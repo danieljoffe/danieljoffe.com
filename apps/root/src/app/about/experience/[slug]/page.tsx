@@ -138,7 +138,7 @@ export default async function ExperiencePage({
               />
             </div>
             <div className='flex flex-col gap-2 text-center md:text-left'>
-              <h1 className='h2 m-0'>{item?.company}</h1>
+              <h1 className='text-4xl m-0'>{item?.company}</h1>
               <h2 className='m-0 flex-1 h4'>{item.year}</h2>
               <h3 className='m-0 h5'>{item.role}</h3>
             </div>

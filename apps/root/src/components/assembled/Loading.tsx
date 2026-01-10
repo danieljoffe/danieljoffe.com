@@ -11,7 +11,7 @@ export default function Loading() {
       aria-live='polite'
       aria-label='Loading content'
     >
-      <div className='flex flex-col items-center gap-4 animate-fade-in will-change-opacity'>
+      <div className='flex flex-col items-center gap-4'>
         <div className='relative will-change-transform'>
           <div className='w-12 h-12 border-4 border-neutral-200 border-t-blue-500 rounded-full animate-spin'></div>
           <div

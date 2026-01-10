@@ -7,18 +7,7 @@ import { contactFormId } from '@/app/about/Contact/Form';
 import { profileData } from '@/utils/profileData';
 import { ABOUT_LINK } from '@/components/assembled/Nav/Links';
 import { FULL_NAME } from '@/utils/constants';
-import dynamic from 'next/dynamic';
-
-// Use lightweight CSS blob for better performance
-const Blob = dynamic(() => import('./Blob'), {
-  ssr: false,
-  loading: () => (
-    <div
-      className='w-full h-full bg-neutral-900 animate-pulse-slow'
-      aria-hidden='true'
-    />
-  ),
-});
+import Blob from './Blob';
 
 export default function Hero() {
   return (

@@ -41,21 +41,21 @@
   h5,
   .h6,
   h6 {
-    @apply font-serif font-medium tracking-wide;
+    @apply font-serif font-medium tracking-wide mb-2;
     line-height: 1.2;
   }
 
   .h4,
   h4 {
-    @apply text-lg mb-2;
+    @apply text-lg;
   }
   .h5,
   h5 {
-    @apply text-base mb-2;
+    @apply text-base;
   }
   .h6,
   h6 {
-    @apply text-sm mb-2;
+    @apply text-sm;
   }
 
   code,
@@ -66,154 +66,5 @@
   /* Improve text readability */
   p {
     max-width: 65ch;
-  }
-}
-
-@layer utilities {
-  /* Performance-optimized animations */
-  .animate-fade-in {
-    animation: fadeIn 1s ease-out forwards;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 1.5s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 1s ease-out forwards;
-  }
-
-  .animate-bounce-subtle {
-    animation: bounceSubtle 2s ease-in-out infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulseSlow 4s ease-in-out infinite;
-  }
-
-  .animate-float {
-    animation: float 8s ease-in-out infinite;
-  }
-
-  .animate-rotate-slow {
-    animation: rotateSlow 25s linear infinite;
-  }
-
-  .animate-gradient-shift {
-    animation: gradientShift 10s ease-in-out infinite;
-  }
-
-  /* Reduce motion for users who prefer it */
-  @media (prefers-reduced-motion: reduce) {
-    .animate-fade-in,
-    .animate-slide-up,
-    .animate-scale-in,
-    .animate-bounce-subtle,
-    .animate-pulse-slow,
-    .animate-float,
-    .animate-rotate-slow,
-    .animate-gradient-shift {
-      animation: none;
-    }
-  }
-
-  /* Optimize for performance */
-  .will-change-transform {
-    will-change: transform;
-  }
-
-  .will-change-opacity {
-    will-change: opacity;
-  }
-
-  .will-change-auto {
-    will-change: auto;
-  }
-
-  /* GPU acceleration for smooth animations */
-  .gpu-accelerated {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(2rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes bounceSubtle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-0.5rem);
-  }
-}
-
-@keyframes pulseSlow {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-1rem);
-  }
-}
-
-@keyframes rotateSlow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
   }
 }
