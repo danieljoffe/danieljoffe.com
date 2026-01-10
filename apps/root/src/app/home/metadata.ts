@@ -1,7 +1,7 @@
 export const homeMetadata = {
-  title: 'Full-Stack Engineer & Technical Leader',
+  title: 'Senior Frontend Engineer',
   description:
-    'Discover achievements, methodologies, and selected work from a full-stack engineer focused on speed, accessibility, and impact.',
+    'Senior Frontend Engineer with 8+ years of experience. Reduced load times by 80% at FightCamp, built design systems at Internet Brands. Available for senior frontend or full-stack roles.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
@@ -24,17 +24,17 @@ export const homeMetadata = {
     canonical: '/',
   },
   openGraph: {
-    title: `Daniel Joffe - Full-Stack Engineer & Technical Leader`,
+    title: `Daniel Joffe | Senior Frontend Engineer`,
     description:
-      'Highlights of achievements, methodology, and recent work with an emphasis on performance and usability.',
+      'Senior Frontend Engineer specializing in performance optimization and component architecture. View achievements, methodology, and work samples.',
     url: 'https://danieljoffe.com',
     type: 'website',
     siteName: 'Daniel Joffe',
   },
   twitter: {
-    title: `Daniel Joffe - Full-Stack Engineer & Technical Leader`,
+    title: `Daniel Joffe | Senior Frontend Engineer`,
     description:
-      'Explore achievements, methodology, and recent work focused on fast, accessible experiences.',
+      'Senior Frontend Engineer. Performance optimization, component architecture, and accessible web applications.',
     card: 'summary_large_image',
     creator: '@danieljoffe',
   },

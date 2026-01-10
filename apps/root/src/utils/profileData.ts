@@ -10,8 +10,8 @@ export const profileData = {
   name: FULL_NAME,
   title: JOB_TITLE,
   tagline:
-    'I build exceptional digital experiences that drive results and inspire users.',
-  status: 'Available for Senior Frontend/Full-Stack roles',
+    'I turn slow websites into fast ones. At FightCamp, I cut mobile load times from 10s to 2s. At Internet Brands, I built a component library used by 80% of applications.',
+  status: 'Currently seeking remote or LA-based opportunities',
   social: {
     email: EMAIL_ADDRESS,
     linkedin: LINKEDIN_PROFILE_URL,

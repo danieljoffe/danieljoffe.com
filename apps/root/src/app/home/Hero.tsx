@@ -30,8 +30,14 @@ export default function Hero() {
           >
             {profileData.name}
           </h1>
+          <p className='text-shadow-lg text-center text-base font-medium text-white/90 mb-2'>
+            {profileData.title}
+          </p>
           <p className='text-shadow-lg text-center text-lg text-white'>
             {profileData.tagline}
+          </p>
+          <p className='text-shadow-lg text-center text-sm text-white/80 mt-2 italic'>
+            {profileData.status}
           </p>
           <div className='flex justify-center mt-4'>
             <Button
@@ -40,7 +46,7 @@ export default function Hero() {
               aria-label={`Get in touch with ${FULL_NAME}`}
               id='contactMe'
             >
-              contact me
+              Let&apos;s Talk
             </Button>
           </div>
         </div>
