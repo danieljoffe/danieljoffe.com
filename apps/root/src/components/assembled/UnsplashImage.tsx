@@ -52,9 +52,7 @@ export default function UnsplashImage({
   }
 
   const onLoad = useCallback(() => {
-    setTimeout(() => {
-      setImageLoaded(true);
-    }, 750);
+    setImageLoaded(true);
   }, []);
 
   useEffect(() => {

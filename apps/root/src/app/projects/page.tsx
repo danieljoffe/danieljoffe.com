@@ -34,7 +34,7 @@ export default function Projects() {
             aria-label='Project portfolio'
           >
             {projectsList.map(
-              ({ slug, link, description, cover, backgroundColor }) => (
+              ({ slug, link, description, cover, backgroundColor }, index) => (
                 <article
                   key={slug}
                   className={[
@@ -48,8 +48,8 @@ export default function Projects() {
                     alt={cover.alt}
                     origin={cover.origin}
                     creator={cover.creator}
-                    priority={true}
-                    fetchPriority='high'
+                    priority={index < 2}
+                    fetchPriority={index < 2 ? 'high' : 'low'}
                     blurHash={cover.blurHash}
                     width={400}
                     height={225}

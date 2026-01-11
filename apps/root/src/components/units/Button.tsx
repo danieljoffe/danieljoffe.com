@@ -1,6 +1,7 @@
 'use client';
-import React from 'react';
+import React, { useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ButtonAsButtonProps,
   ButtonAsLinkProps,
@@ -27,6 +28,17 @@ const Button = React.forwardRef<
     onClick,
     ...restProps
   } = props;
+  const router = useRouter();
+
+  const handleMouseEnter = useCallback(
+    (href: string) => {
+      if (href && href.startsWith('/')) {
+        router.prefetch(href);
+      }
+    },
+    [router]
+  );
+
   const classes = [
     buttonBaseStyles,
     buttonVariantStyles[variant],
@@ -89,6 +101,7 @@ const Button = React.forwardRef<
         ref={ref as React.ForwardedRef<HTMLAnchorElement>}
         className={linkClasses}
         onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
+        onMouseEnter={() => handleMouseEnter(href)}
         rel={safeRel}
         target={target}
         href={href}

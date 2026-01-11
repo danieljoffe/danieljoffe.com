@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from './metadata';
 import { josefinSans, irn, firaMono } from './fonts';
-// import '@/app/critical.scss';
 import '@/app/global.scss';
 
 import HeadClient from './home/HeadClient';

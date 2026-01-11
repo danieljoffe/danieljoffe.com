@@ -70,6 +70,7 @@ const nextConfig = {
   // Headers (additional to middleware)
   async headers() {
     return [
+      // Security headers for all routes
       {
         source: '/(.*)',
         headers: [
@@ -103,8 +104,9 @@ const nextConfig = {
           },
         ],
       },
+      // Static images - immutable, 1 year
       {
-        source: '/images/(.*)',
+        source: '/images/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -112,8 +114,9 @@ const nextConfig = {
           },
         ],
       },
+      // Next.js static assets - immutable, 1 year
       {
-        source: '/_next/static/(.*)',
+        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -121,22 +124,44 @@ const nextConfig = {
           },
         ],
       },
+      // Next.js optimized images - respect upstream cache headers
+      {
+        source: '/_next/image',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // Static files at root - long cache
+      {
+        source: '/:file(favicon.ico|sitemap.xml|robots.txt)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // API routes - no caching
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate',
+          },
+        ],
+      },
+      // HTML pages - short cache with stale-while-revalidate
       {
         source:
-          '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|monitoring).*)',
+          '/:path((?!api|_next|images|favicon.ico|sitemap.xml|robots.txt|monitoring).*)',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=300, stale-while-revalidate=86400',
-          },
-        ],
-      },
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache',
           },
         ],
       },

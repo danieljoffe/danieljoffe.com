@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useTransitionRouter } from 'next-transition-router';
@@ -32,8 +31,6 @@ export default function Form() {
     resolver: yupResolver(formSchema),
   });
 
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-
   const onSubmit = async (data: ContactFormData) => {
     if (isSubmitting) {
       setError('root', {
@@ -64,10 +61,7 @@ export default function Form() {
         throw new Error('Failed to send message');
       }
 
-      setSubmitSuccess(true);
-      setTimeout(() => {
-        router.push('/thank-you/email');
-      }, 2000);
+      router.push('/thank-you/email');
     } catch (_error) {
       setError('root.unknownError', {
         type: 'manual',
@@ -79,12 +73,6 @@ export default function Form() {
   const onVerify = (token: string) => {
     setValue('hcaptcha', token);
   };
-
-  useEffect(() => {
-    if (submitSuccess) {
-      router.push('/thank-you/email');
-    }
-  }, [submitSuccess, router]);
 
   return (
     <form
