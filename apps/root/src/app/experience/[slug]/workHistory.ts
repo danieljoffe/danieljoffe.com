@@ -1,3 +1,4 @@
+import { EXPERIENCE_LINK, NavLink } from '@/components/assembled/Nav/Links';
 import { UnsplashImageMeta } from '@/components/assembled/UnsplashImage';
 
 export type ExperienceItem = {
@@ -12,10 +13,16 @@ export type ExperienceItem = {
   impact: string;
   learned: string;
   cover: UnsplashImageMeta;
+  tech: string;
+  link: NavLink;
 };
 
 export const winc: ExperienceItem = {
   id: 'winc',
+  link: {
+    label: 'Winc',
+    href: [EXPERIENCE_LINK.href, '/winc'].join(''),
+  },
   year: '2015-2017',
   company: 'WINC (formerly ClubW)',
   logo: '/images/winc-logo.svg',
@@ -39,10 +46,15 @@ export const winc: ExperienceItem = {
     creator: '@marcojodoin',
     blurHash: 'LHA9c@NGEfsTxboLofWB0}xt$%R*',
   },
+  tech: 'AngularJS, JavaScript ES6+, Java, Spring, Thymeleaf, HTML5, CSS3, WebAIM, WCAG 2.0 AA, Git, Browser Accessibility Tools',
 };
 
 export const internetBrands: ExperienceItem = {
   id: 'internet-brands',
+  link: {
+    label: 'Internet Brands',
+    href: [EXPERIENCE_LINK.href, '/internet-brands'].join(''),
+  },
   year: '2018-2019',
   company: 'Internet Brands',
   logo: '/images/internet-brands-logo.svg',
@@ -66,10 +78,15 @@ export const internetBrands: ExperienceItem = {
     creator: '@timmossholder',
     blurHash: 'LA9jDg~A-oxt^+-UxZt75UE2M|jt',
   },
+  tech: 'React, Redux, TypeScript, JavaScript ES6+, AngularJS, Angular 2+, Webpack, CSS Grid, Flexbox, Chrome DevTools, NPM, Electron, CI/CD, HIPAA Compliance',
 };
 
 export const theLibraryCorporation: ExperienceItem = {
   id: 'the-library-corporation',
+  link: {
+    label: 'The Library Corporation',
+    href: [EXPERIENCE_LINK.href, '/the-library-corporation'].join(''),
+  },
   year: '2019-2021',
   company: 'The Library Corporation',
   logo: '/images/the-library-corporation-logo.svg',
@@ -92,10 +109,15 @@ export const theLibraryCorporation: ExperienceItem = {
     creator: '@willvanw',
     blurHash: 'LRCPO;bH9FjY~CbHD%jZ%2WWi^o0',
   },
+  tech: '**Tech Stack:** Angular 2, TypeScript, AngularJS, Node.js, AWS S3, HTML5, CSS3, SASS',
 };
 
 export const fightcamp: ExperienceItem = {
   id: 'fightcamp',
+  link: {
+    label: 'FightCamp',
+    href: [EXPERIENCE_LINK.href, '/fightcamp'].join(''),
+  },
   year: '2021-2023',
   company: 'FightCamp',
   logo: '/images/fightcamp-logo.svg',
@@ -119,10 +141,15 @@ export const fightcamp: ExperienceItem = {
     creator: '@visualsbyroyalz',
     blurHash: 'LVK1zX00D%IU_3D%ofj]00WBt7xu',
   },
+  tech: 'Vue.js, Nuxt.js, TypeScript, Webpack, Storybook, Jest, Storyblok CMS, Google Optimize, Google Analytics, AWS S3, Intersection Observer API, Lighthouse, Chrome DevTools',
 };
 
 export const professionalDevelopment: ExperienceItem = {
   id: 'professional-development',
+  link: {
+    label: 'Professional Development & Contract Work',
+    href: [EXPERIENCE_LINK.href, '/professional-development'].join(''),
+  },
   year: '2023-Present',
   company: 'Professional Development & Contract Work',
   logo: '/images/brand-logo.svg',
@@ -146,6 +173,7 @@ export const professionalDevelopment: ExperienceItem = {
     creator: '@emmaou',
     blurHash: 'LjKU=u%gkqRP_MogMxbvD%RPxtR*',
   },
+  tech: '**Tech Stack:** Angular 2, TypeScript, AngularJS, Node.js, AWS S3, HTML5, CSS3, SASS',
 };
 
 export const experience: Record<string, ExperienceItem> = {

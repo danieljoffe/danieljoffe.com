@@ -6,9 +6,10 @@ export default function Overview() {
     <div className='flex flex-col gap-4'>
       <h3>Overview</h3>
       <p>
-        I&apos;ve worked in a variety of roles, from frontend developer to
-        technical leader. I&apos;ve also worked in a variety of industries, from
-        wine subscription to healthcare to library software.
+        From wine e-commerce to healthcare compliance to library systems, each
+        role expanded my toolkit. I&apos;ve progressed from building landing
+        pages to architecting component libraries used by 80% of applications,
+        always focused on eliminating bottlenecks and empowering teams.
       </p>
       <TimelineMobile />
       <TimelineTU />

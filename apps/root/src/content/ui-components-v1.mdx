@@ -1,174 +1,61 @@
-import Button from '@/components/units/Button';
-import Container from '@/components/units/Container';
-import TextInput from '@/components/units/TextInput';
-import InputLabel from '@/components/units/InputLabel';
-import InputFeedback from '@/components/units/InputFeedback';
-import LinkHint from '@/components/units/LinkHint';
-import { uiComponentsV1Slug } from '@/app/projects/projects-list.ts';
-import { EXAMPLE_URL } from '@/utils/constants';
+# Building a Design System: UI Components for danieljoffe.com
 
-# Building a Design System: My Journey with UI Components
+When building this portfolio, I wanted more than hastily assembled components—I wanted a design system that would scale. Here's what I built and why it matters.
 
-When I started building this website, I knew I wanted something more than just a collection of hastily thrown-together components. I wanted a design system that would grow with me, one that would make development faster and more consistent. So I set out to create a set of foundational UI components that would serve as the building blocks for everything else.
+## The Component Library
 
-What I ended up with was a collection of 6 core components that have become the backbone of my entire application. Let me walk you through what I built and why it matters.
+I created 6 foundational components that form the backbone of this application:
 
-## The Foundation: What I Built and Why
+### First: Button
 
-### 1. The Versatile Button Component
+A flexible button with three variants (primary, secondary, icon) and three sizes. Uses `React.forwardRef` for proper ref forwarding and includes built-in accessibility with ARIA attributes and keyboard navigation.
 
-Let's start with the workhorse of any UI - the button. I've always been frustrated by button components that force you into rigid patterns or require endless prop drilling. So I built one that's flexible enough to handle almost any use case.
+### Second: Container
 
-**What makes it special:**
+A simple but essential wrapper that centers content and provides consistent spacing. Used on almost every page.
 
-- **Three variants**: `primary`, `secondary`, and `icon` - each with its own personality
-- **Three sizes**: `sm`, `md`, and `lg` - because one size doesn't fit all
-- **Smart states**: Hover, active, disabled, and focus - all handled automatically
-- **Accessibility built-in**: Proper ARIA attributes and keyboard navigation from day one
+### Third: TextInput
 
-The implementation uses React.forwardRef for proper ref forwarding, which might sound technical, but it means the component plays nicely with form libraries and other tools. I also made sure the focus management is consistent - you'll always know where you are when tabbing through the interface.
+A polymorphic form component that renders as either `<input>` or `<textarea>`. Handles validation states, error messages, and success feedback with proper ARIA relationships using `React.useId()`.
 
-Here's how it looks in practice:
+### Fourth: InputLabel
 
-```tsx
-<Button name='example' variant="primary" size="md" onClick={handleClick}>
-  Submit Form
-</Button>
+Handles proper HTML label association, required field indicators (red asterisk), and consistent typography.
 
-<Button name='example2' variant="icon" size="sm" aria-label="Close">
-  <XIcon />
-</Button>
-```
+### Fifth: InputFeedback
 
-**See it in action:**
+Validation messages with proper ARIA roles and live regions for screen readers.
 
-<Button name='example' variant='primary'>
-  click
-</Button>
+### Sixth: LinkHint
 
-### 2. The Container: Simple but Essential
+A small arrow icon indicating external links, using Lucide React for consistency.
 
-Sometimes the simplest components are the most valuable. The Container component is just a wrapper, but it's one I use on almost every page. It centers content horizontally, provides consistent spacing, and gives me a predictable foundation to build on.
+## Design Principles
 
-It's not flashy, but it's the kind of component that makes you realize how much time you were wasting manually centering things and calculating margins.
+**Accessibility First**  
+Every component starts with accessibility: ARIA attributes, keyboard navigation, screen reader compatibility. These aren't afterthoughts—they're the foundation.
 
-**Try it out:**
+**Type Safety**  
+Full TypeScript support catches errors at compile time. Proper prop interfaces and strict type checking have saved countless debugging hours.
 
-<Container>
-  <p>Inside Container</p>
-</Container>
+**Consistency via Tailwind**  
+Tailwind CSS provides a consistent design language—neutral palette with blue accents—so I don't have to think about spacing or typography choices.
 
-### 3. TextInput: Where Forms Come Alive
+## Key Takeaways
 
-Forms are the backbone of user interaction, and I wanted mine to be both beautiful and accessible. The TextInput component is polymorphic - it can render as either a single-line input or a multi-line textarea based on the `as` prop. It handles all the common scenarios - validation states, error messages, success feedback, and helpful hints.
+- Always use labels—it's essential for accessibility
+- Meaningful error messages help users understand what went wrong
+- Test keyboard navigation—if you can't use it with a keyboard, it's broken
+- Semantic HTML matters—use the right elements for the right purposes
 
-**Key features that make a difference:**
+## What's Next
 
-- **Polymorphic design**: Use `as="input"` or `as="textarea"` to switch between input types
-- **Smart state management**: Default, error, success, and disabled states
-- **Accessibility first**: Proper labels, ARIA attributes, and error handling
-- **User guidance**: Optional hint text that actually helps users
-- **Required field indicators**: Clear visual cues for what's needed
+- Dark mode support
+- Animation integration
+- More input types (select, checkbox, radio)
+- Storybook documentation
+- Expanded test coverage
 
-I used React.useId() for unique IDs, which ensures proper label association without manual ID management. The ARIA relationships are set up automatically, so screen readers get all the context they need.
+---
 
-**Here's how it works as an input:**
-
-<TextInput
-  label='Email Address'
-  name='email'
-  type='email'
-  error='Please enter a valid email address'
-  hint="We'll never share your email"
-/>
-
-**And as a textarea:**
-
-<TextInput
-  label='Message'
-  name='message'
-  as='textarea'
-  placeholder='Enter your message here...'
-  rows={4}
-/>
-
-### 4. InputLabel: The Unsung Hero
-
-Labels might seem simple, but they're crucial for accessibility. My InputLabel component handles the proper HTML association, required field indicators, and consistent typography. The red asterisk for required fields is a small detail, but it makes a big difference in user experience.
-
-**Example:**
-
-<InputLabel inputId='email-field' label='Email Address' required={true} />
-
-### 5. InputFeedback: Giving Users a Voice
-
-Validation messages need to be more than just text. The InputFeedback component provides proper ARIA roles, live regions for screen readers, and visual distinction between different types of feedback.
-
-**Error feedback example:**
-
-<InputFeedback
-  inputId='email-field'
-  message='Please enter a valid email address'
-  type='error'
-/>
-
-### 6. LinkHint: The Small Touch
-
-Sometimes it's the little things that matter. The LinkHint component is just an arrow icon, but it provides a clear visual cue that a link goes to an external site. It uses Lucide React icons for consistency and maintains proper sizing and alignment.
-
-**External link example:**
-
-<a href={EXAMPLE_URL} className='flex items-center'>
-  Visit External Site
-  <LinkHint />
-</a>
-
-## The Philosophy Behind the System
-
-### Accessibility Isn't Optional
-
-Every component I built starts with accessibility considerations. Proper ARIA attributes, keyboard navigation support, screen reader compatibility - these aren't afterthoughts, they're the foundation. I've learned that accessible components are often better components for everyone, not just users with disabilities.
-
-### Consistency Breeds Confidence
-
-Using Tailwind CSS for styling gives me a consistent design language. The neutral color palette with blue accents creates a professional look that's easy on the eyes. More importantly, it means I don't have to think about spacing, typography, or color choices - the system handles that for me.
-
-### Type Safety Saves Time
-
-Full TypeScript support might seem like overkill for UI components, but it's saved me countless hours of debugging. Proper prop interfaces, generic type support, and strict type checking mean I catch errors at compile time rather than runtime.
-
-### Reusability Through Design
-
-These components are designed to be modular and composable. They're configurable through props, extensible through className overrides, and consistent across the application. When I need a new feature, I can often build it by combining existing components rather than starting from scratch.
-
-## Lessons Learned and Best Practices
-
-Through building this system, I've developed some strong opinions about what makes good UI components:
-
-1. **Always use labels** - It's not optional, it's essential for accessibility
-2. **Meaningful error messages** - Users need to understand what went wrong and how to fix it
-3. **ARIA attributes matter** - They're not just for compliance, they're for usability
-4. **Test keyboard navigation** - If you can't use it with a keyboard, it's broken
-5. **Consistent spacing** - The design system should handle this, not individual components
-6. **Semantic HTML** - Use the right elements for the right purposes
-
-## What's Next?
-
-This is just the beginning. I'm already thinking about:
-
-- **Dark mode support** - Because users deserve choice
-- **Animation libraries** - Subtle motion can make interfaces feel alive
-- **More input types** - Select dropdowns, checkboxes, radio buttons
-- **Form validation integration** - Better error handling and user feedback
-- **Storybook documentation** - Interactive component playgrounds
-- **Unit test coverage** - Because reliable components need reliable tests
-
-## Wrapping Up
-
-Building this design system has been one of the most rewarding parts of developing this website. What started as a way to avoid repeating myself has become a foundation that makes every new feature easier to build.
-
-The key insight? Good components aren't just about code reuse - they're about creating a consistent, accessible, and maintainable user experience. When users interact with your interface, they shouldn't be able to tell that different parts were built at different times or by different people. It should feel cohesive and intentional.
-
-These 6 components might seem simple, but they've transformed how I think about building interfaces. They've taught me that the best design systems are the ones that get out of your way and let you focus on what actually matters - creating great user experiences.
-
-If you're building your own design system, start small, focus on accessibility, and don't be afraid to iterate. The components you build today will shape the applications you build tomorrow.
+_These 6 components taught me that the best design systems get out of your way and let you focus on creating great user experiences._

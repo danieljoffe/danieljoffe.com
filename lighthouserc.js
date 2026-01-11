@@ -11,8 +11,8 @@ const config = {
       url: [
         baseUrl,
         `${baseUrl}/about`,
-        `${baseUrl}/about/experience/winc`,
-        `${baseUrl}/about/experience/professional-development`,
+        `${baseUrl}/experience/winc`,
+        `${baseUrl}/experience/professional-development`,
         `${baseUrl}/projects`,
       ],
       // numberOfRuns: 3,

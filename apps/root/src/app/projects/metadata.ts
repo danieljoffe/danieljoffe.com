@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const projectsMetadata: Metadata = {
-  title: 'Portfolio',
-  description: `Selected projects and case studies—goals, approach, and outcomes across platforms and industries.`,
+  title: 'Projects | Daniel Joffe - Frontend Engineer',
+  description: 'Projects | Daniel Joffe - Frontend Engineer',
   keywords: [
     'Daniel Joffe',
     'Portfolio',

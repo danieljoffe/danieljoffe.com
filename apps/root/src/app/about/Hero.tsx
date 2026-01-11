@@ -2,14 +2,14 @@
 import Button from '@/components/units/Button';
 import Container from '@/components/units/Container';
 import { FULL_NAME, RESUME_URL } from '@/utils/constants';
-import { getBase64DataUrl } from '@/utils/helpers';
+import { onClickDownload } from '@/utils/helpers';
 import { profileData } from '@/utils/profileData';
 import { Download, Github, Linkedin, AtSign } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Hero() {
   return (
-    <Container>
+    <Container className='bg-neutral-900 text-white'>
       <div className='flex flex-col gap-4'>
         <h1 className='text-center'>About</h1>
         <div className='flex flex-col gap-4 items-center md:flex-row '>
@@ -18,14 +18,12 @@ export default function Hero() {
               src='/images/daniel-joffe-profile.png'
               alt={FULL_NAME}
               title={FULL_NAME}
-              width={300}
-              height={300}
-              className='rounded-full w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64'
+              width={275}
+              height={275}
+              className='rounded-full min-h-60 min-w-60'
               priority={true}
               fetchPriority='high'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
-              placeholder='blur'
-              blurDataURL={getBase64DataUrl('rgb(171, 146, 116)')}
               decoding='async'
             />
           </div>
@@ -82,17 +80,13 @@ export default function Hero() {
                 <Button
                   size='sm'
                   variant='icon'
-                  aria-label='Download Resume PDF'
+                  aria-label='Download Resume (PDF)'
                   title='Download Resume'
                   name='download resume'
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = RESUME_URL;
-                    link.download = 'daniel-joffe-resume.pdf';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
+                  onClick={onClickDownload({
+                    download: 'daniel-joffe.resume.pdf',
+                    href: RESUME_URL,
+                  })}
                 >
                   <Download absoluteStrokeWidth={true} />
                 </Button>

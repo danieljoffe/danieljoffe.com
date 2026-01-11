@@ -51,3 +51,17 @@ export const devLog = (message: string, ...args: unknown[]) => {
 export const isProduction = () => {
   return publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] === 'production';
 };
+
+interface ClickDownloadOptions {
+  href: string;
+  download: string;
+}
+
+export const onClickDownload = (options: ClickDownloadOptions) => () => {
+  const link = document.createElement('a');
+  link.href = options.href;
+  link.download = options.download;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};

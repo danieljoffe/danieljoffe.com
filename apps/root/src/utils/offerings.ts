@@ -45,22 +45,22 @@ export const offerings = {
     {
       icon: '🏗️',
       title: 'Infrastructure-First Thinking',
-      text: 'I establish scalable guidelines and standards that accommodate exponential growth while maintaining consistent development practices across engineering teams.',
+      text: 'At FightCamp, I established development guidelines that reduced bundle sizes by 62%. At Internet Brands, I built component library infrastructure that unified UI patterns across 5+ healthcare applications',
     },
     {
       icon: '👥',
       title: 'Cross-Functional Collaboration',
-      text: 'I work seamlessly with Content, Marketing, Design, and QA teams to align technical solutions with business objectives and user needs.',
+      text: 'At Winc, I partnered with Marketing to build a CMS that let them launch 200+ pages without engineering help. At FightCamp, I integrated Google Optimize so Marketing could run A/B tests independently.',
     },
     {
       icon: '📈',
       title: 'Performance-Driven Development',
-      text: 'I leverage data and testing tools like Lighthouse, A/B testing, and performance optimization to deliver measurable improvements in user experience.',
+      text: "I've improved Lighthouse scores by 40+ points, reduced bounce rates by 39%, and cut load times from 10 seconds to 2 seconds—all through systematic performance analysis and optimization.",
     },
     {
       icon: '🎓',
       title: 'Mentorship & Knowledge Transfer',
-      text: 'I invest in team growth through targeted training, component architecture guidance, and hands-on development support that accelerates individual and team velocity.',
+      text: "I've mentored 5 developers—one promoted to Senior Engineer, another now works at JPL. I believe when teams succeed, products succeed",
     },
   ],
 };

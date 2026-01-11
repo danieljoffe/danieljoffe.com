@@ -1,6 +1,10 @@
 import { MetadataRoute } from 'next';
-import { experience } from './about/experience/[slug]/workHistory';
-import { ABOUT_LINK, PROJECTS_LINK } from '@/components/assembled/Nav/Links';
+import { experience } from './experience/[slug]/workHistory';
+import {
+  ABOUT_LINK,
+  EXPERIENCE_LINK,
+  PROJECTS_LINK,
+} from '@/components/assembled/Nav/Links';
 import { DOMAIN_URL } from '@/utils/constants';
 import { pagesRecords } from './projects/constants';
 
@@ -29,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Dynamic experience routes
   const experienceRoutes = Object.keys(experience).map(slug => ({
-    url: `${DOMAIN_URL}${ABOUT_LINK.href}/experience/${slug}`,
+    url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'yearly' as const,
     priority: 0.6,

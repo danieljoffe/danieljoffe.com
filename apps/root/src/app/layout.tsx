@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from './metadata';
-import './critical.scss';
 import { josefinSans, irn, firaMono } from './fonts';
-import HeadClient from './home/HeadClient';
+// import '@/app/critical.scss';
+import '@/app/global.scss';
 
+import HeadClient from './home/HeadClient';
 import Button from '@/components/units/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';

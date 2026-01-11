@@ -16,7 +16,9 @@ export default function Projects() {
         <header>
           <h1>Projects</h1>
           <p>
-            Explore my portfolio of web applications and technical solutions.
+            Case studies and projects showcasing performance optimization,
+            component architecture, and full-stack development. Each project
+            includes the challenge, my approach, and measurable outcomes.
           </p>
         </header>
         <section aria-labelledby='projects-heading'>
@@ -27,12 +29,20 @@ export default function Projects() {
             className={[
               'grid grid-cols-1 md:grid-cols-2 md:grid-rows-2',
               'text-white max-w-[30rem] mx-auto md:max-w-full',
+              'gap-8',
             ].join(' ')}
             aria-label='Project portfolio'
           >
             {projectsList.map(
               ({ slug, link, description, cover, backgroundColor }) => (
-                <article key={slug} className='flex flex-col'>
+                <article
+                  key={slug}
+                  className={[
+                    'flex flex-col overflow-hidden rounded-md transition',
+                    'shadow-md/10 ease-in-out duration-300',
+                    'hover:scale-102 hover:shadow-lg/30',
+                  ].join(' ')}
+                >
                   <UnsplashImage
                     src={cover.src}
                     alt={cover.alt}

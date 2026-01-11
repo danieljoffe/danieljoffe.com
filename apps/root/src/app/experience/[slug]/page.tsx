@@ -3,13 +3,12 @@ import { experience } from './workHistory';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { timeline } from '@/app/about/Timeline/timeline';
-import { ABOUT_LINK } from '@/components/assembled/Nav/Links';
+import { ABOUT_LINK, EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
 import UnsplashImage from '@/components/assembled/UnsplashImage';
-import Button from '@/components/units/Button';
 import Script from 'next/script';
 import { headers } from 'next/headers';
+import BreadCrumbs from '@/components/units/BreadCrumbs';
 
 export async function generateMetadata({
   params,
@@ -48,7 +47,7 @@ export async function generateMetadata({
       title: `${item.role} at ${item.company} - ${FULL_NAME}`,
       description,
       siteName: FULL_NAME,
-      url: [DOMAIN_URL, ABOUT_LINK.href, `/experience/${slug}`].join(''),
+      url: [DOMAIN_URL, EXPERIENCE_LINK.href, `/${slug}`].join(''),
       images: [
         {
           url: item.cover.src,
@@ -59,7 +58,7 @@ export async function generateMetadata({
       ],
     },
     alternates: {
-      canonical: `${ABOUT_LINK.href}/experience/${slug}`,
+      canonical: `${EXPERIENCE_LINK.href}/${slug}`,
     },
     twitter: {
       title: `${item.role} at ${item.company} - ${FULL_NAME}`,
@@ -116,7 +115,16 @@ export default async function ExperiencePage({
         width={800}
         height={450}
       />
-      <Container>
+      <Container className='gap-4'>
+        <BreadCrumbs
+          items={[
+            {
+              href: ABOUT_LINK.href,
+              label: EXPERIENCE_LINK.label,
+            },
+            item.link,
+          ]}
+        />
         <article className='flex flex-col gap-4'>
           <header className='flex flex-col md:flex-row items-center gap-4'>
             <div
@@ -164,16 +172,6 @@ export default async function ExperiencePage({
               <h3 className='h5'>Lessons Learned</h3>
               <p> {item.learned}</p>
             </section>
-
-            <div className='flex justify-center'>
-              <Button
-                as='link'
-                href={`${ABOUT_LINK.href}?scrollTo=${timeline.id}`}
-                aria-label='Back to timeline'
-              >
-                Back to Timeline
-              </Button>
-            </div>
           </div>
         </article>
       </Container>

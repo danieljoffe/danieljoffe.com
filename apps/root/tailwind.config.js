@@ -53,9 +53,15 @@ module.exports = {
     extend: {
       // Only extend with what you actually use
       fontFamily: {
-        sans: ['var(--font-josefin-sans)', 'system-ui', 'sans-serif'],
-        serif: ['var(--font-irn)', 'serif'],
-        mono: ['var(--font-fira-code)', 'monospace'],
+        sans: ['var(--font-josefin-sans)', 'Futura', 'Helvetica', 'sans-serif'],
+        serif: ['var(--font-irn)', 'Garamond', 'Times', 'serif'],
+        mono: [
+          'var(--font-fira-code)',
+          'Fira Mono',
+          'Droid Sans Mono',
+          'Courier New',
+          'monospace',
+        ],
       },
     },
   },

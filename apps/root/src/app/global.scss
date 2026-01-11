@@ -1,3 +1,4 @@
+/* Critical CSS - Above the fold only */
 @use 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
@@ -32,6 +33,38 @@
   --color-neutral-700: #4d4d4d;
   --color-neutral-800: #2e2e2e;
   --color-neutral-900: #0f0f0f;
+}
+
+@layer base {
+  html {
+    font-size: 18px;
+  }
+
+  body {
+    @apply antialiased font-sans text-neutral-900 bg-neutral-100 font-light;
+    @apply flex flex-col h-screen relative;
+    line-height: 1.5;
+  }
+
+  /* Critical heading styles for above-the-fold content */
+  h1,
+  h2,
+  h3 {
+    @apply font-serif font-medium tracking-wide mb-4;
+    line-height: 1.2;
+  }
+
+  h1 {
+    @apply text-6xl;
+  }
+
+  h2 {
+    @apply text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl;
+  }
 }
 
 @layer base {

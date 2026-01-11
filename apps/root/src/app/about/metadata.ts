@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
 
 export const aboutMetadata: Metadata = {
-  title: `About Daniel Joffe`,
-  description: `Career overview, principles, and highlights from Daniel Joffe's work—what I do, how I work, and why it matters.`,
+  title: 'About Daniel Joffe | Frontend Engineer & Technical Leader',
+  description:
+    '8+ years building performant web applications. Specializing in React, Vue, TypeScript, and performance optimization. Currently completing CS degree at WGU.',
   keywords: [
     'Daniel Joffe',
     'About',

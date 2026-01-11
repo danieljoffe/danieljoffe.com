@@ -100,7 +100,7 @@ apps/root/src/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/dannyk08/danieljoffe.com.git
+   git clone https://github.com/danieljoffe/danieljoffe.com.git
    cd danieljoffe.com
    ```
 
@@ -245,8 +245,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Senior Software Engineer
 
 - 🌐 Website: [danieljoffe.com](https://danieljoffe.com)
-- 💼 LinkedIn: [linkedin.com/in/dannyk08](https://linkedin.com/in/dannyk08)
-- 🐙 GitHub: [github.com/dannyk08](https://github.com/dannyk08)
+- 💼 LinkedIn: [linkedin.com/in/danieljoffe](https://linkedin.com/in/danieljoffe)
+- 🐙 GitHub: [github.com/danieljoffe](https://github.com/danieljoffe)
 - 📧 Email: hello@danieljoffe.com
 
 ---

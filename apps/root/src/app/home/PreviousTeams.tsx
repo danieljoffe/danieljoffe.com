@@ -5,9 +5,9 @@ import {
   internetBrands,
   theLibraryCorporation,
   winc,
-} from '@/app/about/experience/[slug]/workHistory';
+} from '@/app/experience/[slug]/workHistory';
 import LinkHint from '@/components/units/LinkHint';
-import { ABOUT_LINK } from '@/components/assembled/Nav/Links';
+import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import Button from '@/components/units/Button';
 
 const companies = [winc, internetBrands, theLibraryCorporation, fightcamp];
@@ -25,7 +25,7 @@ export default function PreviousTeams() {
             as='link'
             variant='link'
             size='lg'
-            href={`${ABOUT_LINK.href}/experience/${company.id}`}
+            href={`${EXPERIENCE_LINK.href}/${company.id}`}
             aria-label={company.company}
             title={company.company}
           >

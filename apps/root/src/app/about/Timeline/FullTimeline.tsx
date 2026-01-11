@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import timeline from './timeline';
 import LinkHint from '@/components/units/LinkHint';
-import { ABOUT_LINK } from '@/components/assembled/Nav/Links';
+import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import Button from '@/components/units/Button';
 
 export default function FullTimeline() {
@@ -16,7 +16,7 @@ export default function FullTimeline() {
               variant='link'
               size='lg'
               className='flex gap-4 w-full h-full text-white'
-              href={`${ABOUT_LINK.href}/experience/${item.id}`}
+              href={`${EXPERIENCE_LINK.href}/${item.id}`}
               aria-label={`View details for ${item.company}`}
             >
               <div className='flex gap-4 w-full h-full items-center justify-between'>
@@ -34,8 +34,8 @@ export default function FullTimeline() {
                 </div>
                 <div className='flex justify-center items-center gap-2 flex-1'>
                   <div className='flex-1'>
-                    <h4>{item.company}</h4>
-                    <p>{item.role}</p>
+                    <h4 className='m-0 h4'>{item.company}</h4>
+                    <p className='text-sm'>{item.role}</p>
                   </div>
                   <div>
                     <LinkHint />

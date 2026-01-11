@@ -8,6 +8,10 @@ export type NavLink = {
 export const HOME_LINK: NavLink = { href: '/', label: 'Home' };
 export const ABOUT_LINK: NavLink = { href: '/about', label: 'About' };
 export const PROJECTS_LINK: NavLink = { href: '/projects', label: 'Projects' };
+export const EXPERIENCE_LINK: NavLink = {
+  href: '/experience',
+  label: 'Experience',
+};
 
 export const NAV_LINKS: NavLink[] = [HOME_LINK, ABOUT_LINK, PROJECTS_LINK];
 

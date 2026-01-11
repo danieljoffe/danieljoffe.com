@@ -4,6 +4,7 @@ import Timeline from './Timeline';
 import Contact from './Contact';
 import type { Metadata } from 'next';
 import { aboutMetadata } from './metadata';
+import TechnicalExpertise from './TechnicalExpertise';
 
 export const metadata: Metadata = aboutMetadata;
 
@@ -11,6 +12,10 @@ export default function About() {
   return (
     <>
       <Hero />
+      <section aria-labelledby='technical-expertise-heading'>
+        <TechnicalExpertise />
+      </section>
+
       <section aria-labelledby='timeline-heading'>
         <Timeline />
       </section>

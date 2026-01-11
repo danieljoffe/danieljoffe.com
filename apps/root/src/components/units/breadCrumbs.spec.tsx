@@ -45,23 +45,26 @@ describe('BreadCrumbs', () => {
     { href: '/about/team', label: 'Team' },
   ];
 
-  test('renders nav with breadcrumb semantics and all items as links', () => {
+  test('renders nav with breadcrumb semantics and non-current items as links', () => {
     mockUsePathname.mockReturnValue('/about');
     render(<BreadCrumbs items={items} />);
     const nav = screen.getByRole('navigation', { name: /breadcrumb/i });
     expect(nav).toBeInTheDocument();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(items.length);
+    // Current page (/about) is rendered as text, not a link
+    expect(links).toHaveLength(items.length - 1);
     expect(links[0]).toHaveAttribute('href', '/');
-    expect(links[1]).toHaveAttribute('href', '/about');
-    expect(links[2]).toHaveAttribute('href', '/about/team');
+    expect(links[1]).toHaveAttribute('href', '/about/team');
   });
 
-  test('marks current page item with aria-current', () => {
+  test('marks current page item with aria-current as text element', () => {
     mockUsePathname.mockReturnValue('/about/team');
     render(<BreadCrumbs items={items} />);
-    const current = screen.getByRole('link', { name: /team/i });
+    // Current page is rendered as a paragraph, not a link
+    const current = screen.getByText(/team/i);
     expect(current).toHaveAttribute('aria-current', 'page');
+    expect(current.tagName).toBe('P');
+    // Non-current items are still links
     const nonCurrent = screen.getByRole('link', { name: /about/i });
     expect(nonCurrent).not.toHaveAttribute('aria-current');
   });

@@ -6,7 +6,7 @@ export const rootMetadata: Metadata = {
     template: '%s | Daniel Joffe - Senior Frontend Engineer',
   },
   description:
-    'Senior Frontend Engineer specializing in performance optimization and component architecture. Reduced load times by 80%, built design systems adopted across organizations. Available for senior frontend or full-stack roles.',
+    'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps. Seeking remote or LA-based roles.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
@@ -42,7 +42,7 @@ export const rootMetadata: Metadata = {
     url: 'https://danieljoffe.com',
     title: 'Daniel Joffe | Senior Frontend Engineer',
     description:
-      'Senior Frontend Engineer specializing in performance optimization and component architecture. 8+ years of experience building fast, accessible web applications.',
+      'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps.',
     siteName: 'Daniel Joffe',
     images: [
       {
@@ -57,7 +57,7 @@ export const rootMetadata: Metadata = {
     card: 'summary_large_image',
     title: 'Daniel Joffe | Senior Frontend Engineer',
     description:
-      'Senior Frontend Engineer specializing in performance optimization and component architecture. Available for senior roles.',
+      'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Seeking remote or LA-based roles.',
     images: ['/images/daniel-joffe-profile.png'],
     creator: '@danieljoffe',
   },
