@@ -30,7 +30,7 @@ export default function Hero() {
           >
             {profileData.name}
           </h1>
-          <p className='text-shadow-lg text-center text-base font-medium text-white/90 mb-2'>
+          <p className='text-shadow-lg text-right text-base font-medium text-white/90 mb-2'>
             {profileData.title}
           </p>
           <p className='text-shadow-lg text-center text-lg text-white'>
