@@ -5,14 +5,14 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     // Check page title
-    await expect(page).toHaveTitle(/Full-Stack Engineer/);
+    await expect(page).toHaveTitle(/Senior Frontend Engineer/);
 
     // Check meta description - wait for it to be present
     const metaDescription = page.locator('meta[name="description"]');
     await expect(metaDescription).toBeAttached();
     await expect(metaDescription).toHaveAttribute(
       'content',
-      /full-stack engineer/
+      /frontend engineer/i
     );
 
     // Check viewport meta tag
