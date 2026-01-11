@@ -52,13 +52,14 @@ export default defineConfig({
     cwd: workspaceRoot,
     timeout: isCI ? 120000 : 60000, // 2 minutes in CI, 1 minute locally
     env: {
-      // Disable Sentry in CI to speed up startup
+      // Use test environment to enable font mocking (important!)
+      NODE_ENV: 'test',
+      // Disable Sentry to speed up startup
       ...(isCI && {
         SENTRY_DSN: '',
         SENTRY_AUTH_TOKEN: '',
-        NODE_ENV: 'test',
       }),
-      // Disable analytics and other non-essential services in CI
+      // Disable analytics and other non-essential services
       ...(isCI && {
         NEXT_TELEMETRY_DISABLED: '1',
         ANALYZE: 'false',
