@@ -43,7 +43,7 @@
     "gsap": "^3.13.0",
     "isomorphic-dompurify": "^2.26.0",
     "lucide-react": "^0.542.0",
-    "next": "~15.5.2",
+    "next": "15.5.9",
     "next-transition-router": "^0.2.11",
     "react": "19.1.1",
     "react-blurhash": "^0.3.0",
