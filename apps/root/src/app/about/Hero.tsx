@@ -32,12 +32,13 @@ export default function Hero() {
           <div className='flex flex-col gap-2 text-center md:text-left'>
             <p>Hello, I&apos;m {FULL_NAME},</p>
             <p>
-              I&apos;m a full-stack engineer with 8+ years of experience
-              building scalable solutions that drive real business impact.
-              Currently, I&apos;m strengthening my computer science foundation
-              through formal education while taking on strategic engineering
-              projects, because I believe in never stopping the pursuit of
-              growth.
+              I&apos;m a frontend engineer with 8+ years of experience
+              specializing in performance optimization and component
+              architecture. I&apos;ve reduced load times by 80%, built design
+              systems adopted across entire organizations, and mentored
+              developers to promotions. Currently completing my CS degree at WGU
+              while taking on contract work—available for senior frontend or
+              full-stack roles.
             </p>
             <div className='flex flex-col gap-2 items-center md:items-start'>
               <p>You can connect with me on:</p>

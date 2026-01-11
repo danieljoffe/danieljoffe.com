@@ -9,7 +9,7 @@ export default function TimelineTU() {
           alt='Timeline TU'
           height={768}
           width={1024}
-          className='w-full h-auto max-w-2xl lg:max-w-4xl'
+          className='w-full h-auto max-w-3xl lg:max-w-4xl'
           sizes='(min-width: 768px) 50vw, (min-width: 1024px) 33vw'
           priority={false}
         />

@@ -13,7 +13,7 @@ export const structuredData = {
   '@type': 'Person',
   name: FULL_NAME,
   jobTitle: JOB_TITLE,
-  description: `${FULL_NAME} is a full-stack engineer with 8+ years of experience building scalable web applications`,
+  description: `${FULL_NAME} is a Senior Frontend Engineer with 8+ years of experience specializing in performance optimization and component architecture`,
   url: DOMAIN_URL,
   email: EMAIL_ADDRESS,
   sameAs: [LINKEDIN_PROFILE_URL, GITHUB_PROFILE_URL],
@@ -35,7 +35,7 @@ export const structuredData = {
   hasOccupation: {
     '@type': 'Occupation',
     name: JOB_TITLE,
-    description: `${FULL_NAME} is a full-stack engineer with 8+ years of experience building scalable web applications. Specialized in React, Angular, and infrastructure optimization.`,
+    description: `${FULL_NAME} is a Senior Frontend Engineer with 8+ years of experience specializing in performance optimization, component architecture, and accessible web applications.`,
     occupationLocation: {
       '@type': 'Place',
       addressCountry: 'US',

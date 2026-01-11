@@ -33,12 +33,13 @@ export default function FullTimeline() {
                   />
                 </div>
                 <div className='flex justify-center items-center gap-2 flex-1'>
-                  <h4 className='flex-1 m-0 h6'>
-                    {item.company} - {item.year}
-                    <br />
-                    {item.role}
-                  </h4>
-                  <LinkHint />
+                  <div className='flex-1'>
+                    <h4>{item.company}</h4>
+                    <p>{item.role}</p>
+                  </div>
+                  <div>
+                    <LinkHint />
+                  </div>
                 </div>
               </div>
             </Button>

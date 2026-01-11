@@ -2,42 +2,42 @@ export const offerings = {
   achievements: [
     {
       icon: '🚀',
-      text: 'Reduced mobile load time from 10s to 2s.',
+      text: 'Reduced mobile load time from 10s to 2s at FightCamp.',
       metric: 'Lightning Fast',
     },
     {
       icon: '📊',
-      text: "Decreased Content team's developer dependency by 90%.",
+      text: "Decreased Content team's developer dependency by 80% at FightCamp.",
       metric: 'Empowered Teams',
     },
     {
       icon: '⚡',
-      text: 'Increased campaign page launches to 200+ in 2 months.',
+      text: 'Increased campaign page launches to 200+ in 2 months at Winc.',
       metric: 'Explosive Growth',
     },
     {
       icon: '♿',
-      text: 'Achieved WCAG compliance across legacy systems.',
+      text: 'Achieved WCAG compliance across legacy systems at The Library Corporation.',
       metric: 'Accessible for All',
     },
     {
       icon: '🎯',
-      text: 'Mentored a junior developer to promotion within 1 year.',
+      text: 'Mentored junior developers—one promoted to Senior, another went to JPL.',
       metric: 'Talent Unlocked',
     },
     {
       icon: '🎨',
-      text: 'Implemented a self-serve CMS for landing pages.',
+      text: 'Built a self-serve CMS enabling 200+ landing pages at Winc.',
       metric: 'Frictionless Launches',
     },
     {
       icon: '🔧',
-      text: 'Stabilized Angular 2+ app with a reliable deployment pipeline.',
+      text: 'Built React component library adopted by 80% of apps at Internet Brands.',
       metric: 'Rock-Solid Delivery',
     },
     {
       icon: '👨‍💼',
-      text: 'Led interviews resulting in a key Senior Developer hire.',
+      text: 'Interviewed 13 candidates, hired key Senior Developer at Internet Brands.',
       metric: 'Leadership Secured',
     },
   ],

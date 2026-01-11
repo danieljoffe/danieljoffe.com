@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 
 export const rootMetadata: Metadata = {
   title: {
-    default: 'Daniel Joffe - Full-Stack Engineer & Technical Leader',
-    template: '%s | Daniel Joffe',
+    default: 'Daniel Joffe | Senior Frontend Engineer',
+    template: '%s | Daniel Joffe - Senior Frontend Engineer',
   },
   description:
-    'Full-stack engineer crafting fast, accessible web apps and leading effective teams. Explore projects, experience, and ways to connect.',
+    'Senior Frontend Engineer specializing in performance optimization and component architecture. Reduced load times by 80%, built design systems adopted across organizations. Available for senior frontend or full-stack roles.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
@@ -40,9 +40,9 @@ export const rootMetadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://danieljoffe.com',
-    title: 'Daniel Joffe - Full-Stack Engineer & Technical Leader',
+    title: 'Daniel Joffe | Senior Frontend Engineer',
     description:
-      'Full-stack engineer focused on performant, accessible web apps and strong engineering practices.',
+      'Senior Frontend Engineer specializing in performance optimization and component architecture. 8+ years of experience building fast, accessible web applications.',
     siteName: 'Daniel Joffe',
     images: [
       {
@@ -55,9 +55,9 @@ export const rootMetadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Daniel Joffe - Full-Stack Engineer & Technical Leader',
+    title: 'Daniel Joffe | Senior Frontend Engineer',
     description:
-      'Full-stack engineer focused on performant, accessible web apps and strong engineering practices.',
+      'Senior Frontend Engineer specializing in performance optimization and component architecture. Available for senior roles.',
     images: ['/images/daniel-joffe-profile.png'],
     creator: '@danieljoffe',
   },

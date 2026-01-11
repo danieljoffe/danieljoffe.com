@@ -24,9 +24,9 @@ export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
 // PERSONAL INFORMATION
 // ============================================================================
 export const FULL_NAME = 'Daniel Joffe';
-export const JOB_TITLE = 'Senior Software Engineer';
+export const JOB_TITLE = 'Senior Frontend Engineer';
 export const EMAIL_ADDRESS = 'hello@danieljoffe.com';
-export const LINKEDIN_PROFILE_URL = `${LINKEDIN_URL}/in/dannyk08`;
+export const LINKEDIN_PROFILE_URL = `${LINKEDIN_URL}/in/daniel-joffe-work`;
 export const GITHUB_PROFILE_URL = `${GITHUB_URL}/dannyk08`;
 export const RESUME_URL = `${GOOGLE_DOCS_URL}/document/d/1v4IB1-XA_-h-wq5HLgzH8_dFzMbOm-PaqOwom8k5_i4/export?format=pdf&portrait=true`;
 

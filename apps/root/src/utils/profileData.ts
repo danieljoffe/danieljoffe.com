@@ -9,9 +9,8 @@ import {
 export const profileData = {
   name: FULL_NAME,
   title: JOB_TITLE,
-  tagline:
-    'I build exceptional digital experiences that drive results and inspire users.',
-  status: 'Available for Senior Frontend/Full-Stack roles',
+  tagline: 'I build fast experiences that inspire.',
+  status: 'Seeking remote or LA-based roles.',
   social: {
     email: EMAIL_ADDRESS,
     linkedin: LINKEDIN_PROFILE_URL,

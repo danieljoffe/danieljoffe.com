@@ -160,6 +160,18 @@ const nextConfig = {
    */
   webpack: (config, options) => {
     const { dev, isServer } = options;
+
+    // In test/CI environments, replace fonts.ts with fonts.mock.ts to avoid network requests
+    if (isTest || isCI) {
+      config.plugins = config.plugins || [];
+      config.plugins.push(
+        new (require('webpack').NormalModuleReplacementPlugin)(
+          /src\/app\/fonts\.ts$/,
+          require.resolve('./src/app/fonts.mock.ts')
+        )
+      );
+    }
+
     // Optimize bundle size and code splitting
     if (!dev && !isServer) {
       config.optimization = config.optimization || {};
