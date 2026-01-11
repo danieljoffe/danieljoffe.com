@@ -172,6 +172,10 @@ export default async function ExperiencePage({
               <h3 className='h5'>Lessons Learned</h3>
               <p> {item.learned}</p>
             </section>
+            <section>
+              <h3 className='h5'>The Tech Stack</h3>
+              <p> {item.tech}</p>
+            </section>
           </div>
         </article>
       </Container>

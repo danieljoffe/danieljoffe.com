@@ -3,10 +3,18 @@ import { render, screen } from '@testing-library/react';
 import BreadCrumbs from './BreadCrumbs';
 import { NavLink } from '@/components/assembled/Nav/Links';
 
-// Mock next/navigation usePathname
+// Mock next/navigation
 const mockUsePathname = jest.fn();
 jest.mock('next/navigation', () => ({
   usePathname: () => mockUsePathname(),
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  }),
 }));
 
 // Mock next/link to use a real anchor and prevent navigation

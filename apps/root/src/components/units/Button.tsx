@@ -28,6 +28,7 @@ const Button = React.forwardRef<
     onClick,
     ...restProps
   } = props;
+
   const router = useRouter();
 
   const handleMouseEnter = useCallback(
