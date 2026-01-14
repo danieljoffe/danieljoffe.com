@@ -26,10 +26,8 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     cssChunking: 'strict',
-    optimizeCss: {
-      inline: ['critical'],
-      removeUnusedCss: true,
-    },
+    // Enable critical CSS inlining with critters
+    optimizeCss: true,
     optimizePackageImports: [
       'lucide-react',
       '@headlessui/react',
@@ -144,24 +142,34 @@ const nextConfig = {
           },
         ],
       },
-      // API routes - no caching
+      // API routes - no caching (but allow bfcache by avoiding no-store on responses)
       {
         source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate',
+            value: 'private, no-cache, must-revalidate',
           },
         ],
       },
-      // HTML pages - short cache with stale-while-revalidate
+      // Root route - bfcache compatible
+      {
+        source: '/',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      // HTML pages - bfcache compatible caching
       {
         source:
           '/:path((?!api|_next|images|favicon.ico|sitemap.xml|robots.txt|monitoring).*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=300, stale-while-revalidate=86400',
+            value: 'public, max-age=0, must-revalidate',
           },
         ],
       },
