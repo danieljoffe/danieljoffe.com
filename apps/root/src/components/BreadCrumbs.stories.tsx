@@ -1,12 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react';
+
 import BreadCrumbs from './BreadCrumbs';
 
 const meta = {
   component: BreadCrumbs,
   title: 'Components/BreadCrumbs',
+  parameters: {
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: '/projects/ui-components',
+      },
+    },
+  },
   decorators: [
     Story => {
       return (
+        // <Memoryrouter></>
         <div className='flex p-4'>
           <Story />
         </div>
@@ -31,8 +41,8 @@ export const Default = {
 export const Short = {
   args: {
     items: [
-      { href: '/', label: 'Home' },
-      { href: '/about', label: 'About' },
+      { href: '/projects', label: 'Projects' },
+      { href: '/projects/ui-components', label: 'UI Components' },
     ],
   },
 } satisfies Story;

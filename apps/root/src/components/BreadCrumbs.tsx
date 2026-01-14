@@ -12,7 +12,7 @@ export default function BreadCrumbs({ items }: BreadCrumbsI) {
   return (
     <nav aria-label='Breadcrumb'>
       <ol className='flex gap-2 items-center'>
-        {items.map((item, index) => (
+        {items.map(item => (
           <li key={item.href} className='flex items-center'>
             {pathname === item.href ? (
               <p aria-current='page' className='font-sans font-bold text-sm'>
@@ -21,17 +21,15 @@ export default function BreadCrumbs({ items }: BreadCrumbsI) {
             ) : (
               <Button as='link' variant='link' size='sm' href={item.href}>
                 {item.label}
-                {index !== items.length - 1 && (
-                  <span
-                    className='flex h-full items-center justify-center'
-                    aria-hidden='true'
-                  >
-                    <ChevronRight
-                      absoluteStrokeWidth={true}
-                      className='w-4 h-4'
-                    />
-                  </span>
-                )}
+                <span
+                  className='flex h-full items-center justify-center'
+                  aria-hidden='true'
+                >
+                  <ChevronRight
+                    absoluteStrokeWidth={true}
+                    className='w-4 h-4'
+                  />
+                </span>
               </Button>
             )}
           </li>
