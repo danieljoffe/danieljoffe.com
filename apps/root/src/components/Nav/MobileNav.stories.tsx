@@ -12,8 +12,14 @@ export default meta;
 
 type Story = StoryObj<typeof MobileNav>;
 
-export const Primary = {
+export const Closed: Story = {
   args: {
     menuOpen: false,
   },
-} satisfies Story;
+};
+
+export const Open: Story = {
+  args: {
+    menuOpen: true,
+  },
+};

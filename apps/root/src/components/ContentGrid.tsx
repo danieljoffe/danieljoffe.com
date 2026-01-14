@@ -5,7 +5,7 @@ export default function ContentGrid({ children }: WChildrenT) {
     <div
       className={[
         'grid grid-cols-1 md:grid-cols-2 md:grid-rows-2',
-        'text-white max-w-[30rem] mx-auto md:max-w-full',
+        'max-w-[30rem] mx-auto md:max-w-full',
         'gap-8',
       ].join(' ')}
     >
