@@ -1,5 +1,5 @@
 import { UNSPLASH_URL } from '@/utils/constants';
-import { NavLink, WChildrenT } from './base';
+import { NavLinkI, WChildrenT } from './base';
 
 export interface UnsplashImageMetaI {
   alt: string;
@@ -14,7 +14,7 @@ export interface PostBaseI {
   title: string;
   description: string;
   cover: UnsplashImageMetaI;
-  link: NavLink;
+  link: NavLinkI;
 }
 
 export interface PostThumbnailI extends PostBaseI {
@@ -22,6 +22,6 @@ export interface PostThumbnailI extends PostBaseI {
 }
 
 export interface PostBodyI extends WChildrenT {
-  breadcrumbs: NavLink[];
+  breadcrumbs: NavLinkI[];
   cover: UnsplashImageMetaI;
 }

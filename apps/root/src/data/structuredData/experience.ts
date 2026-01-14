@@ -2,13 +2,20 @@ import {
   AllowedExperienceSlugs,
   ExperienceStructuredDataI,
 } from '@/types/base';
-import { personStructuredData as member } from './base';
+import {
+  personStructuredData as member,
+  CollectionPageStructuredData,
+} from './base';
 import {
   experienceNames,
   experienceRoles,
   experienceSlugs,
   experienceDomains,
+  experiencePageSlugs,
 } from '../experience';
+import { experienceRecords } from '../experienceThumbnails';
+import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
+import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 
 export const wincExperienceSD: ExperienceStructuredDataI = {
   '@context': 'https://schema.org',
@@ -98,4 +105,24 @@ export const experienceStructuredData: Record<
   [experienceSlugs.TLC]: TLCExperienceSD,
   [experienceSlugs.FC]: FCExperienceSD,
   [experienceSlugs.SD]: PDExperienceSD,
+};
+
+export const experienceRootStructuredData: CollectionPageStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `Experience | ${FULL_NAME} - Frontend Engineer`,
+  description:
+    'An overview of my professional journey as a frontend engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',
+  url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}`,
+  author: member,
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: experiencePageSlugs.map((slug, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: experienceRecords[slug].title,
+      url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${slug}`,
+      description: experienceRecords[slug].description as string,
+    })),
+  },
 };

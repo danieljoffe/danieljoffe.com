@@ -4,11 +4,17 @@ import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
 import { Metadata } from 'next';
 import { experienceRootMetadata } from '@/data/metadata/experience';
+import { experienceRootStructuredData } from '@/data/structuredData/experience';
+import Script from 'next/script';
+import { headers } from 'next/headers';
 
 const experienceList = Object.values(experienceRecords);
 export const metadata: Metadata = experienceRootMetadata;
 
-export default function ExperiencePage() {
+export default async function ExperiencePage() {
+  const headersStore = await headers();
+  const nonce = headersStore.get('x-nonce') ?? undefined;
+
   return (
     <>
       <Container>
@@ -34,6 +40,14 @@ export default function ExperiencePage() {
           </section>
         </div>
       </Container>
+      <Script
+        id='experience-structured-data'
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(experienceRootStructuredData),
+        }}
+        nonce={nonce}
+      />
     </>
   );
 }

@@ -6,13 +6,13 @@ export type WChildrenT = {
   children: React.ReactNode;
 };
 
-export interface NavLink {
+export interface NavLinkI {
   label: string;
   href: `/${string}` | `https://${string}` | string;
 }
 
 export interface BreadCrumbsI {
-  items: NavLink[];
+  items: NavLinkI[];
 }
 
 export interface SlugPagePropsI {

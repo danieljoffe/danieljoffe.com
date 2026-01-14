@@ -1,7 +1,12 @@
 import { AllowedProjectSlugs, ProjectStructuredDataI } from '@/types/base';
-import { projectSlugs } from '@/data/project';
+import { projectSlugs, projectPageSlugs } from '@/data/project';
 import { projectsRecords } from '@/data/projectThumbnails';
-import { personStructuredData as author } from './base';
+import {
+  personStructuredData as author,
+  CollectionPageStructuredData,
+} from './base';
+import { DOMAIN_URL } from '@/utils/constants';
+import { PROJECTS_LINK } from '@/components/assembled/Nav/Links';
 
 export const projectStructuredData: Record<
   AllowedProjectSlugs,
@@ -55,5 +60,25 @@ export const projectStructuredData: Record<
     about: projectsRecords[projectSlugs.csLogisticsDashboard].description,
     headline: projectsRecords[projectSlugs.csLogisticsDashboard].title,
     author,
+  },
+};
+
+export const projectsRootStructuredData: CollectionPageStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Projects | Daniel Joffe - Frontend Engineer',
+  description:
+    'Case studies and projects showcasing performance optimization, component architecture, and full-stack development. Each project includes the challenge, my approach, and measurable outcomes.',
+  url: `${DOMAIN_URL}${PROJECTS_LINK.href}`,
+  author,
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: projectPageSlugs.map((slug, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: projectsRecords[slug].title,
+      url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${slug}`,
+      description: projectsRecords[slug].description as string,
+    })),
   },
 };

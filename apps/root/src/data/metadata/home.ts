@@ -1,4 +1,6 @@
-export const homeMetadata = {
+import { Metadata } from 'next';
+
+export const homeMetadata: Metadata = {
   title: 'Senior Frontend Engineer',
   description:
     'Senior Frontend Engineer with 8+ years of experience. Reduced load times by 80% at FightCamp, built design systems at Internet Brands. Available for senior frontend or full-stack roles.',

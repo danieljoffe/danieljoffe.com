@@ -1,7 +1,7 @@
 import { PostThumbnailI } from '@/types/post.types';
 import UnsplashImage from '../assembled/UnsplashImage';
 import { Link } from 'next-transition-router';
-import WorkItem from '@/app/projects/Item';
+import PostThumbnailIDescription from './PostThumbnailDescription';
 
 export default function PostThumbnail({
   slug,
@@ -41,8 +41,8 @@ export default function PostThumbnail({
         ].join(' ')}
         aria-label={`View ${link.label} project details`}
       >
-        <WorkItem
-          name={link.label as string}
+        <PostThumbnailIDescription
+          title={link.label as string}
           description={description as string}
         />
       </Link>

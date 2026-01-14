@@ -1,15 +1,15 @@
-import { NavLink } from '@/types/base';
+import { NavLinkI } from '@/types/base';
 import Button from '@/components/units/Button';
 
-export const HOME_LINK: NavLink = { href: '/', label: 'Home' };
-export const ABOUT_LINK: NavLink = { href: '/about', label: 'About' };
-export const PROJECTS_LINK: NavLink = { href: '/projects', label: 'Projects' };
-export const EXPERIENCE_LINK: NavLink = {
+export const HOME_LINK: NavLinkI = { href: '/', label: 'Home' };
+export const ABOUT_LINK: NavLinkI = { href: '/about', label: 'About' };
+export const PROJECTS_LINK: NavLinkI = { href: '/projects', label: 'Projects' };
+export const EXPERIENCE_LINK: NavLinkI = {
   href: '/experience',
   label: 'Experience',
 };
 
-export const NAV_LINKS: NavLink[] = [
+export const NAV_LINKS: NavLinkI[] = [
   HOME_LINK,
   ABOUT_LINK,
   EXPERIENCE_LINK,

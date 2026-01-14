@@ -4,7 +4,7 @@ import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import PostBody from '@/components/PostBody';
 import Container from '@/components/units/Container';
 import { experienceRecords } from '@/data/experienceThumbnails';
-import { AllowedExperienceSlugs, NavLink, SlugPagePropsI } from '@/types/base';
+import { AllowedExperienceSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { headers } from 'next/headers';
 import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
@@ -38,7 +38,7 @@ export default async function ExperiencePage({ params }: SlugPagePropsI) {
   const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
 
-  const breadcrumbs: NavLink[] = [
+  const breadcrumbs: NavLinkI[] = [
     EXPERIENCE_LINK,
     {
       href: `${EXPERIENCE_LINK.href}/${slug}`,
@@ -59,8 +59,8 @@ export default async function ExperiencePage({ params }: SlugPagePropsI) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(structuredData),
         }}
+        nonce={nonce}
       />
-      nonce={nonce}
     </>
   );
 }

@@ -80,8 +80,9 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       openGraph: {
         title: `${experienceRoles.Winc} at ${experienceNames.Winc} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.Winc].description,
-        siteName: FULL_NAME,
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.Winc}`,
+        type: 'article',
+        siteName: FULL_NAME,
         images: [
           {
             url: experienceRecords[experienceSlugs.Winc].cover.src,
@@ -94,6 +95,7 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       twitter: {
         title: `${experienceRoles.Winc} at ${experienceNames.Winc} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.Winc].description,
+        card: 'summary_large_image',
         images: [experienceRecords[experienceSlugs.Winc].cover.src],
       },
     },
@@ -129,8 +131,9 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       openGraph: {
         title: `${experienceRoles.IB} at ${experienceNames.IB} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.IB].description,
-        siteName: FULL_NAME,
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.IB}`,
+        type: 'article',
+        siteName: FULL_NAME,
         images: [
           {
             url: experienceRecords[experienceSlugs.IB].cover.src,
@@ -143,6 +146,7 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       twitter: {
         title: `${experienceRoles.IB} at ${experienceNames.IB} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.IB].description,
+        card: 'summary_large_image',
         images: [experienceRecords[experienceSlugs.IB].cover.src],
       },
     },
@@ -177,8 +181,9 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       openGraph: {
         title: `${experienceRoles.TLC} at ${experienceNames.TLC} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.TLC].description,
-        siteName: FULL_NAME,
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.TLC}`,
+        type: 'article',
+        siteName: FULL_NAME,
         images: [
           {
             url: experienceRecords[experienceSlugs.TLC].cover.src,
@@ -191,6 +196,7 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       twitter: {
         title: `${experienceRoles.TLC} at ${experienceNames.TLC} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.TLC].description,
+        card: 'summary_large_image',
         images: [experienceRecords[experienceSlugs.TLC].cover.src],
       },
     },
@@ -225,8 +231,9 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       openGraph: {
         title: `${experienceRoles.FC} at ${experienceNames.FC} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.FC].description,
-        siteName: FULL_NAME,
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.FC}`,
+        type: 'article',
+        siteName: FULL_NAME,
         images: [
           {
             url: experienceRecords[experienceSlugs.FC].cover.src,
@@ -239,6 +246,7 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       twitter: {
         title: `${experienceRoles.FC} at ${experienceNames.FC} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.FC].description,
+        card: 'summary_large_image',
         images: [experienceRecords[experienceSlugs.FC].cover.src],
       },
     },
@@ -273,8 +281,9 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       openGraph: {
         title: `${experienceRoles.SD} - ${experienceNames.SD} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.SD].description,
-        siteName: FULL_NAME,
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.SD}`,
+        type: 'article',
+        siteName: FULL_NAME,
         images: [
           {
             url: experienceRecords[experienceSlugs.SD].cover.src,
@@ -287,6 +296,7 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
       twitter: {
         title: `${experienceRoles.SD} - ${experienceNames.SD} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.SD].description,
+        card: 'summary_large_image',
         images: [experienceRecords[experienceSlugs.SD].cover.src],
       },
     },

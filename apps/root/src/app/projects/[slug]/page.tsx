@@ -3,7 +3,7 @@ import Script from 'next/script';
 import { headers } from 'next/headers';
 import Container from '@/components/units/Container';
 import { projectPagesMetadata } from '@/data/metadata/project';
-import { AllowedProjectSlugs, NavLink, SlugPagePropsI } from '@/types/base';
+import { AllowedProjectSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { redirect } from 'next/navigation';
 import PostBody from '@/components/PostBody';
@@ -35,7 +35,7 @@ export default async function ProjectPage({ params }: SlugPagePropsI) {
 
   const structuredData = projectStructuredData[slug as AllowedProjectSlugs];
 
-  const breadcrumbs: NavLink[] = [
+  const breadcrumbs: NavLinkI[] = [
     PROJECTS_LINK,
     {
       href: `${PROJECTS_LINK.href}/${slug}`,
