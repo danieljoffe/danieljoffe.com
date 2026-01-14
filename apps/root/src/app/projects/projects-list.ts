@@ -1,6 +1,6 @@
-import { NavLink } from '@/components/assembled/Nav/Links';
-import { UnsplashImageMeta } from '@/components/assembled/UnsplashImage';
 import { Metadata } from 'next';
+import { UnsplashImageMeta } from '@/components/assembled/UnsplashImage';
+import { NavLink } from '@/types/base';
 
 export const uiComponentsV1Slug = 'ui-components-v1' as const;
 export const caseStudyPerformance = 'performance-case-study' as const;

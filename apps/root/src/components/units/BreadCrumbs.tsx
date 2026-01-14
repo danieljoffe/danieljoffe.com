@@ -1,10 +1,10 @@
 'use client';
 import { ChevronRight } from 'lucide-react';
-import { NavLink } from '@/components/assembled/Nav/Links';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/units/Button';
+import { BreadCrumbsI } from '@/types/base';
 
-export default function BreadCrumbs({ items }: { items: NavLink[] }) {
+export default function BreadCrumbs({ items }: BreadCrumbsI) {
   const pathname = usePathname();
 
   if (items == null) return null;

@@ -1,16 +1,11 @@
 import Container from '@/components/units/Container';
 import Image from 'next/image';
-import {
-  fightcamp,
-  internetBrands,
-  theLibraryCorporation,
-  winc,
-} from '@/app/experience/[slug]/workHistory';
 import LinkHint from '@/components/units/LinkHint';
 import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import Button from '@/components/units/Button';
+import { experienceFull } from '@/data/base';
 
-const companies = [winc, internetBrands, theLibraryCorporation, fightcamp];
+const companies = Object.values(experienceFull);
 
 export default function PreviousTeams() {
   return (
@@ -21,11 +16,11 @@ export default function PreviousTeams() {
       <div className='grid grid-cols-2 grid-rows-2 gap-8 justify-items-center items-center pb-4 min-h-[12.5rem]'>
         {companies.map((company, index) => (
           <Button
-            key={company.id}
+            key={company.slug}
             as='link'
             variant='link'
             size='lg'
-            href={`${EXPERIENCE_LINK.href}/${company.id}`}
+            href={`${EXPERIENCE_LINK.href}/${company.slug}`}
             aria-label={company.company}
             title={company.company}
           >

@@ -1,9 +1,5 @@
+import { NavLink } from '@/types/base';
 import Button from '@/components/units/Button';
-
-export type NavLink = {
-  href: string;
-  label: string;
-};
 
 export const HOME_LINK: NavLink = { href: '/', label: 'Home' };
 export const ABOUT_LINK: NavLink = { href: '/about', label: 'About' };
@@ -13,7 +9,12 @@ export const EXPERIENCE_LINK: NavLink = {
   label: 'Experience',
 };
 
-export const NAV_LINKS: NavLink[] = [HOME_LINK, ABOUT_LINK, PROJECTS_LINK];
+export const NAV_LINKS: NavLink[] = [
+  HOME_LINK,
+  ABOUT_LINK,
+  EXPERIENCE_LINK,
+  PROJECTS_LINK,
+];
 
 export default function NavLinks({
   pathname,

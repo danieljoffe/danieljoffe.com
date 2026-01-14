@@ -7,6 +7,7 @@ import { projectMetadata } from './metadata';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import { DOMAIN_URL } from '@/utils/constants';
+import Container from '@/components/units/Container';
 
 export async function generateMetadata({
   params,
@@ -33,7 +34,7 @@ export default async function Page({
   const headersStore = await headers();
   const nonce = headersStore.get('x-nonce') ?? undefined;
   const { slug } = await params;
-  const { default: Post } = await import(`@/content/${slug}.mdx`);
+  const { default: Post } = await import(`@/data/content/projects/${slug}.mdx`);
   const { link, cover } = pagesRecords[slug as keyof typeof pagesRecords];
 
   // Breadcrumb structured data
@@ -63,7 +64,7 @@ export default async function Page({
   };
 
   return (
-    <>
+    <Container>
       <div className='flex flex-col gap-4'>
         <BreadCrumbs items={[PROJECTS_LINK, link]} />
         <div className='flex flex-col gap-12'>
@@ -100,7 +101,7 @@ export default async function Page({
         }}
         nonce={nonce}
       />
-    </>
+    </Container>
   );
 }
 
