@@ -1,22 +1,51 @@
 import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
-import {
-  uiComponentsV1Slug,
-  caseStudyPerformance,
-  caseStudyComponentLibrary,
-  caseStudyCMSTooling,
-  caseStudyAccessibilitySerials,
-  caseStudyModernPractice,
-  caseStudyLogisticsDashboard,
-  AllowedPages,
-} from '../projects-list';
 import { PROJECTS_LINK } from '@/components/assembled/Nav/Links';
 import { Metadata } from 'next';
-import { pagesRecords } from '../constants';
+import { AllowedProjectSlugs } from '@/types/base';
+import { projectSlugs } from '@/data/project';
+import { projectsRecords } from '../projectThumbnails';
 
-export const projectMetadata: Record<AllowedPages, Metadata> = {
-  [uiComponentsV1Slug]: {
+export const projectRootMetadata: Metadata = {
+  title: 'Projects | Daniel Joffe - Frontend Engineer',
+  description: 'Projects | Daniel Joffe - Frontend Engineer',
+  keywords: [
+    'Daniel Joffe',
+    'Portfolio',
+    'Projects',
+    'Case Studies',
+    'Technical Solutions',
+    'Web Applications',
+    'React Projects',
+    'Angular Projects',
+    'Full-Stack Development',
+    'Software Development',
+    'Web Development',
+    'Technical Implementation',
+    'Project Showcase',
+    'Code Examples',
+  ],
+  alternates: {
+    canonical: '/projects',
+  },
+  openGraph: {
+    title: `Daniel Joffe - Portfolio & Projects`,
+    description: `A curated portfolio of case studies detailing goals, approach, and measurable outcomes.`,
+    url: `https://danieljoffe.com/projects`,
+    type: 'website',
+    siteName: 'Daniel Joffe',
+  },
+  twitter: {
+    title: `Daniel Joffe - Portfolio & Projects`,
+    description: `Case studies highlighting goals, approach, and results across platforms and industries.`,
+    card: 'summary_large_image',
+    creator: '@danieljoffe',
+  },
+};
+
+export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
+  [projectSlugs.uiV1]: {
     title: 'Project | UI Components V1',
-    description: pagesRecords[uiComponentsV1Slug].description,
+    description: projectsRecords[projectSlugs.uiV1].description,
     keywords: [
       'ui',
       'components',
@@ -35,12 +64,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${uiComponentsV1Slug}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.uiV1}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[uiComponentsV1Slug].cover.src,
+          url: projectsRecords[projectSlugs.uiV1].cover.src,
           width: 4042,
           height: 2695,
           alt: 'UI Components V1',
@@ -49,21 +78,21 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[uiComponentsV1Slug].cover.src,
+        projectsRecords[projectSlugs.uiV1].cover.src,
         {
-          url: pagesRecords[uiComponentsV1Slug].cover.src,
+          url: projectsRecords[projectSlugs.uiV1].cover.src,
           width: 4042,
           height: 2695,
           alt: 'UI Components V1',
         },
       ],
       title: 'Project | UI Components V1',
-      description: pagesRecords[uiComponentsV1Slug].description as string,
+      description: projectsRecords[projectSlugs.uiV1].description as string,
     },
   },
-  [caseStudyPerformance]: {
+  [projectSlugs.csPerformance]: {
     title: 'Project | Performance Optimization Case Study',
-    description: pagesRecords[caseStudyPerformance].description,
+    description: projectsRecords[projectSlugs.csPerformance].description,
     keywords: [
       'performance',
       'optimization',
@@ -83,12 +112,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${caseStudyPerformance}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.csPerformance}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[caseStudyPerformance].cover.src,
+          url: projectsRecords[projectSlugs.csPerformance].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Performance Optimization Case Study',
@@ -97,21 +126,22 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[caseStudyPerformance].cover.src,
+        projectsRecords[projectSlugs.csPerformance].cover.src,
         {
-          url: pagesRecords[caseStudyPerformance].cover.src,
+          url: projectsRecords[projectSlugs.csPerformance].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Performance Optimization Case Study',
         },
       ],
       title: 'Project | Performance Optimization Case Study',
-      description: pagesRecords[caseStudyPerformance].description as string,
+      description: projectsRecords[projectSlugs.csPerformance]
+        .description as string,
     },
   },
-  [caseStudyComponentLibrary]: {
+  [projectSlugs.csCLibrary]: {
     title: 'Project | Component Library Case Study',
-    description: pagesRecords[caseStudyComponentLibrary].description,
+    description: projectsRecords[projectSlugs.csCLibrary].description,
     keywords: [
       'component library',
       'design system',
@@ -131,12 +161,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${caseStudyComponentLibrary}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.csCLibrary}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[caseStudyComponentLibrary].cover.src,
+          url: projectsRecords[projectSlugs.csCLibrary].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Component Library Case Study',
@@ -145,22 +175,22 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[caseStudyComponentLibrary].cover.src,
+        projectsRecords[projectSlugs.csCLibrary].cover.src,
         {
-          url: pagesRecords[caseStudyComponentLibrary].cover.src,
+          url: projectsRecords[projectSlugs.csCLibrary].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Component Library Case Study',
         },
       ],
       title: 'Project | Component Library Case Study',
-      description: pagesRecords[caseStudyComponentLibrary]
+      description: projectsRecords[projectSlugs.csCLibrary]
         .description as string,
     },
   },
-  [caseStudyCMSTooling]: {
+  [projectSlugs.csCMSTooling]: {
     title: 'Project | CMS Tooling Case Study',
-    description: pagesRecords[caseStudyCMSTooling].description,
+    description: projectsRecords[projectSlugs.csCMSTooling].description,
     keywords: [
       'cms',
       'content management',
@@ -179,12 +209,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${caseStudyCMSTooling}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.csCMSTooling}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[caseStudyCMSTooling].cover.src,
+          url: projectsRecords[projectSlugs.csCMSTooling].cover.src,
           width: 4042,
           height: 2695,
           alt: 'CMS Tooling Case Study',
@@ -193,21 +223,22 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[caseStudyCMSTooling].cover.src,
+        projectsRecords[projectSlugs.csCMSTooling].cover.src,
         {
-          url: pagesRecords[caseStudyCMSTooling].cover.src,
+          url: projectsRecords[projectSlugs.csCMSTooling].cover.src,
           width: 4042,
           height: 2695,
           alt: 'CMS Tooling Case Study',
         },
       ],
       title: 'Project | CMS Tooling Case Study',
-      description: pagesRecords[caseStudyCMSTooling].description as string,
+      description: projectsRecords[projectSlugs.csCMSTooling]
+        .description as string,
     },
   },
-  [caseStudyModernPractice]: {
+  [projectSlugs.csModernPractice]: {
     title: 'Project | Modern Practice Case Study',
-    description: pagesRecords[caseStudyModernPractice].description,
+    description: projectsRecords[projectSlugs.csModernPractice].description,
     keywords: [
       'modern web development',
       'best practices',
@@ -226,12 +257,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${caseStudyModernPractice}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.csModernPractice}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[caseStudyModernPractice].cover.src,
+          url: projectsRecords[projectSlugs.csModernPractice].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Modern Practice Case Study',
@@ -240,21 +271,22 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[caseStudyModernPractice].cover.src,
+        projectsRecords[projectSlugs.csModernPractice].cover.src,
         {
-          url: pagesRecords[caseStudyModernPractice].cover.src,
+          url: projectsRecords[projectSlugs.csModernPractice].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Modern Practice Case Study',
         },
       ],
       title: 'Project | Modern Practice Case Study',
-      description: pagesRecords[caseStudyModernPractice].description as string,
+      description: projectsRecords[projectSlugs.csModernPractice]
+        .description as string,
     },
   },
-  [caseStudyAccessibilitySerials]: {
+  [projectSlugs.csA11y]: {
     title: 'Project | Accessibility Case Study (Serials)',
-    description: pagesRecords[caseStudyAccessibilitySerials].description,
+    description: projectsRecords[projectSlugs.csA11y].description,
     keywords: [
       'accessibility',
       'a11y',
@@ -273,12 +305,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${caseStudyAccessibilitySerials}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.csA11y}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[caseStudyAccessibilitySerials].cover.src,
+          url: projectsRecords[projectSlugs.csA11y].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Accessibility Case Study (Serials)',
@@ -287,22 +319,21 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[caseStudyAccessibilitySerials].cover.src,
+        projectsRecords[projectSlugs.csA11y].cover.src,
         {
-          url: pagesRecords[caseStudyAccessibilitySerials].cover.src,
+          url: projectsRecords[projectSlugs.csA11y].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Accessibility Case Study (Serials)',
         },
       ],
       title: 'Project | Accessibility Case Study (Serials)',
-      description: pagesRecords[caseStudyAccessibilitySerials]
-        .description as string,
+      description: projectsRecords[projectSlugs.csA11y].description as string,
     },
   },
-  [caseStudyLogisticsDashboard]: {
+  [projectSlugs.csLogisticsDashboard]: {
     title: 'Project | Logistics Dashboard Case Study',
-    description: pagesRecords[caseStudyLogisticsDashboard].description,
+    description: projectsRecords[projectSlugs.csLogisticsDashboard].description,
     keywords: [
       'logistics',
       'dashboard',
@@ -322,12 +353,12 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     metadataBase: new URL(DOMAIN_URL),
     alternates: {
-      canonical: `${PROJECTS_LINK.href}/${caseStudyLogisticsDashboard}`,
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.csLogisticsDashboard}`,
     },
     openGraph: {
       images: [
         {
-          url: pagesRecords[caseStudyLogisticsDashboard].cover.src,
+          url: projectsRecords[projectSlugs.csLogisticsDashboard].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Logistics Dashboard Case Study',
@@ -336,16 +367,16 @@ export const projectMetadata: Record<AllowedPages, Metadata> = {
     },
     twitter: {
       images: [
-        pagesRecords[caseStudyLogisticsDashboard].cover.src,
+        projectsRecords[projectSlugs.csLogisticsDashboard].cover.src,
         {
-          url: pagesRecords[caseStudyLogisticsDashboard].cover.src,
+          url: projectsRecords[projectSlugs.csLogisticsDashboard].cover.src,
           width: 4042,
           height: 2695,
           alt: 'Logistics Dashboard Case Study',
         },
       ],
       title: 'Project | Logistics Dashboard Case Study',
-      description: pagesRecords[caseStudyLogisticsDashboard]
+      description: projectsRecords[projectSlugs.csLogisticsDashboard]
         .description as string,
     },
   },

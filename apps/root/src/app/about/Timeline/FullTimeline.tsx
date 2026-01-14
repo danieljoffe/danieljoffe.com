@@ -2,7 +2,7 @@ import Image from 'next/image';
 import LinkHint from '@/components/units/LinkHint';
 import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import Button from '@/components/units/Button';
-import { experienceFull, experiencePageSlugs } from '@/data/base';
+import { experienceFull, experiencePageSlugs } from '@/data/experience';
 
 export default function FullTimeline() {
   return (

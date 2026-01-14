@@ -1,26 +1,19 @@
 import { PROJECTS_LINK } from '@/components/assembled/Nav/Links';
-import {
-  AllowedPages,
-  caseStudyAccessibilitySerials,
-  caseStudyCMSTooling,
-  caseStudyComponentLibrary,
-  caseStudyLogisticsDashboard,
-  caseStudyModernPractice,
-  caseStudyPerformance,
-  ProjectInfo,
-  uiComponentsV1Slug,
-} from './projects-list';
 import { UNSPLASH_URL } from '@/utils/constants';
+import { PostThumbnailI } from '@/types/post.types';
+import { AllowedProjectSlugs } from '@/types/base';
+import { projectSlugs } from '@/data/project';
 
-export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
-  [caseStudyPerformance]: {
-    slug: caseStudyPerformance,
+export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
+  [projectSlugs.csPerformance]: {
+    slug: projectSlugs.csPerformance,
+    title: 'Case Studies: Daniel Joffe Portfolio',
     description:
       'Case study on performance optimization and critical web vitals improvements for a high-traffic React site. Covers auditing, lazy loading, bundle splitting, and measurable results.',
     backgroundColor: 'bg-stone-950',
     link: {
       label: 'Performance Optimization Case Study',
-      href: `${PROJECTS_LINK.href}/${caseStudyPerformance}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csPerformance}`,
     },
     cover: {
       alt: 'A winding road through a lush green forest',
@@ -30,14 +23,15 @@ export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
       blurHash: 'LQI+:]jY_3j[~qkCj[j[00kCw^j[',
     },
   },
-  [caseStudyComponentLibrary]: {
-    slug: caseStudyComponentLibrary,
+  [projectSlugs.csCLibrary]: {
+    slug: projectSlugs.csCLibrary,
+    title: 'Case Study 2: Internet Brands — React Component Library',
     description:
       'Story of building and evangelizing a component library to accelerate development and improve maintainability and team capability. Training, documentation, and measurable team outcomes.',
     backgroundColor: 'bg-fuchsia-950',
     link: {
       label: 'Component Library Case Study',
-      href: `${PROJECTS_LINK.href}/${caseStudyComponentLibrary}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csCLibrary}`,
     },
     cover: {
       alt: 'A purple LED grid forming a pattern',
@@ -47,14 +41,15 @@ export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
       blurHash: 'L86k*:xXWCM{-;WBaxf6bcWAWBf6',
     },
   },
-  [caseStudyCMSTooling]: {
-    slug: caseStudyCMSTooling,
+  [projectSlugs.csCMSTooling]: {
+    slug: projectSlugs.csCMSTooling,
+    title: 'Case Study 3: Winc — Self-Serve Landing Page CMS',
     description:
       'How a custom CMS enabled marketers to ship 200+ landing pages with zero engineering support, freeing up developer time and improving conversion rates. Problem, approach, impact.',
     backgroundColor: 'bg-amber-950',
     link: {
       label: 'CMS Tooling Case Study',
-      href: `${PROJECTS_LINK.href}/${caseStudyCMSTooling}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csCMSTooling}`,
     },
     cover: {
       alt: 'An open book on a lit desk',
@@ -65,14 +60,15 @@ export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
     },
   },
 
-  [caseStudyModernPractice]: {
-    slug: caseStudyModernPractice,
+  [projectSlugs.csModernPractice]: {
+    slug: projectSlugs.csModernPractice,
+    title: 'Case Study: Modern Practice — Web Engineering Best Practices',
     description:
       'Case study exploring adoption of modern best practices in web engineering. Focus on developer experience, code quality, and tangible impact of new tools and methodologies.',
     backgroundColor: 'bg-cyan-950',
     link: {
       label: 'Modern Practice Case Study',
-      href: `${PROJECTS_LINK.href}/${caseStudyModernPractice}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csModernPractice}`,
     },
     cover: {
       alt: 'A developer desk with modern gadgets and screens showing code',
@@ -82,14 +78,15 @@ export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
       blurHash: 'L35#2u9FRiRi}pNHxZay4UayIUae',
     },
   },
-  [caseStudyAccessibilitySerials]: {
-    slug: caseStudyAccessibilitySerials,
+  [projectSlugs.csA11y]: {
+    slug: projectSlugs.csA11y,
+    title: 'Case Study: Accessibility Serials — Real-World A11y Solutions',
     description:
       'A serial deep dive into real-world accessibility (a11y) challenges and solutions across several projects. Covers audits, remediations, and inclusive technical strategy.',
     backgroundColor: 'bg-green-950',
     link: {
       label: 'Accessibility Case Study (Serials)',
-      href: `${PROJECTS_LINK.href}/${caseStudyAccessibilitySerials}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csA11y}`,
     },
     cover: {
       alt: 'Closeup of hands reading braille on a tactile page',
@@ -99,14 +96,15 @@ export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
       blurHash: 'LHCcFN_4ADxu};tR%MRk-pM{s:af',
     },
   },
-  [caseStudyLogisticsDashboard]: {
-    slug: caseStudyLogisticsDashboard,
+  [projectSlugs.csLogisticsDashboard]: {
+    slug: projectSlugs.csLogisticsDashboard,
+    title: 'Case Study: Logistics Dashboard MVP — Next.js & AWS Cognito',
     description:
       'Building a logistics dashboard MVP using Next.js and AWS Cognito for a seed startup. Covers authentication, RBAC, charts, measurable delivery, and product outcomes.',
     backgroundColor: 'bg-blue-950',
     link: {
       label: 'Logistics Dashboard Case Study',
-      href: `${PROJECTS_LINK.href}/${caseStudyLogisticsDashboard}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csLogisticsDashboard}`,
     },
     cover: {
       alt: 'A screenshot of a dashboard interface with charts and data visualization',
@@ -116,14 +114,15 @@ export const pagesRecords: Record<AllowedPages, ProjectInfo> = {
       blurHash: 'L75vOp_4D%xu~qogt8afRjWBt7j[',
     },
   },
-  [uiComponentsV1Slug]: {
-    slug: uiComponentsV1Slug,
+  [projectSlugs.uiV1]: {
+    slug: projectSlugs.uiV1,
+    title: 'Building a Design System: UI Components for danieljoffe.com',
     description:
       'Overview and documentation of foundational UI components in the src/components/units folder. Includes usage, design principles, accessibility, and best practices.',
     backgroundColor: 'bg-slate-900',
     link: {
       label: 'UI Components V1',
-      href: `${PROJECTS_LINK.href}/${uiComponentsV1Slug}`,
+      href: `${PROJECTS_LINK.href}/${projectSlugs.uiV1}`,
     },
     cover: {
       alt: 'An image of a jellyfish in the dark',

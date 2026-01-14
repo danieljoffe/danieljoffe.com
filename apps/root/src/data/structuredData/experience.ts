@@ -7,8 +7,8 @@ import {
   experienceNames,
   experienceRoles,
   experienceSlugs,
-  experienceUrls,
-} from '../base';
+  experienceDomains,
+} from '../experience';
 
 export const wincExperienceSD: ExperienceStructuredDataI = {
   '@context': 'https://schema.org',
@@ -21,7 +21,7 @@ export const wincExperienceSD: ExperienceStructuredDataI = {
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.Winc,
-    url: experienceUrls.Winc,
+    url: experienceDomains.Winc,
   },
   member,
 };
@@ -37,7 +37,7 @@ export const IBExperienceSD: ExperienceStructuredDataI = {
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.IB,
-    url: experienceUrls.IB,
+    url: experienceDomains.IB,
   },
   member,
 };
@@ -53,7 +53,7 @@ export const TLCExperienceSD: ExperienceStructuredDataI = {
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.TLC,
-    url: experienceUrls.TLC,
+    url: experienceDomains.TLC,
   },
   member,
 };
@@ -69,7 +69,7 @@ export const FCExperienceSD: ExperienceStructuredDataI = {
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.FC,
-    url: experienceUrls.FC,
+    url: experienceDomains.FC,
   },
   member,
 };
@@ -84,7 +84,7 @@ export const PDExperienceSD: ExperienceStructuredDataI = {
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.SD,
-    url: experienceUrls.SD,
+    url: experienceDomains.SD,
   },
   member,
 };

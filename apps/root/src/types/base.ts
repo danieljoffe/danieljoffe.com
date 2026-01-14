@@ -1,5 +1,6 @@
-import { type experiencePageSlugs } from '@/data/base';
-import { Corporation, Person, Role } from 'schema-dts';
+import { type experiencePageSlugs } from '@/data/experience';
+import { type projectPageSlugs } from '@/data/project';
+import { Blog, Corporation, Person, Role } from 'schema-dts';
 
 export type WChildrenT = {
   children: React.ReactNode;
@@ -24,4 +25,10 @@ export type ExperienceStructuredDataI = Role & {
   member: Person;
 };
 
+export type ProjectStructuredDataI = Blog & {
+  '@context': 'https://schema.org';
+  author: Person;
+};
+
 export type AllowedExperienceSlugs = (typeof experiencePageSlugs)[number];
+export type AllowedProjectSlugs = (typeof projectPageSlugs)[number];

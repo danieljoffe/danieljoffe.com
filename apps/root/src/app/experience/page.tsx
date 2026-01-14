@@ -3,11 +3,10 @@ import { experienceRecords } from '@/data/experienceThumbnails';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
 import { Metadata } from 'next';
-import { experienceHomeMetadata } from '@/data/metadata/experience';
+import { experienceRootMetadata } from '@/data/metadata/experience';
 
 const experienceList = Object.values(experienceRecords);
-
-export const metadata: Metadata = experienceHomeMetadata;
+export const metadata: Metadata = experienceRootMetadata;
 
 export default function ExperiencePage() {
   return (

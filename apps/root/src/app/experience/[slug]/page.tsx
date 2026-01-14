@@ -6,7 +6,7 @@ import Container from '@/components/units/Container';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { AllowedExperienceSlugs, NavLink, SlugPagePropsI } from '@/types/base';
 import { headers } from 'next/headers';
-import { experiencePageSlugs } from '@/data/base';
+import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
 
@@ -27,14 +27,15 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
 export default async function ExperiencePage({ params }: SlugPagePropsI) {
   const headersStore = await headers();
   const nonce = headersStore.get('x-nonce') ?? undefined;
-  const { slug } = (await params) || {};
-  const { default: Data } = await import(
+  const { slug } = (await params) ?? {};
+  const { default: Post } = await import(
     `@/data/content/experience/${slug}.mdx`
   );
   const record = experienceRecords[slug as AllowedExperienceSlugs];
+
   if (!record) return redirect(EXPERIENCE_LINK.href);
 
-  const structureData =
+  const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
 
   const breadcrumbs: NavLink[] = [
@@ -49,14 +50,14 @@ export default async function ExperiencePage({ params }: SlugPagePropsI) {
     <>
       <Container>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
-          <Data />
+          <Post />
         </PostBody>
       </Container>
       <Script
         id={`${slug}-structured-data`}
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structureData),
+          __html: JSON.stringify(structuredData),
         }}
       />
       nonce={nonce}

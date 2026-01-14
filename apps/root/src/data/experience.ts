@@ -17,7 +17,7 @@ export const experienceNames = {
   SD: 'Professional Development & Contract Work',
 } as const;
 
-export const experienceUrls = {
+export const experienceDomains = {
   Winc: 'https://www.winc.com',
   IB: 'https://www.internetbrands.com',
   TLC: 'https://tlcdelivers.com',

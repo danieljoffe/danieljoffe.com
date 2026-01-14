@@ -5,8 +5,8 @@ import {
   PROJECTS_LINK,
 } from '@/components/assembled/Nav/Links';
 import { DOMAIN_URL } from '@/utils/constants';
-import { pagesRecords } from './projects/constants';
-import { experiencePageSlugs } from '@/data/base';
+import { experiencePageSlugs } from '@/data/experience';
+import { projectPageSlugs } from '@/data/project';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static routes
@@ -46,7 +46,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Dynamic project routes
-  const projectRoutes = Object.keys(pagesRecords).map(slug => ({
+  const projectRoutes = projectPageSlugs.map(slug => ({
     url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,

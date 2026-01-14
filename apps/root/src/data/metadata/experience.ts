@@ -3,9 +3,13 @@ import { Metadata } from 'next';
 import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
 import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
 import { experienceRecords } from '../experienceThumbnails';
-import { experienceRoles, experienceNames, experienceSlugs } from '../base';
+import {
+  experienceRoles,
+  experienceNames,
+  experienceSlugs,
+} from '../experience';
 
-export const experienceHomeMetadata: Metadata = {
+export const experienceRootMetadata: Metadata = {
   title: `Experience | ${FULL_NAME} - Frontend Engineer`,
   description:
     'An overview of my professional journey as a frontend engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',

@@ -1,13 +1,12 @@
 import Container from '@/components/units/Container';
 import { Metadata } from 'next';
-import WorkItem from './Item';
-import { Link } from 'next-transition-router';
-import { pagesRecords } from './constants';
-import { projectsMetadata } from './metadata';
-import UnsplashImage from '@/components/assembled/UnsplashImage';
-const projectsList = Object.values(pagesRecords);
+import PostThumbnail from '@/components/PostThumbnail';
+import ContentGrid from '@/components/ContentGrid';
+import { projectsRecords } from '@/data/projectThumbnails';
+import { projectRootMetadata } from '@/data/metadata/project';
 
-export const metadata: Metadata = projectsMetadata;
+const projectsList = Object.values(projectsRecords);
+export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {
   return (
@@ -25,54 +24,11 @@ export default function Projects() {
           <h2 id='projects-heading' className='sr-only'>
             Project Portfolio
           </h2>
-          <div
-            className={[
-              'grid grid-cols-1 md:grid-cols-2 md:grid-rows-2',
-              'text-white max-w-[30rem] mx-auto md:max-w-full',
-              'gap-8',
-            ].join(' ')}
-            aria-label='Project portfolio'
-          >
-            {projectsList.map(
-              ({ slug, link, description, cover, backgroundColor }, index) => (
-                <article
-                  key={slug}
-                  className={[
-                    'flex flex-col overflow-hidden rounded-md transition',
-                    'shadow-md/10 ease-in-out duration-300',
-                    'hover:scale-102 hover:shadow-lg/30',
-                  ].join(' ')}
-                >
-                  <UnsplashImage
-                    src={cover.src}
-                    alt={cover.alt}
-                    origin={cover.origin}
-                    creator={cover.creator}
-                    priority={index < 2}
-                    fetchPriority={index < 2 ? 'high' : 'low'}
-                    blurHash={cover.blurHash}
-                    width={400}
-                    height={225}
-                  />
-                  <Link
-                    href={link.href}
-                    className={[
-                      'row-span-1 col-span-1',
-                      backgroundColor,
-                      'overflow-hidden',
-                      'shadow-lg',
-                    ].join(' ')}
-                    aria-label={`View ${link.label} project details`}
-                  >
-                    <WorkItem
-                      name={link.label as string}
-                      description={description as string}
-                    />
-                  </Link>
-                </article>
-              )
-            )}
-          </div>
+          <ContentGrid>
+            {projectsList.map((data, index) => (
+              <PostThumbnail key={data.slug} {...data} index={index} />
+            ))}
+          </ContentGrid>
         </section>
       </div>
     </Container>
