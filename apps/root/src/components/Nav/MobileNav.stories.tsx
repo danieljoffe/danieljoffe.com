@@ -3,7 +3,7 @@ import MobileNav from './MobileNav';
 
 const meta = {
   component: MobileNav,
-  title: 'Nav/MobileNav',
+  title: 'Components/Nav/MobileNav',
   argTypes: {
     setMenuOpen: { action: 'setMenuOpen executed!' },
   },

@@ -6,7 +6,7 @@ import Modal from '../Modal';
 
 const meta: Meta<typeof Nav> = {
   component: Nav,
-  title: 'Nav',
+  title: 'Components/Nav',
   decorators: [
     Story => {
       return (

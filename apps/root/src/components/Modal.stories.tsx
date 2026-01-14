@@ -8,7 +8,7 @@ import { useGlobal } from '@/state/Global/Context';
 
 const meta: Meta<typeof Modal> = {
   component: Modal,
-  title: 'Modal',
+  title: 'Components/Modal',
   decorators: [
     Story => {
       const ButtonTrigger = () => {

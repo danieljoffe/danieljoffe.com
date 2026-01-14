@@ -3,7 +3,7 @@ import NavLinks from './Links';
 
 const meta = {
   component: NavLinks,
-  title: 'Nav/Links',
+  title: 'Components/Nav/Links',
   argTypes: {
     handleClick: { action: 'handleClick executed!' },
     pathname: {

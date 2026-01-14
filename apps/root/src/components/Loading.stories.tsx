@@ -3,7 +3,7 @@ import Loading from './Loading';
 
 const meta = {
   component: Loading,
-  title: 'Loading',
+  title: 'Components/Loading',
   decorators: [
     Story => {
       return (

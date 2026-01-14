@@ -10,7 +10,7 @@ const blurHash = 'L125+JD~D#-rn$WCkCj?D~xbxbNc';
 
 const meta = {
   component: UnsplashImage,
-  title: 'UnsplashImage',
+  title: 'Components/UnsplashImage',
   parameters: {
     layout: 'centered',
   },

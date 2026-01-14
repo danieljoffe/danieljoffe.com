@@ -4,7 +4,7 @@ import { expect } from 'storybook/test';
 
 const meta: Meta<typeof ErrorBoundary> = {
   component: ErrorBoundary,
-  title: 'ErrorBoundary',
+  title: 'Components/ErrorBoundary',
   parameters: {
     nextjs: {
       appDirectory: true,

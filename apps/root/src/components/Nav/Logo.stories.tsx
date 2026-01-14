@@ -3,7 +3,7 @@ import Logo from './Logo';
 
 const meta = {
   component: Logo,
-  title: 'Nav/Logo',
+  title: 'Components/Nav/Logo',
   decorators: [
     Story => {
       return (
