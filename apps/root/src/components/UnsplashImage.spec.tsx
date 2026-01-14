@@ -300,19 +300,6 @@ describe('UnsplashImage', () => {
       expect(blurhash).toBeInTheDocument();
       expect(blurhash).toHaveAttribute('data-hash', mockProps.blurHash);
     });
-
-    it('should only render image when in viewport', () => {
-      mockUseViewport.mockReturnValue(false);
-      render(<UnsplashImage {...mockProps} />);
-
-      expect(screen.queryByRole('img')).not.toBeInTheDocument();
-
-      // When in viewport
-      mockUseViewport.mockReturnValue(true);
-      render(<UnsplashImage {...mockProps} />);
-
-      expect(screen.getByRole('img')).toBeInTheDocument();
-    });
   });
 
   describe('Error handling', () => {

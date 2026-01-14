@@ -56,6 +56,16 @@ const criticalStyles = `
     white-space: nowrap;
     border-width: 0;
   }
+  .sr-only:focus, .focus\\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
 `;
 
 export default async function RootLayout({
