@@ -1,4 +1,4 @@
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 
 export default function TechnicalExpertise() {
   return (

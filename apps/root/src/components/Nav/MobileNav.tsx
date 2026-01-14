@@ -1,6 +1,6 @@
 'use client';
 import Logo from './Logo';
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 import MorphSVGPlugin from 'gsap/MorphSVGPlugin';
 import gsap from 'gsap';
 import { useRef } from 'react';

@@ -1,5 +1,5 @@
 import { NavLinkI } from '@/types/base';
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 
 export const HOME_LINK: NavLinkI = { href: '/', label: 'Home' };
 export const ABOUT_LINK: NavLinkI = { href: '/about', label: 'About' };

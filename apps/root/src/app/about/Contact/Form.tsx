@@ -3,13 +3,13 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useTransitionRouter } from 'next-transition-router';
-import Button from '@/components/units/Button';
-import TextInput from '@/components/units/TextInput';
+import Button from '@/components/Button';
+import TextInput from '@/components/TextInput';
 import { publicEnv } from '@/lib/public.env';
 import { formSchema } from '@/app/api/email/schema';
 import type { InferType } from 'yup';
 import dynamic from 'next/dynamic';
-import Loading from '@/components/assembled/Loading';
+import Loading from '@/components/Loading';
 
 export const contactFormId = 'contact-form';
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {

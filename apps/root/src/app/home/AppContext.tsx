@@ -1,14 +1,14 @@
 'use client';
 
 import GlobalProvider from '@/state/Global/Provider';
-import Nav from '@/components/assembled/Nav';
+import Nav from '@/components/Nav';
 import { TransitionRouter } from 'next-transition-router';
 import { startTransition, Suspense, useRef } from 'react';
 
-import ErrorBoundary from '@/components/assembled/ErrorBoundary';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import dynamic from 'next/dynamic';
 
-const Modal = dynamic(() => import('@/components/assembled/Modal'));
+const Modal = dynamic(() => import('@/components/Modal'));
 const ScrollToElement = dynamic(() => import('./ScrollToElement'));
 
 export default function AppContext({

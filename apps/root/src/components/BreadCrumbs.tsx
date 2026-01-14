@@ -1,7 +1,7 @@
 'use client';
 import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 import { BreadCrumbsI } from '@/types/base';
 
 export default function BreadCrumbs({ items }: BreadCrumbsI) {

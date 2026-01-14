@@ -1,5 +1,5 @@
 import { WChildrenT } from '@/types/base';
-import Container from './units/Container';
+import Container from './Container';
 
 export default function PostContent({ children }: WChildrenT) {
   return (

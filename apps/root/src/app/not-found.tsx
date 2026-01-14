@@ -1,6 +1,6 @@
-import Container from '@/components/units/Container';
-import Button from '@/components/units/Button';
-import { HOME_LINK } from '@/components/assembled/Nav/Links';
+import Container from '@/components/Container';
+import Button from '@/components/Button';
+import { HOME_LINK } from '@/components/Nav/Links';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

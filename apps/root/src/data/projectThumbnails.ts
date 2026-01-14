@@ -1,4 +1,4 @@
-import { PROJECTS_LINK } from '@/components/assembled/Nav/Links';
+import { PROJECTS_LINK } from '@/components/Nav/Links';
 import { UNSPLASH_URL } from '@/utils/constants';
 import { PostThumbnailI } from '@/types/post.types';
 import { AllowedProjectSlugs } from '@/types/base';

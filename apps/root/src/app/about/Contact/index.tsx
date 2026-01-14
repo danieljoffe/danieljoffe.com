@@ -1,4 +1,4 @@
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import Form from './Form';
 
 export default function Contact() {

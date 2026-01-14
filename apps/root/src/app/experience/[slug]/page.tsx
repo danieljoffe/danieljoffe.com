@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import Script from 'next/script';
-import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
+import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import PostBody from '@/components/PostBody';
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { AllowedExperienceSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { headers } from 'next/headers';

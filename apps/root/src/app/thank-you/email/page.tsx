@@ -1,10 +1,10 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 
 import type { Metadata } from 'next';
-import { ABOUT_LINK, HOME_LINK } from '@/components/assembled/Nav/Links';
-import Button from '@/components/units/Button';
+import { ABOUT_LINK, HOME_LINK } from '@/components/Nav/Links';
+import Button from '@/components/Button';
 
 export const metadata: Metadata = {
   title: 'Thank You - Message Received',

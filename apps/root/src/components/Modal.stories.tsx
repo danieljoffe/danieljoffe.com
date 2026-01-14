@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Modal from './Modal';
 import { expect } from 'storybook/internal/test';
 
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 import GlobalProvider from '@/state/Global/Provider';
 import { useGlobal } from '@/state/Global/Context';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 import { useTransitionRouter } from 'next-transition-router';
 import { publicEnv, PublicEnvVars } from '@/lib/public.env';
 import { A11Y } from '@/utils/constants';

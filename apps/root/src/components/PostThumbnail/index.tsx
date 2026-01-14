@@ -1,5 +1,5 @@
 import { PostThumbnailI } from '@/types/post.types';
-import UnsplashImage from '../assembled/UnsplashImage';
+import UnsplashImage from '../UnsplashImage';
 import { Link } from 'next-transition-router';
 import PostThumbnailIDescription from './PostThumbnailDescription';
 

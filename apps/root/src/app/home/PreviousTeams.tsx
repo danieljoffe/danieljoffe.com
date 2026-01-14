@@ -1,8 +1,8 @@
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import Image from 'next/image';
-import LinkHint from '@/components/units/LinkHint';
-import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
-import Button from '@/components/units/Button';
+import LinkHint from '@/components/LinkHint';
+import { EXPERIENCE_LINK } from '@/components/Nav/Links';
+import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 
 const companies = Object.values(experienceFull);

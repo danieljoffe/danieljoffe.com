@@ -6,7 +6,7 @@ import {
   CollectionPageStructuredData,
 } from './base';
 import { DOMAIN_URL } from '@/utils/constants';
-import { PROJECTS_LINK } from '@/components/assembled/Nav/Links';
+import { PROJECTS_LINK } from '@/components/Nav/Links';
 
 export const projectStructuredData: Record<
   AllowedProjectSlugs,

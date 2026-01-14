@@ -1,4 +1,4 @@
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import { Metadata } from 'next';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';

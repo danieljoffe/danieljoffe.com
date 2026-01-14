@@ -1,5 +1,5 @@
 import { useGlobal } from '@/state/Global/Context';
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useFocusTrap } from '@/hooks/useFocusTrap';

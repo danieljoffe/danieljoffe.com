@@ -3,7 +3,7 @@ import {
   ABOUT_LINK,
   EXPERIENCE_LINK,
   PROJECTS_LINK,
-} from '@/components/assembled/Nav/Links';
+} from '@/components/Nav/Links';
 import { DOMAIN_URL } from '@/utils/constants';
 import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';

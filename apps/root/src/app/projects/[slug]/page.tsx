@@ -1,7 +1,7 @@
-import { PROJECTS_LINK } from '@/components/assembled/Nav/Links';
+import { PROJECTS_LINK } from '@/components/Nav/Links';
 import Script from 'next/script';
 import { headers } from 'next/headers';
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import { projectPagesMetadata } from '@/data/metadata/project';
 import { AllowedProjectSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { projectsRecords } from '@/data/projectThumbnails';

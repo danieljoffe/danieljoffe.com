@@ -1,6 +1,6 @@
 'use client';
-import Button from '@/components/units/Button';
-import Container from '@/components/units/Container';
+import Button from '@/components/Button';
+import Container from '@/components/Container';
 import { FULL_NAME, RESUME_URL } from '@/utils/constants';
 import { onClickDownload } from '@/utils/helpers';
 import { profileData } from '@/utils/profileData';

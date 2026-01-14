@@ -1,4 +1,4 @@
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import FullTimeline from './FullTimeline';
 import Overview from './Overview';
 import Intro from './Intro';

@@ -1,4 +1,4 @@
-import Container from '@/components/units/Container';
+import Container from '@/components/Container';
 import { offerings } from '@/utils/offerings';
 
 export default function Achievements() {

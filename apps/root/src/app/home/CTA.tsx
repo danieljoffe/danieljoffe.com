@@ -1,7 +1,7 @@
 'use client';
-import Button from '@/components/units/Button';
-import Container from '@/components/units/Container';
-import { ABOUT_LINK, PROJECTS_LINK } from '@/components/assembled/Nav/Links';
+import Button from '@/components/Button';
+import Container from '@/components/Container';
+import { ABOUT_LINK, PROJECTS_LINK } from '@/components/Nav/Links';
 import { FULL_NAME } from '@/utils/constants';
 import { contactFormId } from '@/app/about/Contact/Form';
 

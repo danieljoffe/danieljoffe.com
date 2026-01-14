@@ -1,7 +1,7 @@
 import { AllowedExperienceSlugs } from '@/types/base';
 import { Metadata } from 'next';
 import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
-import { EXPERIENCE_LINK } from '@/components/assembled/Nav/Links';
+import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import { experienceRecords } from '../experienceThumbnails';
 import {
   experienceRoles,

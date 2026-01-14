@@ -1,7 +1,7 @@
 import { PostBodyI } from '@/types/post.types';
-import UnsplashImage from './assembled/UnsplashImage';
+import UnsplashImage from './UnsplashImage';
 import PostContent from './PostContent';
-import BreadCrumbs from './units/BreadCrumbs';
+import BreadCrumbs from './BreadCrumbs';
 
 export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
   return (

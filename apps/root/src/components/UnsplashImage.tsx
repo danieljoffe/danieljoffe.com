@@ -1,7 +1,7 @@
 'use client';
 import { UNSPLASH_URL } from '@/utils/constants';
 import Image, { ImageProps } from 'next/image';
-import Button from '@/components/units/Button';
+import Button from '@/components/Button';
 import { Blurhash } from 'react-blurhash';
 import unsplashLoader from '@/utils/unsplashLoader';
 import { useViewport } from '@/hooks/inViewport';

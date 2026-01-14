@@ -98,7 +98,7 @@ jest.mock('@/state/Global/Context', () => ({
 }));
 
 // Mock Button component
-jest.mock('@/components/units/Button', () => {
+jest.mock('@/components/Button', () => {
   const React = require('react');
 
   interface MockButtonProps
