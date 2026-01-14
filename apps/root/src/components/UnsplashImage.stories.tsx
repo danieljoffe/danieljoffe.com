@@ -35,6 +35,7 @@ export const Default: Story = {
     origin,
     priority: false,
     fetchPriority: 'low',
+    fill: true,
     blurHash,
   },
 };
@@ -62,6 +63,7 @@ export const HighPriority: Story = {
     origin,
     priority: true,
     fetchPriority: 'high',
+    fill: true,
     blurHash,
   },
 };

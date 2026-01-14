@@ -6,6 +6,9 @@ import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from 'storybook/viewport';
 export const preview: Preview = {
   parameters: {
     layout: 'centered',
+    nextjs: {
+      appDirectory: true,
+    },
     viewport: {
       options: {
         ...MINIMAL_VIEWPORTS,

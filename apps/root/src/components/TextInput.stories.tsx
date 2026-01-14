@@ -65,11 +65,11 @@ type Story = StoryObj;
 export const Default: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Email Address'
       name='email'
       type='email'
       placeholder='Enter your email'
-      {...props}
     />
   ),
 };
@@ -77,12 +77,12 @@ export const Default: Story = {
 export const WithError: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Email Address'
       name='email'
       type='email'
       error='Please enter a valid email address'
       defaultValue='invalid-email'
-      {...props}
     />
   ),
 };
@@ -90,11 +90,11 @@ export const WithError: Story = {
 export const WithHint: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Password'
       name='password'
       type='password'
       hint='Must be at least 8 characters long'
-      {...props}
     />
   ),
 };
@@ -102,12 +102,12 @@ export const WithHint: Story = {
 export const Success: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Email Address'
       name='email'
       type='email'
       success={true}
       defaultValue='user@example.com'
-      {...props}
     />
   ),
 };
@@ -115,12 +115,12 @@ export const Success: Story = {
 export const Disabled: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Email Address'
       name='email'
       type='email'
       disabled={true}
       defaultValue='user@example.com'
-      {...props}
     />
   ),
 };
@@ -128,11 +128,11 @@ export const Disabled: Story = {
 export const Required: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Email Address'
       name='email'
       type='email'
       required={true}
-      {...props}
     />
   ),
 };
@@ -140,12 +140,12 @@ export const Required: Story = {
 export const TextArea: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Message'
       name='message'
       as='textarea'
       placeholder='Enter your message here...'
       rows={4}
-      {...props}
     />
   ),
 };
@@ -153,12 +153,12 @@ export const TextArea: Story = {
 export const TextAreaWithError: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Description'
       name='description'
       as='textarea'
       error='Description is required'
       placeholder='Enter description...'
-      {...props}
     />
   ),
 };
@@ -166,13 +166,13 @@ export const TextAreaWithError: Story = {
 export const TextAreaWithHint: Story = {
   render: props => (
     <TextInput
+      {...props}
       label='Comments'
       name='comments'
       as='textarea'
       hint='Please provide detailed feedback'
       placeholder='Your comments here...'
       rows={6}
-      {...props}
     />
   ),
 };
