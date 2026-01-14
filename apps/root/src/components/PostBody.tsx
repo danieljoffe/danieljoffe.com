@@ -18,6 +18,7 @@ export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
           blurHash={cover.blurHash}
           width={800}
           height={450}
+          loading='eager'
         />
         <PostContent>{children}</PostContent>
       </div>

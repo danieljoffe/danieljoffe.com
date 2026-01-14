@@ -4,8 +4,7 @@ import Image, { ImageProps } from 'next/image';
 import Button from '@/components/Button';
 import { Blurhash } from 'react-blurhash';
 import unsplashLoader from '@/utils/unsplashLoader';
-import { useViewport } from '@/hooks/inViewport';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useGlobal } from '@/state/Global/Context';
 import { getBase64DataUrl } from '@/utils/helpers';
 
@@ -23,6 +22,7 @@ export type UnsplashImageProps = UnsplashImageMeta & {
   width?: number;
   height?: number;
   fill?: boolean;
+  loading?: 'eager' | 'lazy';
 };
 
 export default function UnsplashImage({
@@ -36,10 +36,9 @@ export default function UnsplashImage({
   fetchPriority,
   fill = false,
   blurHash,
+  loading = 'lazy',
 }: UnsplashImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
-  const isInViewport = useViewport<HTMLElement | null>(ref);
   const { windowWidth } = useGlobal();
 
   if (!src || !alt || !creator || !origin) {
@@ -87,6 +86,7 @@ export default function UnsplashImage({
     placeholder: 'blur',
     blurDataURL: getBase64DataUrl('rgb(22, 22, 22)'),
     decoding: 'async',
+    loading,
   };
 
   if (fill == false || (width && height)) {
@@ -117,11 +117,10 @@ export default function UnsplashImage({
   return (
     <figure
       className='w-full h-48 sm:h-64 md:h-80 lg:h-96 flex relative'
-      ref={ref}
       style={{ aspectRatio: width && height ? `${width}/${height}` : '9/16' }}
     >
       {placeholder}
-      {isInViewport && <Image {...imageProps} alt={alt} />}
+      <Image {...imageProps} alt={alt} />
       <figcaption className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent flex justify-end'>
         <p className='text-white text-sm flex items-end gap-1 md:flex-col'>
           <Button
