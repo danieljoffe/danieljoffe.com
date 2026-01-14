@@ -5,7 +5,7 @@ import Button from '@/components/Button';
 import { Blurhash } from 'react-blurhash';
 import unsplashLoader from '@/utils/unsplashLoader';
 import { useViewport } from '@/hooks/inViewport';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useGlobal } from '@/state/Global/Context';
 import { getBase64DataUrl } from '@/utils/helpers';
 
@@ -37,7 +37,6 @@ export default function UnsplashImage({
   fill = false,
   blurHash,
 }: UnsplashImageProps) {
-  const [imageWidth, setImageWidth] = useState(Math.min(width ?? 800, 800));
   const [imageLoaded, setImageLoaded] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const isInViewport = useViewport<HTMLElement | null>(ref);
@@ -55,8 +54,14 @@ export default function UnsplashImage({
     setImageLoaded(true);
   }, []);
 
-  useEffect(() => {
-    setImageWidth(Math.min(windowWidth, 1024));
+  // Calculate optimal image width based on viewport and sizes attribute
+  // sizes: 100vw up to 640px, 90vw up to 768px, 80vw up to 1024px, then 800px
+  const imageWidth = useMemo(() => {
+    if (windowWidth <= 640) return Math.min(windowWidth, 640);
+    if (windowWidth <= 768) return Math.min(Math.floor(windowWidth * 0.9), 691);
+    if (windowWidth <= 1024)
+      return Math.min(Math.floor(windowWidth * 0.8), 819);
+    return 800; // Max width as specified in sizes
   }, [windowWidth]);
 
   const imageClasses = [

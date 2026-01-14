@@ -49,7 +49,6 @@ jest.mock('next/image', () => {
         finalSrc = loader({
           src: src as string,
           width: width as number,
-          quality: 90,
         });
       }
 
@@ -223,15 +222,17 @@ describe('UnsplashImage', () => {
 
   describe('Image URL generation', () => {
     it('should generate correct URL with specified width and height', () => {
+      // windowWidth is 800, so calculated width is 640 (80% of 800, capped)
       render(<UnsplashImage {...mockProps} width={800} height={500} />);
 
       const image = screen.getByRole('img');
       const src = image.getAttribute('src');
-      expect(src).toContain('w=800');
+      expect(src).toContain('w=640');
       expect(src).toContain('h=500');
-      expect(src).toContain('q=90');
+      expect(src).toContain('q=75'); // Default quality is 75 for better compression
       expect(src).toContain('auto=compress%2Cformat');
-      expect(src).toContain('fit=clip');
+      expect(src).toContain('fit=crop');
+      expect(src).toContain('crop=entropy');
     });
 
     it('should generate URL with different dimensions', () => {
@@ -262,6 +263,8 @@ describe('UnsplashImage', () => {
 
       const image = screen.getByRole('img');
       const src = image.getAttribute('src');
+      // For fill images without explicit width, loader defaults to 800
+      // (width comes from Next.js Image based on sizes attribute in production)
       expect(src).toContain('w=800');
       // 9:16 aspect ratio for width 800 should be height 450
       expect(src).toContain('h=450');
