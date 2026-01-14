@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useTransitionRouter } from 'next-transition-router';
@@ -21,6 +22,9 @@ type ContactFormData = InferType<typeof formSchema>;
 
 export default function Form() {
   const router = useTransitionRouter();
+  const [shouldLoadCaptcha, setShouldLoadCaptcha] = useState(false);
+  const captchaContainerRef = useRef<HTMLDivElement>(null);
+
   const {
     register,
     handleSubmit,
@@ -30,6 +34,25 @@ export default function Form() {
   } = useForm<ContactFormData>({
     resolver: yupResolver(formSchema),
   });
+
+  // Lazy load hCaptcha only when the form section is visible
+  useEffect(() => {
+    const container = captchaContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadCaptcha(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' } // Start loading 200px before visible
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   const onSubmit = async (data: ContactFormData) => {
     if (isSubmitting) {
@@ -154,13 +177,15 @@ export default function Form() {
         />
       </div>
 
-      <div>
-        <HCaptcha
-          sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}
-          onVerify={onVerify}
-          aria-label='Security verification'
-          loadAsync={true}
-        />
+      <div ref={captchaContainerRef} className='min-h-[78px]'>
+        {shouldLoadCaptcha && (
+          <HCaptcha
+            sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}
+            onVerify={onVerify}
+            aria-label='Security verification'
+            loadAsync={true}
+          />
+        )}
       </div>
 
       <div>
