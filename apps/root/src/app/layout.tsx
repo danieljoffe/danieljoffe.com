@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { rootMetadata } from './metadata';
+import { rootMetadata } from '@/data/metadata/root';
 import { josefinSans, irn, firaMono } from './fonts';
 import '@/app/global.scss';
 

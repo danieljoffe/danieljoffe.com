@@ -3,7 +3,7 @@ import Mantra from './Mantra';
 import Timeline from './Timeline';
 import Contact from './Contact';
 import type { Metadata } from 'next';
-import { aboutMetadata } from './metadata';
+import { aboutMetadata } from '@/data/metadata/about';
 import TechnicalExpertise from './TechnicalExpertise';
 
 export const metadata: Metadata = aboutMetadata;

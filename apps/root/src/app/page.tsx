@@ -4,7 +4,7 @@ import PreviousTeams from './home/PreviousTeams';
 import Hero from './home/Hero';
 import CTA from './home/CTA';
 import type { Metadata } from 'next';
-import { homeMetadata } from './home/metadata';
+import { homeMetadata } from '@/data/metadata/home';
 
 export const metadata: Metadata = homeMetadata;
 
