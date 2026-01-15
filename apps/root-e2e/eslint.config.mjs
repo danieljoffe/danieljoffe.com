@@ -23,5 +23,6 @@ export default [
       'playwright/no-skipped-test': 'warn',
       'playwright/no-wait-for-timeout': 'warn',
     },
+    ignores: ['playwright-report-json'],
   },
 ];
