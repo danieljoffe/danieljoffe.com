@@ -56,9 +56,12 @@ const CustomFallback = ({
 
 describe('ErrorBoundary', () => {
   beforeEach(() => {
-    // Suppress console.error for tests
+    // Suppress console.error and console.warn for tests
     jest.spyOn(console, 'error').mockImplementation(() => {
       // Suppress console.error for tests
+    });
+    jest.spyOn(console, 'warn').mockImplementation(() => {
+      // Suppress console.warn for tests
     });
   });
 
