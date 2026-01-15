@@ -11,6 +11,7 @@ import { formSchema } from '@/app/api/email/schema';
 import type { InferType } from 'yup';
 import dynamic from 'next/dynamic';
 import Loading from '@/components/Loading';
+import { analytics } from '@/lib/analytics';
 
 export const contactFormId = 'contact-form';
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
@@ -44,6 +45,7 @@ export default function Form() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setShouldLoadCaptcha(true);
+          analytics.formStart('contact');
           observer.disconnect();
         }
       },
@@ -84,8 +86,10 @@ export default function Form() {
         throw new Error('Failed to send message');
       }
 
+      analytics.formSubmit('contact');
       router.push('/thank-you/email');
     } catch (_error) {
+      analytics.formError('contact', 'Failed to send message');
       setError('root.unknownError', {
         type: 'manual',
         message: 'Failed to send message. Please try again.',

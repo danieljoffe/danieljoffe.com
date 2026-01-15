@@ -4,6 +4,7 @@ import Container from '@/components/Container';
 import { ABOUT_LINK, PROJECTS_LINK } from '@/components/Nav/Links';
 import { FULL_NAME } from '@/utils/constants';
 import { contactFormId } from '@/app/about/Contact/Form';
+import { analytics } from '@/lib/analytics';
 
 export default function CTA() {
   return (
@@ -24,6 +25,12 @@ export default function CTA() {
               as='link'
               href={`${ABOUT_LINK.href}?scrollTo=${contactFormId}`}
               aria-label={`Get in touch with ${FULL_NAME}`}
+              onClick={() =>
+                analytics.ctaClick(
+                  'get_in_touch',
+                  '/about?scrollTo=contact-form'
+                )
+              }
             >
               Get in touch
             </Button>
@@ -31,6 +38,7 @@ export default function CTA() {
               as='link'
               href={PROJECTS_LINK.href}
               aria-label={`View ${FULL_NAME}'s work portfolio`}
+              onClick={() => analytics.ctaClick('view_my_work', '/projects')}
             >
               View my work
             </Button>

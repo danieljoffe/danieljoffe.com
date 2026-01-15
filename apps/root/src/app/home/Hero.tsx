@@ -8,6 +8,7 @@ import { profileData } from '@/utils/profileData';
 import { ABOUT_LINK } from '@/components/Nav/Links';
 import { FULL_NAME } from '@/utils/constants';
 import Blob from './Blob';
+import { analytics } from '@/lib/analytics';
 
 export default function Hero() {
   return (
@@ -45,6 +46,9 @@ export default function Hero() {
               href={`${ABOUT_LINK.href}?scrollTo=${contactFormId}`}
               aria-label={`Get in touch with ${FULL_NAME}`}
               id='contactMe'
+              onClick={() =>
+                analytics.ctaClick('lets_talk', '/about?scrollTo=contact-form')
+              }
             >
               Let&apos;s Talk
             </Button>

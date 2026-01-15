@@ -1,7 +1,10 @@
+'use client';
+
 import { PostThumbnailI } from '@/types/post.types';
 import UnsplashImage from '../UnsplashImage';
 import { Link } from 'next-transition-router';
 import PostThumbnailIDescription from './PostThumbnailDescription';
+import { analytics } from '@/lib/analytics';
 
 export default function PostThumbnail({
   slug,
@@ -11,6 +14,14 @@ export default function PostThumbnail({
   description,
   index,
 }: PostThumbnailI & { index: number }) {
+  const handleClick = () => {
+    if (link.href.includes('/projects/')) {
+      analytics.projectClick(slug);
+    } else if (link.href.includes('/experience/')) {
+      analytics.experienceClick(slug);
+    }
+  };
+
   return (
     <article
       key={slug}
@@ -34,6 +45,7 @@ export default function PostThumbnail({
       />
       <Link
         href={link.href}
+        onClick={handleClick}
         className={[
           'row-span-1 col-span-1',
           backgroundColor,

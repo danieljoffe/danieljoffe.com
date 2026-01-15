@@ -1,5 +1,8 @@
+'use client';
+
 import { NavLinkI } from '@/types/base';
 import Button from '@/components/Button';
+import { analytics } from '@/lib/analytics';
 
 export const HOME_LINK: NavLinkI = { href: '/', label: 'Home' };
 export const ABOUT_LINK: NavLinkI = { href: '/about', label: 'About' };
@@ -23,7 +26,8 @@ export default function NavLinks({
   pathname: string;
   handleClick?: () => void;
 }) {
-  const handleLinkClick = () => {
+  const handleLinkClick = (label: string) => {
+    analytics.navClick(label);
     setTimeout(() => {
       handleClick?.();
     }, 150);
@@ -42,7 +46,7 @@ export default function NavLinks({
               size='sm'
               as='link'
               href={link.href}
-              onClick={handleLinkClick}
+              onClick={() => handleLinkClick(link.label)}
               highlighted={pathname === link.href}
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}

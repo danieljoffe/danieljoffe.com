@@ -5,6 +5,7 @@ import MorphSVGPlugin from 'gsap/MorphSVGPlugin';
 import gsap from 'gsap';
 import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
+import { analytics } from '@/lib/analytics';
 
 gsap.registerPlugin(MorphSVGPlugin, useGSAP);
 
@@ -83,6 +84,11 @@ export default function MobileNav({
   menuOpen: boolean;
   setMenuOpen: () => void;
 }) {
+  const handleToggle = () => {
+    analytics.mobileMenuToggle(menuOpen ? 'close' : 'open');
+    setMenuOpen();
+  };
+
   return (
     <div className='md:hidden flex items-center justify-between w-full py-4 px-4 bg-neutral-100 shadow'>
       <Logo />
@@ -90,7 +96,7 @@ export default function MobileNav({
         aria-label={menuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={menuOpen}
         aria-controls='mobile-menu'
-        onClick={setMenuOpen}
+        onClick={handleToggle}
         variant='icon'
         name='toggle menu'
       >

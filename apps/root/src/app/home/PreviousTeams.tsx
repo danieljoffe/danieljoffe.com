@@ -1,9 +1,12 @@
+'use client';
+
 import Container from '@/components/Container';
 import Image from 'next/image';
 import LinkHint from '@/components/LinkHint';
 import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
+import { analytics } from '@/lib/analytics';
 
 const companies = Object.values(experienceFull);
 
@@ -23,6 +26,7 @@ export default function PreviousTeams() {
             href={`${EXPERIENCE_LINK.href}/${company.slug}`}
             aria-label={company.company}
             title={company.company}
+            onClick={() => analytics.experienceClick(company.slug)}
           >
             <div className='flex gap-2 w-full h-full items-center justify-center'>
               <Image

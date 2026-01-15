@@ -1,5 +1,3 @@
-const baseStyles = 'px-2 py-1 text-sm font-sans font-medium';
-
 const styles = {
   error: 'bg-rose-500 text-white',
   success: 'bg-blue-500 text-white',
@@ -22,14 +20,16 @@ export default function InputFeedback({
   const ariaLive = type === 'error' ? 'assertive' : 'polite';
 
   return (
-    <p
-      id={`${inputId}-${type}`}
-      className={[baseStyles, styles[type]].join(' ')}
-      role={role}
-      aria-live={ariaLive}
-      aria-atomic='true'
-    >
-      {message}
-    </p>
+    <div className={['px-2 py-1', styles[type]].join(' ')}>
+      <p
+        id={`${inputId}-${type}`}
+        role={role}
+        className='text-sm font-sans font-medium'
+        aria-live={ariaLive}
+        aria-atomic='true'
+      >
+        {message}
+      </p>
+    </div>
   );
 }

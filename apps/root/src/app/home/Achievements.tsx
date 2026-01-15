@@ -11,7 +11,7 @@ export default function Achievements() {
         {offerings.achievements.map((achievement, index) => (
           <div
             key={index}
-            className='flex gap-4 items-center w-full max-w-[28rem] p-4 bg-neutral-100 text-black rounded-[5px]'
+            className='flex gap-4 w-full max-w-[28rem] p-4 bg-neutral-100 text-black rounded-[5px]'
           >
             <p className='text-2xl'>{achievement.icon}</p>
             <div className='flex flex-col'>
