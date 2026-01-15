@@ -7,7 +7,10 @@ import styles from './blob.module.scss';
 export default function BlobCSS() {
   useEffect(() => {
     // Randomly set gradient theme on mount and periodically
-    const interval = setInterval(setGradientTheme, 8000);
+    const interval = setInterval(
+      setGradientTheme,
+      Math.max(8000 * Math.random(), 2000 * Math.random())
+    );
     setGradientTheme();
 
     return () => clearInterval(interval);

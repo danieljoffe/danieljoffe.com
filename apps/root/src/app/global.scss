@@ -36,6 +36,17 @@
 }
 
 @layer base {
+  :root {
+    --stop-color-one: #000;
+    --stop-color-two: #000;
+    --stop-color-three: #000;
+    --stop-color-four: #000;
+    --stop-color-five: #000;
+    --stop-color-six: #000;
+    --stop-color-seven: #000;
+    --stop-color-eight: #000;
+  }
+
   html {
     font-size: 18px;
   }
