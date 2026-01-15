@@ -33,7 +33,9 @@ export default async function Projects() {
             </h2>
             <ContentGrid>
               {projectsList.map((data, index) => (
-                <PostThumbnail key={data.slug} {...data} index={index} />
+                <li key={data.slug}>
+                  <PostThumbnail {...data} index={index} />
+                </li>
               ))}
             </ContentGrid>
           </section>

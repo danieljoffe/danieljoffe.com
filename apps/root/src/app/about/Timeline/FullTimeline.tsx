@@ -3,17 +3,18 @@ import LinkHint from '@/components/LinkHint';
 import Button from '@/components/Button';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { EXPERIENCE_LINK } from '@/utils/base';
+import ContentGrid from '@/components/ContentGrid';
 
 export default function FullTimeline() {
   return (
     <div className='flex flex-col gap-4' id='timeline'>
       <h3 className='pb-2'>Detailed Professional Journey</h3>
-      <ul className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+      <ContentGrid>
         {experiencePageSlugs.map(slug => {
           const company = experienceFull[slug] || {};
 
           return (
-            <li key={company.slug}>
+            <li className='flex flex-1' key={company.slug}>
               <Button
                 as='link'
                 variant='link'
@@ -49,7 +50,7 @@ export default function FullTimeline() {
             </li>
           );
         })}
-      </ul>
+      </ContentGrid>
     </div>
   );
 }

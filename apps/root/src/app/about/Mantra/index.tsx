@@ -22,35 +22,35 @@ export default function Mantra() {
             challenge and there were valuable lessons learned.
           </p>
           <ul className='grid grid-cols-1 md:grid-cols-8 gap-4'>
-            <li className='col-span-1 md:col-span-5 flex items-center gap-4'>
+            <li className='col-span-1 md:col-span-5 flex gap-4'>
               <p className='text-2xl'>🚀</p>
               <div>
                 <h4>Winc</h4>
                 <p> Marketing velocity and brand transformation</p>
               </div>
             </li>
-            <li className='col-span-1 md:col-start-2 col-span-4 flex items-center gap-4'>
+            <li className='col-span-1 md:col-start-2 col-span-4 flex gap-4'>
               <p className='text-2xl'>🤝</p>
               <div>
                 <h4>Internet Brands</h4>
                 <p> Team leadership and regulatory compliance</p>
               </div>
             </li>
-            <li className='col-span-1 md:col-start-3 col-span-4 flex items-center gap-4'>
+            <li className='col-span-1 md:col-start-3 col-span-4 flex gap-4'>
               <p className='text-2xl'>🧑‍💻</p>
               <div>
                 <h4>Library Corporation</h4>
                 <p> Domain specialization and accessibility</p>
               </div>
             </li>
-            <li className='col-span-1 md:col-start-4 col-span-4 flex items-center gap-4'>
+            <li className='col-span-1 md:col-start-4 col-span-4 flex gap-4'>
               <p className='text-2xl'>⚙️</p>
               <div>
                 <h4>FightCamp</h4>
                 <p> Infrastructure scaling and team empowerment</p>
               </div>
             </li>
-            <li className='col-span-1 md:col-start-5 col-span-4 flex items-center gap-4'>
+            <li className='col-span-1 md:col-start-5 col-span-4 flex gap-4'>
               <p className='text-2xl'>📈</p>
               <div>
                 <h4>Current</h4>

@@ -47,10 +47,9 @@ export default function PostThumbnail({
         href={link.href}
         onClick={handleClick}
         className={[
-          'row-span-1 col-span-1',
+          'row-span-1 col-span-1 flex-1',
+          'overflow-hidden shadow-lg',
           backgroundColor,
-          'overflow-hidden',
-          'shadow-lg',
         ].join(' ')}
         aria-label={`View ${link.label} project details`}
       >

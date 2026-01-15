@@ -34,7 +34,9 @@ export default async function ExperiencePage() {
             </h2>
             <ContentGrid>
               {experienceList.map((data, index) => (
-                <PostThumbnail key={data.slug} {...data} index={index} />
+                <li key={data.slug}>
+                  <PostThumbnail {...data} index={index} />
+                </li>
               ))}
             </ContentGrid>
           </section>
