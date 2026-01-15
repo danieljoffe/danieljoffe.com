@@ -2,33 +2,235 @@
 
 When building this portfolio, I wanted more than hastily assembled components—I wanted a design system that would scale. Here's what I built and why it matters.
 
-## The Component Library
+## Form Components
 
-I created 6 foundational components that form the backbone of this application:
-
-### First: Button
+### Button
 
 A flexible button with three variants (primary, secondary, icon) and three sizes. Uses `React.forwardRef` for proper ref forwarding and includes built-in accessibility with ARIA attributes and keyboard navigation.
 
-### Second: Container
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-button--primary'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
 
-A simple but essential wrapper that centers content and provides consistent spacing. Used on almost every page.
-
-### Third: TextInput
+### TextInput
 
 A polymorphic form component that renders as either `<input>` or `<textarea>`. Handles validation states, error messages, and success feedback with proper ARIA relationships using `React.useId()`.
 
-### Fourth: InputLabel
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-textinput--default&viewMode=story'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### InputLabel
 
 Handles proper HTML label association, required field indicators (red asterisk), and consistent typography.
 
-### Fifth: InputFeedback
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-inputlabel--default&viewMode=story'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### InputFeedback
 
 Validation messages with proper ARIA roles and live regions for screen readers.
 
-### Sixth: LinkHint
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-inputfeedback--error&viewMode=story'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### LinkHint
 
 A small arrow icon indicating external links, using Lucide React for consistency.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-linkhint--default&viewMode=story'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Navigation Components
+
+### Nav
+
+The main navigation bar component that combines the logo and navigation links. Integrates with the global state provider for modal functionality.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-nav--index&viewMode=story'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Logo
+
+The site logo component displayed in the navigation. Provides consistent branding across the application.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-nav-logo--primary&viewMode=story'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### NavLinks
+
+Navigation links with active state indication. Highlights the current page and provides consistent navigation styling.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-nav-links--primary&viewMode=story'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### MobileNav
+
+Responsive mobile navigation with hamburger menu toggle. Handles the open/closed state for mobile viewports.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-nav-mobilenav--open&viewMode=story'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### BreadCrumbs
+
+Hierarchical navigation showing the current page location. Helps users understand their position within the site structure.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-breadcrumbs--default&viewMode=story'
+  width='400'
+  height='75'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Layout Components
+
+### Container
+
+A simple but essential wrapper that centers content and provides consistent spacing. Used on almost every page.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-container--default&viewMode=story'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### ContentGrid
+
+A responsive grid layout for displaying content cards. Automatically adjusts columns based on viewport size.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-contentgrid--default&viewMode=story'
+  width='400'
+  height='600'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### PostBody
+
+The main layout component for blog posts and project pages. Combines the cover image, breadcrumbs, and prose-styled content area.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-postbody--default&viewMode=story'
+  width='400'
+  height='400'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### PostContent
+
+A typography wrapper using Tailwind's prose plugin. Provides consistent styling for article content including headings, paragraphs, lists, and code blocks.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-postcontent--default&viewMode=story'
+  width='400'
+  height='650'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Content Components
+
+### PostThumbnail
+
+A clickable card component for displaying project and experience previews. Features a cover image, gradient overlay, and description.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-postthumbnail--default&viewMode=story'
+  width='400'
+  height='500'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### PostThumbnailDescription
+
+The text overlay component within PostThumbnail. Displays the title and description with proper text hierarchy.
+
+<iframe
+  src='http://ui.danieljoffe.com/iframe.html?globals=&args=&id=components-postthumbnail-postthumbnaildescription--default&viewMode=story'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### UnsplashImage
+
+An optimized image component for Unsplash photos. Includes blur hash placeholders, proper attribution links, and Next.js Image optimization.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-unsplashimage--default&viewMode=story'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Utility Components
+
+### Loading
+
+A loading spinner component for async states. Provides visual feedback during data fetching or processing.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-loading--primary&viewMode=story'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Modal
+
+A portal-based modal component controlled via global state. Renders content above the main application with proper focus management.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-modal--primary&viewMode=story'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### ErrorBoundary
+
+A React error boundary that catches JavaScript errors in child components. Displays a fallback UI instead of crashing the entire application.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?args=&globals=&id=components-errorboundary--triggered&viewMode=story'
+  width='400'
+  height='500'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
 
 ## Design Principles
 
@@ -53,7 +255,6 @@ Tailwind CSS provides a consistent design language—neutral palette with blue a
 - Dark mode support
 - Animation integration
 - More input types (select, checkbox, radio)
-- Storybook documentation
 - Expanded test coverage
 
-_These 6 components taught me that the best design systems get out of your way and let you focus on creating great user experiences._
+_These components taught me that the best design systems get out of your way and let you focus on creating great user experiences._
