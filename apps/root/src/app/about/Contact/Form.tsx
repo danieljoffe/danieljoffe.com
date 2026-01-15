@@ -12,8 +12,7 @@ import type { InferType } from 'yup';
 import dynamic from 'next/dynamic';
 import Loading from '@/components/Loading';
 import { analytics } from '@/lib/analytics';
-
-export const contactFormId = 'contact-form';
+import { CONTACT_FORM_ID } from '@/utils/base';
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
   loading: () => <Loading />,
@@ -103,7 +102,7 @@ export default function Form() {
 
   return (
     <form
-      id={contactFormId}
+      id={CONTACT_FORM_ID}
       className='flex flex-col gap-4 text-white relative'
       onSubmit={handleSubmit(onSubmit)}
       action=''

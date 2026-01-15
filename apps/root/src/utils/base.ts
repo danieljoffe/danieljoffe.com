@@ -14,3 +14,6 @@ export const NAV_LINKS: NavLinkI[] = [
   EXPERIENCE_LINK,
   PROJECTS_LINK,
 ];
+
+// Form IDs
+export const CONTACT_FORM_ID = 'contact-form';

@@ -2,9 +2,8 @@
 import Button from '@/components/Button';
 import Container from '@/components/Container';
 import { FULL_NAME } from '@/utils/constants';
-import { contactFormId } from '@/app/about/Contact/Form';
 import { analytics } from '@/lib/analytics';
-import { ABOUT_LINK, PROJECTS_LINK } from '@/utils/base';
+import { ABOUT_LINK, CONTACT_FORM_ID, PROJECTS_LINK } from '@/utils/base';
 
 export default function CTA() {
   return (
@@ -23,7 +22,7 @@ export default function CTA() {
           <div className='flex gap-4'>
             <Button
               as='link'
-              href={`${ABOUT_LINK.href}?scrollTo=${contactFormId}`}
+              href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
               aria-label={`Get in touch with ${FULL_NAME}`}
               onClick={() =>
                 analytics.ctaClick(

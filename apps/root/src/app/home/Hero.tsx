@@ -2,13 +2,11 @@
 
 import Button from '@/components/Button';
 import Container from '@/components/Container';
-import { contactFormId } from '@/app/about/Contact/Form';
-
 import { profileData } from '@/utils/profileData';
 import { FULL_NAME } from '@/utils/constants';
 import Blob from './Blob';
 import { analytics } from '@/lib/analytics';
-import { ABOUT_LINK } from '@/utils/base';
+import { ABOUT_LINK, CONTACT_FORM_ID } from '@/utils/base';
 
 export default function Hero() {
   return (
@@ -43,7 +41,7 @@ export default function Hero() {
           <div className='flex justify-center mt-4'>
             <Button
               as='link'
-              href={`${ABOUT_LINK.href}?scrollTo=${contactFormId}`}
+              href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
               aria-label={`Get in touch with ${FULL_NAME}`}
               id='contactMe'
               onClick={() =>
