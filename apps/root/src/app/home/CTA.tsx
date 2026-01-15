@@ -1,10 +1,10 @@
 'use client';
 import Button from '@/components/Button';
 import Container from '@/components/Container';
-import { ABOUT_LINK, PROJECTS_LINK } from '@/components/Nav/Links';
 import { FULL_NAME } from '@/utils/constants';
 import { contactFormId } from '@/app/about/Contact/Form';
 import { analytics } from '@/lib/analytics';
+import { ABOUT_LINK, PROJECTS_LINK } from '@/utils/base';
 
 export default function CTA() {
   return (

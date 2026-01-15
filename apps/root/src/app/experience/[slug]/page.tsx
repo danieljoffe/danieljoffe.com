@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import Script from 'next/script';
-import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import PostBody from '@/components/PostBody';
 import Container from '@/components/Container';
 import { experienceRecords } from '@/data/experienceThumbnails';
@@ -9,6 +8,7 @@ import { headers } from 'next/headers';
 import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
+import { EXPERIENCE_LINK } from '@/utils/base';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;

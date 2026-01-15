@@ -7,7 +7,7 @@ import {
   validateFormData,
   rateLimit,
 } from './helpers';
-import { ABOUT_LINK } from '@/components/Nav/Links';
+import { ABOUT_LINK } from '@/utils/base';
 
 /**
  * Contact Form API Endpoint

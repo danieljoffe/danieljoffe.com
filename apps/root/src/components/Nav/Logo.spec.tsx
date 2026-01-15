@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Logo from './Logo';
-import { HOME_LINK } from './Links';
 import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
+import { HOME_LINK } from '@/utils/base';
 
 // Mock next/link
 jest.mock('next/link', () => {

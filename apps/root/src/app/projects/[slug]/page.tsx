@@ -1,4 +1,3 @@
-import { PROJECTS_LINK } from '@/components/Nav/Links';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import Container from '@/components/Container';
@@ -9,6 +8,7 @@ import { redirect } from 'next/navigation';
 import PostBody from '@/components/PostBody';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
+import { PROJECTS_LINK } from '@/utils/base';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;

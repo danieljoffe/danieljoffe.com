@@ -1,8 +1,8 @@
 import { PostThumbnailI } from '@/types/post.types';
-import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import { UNSPLASH_URL } from '@/utils/constants';
 import { experienceNames, experienceSlugs } from './experience';
 import { AllowedExperienceSlugs } from '@/types/base';
+import { EXPERIENCE_LINK } from '@/utils/base';
 
 export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
   {

@@ -1,7 +1,7 @@
 import Container from '@/components/Container';
 import Button from '@/components/Button';
-import { HOME_LINK } from '@/components/Nav/Links';
 import type { Metadata } from 'next';
+import { HOME_LINK } from '@/utils/base';
 
 export const metadata: Metadata = {
   title: 'Page Not Found - 404',

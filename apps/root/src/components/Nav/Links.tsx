@@ -1,23 +1,8 @@
 'use client';
 
-import { NavLinkI } from '@/types/base';
 import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
-
-export const HOME_LINK: NavLinkI = { href: '/', label: 'Home' };
-export const ABOUT_LINK: NavLinkI = { href: '/about', label: 'About' };
-export const PROJECTS_LINK: NavLinkI = { href: '/projects', label: 'Projects' };
-export const EXPERIENCE_LINK: NavLinkI = {
-  href: '/experience',
-  label: 'Experience',
-};
-
-export const NAV_LINKS: NavLinkI[] = [
-  HOME_LINK,
-  ABOUT_LINK,
-  EXPERIENCE_LINK,
-  PROJECTS_LINK,
-];
+import { NAV_LINKS } from '@/utils/base';
 
 export default function NavLinks({
   pathname,

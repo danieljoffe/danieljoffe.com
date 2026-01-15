@@ -5,10 +5,10 @@ import Container from '@/components/Container';
 import { contactFormId } from '@/app/about/Contact/Form';
 
 import { profileData } from '@/utils/profileData';
-import { ABOUT_LINK } from '@/components/Nav/Links';
 import { FULL_NAME } from '@/utils/constants';
 import Blob from './Blob';
 import { analytics } from '@/lib/analytics';
+import { ABOUT_LINK } from '@/utils/base';
 
 export default function Hero() {
   return (

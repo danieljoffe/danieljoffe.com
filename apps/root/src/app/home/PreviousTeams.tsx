@@ -3,10 +3,10 @@
 import Container from '@/components/Container';
 import Image from 'next/image';
 import LinkHint from '@/components/LinkHint';
-import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 import { analytics } from '@/lib/analytics';
+import { EXPERIENCE_LINK } from '@/utils/base';
 
 const companies = Object.values(experienceFull);
 

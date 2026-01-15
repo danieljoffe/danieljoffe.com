@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import { HOME_LINK } from '@/components/Nav/Links';
 import { JOB_TITLE, FULL_NAME } from '@/utils/constants';
 import Button from '@/components/Button';
+import { HOME_LINK } from '@/utils/base';
 
 export default function Logo() {
   return (

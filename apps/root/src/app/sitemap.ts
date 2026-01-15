@@ -1,12 +1,9 @@
 import { MetadataRoute } from 'next';
-import {
-  ABOUT_LINK,
-  EXPERIENCE_LINK,
-  PROJECTS_LINK,
-} from '@/components/Nav/Links';
+
 import { DOMAIN_URL } from '@/utils/constants';
 import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';
+import { ABOUT_LINK, EXPERIENCE_LINK, PROJECTS_LINK } from '@/utils/base';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static routes

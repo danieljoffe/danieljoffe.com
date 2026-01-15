@@ -1,13 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import NavLinks, {
-  NAV_LINKS,
-  HOME_LINK,
+import NavLinks from './Links';
+import {
   ABOUT_LINK,
-  PROJECTS_LINK,
   EXPERIENCE_LINK,
-} from './Links';
+  HOME_LINK,
+  NAV_LINKS,
+  PROJECTS_LINK,
+} from '@/utils/base';
 
 // Mock next/link
 jest.mock('next/link', () => {

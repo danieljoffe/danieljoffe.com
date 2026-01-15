@@ -15,7 +15,7 @@ import {
 } from '../experience';
 import { experienceRecords } from '../experienceThumbnails';
 import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
-import { EXPERIENCE_LINK } from '@/components/Nav/Links';
+import { EXPERIENCE_LINK } from '@/utils/base';
 
 export const wincExperienceSD: ExperienceStructuredDataI = {
   '@context': 'https://schema.org',

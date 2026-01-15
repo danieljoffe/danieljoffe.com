@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation';
 import Container from '@/components/Container';
 
 import type { Metadata } from 'next';
-import { ABOUT_LINK, HOME_LINK } from '@/components/Nav/Links';
 import Button from '@/components/Button';
+import { ABOUT_LINK, HOME_LINK } from '@/utils/base';
 
 export const metadata: Metadata = {
   title: 'Thank You - Message Received',

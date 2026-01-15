@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import LinkHint from '@/components/LinkHint';
-import { EXPERIENCE_LINK } from '@/components/Nav/Links';
 import Button from '@/components/Button';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
+import { EXPERIENCE_LINK } from '@/utils/base';
 
 export default function FullTimeline() {
   return (
