@@ -10,5 +10,5 @@ async function getFileContents(path: string) {
 }
 
 export const CRITICAL_STYLES = await getFileContents(
-  '/src/typography/_critical-styles.css'
+  '/src/styles/_critical-styles.css'
 );

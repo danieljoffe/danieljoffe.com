@@ -7,15 +7,12 @@ import { startTransition, Suspense, useRef } from 'react';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import dynamic from 'next/dynamic';
+import { WChildrenT } from '@/types/base';
 
 const Modal = dynamic(() => import('@/components/Modal'));
 const ScrollToElement = dynamic(() => import('./ScrollToElement'));
 
-export default function AppContext({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppContext({ children }: WChildrenT) {
   const ref = useRef<HTMLDivElement>(null);
 
   const handleLeave = async (next: () => void) => {

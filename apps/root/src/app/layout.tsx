@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
 
-import { fontVariables } from '../typography/fonts';
-import { CRITICAL_STYLES } from '@/typography/styles';
+import { fontVariables } from '@/styles/fonts';
+import { CRITICAL_STYLES } from '@/styles/base';
 import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
+import '@/styles/tailwind.scss';
+import { WChildrenT } from '@/types/base';
 
 export const metadata: Metadata = rootMetadata;
 
@@ -16,11 +18,7 @@ export const viewport: Viewport = {
   themeColor: '#0056b3',
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: WChildrenT) {
   return (
     <html lang='en' className={[fontVariables, 'scroll-smooth'].join(' ')}>
       <head>
@@ -37,10 +35,10 @@ export default async function RootLayout({
       </head>
       <body
         className={[
-          'antialiased font-sans text-neutral-900 bg-neutral-100 font-light line-height-1.5',
-          'flex flex-col h-screen relative pt-[3.75rem] md:pt-[3.25rem]',
+          'text-neutral-900 pt-[3.75rem] md:pt-[3.25rem]',
           'focus:outline-blue-500 focus:outline-2 focus:outline-offset-2',
-          'focus-visible:outline-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2',
+          'focus-visible:outline-blue-500 focus-visible:outline-2',
+          'focus-visible:outline-offset-2',
         ].join(' ')}
       >
         <Button
