@@ -13,12 +13,10 @@ export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
           alt={cover.alt}
           origin={cover.origin}
           creator={cover.creator}
-          priority={true}
-          fetchPriority='high'
           blurHash={cover.blurHash}
           width={800}
           height={450}
-          loading='eager'
+          priority={true}
         />
         <PostContent>{children}</PostContent>
       </div>

@@ -38,8 +38,10 @@ export default function PreviousTeams() {
                   height={45}
                   sizes='(max-width: 640px) 5rem, (max-width: 768px) 6rem, 7rem'
                   unoptimized={true}
-                  loading={index < 2 ? 'eager' : 'lazy'}
+                  decoding='async'
                   fetchPriority={index < 2 ? 'high' : 'low'}
+                  priority={index < 2}
+                  loading={index < 2 ? 'eager' : 'lazy'}
                 />
                 <LinkHint />
               </div>

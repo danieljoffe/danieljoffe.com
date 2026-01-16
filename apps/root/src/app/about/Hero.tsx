@@ -18,13 +18,14 @@ export default function Hero() {
               src='/images/daniel-joffe-profile.png'
               alt={FULL_NAME}
               title={FULL_NAME}
-              width={275}
-              height={275}
+              width={300}
+              height={300}
               className='rounded-full min-h-60 min-w-60'
-              priority={true}
-              fetchPriority='high'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
+              fetchPriority='high'
+              priority={true}
               decoding='async'
+              loading='eager'
             />
           </div>
           <div className='flex flex-col gap-2 text-center md:text-left'>

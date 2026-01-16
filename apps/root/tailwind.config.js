@@ -51,17 +51,51 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // Only extend with what you actually use
       fontFamily: {
-        sans: ['var(--font-josefin-sans)', 'Futura', 'Helvetica', 'sans-serif'],
-        serif: ['var(--font-irn)', 'Garamond', 'Times', 'serif'],
-        mono: [
-          'var(--font-fira-code)',
-          'Fira Mono',
-          'Droid Sans Mono',
-          'Courier New',
-          'monospace',
-        ],
+        heading: ['var(--font-heading)', 'Georgia', 'Times New Roman', 'serif'],
+        body: ['var(--font-body)', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['var(--font-mono)', 'Fira Code', 'Consolas', 'monospace'],
+      },
+
+      // =====================================================================
+      // FONT SIZES (with line-height and letter-spacing)
+      // Using 1.25 (Major Third) scale
+      // =====================================================================
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1.5', letterSpacing: '0.025em' }], // 12px
+        sm: ['0.875rem', { lineHeight: '1.5', letterSpacing: '0' }], // 14px
+        base: ['1rem', { lineHeight: '1.5', letterSpacing: '0' }], // 16px
+        lg: ['1.125rem', { lineHeight: '1.5', letterSpacing: '0' }], // 18px
+        xl: ['1.25rem', { lineHeight: '1.375', letterSpacing: '0' }], // 20px
+        '2xl': ['1.563rem', { lineHeight: '1.375', letterSpacing: '0' }], // 25px
+        '3xl': ['1.953rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }], // 31px
+        '4xl': ['2.441rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }], // 39px
+        '5xl': ['3.052rem', { lineHeight: '1.2', letterSpacing: '-0.04em' }], // 49px
+        '6xl': ['3.815rem', { lineHeight: '1.1', letterSpacing: '-0.04em' }], // 61px
+      },
+
+      // =====================================================================
+      // LETTER SPACING (extend defaults)
+      // =====================================================================
+      letterSpacing: {
+        tighter: '-0.04em',
+        tight: '-0.02em',
+        normal: '0',
+        wide: '0.025em',
+        wider: '0.05em',
+        widest: '0.1em',
+      },
+
+      // =====================================================================
+      // LINE HEIGHTS (extend defaults)
+      // =====================================================================
+      lineHeight: {
+        none: '1',
+        tight: '1.2',
+        snug: '1.375',
+        normal: '1.5',
+        relaxed: '1.625',
+        loose: '1.75',
       },
     },
   },

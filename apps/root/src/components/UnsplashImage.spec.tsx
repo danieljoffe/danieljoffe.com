@@ -157,7 +157,6 @@ describe('UnsplashImage', () => {
     width: 800,
     height: 500,
     priority: true,
-    fetchPriority: 'high',
   };
 
   beforeEach(() => {
@@ -192,24 +191,22 @@ describe('UnsplashImage', () => {
       expect(image).toHaveAttribute('data-priority', 'true');
     });
 
-    it('should render Image component with fetchPriority prop', () => {
-      render(<UnsplashImage {...mockProps} fetchPriority='high' />);
+    it('should set fetchPriority to high when priority is true', () => {
+      render(<UnsplashImage {...mockProps} priority={true} />);
 
       const image = screen.getByRole('img');
       expect(image).toHaveAttribute('data-fetch-priority', 'high');
     });
 
-    it('should render Image component with fetchPriority set to low', () => {
-      render(<UnsplashImage {...mockProps} fetchPriority='low' />);
+    it('should set fetchPriority to low when priority is false', () => {
+      render(<UnsplashImage {...mockProps} priority={false} />);
 
       const image = screen.getByRole('img');
       expect(image).toHaveAttribute('data-fetch-priority', 'low');
     });
 
     it('should render Image component with all required props', () => {
-      render(
-        <UnsplashImage {...mockProps} priority={false} fetchPriority='low' />
-      );
+      render(<UnsplashImage {...mockProps} priority={false} />);
 
       const image = screen.getByRole('img');
       expect(image).toHaveAttribute('data-decoding', 'async');
@@ -317,7 +314,6 @@ describe('UnsplashImage', () => {
             origin={`${UNSPLASH_URL}/photos/test` as const}
             blurHash=''
             priority={true}
-            fetchPriority='high'
           />
         );
       }).toThrow('Missing required props');
@@ -338,7 +334,6 @@ describe('UnsplashImage', () => {
         origin: mockProps.origin,
         blurHash: mockProps.blurHash,
         priority: mockProps.priority,
-        fetchPriority: mockProps.fetchPriority,
         fill: false,
         // Explicitly don't include width and height
       } as UnsplashImageProps;

@@ -36,12 +36,10 @@ export default function PostThumbnail({
         alt={cover.alt}
         origin={cover.origin}
         creator={cover.creator}
-        priority={index < 2}
-        fetchPriority={index < 2 ? 'high' : 'low'}
-        loading={index < 2 ? 'eager' : 'lazy'}
         blurHash={cover.blurHash}
         width={400}
         height={225}
+        priority={index < 2}
       />
       <Link
         href={link.href}

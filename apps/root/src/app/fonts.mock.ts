@@ -1,18 +1,19 @@
-// Mock fonts for test/CI environments where network access is restricted
-export const josefinSans = {
+export const ibarraRealNova = {
   className: '',
-  style: { fontFamily: 'system-ui, sans-serif' },
-  variable: '--font-josefin-sans',
+  style: { fontFamily: 'Georgia, Times New Roman, serif' },
+  variable: '--font-heading',
 };
 
-export const irn = {
+export const plusJakartaSans = {
   className: '',
-  style: { fontFamily: 'system-ui, serif' },
-  variable: '--font-irn',
+  style: { fontFamily: 'system-ui, -apple-system, sans-serif' },
+  variable: '--font-body',
 };
 
-export const firaMono = {
+export const jetbrainsMono = {
   className: '',
-  style: { fontFamily: 'system-ui, monospace' },
-  variable: '--font-fira-code',
+  style: { fontFamily: 'Consolas, Monaco, monospace' },
+  variable: '--font-mono',
 };
+
+export const fontVariables = `${ibarraRealNova.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`;

@@ -18,11 +18,9 @@ export type UnsplashImageMeta = {
 
 export type UnsplashImageProps = UnsplashImageMeta & {
   priority: boolean;
-  fetchPriority: 'high' | 'low';
   width?: number;
   height?: number;
   fill?: boolean;
-  loading?: 'eager' | 'lazy';
 };
 
 export default function UnsplashImage({
@@ -33,10 +31,8 @@ export default function UnsplashImage({
   width,
   height,
   priority,
-  fetchPriority,
   fill = false,
   blurHash,
-  loading = 'lazy',
 }: UnsplashImageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const { windowWidth } = useGlobal();
@@ -78,15 +74,13 @@ export default function UnsplashImage({
     src,
     alt,
     priority,
-    fetchPriority,
     fill,
     sizes:
       '(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 80vw, 800px',
-    unoptimized: false,
     placeholder: 'blur',
     blurDataURL: getBase64DataUrl('rgb(22, 22, 22)'),
+    unoptimized: false,
     decoding: 'async',
-    loading,
   };
 
   if (fill == false || (width && height)) {
@@ -95,6 +89,9 @@ export default function UnsplashImage({
     imageProps.height = height as number;
   }
 
+  imageProps.fetchPriority = priority ? 'high' : 'low';
+  imageProps.loading = priority ? 'eager' : 'lazy';
+  // imageProps.preload = !!priority //TODO: include when nextj is 16>
   imageProps.className = imageClasses.join(' ');
 
   const placeholder = useMemo(() => {

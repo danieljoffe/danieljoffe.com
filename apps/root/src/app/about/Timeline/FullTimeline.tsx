@@ -31,9 +31,11 @@ export default function FullTimeline() {
                       width={48}
                       height={48}
                       sizes='(max-width: 640px) 3rem, 3.5rem'
+                      unoptimized={true}
                       fetchPriority='low'
                       priority={false}
-                      unoptimized={true}
+                      loading='lazy'
+                      decoding='async'
                     />
                   </div>
                   <div className='flex justify-center items-center gap-2 flex-1'>

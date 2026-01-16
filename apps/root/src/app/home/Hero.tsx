@@ -4,9 +4,13 @@ import Button from '@/components/Button';
 import Container from '@/components/Container';
 import { profileData } from '@/utils/profileData';
 import { FULL_NAME } from '@/utils/constants';
-import Blob from './Blob';
 import { analytics } from '@/lib/analytics';
 import { ABOUT_LINK, CONTACT_FORM_ID } from '@/utils/base';
+import dynamic from 'next/dynamic';
+
+const Blob = dynamic(() => import('./Blob'), {
+  loading: () => <div />,
+});
 
 export default function Hero() {
   return (

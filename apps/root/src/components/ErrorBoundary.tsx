@@ -86,7 +86,7 @@ const ErrorComponent = ({
                 <summary className='cursor-pointer text-sm text-neutral-500 hover:text-neutral-700'>
                   Error Details (Non-Production)
                 </summary>
-                <pre className='mt-2 text-xs bg-neutral-100 p-3 rounded overflow-auto'>
+                <pre className='mt-2 text-sm bg-neutral-100 p-3 rounded overflow-auto'>
                   {error.stack}
                 </pre>
               </details>
