@@ -1,4 +1,5 @@
 import { publicEnv, PublicEnvVars } from '@/lib/public.env';
+import { RESUME_URL } from './constants';
 
 // ============================================================================
 // IMAGE UTILITIES
@@ -65,3 +66,8 @@ export const onClickDownload = (options: ClickDownloadOptions) => () => {
   link.click();
   document.body.removeChild(link);
 };
+
+export const downloadResume = onClickDownload({
+  download: 'daniel-joffe-resume.pdf',
+  href: RESUME_URL,
+});

@@ -8,7 +8,7 @@ import {
 } from '@/utils/constants';
 
 // Structured data for better SEO
-export const structuredData = {
+export const rootStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Person',
   name: FULL_NAME,

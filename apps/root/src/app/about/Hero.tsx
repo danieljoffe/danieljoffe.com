@@ -1,8 +1,10 @@
 'use client';
 import Button from '@/components/Button';
 import Container from '@/components/Container';
-import { FULL_NAME, RESUME_URL } from '@/utils/constants';
-import { onClickDownload } from '@/utils/helpers';
+import { analytics } from '@/lib/analytics';
+import { PROJECTS_LINK } from '@/utils/base';
+import { FULL_NAME } from '@/utils/constants';
+import { downloadResume } from '@/utils/helpers';
 import { profileData } from '@/utils/profileData';
 import { Download, Github, Linkedin, AtSign } from 'lucide-react';
 import Image from 'next/image';
@@ -84,10 +86,10 @@ export default function Hero() {
                   aria-label='Download Resume (PDF)'
                   title='Download Resume'
                   name='download resume'
-                  onClick={onClickDownload({
-                    download: 'daniel-joffe.resume.pdf',
-                    href: RESUME_URL,
-                  })}
+                  onClick={() => {
+                    analytics.ctaClick('download_resume', PROJECTS_LINK.href);
+                    downloadResume();
+                  }}
                 >
                   <Download absoluteStrokeWidth={true} />
                 </Button>

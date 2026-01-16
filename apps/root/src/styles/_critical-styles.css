@@ -118,11 +118,6 @@ h6 {
   text-transform: uppercase;
 }
 
-p {
-  line-height: inherit;
-  letter-spacing: inherit;
-}
-
 ul,
 ol {
   list-style: none;
@@ -153,6 +148,10 @@ ol {
 }
 
 @media (min-width: 640px) {
+  html {
+    font-size: 18px;
+  }
+
   body {
     padding-top: 3.75rem;
   }
@@ -177,7 +176,7 @@ ol {
 
 @media (min-width: 1024px) {
   html {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   h1 {
