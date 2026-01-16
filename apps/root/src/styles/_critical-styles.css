@@ -75,7 +75,6 @@ h5,
 h6 {
   font-family: var(--font-heading);
   font-weight: var(--font-semibold);
-  margin-top: 0;
   text-wrap: balance;
 }
 
@@ -83,24 +82,32 @@ h1 {
   font-size: var(--text-4xl);
   letter-spacing: var(--tracking-tight);
   line-height: var(--leading-tight);
+  margin-top: 0;
+  margin-bottom: 0.5em;
 }
 
 h2 {
   font-size: var(--text-3xl);
   letter-spacing: var(--tracking-tight);
   line-height: var(--leading-tight);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
 }
 
 h3 {
   font-size: var(--text-2xl);
   letter-spacing: var(--tracking-normal);
   line-height: var(--leading-snug);
+  margin-top: 0.75em;
+  margin-bottom: 0.375em;
 }
 
 h4 {
   font-size: var(--text-xl);
   letter-spacing: var(--tracking-normal);
   line-height: var(--leading-snug);
+  margin-top: 1em;
+  margin-bottom: 0.25em;
 }
 
 h5 {
@@ -108,6 +115,8 @@ h5 {
   letter-spacing: var(--tracking-normal);
   line-height: var(--leading-snug);
   font-weight: var(--font-medium);
+  margin-top: 1em;
+  margin-bottom: 0.25em;
 }
 
 h6 {
@@ -116,6 +125,8 @@ h6 {
   line-height: var(--leading-normal);
   font-weight: var(--font-medium);
   text-transform: uppercase;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
 }
 
 ul,
@@ -145,6 +156,10 @@ ol {
   overflow: visible;
   clip: auto;
   white-space: normal;
+}
+
+:is(h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
 }
 
 @media (min-width: 640px) {

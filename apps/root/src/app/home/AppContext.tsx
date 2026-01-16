@@ -50,7 +50,7 @@ export default function AppContext({ children }: WChildrenT) {
         <Nav />
         <main
           ref={ref}
-          id='main-content'
+          id='main-content' // TODO: make this public so other pages can use it
           role='main'
           className='flex flex-col flex-1'
         >

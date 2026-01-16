@@ -1,19 +1,17 @@
 'use client';
-import Button from '@/components/Button';
-import Container from '@/components/Container';
+import { ABOUT_LINK, CONTACT_FORM_ID, PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
-import { ABOUT_LINK, CONTACT_FORM_ID, PROJECTS_LINK } from '@/utils/base';
+import Section from '@/components/Section';
+import Container from '@/components/Container';
+import Button from '@/components/Button';
 
 export default function CTA() {
   return (
-    <section
-      className='bg-neutral-900 text-white'
-      aria-labelledby='cta-heading'
-    >
-      <Container>
-        <div className='flex flex-col max-w-[32rem] items-center self-center text-center gap-4'>
-          <h2 id='cta-heading'>Let&apos;s Build Something Great Together</h2>
+    <Section className='bg-neutral-900 text-white' ariaLabelBy='cta-heading'>
+      <Container className='text-center max-w-[31rem]'>
+        <h2 id='cta-heading'>Let&apos;s Build Something Great Together</h2>
+        <div className='flex flex-col items-center self-center  gap-4'>
           <p>
             Ready to discuss how I can help drive your team&apos;s success?
             I&apos;m always excited to tackle new challenges and create
@@ -44,6 +42,6 @@ export default function CTA() {
           </div>
         </div>
       </Container>
-    </section>
+    </Section>
   );
 }

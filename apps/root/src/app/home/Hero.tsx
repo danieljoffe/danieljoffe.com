@@ -7,6 +7,7 @@ import { analytics } from '@/lib/analytics';
 import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import dynamic from 'next/dynamic';
 import { downloadResume } from '@/utils/helpers';
+import Section from '@/components/Section';
 
 const Blob = dynamic(() => import('./Blob'), {
   loading: () => <div />,
@@ -14,8 +15,8 @@ const Blob = dynamic(() => import('./Blob'), {
 
 export default function Hero() {
   return (
-    <section
-      className='min-h-[50vh] flex flex-col w-full overflow-hidden flex items-center justify-center md:min-h-[80vh]'
+    <Section
+      className='min-h-[50vh] flex-col overflow-hidden items-center md:min-h-[80vh]'
       aria-labelledby='hero-heading'
     >
       <div className='flex relative w-full h-0 top-[50%]'>
@@ -76,6 +77,6 @@ export default function Hero() {
           </div>
         </Container>
       </div>
-    </section>
+    </Section>
   );
 }
