@@ -1,5 +1,6 @@
-import '@/app/global.scss';
-import '@/app/fonts';
+import '@/styles/tailwind.scss';
+import '@/styles/global.scss';
+import '@/styles/fonts';
 import type { Preview } from '@storybook/react';
 import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from 'storybook/viewport';
 
