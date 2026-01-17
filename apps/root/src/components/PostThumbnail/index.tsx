@@ -27,7 +27,7 @@ export default function PostThumbnail({
       key={slug}
       className={[
         'flex flex-col overflow-hidden rounded-md transition',
-        'shadow-md/10 ease-in-out duration-300',
+        'shadow-md/10 ease-in-out duration-300 h-full',
         'hover:scale-102 hover:shadow-lg/30',
       ].join(' ')}
     >
@@ -37,8 +37,8 @@ export default function PostThumbnail({
         origin={cover.origin}
         creator={cover.creator}
         blurHash={cover.blurHash}
-        width={400}
-        height={225}
+        width={360}
+        height={375}
         priority={index < 2}
       />
       <Link

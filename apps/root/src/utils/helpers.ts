@@ -40,9 +40,7 @@ export const getBase64DataUrl = (
 
 export const devLog = (message: string, ...args: unknown[]) => {
   if (isProduction()) return;
-  if (typeof window !== 'undefined') {
-    console.warn(`🔍 ${new Date().toISOString()} ${message}`, ...args);
-  }
+  console.log(`🔍 ${new Date().toISOString()} ${message}`, ...args);
 };
 
 // ============================================================================

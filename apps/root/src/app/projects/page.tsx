@@ -1,12 +1,13 @@
-import Container from '@/components/Container';
 import { Metadata } from 'next';
-import PostThumbnail from '@/components/PostThumbnail';
-import ContentGrid from '@/components/ContentGrid';
+import Script from 'next/script';
+import { headers } from 'next/headers';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
-import Script from 'next/script';
-import { headers } from 'next/headers';
+import Container from '@/components/Container';
+import PostThumbnail from '@/components/PostThumbnail';
+import ContentGrid from '@/components/ContentGrid';
+import Section from '@/components/Section';
 
 const projectsList = Object.values(projectsRecords);
 export const metadata: Metadata = projectRootMetadata;
@@ -16,7 +17,7 @@ export default async function Projects() {
   const nonce = headersStore.get('x-nonce') ?? undefined;
 
   return (
-    <>
+    <Section>
       <Container>
         <div className='flex flex-col gap-4'>
           <header>
@@ -27,6 +28,7 @@ export default async function Projects() {
               includes the challenge, my approach, and measurable outcomes.
             </p>
           </header>
+
           <section aria-labelledby='projects-heading'>
             <h2 id='projects-heading' className='sr-only'>
               Project Portfolio
@@ -49,6 +51,6 @@ export default async function Projects() {
         }}
         nonce={nonce}
       />
-    </>
+    </Section>
   );
 }

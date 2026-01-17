@@ -1,12 +1,12 @@
 'use client';
-import { UNSPLASH_URL } from '@/utils/constants';
 import Image, { ImageProps } from 'next/image';
-import Button from '@/components/Button';
 import { Blurhash } from 'react-blurhash';
-import unsplashLoader from '@/utils/unsplashLoader';
 import { useCallback, useMemo, useState } from 'react';
-import { useGlobal } from '@/state/Global/Context';
 import { getBase64DataUrl } from '@/utils/helpers';
+import { UNSPLASH_URL } from '@/utils/constants';
+import unsplashLoader from '@/utils/unsplashLoader';
+import { useGlobal } from '@/state/Global/Context';
+import Button from '@/components/Button';
 
 export type UnsplashImageMeta = {
   alt: string;
@@ -61,7 +61,7 @@ export default function UnsplashImage({
 
   const imageClasses = [
     'object-cover',
-    imageLoaded ? 'opacity-100' : 'opacity-0',
+    // imageLoaded ? 'opacity-100' : 'opacity-0',
   ];
   // Create a custom loader that uses the actual height prop
   const loader = useMemo(() => {

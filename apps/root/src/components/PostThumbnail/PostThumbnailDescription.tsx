@@ -7,20 +7,13 @@ export default function PostThumbnailIDescription({
   return (
     <div
       className={[
-        'flex flex-col gap-4 h-full w-full',
-        'overflow-hidden min-h-[15rem] min-h-min',
-        'text-white',
+        'overflow-hidden min-h-[15rem] min-h-min text-white',
+        'bg-neutral-900/25 backdrop-blur-md shadow-lg h-full',
+        'px-4 pt-6 pb-8',
       ].join(' ')}
     >
-      <div
-        className={[
-          'flex flex-col gap-4 h-full w-full px-4 pt-6 pb-8',
-          'bg-neutral-900/25 backdrop-blur-md shadow-lg',
-        ].join(' ')}
-      >
-        <h3>{title}</h3>
-        <p>{description}</p>
-      </div>
+      <h3>{title}</h3>
+      <p>{description}</p>
     </div>
   );
 }
