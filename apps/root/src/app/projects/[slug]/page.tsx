@@ -10,6 +10,7 @@ import { projectPageSlugs } from '@/data/project';
 import { projectMdxComponents } from '@/data/content/projects';
 import Container from '@/components/Container';
 import PostBody from '@/components/PostBody';
+import Section from '@/components/Section';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -46,7 +47,7 @@ export default async function SlugProjectPage({ params }: SlugPagePropsI) {
   ];
 
   return (
-    <>
+    <Section>
       <Container>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <Post />
@@ -60,7 +61,7 @@ export default async function SlugProjectPage({ params }: SlugPagePropsI) {
         }}
         nonce={nonce}
       />
-    </>
+    </Section>
   );
 }
 

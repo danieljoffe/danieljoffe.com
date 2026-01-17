@@ -49,7 +49,9 @@ const Button = React.forwardRef<
   ];
 
   const content = (
-    <span className='min-h-[1.25rem] flex h-full w-full'>{children}</span>
+    <span className='min-h-[1.25rem] flex h-full w-full items-center'>
+      {children}
+    </span>
   );
 
   const commonClassName = classes

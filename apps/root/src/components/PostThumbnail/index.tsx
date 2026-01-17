@@ -37,9 +37,10 @@ export default function PostThumbnail({
         origin={cover.origin}
         creator={cover.creator}
         blurHash={cover.blurHash}
-        width={360}
-        height={375}
+        width={440}
+        height={460}
         priority={index < 2}
+        quality={65}
       />
       <Link
         href={link.href}

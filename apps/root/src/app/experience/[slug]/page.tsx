@@ -10,6 +10,7 @@ import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
 import PostBody from '@/components/PostBody';
 import Container from '@/components/Container';
+import Section from '@/components/Section';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -47,7 +48,7 @@ export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
   ];
 
   return (
-    <>
+    <Section>
       <Container>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <Post />
@@ -61,7 +62,7 @@ export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
         }}
         nonce={nonce}
       />
-    </>
+    </Section>
   );
 }
 

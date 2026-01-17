@@ -7,7 +7,8 @@ export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
   return (
     <div className='flex flex-col gap-4'>
       <BreadCrumbs items={breadcrumbs} />
-      <div className='flex flex-col gap-12'>
+
+      <div className='flex flex-col'>
         <UnsplashImage
           src={cover.src}
           alt={cover.alt}
