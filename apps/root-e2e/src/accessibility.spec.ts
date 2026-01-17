@@ -186,7 +186,9 @@ test.describe('accessibility Tests', () => {
 
       if (isFocusable) {
         await firstSkipLink.focus();
-        await firstSkipLink.click(); // Use click instead of press('Enter') for better cross-browser support
+        // Use evaluate to trigger click since sr-only positions element outside viewport
+        // and Playwright's click() cannot interact with it even with force: true
+        await firstSkipLink.evaluate((el: HTMLElement) => el.click());
 
         // Check if focus moved to target or URL hash updated
         const targetId = await firstSkipLink.getAttribute('href');
