@@ -1,14 +1,16 @@
 import { redirect } from 'next/navigation';
-import Script from 'next/script';
-import PostBody from '@/components/PostBody';
-import Container from '@/components/Container';
-import { experienceRecords } from '@/data/experienceThumbnails';
-import { AllowedExperienceSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { headers } from 'next/headers';
+import Script from 'next/script';
+import { AllowedExperienceSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
+import { EXPERIENCE_LINK } from '@/utils/base';
+import { experienceRecords } from '@/data/experienceThumbnails';
+import { experienceMdxComponents } from '@/data/content/experience';
 import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
-import { EXPERIENCE_LINK } from '@/utils/base';
+import PostBody from '@/components/PostBody';
+import Container from '@/components/Container';
+import Section from '@/components/Section';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -24,16 +26,15 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
   return record;
 }
 
-export default async function ExperiencePage({ params }: SlugPagePropsI) {
+export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
   const headersStore = await headers();
   const nonce = headersStore.get('x-nonce') ?? undefined;
   const { slug } = (await params) ?? {};
-  const { default: Post } = await import(
-    `@/data/content/experience/${slug}.mdx`
-  );
+
+  const Post = experienceMdxComponents[slug as AllowedExperienceSlugs];
   const record = experienceRecords[slug as AllowedExperienceSlugs];
 
-  if (!record) return redirect(EXPERIENCE_LINK.href);
+  if (!record || !Post) return redirect(EXPERIENCE_LINK.href);
 
   const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
@@ -47,7 +48,7 @@ export default async function ExperiencePage({ params }: SlugPagePropsI) {
   ];
 
   return (
-    <>
+    <Section>
       <Container>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <Post />
@@ -61,7 +62,7 @@ export default async function ExperiencePage({ params }: SlugPagePropsI) {
         }}
         nonce={nonce}
       />
-    </>
+    </Section>
   );
 }
 

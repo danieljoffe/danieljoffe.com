@@ -1,10 +1,4 @@
 // ============================================================================
-// ENCODING & CRYPTOGRAPHY
-// ============================================================================
-export const KEYS_STR =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-
-// ============================================================================
 // EXTERNAL URLS
 // ============================================================================
 export const DOMAIN_URL = 'https://danieljoffe.com';
@@ -19,7 +13,6 @@ export const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
 export const SENTRY_URL = 'https://www.sentry.io';
 export const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
-export const HCAPTCHA_API_URL = 'https://api.hcaptcha.com';
 
 // ============================================================================
 // PERSONAL INFORMATION
@@ -61,14 +54,6 @@ export const ANIMATION_DURATION = {
   VERY_SLOW: 1000,
 } as const;
 
-export const BREAKPOINTS = {
-  SM: 640,
-  MD: 768,
-  LG: 1024,
-  XL: 1280,
-  '2XL': 1536,
-} as const;
-
 export const Z_INDEX = {
   DROPDOWN: 1000,
   STICKY: 1020,
@@ -92,20 +77,6 @@ export const FORM_LIMITS = {
 export const VALIDATION_PATTERNS = {
   NAME: /^[a-zA-Z\s\-']+$/,
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-} as const;
-
-// ============================================================================
-// PERFORMANCE CONSTANTS
-// ============================================================================
-export const PERFORMANCE = {
-  DEBOUNCE_DELAY: 300,
-  THROTTLE_DELAY: 100,
-  LAZY_LOAD_THRESHOLD: 100,
-  CACHE_TTL: {
-    SHORT: 5 * 60 * 1000, // 5 minutes
-    MEDIUM: 30 * 60 * 1000, // 30 minutes
-    LONG: 24 * 60 * 60 * 1000, // 24 hours
-  },
 } as const;
 
 // ============================================================================

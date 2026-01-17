@@ -21,7 +21,7 @@ export default function NavLinks({
   return (
     <div className='flex flex-col h-full w-full justify-center items-center'>
       <ul
-        className='flex flex-col gap-4 items-center md:flex-row'
+        className='flex flex-col gap-4 items-center md:flex-row lowercase'
         role='menubar'
       >
         {NAV_LINKS.map(link => (

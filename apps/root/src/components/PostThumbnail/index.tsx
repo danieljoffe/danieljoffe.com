@@ -27,7 +27,7 @@ export default function PostThumbnail({
       key={slug}
       className={[
         'flex flex-col overflow-hidden rounded-md transition',
-        'shadow-md/10 ease-in-out duration-300',
+        'shadow-md/10 ease-in-out duration-300 h-full',
         'hover:scale-102 hover:shadow-lg/30',
       ].join(' ')}
     >
@@ -36,21 +36,19 @@ export default function PostThumbnail({
         alt={cover.alt}
         origin={cover.origin}
         creator={cover.creator}
-        priority={index < 2}
-        fetchPriority={index < 2 ? 'high' : 'low'}
-        loading={index < 2 ? 'eager' : 'lazy'}
         blurHash={cover.blurHash}
-        width={400}
-        height={225}
+        width={440}
+        height={460}
+        priority={index < 2}
+        quality={65}
       />
       <Link
         href={link.href}
         onClick={handleClick}
         className={[
-          'row-span-1 col-span-1',
+          'row-span-1 col-span-1 flex-1',
+          'overflow-hidden shadow-lg',
           backgroundColor,
-          'overflow-hidden',
-          'shadow-lg',
         ].join(' ')}
         aria-label={`View ${link.label} project details`}
       >

@@ -3,9 +3,9 @@ export const projectSlugs = {
   csPerformance: 'performance-case-study',
   csCLibrary: 'component-library-case-study',
   csCMSTooling: 'cms-tooling-case-study',
-  csA11y: 'a11y-serials-case-study',
-  csModernPractice: 'modern-practice-case-study',
-  csLogisticsDashboard: 'logistics-dashboard-case-study',
+  csA11y: 'accessibility-serials-study-case',
+  csModernPractice: 'portfolio-modern-practice-study-case',
+  csLogisticsDashboard: 'logistics-dashboard-study-case',
 } as const;
 
 export const projectPageSlugs = [...Object.values(projectSlugs)];

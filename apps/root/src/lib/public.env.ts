@@ -17,7 +17,7 @@ export const publicEnv: Record<PublicEnvVars, string | undefined> = {
   [PublicEnvVars.NEXT_PUBLIC_NODE_ENV]: process.env.NODE_ENV ?? 'development',
 };
 
-export function validatePublicEnv() {
+function validatePublicEnv() {
   Object.entries(PublicEnvVars).forEach(([varName, varValue]) => {
     if (varValue == null) {
       devLog(`Missing required environment variable: ${varName}`);

@@ -2,18 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useTransitionRouter } from 'next-transition-router';
+import dynamic from 'next/dynamic';
+import type { InferType } from 'yup';
+import { CONTACT_FORM_ID } from '@/utils/base';
+import { formSchema } from '@/app/api/email/schema';
+import { analytics } from '@/lib/analytics';
+import { publicEnv } from '@/lib/public.env';
+import { yupResolver } from '@hookform/resolvers/yup';
 import Button from '@/components/Button';
 import TextInput from '@/components/TextInput';
-import { publicEnv } from '@/lib/public.env';
-import { formSchema } from '@/app/api/email/schema';
-import type { InferType } from 'yup';
-import dynamic from 'next/dynamic';
 import Loading from '@/components/Loading';
-import { analytics } from '@/lib/analytics';
 
-export const contactFormId = 'contact-form';
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
   loading: () => <Loading />,
@@ -103,26 +103,17 @@ export default function Form() {
 
   return (
     <form
-      id={contactFormId}
+      id={CONTACT_FORM_ID}
       className='flex flex-col gap-4 text-white relative'
       onSubmit={handleSubmit(onSubmit)}
       action=''
       aria-labelledby='contact-form-heading'
       noValidate
     >
-      <header className='mb-2'>
+      <header>
         <h3 id='contact-form-heading' className='sr-only'>
           Contact Form
         </h3>
-        <p className='mb-2'>
-          I&apos;m currently seeking senior frontend or full-stack engineering
-          roles—remote or LA-based. Whether you have an opportunity to discuss
-          or just want to chat about performance optimization, I&apos;d love to
-          hear from you.
-        </p>
-        <p className='text-sm font-medium'>
-          <strong>Response time:</strong> Usually within 24 hours
-        </p>
       </header>
 
       <fieldset className='flex flex-col gap-4'>

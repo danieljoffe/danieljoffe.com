@@ -7,18 +7,17 @@ export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
   return (
     <div className='flex flex-col gap-4'>
       <BreadCrumbs items={breadcrumbs} />
-      <div className='flex flex-col gap-12'>
+
+      <div className='flex flex-col'>
         <UnsplashImage
           src={cover.src}
           alt={cover.alt}
           origin={cover.origin}
           creator={cover.creator}
-          priority={true}
-          fetchPriority='high'
           blurHash={cover.blurHash}
           width={800}
           height={450}
-          loading='eager'
+          priority={true}
         />
         <PostContent>{children}</PostContent>
       </div>

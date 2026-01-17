@@ -13,7 +13,7 @@ export default function Container({
       data-testid='container-outer'
     >
       <div
-        className={`container flex flex-col py-14 px-4 max-w-[48rem]`}
+        className={`container flex flex-col py-8 md:py-14 px-4 max-w-[48rem]`}
         data-testid='container-inner'
       >
         {children}

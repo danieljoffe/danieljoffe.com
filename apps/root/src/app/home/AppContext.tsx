@@ -7,15 +7,12 @@ import { startTransition, Suspense, useRef } from 'react';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import dynamic from 'next/dynamic';
+import { WChildrenT } from '@/types/base';
 
 const Modal = dynamic(() => import('@/components/Modal'));
 const ScrollToElement = dynamic(() => import('./ScrollToElement'));
 
-export default function AppContext({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppContext({ children }: WChildrenT) {
   const ref = useRef<HTMLDivElement>(null);
 
   const handleLeave = async (next: () => void) => {
@@ -53,7 +50,7 @@ export default function AppContext({
         <Nav />
         <main
           ref={ref}
-          id='main-content'
+          id='main-content' // TODO: make this public so other pages can use it
           role='main'
           className='flex flex-col flex-1'
         >

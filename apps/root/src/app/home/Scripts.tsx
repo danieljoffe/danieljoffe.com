@@ -2,7 +2,7 @@ import { publicEnv } from '@/lib/public.env';
 import { GoogleAnalytics } from './GoogleAnalytics';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { structuredData } from '../structuredData';
+import { rootStructuredData } from '@/data/structuredData/root';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import { serverEnv } from '@/lib/env';
@@ -18,7 +18,7 @@ export default async function Scripts() {
         id='structuredData'
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: JSON.stringify(rootStructuredData),
         }}
         nonce={nonce}
       />

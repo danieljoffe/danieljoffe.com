@@ -1,37 +1,42 @@
 import Container from '@/components/Container';
+import Section from '@/components/Section';
 
 export default function TechnicalExpertise() {
   return (
-    <Container>
-      <div className='flex flex-col gap-4'>
+    <Section ariaLabelBy='technical-expertise-heading'>
+      <Container>
         <h2 id='technical-expertise-heading'>Technical Expertise</h2>
-        <ul className='list-none space-y-2'>
+        <ul className='flex flex-col gap-2'>
           <li>
             <p>
-              <strong>Frontend:</strong> React, TypeScript, Vue.js, Nuxt.js,
+              <strong className='font-bold'>Frontend:</strong>{' '}
+              <br className='md:hidden' /> React, TypeScript, Vue.js, Nuxt.js,
               Next.js, Angular, HTML5, CSS3, Tailwind CSS
             </p>
           </li>
           <li>
             <p>
-              <strong>Backend:</strong> Node.js, Express, REST APIs, AWS (S3,
+              <strong className='font-bold'>Backend:</strong>{' '}
+              <br className='md:hidden' /> Node.js, Express, REST APIs, AWS (S3,
               Cognito), PostgreSQL
             </p>
           </li>
           <li>
             <p>
-              <strong>Tools:</strong> Jest, Cypress, Storybook, Webpack, Git,
-              CI/CD, Lighthouse, WCAG
+              <strong className='font-bold'>Tools:</strong>{' '}
+              <br className='md:hidden' /> Jest, Cypress, Storybook, Webpack,
+              Git, CI/CD, Lighthouse, WCAG
             </p>
           </li>
           <li>
             <p>
-              <strong>Specializations:</strong> Performance Optimization,
-              Component Libraries, Design Systems, Accessibility
+              <strong className='font-bold'>Specializations:</strong>{' '}
+              <br className='md:hidden' /> Performance Optimization, Component
+              Libraries, Design Systems, Accessibility
             </p>
           </li>
         </ul>
-      </div>
-    </Container>
+      </Container>
+    </Section>
   );
 }

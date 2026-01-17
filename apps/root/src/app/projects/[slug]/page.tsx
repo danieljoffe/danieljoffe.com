@@ -1,14 +1,16 @@
 import Script from 'next/script';
 import { headers } from 'next/headers';
-import Container from '@/components/Container';
-import { projectPagesMetadata } from '@/data/metadata/project';
-import { AllowedProjectSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
-import { projectsRecords } from '@/data/projectThumbnails';
 import { redirect } from 'next/navigation';
-import PostBody from '@/components/PostBody';
+import { AllowedProjectSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
+import { PROJECTS_LINK } from '@/utils/base';
+import { projectPagesMetadata } from '@/data/metadata/project';
+import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
-import { PROJECTS_LINK } from '@/utils/base';
+import { projectMdxComponents } from '@/data/content/projects';
+import Container from '@/components/Container';
+import PostBody from '@/components/PostBody';
+import Section from '@/components/Section';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -24,14 +26,15 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
   return record;
 }
 
-export default async function ProjectPage({ params }: SlugPagePropsI) {
+export default async function SlugProjectPage({ params }: SlugPagePropsI) {
   const headersStore = await headers();
   const nonce = headersStore.get('x-nonce') ?? undefined;
   const { slug } = (await params) ?? {};
-  const { default: Post } = await import(`@/data/content/projects/${slug}.mdx`);
+
+  const Post = projectMdxComponents[slug as AllowedProjectSlugs];
   const record = projectsRecords[slug as AllowedProjectSlugs];
 
-  if (!record) return redirect(PROJECTS_LINK.href);
+  if (!record || !Post) return redirect(PROJECTS_LINK.href);
 
   const structuredData = projectStructuredData[slug as AllowedProjectSlugs];
 
@@ -44,7 +47,7 @@ export default async function ProjectPage({ params }: SlugPagePropsI) {
   ];
 
   return (
-    <>
+    <Section>
       <Container>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <Post />
@@ -58,7 +61,7 @@ export default async function ProjectPage({ params }: SlugPagePropsI) {
         }}
         nonce={nonce}
       />
-    </>
+    </Section>
   );
 }
 

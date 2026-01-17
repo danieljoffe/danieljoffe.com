@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { A11Y } from '@/utils/constants';
 
 export default function Loading() {

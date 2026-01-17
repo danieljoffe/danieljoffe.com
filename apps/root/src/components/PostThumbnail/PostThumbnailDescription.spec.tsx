@@ -39,13 +39,13 @@ describe('PostThumbnailDescription', () => {
     expect(paragraph.tagName.toLowerCase()).toBe('p');
   });
 
-  test('applies flex column layout', () => {
+  test('applies text styling', () => {
     const { container } = render(
       <PostThumbnailDescription title='Title' description='Desc' />
     );
     const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('flex');
-    expect((outerDiv as HTMLElement)?.className).toContain('flex-col');
+    expect((outerDiv as HTMLElement)?.className).toContain('text-white');
+    expect((outerDiv as HTMLElement)?.className).toContain('overflow-hidden');
   });
 
   test('applies minimum height for consistent card sizing', () => {
@@ -72,11 +72,13 @@ describe('PostThumbnailDescription', () => {
     expect(innerDiv).toBeInTheDocument();
   });
 
-  test('renders with gap between title and description', () => {
+  test('applies padding styling', () => {
     const { container } = render(
       <PostThumbnailDescription title='Title' description='Desc' />
     );
-    const innerDiv = container.querySelector('.gap-4');
-    expect(innerDiv).toBeInTheDocument();
+    const outerDiv = container.firstChild;
+    expect((outerDiv as HTMLElement)?.className).toContain('px-4');
+    expect((outerDiv as HTMLElement)?.className).toContain('pt-6');
+    expect((outerDiv as HTMLElement)?.className).toContain('pb-8');
   });
 });

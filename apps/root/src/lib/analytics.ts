@@ -3,6 +3,9 @@ import { sendGAEvent } from '@/app/home/GoogleAnalytics';
 type EventParams = Record<string, string | number | boolean>;
 
 function trackEvent(eventName: string, params?: EventParams) {
+  // Skip during SSR
+  if (typeof window === 'undefined') return;
+
   // sendGAEvent pushes arguments to dataLayer, mimicking gtag('event', name, params)
   sendGAEvent(
     'event' as unknown as object,

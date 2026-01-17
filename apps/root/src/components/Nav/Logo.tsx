@@ -17,13 +17,13 @@ export default function Logo() {
         alt={`${FULL_NAME} - ${JOB_TITLE}`}
         width={124}
         height={24}
-        loading='eager'
         className='h-6 w-auto sm:h-7 md:h-8'
         sizes='(max-width: 640px) 6rem, (max-width: 768px) 7rem, 8rem'
-        priority={true}
-        fetchPriority='high'
         unoptimized={true}
-        decoding='async'
+        fetchPriority='high'
+        priority={true}
+        loading='eager'
+        decoding='sync'
       />
     </Button>
   );

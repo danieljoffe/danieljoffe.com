@@ -1,12 +1,13 @@
-import Container from '@/components/Container';
-import { experienceRecords } from '@/data/experienceThumbnails';
-import PostThumbnail from '@/components/PostThumbnail';
-import ContentGrid from '@/components/ContentGrid';
 import { Metadata } from 'next';
-import { experienceRootMetadata } from '@/data/metadata/experience';
-import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import Script from 'next/script';
 import { headers } from 'next/headers';
+import { experienceRecords } from '@/data/experienceThumbnails';
+import { experienceRootStructuredData } from '@/data/structuredData/experience';
+import { experienceRootMetadata } from '@/data/metadata/experience';
+import Container from '@/components/Container';
+import PostThumbnail from '@/components/PostThumbnail';
+import ContentGrid from '@/components/ContentGrid';
+import Section from '@/components/Section';
 
 const experienceList = Object.values(experienceRecords);
 export const metadata: Metadata = experienceRootMetadata;
@@ -16,7 +17,7 @@ export default async function ExperiencePage() {
   const nonce = headersStore.get('x-nonce') ?? undefined;
 
   return (
-    <>
+    <Section>
       <Container>
         <div className='flex flex-col gap-4'>
           <header>
@@ -28,18 +29,22 @@ export default async function ExperiencePage() {
               applications.
             </p>
           </header>
+
           <section aria-labelledby='experience-heading'>
             <h2 id='experience-heading' className='sr-only'>
               Portfolio Experience section
             </h2>
             <ContentGrid>
               {experienceList.map((data, index) => (
-                <PostThumbnail key={data.slug} {...data} index={index} />
+                <li key={data.slug}>
+                  <PostThumbnail {...data} index={index} />
+                </li>
               ))}
             </ContentGrid>
           </section>
         </div>
       </Container>
+
       <Script
         id='experience-structured-data'
         type='application/ld+json'
@@ -48,6 +53,6 @@ export default async function ExperiencePage() {
         }}
         nonce={nonce}
       />
-    </>
+    </Section>
   );
 }

@@ -1,4 +1,5 @@
 import { publicEnv, PublicEnvVars } from '@/lib/public.env';
+import { RESUME_URL } from './constants';
 
 // ============================================================================
 // IMAGE UTILITIES
@@ -39,9 +40,7 @@ export const getBase64DataUrl = (
 
 export const devLog = (message: string, ...args: unknown[]) => {
   if (isProduction()) return;
-  if (typeof window !== 'undefined') {
-    console.warn(`🔍 ${new Date().toISOString()} ${message}`, ...args);
-  }
+  console.log(`🔍 ${new Date().toISOString()} ${message}`, ...args);
 };
 
 // ============================================================================
@@ -65,3 +64,8 @@ export const onClickDownload = (options: ClickDownloadOptions) => () => {
   link.click();
   document.body.removeChild(link);
 };
+
+export const downloadResume = onClickDownload({
+  download: 'daniel-joffe-resume.pdf',
+  href: RESUME_URL,
+});
