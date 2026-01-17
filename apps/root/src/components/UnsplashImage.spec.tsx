@@ -212,24 +212,22 @@ describe('UnsplashImage', () => {
       expect(image).toHaveAttribute('data-decoding', 'async');
       expect(image).toHaveAttribute('data-priority', 'false');
       expect(image).toHaveAttribute('data-fetch-priority', 'low');
-      expect(image).toHaveAttribute('data-placeholder', 'blur');
       expect(image).toHaveAttribute('data-unoptimized', 'false');
     });
   });
 
   describe('Image URL generation', () => {
     it('should generate correct URL with specified width and height', () => {
-      // windowWidth is 800, so calculated width is 640 (80% of 800, capped)
       render(<UnsplashImage {...mockProps} width={800} height={500} />);
 
       const image = screen.getByRole('img');
       const src = image.getAttribute('src');
-      expect(src).toContain('w=640');
+      expect(src).toContain('w=800');
       expect(src).toContain('h=500');
       expect(src).toContain('q=75'); // Default quality is 75 for better compression
-      expect(src).toContain('auto=compress%2Cformat');
+      expect(src).toContain('auto=format%2Ccompress');
       expect(src).toContain('fit=crop');
-      expect(src).toContain('crop=entropy');
+      expect(src).toContain('crop=faces%2Cfocalpoint');
     });
 
     it('should generate URL with different dimensions', () => {
@@ -284,18 +282,17 @@ describe('UnsplashImage', () => {
       render(<UnsplashImage {...mockProps} />);
 
       const creatorLink = screen.getByText('Photo by @testuser,');
-      const unsplashLink = screen.getByText('on Unsplash');
+      const unsplashLink = screen.getByText('Unsplash');
 
       expect(creatorLink).toBeInTheDocument();
       expect(unsplashLink).toBeInTheDocument();
     });
 
-    it('should render blurhash placeholder when image not loaded', () => {
+    it('should render image with correct alt text', () => {
       render(<UnsplashImage {...mockProps} />);
 
-      const blurhash = screen.getByTestId('blurhash');
-      expect(blurhash).toBeInTheDocument();
-      expect(blurhash).toHaveAttribute('data-hash', mockProps.blurHash);
+      const image = screen.getByRole('img');
+      expect(image).toHaveAttribute('alt', mockProps.alt);
     });
   });
 

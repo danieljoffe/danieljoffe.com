@@ -73,13 +73,13 @@ describe('TextInput', () => {
     expect(id.startsWith('first-')).toBe(true);
   });
 
-  test('warns in dev when no label and no aria-label (does not throw)', () => {
+  test('logs in dev when no label and no aria-label (does not throw)', () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'development';
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(jest.fn());
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(jest.fn());
     render(<TextInput name='nolabel' />);
-    expect(warnSpy).toHaveBeenCalled();
-    warnSpy.mockRestore();
+    expect(logSpy).toHaveBeenCalled();
+    logSpy.mockRestore();
     process.env.NODE_ENV = originalEnv;
   });
 });
