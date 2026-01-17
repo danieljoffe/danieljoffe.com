@@ -35,10 +35,9 @@ export default async function RootLayout({ children }: WChildrenT) {
       </head>
       <body
         className={[
-          'text-neutral-900 pt-[3.75rem] md:pt-[3.25rem]',
           'focus:outline-blue-500 focus:outline-2 focus:outline-offset-2',
           'focus-visible:outline-blue-500 focus-visible:outline-2',
-          'focus-visible:outline-offset-2',
+          'focus-visible:outline-offset-2 text-neutral-900',
         ].join(' ')}
       >
         <Button

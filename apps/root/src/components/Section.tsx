@@ -12,7 +12,11 @@ export default function Section({
 }: SectionProps) {
   return (
     <section
-      className={`w-full flex justify-center ${className}`}
+      className={[
+        'overflow-hidden min-h-min w-full flex justify-center',
+        'max-h-max',
+        className,
+      ].join(' ')}
       aria-labelledby={ariaLabelBy}
     >
       {children}

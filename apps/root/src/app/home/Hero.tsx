@@ -16,11 +16,14 @@ const Blob = dynamic(() => import('./Blob'), {
 export default function Hero() {
   return (
     <Section
-      className='min-h-[50vh] flex-col overflow-hidden items-center md:min-h-[80vh]'
+      className={[
+        'relative !min-h-[27.5rem] md:!min-h-[32.5rem] h-[50vh]',
+        'flex-col overflow-hidden items-center md:h-[80vh]',
+      ].join(' ')}
       aria-labelledby='hero-heading'
     >
-      <div className='flex relative w-full h-0 top-[50%]'>
-        <div className='absolute -z-1 flex w-dvw h-dvh top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 justify-center items-center'>
+      <div className='flex  w-full h-0 top-[50%]'>
+        <div className='absolute -z-1 flex w-dvw h-[125dvh] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 justify-center items-center'>
           <Blob />
         </div>
       </div>
@@ -39,7 +42,7 @@ export default function Hero() {
                 <br className='hidden md:block' />
                 <span> I&apos;m Daniel Joffe.</span>
               </h1>
-              <p className='uppercase tracking-wide'>{JOB_TITLE}</p>
+              <p className='uppercase tracking-wide font-medium'>{JOB_TITLE}</p>
             </div>
 
             <div className='flex flex-col text-right text-sm gap-2'>
