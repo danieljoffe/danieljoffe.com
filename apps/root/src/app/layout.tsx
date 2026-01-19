@@ -1,8 +1,9 @@
+import { promises as fs } from 'fs';
+import path from 'node:path';
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
 
 import { fontVariables } from '@/styles/fonts';
-import { CRITICAL_STYLES } from '@/styles/base';
 import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
@@ -18,12 +19,24 @@ export const viewport: Viewport = {
   themeColor: '#0056b3',
 };
 
+async function getCriticalStyles() {
+  const stylesPath = path.join(
+    process.cwd(),
+    'src/styles/_critical-styles.css'
+  );
+  const criticalStyles = await fs.readFile(stylesPath, 'utf-8');
+
+  return criticalStyles;
+}
+
 export default async function RootLayout({ children }: WChildrenT) {
+  const criticalStyles = await getCriticalStyles();
+
   return (
     <html lang='en' className={[fontVariables, 'scroll-smooth'].join(' ')}>
       <head>
         {/* Critical inline styles for immediate rendering */}
-        <style dangerouslySetInnerHTML={{ __html: CRITICAL_STYLES }} />
+        <style dangerouslySetInnerHTML={{ __html: criticalStyles }} />
         {/* Resource hints for third-party services */}
         <link rel='dns-prefetch' href='https://sentry.io' />
         <link rel='dns-prefetch' href='https://www.googletagmanager.com' />
