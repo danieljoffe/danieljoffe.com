@@ -1,5 +1,4 @@
 import { promises as fs } from 'fs';
-import path from 'node:path';
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
 
@@ -20,10 +19,7 @@ export const viewport: Viewport = {
 };
 
 async function getCriticalStyles() {
-  const stylesPath = path.join(
-    process.cwd(),
-    'src/styles/_critical-styles.css'
-  );
+  const stylesPath = `${process.cwd()}/src/styles/_critical-styles.css`;
   const criticalStyles = await fs.readFile(stylesPath, 'utf-8');
 
   return criticalStyles;
