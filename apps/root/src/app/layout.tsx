@@ -1,16 +1,14 @@
-import { promises as fs } from 'fs';
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
-
+import { WChildrenT } from '@/types/base';
+import { criticalStyles } from '@/styles/_critical-styles';
 import { fontVariables } from '@/styles/fonts';
+import '@/styles/tailwind.scss';
 import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
-import '@/styles/tailwind.scss';
-import { WChildrenT } from '@/types/base';
 
 export const metadata: Metadata = rootMetadata;
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -18,16 +16,7 @@ export const viewport: Viewport = {
   themeColor: '#0056b3',
 };
 
-async function getCriticalStyles() {
-  const stylesPath = `${process.cwd()}/src/styles/_critical-styles.css`;
-  const criticalStyles = await fs.readFile(stylesPath, 'utf-8');
-
-  return criticalStyles;
-}
-
 export default async function RootLayout({ children }: WChildrenT) {
-  const criticalStyles = await getCriticalStyles();
-
   return (
     <html lang='en' className={[fontVariables, 'scroll-smooth'].join(' ')}>
       <head>

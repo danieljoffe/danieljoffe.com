@@ -1,32 +1,33 @@
+export const criticalStyles = `
 :root {
   --font-heading: 'Ibarra Real Nova', Georgia, 'Times New Roman', serif;
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.563rem; /* 25px */
-  --text-3xl: 1.953rem; /* 31px */
-  --text-4xl: 2.441rem; /* 39px */
-  --text-5xl: 3.052rem; /* 49px */
-  --text-6xl: 3.815rem; /* 61px */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.563rem;
+  --text-3xl: 1.953rem;
+  --text-4xl: 2.441rem;
+  --text-5xl: 3.052rem;
+  --text-6xl: 3.815rem;
 
   --leading-none: 1;
-  --leading-tight: 1.2; /* Headings */
-  --leading-snug: 1.375; /* Subheadings, large text */
-  --leading-normal: 1.5; /* Body text */
-  --leading-relaxed: 1.625; /* Long-form reading */
-  --leading-loose: 1.75; /* Very long-form, accessibility */
+  --leading-tight: 1.2;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 1.75;
 
-  --tracking-tighter: -0.04em; /* Display headings (5xl+) */
-  --tracking-tight: -0.02em; /* Large headings (3xl-4xl) */
-  --tracking-normal: 0; /* Default */
-  --tracking-wide: 0.025em; /* Small text, labels */
-  --tracking-wider: 0.05em; /* All caps, small caps */
-  --tracking-widest: 0.1em; /* Extreme emphasis */
+  --tracking-tighter: -0.04em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
 
   --font-light: 300;
   --font-normal: 400;
@@ -202,3 +203,4 @@ ol {
     font-size: var(--text-5xl);
   }
 }
+`;
