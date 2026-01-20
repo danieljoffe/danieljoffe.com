@@ -1,39 +1,34 @@
 export const criticalStyles = `
 :root {
-  --font-heading: 'Ibarra Real Nova', Georgia, 'Times New Roman', serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', Consolas, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.563rem;
-  --text-3xl: 1.953rem;
-  --text-4xl: 2.441rem;
+  --text-xl: 1.125rem;
+  --text-2xl: 1.375rem;
+  --text-3xl: 1.75rem;
+  --text-4xl: clamp(2rem, 3vw + 1rem, 2.75rem);
   --text-5xl: 3.052rem;
   --text-6xl: 3.815rem;
 
   --leading-none: 1;
   --leading-tight: 1.2;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 1.75;
+  --leading-snug: 1.25;
+  --leading-normal: 1.3;
+  --leading-relaxed: 1.4;
+  --leading-loose: 1.5;
 
-  --tracking-tighter: -0.04em;
-  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.02em;
+  --tracking-tight: -0.01em;
   --tracking-normal: 0;
-  --tracking-wide: 0.025em;
-  --tracking-wider: 0.05em;
-  --tracking-widest: 0.1em;
 
   --font-light: 300;
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
-  --font-bold: 700;
 }
 
 html {
@@ -51,12 +46,13 @@ figure {
 
 body {
   font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: var(--font-light);
-  line-height: var(--leading-normal);
+  font-size: var(--text-xl);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-loose);
   letter-spacing: var(--tracking-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -75,59 +71,72 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  font-weight: var(--font-semibold);
   text-wrap: balance;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--font-semibold);
+}
+
+h5,
+h6 {
+  font-weight: var(--font-medium);
 }
 
 h1 {
   font-size: var(--text-4xl);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-tighter);
   line-height: var(--leading-tight);
+  font-variation-settings: 'opsz' 144, 'WONK' 1;
   margin-top: 0;
-  margin-bottom: 0.5em;
+  margin-bottom: 1.5rem;
 }
 
 h2 {
   font-size: var(--text-3xl);
   letter-spacing: var(--tracking-tight);
-  line-height: var(--leading-tight);
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  line-height: var(--leading-snug);
+  font-variation-settings: 'opsz' 72, 'WONK' 1;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
 }
 
 h3 {
   font-size: var(--text-2xl);
-  letter-spacing: var(--tracking-normal);
-  line-height: var(--leading-snug);
-  margin-top: 0.75em;
-  margin-bottom: 0.375em;
+  line-height: var(--leading-normal);
+  font-variation-settings: 'opsz' 36, 'WONK' 0;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
 }
 
 h4 {
   font-size: var(--text-xl);
-  letter-spacing: var(--tracking-normal);
-  line-height: var(--leading-snug);
-  margin-top: 1em;
-  margin-bottom: 0.25em;
+  line-height: var(--leading-relaxed);
+  font-variation-settings: 'opsz' 24, 'WONK' 0;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 h5 {
-  font-size: var(--text-lg);
-  letter-spacing: var(--tracking-normal);
-  line-height: var(--leading-snug);
+  font-size: var(--text-sm);
+  line-height: var(--leading-loose);
   font-weight: var(--font-medium);
-  margin-top: 1em;
-  margin-bottom: 0.25em;
+  font-variation-settings: 'opsz' 12, 'WONK' 0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 h6 {
   font-size: var(--text-sm);
-  letter-spacing: var(--tracking-wider);
-  line-height: var(--leading-normal);
+  line-height: var(--leading-loose);
   font-weight: var(--font-medium);
   text-transform: uppercase;
-  margin-top: 0.75em;
-  margin-bottom: 0.25em;
+  font-variation-settings: 'opsz' 12, 'WONK' 0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 ul,
@@ -170,37 +179,6 @@ ol {
 
   body {
     padding-top: 3.5rem;
-  }
-  h1 {
-    font-size: var(--text-5xl);
-    letter-spacing: var(--tracking-tighter);
-  }
-
-  h2 {
-    font-size: var(--text-4xl);
-    letter-spacing: var(--tracking-tight);
-  }
-
-  h3 {
-    font-size: var(--text-3xl);
-  }
-
-  h4 {
-    font-size: var(--text-2xl);
-  }
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 20px;
-  }
-
-  h1 {
-    font-size: var(--text-6xl);
-  }
-
-  h2 {
-    font-size: var(--text-5xl);
   }
 }
 `;
