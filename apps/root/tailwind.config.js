@@ -14,6 +14,9 @@ module.exports = {
   content: [
     './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
     '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
+    // Include shared UI library
+    '../../libs/ui/src/**/*.{ts,tsx,js,jsx}',
+    '!../../libs/ui/src/**/*.{stories,spec}.{ts,tsx,js,jsx}',
     ...createGlobPatternsForDependencies(__dirname),
   ],
   // Enable JIT mode for better performance and smaller CSS output
