@@ -1,32 +1,5 @@
-@theme {
-  --color-blue-100: #669ad1;
-  --color-blue-200: #4d89ca;
-  --color-blue-300: #3378c2;
-  --color-blue-400: #1a67bb;
-  --color-blue-500: #0056b3;
-  --color-blue-600: #00458f;
-  --color-blue-700: #00346b;
-  --color-blue-800: #002248;
-  --color-blue-900: #001124;
-  --color-rose-100: #cf6b8b;
-  --color-rose-200: #c75277;
-  --color-rose-300: #bf3964;
-  --color-rose-400: #b72150;
-  --color-rose-500: #af083d;
-  --color-rose-600: #8c0631;
-  --color-rose-700: #690525;
-  --color-rose-800: #460318;
-  --color-rose-900: #23020c;
-  --color-neutral-100: #f5f5f5;
-  --color-neutral-200: #cdcdcd;
-  --color-neutral-300: #b8b8b8;
-  --color-neutral-400: #a4a4a4;
-  --color-neutral-500: #8b8b8b;
-  --color-neutral-600: #6c6c6c;
-  --color-neutral-700: #4d4d4d;
-  --color-neutral-800: #2e2e2e;
-  --color-neutral-900: #0f0f0f;
-}
+@use "tailwindcss";
+@use "@danieljoffe.com/ui/styles/index.scss";
 
 @layer base {
   :root {

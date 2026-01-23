@@ -1,5 +1,0 @@
-@use 'tailwindcss';
-@plugin '@tailwindcss/typography';
-
-/* Include UI library source files for Tailwind class detection */
-@source "../../../../libs/ui/src/**/*.{ts,tsx}";

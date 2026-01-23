@@ -3,7 +3,7 @@ import { rootMetadata } from '@/data/metadata/root';
 import { WChildrenT } from '@/types/base';
 import { criticalStyles } from '@/styles/_critical-styles';
 import { fontVariables } from '@/styles/fonts';
-import '@/styles/tailwind.scss';
+import '@/styles/global.scss';
 import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
