@@ -1,34 +1,65 @@
 export const criticalStyles = `
 :root {
-  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', Consolas, monospace;
+  --font-heading: 'Fraunces', 'Fraunces Fallback', Georgia, 'Times New Roman', serif;
+  --font-body: 'Space Grotesk', 'Space Grotesk Fallback', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', Consolas, Monaco, monospace;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-xl: 1.125rem;
-  --text-2xl: 1.375rem;
-  --text-3xl: 1.75rem;
-  --text-4xl: clamp(2rem, 3vw + 1rem, 2.75rem);
-  --text-5xl: 3.052rem;
-  --text-6xl: 3.815rem;
+  /* Color System - Light Mode */
+  --background: #FDFBF7;
+  --background-alt: #F5F3EE;
+  --background-elevated: #FFFFFF;
+  --foreground: #1A1A1A;
+  --foreground-muted: #6B6B6B;
+  --foreground-subtle: #9A9A9A;
 
-  --leading-none: 1;
-  --leading-tight: 1.2;
-  --leading-snug: 1.25;
-  --leading-normal: 1.3;
-  --leading-relaxed: 1.4;
-  --leading-loose: 1.5;
+  --accent: #6B5B95;
+  --accent-hover: #574A7A;
+  --accent-active: #453B62;
+  --accent-muted: #EEEAF4;
+  --accent-foreground: #FDFBF7;
 
-  --tracking-tighter: -0.02em;
-  --tracking-tight: -0.01em;
-  --tracking-normal: 0;
+  --border: #E5E2DA;
+  --border-strong: #D0CCC2;
 
-  --font-light: 300;
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
+  /* Typography Tokens */
+  --font-size-base: 1.0625rem;
+  --font-size-h1: clamp(2rem, 3vw + 1rem, 2.75rem);
+  --font-size-h2: 1.75rem;
+  --font-size-h3: 1.375rem;
+  --font-size-h4: 1.125rem;
+  --font-size-h5: 0.875rem;
+  --font-size-h6: 0.875rem;
+
+  --line-height-base: 1.6;
+  --line-height-h1: 1.2;
+  --line-height-h2: 1.25;
+  --line-height-h3: 1.3;
+  --line-height-h4: 1.4;
+  --line-height-h5: 1.5;
+  --line-height-h6: 1.5;
+
+  --letter-spacing-h1: -0.02em;
+  --letter-spacing-h2: -0.01em;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Spacing for Typography */
+  --h1-margin-top: 0;
+  --h1-margin-bottom: 1.5rem;
+  --h2-margin-top: 3rem;
+  --h2-margin-bottom: 1rem;
+  --h3-margin-top: 2.5rem;
+  --h3-margin-bottom: 0.75rem;
+  --h4-margin-top: 2rem;
+  --h4-margin-bottom: 0.5rem;
+  --h5-margin-top: 1.5rem;
+  --h5-margin-bottom: 0.5rem;
+  --h6-margin-top: 1.5rem;
+  --h6-margin-bottom: 0.5rem;
+
+  --radius: 0.25rem;
 }
 
 html {
@@ -46,10 +77,9 @@ figure {
 
 body {
   font-family: var(--font-body);
-  font-size: var(--text-xl);
-  font-weight: var(--font-normal);
-  line-height: var(--leading-loose);
-  letter-spacing: var(--tracking-normal);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'kern' 1, 'liga' 1;
@@ -57,7 +87,8 @@ body {
   flex-direction: column;
   flex: 1;
   position: relative;
-  background-color: #f5f5f5;
+  background-color: var(--background);
+  color: var(--foreground);
   height: 100vh;
   width: 100vw;
   margin: 0;
@@ -71,72 +102,72 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
+  color: var(--foreground);
   text-wrap: balance;
+  margin: 0;
 }
 
 h1,
 h2,
 h3,
 h4 {
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-weight-semibold);
 }
 
 h5,
 h6 {
-  font-weight: var(--font-medium);
+  font-weight: var(--font-weight-medium);
 }
 
 h1 {
-  font-size: var(--text-4xl);
-  letter-spacing: var(--tracking-tighter);
-  line-height: var(--leading-tight);
+  font-size: var(--font-size-h1);
+  letter-spacing: var(--letter-spacing-h1);
+  line-height: var(--line-height-h1);
   font-variation-settings: 'opsz' 144, 'WONK' 1;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-top: var(--h1-margin-top);
+  margin-bottom: var(--h1-margin-bottom);
 }
 
 h2 {
-  font-size: var(--text-3xl);
-  letter-spacing: var(--tracking-tight);
-  line-height: var(--leading-snug);
+  font-size: var(--font-size-h2);
+  letter-spacing: var(--letter-spacing-h2);
+  line-height: var(--line-height-h2);
   font-variation-settings: 'opsz' 72, 'WONK' 1;
-  margin-top: 3rem;
-  margin-bottom: 1rem;
+  margin-top: var(--h2-margin-top);
+  margin-bottom: var(--h2-margin-bottom);
 }
 
 h3 {
-  font-size: var(--text-2xl);
-  line-height: var(--leading-normal);
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-h3);
   font-variation-settings: 'opsz' 36, 'WONK' 0;
-  margin-top: 2.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: var(--h3-margin-top);
+  margin-bottom: var(--h3-margin-bottom);
 }
 
 h4 {
-  font-size: var(--text-xl);
-  line-height: var(--leading-relaxed);
+  font-size: var(--font-size-h4);
+  line-height: var(--line-height-h4);
   font-variation-settings: 'opsz' 24, 'WONK' 0;
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
+  margin-top: var(--h4-margin-top);
+  margin-bottom: var(--h4-margin-bottom);
 }
 
 h5 {
-  font-size: var(--text-sm);
-  line-height: var(--leading-loose);
-  font-weight: var(--font-medium);
+  font-size: var(--font-size-h5);
+  line-height: var(--line-height-h5);
   font-variation-settings: 'opsz' 12, 'WONK' 0;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: var(--h5-margin-top);
+  margin-bottom: var(--h5-margin-bottom);
 }
 
 h6 {
-  font-size: var(--text-sm);
-  line-height: var(--leading-loose);
-  font-weight: var(--font-medium);
+  font-size: var(--font-size-h6);
+  line-height: var(--line-height-h6);
   text-transform: uppercase;
   font-variation-settings: 'opsz' 12, 'WONK' 0;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: var(--h6-margin-top);
+  margin-bottom: var(--h6-margin-bottom);
 }
 
 ul,
@@ -173,10 +204,6 @@ ol {
 }
 
 @media (min-width: 640px) {
-  html {
-    font-size: 18px;
-  }
-
   body {
     padding-top: 3.5rem;
   }
