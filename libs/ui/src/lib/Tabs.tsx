@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 
 interface Tab {
   id: string;
@@ -14,6 +14,7 @@ interface TabsProps {
 
 export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+  const baseId = useId();
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -21,14 +22,21 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
   };
 
   const activeContent = tabs.find(tab => tab.id === activeTab)?.content;
+  const getTabId = (tabId: string) => `${baseId}-tab-${tabId}`;
+  const getPanelId = (tabId: string) => `${baseId}-panel-${tabId}`;
 
   return (
     <div className='w-full'>
       <div className='border-b border-border'>
-        <div className='flex gap-1 flex-wrap'>
+        <div role='tablist' className='flex gap-1 flex-wrap'>
           {tabs.map(tab => (
             <button
               key={tab.id}
+              id={getTabId(tab.id)}
+              role='tab'
+              aria-selected={activeTab === tab.id}
+              aria-controls={getPanelId(tab.id)}
+              tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => handleTabChange(tab.id)}
               className={`px-4 py-2.5 border-b-2 transition-colors ${
                 activeTab === tab.id
@@ -41,7 +49,15 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
           ))}
         </div>
       </div>
-      <div className='mt-4'>{activeContent}</div>
+      <div
+        id={getPanelId(activeTab)}
+        role='tabpanel'
+        aria-labelledby={getTabId(activeTab)}
+        tabIndex={0}
+        className='mt-4'
+      >
+        {activeContent}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -47,6 +47,8 @@ export function Modal({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
+  const titleId = useId();
+
   if (!isOpen) return null;
 
   const sizeStyles = {
@@ -73,27 +75,36 @@ export function Modal({
       <div
         className='absolute inset-0 bg-background/80 backdrop-blur-sm'
         onClick={onClose}
+        aria-hidden='true'
       />
       <div
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : 'Dialog'}
         className={`relative w-full ${sizeStyles[size]} ${variantStyles[variant]} rounded-lg shadow-2xl`}
       >
         {title && (
           <div className='flex items-center justify-between p-6 border-b border-border'>
-            <h3 className='mt-0 mb-0'>{title}</h3>
+            <h3 id={titleId} className='mt-0 mb-0'>
+              {title}
+            </h3>
             <button
               onClick={onClose}
+              aria-label='Close dialog'
               className='text-foreground-subtle hover:text-foreground transition-colors'
             >
-              <X className='w-5 h-5' />
+              <X className='w-5 h-5' aria-hidden='true' />
             </button>
           </div>
         )}
         {!title && (
           <button
             onClick={onClose}
+            aria-label='Close dialog'
             className='absolute top-4 right-4 text-foreground-subtle hover:text-foreground transition-colors'
           >
-            <X className='w-5 h-5' />
+            <X className='w-5 h-5' aria-hidden='true' />
           </button>
         )}
         <div className='p-6'>{children}</div>

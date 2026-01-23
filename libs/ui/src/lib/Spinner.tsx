@@ -1,9 +1,14 @@
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   variant?: 'accent' | 'success' | 'warning' | 'error' | 'info' | 'foreground';
+  'aria-label'?: string;
 }
 
-export function Spinner({ size = 'md', variant = 'accent' }: SpinnerProps) {
+export function Spinner({
+  size = 'md',
+  variant = 'accent',
+  'aria-label': ariaLabel = 'Loading',
+}: SpinnerProps) {
   const sizeStyles = {
     sm: 'w-4 h-4 border-2',
     md: 'w-8 h-8 border-2',
@@ -21,6 +26,8 @@ export function Spinner({ size = 'md', variant = 'accent' }: SpinnerProps) {
 
   return (
     <div
+      role='status'
+      aria-label={ariaLabel}
       className={`inline-block ${sizeStyles[size]} ${variantStyles[variant]} rounded-full animate-spin`}
     />
   );

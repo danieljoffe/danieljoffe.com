@@ -38,11 +38,16 @@ export function Alert({
   };
 
   const { container, icon: Icon } = variantStyles[variant];
+  const isUrgent = variant === 'error' || variant === 'warning';
 
   return (
-    <div className={`relative rounded-lg border p-4 ${container} ${className}`}>
+    <div
+      role={isUrgent ? 'alert' : 'status'}
+      aria-live={isUrgent ? 'assertive' : 'polite'}
+      className={`relative rounded-lg border p-4 ${container} ${className}`}
+    >
       <div className='flex gap-3'>
-        <Icon className='w-5 h-5 flex-shrink-0 mt-0.5' />
+        <Icon className='w-5 h-5 flex-shrink-0 mt-0.5' aria-hidden='true' />
         <div className='flex-1'>
           {title && <h5 className='mb-1 mt-0'>{title}</h5>}
           <div className='text-sm text-foreground-muted'>{children}</div>
@@ -50,9 +55,10 @@ export function Alert({
         {dismissible && (
           <button
             onClick={onDismiss}
+            aria-label='Dismiss alert'
             className='text-foreground-subtle hover:text-foreground transition-colors'
           >
-            <X className='w-4 h-4' />
+            <X className='w-4 h-4' aria-hidden='true' />
           </button>
         )}
       </div>

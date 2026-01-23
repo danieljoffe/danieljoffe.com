@@ -5,6 +5,7 @@ interface ProgressBarProps {
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   className?: string;
+  'aria-label'?: string;
 }
 
 export function ProgressBar({
@@ -14,6 +15,7 @@ export function ProgressBar({
   size = 'md',
   showLabel = false,
   className = '',
+  'aria-label': ariaLabel = 'Progress',
 }: ProgressBarProps) {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
@@ -34,6 +36,11 @@ export function ProgressBar({
   return (
     <div className='w-full'>
       <div
+        role='progressbar'
+        aria-valuenow={Math.round(percentage)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={ariaLabel}
         className={`w-full bg-background-elevated rounded-full overflow-hidden ${sizeStyles[size]} ${className}`}
       >
         <div
@@ -42,7 +49,10 @@ export function ProgressBar({
         />
       </div>
       {showLabel && (
-        <p className='mt-1.5 text-sm text-foreground-muted text-right'>
+        <p
+          className='mt-1.5 text-sm text-foreground-muted text-right'
+          aria-hidden='true'
+        >
           {Math.round(percentage)}%
         </p>
       )}
