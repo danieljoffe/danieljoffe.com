@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from '@storybook/test';
 import { Button } from './Button';
 
 const meta: Meta<typeof Button> = {
@@ -82,5 +83,56 @@ export const Large: Story = {
     variant: 'primary',
     size: 'lg',
     children: 'Large',
+  },
+};
+
+export const ClickInteraction: Story = {
+  args: {
+    children: 'Click me',
+    onClick: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button', { name: 'Click me' });
+
+    await userEvent.click(button);
+
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const DisabledInteraction: Story = {
+  args: {
+    children: 'Disabled Button',
+    disabled: true,
+    onClick: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button', { name: 'Disabled Button' });
+
+    await expect(button).toBeDisabled();
+    await userEvent.click(button);
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
+};
+
+export const KeyboardInteraction: Story = {
+  args: {
+    children: 'Press Enter',
+    onClick: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button', { name: 'Press Enter' });
+
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+
+    await userEvent.keyboard(' ');
+    await expect(args.onClick).toHaveBeenCalledTimes(2);
   },
 };

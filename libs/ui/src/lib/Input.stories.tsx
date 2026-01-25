@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from '@storybook/test';
 import { Input } from './Input';
 
 const meta: Meta<typeof Input> = {
@@ -59,5 +60,68 @@ export const WithError: Story = {
     label: 'Username',
     error: 'Username is already taken',
     defaultValue: 'johndoe',
+  },
+};
+
+export const TypingInteraction: Story = {
+  args: {
+    label: 'Name',
+    placeholder: 'Enter your name',
+    onChange: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('textbox');
+
+    await userEvent.type(input, 'John Doe');
+
+    await expect(input).toHaveValue('John Doe');
+    await expect(args.onChange).toHaveBeenCalled();
+  },
+};
+
+export const FocusInteraction: Story = {
+  args: {
+    label: 'Focus me',
+    placeholder: 'Tab to focus',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('textbox');
+
+    await userEvent.tab();
+    await expect(input).toHaveFocus();
+  },
+};
+
+export const LabelClickFocuses: Story = {
+  args: {
+    label: 'Click my label',
+    placeholder: 'Input will focus',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const label = canvas.getByText('Click my label');
+    const input = canvas.getByRole('textbox');
+
+    await userEvent.click(label);
+    await expect(input).toHaveFocus();
+  },
+};
+
+export const ErrorAccessibility: Story = {
+  args: {
+    label: 'Invalid Field',
+    error: 'This field has an error',
+    defaultValue: 'invalid',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('textbox');
+    const errorMessage = canvas.getByRole('alert');
+
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAttribute('aria-describedby');
+    await expect(errorMessage).toBeInTheDocument();
   },
 };

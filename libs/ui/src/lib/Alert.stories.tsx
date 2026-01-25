@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from '@storybook/test';
 import { Alert } from './Alert';
 
 const meta: Meta<typeof Alert> = {
@@ -71,5 +72,52 @@ export const Error: Story = {
     variant: 'error',
     title: 'Error',
     dismissible: true,
+  },
+};
+
+export const DismissInteraction: Story = {
+  args: {
+    children: 'Click the X to dismiss this alert.',
+    variant: 'info',
+    title: 'Dismissible',
+    dismissible: true,
+    onDismiss: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const dismissButton = canvas.getByRole('button', { name: 'Dismiss alert' });
+
+    await userEvent.click(dismissButton);
+    await expect(args.onDismiss).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const UrgentAlertRole: Story = {
+  args: {
+    children: 'This is an urgent error message.',
+    variant: 'error',
+    title: 'Critical Error',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const alert = canvas.getByRole('alert');
+
+    await expect(alert).toBeInTheDocument();
+    await expect(alert).toHaveAttribute('aria-live', 'assertive');
+  },
+};
+
+export const StatusAlertRole: Story = {
+  args: {
+    children: 'This is an informational message.',
+    variant: 'info',
+    title: 'Information',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const status = canvas.getByRole('status');
+
+    await expect(status).toBeInTheDocument();
+    await expect(status).toHaveAttribute('aria-live', 'polite');
   },
 };
