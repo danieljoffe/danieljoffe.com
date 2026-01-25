@@ -1,17 +1,32 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Card } from './Card';
 
-const meta = {
+const meta: Meta<typeof Card> = {
+  title: 'Components/Card',
   component: Card,
-  title: 'Card',
+  tags: ['autodocs'],
   argTypes: {
-    elevated: { control: 'boolean' },
+    elevated: {
+      description: 'Adds elevated shadow effect',
+      control: 'boolean',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
     padding: {
+      description: 'Padding size inside the card',
       control: 'select',
       options: [undefined, 'none', 'sm', 'md', 'lg'],
+      table: {
+        defaultValue: { summary: 'md' },
+      },
+    },
+    children: {
+      description: 'Card content',
+      control: 'text',
     },
   },
-} satisfies Meta<typeof Card>;
+};
 export default meta;
 
 type Story = StoryObj<typeof Card>;

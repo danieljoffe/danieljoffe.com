@@ -1,10 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Spinner } from './Spinner';
 
-const meta = {
+const meta: Meta<typeof Spinner> = {
+  title: 'Components/Spinner',
   component: Spinner,
-  title: 'Spinner',
-} satisfies Meta<typeof Spinner>;
+  tags: ['autodocs'],
+  argTypes: {
+    size: {
+      description: 'Size of the spinner',
+      control: 'select',
+      options: [undefined, 'sm', 'md', 'lg'],
+      table: {
+        defaultValue: { summary: 'md' },
+      },
+    },
+    variant: {
+      description: 'Color variant of the spinner',
+      control: 'select',
+      options: [undefined, 'accent', 'success', 'warning', 'error', 'info'],
+      table: {
+        defaultValue: { summary: 'accent' },
+      },
+    },
+  },
+};
 export default meta;
 
 type Story = StoryObj<typeof Spinner>;

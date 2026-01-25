@@ -1,10 +1,47 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ProgressBar } from './ProgressBar';
 
-const meta = {
+const meta: Meta<typeof ProgressBar> = {
+  title: 'Components/ProgressBar',
   component: ProgressBar,
-  title: 'ProgressBar',
-} satisfies Meta<typeof ProgressBar>;
+  tags: ['autodocs'],
+  argTypes: {
+    value: {
+      description: 'Current progress value',
+      control: 'number',
+    },
+    max: {
+      description: 'Maximum progress value',
+      control: 'number',
+      table: {
+        defaultValue: { summary: '100' },
+      },
+    },
+    variant: {
+      description: 'Color variant of the progress bar',
+      control: 'select',
+      options: [undefined, 'accent', 'success', 'warning', 'error', 'info'],
+      table: {
+        defaultValue: { summary: 'accent' },
+      },
+    },
+    size: {
+      description: 'Height of the progress bar',
+      control: 'select',
+      options: [undefined, 'sm', 'md', 'lg'],
+      table: {
+        defaultValue: { summary: 'md' },
+      },
+    },
+    showLabel: {
+      description: 'Display percentage label',
+      control: 'boolean',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+  },
+};
 export default meta;
 
 type Story = StoryObj<typeof ProgressBar>;

@@ -1,10 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { CardContent } from './Card';
 
-const meta = {
+const meta: Meta<typeof CardContent> = {
+  title: 'Components/Card/CardContent',
   component: CardContent,
-  title: 'CardContent',
-} satisfies Meta<typeof CardContent>;
+  tags: ['autodocs'],
+  argTypes: {
+    children: {
+      description: 'Content area of the card',
+      control: 'text',
+    },
+  },
+};
 export default meta;
 
 type Story = StoryObj<typeof CardContent>;

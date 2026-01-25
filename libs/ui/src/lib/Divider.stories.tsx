@@ -1,16 +1,25 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Divider } from './Divider';
 
-const meta = {
+const meta: Meta<typeof Divider> = {
+  title: 'Layout/Divider',
   component: Divider,
-  title: 'Divider',
+  tags: ['autodocs'],
   argTypes: {
     orientation: {
+      description: 'Direction of the divider line',
       control: 'select',
       options: [undefined, 'horizontal', 'vertical'],
+      table: {
+        defaultValue: { summary: 'horizontal' },
+      },
+    },
+    label: {
+      description: 'Optional text label displayed in the center',
+      control: 'text',
     },
   },
-} satisfies Meta<typeof Divider>;
+};
 export default meta;
 
 type Story = StoryObj<typeof Divider>;
