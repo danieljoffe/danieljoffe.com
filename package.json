@@ -75,6 +75,7 @@
     "@nx/workspace": "21.5.2",
     "@playwright/test": "^1.55.0",
     "@storybook/nextjs": "9.1.4",
+    "@storybook/react-vite": "9.1.4",
     "@swc-node/register": "~1.11.1",
     "@swc/cli": "~0.7.8",
     "@swc/core": "~1.13.5",
