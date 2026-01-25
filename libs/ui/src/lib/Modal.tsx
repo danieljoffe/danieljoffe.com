@@ -1,15 +1,44 @@
-import React, { useEffect, useId } from 'react';
+import { useEffect, useId, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
-interface ModalProps {
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
+type ModalVariant =
+  | 'default'
+  | 'accent'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info';
+
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  footer?: React.ReactNode;
-  variant?: 'default' | 'accent' | 'success' | 'warning' | 'error' | 'info';
+  children: ReactNode;
+  size?: ModalSize;
+  footer?: ReactNode;
+  variant?: ModalVariant;
 }
+
+const sizeStyles: Record<ModalSize, string> = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+};
+
+const variantStyles: Record<ModalVariant, string> = {
+  default: 'bg-background-elevated border border-border-strong',
+  accent:
+    'bg-background-elevated border-l-4 border-l-accent border border-border-strong',
+  success:
+    'bg-background-elevated border-l-4 border-l-success border border-border-strong',
+  warning:
+    'bg-background-elevated border-l-4 border-l-warning border border-border-strong',
+  error:
+    'bg-background-elevated border-l-4 border-l-error border border-border-strong',
+  info: 'bg-background-elevated border-l-4 border-l-info border border-border-strong',
+};
 
 export function Modal({
   isOpen,
@@ -50,25 +79,6 @@ export function Modal({
   const titleId = useId();
 
   if (!isOpen) return null;
-
-  const sizeStyles = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-  };
-  const variantStyles = {
-    default: 'bg-background-elevated border border-border-strong',
-    accent:
-      'bg-background-elevated border-l-4 border-l-accent border border-border-strong',
-    success:
-      'bg-background-elevated border-l-4 border-l-success border border-border-strong',
-    warning:
-      'bg-background-elevated border-l-4 border-l-warning border border-border-strong',
-    error:
-      'bg-background-elevated border-l-4 border-l-error border border-border-strong',
-    info: 'bg-background-elevated border-l-4 border-l-info border border-border-strong',
-  };
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>

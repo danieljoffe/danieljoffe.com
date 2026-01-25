@@ -1,10 +1,15 @@
-import React from 'react';
+import type { SelectHTMLAttributes } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: { value: string; label: string }[];
+  options: SelectOption[];
 }
 
 export function Select({

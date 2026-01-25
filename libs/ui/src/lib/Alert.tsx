@@ -1,14 +1,38 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react';
 
-interface AlertProps {
-  children: React.ReactNode;
-  variant?: 'info' | 'success' | 'warning' | 'error';
+type AlertVariant = 'info' | 'success' | 'warning' | 'error';
+
+export interface AlertProps {
+  children: ReactNode;
+  variant?: AlertVariant;
   title?: string;
   dismissible?: boolean;
   onDismiss?: () => void;
   className?: string;
 }
+
+const variantStyles: Record<
+  AlertVariant,
+  { container: string; icon: typeof Info }
+> = {
+  info: {
+    container: 'bg-info-muted border-info/30 text-info',
+    icon: Info,
+  },
+  success: {
+    container: 'bg-success-muted border-success/30 text-success',
+    icon: CheckCircle,
+  },
+  warning: {
+    container: 'bg-warning-muted border-warning/30 text-warning',
+    icon: AlertTriangle,
+  },
+  error: {
+    container: 'bg-error-muted border-error/30 text-error',
+    icon: AlertCircle,
+  },
+};
 
 export function Alert({
   children,
@@ -18,25 +42,6 @@ export function Alert({
   onDismiss,
   className = '',
 }: AlertProps) {
-  const variantStyles = {
-    info: {
-      container: 'bg-info-muted border-info/30 text-info',
-      icon: Info,
-    },
-    success: {
-      container: 'bg-success-muted border-success/30 text-success',
-      icon: CheckCircle,
-    },
-    warning: {
-      container: 'bg-warning-muted border-warning/30 text-warning',
-      icon: AlertTriangle,
-    },
-    error: {
-      container: 'bg-error-muted border-error/30 text-error',
-      icon: AlertCircle,
-    },
-  };
-
   const { container, icon: Icon } = variantStyles[variant];
   const isUrgent = variant === 'error' || variant === 'warning';
 

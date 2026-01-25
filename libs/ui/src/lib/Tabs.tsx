@@ -1,12 +1,12 @@
-import React, { useState, useId } from 'react';
+import { useState, useId, useCallback, type ReactNode } from 'react';
 
-interface Tab {
+export interface Tab {
   id: string;
   label: string;
-  content: React.ReactNode;
+  content: ReactNode;
 }
 
-interface TabsProps {
+export interface TabsProps {
   tabs: Tab[];
   defaultTab?: string;
   onChange?: (tabId: string) => void;
@@ -16,14 +16,23 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
   const baseId = useId();
 
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
-    onChange?.(tabId);
-  };
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      setActiveTab(tabId);
+      onChange?.(tabId);
+    },
+    [onChange]
+  );
 
   const activeContent = tabs.find(tab => tab.id === activeTab)?.content;
-  const getTabId = (tabId: string) => `${baseId}-tab-${tabId}`;
-  const getPanelId = (tabId: string) => `${baseId}-panel-${tabId}`;
+  const getTabId = useCallback(
+    (tabId: string) => `${baseId}-tab-${tabId}`,
+    [baseId]
+  );
+  const getPanelId = useCallback(
+    (tabId: string) => `${baseId}-panel-${tabId}`,
+    [baseId]
+  );
 
   return (
     <div className='w-full'>

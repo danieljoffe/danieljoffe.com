@@ -1,5 +1,7 @@
-interface DividerProps {
-  orientation?: 'horizontal' | 'vertical';
+type DividerOrientation = 'horizontal' | 'vertical';
+
+export interface DividerProps {
+  orientation?: DividerOrientation;
   className?: string;
   label?: string;
 }

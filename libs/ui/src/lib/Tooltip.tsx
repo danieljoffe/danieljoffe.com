@@ -1,11 +1,26 @@
-import React, { useState, useRef, useCallback } from 'react';
+import {
+  useState,
+  useRef,
+  useCallback,
+  type ReactNode,
+  type KeyboardEvent,
+} from 'react';
 
-interface TooltipProps {
+type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+
+export interface TooltipProps {
   content: string;
-  children: React.ReactNode;
-  position?: 'top' | 'bottom' | 'left' | 'right';
+  children: ReactNode;
+  position?: TooltipPosition;
   delay?: number;
 }
+
+const positionStyles: Record<TooltipPosition, string> = {
+  top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+  bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
+  left: 'right-full top-1/2 -translate-y-1/2 mr-2',
+  right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+};
 
 export function Tooltip({
   content,
@@ -15,13 +30,6 @@ export function Tooltip({
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const positionStyles = {
-    top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
-    bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
-    left: 'right-full top-1/2 -translate-y-1/2 mr-2',
-    right: 'left-full top-1/2 -translate-y-1/2 ml-2',
-  };
 
   const showTooltip = useCallback(() => {
     timeoutRef.current = setTimeout(() => {
@@ -38,7 +46,7 @@ export function Tooltip({
   }, []);
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+    (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         hideTooltip();
       }

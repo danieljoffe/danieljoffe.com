@@ -1,12 +1,29 @@
-interface ProgressBarProps {
+type ProgressBarVariant = 'accent' | 'success' | 'warning' | 'error' | 'info';
+type ProgressBarSize = 'sm' | 'md' | 'lg';
+
+export interface ProgressBarProps {
   value: number;
   max?: number;
-  variant?: 'accent' | 'success' | 'warning' | 'error' | 'info';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: ProgressBarVariant;
+  size?: ProgressBarSize;
   showLabel?: boolean;
   className?: string;
   'aria-label'?: string;
 }
+
+const variantStyles: Record<ProgressBarVariant, string> = {
+  accent: 'bg-accent',
+  success: 'bg-success',
+  warning: 'bg-warning',
+  error: 'bg-error',
+  info: 'bg-info',
+};
+
+const sizeStyles: Record<ProgressBarSize, string> = {
+  sm: 'h-1',
+  md: 'h-2',
+  lg: 'h-3',
+};
 
 export function ProgressBar({
   value,
@@ -18,20 +35,6 @@ export function ProgressBar({
   'aria-label': ariaLabel = 'Progress',
 }: ProgressBarProps) {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
-
-  const variantStyles = {
-    accent: 'bg-accent',
-    success: 'bg-success',
-    warning: 'bg-warning',
-    error: 'bg-error',
-    info: 'bg-info',
-  };
-
-  const sizeStyles = {
-    sm: 'h-1',
-    md: 'h-2',
-    lg: 'h-3',
-  };
 
   return (
     <div className='w-full'>
