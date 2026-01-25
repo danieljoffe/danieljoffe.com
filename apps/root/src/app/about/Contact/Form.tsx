@@ -10,10 +10,8 @@ import { formSchema } from '@/app/api/email/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Stack } from '@danieljoffe.com/ui';
+import { Stack, Input, Textarea, Loading } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
-import TextInput from '@/components/TextInput';
-import Loading from '@/components/Loading';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -120,7 +118,7 @@ export default function Form() {
       <fieldset>
         <legend className='sr-only'>Contact Information</legend>
         <Stack direction='vertical' gap='md'>
-          <TextInput
+          <Input
             className='text-neutral-900 placeholder-neutral-800'
             placeholder='John Doe'
             type='text'
@@ -132,7 +130,7 @@ export default function Form() {
             aria-describedby={errors?.name?.message ? 'name-error' : undefined}
           />
 
-          <TextInput
+          <Input
             className='text-neutral-900 placeholder-neutral-800'
             label='Email'
             placeholder='john.doe@example.com'
@@ -146,11 +144,10 @@ export default function Form() {
             }
           />
 
-          <TextInput
+          <Textarea
             className='text-neutral-900 placeholder-neutral-800'
             label='Message'
             placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
-            as='textarea'
             autoComplete='off'
             required={true}
             {...register('message')}
@@ -164,7 +161,7 @@ export default function Form() {
 
       {/* Honeypot field for spam protection */}
       <div className='absolute top-0 left-0 w-0 h-0 pointer-events-none -z-1 hidden'>
-        <TextInput
+        <Input
           name='address'
           label='Address'
           placeholder='1234 Main St, Anytown, USA'

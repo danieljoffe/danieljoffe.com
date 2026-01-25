@@ -1,51 +1,54 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-heading: 'Fraunces', 'Fraunces Fallback', Georgia, 'Times New Roman', serif;
-  --font-body: 'Space Grotesk', 'Space Grotesk Fallback', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', Consolas, Monaco, monospace;
-  
+  --font-heading: 'Fraunces', 'Fraunces Fallback', Georgia, 'Times New Roman',
+    serif;
+  --font-body: 'Space Grotesk', 'Space Grotesk Fallback', system-ui,
+    -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', Consolas, Monaco,
+    monospace;
+
   /* Color System - Light Mode (Default) */
-  --background: #FDFBF7;
-  --background-alt: #F5F3EE;
-  --background-elevated: #FFFFFF;
-  --foreground: #1A1A1A;
-  --foreground-muted: #6B6B6B;
-  --foreground-subtle: #9A9A9A;
-  
-  --accent: #6B5B95;
-  --accent-hover: #574A7A;
-  --accent-active: #453B62;
-  --accent-muted: #EEEAF4;
-  --accent-foreground: #FDFBF7;
-  
-  --border: #E5E2DA;
-  --border-strong: #D0CCC2;
-  
-  --success: #2D6A4F;
-  --success-muted: #E8F5EE;
-  --success-foreground: #FDFBF7;
-  
-  --warning: #8B7425;
-  --warning-muted: #F5F0E0;
-  --warning-foreground: #FDFBF7;
-  
-  --error: #B54332;
-  --error-muted: #FCEEED;
-  --error-foreground: #FDFBF7;
-  
-  --info: #2B6B8A;
-  --info-muted: #E8F2F7;
-  --info-foreground: #FDFBF7;
-  
-  --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
-  
-  --input: #FFFFFF;
-  --input-border: #D0CCC2;
-  
-  --ring: #6B5B95;
-  
+  --background: #fdfbf7;
+  --background-alt: #f5f3ee;
+  --background-elevated: #ffffff;
+  --foreground: #1a1a1a;
+  --foreground-muted: #6b6b6b;
+  --foreground-subtle: #9a9a9a;
+
+  --accent: #6b5b95;
+  --accent-hover: #574a7a;
+  --accent-active: #453b62;
+  --accent-muted: #eeeaf4;
+  --accent-foreground: #fdfbf7;
+
+  --border: #e5e2da;
+  --border-strong: #d0ccc2;
+
+  --success: #2d6a4f;
+  --success-muted: #e8f5ee;
+  --success-foreground: #fdfbf7;
+
+  --warning: #8b7425;
+  --warning-muted: #f5f0e0;
+  --warning-foreground: #fdfbf7;
+
+  --error: #b54332;
+  --error-muted: #fceeed;
+  --error-foreground: #fdfbf7;
+
+  --info: #2b6b8a;
+  --info-muted: #e8f2f7;
+  --info-foreground: #fdfbf7;
+
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+
+  --input: #ffffff;
+  --input-border: #d0ccc2;
+
+  --ring: #6b5b95;
+
   /* Typography Tokens */
   --font-size-base: 1.0625rem;
   --font-size-h1: clamp(2rem, 3vw + 1rem, 2.75rem);
@@ -55,7 +58,7 @@
   --font-size-h5: 0.875rem;
   --font-size-h6: 0.875rem;
   --font-size-code: 0.9375rem;
-  
+
   --line-height-base: 1.6;
   --line-height-h1: 1.2;
   --line-height-h2: 1.25;
@@ -64,14 +67,14 @@
   --line-height-h5: 1.5;
   --line-height-h6: 1.5;
   --line-height-code: 1.5;
-  
+
   --letter-spacing-h1: -0.02em;
   --letter-spacing-h2: -0.01em;
-  
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
-  
+
   /* Spacing for Typography */
   --h1-margin-top: 0;
   --h1-margin-bottom: 1.5rem;
@@ -85,7 +88,7 @@
   --h5-margin-bottom: 0.5rem;
   --h6-margin-top: 1.5rem;
   --h6-margin-bottom: 0.5rem;
-  
+
   /* Radius */
   --radius: 0.25rem;
 }
@@ -93,44 +96,44 @@
 /* Dark Mode */
 .dark {
   --background: #141517;
-  --background-alt: #1E2023;
-  --background-elevated: #262A2E;
-  --foreground: #F5F4F1;
-  --foreground-muted: #9A9B9E;
-  --foreground-subtle: #6B6D70;
-  
-  --accent: #A99BC8;
-  --accent-hover: #BDB0D6;
-  --accent-active: #9588B5;
+  --background-alt: #1e2023;
+  --background-elevated: #262a2e;
+  --foreground: #f5f4f1;
+  --foreground-muted: #9a9b9e;
+  --foreground-subtle: #6b6d70;
+
+  --accent: #a99bc8;
+  --accent-hover: #bdb0d6;
+  --accent-active: #9588b5;
   --accent-muted: #252330;
   --accent-foreground: #141517;
-  
-  --border: #2A2C2F;
-  --border-strong: #3A3D42;
-  
-  --success: #5DB87D;
-  --success-muted: #1A2E22;
+
+  --border: #2a2c2f;
+  --border-strong: #3a3d42;
+
+  --success: #5db87d;
+  --success-muted: #1a2e22;
   --success-foreground: #141517;
-  
-  --warning: #D4A84B;
-  --warning-muted: #2E2921;
+
+  --warning: #d4a84b;
+  --warning-muted: #2e2921;
   --warning-foreground: #141517;
-  
-  --error: #E07A6B;
-  --error-muted: #2E1F1D;
+
+  --error: #e07a6b;
+  --error-muted: #2e1f1d;
   --error-foreground: #141517;
-  
-  --info: #6BA8D4;
-  --info-muted: #1D252E;
+
+  --info: #6ba8d4;
+  --info-muted: #1d252e;
   --info-foreground: #141517;
-  
-  --card: #1E2023;
-  --card-foreground: #F5F4F1;
-  
-  --input: #262A2E;
-  --input-border: #3A3D42;
-  
-  --ring: #A99BC8;
+
+  --card: #1e2023;
+  --card-foreground: #f5f4f1;
+
+  --input: #262a2e;
+  --input-border: #3a3d42;
+
+  --ring: #a99bc8;
 }
 
 @theme inline {
@@ -140,40 +143,40 @@
   --color-foreground: var(--foreground);
   --color-foreground-muted: var(--foreground-muted);
   --color-foreground-subtle: var(--foreground-subtle);
-  
+
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-active: var(--accent-active);
   --color-accent-muted: var(--accent-muted);
   --color-accent-foreground: var(--accent-foreground);
-  
+
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
-  
+
   --color-success: var(--success);
   --color-success-muted: var(--success-muted);
   --color-success-foreground: var(--success-foreground);
-  
+
   --color-warning: var(--warning);
   --color-warning-muted: var(--warning-muted);
   --color-warning-foreground: var(--warning-foreground);
-  
+
   --color-error: var(--error);
   --color-error-muted: var(--error-muted);
   --color-error-foreground: var(--error-foreground);
-  
+
   --color-info: var(--info);
   --color-info-muted: var(--info-muted);
   --color-info-foreground: var(--info-foreground);
-  
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  
+
   --color-input: var(--input);
   --color-input-border: var(--input-border);
-  
+
   --color-ring: var(--ring);
-  
+
   --radius-sm: calc(var(--radius) - 0.5rem);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 0.125rem);
@@ -199,7 +202,12 @@
     font-weight: var(--font-weight-normal);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading);
     color: var(--color-foreground);
     margin: 0;

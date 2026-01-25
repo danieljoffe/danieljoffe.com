@@ -1,11 +1,9 @@
-import { Stack } from '@danieljoffe.com/ui';
-import Container from '@/components/Container';
-import Section from '@/components/Section';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 
 export default function Mantra() {
   return (
-    <Section ariaLabelBy='mantra-heading'>
-      <Container>
+    <Section aria-labelledby='mantra-heading' className='min-h-min max-h-max'>
+      <PageContainer>
         <h2 id='mantra-heading'>Mantra</h2>
         <p>
           I&apos;m driven by the challenge of making complex systems simple and
@@ -80,7 +78,7 @@ export default function Mantra() {
           on technical growth, but on becoming the kind of engineer who makes
           everyone around them more effective.
         </p>
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

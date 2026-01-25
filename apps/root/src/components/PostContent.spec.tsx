@@ -15,13 +15,14 @@ describe('PostContent', () => {
   });
 
   test('wraps content in Container component', () => {
-    render(
+    const { container } = render(
       <PostContent>
         <p>Content</p>
       </PostContent>
     );
-    const container = screen.getByTestId('container-outer');
-    expect(container).toBeInTheDocument();
+    // Container applies max-w-3xl (sm size) and centering styles
+    const containerElement = container.firstChild;
+    expect(containerElement).toHaveClass('mx-auto', 'max-w-3xl');
   });
 
   test('applies prose typography classes', () => {

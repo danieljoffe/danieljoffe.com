@@ -1,22 +1,23 @@
 'use client';
 
-import Container from '@/components/Container';
 import Image from 'next/image';
 import LinkHint from '@/components/LinkHint';
 import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 import { analytics } from '@/lib/analytics';
 import { EXPERIENCE_LINK } from '@/utils/base';
-import { Stack } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import ContentGrid from '@/components/ContentGrid';
-import Section from '@/components/Section';
 
 const companies = Object.values(experienceFull);
 
 export default function PreviousTeams() {
   return (
-    <Section ariaLabelBy='previous-teams-heading'>
-      <Container>
+    <Section
+      aria-labelledby='previous-teams-heading'
+      className='min-h-min max-h-max'
+    >
+      <PageContainer>
         <h2 className='text-center' id='previous-teams-heading'>
           Teams I&apos;ve worked with
         </h2>
@@ -65,7 +66,7 @@ export default function PreviousTeams() {
             inclusive digital experiences.
           </p>
         </Stack>
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

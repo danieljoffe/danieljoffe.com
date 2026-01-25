@@ -1,4 +1,4 @@
-import Container from '@/components/Container';
+import { PageContainer } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
 import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/base';
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <Container>
+    <PageContainer>
       <div className='flex flex-col items-center justify-center gap-6 min-h-[60vh] text-center'>
         <div>
           <h1 className='text-6xl font-bold mb-4 text-neutral-600'>404</h1>
@@ -37,6 +37,6 @@ export default function NotFound() {
           Back to Home
         </Button>
       </div>
-    </Container>
+    </PageContainer>
   );
 }

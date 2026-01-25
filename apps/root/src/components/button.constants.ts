@@ -4,49 +4,50 @@ import {
   ButtonVariant,
 } from './button.types';
 
+// Uses UI library semantic color tokens for consistent theming
 export const buttonBaseStyles = [
   'flex inline-flex items-center justify-center',
-  'font-sans font-bold border-transparent rounded',
-  'transition-colors duration-400 ease-in-out',
-  'focus:outline-none focus-visible:ring-2',
-  'focus-visible:ring-offset-2 border-2',
-  'disabled:bg-neutral-100 disabled:text-neutral-500 disabled:border-neutral-200',
+  'font-sans font-bold border-transparent rounded-md',
+  'transition-all duration-200 ease-in-out',
+  'focus:outline-none focus:ring-2',
+  'focus:ring-offset-2 focus:ring-offset-background border-2',
+  'disabled:opacity-50 disabled:cursor-not-allowed',
 ].join(' ');
 
 export const buttonVariantStyles: Record<ButtonVariant, string> = {
   default: 'bg-transparent',
   primary: [
-    'bg-blue-500 text-white',
-    'hover:bg-blue-600 active:border-blue-900',
-    'focus-visible:ring-blue-500 ',
+    'bg-accent text-accent-foreground',
+    'hover:bg-accent-hover active:bg-accent-active',
+    'focus:ring-accent',
   ].join(' '),
   secondary: [
-    'bg-neutral-100 border-neutral-200 text-neutral-900',
-    'hover:border-neutral-600',
-    'active:bg-neutral-200 active:border-neutral-600',
-    'focus-visible:ring-neutral-600',
+    'bg-background-elevated border-border text-foreground',
+    'hover:border-border-strong hover:bg-border-strong',
+    'active:bg-background-alt',
+    'focus:ring-accent',
   ].join(' '),
   icon: [
-    'border-neutral-100 p-2 rounded-full',
-    'hover:border-neutral-200 active:border-neutral-400',
-    'focus-visible:ring-neutral-200',
+    'border-border p-2 rounded-full',
+    'hover:border-border-strong active:bg-background-elevated',
+    'focus:ring-accent',
     'p-2 w-10 h-10 min-w-[1.25rem]',
   ].join(' '),
   link: [
-    'hover:text-blue-600 hover:underline hover:underline-offset-4',
-    'active:text-blue-700',
+    'text-foreground hover:text-accent hover:underline hover:underline-offset-4',
+    'active:text-accent-active',
   ].join(' '),
 };
 
 export const buttonStateStyles: Record<keyof ButtonStateInterface, string> = {
   enabled: 'cursor-pointer hover:cursor-pointer',
-  disabled: 'cursor-not-allowed opacity-60 hover:cursor-not-allowed',
+  disabled: 'cursor-not-allowed opacity-50 hover:cursor-not-allowed',
   highlighted: '',
 };
 
 export const buttonLinkStyles: Record<keyof ButtonStateInterface, string> = {
   ...buttonStateStyles,
-  highlighted: 'text-blue-500 underline underline-offset-4',
+  highlighted: 'text-accent underline underline-offset-4',
 };
 
 export const buttonSizeStyles: Record<ButtonSize, string> = {

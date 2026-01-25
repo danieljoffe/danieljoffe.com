@@ -1,15 +1,13 @@
-import { Card, Stack } from '@danieljoffe.com/ui';
-import Container from '@/components/Container';
-import Section from '@/components/Section';
+import { Card, Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import { offerings } from '@/utils/offerings';
 
 export default function Achievements() {
   return (
     <Section
-      ariaLabelBy='achievements-heading'
-      className='bg-neutral-900 text-white'
+      aria-labelledby='achievements-heading'
+      className='min-h-min max-h-max bg-neutral-900 text-white'
     >
-      <Container>
+      <PageContainer>
         <Stack direction='vertical' gap='lg' align='center'>
           <h2 className='text-center' id='achievements-heading'>
             My Achievements
@@ -30,7 +28,7 @@ export default function Achievements() {
             </Card>
           ))}
         </Stack>
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

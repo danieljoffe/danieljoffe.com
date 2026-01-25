@@ -35,24 +35,27 @@ Sound familiar? Just as at Winc, marketing relied on engineering for content upd
 
 I attacked each root cause systematically:
 
-*Images:*
+_Images:_
+
 - Built a centralized image component with viewport-dependent srcset
 - Integrated with Storyblok CMS + fallback providers
 - Added lazy loading via Intersection Observer
 - Served device-appropriate quality and dimensions
 
-*Video:*
+_Video:_
+
 - Manually optimized video assets, creating multiple quality tiers
 - Reduced file sizes from 500-800 MB to \<300 MB (MP4) / \<150 MB (WebM)
 - Built a lazy-load video component that deferred download until near-viewport
 
-*Bundle:*
+_Bundle:_
+
 - Removed duplicate libraries
 - Tailored Nuxt.js build configuration
 - Streamlined task chaining
 - Reduced bundle from ~725 KB to ~275 KB
 
-*Discovery:*
+_Discovery:_
 While debugging, I found that the Vue store alone caused a 20-point Lighthouse impact. Without the store loaded, scores jumped to 98-99. (We didn't remove it; the functionality was needed, but it explained the ceiling.)
 
 **Storyblok CMS Migration**

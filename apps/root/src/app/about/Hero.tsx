@@ -1,8 +1,6 @@
 'use client';
 import Button from '@/components/Button';
-import Container from '@/components/Container';
-import Section from '@/components/Section';
-import { Stack } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
@@ -13,8 +11,11 @@ import Image from 'next/image';
 
 export default function Hero() {
   return (
-    <Section ariaLabelBy='about-me-name' className='bg-neutral-900 text-white'>
-      <Container>
+    <Section
+      aria-labelledby='about-me-name'
+      className='min-h-min max-h-max bg-neutral-900 text-white'
+    >
+      <PageContainer>
         <h1 className='text-center'>About Me</h1>
         <Stack direction='vertical' gap='md' className='md:flex-row md:gap-8'>
           <Stack
@@ -137,7 +138,7 @@ export default function Hero() {
             </Stack>
           </Stack>
         </Stack>
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

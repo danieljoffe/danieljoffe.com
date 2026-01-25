@@ -1,13 +1,14 @@
-import { Stack } from '@danieljoffe.com/ui';
-import Container from '@/components/Container';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import ContentGrid from '@/components/ContentGrid';
-import Section from '@/components/Section';
 import { offerings } from '@/utils/offerings';
 
 export default function Methodologies() {
   return (
-    <Section ariaLabelBy='methodologies-heading'>
-      <Container>
+    <Section
+      aria-labelledby='methodologies-heading'
+      className='min-h-min max-h-max'
+    >
+      <PageContainer>
         <Stack direction='vertical' gap='md'>
           <h2 className='text-center' id='methodologies-heading'>
             My Methodology
@@ -29,7 +30,7 @@ export default function Methodologies() {
             ))}
           </ContentGrid>
         </Stack>
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

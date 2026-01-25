@@ -4,11 +4,9 @@ import { headers } from 'next/headers';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceRootMetadata } from '@/data/metadata/experience';
-import { Stack } from '@danieljoffe.com/ui';
-import Container from '@/components/Container';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
-import Section from '@/components/Section';
 
 const experienceList = Object.values(experienceRecords);
 export const metadata: Metadata = experienceRootMetadata;
@@ -18,8 +16,8 @@ export default async function ExperiencePage() {
   const nonce = headersStore.get('x-nonce') ?? undefined;
 
   return (
-    <Section>
-      <Container>
+    <Section className='min-h-min max-h-max'>
+      <PageContainer>
         <Stack direction='vertical' gap='md'>
           <header>
             <h1>Experience</h1>
@@ -44,7 +42,7 @@ export default async function ExperiencePage() {
             </ContentGrid>
           </section>
         </Stack>
-      </Container>
+      </PageContainer>
 
       <Script
         id='experience-structured-data'

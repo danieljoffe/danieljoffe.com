@@ -2,15 +2,16 @@
 import { ABOUT_LINK, CONTACT_FORM_ID, PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
-import { Stack } from '@danieljoffe.com/ui';
-import Section from '@/components/Section';
-import Container from '@/components/Container';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
 
 export default function CTA() {
   return (
-    <Section className='bg-neutral-900 text-white' ariaLabelBy='cta-heading'>
-      <Container className='text-center max-w-[31rem]'>
+    <Section
+      className='min-h-min max-h-max bg-neutral-900 text-white'
+      aria-labelledby='cta-heading'
+    >
+      <PageContainer className='text-center max-w-[31rem]'>
         <h2 id='cta-heading'>Let&apos;s Build Something Great Together</h2>
         <Stack
           direction='vertical'
@@ -47,7 +48,7 @@ export default function CTA() {
             </Button>
           </Stack>
         </Stack>
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

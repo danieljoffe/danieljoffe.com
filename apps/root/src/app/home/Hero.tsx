@@ -1,14 +1,12 @@
 'use client';
 
 import Button from '@/components/Button';
-import Container from '@/components/Container';
 import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import dynamic from 'next/dynamic';
 import { downloadResume } from '@/utils/helpers';
-import { Stack } from '@danieljoffe.com/ui';
-import Section from '@/components/Section';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 
 const Blob = dynamic(() => import('./Blob'), {
   loading: () => <div />,
@@ -18,7 +16,7 @@ export default function Hero() {
   return (
     <Section
       className={[
-        'relative !min-h-[27.5rem] md:!min-h-[32.5rem] h-[50vh]',
+        'min-h-min max-h-max relative !min-h-[27.5rem] md:!min-h-[32.5rem] h-[50vh]',
         'flex-col overflow-hidden items-center md:h-[80vh]',
       ].join(' ')}
       aria-labelledby='hero-heading'
@@ -30,7 +28,7 @@ export default function Hero() {
       </div>
 
       <div className='min-h-full min-w-full bg-[#00000099] text-white'>
-        <Container className='min-h-full'>
+        <PageContainer className='min-h-full'>
           <div
             className={[
               'flex-1 w-full min-h-full flex flex-col justify-evenly',
@@ -83,7 +81,7 @@ export default function Hero() {
               </Stack>
             </Stack>
           </div>
-        </Container>
+        </PageContainer>
       </div>
     </Section>
   );
