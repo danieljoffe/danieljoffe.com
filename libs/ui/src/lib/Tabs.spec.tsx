@@ -68,9 +68,9 @@ describe('Tabs', () => {
     expect(tab2Button).toHaveClass('border-accent', 'text-accent');
   });
 
-  it('renders with empty tabs array', () => {
+  it('renders nothing with empty tabs array', () => {
     const { container } = render(<Tabs tabs={[]} />);
-    expect(container.querySelector('.flex.gap-1')).toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
   });
 
   it('handles single tab', () => {

@@ -13,7 +13,8 @@ export interface TabsProps {
 }
 
 export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+  const firstTab = tabs[0];
+  const [activeTab, setActiveTab] = useState(defaultTab ?? firstTab?.id ?? '');
   const baseId = useId();
 
   const handleTabChange = useCallback(
@@ -33,6 +34,10 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
     (tabId: string) => `${baseId}-panel-${tabId}`,
     [baseId]
   );
+
+  if (tabs.length === 0) {
+    return null;
+  }
 
   return (
     <div className='w-full'>
