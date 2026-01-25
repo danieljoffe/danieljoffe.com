@@ -1,28 +1,77 @@
 ## The Library Corporation
 
-**Duration:** 2019–2021  
+**Duration:** September 2019 – November 2021
 **Role:** Software Engineer
 
 ### The Context
 
-**The Specialization Challenge: Building for Unique User Needs**
+After Internet Brands, I wanted a role with greater scope. I got that, just not how I expected.
+
+TLC builds cataloging software used by 5,500+ public and school libraries across the US. I joined a small team: a lead developer, a backend engineer, a PM, and me on the frontend. Three months in, the lead transitioned to a separate venture project.
+
+For the next 23 months, I was the sole frontend developer.
 
 ### The Challenge
 
-Transitioning to library software meant understanding an entirely different user base: librarians managing cataloging workflows across 5,500+ school and public libraries nationwide. As the sole frontend developer for 23 months, I needed to build features that enhanced complex workflows for subject matter experts I'd never worked with before, all while ensuring accessibility compliance for diverse library patrons.
+This role threw me into unfamiliar territory on every axis:
+
+- **New domain:** Library cataloging is its own specialized world, with serials, periodicals, MARC records, and controlled vocabularies. I'd never worked with librarians or understood their workflows.
+- **New stack:** AngularJS frontend, Java/Spring backend, Thymeleaf templating. My first time touching Java.
+- **No onboarding:** The lead who left hadn't documented much. I was remote and isolated, figuring things out through the codebase.
+- **Waterfall process:** Long feedback cycles, an impatient lead (before he left), and limited access to end users.
+
+I'll be honest, the first two weeks I was paralyzed by imposter syndrome. I didn't know where to start.
 
 ### The Solution
 
-I became a student of the domain, collaborating closely with QA teams, backend engineers, and library cataloging SMEs. I built 30+ features in AngularJS while focusing on scalability and accessibility.
+I got through it by treating the domain as a learning problem. I leaned on the QA team, the backend developer, and eventually a cataloger SME who became my guide to how librarians actually work.
+
+**Serials Cataloging System (Year-long Project)**
+
+The flagship project of my time at TLC. Serials, magazines, journals, and periodicals had been the most requested feature for years, only to be repeatedly postponed.
+
+I worked with a designer, PM, backend developer, and a cataloger SME to build it from scratch:
+
+- **Core features:** Pagination, search, filtering, navigation between serial records
+- **Generation algorithms:** The complex part. Serials follow schedules: daily, weekly, monthly, quarterly, biannual, with issue types such as Volume, Part, Issue, Index, and Section. Some have predictable patterns; others are irregular. I built algorithms to generate, clone, and duplicate issues based on configurable rules.
+- **Flexible date/sequence handling:** Issues could have dates and sequences that were synchronized or independent, depending on the publication type.
+
+This project more than doubled the application's feature count. I presented progress at company all-hands meetings throughout the year, which helped me rebuild confidence after those rough first weeks.
+
+**WCAG Accessibility Compliance**
+
+Libraries serve diverse patrons, and many institutions require accessibility compliance. Our legacy Thymeleaf templates had never been audited.
+
+I reviewed 15+ views and remediated 200+ violations in about a month:
+
+- Missing alt text, input labels, and ARIA attributes
+- Broken links and empty buttons
+- Low contrast and incorrect heading hierarchy
+- No focus states or keyboard navigation
+- Missing semantic HTML and language meta tags
+
+**Polymorphic Cataloging Components**
+
+Different asset types, books, magazines, and encyclopedias shared similar data entry patterns but had unique fields. Rather than duplicating components, I built a polymorphic class that handled multiple asset types and switched views based on the cataloging context.
+
+This was pre-props AngularJS, so I used a class-based approach. It reduced code duplication significantly and made the UI flexible enough to handle new asset types without major rewrites.
 
 ### The Impact
 
-I achieved full WCAG compliance by researching, diagnosing, and remediating 200+ accessibility violations across our legacy Spring application. My dynamic cataloging components increased both accuracy and flexibility for diverse asset types, serving 5,500+ libraries.
+- **Serials cataloging system** delivered after a year of development, the most requested feature in the product's history
+- **200+ accessibility violations** remediated across legacy views
+- **30+ features** shipped as sole frontend developer
+- **5,500+ libraries** served by the applications I maintained
+- Rebuilt confidence through consistent delivery and all-hands presentations
 
-### Lessons Learned
+### Why I Left
 
-The importance of domain expertise and user-centered design. Technical skills mean nothing without deep understanding of user needs and regulatory requirements.
+No promotion path. The waterfall process meant slow feedback loops, and I was ready for a faster-moving environment. I left voluntarily for FightCamp.
+
+### What I Learned
+
+This role taught me how to learn. New domain, new stack, no documentation, no senior to lean on, I had to figure it out. The imposter syndrome I felt in week one never fully went away, but I learned to work through it by focusing on small wins and building relationships with the people who understood the domain better than I did.
 
 ### Tech Stack
 
-Angular 2, TypeScript, AngularJS, Node.js, AWS S3, HTML5, CSS3, SASS
+AngularJS, Java, Spring, Thymeleaf, HTML5, CSS3, WebAIM, Browser Accessibility Tools
