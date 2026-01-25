@@ -1,5 +1,5 @@
-import { useEffect, useId, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useEffect, useId, type ReactNode } from 'react';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 type ModalVariant =

@@ -1,12 +1,36 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Input } from './Input';
 
-const meta = {
+const meta: Meta<typeof Input> = {
+  title: 'Components/Input',
   component: Input,
-  title: 'Input',
-} satisfies Meta<typeof Input>;
-export default meta;
+  tags: ['autodocs'],
+  argTypes: {
+    label: {
+      description: 'Label text displayed above the input',
+      control: 'text',
+    },
+    error: {
+      description: 'Error message displayed below the input',
+      control: 'text',
+    },
+    helperText: {
+      description:
+        'Helper text displayed below the input (hidden when error is shown)',
+      control: 'text',
+    },
+    placeholder: {
+      description: 'Placeholder text shown when input is empty',
+      control: 'text',
+    },
+    disabled: {
+      description: 'Disables the input',
+      control: 'boolean',
+    },
+  },
+};
 
+export default meta;
 type Story = StoryObj<typeof Input>;
 
 export const Default: Story = {

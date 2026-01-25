@@ -67,7 +67,6 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
         id={getPanelId(activeTab)}
         role='tabpanel'
         aria-labelledby={getTabId(activeTab)}
-        tabIndex={0}
         className='mt-4'
       >
         {activeContent}

@@ -62,6 +62,7 @@ export function Tooltip({
         onFocus={showTooltip}
         onBlur={hideTooltip}
         onKeyDown={handleKeyDown}
+        role='presentation'
       >
         {children}
       </div>

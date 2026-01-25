@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
 
-const meta = {
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
   component: Button,
-  title: 'Button',
+  tags: ['autodocs'],
   argTypes: {
     variant: {
+      description: 'Visual style of the button',
       control: 'select',
       options: [
         undefined,
@@ -19,15 +21,30 @@ const meta = {
         'warning',
         'info',
       ],
+      table: {
+        defaultValue: { summary: 'primary' },
+      },
     },
     size: {
+      description: 'Size of the button',
       control: 'select',
       options: [undefined, 'sm', 'md', 'lg'],
+      table: {
+        defaultValue: { summary: 'md' },
+      },
+    },
+    disabled: {
+      description: 'Disables interaction',
+      control: 'boolean',
+    },
+    children: {
+      description: 'Button content',
+      control: 'text',
     },
   },
-} satisfies Meta<typeof Button>;
-export default meta;
+};
 
+export default meta;
 type Story = StoryObj<typeof Button>;
 
 export const Default: Story = {

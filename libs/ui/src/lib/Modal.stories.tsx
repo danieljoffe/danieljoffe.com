@@ -1,11 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Modal } from './Modal';
 
-const meta = {
+const meta: Meta<typeof Modal> = {
+  title: 'Components/Modal',
   component: Modal,
-  title: 'Modal',
+  tags: ['autodocs'],
   argTypes: {
+    isOpen: {
+      description: 'Controls whether the modal is visible',
+      control: 'boolean',
+    },
+    title: {
+      description: 'Optional title displayed in the modal header',
+      control: 'text',
+    },
+    size: {
+      description: 'Width of the modal',
+      control: 'select',
+      options: [undefined, 'sm', 'md', 'lg', 'xl'],
+      table: {
+        defaultValue: { summary: 'md' },
+      },
+    },
     variant: {
+      description: 'Visual style of the modal',
       control: 'select',
       options: [
         undefined,
@@ -16,16 +34,26 @@ const meta = {
         'error',
         'info',
       ],
+      table: {
+        defaultValue: { summary: 'default' },
+      },
     },
-    size: {
-      control: 'select',
-      options: [undefined, 'sm', 'md', 'lg', 'xl'],
+    onClose: {
+      description:
+        'Callback fired when modal is closed (via backdrop click, Escape key, or close button)',
+      action: 'onClose executed!',
     },
-    onClose: { action: 'onClose executed!' },
+    children: {
+      description: 'Modal body content',
+      control: 'text',
+    },
+    footer: {
+      description: 'Optional footer content (typically action buttons)',
+    },
   },
-} satisfies Meta<typeof Modal>;
-export default meta;
+};
 
+export default meta;
 type Story = StoryObj<typeof Modal>;
 
 export const Default: Story = {
