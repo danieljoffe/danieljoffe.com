@@ -6,6 +6,26 @@ const meta: Meta<typeof Stack> = {
   component: Stack,
   tags: ['autodocs'],
   argTypes: {
+    as: {
+      description:
+        'The HTML element to render as. Supports semantic elements for accessibility.',
+      control: 'select',
+      options: [
+        'div',
+        'ul',
+        'ol',
+        'nav',
+        'section',
+        'article',
+        'aside',
+        'main',
+        'header',
+        'footer',
+      ],
+      table: {
+        defaultValue: { summary: 'div' },
+      },
+    },
     direction: {
       description: 'The direction of the stack layout',
       control: 'radio',
@@ -123,6 +143,106 @@ export const Wrapped: Story = {
         {Array.from({ length: 10 }, (_, i) => (
           <Box key={i}>Item {i + 1}</Box>
         ))}
+      </>
+    ),
+  },
+};
+
+export const AsUnorderedList: Story = {
+  name: 'As Unordered List (ul)',
+  args: {
+    as: 'ul',
+    direction: 'vertical',
+    gap: 'sm',
+    className: 'list-none',
+    children: (
+      <>
+        <li className='bg-accent text-accent-foreground p-3 rounded'>
+          First item
+        </li>
+        <li className='bg-accent text-accent-foreground p-3 rounded'>
+          Second item
+        </li>
+        <li className='bg-accent text-accent-foreground p-3 rounded'>
+          Third item
+        </li>
+      </>
+    ),
+  },
+};
+
+export const AsOrderedList: Story = {
+  name: 'As Ordered List (ol)',
+  args: {
+    as: 'ol',
+    direction: 'vertical',
+    gap: 'sm',
+    className: 'list-none',
+    children: (
+      <>
+        <li className='bg-accent text-accent-foreground p-3 rounded'>
+          Step 1: Plan
+        </li>
+        <li className='bg-accent text-accent-foreground p-3 rounded'>
+          Step 2: Build
+        </li>
+        <li className='bg-accent text-accent-foreground p-3 rounded'>
+          Step 3: Deploy
+        </li>
+      </>
+    ),
+  },
+};
+
+export const AsNav: Story = {
+  name: 'As Navigation (nav)',
+  args: {
+    as: 'nav',
+    direction: 'horizontal',
+    gap: 'md',
+    align: 'center',
+    children: (
+      <>
+        <a href='#' className='text-accent hover:underline'>
+          Home
+        </a>
+        <a href='#' className='text-accent hover:underline'>
+          About
+        </a>
+        <a href='#' className='text-accent hover:underline'>
+          Projects
+        </a>
+        <a href='#' className='text-accent hover:underline'>
+          Contact
+        </a>
+      </>
+    ),
+  },
+};
+
+export const HorizontalListWithIcons: Story = {
+  name: 'Horizontal List with Icons',
+  args: {
+    as: 'ul',
+    direction: 'horizontal',
+    gap: 'lg',
+    align: 'center',
+    justify: 'center',
+    className: 'list-none',
+    children: (
+      <>
+        <li className='flex flex-col items-center gap-2'>
+          <span className='text-2xl'>🚀</span>
+          <span>Fast</span>
+        </li>
+        <li className='flex flex-col items-center gap-2'>
+          <span className='text-2xl'>🎨</span>
+          <span>Beautiful</span>
+        </li>
+        <li className='flex flex-col items-center gap-2'>
+          <span className='text-2xl'>♿</span>
+          <span>Accessible</span>
+        </li>
       </>
     ),
   },

@@ -1,3 +1,4 @@
+import { Stack } from '@danieljoffe.com/ui';
 import Container from '@/components/Container';
 import Section from '@/components/Section';
 
@@ -6,7 +7,7 @@ export default function TechnicalExpertise() {
     <Section ariaLabelBy='technical-expertise-heading'>
       <Container>
         <h2 id='technical-expertise-heading'>Technical Expertise</h2>
-        <ul className='flex flex-col gap-2'>
+        <Stack as='ul' direction='vertical' gap='sm' className='list-none'>
           <li>
             <p>
               <strong className='font-bold'>Frontend:</strong>{' '}
@@ -35,7 +36,7 @@ export default function TechnicalExpertise() {
               Libraries, Design Systems, Accessibility
             </p>
           </li>
-        </ul>
+        </Stack>
       </Container>
     </Section>
   );

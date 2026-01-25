@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
+import { Stack } from '@danieljoffe.com/ui';
 import Container from '@/components/Container';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
@@ -19,7 +20,7 @@ export default async function Projects() {
   return (
     <Section>
       <Container>
-        <div className='flex flex-col gap-4'>
+        <Stack direction='vertical' gap='md'>
           <header>
             <h1>Projects</h1>
             <p>
@@ -41,7 +42,7 @@ export default async function Projects() {
               ))}
             </ContentGrid>
           </section>
-        </div>
+        </Stack>
       </Container>
       <Script
         id='projects-structured-data'

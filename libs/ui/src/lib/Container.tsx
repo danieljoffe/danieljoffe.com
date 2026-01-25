@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 
-export interface ContainerProps {
+export interface ContainerProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'className'> {
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   className?: string;
@@ -18,10 +19,12 @@ export function Container({
   children,
   size = 'full',
   className = '',
+  ...rest
 }: ContainerProps) {
   return (
     <div
       className={`mx-auto w-full px-4 sm:px-6 ${sizeClasses[size]} ${className}`}
+      {...rest}
     >
       {children}
     </div>

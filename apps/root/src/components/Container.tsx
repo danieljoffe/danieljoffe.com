@@ -1,3 +1,5 @@
+import { Container as UIContainer } from '@danieljoffe.com/ui';
+
 interface ContainerProps {
   children: React.ReactNode;
   className?: string;
@@ -12,12 +14,13 @@ export default function Container({
       className={`flex justify-center ${className}`}
       data-testid='container-outer'
     >
-      <div
-        className={`container flex flex-col py-8 md:py-14 px-4 max-w-[48rem]`}
+      <UIContainer
+        size='sm'
+        className='flex flex-col py-8 md:py-14'
         data-testid='container-inner'
       >
         {children}
-      </div>
+      </UIContainer>
     </div>
   );
 }

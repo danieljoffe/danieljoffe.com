@@ -2,31 +2,28 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TextInput from './TextInput';
-import {
-  stateStyles,
-  textAreaBaseStyles,
-  baseStyles,
-} from './textInput.constants';
 
 describe('TextInput', () => {
   test('renders input with label and required attributes', () => {
     render(<TextInput label='Email' name='email' required />);
     const input = screen.getByRole('textbox');
-    const label = screen.getByText('Email');
+    const label = screen.getByText('Email', { exact: false });
     expect(label).toBeInTheDocument();
     expect(label).toHaveAttribute('for', input.getAttribute('id'));
     expect(input).toHaveAttribute('required');
     expect(input).toHaveAttribute('aria-required', 'true');
-    // base styles applied for input
-    expect(input.className).toContain(baseStyles.split(' ')[0]);
   });
 
-  test('applies disabled state styles and disables the control', async () => {
+  test('shows required indicator in label', () => {
+    render(<TextInput label='Email' name='email' required />);
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  test('applies disabled state and disables the control', async () => {
     const user = userEvent.setup();
     render(<TextInput label='Username' name='username' disabled />);
     const input = screen.getByRole('textbox');
     expect(input).toBeDisabled();
-    expect(input.className).toContain(stateStyles.disabled.split(' ')[0]);
     await user.click(input);
     expect(input).not.toHaveFocus();
   });
@@ -39,38 +36,34 @@ describe('TextInput', () => {
     expect(feedback).toHaveTextContent('Required');
     const describedBy = input.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    // Feedback id should match pattern `${inputId}-error`
     expect(feedback.getAttribute('id')).toEqual(describedBy as string);
   });
 
-  test('when hint provided, aria-describedby points to hint id', () => {
+  test('when hint provided, aria-describedby points to helper id', () => {
     render(<TextInput label='City' name='city' hint='Optional' />);
     const input = screen.getByRole('textbox');
-    const status = screen.getByRole('status');
-    expect(status).toHaveTextContent('Optional');
+    const helper = screen.getByText('Optional');
+    expect(helper).toBeInTheDocument();
     const describedBy = input.getAttribute('aria-describedby');
-    expect(status.getAttribute('id')).toEqual(describedBy as string);
+    expect(helper.getAttribute('id')).toEqual(describedBy as string);
   });
 
-  test('applies success state styles when success is true and no error', () => {
+  test('applies success state classes when success is true and no error', () => {
     render(<TextInput label='Zip' name='zip' success />);
     const input = screen.getByRole('textbox');
-    expect(input.className).toContain(stateStyles.success.split(' ')[0]);
+    expect(input.className).toContain('border-success');
   });
 
   test('renders textarea when as="textarea"', () => {
     render(<TextInput label='Bio' name='bio' as='textarea' />);
     const textarea = screen.getByRole('textbox');
-    // textareas are also role="textbox"
     expect(textarea.tagName.toLowerCase()).toBe('textarea');
-    expect(textarea.className).toContain(textAreaBaseStyles.split(' ')[0]);
   });
 
-  test('id composition uses name prefix when provided', () => {
-    render(<TextInput label='First Name' name='first' />);
+  test('uses provided id when given', () => {
+    render(<TextInput label='First Name' id='custom-id' />);
     const input = screen.getByRole('textbox');
-    const id = input.getAttribute('id') as string;
-    expect(id.startsWith('first-')).toBe(true);
+    expect(input.getAttribute('id')).toBe('custom-id');
   });
 
   test('logs in dev when no label and no aria-label (does not throw)', () => {

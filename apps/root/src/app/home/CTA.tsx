@@ -2,6 +2,7 @@
 import { ABOUT_LINK, CONTACT_FORM_ID, PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
+import { Stack } from '@danieljoffe.com/ui';
 import Section from '@/components/Section';
 import Container from '@/components/Container';
 import Button from '@/components/Button';
@@ -11,13 +12,18 @@ export default function CTA() {
     <Section className='bg-neutral-900 text-white' ariaLabelBy='cta-heading'>
       <Container className='text-center max-w-[31rem]'>
         <h2 id='cta-heading'>Let&apos;s Build Something Great Together</h2>
-        <div className='flex flex-col items-center self-center  gap-4'>
+        <Stack
+          direction='vertical'
+          gap='md'
+          align='center'
+          className='self-center'
+        >
           <p>
             Ready to discuss how I can help drive your team&apos;s success?
             I&apos;m always excited to tackle new challenges and create
             meaningful impact.
           </p>
-          <div className='flex gap-4'>
+          <Stack direction='horizontal' gap='md'>
             <Button
               as='link'
               href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
@@ -39,8 +45,8 @@ export default function CTA() {
             >
               View my work
             </Button>
-          </div>
-        </div>
+          </Stack>
+        </Stack>
       </Container>
     </Section>
   );

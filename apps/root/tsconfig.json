@@ -55,6 +55,9 @@
   ],
   "references": [
     {
+      "path": "../../libs/ui"
+    },
+    {
       "path": "./tsconfig.storybook.json"
     }
   ]

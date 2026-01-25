@@ -7,6 +7,7 @@ import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 import { analytics } from '@/lib/analytics';
 import { EXPERIENCE_LINK } from '@/utils/base';
+import { Stack } from '@danieljoffe.com/ui';
 import ContentGrid from '@/components/ContentGrid';
 import Section from '@/components/Section';
 
@@ -31,7 +32,13 @@ export default function PreviousTeams() {
                 title={company.company}
                 onClick={() => analytics.experienceClick(company.slug)}
               >
-                <div className='flex gap-2 w-full h-full items-center justify-center'>
+                <Stack
+                  direction='horizontal'
+                  gap='sm'
+                  align='center'
+                  justify='center'
+                  className='w-full h-full'
+                >
                   <Image
                     className='w-full h-full max-w-[10rem] max-h-[5rem] object-contain flex-1'
                     src={company.logo}
@@ -46,18 +53,18 @@ export default function PreviousTeams() {
                     loading={index < 2 ? 'eager' : 'lazy'}
                   />
                   <LinkHint />
-                </div>
+                </Stack>
               </Button>
             </li>
           ))}
         </ContentGrid>
 
-        <div className='flex justify-center text-center'>
+        <Stack direction='horizontal' justify='center' className='text-center'>
           <p>
             I&apos;ve worked with these companies to build fast, beautiful, and
             inclusive digital experiences.
           </p>
-        </div>
+        </Stack>
       </Container>
     </Section>
   );

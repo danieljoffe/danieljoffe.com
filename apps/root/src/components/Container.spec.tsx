@@ -32,10 +32,9 @@ describe('Container', () => {
     );
     const inner = screen.getByTestId('container-inner');
     expect(inner).toBeInTheDocument();
-    expect(inner.className).toContain('container');
     expect(inner.className).toContain('flex');
     expect(inner.className).toContain('flex-col');
-    expect(inner.className).toContain('max-w-[48rem]');
+    expect(inner.className).toContain('max-w-3xl'); // UI library size='sm'
   });
 
   test('applies custom className to outer container', () => {

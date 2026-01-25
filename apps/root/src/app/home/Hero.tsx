@@ -7,6 +7,7 @@ import { analytics } from '@/lib/analytics';
 import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import dynamic from 'next/dynamic';
 import { downloadResume } from '@/utils/helpers';
+import { Stack } from '@danieljoffe.com/ui';
 import Section from '@/components/Section';
 
 const Blob = dynamic(() => import('./Blob'), {
@@ -45,14 +46,18 @@ export default function Hero() {
               <p className='uppercase tracking-wide font-medium'>{JOB_TITLE}</p>
             </div>
 
-            <div className='flex flex-col text-right text-sm gap-2'>
+            <Stack direction='vertical' gap='sm' className='text-right text-sm'>
               <div>
                 <p>I optimize applications.</p>
                 <p>I build scalable design systems.</p>
                 <p>And I love eliminating engineering bottlenecks.</p>
               </div>
 
-              <div className='flex justify-evenly md:justify-end'>
+              <Stack
+                direction='horizontal'
+                justify='evenly'
+                className='md:justify-end'
+              >
                 <Button
                   as='link'
                   variant='link'
@@ -75,8 +80,8 @@ export default function Hero() {
                 >
                   Download resume
                 </Button>
-              </div>
-            </div>
+              </Stack>
+            </Stack>
           </div>
         </Container>
       </div>

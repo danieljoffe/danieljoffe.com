@@ -10,6 +10,7 @@ import { formSchema } from '@/app/api/email/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Stack } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
 import TextInput from '@/components/TextInput';
 import Loading from '@/components/Loading';
@@ -116,46 +117,49 @@ export default function Form() {
         </h3>
       </header>
 
-      <fieldset className='flex flex-col gap-4'>
+      <fieldset>
         <legend className='sr-only'>Contact Information</legend>
+        <Stack direction='vertical' gap='md'>
+          <TextInput
+            className='text-neutral-900 placeholder-neutral-800'
+            placeholder='John Doe'
+            type='text'
+            autoComplete='name'
+            label='Name'
+            required={true}
+            {...register('name')}
+            error={errors?.name?.message}
+            aria-describedby={errors?.name?.message ? 'name-error' : undefined}
+          />
 
-        <TextInput
-          className='text-neutral-900 placeholder-neutral-800'
-          placeholder='John Doe'
-          type='text'
-          autoComplete='name'
-          label='Name'
-          required={true}
-          {...register('name')}
-          error={errors?.name?.message}
-          aria-describedby={errors?.name?.message ? 'name-error' : undefined}
-        />
+          <TextInput
+            className='text-neutral-900 placeholder-neutral-800'
+            label='Email'
+            placeholder='john.doe@example.com'
+            type='email'
+            autoComplete='email'
+            required={true}
+            {...register('email')}
+            error={errors?.email?.message}
+            aria-describedby={
+              errors?.email?.message ? 'email-error' : undefined
+            }
+          />
 
-        <TextInput
-          className='text-neutral-900 placeholder-neutral-800'
-          label='Email'
-          placeholder='john.doe@example.com'
-          type='email'
-          autoComplete='email'
-          required={true}
-          {...register('email')}
-          error={errors?.email?.message}
-          aria-describedby={errors?.email?.message ? 'email-error' : undefined}
-        />
-
-        <TextInput
-          className='text-neutral-900 placeholder-neutral-800'
-          label='Message'
-          placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
-          as='textarea'
-          autoComplete='off'
-          required={true}
-          {...register('message')}
-          error={errors?.message?.message}
-          aria-describedby={
-            errors?.message?.message ? 'message-error' : undefined
-          }
-        />
+          <TextInput
+            className='text-neutral-900 placeholder-neutral-800'
+            label='Message'
+            placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
+            as='textarea'
+            autoComplete='off'
+            required={true}
+            {...register('message')}
+            error={errors?.message?.message}
+            aria-describedby={
+              errors?.message?.message ? 'message-error' : undefined
+            }
+          />
+        </Stack>
       </fieldset>
 
       {/* Honeypot field for spam protection */}

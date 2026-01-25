@@ -1,11 +1,25 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
 
-export interface GridProps {
+type GridElement =
+  | 'div'
+  | 'ul'
+  | 'ol'
+  | 'section'
+  | 'article'
+  | 'aside'
+  | 'main';
+
+export interface GridProps<T extends GridElement = 'div'> {
+  /** The HTML element to render as. Defaults to 'div'. Use 'ul' or 'ol' for semantic lists. */
+  as?: T;
   children: ReactNode;
   cols?: 1 | 2 | 3 | 4 | 6 | 12;
   gap?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
+
+type PolymorphicGridProps<T extends GridElement = 'div'> = GridProps<T> &
+  Omit<ComponentPropsWithoutRef<T>, keyof GridProps<T>>;
 
 const colClasses = {
   1: 'grid-cols-1',
@@ -24,24 +38,38 @@ const gapClasses = {
   xl: 'gap-8 sm:gap-12',
 };
 
-export function Grid({
+export function Grid<T extends GridElement = 'div'>({
+  as,
   children,
   cols = 12,
   gap = 'md',
   className = '',
-}: GridProps) {
+  ...rest
+}: PolymorphicGridProps<T>) {
+  const Component = (as || 'div') as ElementType;
+
   return (
-    <div className={`grid ${colClasses[cols]} ${gapClasses[gap]} ${className}`}>
+    <Component
+      className={`grid ${colClasses[cols]} ${gapClasses[gap]} ${className}`}
+      {...rest}
+    >
       {children}
-    </div>
+    </Component>
   );
 }
 
-export interface GridItemProps {
+type GridItemElement = 'div' | 'li' | 'article' | 'section';
+
+export interface GridItemProps<T extends GridItemElement = 'div'> {
+  /** The HTML element to render as. Defaults to 'div'. Use 'li' when Grid is a list. */
+  as?: T;
   children: ReactNode;
   colSpan?: 1 | 2 | 3 | 4 | 6 | 12;
   className?: string;
 }
+
+type PolymorphicGridItemProps<T extends GridItemElement = 'div'> =
+  GridItemProps<T> & Omit<ComponentPropsWithoutRef<T>, keyof GridItemProps<T>>;
 
 const spanClasses = {
   1: 'col-span-1',
@@ -52,12 +80,18 @@ const spanClasses = {
   12: 'col-span-full',
 };
 
-export function GridItem({
+export function GridItem<T extends GridItemElement = 'div'>({
+  as,
   children,
   colSpan = 1,
   className = '',
-}: GridItemProps) {
+  ...rest
+}: PolymorphicGridItemProps<T>) {
+  const Component = (as || 'div') as ElementType;
+
   return (
-    <div className={`${spanClasses[colSpan]} ${className}`}>{children}</div>
+    <Component className={`${spanClasses[colSpan]} ${className}`} {...rest}>
+      {children}
+    </Component>
   );
 }

@@ -22,6 +22,56 @@ describe('Grid', () => {
     expect(container.firstChild).toHaveClass('grid');
   });
 
+  it('renders as div by default', () => {
+    const { container } = render(
+      <Grid>
+        <div>Child</div>
+      </Grid>
+    );
+    expect(container.firstChild?.nodeName).toBe('DIV');
+  });
+
+  it('renders as ul when as="ul"', () => {
+    const { container } = render(
+      <Grid as='ul'>
+        <li>Item 1</li>
+        <li>Item 2</li>
+      </Grid>
+    );
+    expect(container.firstChild?.nodeName).toBe('UL');
+    expect(container.firstChild).toHaveClass('grid');
+  });
+
+  it('renders as ol when as="ol"', () => {
+    const { container } = render(
+      <Grid as='ol'>
+        <li>Item 1</li>
+        <li>Item 2</li>
+      </Grid>
+    );
+    expect(container.firstChild?.nodeName).toBe('OL');
+    expect(container.firstChild).toHaveClass('grid');
+  });
+
+  it('renders as section when as="section"', () => {
+    const { container } = render(
+      <Grid as='section'>
+        <div>Content</div>
+      </Grid>
+    );
+    expect(container.firstChild?.nodeName).toBe('SECTION');
+  });
+
+  it('passes through additional HTML attributes', () => {
+    render(
+      <Grid as='ul' aria-label='Item list' data-testid='grid-list'>
+        <li>Item</li>
+      </Grid>
+    );
+    const list = screen.getByTestId('grid-list');
+    expect(list).toHaveAttribute('aria-label', 'Item list');
+  });
+
   it('applies default cols (12)', () => {
     const { container } = render(
       <Grid>
@@ -126,6 +176,31 @@ describe('GridItem', () => {
   it('renders children', () => {
     render(<GridItem>Item Content</GridItem>);
     expect(screen.getByText('Item Content')).toBeInTheDocument();
+  });
+
+  it('renders as div by default', () => {
+    const { container } = render(<GridItem>Content</GridItem>);
+    expect(container.firstChild?.nodeName).toBe('DIV');
+  });
+
+  it('renders as li when as="li"', () => {
+    const { container } = render(<GridItem as='li'>Content</GridItem>);
+    expect(container.firstChild?.nodeName).toBe('LI');
+  });
+
+  it('renders as article when as="article"', () => {
+    const { container } = render(<GridItem as='article'>Content</GridItem>);
+    expect(container.firstChild?.nodeName).toBe('ARTICLE');
+  });
+
+  it('passes through additional HTML attributes', () => {
+    render(
+      <GridItem as='li' data-testid='grid-item' aria-label='List item'>
+        Content
+      </GridItem>
+    );
+    const item = screen.getByTestId('grid-item');
+    expect(item).toHaveAttribute('aria-label', 'List item');
   });
 
   it('applies default colSpan (1)', () => {

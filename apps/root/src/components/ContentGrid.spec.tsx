@@ -25,14 +25,15 @@ describe('ContentGrid', () => {
     expect(grid?.className).toContain('grid-cols-1');
   });
 
-  test('applies responsive grid classes for medium screens', () => {
+  test('applies responsive grid classes', () => {
     render(
       <ContentGrid>
         <div>Content</div>
       </ContentGrid>
     );
     const grid = screen.getByText('Content').parentElement;
-    expect(grid?.className).toContain('md:grid-cols-2');
+    // UI library Grid uses sm: breakpoint for 2 columns
+    expect(grid?.className).toContain('sm:grid-cols-2');
     expect(grid?.className).toContain('md:grid-rows-2');
   });
 
@@ -54,7 +55,18 @@ describe('ContentGrid', () => {
       </ContentGrid>
     );
     const grid = screen.getByText('Content').parentElement;
-    expect(grid?.className).toContain('gap-8');
+    // UI library Grid gap='lg' uses sm:gap-8
+    expect(grid?.className).toContain('sm:gap-8');
+  });
+
+  test('renders as semantic ul element', () => {
+    render(
+      <ContentGrid>
+        <li>Item 1</li>
+      </ContentGrid>
+    );
+    const grid = screen.getByText('Item 1').parentElement;
+    expect(grid?.nodeName).toBe('UL');
   });
 
   test('renders multiple grid items', () => {

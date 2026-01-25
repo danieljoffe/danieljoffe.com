@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Textarea } from './Textarea';
 
@@ -86,5 +87,35 @@ describe('Textarea', () => {
     const textarea = screen.getByTestId('desc-textarea');
     expect(textarea).toHaveAttribute('name', 'description');
     expect(textarea).toHaveAttribute('rows', '5');
+  });
+
+  it('applies success styles when success is true', () => {
+    render(<Textarea success />);
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveClass('border-success');
+  });
+
+  it('prioritizes error styles over success styles', () => {
+    render(<Textarea error='Error' success />);
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveClass('border-error');
+    expect(textarea).not.toHaveClass('border-success');
+  });
+
+  it('shows required indicator in label', () => {
+    render(<Textarea label='Description' required />);
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  it('sets aria-required when required', () => {
+    render(<Textarea label='Description' required />);
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('accepts ref via forwardRef', () => {
+    const ref = { current: null } as React.RefObject<HTMLTextAreaElement>;
+    render(<Textarea ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLTextAreaElement);
   });
 });

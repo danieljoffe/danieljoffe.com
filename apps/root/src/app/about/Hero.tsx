@@ -2,6 +2,7 @@
 import Button from '@/components/Button';
 import Container from '@/components/Container';
 import Section from '@/components/Section';
+import { Stack } from '@danieljoffe.com/ui';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
@@ -15,8 +16,13 @@ export default function Hero() {
     <Section ariaLabelBy='about-me-name' className='bg-neutral-900 text-white'>
       <Container>
         <h1 className='text-center'>About Me</h1>
-        <div className='flex flex-col gap-4 md:gap-8 md:flex-row '>
-          <div className='flex items-start justify-center p-[1rem]'>
+        <Stack direction='vertical' gap='md' className='md:flex-row md:gap-8'>
+          <Stack
+            direction='horizontal'
+            justify='center'
+            align='start'
+            className='p-[1rem]'
+          >
             <Image
               src='/images/daniel-joffe-profile.png'
               alt={FULL_NAME}
@@ -30,8 +36,12 @@ export default function Hero() {
               decoding='async'
               loading='eager'
             />
-          </div>
-          <div className='flex flex-col gap-4 text-center md:text-left'>
+          </Stack>
+          <Stack
+            direction='vertical'
+            gap='md'
+            className='text-center md:text-left'
+          >
             <p className='uppercase tracking-wide font-medium'>
               Daniel Joffe, <br />
               Senior Frontend Engineer
@@ -50,8 +60,12 @@ export default function Hero() {
               Explore my work below, and let&apos;s discuss how I can help your
               team.
             </p>
-            <div className='flex flex-col items-center md:items-start'>
-              <div className='flex'>
+            <Stack
+              direction='vertical'
+              align='center'
+              className='md:items-start'
+            >
+              <Stack direction='horizontal' gap='none'>
                 <Button
                   size='sm'
                   variant='icon'
@@ -119,10 +133,10 @@ export default function Hero() {
                 >
                   <Download absoluteStrokeWidth={true} />
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Stack>
       </Container>
     </Section>
   );

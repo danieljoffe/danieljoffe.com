@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Input } from './Input';
 
@@ -84,5 +85,35 @@ describe('Input', () => {
     const input = screen.getByTestId('email-input');
     expect(input).toHaveAttribute('type', 'email');
     expect(input).toHaveAttribute('name', 'email');
+  });
+
+  it('applies success styles when success is true', () => {
+    render(<Input success />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('border-success');
+  });
+
+  it('prioritizes error styles over success styles', () => {
+    render(<Input error='Error' success />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('border-error');
+    expect(input).not.toHaveClass('border-success');
+  });
+
+  it('shows required indicator in label', () => {
+    render(<Input label='Email' required />);
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  it('sets aria-required when required', () => {
+    render(<Input label='Email' required />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('accepts ref via forwardRef', () => {
+    const ref = { current: null } as React.RefObject<HTMLInputElement>;
+    render(<Input ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
 });

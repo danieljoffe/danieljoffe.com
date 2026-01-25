@@ -1,12 +1,6 @@
 import React from 'react';
-import TextInputFeedback from './InputFeedback';
-import InputLabel from './InputLabel';
+import { Input, Textarea } from '@danieljoffe.com/ui';
 import { TextInputProps } from './textInput.types';
-import {
-  stateStyles,
-  textAreaBaseStyles,
-  baseStyles,
-} from './textInput.constants';
 import { devLog } from '@/utils/helpers';
 
 const TextInput = React.forwardRef<
@@ -28,11 +22,6 @@ const TextInput = React.forwardRef<
     },
     ref
   ) => {
-    const generatedId = React.useId();
-    const inputId = id || generatedId;
-    const controlId = props.name ? `${props.name}-${inputId}` : inputId;
-    let stateClass = stateStyles.default;
-
     if (
       (label == null || label === '') &&
       (
@@ -43,56 +32,39 @@ const TextInput = React.forwardRef<
       devLog('TextInput: Accessible label is required (label or aria-label).');
     }
 
-    if (disabled) {
-      stateClass = stateStyles.disabled;
-    } else if (error) {
-      stateClass = stateStyles.error;
-    } else if (success) {
-      stateClass = stateStyles.success;
+    // Map hint to helperText for UI library components
+    const helperText = hint;
+
+    if (as === 'textarea') {
+      return (
+        <Textarea
+          ref={ref as React.Ref<HTMLTextAreaElement>}
+          id={id}
+          label={label}
+          error={error}
+          helperText={helperText}
+          success={success}
+          disabled={disabled}
+          required={required}
+          className={className}
+          {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+        />
+      );
     }
 
-    const baseProps = {
-      ref: ref as React.Ref<HTMLInputElement | HTMLTextAreaElement>,
-      id: controlId,
-      className: [
-        as === 'textarea' ? textAreaBaseStyles : baseStyles,
-        stateClass,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' '),
-      'aria-invalid': !!error,
-      'aria-required': required || undefined,
-      'aria-describedby': error
-        ? `${inputId}-error`
-        : hint
-        ? `${inputId}-hint`
-        : undefined,
-      disabled,
-      required,
-      ...props,
-    };
-
     return (
-      <div className='w-full'>
-        {label && (
-          <InputLabel inputId={controlId} label={label} required={required} />
-        )}
-        {as === 'textarea' ? (
-          <textarea
-            {...(baseProps as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
-          />
-        ) : (
-          <input
-            {...(baseProps as React.InputHTMLAttributes<HTMLInputElement>)}
-          />
-        )}
-        {error ? (
-          <TextInputFeedback inputId={inputId} message={error} type='error' />
-        ) : hint ? (
-          <TextInputFeedback inputId={inputId} message={hint} type='hint' />
-        ) : null}
-      </div>
+      <Input
+        ref={ref as React.Ref<HTMLInputElement>}
+        id={id}
+        label={label}
+        error={error}
+        helperText={helperText}
+        success={success}
+        disabled={disabled}
+        required={required}
+        className={className}
+        {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+      />
     );
   }
 );

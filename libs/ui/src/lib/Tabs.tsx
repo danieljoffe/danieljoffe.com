@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useId, useCallback, type ReactNode } from 'react';
 
 export interface Tab {

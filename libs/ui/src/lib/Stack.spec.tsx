@@ -22,6 +22,67 @@ describe('Stack', () => {
     expect(container.firstChild).toHaveClass('flex');
   });
 
+  it('renders as div by default', () => {
+    const { container } = render(
+      <Stack>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild?.nodeName).toBe('DIV');
+  });
+
+  it('renders as ul when as="ul"', () => {
+    const { container } = render(
+      <Stack as='ul'>
+        <li>Item 1</li>
+        <li>Item 2</li>
+      </Stack>
+    );
+    expect(container.firstChild?.nodeName).toBe('UL');
+    expect(container.firstChild).toHaveClass('flex');
+  });
+
+  it('renders as ol when as="ol"', () => {
+    const { container } = render(
+      <Stack as='ol'>
+        <li>Item 1</li>
+        <li>Item 2</li>
+      </Stack>
+    );
+    expect(container.firstChild?.nodeName).toBe('OL');
+    expect(container.firstChild).toHaveClass('flex');
+  });
+
+  it('renders as nav when as="nav"', () => {
+    const { container } = render(
+      <Stack as='nav'>
+        <a href='/'>Home</a>
+        <a href='/about'>About</a>
+      </Stack>
+    );
+    expect(container.firstChild?.nodeName).toBe('NAV');
+    expect(container.firstChild).toHaveClass('flex');
+  });
+
+  it('renders as section when as="section"', () => {
+    const { container } = render(
+      <Stack as='section'>
+        <div>Content</div>
+      </Stack>
+    );
+    expect(container.firstChild?.nodeName).toBe('SECTION');
+  });
+
+  it('passes through additional HTML attributes', () => {
+    render(
+      <Stack as='ul' aria-label='Navigation list' data-testid='stack-list'>
+        <li>Item</li>
+      </Stack>
+    );
+    const list = screen.getByTestId('stack-list');
+    expect(list).toHaveAttribute('aria-label', 'Navigation list');
+  });
+
   it('renders vertical direction by default', () => {
     const { container } = render(
       <Stack>

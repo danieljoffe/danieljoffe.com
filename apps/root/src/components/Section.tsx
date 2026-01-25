@@ -1,3 +1,4 @@
+import { Section as UISection } from '@danieljoffe.com/ui';
 import { WChildrenT } from '@/types/base';
 
 interface SectionProps extends WChildrenT {
@@ -11,15 +12,14 @@ export default function Section({
   ariaLabelBy,
 }: SectionProps) {
   return (
-    <section
-      className={[
-        'overflow-hidden min-h-min w-full flex justify-center',
-        'max-h-max',
-        className,
-      ].join(' ')}
+    <UISection
+      center={true}
+      overflow='hidden'
+      fullWidth={true}
+      className={`min-h-min max-h-max ${className ?? ''}`}
       aria-labelledby={ariaLabelBy}
     >
       {children}
-    </section>
+    </UISection>
   );
 }

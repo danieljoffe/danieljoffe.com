@@ -1,6 +1,20 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
 
-export interface StackProps {
+type StackElement =
+  | 'div'
+  | 'ul'
+  | 'ol'
+  | 'nav'
+  | 'section'
+  | 'article'
+  | 'aside'
+  | 'main'
+  | 'header'
+  | 'footer';
+
+export interface StackProps<T extends StackElement = 'div'> {
+  /** The HTML element to render as. Defaults to 'div'. Use 'ul' or 'ol' for semantic lists. */
+  as?: T;
   children: ReactNode;
   direction?: 'vertical' | 'horizontal';
   gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -9,6 +23,9 @@ export interface StackProps {
   wrap?: boolean;
   className?: string;
 }
+
+type PolymorphicStackProps<T extends StackElement = 'div'> = StackProps<T> &
+  Omit<ComponentPropsWithoutRef<T>, keyof StackProps<T>>;
 
 const directionClasses = {
   vertical: 'flex-col',
@@ -40,7 +57,8 @@ const justifyClasses = {
   evenly: 'justify-evenly',
 };
 
-export function Stack({
+export function Stack<T extends StackElement = 'div'>({
+  as,
   children,
   direction = 'vertical',
   gap = 'md',
@@ -48,14 +66,17 @@ export function Stack({
   justify = 'start',
   wrap = false,
   className = '',
-}: StackProps) {
+  ...rest
+}: PolymorphicStackProps<T>) {
+  const Component = (as || 'div') as ElementType;
   const wrapClass = wrap ? 'flex-wrap' : '';
 
   return (
-    <div
+    <Component
       className={`flex ${directionClasses[direction]} ${gapClasses[gap]} ${alignClasses[align]} ${justifyClasses[justify]} ${wrapClass} ${className}`}
+      {...rest}
     >
       {children}
-    </div>
+    </Component>
   );
 }

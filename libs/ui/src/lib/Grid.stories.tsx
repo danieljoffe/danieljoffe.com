@@ -6,6 +6,15 @@ const meta: Meta<typeof Grid> = {
   component: Grid,
   tags: ['autodocs'],
   argTypes: {
+    as: {
+      description:
+        'The HTML element to render as. Supports semantic elements for accessibility.',
+      control: 'select',
+      options: ['div', 'ul', 'ol', 'section', 'article', 'aside', 'main'],
+      table: {
+        defaultValue: { summary: 'div' },
+      },
+    },
     cols: {
       description: 'Number of columns in the grid',
       control: 'select',
@@ -146,6 +155,87 @@ export const NoGap: Story = {
         <Box>2</Box>
         <Box>3</Box>
         <Box>4</Box>
+      </>
+    ),
+  },
+};
+
+export const AsUnorderedList: Story = {
+  name: 'As Unordered List (ul)',
+  args: {
+    as: 'ul',
+    cols: 2,
+    gap: 'md',
+    className: 'list-none',
+    children: (
+      <>
+        <GridItem as='li'>
+          <Box>List Item 1</Box>
+        </GridItem>
+        <GridItem as='li'>
+          <Box>List Item 2</Box>
+        </GridItem>
+        <GridItem as='li'>
+          <Box>List Item 3</Box>
+        </GridItem>
+        <GridItem as='li'>
+          <Box>List Item 4</Box>
+        </GridItem>
+      </>
+    ),
+  },
+};
+
+export const AsOrderedList: Story = {
+  name: 'As Ordered List (ol)',
+  args: {
+    as: 'ol',
+    cols: 1,
+    gap: 'sm',
+    className: 'list-none',
+    children: (
+      <>
+        <GridItem as='li'>
+          <Box>Step 1: Plan your project</Box>
+        </GridItem>
+        <GridItem as='li'>
+          <Box>Step 2: Build the components</Box>
+        </GridItem>
+        <GridItem as='li'>
+          <Box>Step 3: Test and deploy</Box>
+        </GridItem>
+      </>
+    ),
+  },
+};
+
+export const CardGrid: Story = {
+  name: 'Card Grid (ul with articles)',
+  args: {
+    as: 'ul',
+    cols: 3,
+    gap: 'lg',
+    className: 'list-none',
+    children: (
+      <>
+        <GridItem as='li'>
+          <article className='bg-background-elevated p-4 rounded border border-border'>
+            <h3 className='mt-0'>Card Title 1</h3>
+            <p>Card description goes here.</p>
+          </article>
+        </GridItem>
+        <GridItem as='li'>
+          <article className='bg-background-elevated p-4 rounded border border-border'>
+            <h3 className='mt-0'>Card Title 2</h3>
+            <p>Card description goes here.</p>
+          </article>
+        </GridItem>
+        <GridItem as='li'>
+          <article className='bg-background-elevated p-4 rounded border border-border'>
+            <h3 className='mt-0'>Card Title 3</h3>
+            <p>Card description goes here.</p>
+          </article>
+        </GridItem>
       </>
     ),
   },

@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceRootMetadata } from '@/data/metadata/experience';
+import { Stack } from '@danieljoffe.com/ui';
 import Container from '@/components/Container';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
@@ -19,7 +20,7 @@ export default async function ExperiencePage() {
   return (
     <Section>
       <Container>
-        <div className='flex flex-col gap-4'>
+        <Stack direction='vertical' gap='md'>
           <header>
             <h1>Experience</h1>
             <p>
@@ -42,7 +43,7 @@ export default async function ExperiencePage() {
               ))}
             </ContentGrid>
           </section>
-        </div>
+        </Stack>
       </Container>
 
       <Script
