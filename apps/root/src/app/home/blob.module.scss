@@ -277,7 +277,7 @@
   /* Initial state matches blob-float-1 and blob-morph-1 at 0% */
   transform: translate(-55%, 10%) scaleY(0.95) scaleX(1.05);
   border-radius: 70% 30% 65% 35% / 35% 70% 30% 65%;
-  animation: blob-float-1 30s ease-in-out infinite,
+  animation: blob-float-1 20s ease-in-out infinite,
     blob-morph-1 20s ease-in-out infinite;
   filter: blur(0.15rem);
 }
@@ -301,7 +301,7 @@
   transform: translate(55%, 5%) scaleY(0.92) scaleX(1.08);
   border-radius: 35% 65% 40% 60% / 60% 35% 65% 40%;
   animation: blob-float-2 12s ease-in-out infinite,
-    blob-morph-2 9s ease-in-out infinite;
+    blob-morph-2 12s ease-in-out infinite;
   filter: blur(0.13rem);
 }
 

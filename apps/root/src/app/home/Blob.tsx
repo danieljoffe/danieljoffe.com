@@ -9,7 +9,10 @@ export default function Blob() {
     // Randomly set gradient theme on mount and periodically
     const interval = setInterval(
       setGradientTheme,
-      Math.max(5250 * Math.random(), 2525 * Math.random())
+      Math.max(
+        Math.floor(5250 * Math.random()),
+        Math.floor(2525 * Math.random())
+      )
     );
 
     return () => clearInterval(interval);

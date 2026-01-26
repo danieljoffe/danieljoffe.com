@@ -5,7 +5,7 @@ export default function Achievements() {
   return (
     <Section
       aria-labelledby='achievements-heading'
-      className='min-h-min max-h-max bg-neutral-900 text-white'
+      className='min-h-min max-h-max'
     >
       <PageContainer>
         <Stack direction='vertical' gap='lg' align='center'>

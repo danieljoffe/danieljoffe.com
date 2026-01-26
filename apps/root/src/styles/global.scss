@@ -1,6 +1,12 @@
 @use 'tailwindcss';
 @use '@danieljoffe.com/ui/styles/index.scss';
 
+// Content sources for Tailwind v4 class detection
+// Root app source files
+@source "../**/*.{ts,tsx,js,jsx}";
+// UI library components (relative path from this file to libs/ui/src)
+@source "../../../../libs/ui/src/**/*.{ts,tsx,js,jsx}";
+
 @layer base {
   :root {
     --stop-color-one: var(--background, transparent);
