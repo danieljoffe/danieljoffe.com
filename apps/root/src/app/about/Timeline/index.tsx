@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function Timeline() {
   return (
-    <Section className='min-h-min max-h-max bg-neutral-900 text-white'>
+    <Section className='min-h-min max-h-max' background='alt'>
       <PageContainer>
         <h2 id='timeline-heading'>Career Timeline</h2>
         <p>

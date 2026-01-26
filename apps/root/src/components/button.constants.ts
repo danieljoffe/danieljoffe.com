@@ -7,7 +7,7 @@ import {
 // Uses UI library semantic color tokens for consistent theming
 export const buttonBaseStyles = [
   'flex inline-flex items-center justify-center',
-  'font-sans font-bold border-transparent rounded-md',
+  'font-bold border-transparent rounded-md',
   'transition-all duration-200 ease-in-out',
   'focus:outline-none focus:ring-2',
   'focus:ring-offset-2 focus:ring-offset-background border-2',
@@ -34,7 +34,7 @@ export const buttonVariantStyles: Record<ButtonVariant, string> = {
     'p-2 w-10 h-10 min-w-[1.25rem]',
   ].join(' '),
   link: [
-    'text-foreground hover:text-accent hover:underline hover:underline-offset-4',
+    'hover:text-accent hover:underline hover:underline-offset-4',
     'active:text-accent-active',
   ].join(' '),
 };

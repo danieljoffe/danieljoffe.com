@@ -9,7 +9,7 @@ export default function Methodologies() {
       className='min-h-min max-h-max'
     >
       <PageContainer>
-        <Stack direction='vertical' gap='md'>
+        <Stack gap='md'>
           <h2 className='text-center' id='methodologies-heading'>
             My Methodology
           </h2>

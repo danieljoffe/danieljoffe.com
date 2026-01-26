@@ -5,7 +5,8 @@ export default function Contact() {
   return (
     <Section
       aria-labelledby='contact-heading'
-      className='min-h-min max-h-max bg-blue-500 text-white'
+      className='min-h-min max-h-max'
+      background='alt'
     >
       <PageContainer>
         <h2 id='contact-heading' className='text-center'>

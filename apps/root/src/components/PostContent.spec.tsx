@@ -36,25 +36,26 @@ describe('PostContent', () => {
     expect(proseContainer?.className).toContain('prose-base');
   });
 
-  test('applies heading font styling', () => {
+  test('renders headings within prose container', () => {
     render(
       <PostContent>
         <h2>Heading</h2>
       </PostContent>
     );
-    const proseContainer = screen.getByText('Heading').parentElement;
-    expect(proseContainer?.className).toContain('prose-headings:font-sans');
-    expect(proseContainer?.className).toContain('prose-headings:font-medium');
+    const heading = screen.getByText('Heading');
+    expect(heading.tagName.toLowerCase()).toBe('h2');
+    expect(heading.parentElement?.className).toContain('prose');
   });
 
-  test('applies body font styling', () => {
+  test('renders body text within prose container', () => {
     render(
       <PostContent>
         <p>Body text</p>
       </PostContent>
     );
-    const proseContainer = screen.getByText('Body text').parentElement;
-    expect(proseContainer?.className).toContain('prose-body:font-serif');
+    const bodyText = screen.getByText('Body text');
+    expect(bodyText.tagName.toLowerCase()).toBe('p');
+    expect(bodyText.parentElement?.className).toContain('prose');
   });
 
   test('applies full width to prose container', () => {

@@ -5,6 +5,7 @@ export default function Achievements() {
   return (
     <Section
       aria-labelledby='achievements-heading'
+      background='alt'
       className='min-h-min max-h-max'
     >
       <PageContainer>
@@ -16,7 +17,7 @@ export default function Achievements() {
             <Card
               key={index}
               padding='md'
-              className='w-full max-w-[28rem] bg-neutral-100 text-black border-none'
+              className='w-full max-w-[28rem] border-none'
             >
               <Stack direction='horizontal' gap='md'>
                 <p className='text-2xl'>{achievement.icon}</p>

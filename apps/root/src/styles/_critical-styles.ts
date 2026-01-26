@@ -88,7 +88,7 @@ body {
   flex: 1;
   position: relative;
   background-color: var(--background);
-  color: var(--foreground);
+  color: inherit;
   height: 100vh;
   width: 100vw;
   margin: 0;
@@ -102,7 +102,7 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  color: var(--foreground);
+  color: inherit;
   text-wrap: balance;
   margin: 0;
 }

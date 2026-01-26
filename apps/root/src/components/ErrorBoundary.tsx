@@ -32,12 +32,12 @@ const ErrorComponent = ({
 
   return (
     <div
-      className='min-h-screen flex items-center justify-center bg-neutral-50'
+      className='min-h-screen flex items-center justify-center bg-background'
       role='alert'
       aria-live='assertive'
     >
       <div className='max-w-md w-full mx-auto p-6'>
-        <div className='bg-white rounded-lg shadow-soft p-6 text-center'>
+        <div className='bg-card rounded-lg shadow-soft p-6 text-center'>
           <div className='w-16 h-16 mx-auto mb-4 bg-rose-100 rounded-full flex items-center justify-center'>
             <svg
               className='w-8 h-8 text-rose-600'
@@ -54,10 +54,8 @@ const ErrorComponent = ({
               />
             </svg>
           </div>
-          <h1 className='text-xl font-semibold text-neutral-900 mb-2'>
-            Something went wrong
-          </h1>
-          <p className='text-neutral-600 mb-6'>{A11Y.ERROR_TEXT}</p>
+          <h1 className='text-foreground'>Something went wrong</h1>
+          <p className='text-foreground-muted mb-6'>{A11Y.ERROR_TEXT}</p>
           <div className='space-y-3'>
             <Button
               name='try-again'
@@ -83,10 +81,10 @@ const ErrorComponent = ({
           {publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] !== 'production' &&
             error && (
               <details className='mt-4 text-left'>
-                <summary className='cursor-pointer text-sm text-neutral-500 hover:text-neutral-700'>
+                <summary className='cursor-pointer text-sm text-foreground-muted hover:text-foreground'>
                   Error Details (Non-Production)
                 </summary>
-                <pre className='mt-2 text-sm bg-neutral-100 p-3 rounded overflow-auto'>
+                <pre className='mt-2 text-sm bg-background-alt p-3 rounded overflow-auto'>
                   {error.stack}
                 </pre>
               </details>

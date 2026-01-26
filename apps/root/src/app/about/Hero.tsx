@@ -13,7 +13,8 @@ export default function Hero() {
   return (
     <Section
       aria-labelledby='about-me-name'
-      className='min-h-min max-h-max bg-neutral-900 text-white'
+      className='min-h-min max-h-max'
+      background='alt'
     >
       <PageContainer>
         <h1 className='text-center'>About Me</h1>
@@ -30,7 +31,7 @@ export default function Hero() {
               title={FULL_NAME}
               width={250}
               height={250}
-              className='rounded-full min-w-[15.5rem] outline-2 outline-white outline-offset-[0.5rem]'
+              className='rounded-full min-w-[15.5rem] outline-2 outline-foreground outline-offset-[0.5rem]'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
               fetchPriority='high'
               priority={true}

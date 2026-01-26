@@ -8,7 +8,8 @@ import Button from '@/components/Button';
 export default function CTA() {
   return (
     <Section
-      className='min-h-min max-h-max bg-neutral-900 text-white'
+      className='min-h-min max-h-max'
+      background='alt'
       aria-labelledby='cta-heading'
     >
       <PageContainer className='text-center max-w-[31rem]'>

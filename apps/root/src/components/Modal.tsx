@@ -71,9 +71,9 @@ export default function Modal() {
       <DialogBackdrop
         transition={true}
         className={[
-          'fixed inset-0 bg-neutral-500/75 transition-opacity',
+          'fixed inset-0 bg-foreground/75 transition-opacity',
           'data-closed:opacity-0 data-enter:ease-out',
-          'data-leave:ease-in dark:bg-neutral-900/50',
+          'data-leave:ease-in',
           `data-enter:duration-${ANIMATION_DURATION.NORMAL}`,
           `data-leave:duration-${ANIMATION_DURATION.FAST}`,
         ].join(' ')}
@@ -85,7 +85,7 @@ export default function Modal() {
             ref={focusTrapRef}
             transition={true}
             className={[
-              'relative transform overflow-hidden bg-neutral-100 text-left',
+              'relative transform overflow-hidden bg-background text-left',
               'shadow-xl transition-all data-closed:translate-y-4',
               'data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out',
               'data-leave:duration-200 data-leave:ease-in h-full w-full',
@@ -102,10 +102,10 @@ export default function Modal() {
                 website.
               </p>
             </header>
-            <main className='bg-neutral-100 flex-1 px-8 py-12 overflow-y-auto'>
+            <main className='bg-background flex-1 px-8 py-12 overflow-y-auto'>
               {modalContent}
             </main>
-            <footer className='bg-neutral-200/50 px-8 py-4 flex justify-end'>
+            <footer className='bg-background-alt px-8 py-4 flex justify-end'>
               <Button
                 onClick={toggleModal}
                 variant='primary'

@@ -103,7 +103,7 @@ export default function Form() {
   return (
     <form
       id={CONTACT_FORM_ID}
-      className='flex flex-col gap-4 text-white relative'
+      className='flex flex-col gap-4 relative'
       onSubmit={handleSubmit(onSubmit)}
       action=''
       aria-labelledby='contact-form-heading'
@@ -119,7 +119,7 @@ export default function Form() {
         <legend className='sr-only'>Contact Information</legend>
         <Stack direction='vertical' gap='md'>
           <Input
-            className='text-neutral-900 placeholder-neutral-800'
+            className='text-foreground placeholder-foreground-muted'
             placeholder='John Doe'
             type='text'
             autoComplete='name'
@@ -131,7 +131,7 @@ export default function Form() {
           />
 
           <Input
-            className='text-neutral-900 placeholder-neutral-800'
+            className='text-foreground placeholder-foreground-muted'
             label='Email'
             placeholder='john.doe@example.com'
             type='email'
@@ -145,11 +145,12 @@ export default function Form() {
           />
 
           <Textarea
-            className='text-neutral-900 placeholder-neutral-800'
+            className='text-foreground placeholder-foreground-muted'
             label='Message'
             placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
             autoComplete='off'
             required={true}
+            rows={5}
             {...register('message')}
             error={errors?.message?.message}
             aria-describedby={

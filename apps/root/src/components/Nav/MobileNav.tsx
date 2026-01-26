@@ -90,7 +90,7 @@ export default function MobileNav({
   };
 
   return (
-    <div className='md:hidden flex items-center justify-between w-full py-4 px-4 bg-neutral-100 shadow'>
+    <div className='md:hidden flex items-center justify-between w-full py-4 px-4 bg-background shadow'>
       <Logo />
       <Button
         aria-label={menuOpen ? 'Close menu' : 'Open menu'}
