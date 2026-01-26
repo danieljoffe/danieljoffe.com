@@ -13,8 +13,7 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./styles/index.scss": "./src/styles/index.scss",
-    "./styles/tailwind.scss": "./src/styles/tailwind.scss",
-    "./styles/theme.muted-violet.scss": "./src/styles/theme.muted-violet.scss"
+    "./styles/muted-violet.scss": "./src/styles/muted-violet.scss",
+    "./styles/muted-violet-dark.scss": "./src/styles/muted-violet-dark.scss"
   }
 }

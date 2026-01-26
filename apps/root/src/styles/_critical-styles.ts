@@ -1,25 +1,53 @@
 export const criticalStyles = `
 :root {
-  --font-heading: 'Fraunces', 'Fraunces Fallback', Georgia, 'Times New Roman', serif;
-  --font-body: 'Space Grotesk', 'Space Grotesk Fallback', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', Consolas, Monaco, monospace;
+  --font-heading:
+    "Fraunces", "Fraunces Fallback", Georgia, "Times New Roman", serif;
+  --font-body:
+    "Space Grotesk", "Space Grotesk Fallback", system-ui, -apple-system,
+    sans-serif;
+  --font-mono:
+    "IBM Plex Mono", "IBM Plex Mono Fallback", Consolas, Monaco, monospace;
 
-  /* Color System - Light Mode */
-  --background: #FDFBF7;
-  --background-alt: #F5F3EE;
-  --background-elevated: #FFFFFF;
-  --foreground: #1A1A1A;
-  --foreground-muted: #6B6B6B;
-  --foreground-subtle: #9A9A9A;
+  /* Color System - Light Mode (Default) */
+  --background: #fdfbf7;
+  --background-alt: #f5f3ee;
+  --background-elevated: #ffffff;
+  --foreground: #1a1a1a;
+  --foreground-muted: #6b6b6b;
+  --foreground-subtle: #9a9a9a;
 
-  --accent: #6B5B95;
-  --accent-hover: #574A7A;
-  --accent-active: #453B62;
-  --accent-muted: #EEEAF4;
-  --accent-foreground: #FDFBF7;
+  --accent: #6b5b95;
+  --accent-hover: #574a7a;
+  --accent-active: #453b62;
+  --accent-muted: #eeeaf4;
+  --accent-foreground: #fdfbf7;
 
-  --border: #E5E2DA;
-  --border-strong: #D0CCC2;
+  --border: #e5e2da;
+  --border-strong: #d0ccc2;
+
+  --success: #2d6a4f;
+  --success-muted: #e8f5ee;
+  --success-foreground: #fdfbf7;
+
+  --warning: #8b7425;
+  --warning-muted: #f5f0e0;
+  --warning-foreground: #fdfbf7;
+
+  --error: #b54332;
+  --error-muted: #fceeed;
+  --error-foreground: #fdfbf7;
+
+  --info: #2b6b8a;
+  --info-muted: #e8f2f7;
+  --info-foreground: #fdfbf7;
+
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+
+  --input: #ffffff;
+  --input-border: #d0ccc2;
+
+  --ring: #6b5b95;
 
   /* Typography Tokens */
   --font-size-base: 1.0625rem;
@@ -29,6 +57,7 @@ export const criticalStyles = `
   --font-size-h4: 1.125rem;
   --font-size-h5: 0.875rem;
   --font-size-h6: 0.875rem;
+  --font-size-code: 0.9375rem;
 
   --line-height-base: 1.6;
   --line-height-h1: 1.2;
@@ -37,11 +66,12 @@ export const criticalStyles = `
   --line-height-h4: 1.4;
   --line-height-h5: 1.5;
   --line-height-h6: 1.5;
+  --line-height-code: 1.5;
 
   --letter-spacing-h1: -0.02em;
   --letter-spacing-h2: -0.01em;
 
-  --font-weight-normal: 400;
+  --font-weight-normal: 300;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
 
@@ -59,40 +89,29 @@ export const criticalStyles = `
   --h6-margin-top: 1.5rem;
   --h6-margin-bottom: 0.5rem;
 
+  /* Radius */
   --radius: 0.25rem;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 html {
+  font-family: var(--font-body);
+  background-color: var(--background);
+  color: var(--foreground);
   font-size: 16px;
 }
 
-html,
-p,
-ul,
-ol,
-figure {
-  margin: 0;
-  padding: 0;
-}
-
 body {
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-body);
   font-size: var(--font-size-base);
-  font-weight: var(--font-weight-normal);
   line-height: var(--line-height-base);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'kern' 1, 'liga' 1;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  position: relative;
-  background-color: var(--background);
-  color: inherit;
-  height: 100vh;
-  width: 100vw;
-  margin: 0;
-  padding: 4.5rem 0 0;
+  font-weight: var(--font-weight-normal);
+  padding-top: 4.5rem;
 }
 
 h1,
@@ -107,72 +126,81 @@ h6 {
   margin: 0;
 }
 
-h1,
-h2,
-h3,
-h4 {
-  font-weight: var(--font-weight-semibold);
-}
-
-h5,
-h6 {
-  font-weight: var(--font-weight-medium);
-}
-
 h1 {
   font-size: var(--font-size-h1);
-  letter-spacing: var(--letter-spacing-h1);
   line-height: var(--line-height-h1);
-  font-variation-settings: 'opsz' 144, 'WONK' 1;
+  letter-spacing: var(--letter-spacing-h1);
+  font-weight: var(--font-weight-semibold);
   margin-top: var(--h1-margin-top);
   margin-bottom: var(--h1-margin-bottom);
+  font-variation-settings:
+    "opsz" 144,
+    "WONK" 1;
 }
 
 h2 {
   font-size: var(--font-size-h2);
-  letter-spacing: var(--letter-spacing-h2);
   line-height: var(--line-height-h2);
-  font-variation-settings: 'opsz' 72, 'WONK' 1;
+  letter-spacing: var(--letter-spacing-h2);
+  font-weight: var(--font-weight-semibold);
   margin-top: var(--h2-margin-top);
   margin-bottom: var(--h2-margin-bottom);
+  font-variation-settings:
+    "opsz" 72,
+    "WONK" 1;
 }
 
 h3 {
   font-size: var(--font-size-h3);
   line-height: var(--line-height-h3);
-  font-variation-settings: 'opsz' 36, 'WONK' 0;
+  font-weight: var(--font-weight-semibold);
   margin-top: var(--h3-margin-top);
   margin-bottom: var(--h3-margin-bottom);
+  font-variation-settings:
+    "opsz" 36,
+    "WONK" 0;
 }
 
 h4 {
   font-size: var(--font-size-h4);
   line-height: var(--line-height-h4);
-  font-variation-settings: 'opsz' 24, 'WONK' 0;
+  font-weight: var(--font-weight-semibold);
   margin-top: var(--h4-margin-top);
   margin-bottom: var(--h4-margin-bottom);
+  font-variation-settings:
+    "opsz" 24,
+    "WONK" 0;
 }
 
 h5 {
   font-size: var(--font-size-h5);
   line-height: var(--line-height-h5);
-  font-variation-settings: 'opsz' 12, 'WONK' 0;
+  font-weight: var(--font-weight-medium);
   margin-top: var(--h5-margin-top);
   margin-bottom: var(--h5-margin-bottom);
+  font-variation-settings:
+    "opsz" 12,
+    "WONK" 0;
 }
 
 h6 {
   font-size: var(--font-size-h6);
   line-height: var(--line-height-h6);
-  text-transform: uppercase;
-  font-variation-settings: 'opsz' 12, 'WONK' 0;
+  font-weight: var(--font-weight-medium);
   margin-top: var(--h6-margin-top);
   margin-bottom: var(--h6-margin-bottom);
+  font-variation-settings:
+    "opsz" 12,
+    "WONK" 0;
 }
 
 ul,
 ol {
   list-style: none;
+}
+
+:is(h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
 }
 
 .sr-only {
@@ -199,11 +227,10 @@ ol {
   white-space: normal;
 }
 
-:is(h1, h2, h3, h4, h5, h6):first-child {
-  margin-top: 0;
-}
-
 @media (min-width: 640px) {
+  html {
+    font-size: 18px;
+  }
   body {
     padding-top: 3.5rem;
   }

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import MobileNav from './MobileNav';
+import DarkModeToggle from './DarkModeToggle';
 import { useGlobal } from '@/state/Global/Context';
 import NavLinks from './Links';
 
@@ -21,8 +22,9 @@ export default function Nav() {
       role='navigation'
       aria-label='Main navigation'
     >
-      <div className='hidden md:flex w-full justify-center items-center py-4 px-8'>
+      <div className='hidden md:flex w-full justify-center items-center py-4 px-8 gap-4'>
         <NavLinks pathname={pathname} />
+        <DarkModeToggle />
       </div>
 
       <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuOpen} />

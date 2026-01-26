@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
 import { WChildrenT } from '@/types/base';
-import { criticalStyles } from '@/styles/_critical-styles';
 import { fontVariables } from '@/styles/fonts';
 import '@/styles/global.scss';
 import Button from '@/components/Button';
@@ -20,8 +19,6 @@ export default async function RootLayout({ children }: WChildrenT) {
   return (
     <html lang='en' className={[fontVariables, 'scroll-smooth'].join(' ')}>
       <head>
-        {/* Critical inline styles for immediate rendering */}
-        <style dangerouslySetInnerHTML={{ __html: criticalStyles }} />
         {/* Resource hints for third-party services */}
         <link rel='dns-prefetch' href='https://sentry.io' />
         <link rel='dns-prefetch' href='https://www.googletagmanager.com' />

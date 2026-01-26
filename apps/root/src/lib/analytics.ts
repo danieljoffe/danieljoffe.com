@@ -37,4 +37,8 @@ export const analytics = {
     trackEvent('project_click', { project: projectSlug }),
   experienceClick: (experienceSlug: string) =>
     trackEvent('experience_click', { experience: experienceSlug }),
+
+  // Theme events
+  themeToggle: (theme: 'light' | 'dark') =>
+    trackEvent('theme_toggle', { theme }),
 };
