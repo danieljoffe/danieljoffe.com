@@ -41,8 +41,8 @@ test.describe('homepage', () => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
 
-    // Check if navigation is visible
-    const nav = page.locator('nav');
+    // Check if main navigation is visible (use specific aria-label to distinguish from footer nav)
+    const nav = page.locator('nav[aria-label="Main navigation"]');
     await expect(nav).toBeVisible();
 
     // On desktop viewport, navigation links should be directly visible

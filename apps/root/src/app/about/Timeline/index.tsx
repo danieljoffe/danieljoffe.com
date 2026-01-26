@@ -1,12 +1,11 @@
-import Container from '@/components/Container';
+import { PageContainer, Section } from '@danieljoffe.com/ui';
 import FullTimeline from './FullTimeline';
-import Section from '@/components/Section';
 import Image from 'next/image';
 
 export default function Timeline() {
   return (
-    <Section className='bg-neutral-900 text-white'>
-      <Container>
+    <Section className='min-h-min max-h-max' background='alt'>
+      <PageContainer>
         <h2 id='timeline-heading'>Career Timeline</h2>
         <p>
           My journey began in frontend development, but I&apos;ve evolved into a
@@ -47,7 +46,7 @@ export default function Timeline() {
           decoding='async'
         />
         <FullTimeline />
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

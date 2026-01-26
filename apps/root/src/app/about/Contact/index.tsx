@@ -1,11 +1,14 @@
-import Container from '@/components/Container';
-import Section from '@/components/Section';
+import { PageContainer, Section } from '@danieljoffe.com/ui';
 import Form from './Form';
 
 export default function Contact() {
   return (
-    <Section ariaLabelBy='contact-heading' className='bg-blue-500 text-white'>
-      <Container>
+    <Section
+      aria-labelledby='contact-heading'
+      className='min-h-min max-h-max'
+      background='alt'
+    >
+      <PageContainer>
         <h2 id='contact-heading' className='text-center'>
           Let&apos;s Connect
         </h2>
@@ -20,7 +23,7 @@ export default function Contact() {
           24 hours
         </p>
         <Form />
-      </Container>
+      </PageContainer>
     </Section>
   );
 }

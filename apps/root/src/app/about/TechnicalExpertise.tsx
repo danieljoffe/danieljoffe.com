@@ -1,12 +1,14 @@
-import Container from '@/components/Container';
-import Section from '@/components/Section';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 
 export default function TechnicalExpertise() {
   return (
-    <Section ariaLabelBy='technical-expertise-heading'>
-      <Container>
+    <Section
+      aria-labelledby='technical-expertise-heading'
+      className='min-h-min max-h-max'
+    >
+      <PageContainer>
         <h2 id='technical-expertise-heading'>Technical Expertise</h2>
-        <ul className='flex flex-col gap-2'>
+        <Stack as='ul' direction='vertical' gap='sm' className='list-none'>
           <li>
             <p>
               <strong className='font-bold'>Frontend:</strong>{' '}
@@ -35,8 +37,8 @@ export default function TechnicalExpertise() {
               Libraries, Design Systems, Accessibility
             </p>
           </li>
-        </ul>
-      </Container>
+        </Stack>
+      </PageContainer>
     </Section>
   );
 }

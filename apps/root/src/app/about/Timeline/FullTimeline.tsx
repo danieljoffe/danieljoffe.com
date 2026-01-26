@@ -4,6 +4,7 @@ import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import LinkHint from '@/components/LinkHint';
 import Button from '@/components/Button';
 import ContentGrid from '@/components/ContentGrid';
+import { Card, Stack } from '@danieljoffe.com/ui';
 
 export default function FullTimeline() {
   return (
@@ -14,7 +15,7 @@ export default function FullTimeline() {
           const company = experienceFull[slug] ?? {};
 
           return (
-            <li className='flex flex-1' key={company.slug}>
+            <Card className='flex' padding='none' key={company.slug} elevated>
               <Button
                 as='link'
                 variant='link'
@@ -23,8 +24,8 @@ export default function FullTimeline() {
                 href={`${EXPERIENCE_LINK.href}/${company.slug}`}
                 aria-label={`View details for ${company.company}`}
               >
-                <div className='flex gap-4 w-full h-full items-center justify-between'>
-                  <div className='flex w-full max-w-[4.5rem] h-[4.5rem] p-2 md:p-[.75rem] bg-white rounded-[50%] justify-center items-center'>
+                <Stack direction='horizontal' className='flex-1'>
+                  <div className='flex w-full max-w-[4.5rem] h-[4.5rem] p-2 md:p-[.75rem] bg-background-elevated rounded-[50%] justify-center items-center'>
                     <Image
                       src={company.logo}
                       alt={company.company}
@@ -48,9 +49,9 @@ export default function FullTimeline() {
                   <div className='w-[1.5rem]'>
                     <LinkHint />
                   </div>
-                </div>
+                </Stack>
               </Button>
-            </li>
+            </Card>
           );
         })}
       </ContentGrid>

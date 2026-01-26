@@ -39,13 +39,13 @@ describe('PostThumbnailDescription', () => {
     expect(paragraph.tagName.toLowerCase()).toBe('p');
   });
 
-  test('applies text styling', () => {
+  test('applies container styling', () => {
     const { container } = render(
       <PostThumbnailDescription title='Title' description='Desc' />
     );
     const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('text-white');
     expect((outerDiv as HTMLElement)?.className).toContain('overflow-hidden');
+    expect((outerDiv as HTMLElement)?.className).toContain('bg-foreground/25');
   });
 
   test('applies minimum height for consistent card sizing', () => {

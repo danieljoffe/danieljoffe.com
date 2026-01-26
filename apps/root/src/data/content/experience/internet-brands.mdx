@@ -1,30 +1,65 @@
 ## Internet Brands
 
-**Duration:** 2018–2019  
-**Role:** Frontend Developer
+**Duration:** March 2018 - August 2019
+**Role:** Frontend Developer (performing Senior-level duties)
 
 ### The Context
 
-**The Leadership Test: Managing Teams While Ensuring Compliance**
+I joined the Health vertical expecting to learn from experienced React developers. One month in, the senior frontend engineer left, and I became the de facto technical lead for React across the team, despite being mid-level on paper.
+
+The team included 4 junior frontend developers, 6 senior backend engineers, and 2 PMs. None of the remaining frontend engineers knew React. I had production experience from my ForceShield contract, but I'd never led a team or architected shared infrastructure at scale.
 
 ### The Challenge
 
-Moving to Internet Brands' Health vertical meant entering the complex world of healthcare applications, where technical excellence had to meet strict regulatory requirements.
+React components were being duplicated across applications with inconsistent implementations. Each app reinvented the wheel, buttons, inputs, and modals, all slightly different. There was no shared design language, and onboarding new developers meant explaining the same patterns over and over.
 
-I was thrust into senior-level responsibilities despite my title, leading a team of 5 developers (3 junior, 2 mid-level) while ensuring HIPAA compliance across clinical office applications. The company also needed to fill a critical Senior Developer role that had been vacant.
+Meanwhile, the business needed features shipped fast, and I was now responsible for both delivery and team development.
 
 ### The Solution
 
-I took ownership of both people and process. I drove HIPAA compliance research and implementation, led the hiring process interviewing 13 candidates, and built a shared React component library that unified our microservices UI.
+**React Component Library**
+
+I built a centralized UI component library to unify patterns across the vertical:
+
+- **Dumb components first**, stateless, reusable primitives (Button, Input, Select, Modal, etc.)
+- **Smart wrappers**, stateful versions when needed for specific use cases
+- **Full documentation**, every component documented with usage examples
+- **Contribution workflow**, established patterns so others could add components
+- **Training program**, taught 7 developers how to use and contribute to the library
+
+**Shipping Under Pressure**
+
+While building infrastructure, I also led delivery on critical projects:
+
+- **Mobile messaging app redesign:** Re-architected a desktop-only doctor messaging app for mobile-first in under one month. Collaborated closely with design on UX; paired with a junior developer throughout.
+- **Doctor-to-doctor communication app:** Took over a stalled project from another team. Directed 6 developers (mix of senior, mid, and junior) to deliver on deadline. Features included messaging, WYSIWYG email composition, and patient treatment tracking.
+- **Electron medical dashboard:** Mentored a junior developer through an entire build, call detection, phone integration, and client data queries. Used it as a teaching opportunity to build pipelines and the component library.
+
+**Hiring**
+
+With the senior role still vacant, I led the hiring process:
+
+- Interviewed 13 candidates (5 senior, 8 junior)
+- Hired a senior developer who became a key contributor
+- Recommended a junior candidate whom another department hired
 
 ### The Impact
 
-The React component library I built was adopted by 80% of Health vertical applications, with 30+ documented components. I interviewed 13 candidates and hired a Senior Developer who became a key contributor. I also mentored 4 junior developers—one was later promoted to Senior, another went on to JPL.
+- **30+ documented components** in the shared library
+- **80% of Health vertical applications** adopted the library
+- **7 developers trained** on React and library contribution
+- **4 junior developers mentored**, one promoted to Senior, another went on to work at JPL
+- Delivered mobile app redesign in under 1 month
+- Successfully shipped doctor-to-doctor app after the previous team couldn't deliver
 
-### Lessons Learned
+### Why I Left
 
-Leadership isn't about titles. It's about taking responsibility for outcomes. I discovered my ability to manage both technical architecture and team dynamics simultaneously.
+I asked for a promotion to Senior after a year of performing at that level, leading teams, architecting systems, and hiring. I was told it was "too much too soon." I left voluntarily, frustrated by the gap between my responsibilities and my title.
+
+### What I Learned
+
+This role proved I could lead without authority. But it also taught me to advocate for myself; doing senior work doesn't automatically get recognized. You have to make the case explicitly.
 
 ### Tech Stack
 
-React, Redux, TypeScript, JavaScript ES6+, AngularJS, Angular 2+, Webpack, CSS Grid, Flexbox, Chrome DevTools, NPM, Electron, CI/CD, HIPAA Compliance
+React, Redux, AngularJS, Angular 2+, Electron, JavaScript, TypeScript, CSS, Webpack, npm, CI/CD

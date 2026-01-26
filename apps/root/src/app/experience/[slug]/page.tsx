@@ -8,9 +8,8 @@ import { experienceMdxComponents } from '@/data/content/experience';
 import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
+import { PageContainer, Section } from '@danieljoffe.com/ui';
 import PostBody from '@/components/PostBody';
-import Container from '@/components/Container';
-import Section from '@/components/Section';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -48,12 +47,12 @@ export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
   ];
 
   return (
-    <Section>
-      <Container>
+    <Section className='min-h-min max-h-max'>
+      <PageContainer>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <Post />
         </PostBody>
-      </Container>
+      </PageContainer>
       <Script
         id={`${slug}-structured-data`}
         type='application/ld+json'

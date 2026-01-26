@@ -1,43 +1,31 @@
-@theme {
-  --color-blue-100: #669ad1;
-  --color-blue-200: #4d89ca;
-  --color-blue-300: #3378c2;
-  --color-blue-400: #1a67bb;
-  --color-blue-500: #0056b3;
-  --color-blue-600: #00458f;
-  --color-blue-700: #00346b;
-  --color-blue-800: #002248;
-  --color-blue-900: #001124;
-  --color-rose-100: #cf6b8b;
-  --color-rose-200: #c75277;
-  --color-rose-300: #bf3964;
-  --color-rose-400: #b72150;
-  --color-rose-500: #af083d;
-  --color-rose-600: #8c0631;
-  --color-rose-700: #690525;
-  --color-rose-800: #460318;
-  --color-rose-900: #23020c;
-  --color-neutral-100: #f5f5f5;
-  --color-neutral-200: #cdcdcd;
-  --color-neutral-300: #b8b8b8;
-  --color-neutral-400: #a4a4a4;
-  --color-neutral-500: #8b8b8b;
-  --color-neutral-600: #6c6c6c;
-  --color-neutral-700: #4d4d4d;
-  --color-neutral-800: #2e2e2e;
-  --color-neutral-900: #0f0f0f;
-}
+@use 'tailwindcss';
+@use '@danieljoffe.com/ui/styles/muted-violet.scss';
+@use '@danieljoffe.com/ui/styles/muted-violet-dark.scss';
+
+// Content sources for Tailwind v4 class detection
+// Root app source files
+@source "../**/*.{ts,tsx,js,jsx}";
+// UI library components (relative path from this file to libs/ui/src)
+@source "../../../../libs/ui/src/**/*.{ts,tsx,js,jsx}";
 
 @layer base {
   :root {
-    --stop-color-one: #000;
-    --stop-color-two: #000;
-    --stop-color-three: #000;
-    --stop-color-four: #000;
-    --stop-color-five: #000;
-    --stop-color-six: #000;
-    --stop-color-seven: #000;
-    --stop-color-eight: #000;
+    --stop-color-one: var(--background, transparent);
+    --stop-color-two: var(--background, transparent);
+    --stop-color-three: var(--background, transparent);
+    --stop-color-four: var(--background, transparent);
+    --stop-color-five: var(--background, transparent);
+    --stop-color-six: var(--background, transparent);
+    --stop-color-seven: var(--background, transparent);
+    --stop-color-eight: var(--background, transparent);
+  }
+
+  html {
+    transition-timing-function: ease-in-out;
+    transition-duration: 3.5s;
+    transition-property: --stop-color-one, --stop-color-two, --stop-color-three,
+      --stop-color-four, --stop-color-five, --stop-color-six, --stop-color-seven,
+      --stop-color-eight;
   }
 
   body {

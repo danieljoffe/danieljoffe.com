@@ -1,35 +1,32 @@
-import Container from '@/components/Container';
-import Section from '@/components/Section';
+import { Card, Stack, PageContainer, Section, Grid } from '@danieljoffe.com/ui';
 import { offerings } from '@/utils/offerings';
 
 export default function Achievements() {
   return (
     <Section
-      ariaLabelBy='achievements-heading'
-      className='bg-neutral-900 text-white'
+      aria-labelledby='achievements-heading'
+      className='min-h-min max-h-max'
     >
-      <Container>
-        <div className='flex flex-col gap-4 items-center md:gap-8'>
+      <PageContainer>
+        <Stack direction='vertical' gap='lg' align='center'>
           <h2 className='text-center' id='achievements-heading'>
             My Achievements
           </h2>
-          {offerings.achievements.map((achievement, index) => (
-            <div
-              key={index}
-              className={[
-                'flex gap-4 w-full max-w-[28rem] pt-4 px-4 pb-6',
-                'bg-neutral-100 text-black rounded-[5px]',
-              ].join(' ')}
-            >
-              <p className='text-2xl'>{achievement.icon}</p>
-              <div className='flex flex-col'>
-                <h3>{achievement.metric}</h3>
-                <p>{achievement.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Container>
+          <Grid cols={1} gap='lg' className='w-full'>
+            {offerings.achievements.map((achievement, index) => (
+              <Card key={index} padding='md' elevated>
+                <Stack direction='horizontal' gap='md'>
+                  <p className='text-2xl'>{achievement.icon}</p>
+                  <Stack direction='vertical' gap='none'>
+                    <h3>{achievement.metric}</h3>
+                    <p>{achievement.text}</p>
+                  </Stack>
+                </Stack>
+              </Card>
+            ))}
+          </Grid>
+        </Stack>
+      </PageContainer>
     </Section>
   );
 }

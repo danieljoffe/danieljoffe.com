@@ -35,6 +35,9 @@ jobs:
       - name: Build application
         run: yarn nx build root
 
+      - name: Build Storybook
+        run: yarn nx build-storybook @danieljoffe.com/ui
+
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps
 

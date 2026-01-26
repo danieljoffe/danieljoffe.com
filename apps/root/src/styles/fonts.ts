@@ -1,11 +1,7 @@
-import {
-  Ibarra_Real_Nova,
-  Plus_Jakarta_Sans,
-  JetBrains_Mono,
-} from 'next/font/google';
+import { Fraunces, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
 
 // HEADING FONT
-export const ibarraRealNova = Ibarra_Real_Nova({
+export const ibarraRealNova = Fraunces({
   subsets: ['latin'],
   variable: '--font-heading',
   fallback: ['Georgia', 'Times New Roman', 'serif'],
@@ -13,10 +9,11 @@ export const ibarraRealNova = Ibarra_Real_Nova({
   preload: true,
   adjustFontFallback: true,
   style: ['normal'],
+  axes: ['WONK', 'opsz'],
 });
 
 // BODY FONT
-export const plusJakartaSans = Plus_Jakarta_Sans({
+export const plusJakartaSans = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-body',
   fallback: ['system-ui', '-apple-system', 'sans-serif'],
@@ -26,13 +23,14 @@ export const plusJakartaSans = Plus_Jakarta_Sans({
   style: ['normal'],
 });
 
-export const jetbrainsMono = JetBrains_Mono({
+export const jetbrainsMono = IBM_Plex_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   fallback: ['Consolas', 'Monaco', 'monospace'],
   display: 'swap',
   preload: false, // Only preload critical fonts
   adjustFontFallback: true,
+  weight: ['400', '600'],
 });
 
 // COMBINED FONT VARIABLES

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Container from '@/components/Container';
+import { PageContainer } from '@danieljoffe.com/ui';
 
 import type { Metadata } from 'next';
 import Button from '@/components/Button';
@@ -35,12 +35,10 @@ export default async function ThankYouEmail() {
 
   return (
     <>
-      <Container>
+      <PageContainer>
         <div className='flex flex-col items-center justify-center gap-4'>
           <div>
-            <h1 className='text-3xl font-bold mb-4 text-center'>
-              Thank you for reaching out!
-            </h1>
+            <h1 className='text-center'>Thank you for reaching out!</h1>
             <p className='text-lg text-center mb-2'>
               I appreciate you taking the time to reach out.
               <br />
@@ -56,7 +54,7 @@ export default async function ThankYouEmail() {
             Back to home
           </Button>
         </div>
-      </Container>
+      </PageContainer>
     </>
   );
 }

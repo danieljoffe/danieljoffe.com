@@ -1,7 +1,6 @@
 'use client';
 import Button from '@/components/Button';
-import Container from '@/components/Container';
-import Section from '@/components/Section';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
@@ -12,26 +11,39 @@ import Image from 'next/image';
 
 export default function Hero() {
   return (
-    <Section ariaLabelBy='about-me-name' className='bg-neutral-900 text-white'>
-      <Container>
+    <Section
+      aria-labelledby='about-me-name'
+      className='min-h-min max-h-max'
+      background='alt'
+    >
+      <PageContainer>
         <h1 className='text-center'>About Me</h1>
-        <div className='flex flex-col gap-4 md:gap-8 md:flex-row '>
-          <div className='flex items-start justify-center p-[1rem]'>
+        <Stack direction='vertical' gap='md' className='md:flex-row md:gap-8'>
+          <Stack
+            direction='horizontal'
+            justify='center'
+            align='start'
+            className='p-[1rem]'
+          >
             <Image
               src='/images/daniel-joffe-profile.png'
               alt={FULL_NAME}
               title={FULL_NAME}
               width={250}
               height={250}
-              className='rounded-full min-w-[15.5rem] outline-2 outline-white outline-offset-[0.5rem]'
+              className='rounded-full min-w-[15.5rem] outline-2 outline-foreground outline-offset-[0.5rem]'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
               fetchPriority='high'
               priority={true}
               decoding='async'
               loading='eager'
             />
-          </div>
-          <div className='flex flex-col gap-4 text-center md:text-left'>
+          </Stack>
+          <Stack
+            direction='vertical'
+            gap='md'
+            className='text-center md:text-left'
+          >
             <p className='uppercase tracking-wide font-medium'>
               Daniel Joffe, <br />
               Senior Frontend Engineer
@@ -50,8 +62,12 @@ export default function Hero() {
               Explore my work below, and let&apos;s discuss how I can help your
               team.
             </p>
-            <div className='flex flex-col items-center md:items-start'>
-              <div className='flex'>
+            <Stack
+              direction='vertical'
+              align='center'
+              className='md:items-start'
+            >
+              <Stack direction='horizontal' gap='none'>
                 <Button
                   size='sm'
                   variant='icon'
@@ -119,11 +135,11 @@ export default function Hero() {
                 >
                   <Download absoluteStrokeWidth={true} />
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Container>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Stack>
+      </PageContainer>
     </Section>
   );
 }

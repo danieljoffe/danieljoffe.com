@@ -1,5 +1,6 @@
 'use client';
 import Logo from './Logo';
+import DarkModeToggle from './DarkModeToggle';
 import Button from '@/components/Button';
 import MorphSVGPlugin from 'gsap/MorphSVGPlugin';
 import gsap from 'gsap';
@@ -90,18 +91,21 @@ export default function MobileNav({
   };
 
   return (
-    <div className='md:hidden flex items-center justify-between w-full py-4 px-4 bg-neutral-100 shadow'>
+    <div className='md:hidden flex items-center justify-between w-full py-4 px-4 bg-background shadow'>
       <Logo />
-      <Button
-        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        aria-expanded={menuOpen}
-        aria-controls='mobile-menu'
-        onClick={handleToggle}
-        variant='icon'
-        name='toggle menu'
-      >
-        <MenuIcon isOpen={menuOpen} />
-      </Button>
+      <div className='flex items-center gap-2'>
+        <DarkModeToggle />
+        <Button
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          aria-controls='mobile-menu'
+          onClick={handleToggle}
+          variant='icon'
+          name='toggle menu'
+        >
+          <MenuIcon isOpen={menuOpen} />
+        </Button>
+      </div>
     </div>
   );
 }

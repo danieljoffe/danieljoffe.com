@@ -4,10 +4,9 @@ import { headers } from 'next/headers';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
-import Container from '@/components/Container';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
-import Section from '@/components/Section';
 
 const projectsList = Object.values(projectsRecords);
 export const metadata: Metadata = projectRootMetadata;
@@ -17,9 +16,9 @@ export default async function Projects() {
   const nonce = headersStore.get('x-nonce') ?? undefined;
 
   return (
-    <Section>
-      <Container>
-        <div className='flex flex-col gap-4'>
+    <Section className='min-h-min max-h-max'>
+      <PageContainer>
+        <Stack direction='vertical' gap='md'>
           <header>
             <h1>Projects</h1>
             <p>
@@ -41,8 +40,8 @@ export default async function Projects() {
               ))}
             </ContentGrid>
           </section>
-        </div>
-      </Container>
+        </Stack>
+      </PageContainer>
       <Script
         id='projects-structured-data'
         type='application/ld+json'

@@ -46,7 +46,7 @@ export default function PostThumbnail({
         href={link.href}
         onClick={handleClick}
         className={[
-          'row-span-1 col-span-1 flex-1',
+          'row-span-1 col-span-1 flex-1 text-white',
           'overflow-hidden shadow-lg',
           backgroundColor,
         ].join(' ')}

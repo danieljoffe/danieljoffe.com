@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
 import { WChildrenT } from '@/types/base';
-import { criticalStyles } from '@/styles/_critical-styles';
 import { fontVariables } from '@/styles/fonts';
-import '@/styles/tailwind.scss';
+import '@/styles/global.scss';
 import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
@@ -20,8 +19,6 @@ export default async function RootLayout({ children }: WChildrenT) {
   return (
     <html lang='en' className={[fontVariables, 'scroll-smooth'].join(' ')}>
       <head>
-        {/* Critical inline styles for immediate rendering */}
-        <style dangerouslySetInnerHTML={{ __html: criticalStyles }} />
         {/* Resource hints for third-party services */}
         <link rel='dns-prefetch' href='https://sentry.io' />
         <link rel='dns-prefetch' href='https://www.googletagmanager.com' />
@@ -35,7 +32,7 @@ export default async function RootLayout({ children }: WChildrenT) {
         className={[
           'focus:outline-blue-500 focus:outline-2 focus:outline-offset-2',
           'focus-visible:outline-blue-500 focus-visible:outline-2',
-          'focus-visible:outline-offset-2 text-neutral-900',
+          'focus-visible:outline-offset-2',
         ].join(' ')}
       >
         <Button

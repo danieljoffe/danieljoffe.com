@@ -2,6 +2,7 @@
 
 import GlobalProvider from '@/state/Global/Provider';
 import Nav from '@/components/Nav';
+import Footer from '@/components/Footer';
 import { TransitionRouter } from 'next-transition-router';
 import { startTransition, Suspense, useRef } from 'react';
 
@@ -56,6 +57,7 @@ export default function AppContext({ children }: WChildrenT) {
         >
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
+        <Footer />
         <Suspense fallback={null}>
           <ScrollToElement />
         </Suspense>

@@ -8,9 +8,8 @@ import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
 import { projectMdxComponents } from '@/data/content/projects';
-import Container from '@/components/Container';
+import { PageContainer, Section } from '@danieljoffe.com/ui';
 import PostBody from '@/components/PostBody';
-import Section from '@/components/Section';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -47,12 +46,12 @@ export default async function SlugProjectPage({ params }: SlugPagePropsI) {
   ];
 
   return (
-    <Section>
-      <Container>
+    <Section className='min-h-min max-h-max'>
+      <PageContainer>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <Post />
         </PostBody>
-      </Container>
+      </PageContainer>
       <Script
         id={`${slug}-breadcrumb-structured-data`}
         type='application/ld+json'

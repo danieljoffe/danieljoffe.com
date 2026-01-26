@@ -6,6 +6,7 @@ import { rootStructuredData } from '@/data/structuredData/root';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import { serverEnv } from '@/lib/env';
+import { criticalStyles } from '@/styles/_critical-styles';
 
 const isProduction = serverEnv.NODE_ENV === 'production';
 export default async function Scripts() {
@@ -14,6 +15,21 @@ export default async function Scripts() {
 
   return (
     <>
+      <Script
+        id='injectCriticalStyles'
+        strategy='beforeInteractive'
+        dangerouslySetInnerHTML={{
+          __html: `
+          if (typeof window !== 'undefined') {
+            const styleElement = document.createElement("style");
+            styleElement.innerHTML = \`${criticalStyles}\`;
+            document.head.prepend(styleElement);
+          }
+          `,
+        }}
+        nonce={nonce}
+      />
+
       <Script
         id='structuredData'
         type='application/ld+json'
@@ -33,7 +49,7 @@ export default async function Scripts() {
                 console.error = function(...args) {
                   // Only suppress known third-party errors that don't affect functionality
                   const message = args.join(' ');
-                  if (message.includes('Non-Error promise rejection') || 
+                  if (message.includes('Non-Error promise rejection') ||
                       message.includes('ResizeObserver loop limit exceeded') ||
                       message.includes('ChunkLoadError') ||
                       message.includes('Loading chunk') ||
@@ -87,7 +103,7 @@ export default async function Scripts() {
                     });
                 });
               }
-              
+
               // Initialize performance monitoring
               if (typeof window !== 'undefined') {
                 window.addEventListener('load', function() {
