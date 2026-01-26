@@ -1,12 +1,12 @@
 'use client';
 
+import { PageContainer, Section, Stack } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
 import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import dynamic from 'next/dynamic';
 import { downloadResume } from '@/utils/helpers';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 
 const Blob = dynamic(() => import('./Blob'), {
   loading: () => <div />,
@@ -21,68 +21,64 @@ export default function Hero() {
       ].join(' ')}
       aria-labelledby='hero-heading'
     >
-      <div className='flex  w-full h-0 top-[50%]'>
-        <div className='absolute -z-1 flex w-dvw h-[125dvh] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 justify-center items-center'>
-          <Blob />
-        </div>
+      <div className='absolute w-dvw h-[125dvh] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-h-[40rem]'>
+        <Blob />
       </div>
 
-      <div className='min-h-full min-w-full bg-[#00000099] text-white'>
-        <PageContainer className='min-h-full'>
-          <div
-            className={[
-              'flex-1 w-full min-h-full flex flex-col justify-evenly',
-              'self-center max-w-[35rem]',
-            ].join(' ')}
-          >
+      <PageContainer className='relative min-h-full'>
+        <div
+          className={[
+            'flex-1 w-full min-h-full flex flex-col justify-evenly',
+            'self-center max-w-[35rem]',
+          ].join(' ')}
+        >
+          <div>
+            <h1 id='hero-heading'>
+              <span>Hello.</span>
+              <br className='hidden md:block' />
+              <span> I&apos;m Daniel Joffe.</span>
+            </h1>
+            <p className='uppercase tracking-wide font-medium'>{JOB_TITLE}</p>
+          </div>
+
+          <Stack direction='vertical' gap='sm' className='text-right text-sm'>
             <div>
-              <h1 id='hero-heading'>
-                <span>Hello.</span>
-                <br className='hidden md:block' />
-                <span> I&apos;m Daniel Joffe.</span>
-              </h1>
-              <p className='uppercase tracking-wide font-medium'>{JOB_TITLE}</p>
+              <p>I optimize applications.</p>
+              <p>I build scalable design systems.</p>
+              <p>And I love eliminating engineering bottlenecks.</p>
             </div>
 
-            <Stack direction='vertical' gap='sm' className='text-right text-sm'>
-              <div>
-                <p>I optimize applications.</p>
-                <p>I build scalable design systems.</p>
-                <p>And I love eliminating engineering bottlenecks.</p>
-              </div>
-
-              <Stack
-                direction='horizontal'
-                justify='evenly'
-                className='md:justify-end'
+            <Stack
+              direction='horizontal'
+              justify='evenly'
+              className='md:justify-end'
+            >
+              <Button
+                as='link'
+                variant='link'
+                href={PROJECTS_LINK.href}
+                aria-label={`View ${FULL_NAME}'s case studies`}
+                onClick={() =>
+                  analytics.ctaClick('view_case_studies', PROJECTS_LINK.href)
+                }
               >
-                <Button
-                  as='link'
-                  variant='link'
-                  href={PROJECTS_LINK.href}
-                  aria-label={`View ${FULL_NAME}'s case studies`}
-                  onClick={() =>
-                    analytics.ctaClick('view_case_studies', PROJECTS_LINK.href)
-                  }
-                >
-                  View case studies
-                </Button>
-                <Button
-                  as='button'
-                  variant='link'
-                  aria-label={`Download ${FULL_NAME}'s resume`}
-                  onClick={() => {
-                    analytics.ctaClick('download_resume', HOME_LINK.href);
-                    downloadResume();
-                  }}
-                >
-                  Download resume
-                </Button>
-              </Stack>
+                View case studies
+              </Button>
+              <Button
+                as='button'
+                variant='link'
+                aria-label={`Download ${FULL_NAME}'s resume`}
+                onClick={() => {
+                  analytics.ctaClick('download_resume', HOME_LINK.href);
+                  downloadResume();
+                }}
+              >
+                Download resume
+              </Button>
             </Stack>
-          </div>
-        </PageContainer>
-      </div>
+          </Stack>
+        </div>
+      </PageContainer>
     </Section>
   );
 }

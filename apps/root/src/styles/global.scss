@@ -3,14 +3,22 @@
 
 @layer base {
   :root {
-    --stop-color-one: #000;
-    --stop-color-two: #000;
-    --stop-color-three: #000;
-    --stop-color-four: #000;
-    --stop-color-five: #000;
-    --stop-color-six: #000;
-    --stop-color-seven: #000;
-    --stop-color-eight: #000;
+    --stop-color-one: var(--background, transparent);
+    --stop-color-two: var(--background, transparent);
+    --stop-color-three: var(--background, transparent);
+    --stop-color-four: var(--background, transparent);
+    --stop-color-five: var(--background, transparent);
+    --stop-color-six: var(--background, transparent);
+    --stop-color-seven: var(--background, transparent);
+    --stop-color-eight: var(--background, transparent);
+  }
+
+  html {
+    transition-timing-function: ease-in-out;
+    transition-duration: 3.5s;
+    transition-property: --stop-color-one, --stop-color-two, --stop-color-three,
+      --stop-color-four, --stop-color-five, --stop-color-six, --stop-color-seven,
+      --stop-color-eight;
   }
 
   body {
