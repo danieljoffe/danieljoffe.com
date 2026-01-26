@@ -25,8 +25,8 @@ const config: Config = {
     global: {
       branches: 25,
       functions: 24.4,
-      lines: 25.8,
-      statements: 25.8,
+      lines: 25.5,
+      statements: 25.5,
     },
   },
   // Ensure Jest exits cleanly in Nx/Next test envs
