@@ -7,7 +7,7 @@ import {
 // Uses UI library semantic color tokens for consistent theming
 export const buttonBaseStyles = [
   'flex inline-flex items-center justify-center',
-  'font-bold border-transparent rounded-md',
+  'border-transparent rounded-md',
   'transition-all duration-200 ease-in-out',
   'focus:outline-none focus:ring-2',
   'focus:ring-offset-2 focus:ring-offset-background border-2',

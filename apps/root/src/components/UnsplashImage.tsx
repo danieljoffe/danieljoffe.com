@@ -86,7 +86,7 @@ export default function UnsplashImage({
           'from-black/75 to-transparent flex justify-end',
         ].join(' ')}
       >
-        <p className='text-background'>
+        <p className='text-white'>
           <Button
             as='link'
             variant='link'

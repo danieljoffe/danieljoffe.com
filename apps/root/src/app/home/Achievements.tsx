@@ -1,11 +1,10 @@
-import { Card, Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Card, Stack, PageContainer, Section, Grid } from '@danieljoffe.com/ui';
 import { offerings } from '@/utils/offerings';
 
 export default function Achievements() {
   return (
     <Section
       aria-labelledby='achievements-heading'
-      background='alt'
       className='min-h-min max-h-max'
     >
       <PageContainer>
@@ -13,21 +12,19 @@ export default function Achievements() {
           <h2 className='text-center' id='achievements-heading'>
             My Achievements
           </h2>
-          {offerings.achievements.map((achievement, index) => (
-            <Card
-              key={index}
-              padding='md'
-              className='w-full max-w-[28rem] border-none'
-            >
-              <Stack direction='horizontal' gap='md'>
-                <p className='text-2xl'>{achievement.icon}</p>
-                <Stack direction='vertical' gap='none'>
-                  <h3>{achievement.metric}</h3>
-                  <p>{achievement.text}</p>
+          <Grid cols={1} gap='lg' className='w-full'>
+            {offerings.achievements.map((achievement, index) => (
+              <Card key={index} padding='md' elevated>
+                <Stack direction='horizontal' gap='md'>
+                  <p className='text-2xl'>{achievement.icon}</p>
+                  <Stack direction='vertical' gap='none'>
+                    <h3>{achievement.metric}</h3>
+                    <p>{achievement.text}</p>
+                  </Stack>
                 </Stack>
-              </Stack>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </Grid>
         </Stack>
       </PageContainer>
     </Section>

@@ -1,4 +1,4 @@
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section, Card } from '@danieljoffe.com/ui';
 import ContentGrid from '@/components/ContentGrid';
 import { offerings } from '@/utils/offerings';
 
@@ -7,6 +7,7 @@ export default function Methodologies() {
     <Section
       aria-labelledby='methodologies-heading'
       className='min-h-min max-h-max'
+      background='alt'
     >
       <PageContainer>
         <Stack gap='md'>
@@ -15,18 +16,20 @@ export default function Methodologies() {
           </h2>
           <ContentGrid>
             {offerings.methodology.map((methodology, index) => (
-              <li key={index}>
+              <Card key={index} elevated padding='lg'>
                 <Stack
                   direction='vertical'
-                  gap='none'
+                  gap='md'
                   align='center'
                   className='text-center'
                 >
                   <p className='text-2xl'>{methodology.icon}</p>
-                  <h3>{methodology.title}</h3>
-                  <p>{methodology.text}</p>
+                  <div>
+                    <h3>{methodology.title}</h3>
+                    <p>{methodology.text}</p>
+                  </div>
                 </Stack>
-              </li>
+              </Card>
             ))}
           </ContentGrid>
         </Stack>

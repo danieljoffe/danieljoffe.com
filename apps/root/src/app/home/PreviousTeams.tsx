@@ -16,6 +16,7 @@ export default function PreviousTeams() {
     <Section
       aria-labelledby='previous-teams-heading'
       className='min-h-min max-h-max'
+      background='alt'
     >
       <PageContainer>
         <h2 className='text-center' id='previous-teams-heading'>

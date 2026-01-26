@@ -228,9 +228,6 @@ ol {
 }
 
 @media (min-width: 640px) {
-  html {
-    font-size: 18px;
-  }
   body {
     padding-top: 3.5rem;
   }

@@ -7,11 +7,7 @@ import Button from '@/components/Button';
 
 export default function CTA() {
   return (
-    <Section
-      className='min-h-min max-h-max'
-      background='alt'
-      aria-labelledby='cta-heading'
-    >
+    <Section className='min-h-min max-h-max' aria-labelledby='cta-heading'>
       <PageContainer className='text-center max-w-[31rem]'>
         <h2 id='cta-heading'>Let&apos;s Build Something Great Together</h2>
         <Stack

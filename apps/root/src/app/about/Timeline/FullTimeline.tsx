@@ -15,7 +15,7 @@ export default function FullTimeline() {
           const company = experienceFull[slug] ?? {};
 
           return (
-            <Card className='flex' padding='none' key={company.slug}>
+            <Card className='flex' padding='none' key={company.slug} elevated>
               <Button
                 as='link'
                 variant='link'
