@@ -1,8 +1,8 @@
 import type { Preview } from '@storybook/react-vite';
 
 import '../src/styles/tailwind.scss';
-import '../src/styles/theme.muted-violet.scss';
-import '../src/styles/theme.muted-violet-dark.scss';
+import '../src/styles/muted-violet.scss';
+import '../src/styles/muted-violet-dark.scss';
 
 const preview: Preview = {
   parameters: {
