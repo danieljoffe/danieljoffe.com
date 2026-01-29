@@ -6,6 +6,7 @@ import { useTransitionRouter } from 'next-transition-router';
 import { publicEnv, PublicEnvVars } from '@/lib/public.env';
 import { A11Y } from '@/utils/constants';
 import { devLog } from '@/utils/helpers';
+import { captureRenderError, addBreadcrumb } from '@/lib/errorTracking';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -113,6 +114,9 @@ class ErrorBoundary extends React.Component<
 
     devLog('Error caught by boundary:', error, errorInfo);
 
+    // Capture error in Sentry with full component stack
+    captureRenderError(error, errorInfo, 'ErrorBoundary');
+
     // Send error to analytics in production
     if (
       publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] === 'production' &&
@@ -127,6 +131,9 @@ class ErrorBoundary extends React.Component<
   }
 
   resetError = () => {
+    addBreadcrumb('User clicked Try Again after error', 'ui.click', {
+      errorMessage: this.state.error?.message,
+    });
     this.setState({ hasError: false, error: null, errorInfo: null });
   };
 

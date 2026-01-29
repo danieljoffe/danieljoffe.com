@@ -8,6 +8,7 @@ import {
   rateLimit,
 } from './helpers';
 import { ABOUT_LINK } from '@/utils/base';
+import { captureApiError } from '@/lib/errorTracking';
 
 /**
  * Contact Form API Endpoint
@@ -77,6 +78,21 @@ export async function POST(
     });
   } catch (e: unknown) {
     const error = e as ErrorResponse;
+
+    // Capture API errors in Sentry for monitoring
+    captureApiError(
+      e instanceof Error
+        ? e
+        : new Error(error.error?.message || 'Unknown API error'),
+      '/api/email',
+      'POST',
+      error.statusCode,
+      {
+        errorPath: error.error?.path,
+        errorMessage: error.error?.message,
+      }
+    );
+
     return NextResponse.json(error, { status: error.statusCode });
   }
 }

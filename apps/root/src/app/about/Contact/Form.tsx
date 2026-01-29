@@ -12,6 +12,7 @@ import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Stack, Input, Textarea, Loading } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
+import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -45,6 +46,9 @@ export default function Form() {
         if (entry.isIntersecting) {
           setShouldLoadCaptcha(true);
           analytics.formStart('contact');
+          addBreadcrumb('Contact form visible', 'form', {
+            formId: CONTACT_FORM_ID,
+          });
           observer.disconnect();
         }
       },
@@ -86,9 +90,19 @@ export default function Form() {
       }
 
       analytics.formSubmit('contact');
+      addBreadcrumb('Contact form submitted successfully', 'form', {
+        formId: CONTACT_FORM_ID,
+      });
       router.push('/thank-you/email');
-    } catch (_error) {
+    } catch (error) {
       analytics.formError('contact', 'Failed to send message');
+
+      // Capture form submission error in Sentry
+      captureFormError(
+        CONTACT_FORM_ID,
+        error instanceof Error ? error : new Error('Failed to send message')
+      );
+
       setError('root.unknownError', {
         type: 'manual',
         message: 'Failed to send message. Please try again.',

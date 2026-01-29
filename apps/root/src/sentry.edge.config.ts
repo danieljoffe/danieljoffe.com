@@ -6,14 +6,32 @@
 import { publicEnv, PublicEnvVars } from '@/lib/public.env';
 import * as Sentry from '@sentry/nextjs';
 
+const isProduction =
+  publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] === 'production';
+
 Sentry.init({
   dsn: publicEnv[PublicEnvVars.NEXT_PUBLIC_SENTRY_CONFIG_ID] as string,
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  // Environment identification
+  environment: publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] || 'development',
+
+  // Sample 100% of errors, but only 10% of performance traces in production
+  tracesSampleRate: isProduction ? 0.1 : 1.0,
+
+  // Sample rate for error events (1.0 = 100% of errors)
+  sampleRate: 1.0,
 
   // Enable logs to be sent to Sentry
   enableLogs: true,
+
+  // Add edge runtime context to all events
+  beforeSend(event) {
+    event.tags = {
+      ...event.tags,
+      runtime: 'edge',
+    };
+    return event;
+  },
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
