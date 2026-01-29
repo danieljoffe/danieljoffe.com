@@ -95,6 +95,60 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       ],
     },
   },
+  [projectSlugs.uiV2]: {
+    title: 'Project | UI Components V2',
+    description: projectsRecords[projectSlugs.uiV2].description,
+    keywords: [
+      'ui',
+      'components',
+      'design system',
+      'accessibility',
+      'react',
+      'typescript',
+      'form controls',
+      'layout primitives',
+    ],
+    authors: [{ name: FULL_NAME }],
+    creator: FULL_NAME,
+    publisher: FULL_NAME,
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    metadataBase: new URL(DOMAIN_URL),
+    alternates: {
+      canonical: `${PROJECTS_LINK.href}/${projectSlugs.uiV2}`,
+    },
+    openGraph: {
+      title: 'Project | UI Components V2',
+      description: projectsRecords[projectSlugs.uiV2].description as string,
+      url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.uiV2}`,
+      type: 'article',
+      siteName: FULL_NAME,
+      images: [
+        {
+          url: projectsRecords[projectSlugs.uiV2].cover.src,
+          width: 4042,
+          height: 2695,
+          alt: 'UI Components V2',
+        },
+      ],
+    },
+    twitter: {
+      title: 'Project | UI Components V2',
+      description: projectsRecords[projectSlugs.uiV2].description as string,
+      card: 'summary_large_image',
+      images: [
+        {
+          url: projectsRecords[projectSlugs.uiV2].cover.src,
+          width: 4042,
+          height: 2695,
+          alt: 'UI Components V2',
+        },
+      ],
+    },
+  },
   [projectSlugs.csPerformance]: {
     title: 'Project | Performance Optimization Case Study',
     description: projectsRecords[projectSlugs.csPerformance].description,

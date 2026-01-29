@@ -19,6 +19,13 @@ export const projectStructuredData: Record<
     headline: projectsRecords[projectSlugs.uiV1].title,
     author,
   },
+  [projectSlugs.uiV2]: {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    about: projectsRecords[projectSlugs.uiV2].description,
+    headline: projectsRecords[projectSlugs.uiV2].title,
+    author,
+  },
   [projectSlugs.csPerformance]: {
     '@context': 'https://schema.org',
     '@type': 'Blog',

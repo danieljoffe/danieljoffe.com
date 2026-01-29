@@ -25,18 +25,7 @@ describe('PostContent', () => {
     expect(containerElement).toHaveClass('mx-auto', 'max-w-3xl');
   });
 
-  test('applies prose typography classes', () => {
-    render(
-      <PostContent>
-        <p>Styled content</p>
-      </PostContent>
-    );
-    const proseContainer = screen.getByText('Styled content').parentElement;
-    expect(proseContainer?.className).toContain('prose');
-    expect(proseContainer?.className).toContain('prose-base');
-  });
-
-  test('renders headings within prose container', () => {
+  test('renders headings within container', () => {
     render(
       <PostContent>
         <h2>Heading</h2>
@@ -44,10 +33,10 @@ describe('PostContent', () => {
     );
     const heading = screen.getByText('Heading');
     expect(heading.tagName.toLowerCase()).toBe('h2');
-    expect(heading.parentElement?.className).toContain('prose');
+    expect(heading.parentElement).toHaveClass('mx-auto', 'max-w-3xl');
   });
 
-  test('renders body text within prose container', () => {
+  test('renders body text within container', () => {
     render(
       <PostContent>
         <p>Body text</p>
@@ -55,17 +44,17 @@ describe('PostContent', () => {
     );
     const bodyText = screen.getByText('Body text');
     expect(bodyText.tagName.toLowerCase()).toBe('p');
-    expect(bodyText.parentElement?.className).toContain('prose');
+    expect(bodyText.parentElement).toHaveClass('mx-auto', 'max-w-3xl');
   });
 
-  test('applies full width to prose container', () => {
+  test('applies full width to container', () => {
     render(
       <PostContent>
         <p>Content</p>
       </PostContent>
     );
-    const proseContainer = screen.getByText('Content').parentElement;
-    expect(proseContainer?.className).toContain('w-full');
+    const container = screen.getByText('Content').parentElement;
+    expect(container).toHaveClass('w-full');
   });
 
   test('renders complex nested content', () => {

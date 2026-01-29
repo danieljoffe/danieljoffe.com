@@ -132,4 +132,22 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
       blurHash: 'L125+JD~D#-rn$WCkCj?D~xbxbNc',
     },
   },
+  [projectSlugs.uiV2]: {
+    slug: projectSlugs.uiV2,
+    title: 'Expanding the Design System: UI Components Part 2',
+    description:
+      'Form controls, feedback mechanisms, and layout primitives. Covers Checkbox, Select, Switch, Textarea, Alert, Badge, Tooltip, Tabs, Card, Stack, and more.',
+    backgroundColor: 'bg-violet-950',
+    link: {
+      label: 'UI Components V2',
+      href: `${PROJECTS_LINK.href}/${projectSlugs.uiV2}`,
+    },
+    cover: {
+      alt: 'Abstract purple geometric shapes',
+      src: `/photo-1636576109679-6f23fdc040c8`,
+      origin: `${UNSPLASH_URL}/photos/an-image-of-a-jellyfish-in-the-dark-4ckVcNeshmQ`,
+      creator: '@and_machines',
+      blurHash: 'L125+JD~D#-rn$WCkCj?D~xbxbNc',
+    },
+  },
 };

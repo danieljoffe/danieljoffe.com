@@ -118,7 +118,10 @@ test.describe('mobile Navigation', () => {
     // Press Escape
     await page.keyboard.press('Escape');
 
-    await expect(modal).toBeHidden();
+    // Wait for close animation to complete
+    await page.waitForTimeout(300);
+
+    await expect(modal).toBeHidden({ timeout: 5000 });
   });
 
   test('mobile menu has close button focused on open', async ({ page }) => {

@@ -1,0 +1,247 @@
+# Expanding the Design System: UI Components Part 2
+
+Building on the [foundational components](/projects/ui-components-v1), this second installment adds form controls, feedback mechanisms, and layout primitives. The library now covers most common UI patterns.
+
+## Form Components
+
+### Checkbox
+
+A controlled checkbox with label support. Handles both click and keyboard interactions with proper ARIA attributes for screen reader compatibility.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-checkbox--default'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Select
+
+A native select wrapper with label, error state, and validation support. Uses `aria-invalid` and `aria-describedby` to connect error messages for assistive technologies.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-select--with-label'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Switch
+
+A toggle switch component for binary choices. Uses the `switch` ARIA role with proper `aria-checked` state management. Supports both controlled and uncontrolled usage.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-switch--default'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Textarea
+
+A multi-line text input with validation states, character counting, and auto-resize capabilities. Shares the same validation patterns as the Input component.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-textarea--default'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Feedback Components
+
+### Alert
+
+A dismissible alert component with four variants: info, success, warning, and error. Uses `role="alert"` with `aria-live="assertive"` for urgent messages and `role="status"` with `aria-live="polite"` for informational content.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-alert--default'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Badge
+
+A simple label component for status indicators and tags. Supports multiple semantic variants: default, accent, success, warning, error, and info.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-badge--default'
+  width='400'
+  height='80'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Tooltip
+
+A hover-triggered tooltip with configurable position and delay. Uses `role="tooltip"` with `aria-hidden` state management to ensure screen readers announce content appropriately.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-tooltip--default'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### ProgressBar
+
+A visual progress indicator for loading states and completion tracking. Includes proper ARIA attributes for accessibility.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-progressbar--default'
+  width='400'
+  height='80'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Spinner
+
+A loading spinner for async operations. Complements the Loading component from Part 1 with a more compact visual indicator.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-spinner--default'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Layout Components
+
+### Card
+
+A composable card component with sub-components: CardHeader, CardTitle, and CardContent. Supports elevation variants and configurable padding.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-card--full-card'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Stack
+
+A flexbox-based layout primitive for vertical or horizontal stacking with consistent spacing. Eliminates the need for manual gap utilities.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-stack--vertical'
+  width='400'
+  height='250'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Tabs
+
+An accessible tab interface with proper ARIA roles: `tablist`, `tab`, and `tabpanel`. Supports keyboard navigation and controlled/uncontrolled modes.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-tabs--default'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Section
+
+A semantic section wrapper for page content organization. Provides consistent vertical spacing and optional headings.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-section--default'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Divider
+
+A simple horizontal rule for visual separation between content sections.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-divider--default'
+  width='400'
+  height='80'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### AspectRatio
+
+A container that maintains a specified aspect ratio for its content. Useful for responsive images and video embeds.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-aspectratio--default'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Spacer
+
+A utility component for adding consistent whitespace. Available in preset sizes for maintaining vertical rhythm.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-spacer--medium'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### PageContainer
+
+A top-level page wrapper that combines Container with page-specific padding and max-width constraints.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-pagecontainer--default'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Component Count
+
+The design system now includes **24 components** across four categories:
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Components</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Form</td>
+      <td>Button, Input, Checkbox, Select, Switch, Textarea</td>
+    </tr>
+    <tr>
+      <td>Feedback</td>
+      <td>Alert, Badge, Loading, Modal, ProgressBar, Spinner, Tooltip</td>
+    </tr>
+    <tr>
+      <td>Layout</td>
+      <td>
+        AspectRatio, Card, Container, Divider, Grid, PageContainer, Section,
+        Spacer, Stack
+      </td>
+    </tr>
+    <tr>
+      <td>Navigation</td>
+      <td>Tabs</td>
+    </tr>
+  </tbody>
+</table>
+
+## What I Learned
+
+**Composition beats configuration.** The Card component started as a monolithic prop-based design. Breaking it into CardHeader, CardTitle, and CardContent made it far more flexible.
+
+**ARIA roles matter.** The Tabs component required careful attention to `tablist`, `tab`, and `tabpanel` roles. Getting keyboard navigation right took multiple iterations.
+
+**Test interactions, not implementation.** Storybook's play functions let me test real user flows—clicking, typing, tabbing—rather than internal state.
+
+## What's Next
+
+- ~~Dark mode theming across all components~~ Done!
+- Animation system with reduced motion support
+- Additional form components (radio groups, date pickers)
+- Documentation site with usage guidelines
+
+_A design system is never finished—it evolves with the product it serves._

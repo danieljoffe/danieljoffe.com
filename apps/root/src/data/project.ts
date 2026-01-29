@@ -1,5 +1,6 @@
 export const projectSlugs = {
   uiV1: 'ui-components-v1',
+  uiV2: 'ui-components-v2',
   csPerformance: 'performance-case-study',
   csCLibrary: 'component-library-case-study',
   csCMSTooling: 'cms-tooling-case-study',
