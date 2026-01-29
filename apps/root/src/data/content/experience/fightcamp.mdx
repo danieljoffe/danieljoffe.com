@@ -1,6 +1,7 @@
 ## FightCamp
 
 **Duration:** November 2021 - January 2023
+
 **Role:** Full-Stack Engineer
 
 ### The Context
@@ -11,7 +12,7 @@ The company had grown fast, but the website's technical foundations hadn't kept 
 
 ### The Challenge
 
-**Performance Discovery**
+#### Performance Discovery
 
 FightCamp held monthly R&D Fridays, dedicated time for code cleanup, refactoring, and investigation. On my first one, I ran Lighthouse audits on the marketing site. The scores were bad. Really bad.
 
@@ -25,13 +26,13 @@ Mobile First Contentful Paint was 8-12 seconds. Users on 3G/4G connections were 
 
 I proposed a systematic fix to my manager. He approved, and it became my primary project.
 
-**Marketing Bottleneck (Again)**
+#### Marketing Bottleneck (Again)
 
 Sound familiar? Just as at Winc, marketing relied on engineering for content updates. Every copy change, image swap, or new section required a developer. The pattern was clear; I'd solved this before.
 
 ### The Solution
 
-**Performance Optimization**
+#### Performance Optimization
 
 I attacked each root cause systematically:
 
@@ -58,7 +59,7 @@ _Bundle:_
 _Discovery:_
 While debugging, I found that the Vue store alone caused a 20-point Lighthouse impact. Without the store loaded, scores jumped to 98-99. (We didn't remove it; the functionality was needed, but it explained the ceiling.)
 
-**Storyblok CMS Migration**
+#### Storyblok CMS Migration
 
 I analyzed 7 marketing pages for common patterns, then extended the UI component library with 10+ CMS-connected components:
 
@@ -69,7 +70,7 @@ I analyzed 7 marketing pages for common patterns, then extended the UI component
 
 This lets the content team build and update pages without engineering involvement.
 
-**A/B Testing Infrastructure**
+#### A/B Testing Infrastructure
 
 Marketing wanted to run experiments on different copy angles, video variations, ands, but had no way to do so without offering a structure without engineering building each variant.
 
@@ -79,7 +80,7 @@ I built configurable test components integrated with Google Optimize:
 - 2-week test cycles
 - Test types: copy (health vs. training messaging), video (male vs. female athletes), images (action shots vs. stills), offers (control vs. discount variants)
 
-**Mentorship**
+#### Mentorship
 
 I paired with Sam, a junior developer, on complex TypeScript tickets. Focused on teaching component breakdown and task decomposition, the same approach my mentors had used with me.
 
@@ -139,6 +140,8 @@ I paired with Sam, a junior developer, on complex TypeScript tickets. Focused on
     </tr>
   </tbody>
 </table>
+
+#### Other impacts:
 
 - **Engineering requests from content team** dropped from ~10/week to ~2/week (80% reduction)
 - **Sam promoted** from Junior to Front-End Developer within one year

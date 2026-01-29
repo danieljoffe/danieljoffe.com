@@ -181,8 +181,8 @@
     font-variation-settings: 'opsz' 12, 'WONK' 0;
   }
 
-  ul,
-  ol {
+  ul:not(.prose ul),
+  ol:not(.prose ol) {
     list-style: none;
   }
 

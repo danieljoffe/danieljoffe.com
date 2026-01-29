@@ -2,9 +2,5 @@ import { Container } from '@danieljoffe.com/ui';
 import { WChildrenT } from '@/types/base';
 
 export default function PostContent({ children }: WChildrenT) {
-  return (
-    <Container size='sm'>
-      <div className={['prose prose-base w-full'].join(' ')}>{children}</div>
-    </Container>
-  );
+  return <Container size='sm'>{children}</Container>;
 }

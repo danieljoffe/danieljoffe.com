@@ -194,9 +194,35 @@ h6 {
     "WONK" 0;
 }
 
+p {
+  margin-bottom: 0.5em;
+}
+p:last-child {
+  margin-bottom: 0;
+}
+
 ul,
 ol {
   list-style: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.25rem 0.75rem;
+}
+th:first-child,
+td:first-child {
+  padding-left: 0;
+}
+th:last-child,
+td:last-child {
+  padding-right: 0;
 }
 
 :is(h1, h2, h3, h4, h5, h6):first-child {
