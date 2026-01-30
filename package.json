@@ -13,7 +13,8 @@
     "test:lighthouse": "lhci autorun",
     "test:lighthouse:collect": "lhci collect",
     "test:lighthouse:assert": "lhci assert",
-    "pom": "yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
+    "typecheck": "nx run-many --target=typecheck --all",
+    "pom": "yarn typecheck && yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
     "dev": "nx run-many --target=dev --all",
     "prepare": "husky"
   },

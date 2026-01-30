@@ -114,7 +114,7 @@ describe('Textarea', () => {
   });
 
   it('accepts ref via forwardRef', () => {
-    const ref = { current: null } as React.RefObject<HTMLTextAreaElement>;
+    const ref = React.createRef<HTMLTextAreaElement>();
     render(<Textarea ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLTextAreaElement);
   });

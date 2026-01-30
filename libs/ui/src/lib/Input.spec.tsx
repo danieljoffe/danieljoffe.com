@@ -112,7 +112,7 @@ describe('Input', () => {
   });
 
   it('accepts ref via forwardRef', () => {
-    const ref = { current: null } as React.RefObject<HTMLInputElement>;
+    const ref = React.createRef<HTMLInputElement>();
     render(<Input ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
