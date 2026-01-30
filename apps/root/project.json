@@ -1,0 +1,8 @@
+{
+  "name": "@danieljoffe.com/root",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/root/src",
+  "projectType": "application",
+  "tags": ["scope:root", "type:app"],
+  "implicitDependencies": ["@danieljoffe.com/ui"]
+}
