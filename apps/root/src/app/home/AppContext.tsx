@@ -49,14 +49,9 @@ export default function AppContext({ children }: WChildrenT) {
       <TransitionRouter auto={true} leave={handleLeave} enter={handleEnter}>
         <Modal />
         <Nav />
-        <main
-          ref={ref}
-          id='main-content' // TODO: make this public so other pages can use it
-          role='main'
-          className='flex flex-col flex-1'
-        >
+        <div ref={ref} className='flex flex-col flex-1'>
           <ErrorBoundary>{children}</ErrorBoundary>
-        </main>
+        </div>
         <Footer />
         <Suspense fallback={null}>
           <ScrollToElement />
