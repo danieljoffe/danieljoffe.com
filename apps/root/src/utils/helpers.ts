@@ -56,7 +56,7 @@ interface ClickDownloadOptions {
   download: string;
 }
 
-export const onClickDownload = (options: ClickDownloadOptions) => () => {
+const onClickDownload = (options: ClickDownloadOptions) => () => {
   const link = document.createElement('a');
   link.href = options.href;
   link.download = options.download;

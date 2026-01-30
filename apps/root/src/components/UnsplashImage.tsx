@@ -37,10 +37,6 @@ export default function UnsplashImage({
     throw new Error('Missing required props');
   }
 
-  if (!src || !alt || !creator || !origin) {
-    throw new Error('Missing required props');
-  }
-
   if (fill == false && (!width || !height)) {
     throw new Error('Missing required props');
   }

@@ -23,6 +23,8 @@ export type GlobalContextValue = WindowSizeInterface &
   ModalInterface &
   ThemeInterface;
 
+const noop = () => undefined;
+
 export const GlobalState: GlobalContextValue = {
   windowWidth: 400,
   windowHeight: 600,
@@ -33,14 +35,10 @@ export const GlobalState: GlobalContextValue = {
   modalContent: null,
   themeMode: 'system',
   isDarkMode: false,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  toggleModal: () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setModalContent: () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setThemeMode: () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  toggleDarkMode: () => {},
+  toggleModal: noop,
+  setModalContent: noop,
+  setThemeMode: noop,
+  toggleDarkMode: noop,
 };
 
 export const GlobalContext = createContext<GlobalContextValue>(GlobalState);

@@ -94,21 +94,7 @@ export default async function Scripts() {
           __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
-                    });
-                });
-              }
-
-              // Initialize performance monitoring
-              if (typeof window !== 'undefined') {
-                window.addEventListener('load', function() {
-                  // Performance monitoring will be initialized here
-                  console.log('Performance monitoring initialized');
+                  navigator.serviceWorker.register('/sw.js');
                 });
               }
             `,

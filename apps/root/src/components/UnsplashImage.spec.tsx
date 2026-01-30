@@ -85,12 +85,7 @@ jest.mock('react-blurhash', () => ({
 }));
 
 // Mock hooks
-const mockUseViewport = jest.fn();
 const mockUseGlobal = jest.fn();
-
-jest.mock('@/hooks/inViewport', () => ({
-  useViewport: () => mockUseViewport(),
-}));
 
 jest.mock('@/state/Global/Context', () => ({
   useGlobal: () => mockUseGlobal(),
@@ -161,7 +156,6 @@ describe('UnsplashImage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseViewport.mockReturnValue(true);
     mockUseGlobal.mockReturnValue({
       windowWidth: 800, // Set to 800 to match test expectations
     });
