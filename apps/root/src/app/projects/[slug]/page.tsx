@@ -10,6 +10,7 @@ import { projectPageSlugs } from '@/data/project';
 import { projectMdxComponents } from '@/data/content/projects';
 import { PageContainer, Section } from '@danieljoffe.com/ui';
 import PostBody from '@/components/PostBody';
+import MainContent from '@/components/MainContent';
 
 export async function generateMetadata({ params }: SlugPagePropsI) {
   const { slug } = await params;
@@ -49,7 +50,9 @@ export default async function SlugProjectPage({ params }: SlugPagePropsI) {
     <Section className='min-h-min max-h-max'>
       <PageContainer>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
-          <Post />
+          <MainContent>
+            <Post />
+          </MainContent>
         </PostBody>
       </PageContainer>
       <Script

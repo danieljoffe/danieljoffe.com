@@ -9,7 +9,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.csPerformance,
     title: 'Case Studies: Daniel Joffe Portfolio',
     description:
-      'Case study on performance optimization and critical web vitals improvements for a high-traffic React site. Covers auditing, lazy loading, bundle splitting, and measurable results.',
+      'How I cut mobile load times from 10s to 2s and reduced bounce rates by 39% at FightCamp.',
     backgroundColor: 'bg-stone-950',
     link: {
       label: 'Performance Optimization Case Study',
@@ -27,7 +27,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.csCLibrary,
     title: 'Case Study 2: Internet Brands — React Component Library',
     description:
-      'Story of building and evangelizing a component library to accelerate development and improve maintainability and team capability. Training, documentation, and measurable team outcomes.',
+      'Building a React component library adopted by 80% of applications—and training the team to own it.',
     backgroundColor: 'bg-fuchsia-950',
     link: {
       label: 'Component Library Case Study',
@@ -45,7 +45,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.csCMSTooling,
     title: 'Case Study 3: Winc — Self-Serve Landing Page CMS',
     description:
-      'How a custom CMS enabled marketers to ship 200+ landing pages with zero engineering support, freeing up developer time and improving conversion rates. Problem, approach, impact.',
+      'From 3 pages per week to 200+ in two months: building self-serve tooling that eliminated engineering bottlenecks.',
     backgroundColor: 'bg-amber-950',
     link: {
       label: 'CMS Tooling Case Study',
@@ -64,7 +64,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.csModernPractice,
     title: 'Case Study: Modern Practice — Web Engineering Best Practices',
     description:
-      'Case study exploring adoption of modern best practices in web engineering. Focus on developer experience, code quality, and tangible impact of new tools and methodologies.',
+      'Building this portfolio: NX monorepo, GSAP animations, full test coverage, and what I learned along the way.',
     backgroundColor: 'bg-cyan-950',
     link: {
       label: 'Modern Practice Case Study',
@@ -82,7 +82,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.csA11y,
     title: 'Case Study: Accessibility Serials — Real-World A11y Solutions',
     description:
-      'A serial deep dive into real-world accessibility (a11y) challenges and solutions across several projects. Covers audits, remediations, and inclusive technical strategy.',
+      'Fixing 200+ WCAG violations across legacy systems—and building accessibility into everything since.',
     backgroundColor: 'bg-green-950',
     link: {
       label: 'Accessibility Case Study (Serials)',
@@ -100,7 +100,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.csLogisticsDashboard,
     title: 'Case Study: Logistics Dashboard MVP — Next.js & AWS Cognito',
     description:
-      'Building a logistics dashboard MVP using Next.js and AWS Cognito for a seed startup. Covers authentication, RBAC, charts, measurable delivery, and product outcomes.',
+      'Shipping a logistics dashboard MVP with Next.js and AWS Cognito for a seed-stage venture.',
     backgroundColor: 'bg-blue-950',
     link: {
       label: 'Logistics Dashboard Case Study',
@@ -118,7 +118,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.uiV1,
     title: 'Building a Design System: UI Components for danieljoffe.com',
     description:
-      'Overview and documentation of foundational UI components in the src/components/units folder. Includes usage, design principles, accessibility, and best practices.',
+      "This portfolio's design system: 20+ documented components built with accessibility and reusability in mind.",
     backgroundColor: 'bg-slate-900',
     link: {
       label: 'UI Components V1',
@@ -136,7 +136,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     slug: projectSlugs.uiV2,
     title: 'Expanding the Design System: UI Components Part 2',
     description:
-      'Form controls, feedback mechanisms, and layout primitives. Covers Checkbox, Select, Switch, Textarea, Alert, Badge, Tooltip, Tabs, Card, Stack, and more.',
+      "This portfolio's design system: form controls, feedback, and layout primitives completing the component library.",
     backgroundColor: 'bg-violet-950',
     link: {
       label: 'UI Components V2',

@@ -21,10 +21,13 @@ export default function Footer() {
           <Stack direction='vertical' gap='sm' align='center'>
             <p className='text-lg font-medium'>{profileData.name}</p>
             <p className='text-sm text-foreground-muted'>{profileData.title}</p>
+            <p className='text-sm text-foreground-muted italic'>
+              {profileData.status}
+            </p>
           </Stack>
 
           <nav aria-label='Footer navigation'>
-            <ul className='flex flex-wrap justify-center gap-4'>
+            <ul className='flex flex-wrap justify-center gap-4 lowercase'>
               {NAV_LINKS.map(link => (
                 <li key={link.href}>
                   <Button
@@ -44,18 +47,6 @@ export default function Footer() {
           <Stack direction='horizontal' gap='md' align='center'>
             <Button
               as='link'
-              href={profileData.social.github}
-              variant='icon'
-              size='sm'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Visit GitHub profile'
-              title='GitHub'
-            >
-              <Github className='h-5 w-5' aria-hidden='true' />
-            </Button>
-            <Button
-              as='link'
               href={profileData.social.linkedin}
               variant='icon'
               size='sm'
@@ -68,6 +59,18 @@ export default function Footer() {
             </Button>
             <Button
               as='link'
+              href={profileData.social.github}
+              variant='icon'
+              size='sm'
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='Visit GitHub profile'
+              title='GitHub'
+            >
+              <Github className='h-5 w-5' aria-hidden='true' />
+            </Button>
+            <Button
+              as='link'
               href={`mailto:${profileData.social.email}`}
               variant='icon'
               size='sm'
@@ -77,6 +80,18 @@ export default function Footer() {
               <Mail className='h-5 w-5' aria-hidden='true' />
             </Button>
           </Stack>
+
+          <Button
+            as='link'
+            href='https://ui.danieljoffe.com'
+            variant='link'
+            size='sm'
+            target='_blank'
+            rel='noopener noreferrer'
+            aria-label='View UI component library'
+          >
+            ui.danieljoffe.com
+          </Button>
 
           <p className='text-xs text-foreground-muted text-center'>
             &copy; {currentYear} {FULL_NAME}. All rights reserved.

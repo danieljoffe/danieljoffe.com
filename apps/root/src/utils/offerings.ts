@@ -43,24 +43,24 @@ export const offerings = {
   ],
   methodology: [
     {
-      icon: '🏗️',
-      title: 'Infrastructure-First Thinking',
-      text: 'At FightCamp, I established development guidelines that reduced bundle sizes by 62%. At Internet Brands, I built component library infrastructure that unified UI patterns across 5+ healthcare applications',
+      icon: '🔍',
+      title: 'I Audit Before I Build',
+      text: 'At FightCamp, a routine R&D Friday turned into a performance investigation. I discovered HD images and 800MB videos loading on every page visit. The fix? Lazy loading, srcset optimization, and bundle analysis—resulting in a 62% smaller bundle and 80% faster load times.',
     },
     {
-      icon: '👥',
-      title: 'Cross-Functional Collaboration',
-      text: 'At Winc, I partnered with Marketing to build a CMS that let them launch 200+ pages without engineering help. At FightCamp, I integrated Google Optimize so Marketing could run A/B tests independently.',
+      icon: '🚀',
+      title: 'I Build for Autonomy',
+      text: "Marketing teams shouldn't wait on engineering to launch a landing page. At Winc and FightCamp, I built CMS tooling that let non-technical teams ship independently—200+ pages at Winc, 80% fewer engineering requests at FightCamp.",
     },
     {
-      icon: '📈',
-      title: 'Performance-Driven Development',
-      text: "I've improved Lighthouse scores by 40+ points, reduced bounce rates by 39%, and cut load times from 10 seconds to 2 seconds—all through systematic performance analysis and optimization.",
+      icon: '📊',
+      title: 'I Measure What Matters',
+      text: 'Lighthouse scores, bounce rates, Core Web Vitals—I treat performance as a feature. At FightCamp, systematic optimization lifted Lighthouse from ~35 to ~80 and cut mobile bounce rates by 39%.',
     },
     {
-      icon: '🎓',
-      title: 'Mentorship & Knowledge Transfer',
-      text: "I've mentored 5 developers—one promoted to Senior Engineer, another now works at JPL. I believe when teams succeed, products succeed",
+      icon: '🌱',
+      title: 'I Invest in People',
+      text: "Five developers I've mentored have gone on to promotions and dream jobs—including one now at JPL. Component architecture is learnable. Curiosity and drive aren't.",
     },
   ],
 };
