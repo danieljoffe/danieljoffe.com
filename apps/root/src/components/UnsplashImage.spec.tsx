@@ -77,13 +77,6 @@ jest.mock('next/image', () => {
   return MockImage;
 });
 
-// Mock react-blurhash
-jest.mock('react-blurhash', () => ({
-  Blurhash: ({ hash, className }: { hash: string; className: string }) => (
-    <div data-testid='blurhash' data-hash={hash} className={className} />
-  ),
-}));
-
 // Mock hooks
 const mockUseGlobal = jest.fn();
 

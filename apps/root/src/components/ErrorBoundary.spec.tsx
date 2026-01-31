@@ -44,7 +44,7 @@ const CustomFallback = ({
   error,
   resetError,
 }: {
-  error: Error | null;
+  error?: Error | null;
   resetError: () => void;
 }) => (
   <div role='alert'>

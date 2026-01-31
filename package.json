@@ -45,7 +45,6 @@
     "next": "15.5.9",
     "next-transition-router": "^0.2.11",
     "react": "19.1.1",
-    "react-blurhash": "^0.3.0",
     "react-dom": "19.1.1",
     "react-hook-form": "^7.62.0",
     "schema-dts": "^1.1.5",

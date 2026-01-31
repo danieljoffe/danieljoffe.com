@@ -33,6 +33,9 @@ const nextConfig = {
       '@headlessui/react',
       '@gsap/react',
       'gsap',
+      '@sentry/nextjs',
+      'yup',
+      'schema-dts',
     ],
     // Disable in CI/test
     webpackBuildWorker: !isTest && !isCI,
@@ -244,6 +247,18 @@ const nextConfig = {
             chunks: 'all',
             priority: 5,
           },
+          sentry: {
+            test: /[\\/]node_modules[\\/]@sentry[\\/]/,
+            name: 'sentry',
+            chunks: 'all',
+            priority: 15,
+          },
+          validation: {
+            test: /[\\/]node_modules[\\/](yup|schema-dts)[\\/]/,
+            name: 'validation',
+            chunks: 'all',
+            priority: 5,
+          },
           // CSS optimization
           styles: {
             name: 'styles',
@@ -273,7 +288,9 @@ const nextConfig = {
       },
     },
   },
-  productionBrowserSourceMaps: true,
+  // Source maps are uploaded to Sentry for error debugging
+  // but not exposed to browsers to reduce bundle size
+  productionBrowserSourceMaps: false,
 };
 
 const plugins = [

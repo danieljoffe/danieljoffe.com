@@ -45,7 +45,7 @@ export function Section({
   className = '',
   ...rest
 }: SectionProps) {
-  const centerClasses = center ? 'flex justify-center' : '';
+  const centerClasses = center ? 'flex flex-col justify-center' : '';
   const widthClasses = fullWidth ? 'w-full' : '';
 
   return (

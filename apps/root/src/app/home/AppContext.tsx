@@ -3,15 +3,17 @@
 import GlobalProvider from '@/state/Global/Provider';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import { TransitionRouter } from 'next-transition-router';
 import { startTransition, Suspense, useRef } from 'react';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import dynamic from 'next/dynamic';
 import { WChildrenT } from '@/types/base';
+import TransitionRouter from './TransitionRouter';
 
-const Modal = dynamic(() => import('@/components/Modal'));
-const ScrollToElement = dynamic(() => import('./ScrollToElement'));
+const Modal = dynamic(() => import('@/components/Modal'), { ssr: false });
+const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
+  ssr: false,
+});
 
 export default function AppContext({ children }: WChildrenT) {
   const ref = useRef<HTMLDivElement>(null);
