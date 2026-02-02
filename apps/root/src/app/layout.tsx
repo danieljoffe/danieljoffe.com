@@ -6,6 +6,7 @@ import '@/styles/global.scss';
 import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
+import Head from './home/Head';
 
 export const metadata: Metadata = rootMetadata;
 export const viewport: Viewport = {
@@ -18,16 +19,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: WChildrenT) {
   return (
     <html lang='en' className={[fontVariables, 'scroll-smooth'].join(' ')}>
-      <head>
-        {/* Resource hints for third-party services */}
-        <link rel='dns-prefetch' href='https://sentry.io' />
-        <link rel='dns-prefetch' href='https://www.googletagmanager.com' />
-        <link rel='dns-prefetch' href='https://www.google-analytics.com' />
-        <link rel='dns-prefetch' href='https://hcaptcha.com' />
-        <link rel='dns-prefetch' href='https://api.hcaptcha.com' />
-        <link rel='prefetch' href='https://images.unsplash.com' />
-        <link rel='prefetch' href='https://unsplash.com' />
-      </head>
+      <Head />
       <body
         className={[
           'focus:outline-blue-500 focus:outline-2 focus:outline-offset-2',

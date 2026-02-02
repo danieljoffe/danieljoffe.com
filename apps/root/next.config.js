@@ -203,7 +203,7 @@ const nextConfig = {
       config.plugins.push(
         new (require('webpack').NormalModuleReplacementPlugin)(
           /src\/app\/fonts\.ts$/,
-          require.resolve('./src/app/fonts.mock.ts')
+          require.resolve('./src/fonts.mock.ts')
         )
       );
     }
