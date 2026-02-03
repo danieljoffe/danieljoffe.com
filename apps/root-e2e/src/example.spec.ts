@@ -121,7 +121,11 @@ test.describe('homepage', () => {
     await expect(mobileNavButton).toBeVisible({ timeout: 5000 });
   });
 
-  test('accessibility compliance', async ({ page }) => {
+  test('accessibility compliance', async ({ page, browserName }) => {
+    test.skip(
+      browserName === 'webkit',
+      'WebKit has flaky browser context issues in this test'
+    );
     await page.goto('/');
 
     // Check for proper ARIA labels

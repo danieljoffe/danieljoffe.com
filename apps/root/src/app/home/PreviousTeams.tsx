@@ -27,7 +27,7 @@ export default function PreviousTeams() {
             <li className='flex flex-1 justify-center' key={company.slug}>
               <Button
                 as='link'
-                variant='link'
+                variant='bare'
                 size='lg'
                 href={`${EXPERIENCE_LINK.href}/${company.slug}`}
                 aria-label={company.company}

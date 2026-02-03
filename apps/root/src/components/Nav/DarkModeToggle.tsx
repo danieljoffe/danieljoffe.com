@@ -15,7 +15,7 @@ export default function DarkModeToggle() {
 
   return (
     <Button
-      variant='icon'
+      variant='bare'
       size='sm'
       onClick={handleToggle}
       aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}

@@ -22,7 +22,7 @@ export default function Methodologies() {
           </h2>
           <ContentGrid>
             {offerings.methodology.map((methodology, index) => (
-              <GridItem as='li' key={index}>
+              <GridItem as='li' key={index} className='flex'>
                 <Card elevated padding='lg'>
                   <Stack
                     direction='vertical'

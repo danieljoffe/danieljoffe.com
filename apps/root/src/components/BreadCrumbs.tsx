@@ -20,7 +20,7 @@ export default function BreadCrumbs({ items }: BreadCrumbsI) {
                 {item.label}
               </p>
             ) : (
-              <Button as='link' variant='link' size='sm' href={item.href}>
+              <Button as='link' variant='bare' size='sm' href={item.href}>
                 {item.label}
                 <span
                   className='flex h-full items-center justify-center'

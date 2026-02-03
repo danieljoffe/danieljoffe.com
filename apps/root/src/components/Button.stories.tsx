@@ -78,7 +78,7 @@ export const Secondary: Story = {
 
 export const Icon: Story = {
   args: {
-    variant: 'icon',
+    variant: 'bare',
     size: 'sm',
     'aria-label': 'Close',
   },
@@ -91,7 +91,7 @@ export const Icon: Story = {
 
 export const Link: Story = {
   args: {
-    variant: 'link',
+    variant: 'bare',
     size: 'md',
     as: 'link',
     href: 'https://www.example.com',

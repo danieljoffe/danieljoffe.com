@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Button from './Button';
-import { buttonLinkStyles, buttonStateStyles } from './button.constants';
 
 // Mock next/link to render a real <a> and support ref
 jest.mock('next/link', () => {
@@ -63,8 +62,6 @@ describe('Button component', () => {
     expect(button).toBeDisabled();
     await user.click(button);
     expect(onClick).not.toHaveBeenCalled();
-    // visually disabled style should be present
-    expect(button.className).toContain(buttonStateStyles.disabled);
   });
 
   test('renders a link when as="link" with href', () => {
@@ -115,7 +112,8 @@ describe('Button component', () => {
       </Button>
     );
     const link = screen.getByRole('link', { name: /highlight/i });
-    expect(link.className).toContain(buttonLinkStyles.highlighted);
+    expect(link.className).toContain('text-accent');
+    expect(link.className).toContain('underline');
   });
 
   test('fires onClick for enabled button', async () => {

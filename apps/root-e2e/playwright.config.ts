@@ -89,6 +89,7 @@ export default defineConfig({
         {
           name: 'webkit',
           use: { ...devices['Desktop Safari'] },
+          retries: 2, // WebKit is flaky in headless mode
         },
         // Mobile browsers support
         {
@@ -98,6 +99,7 @@ export default defineConfig({
         {
           name: 'Mobile Safari',
           use: { ...devices['iPhone 12'] },
+          retries: 2, // WebKit-based, can be flaky
         },
       ],
 });

@@ -27,7 +27,7 @@ export default function NavLinks({
         {NAV_LINKS.map(link => (
           <li key={link.href} className='flex items-center' role='none'>
             <Button
-              variant='link'
+              variant='bare'
               size='sm'
               as='link'
               href={link.href}

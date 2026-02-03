@@ -100,7 +100,7 @@ export default function MobileNav({
           aria-expanded={menuOpen}
           aria-controls='mobile-menu'
           onClick={handleToggle}
-          variant='icon'
+          variant='bare'
           name='toggle menu'
         >
           <MenuIcon isOpen={menuOpen} />

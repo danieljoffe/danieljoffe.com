@@ -1,6 +1,7 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
-type ButtonVariant =
+export type UIButtonVariantT =
+  | 'bare'
   | 'primary'
   | 'secondary'
   | 'ghost'
@@ -11,18 +12,22 @@ type ButtonVariant =
   | 'warning'
   | 'info';
 
-type ButtonSize = 'sm' | 'md' | 'lg';
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+export type UIButtonSizeT = 'sm' | 'md' | 'lg';
+export interface UIButtonBaseI {
+  variant?: UIButtonVariantT;
+  size?: UIButtonSizeT;
   children: ReactNode;
 }
 
-const baseStyles =
+export interface UIButtonProps
+  extends UIButtonBaseI,
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {}
+
+export const baseUIButtonStyles =
   'inline-flex items-center justify-center gap-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed';
 
-const variantStyles: Record<ButtonVariant, string> = {
+export const variantUIButtonStyles: Record<UIButtonVariantT, string> = {
+  bare: '',
   primary:
     'bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-active',
   secondary:
@@ -38,27 +43,27 @@ const variantStyles: Record<ButtonVariant, string> = {
   info: 'bg-info text-info-foreground hover:opacity-90',
 };
 
-const sizeStyles: Record<ButtonSize, string> = {
+export const sizeUIButtonStyles: Record<UIButtonSizeT, string> = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-3',
   lg: 'px-6 py-3 text-lg',
 };
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  children,
-  className = '',
-  disabled,
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-      disabled={disabled}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
+export const Button = forwardRef<HTMLButtonElement, UIButtonProps>(
+  (
+    { variant = 'primary', size = 'md', children, className = '', ...props },
+    ref
+  ) => {
+    return (
+      <button
+        ref={ref}
+        className={`${baseUIButtonStyles} ${variantUIButtonStyles[variant]} ${sizeUIButtonStyles[size]} ${className}`}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button';

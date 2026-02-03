@@ -1,12 +1,13 @@
 'use client';
 
-import { PageContainer, Section, Stack } from '@danieljoffe.com/ui';
-import Button from '@/components/Button';
-import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
-import { analytics } from '@/lib/analytics';
-import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import dynamic from 'next/dynamic';
+import { ArrowUpRight, Download } from 'lucide-react';
+import { PageContainer, Section, Stack } from '@danieljoffe.com/ui';
+import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
+import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import { downloadResume } from '@/utils/helpers';
+import { analytics } from '@/lib/analytics';
+import Button from '@/components/Button';
 
 const Blob = dynamic(() => import('./Blob'), {
   loading: () => <div />,
@@ -16,7 +17,7 @@ export default function Hero() {
   return (
     <Section
       className={[
-        'min-h-min max-h-max relative !min-h-[27.5rem] md:!min-h-[32.5rem] h-[50vh]',
+        'relative h-[50vh] !min-h-[27.5rem] md:!min-h-[32.5rem] max-h-max',
         'flex-col overflow-hidden items-center md:h-[80vh]',
       ].join(' ')}
       aria-labelledby='hero-heading'
@@ -41,39 +42,35 @@ export default function Hero() {
             <p className='uppercase tracking-wide font-medium'>{JOB_TITLE}</p>
           </div>
 
-          <Stack direction='vertical' gap='sm' className='text-right text-sm'>
+          <Stack direction='vertical' gap='lg' className='text-right text-sm'>
             <div>
               <p>I optimize applications.</p>
               <p>I build scalable design systems.</p>
               <p>And I love eliminating engineering bottlenecks.</p>
             </div>
 
-            <Stack
-              direction='horizontal'
-              justify='evenly'
-              className='md:justify-end'
-            >
+            <Stack direction='vertical' className='max-w-[12.5rem] self-center'>
               <Button
                 as='link'
-                variant='link'
                 href={PROJECTS_LINK.href}
                 aria-label={`View ${FULL_NAME}'s case studies`}
                 onClick={() =>
                   analytics.ctaClick('view_case_studies', PROJECTS_LINK.href)
                 }
               >
-                View case studies
+                <span>View case studies</span>
+                <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
               </Button>
               <Button
                 as='button'
-                variant='link'
                 aria-label={`Download ${FULL_NAME}'s resume`}
                 onClick={() => {
                   analytics.ctaClick('download_resume', HOME_LINK.href);
                   downloadResume();
                 }}
               >
-                Download resume
+                <Download absoluteStrokeWidth={true} className='w-4 h-4' />
+                <span>Download resume</span>
               </Button>
             </Stack>
           </Stack>

@@ -33,7 +33,7 @@ export default function Footer() {
                   <Button
                     as='link'
                     href={link.href}
-                    variant='link'
+                    variant='bare'
                     size='sm'
                     aria-label={`Navigate to ${link.label}`}
                   >
@@ -48,7 +48,7 @@ export default function Footer() {
             <Button
               as='link'
               href={profileData.social.linkedin}
-              variant='icon'
+              variant='bare'
               size='sm'
               target='_blank'
               rel='noopener noreferrer'
@@ -60,7 +60,7 @@ export default function Footer() {
             <Button
               as='link'
               href={profileData.social.github}
-              variant='icon'
+              variant='bare'
               size='sm'
               target='_blank'
               rel='noopener noreferrer'
@@ -72,7 +72,7 @@ export default function Footer() {
             <Button
               as='link'
               href={`mailto:${profileData.social.email}`}
-              variant='icon'
+              variant='bare'
               size='sm'
               aria-label='Send email'
               title='Email'
@@ -84,7 +84,7 @@ export default function Footer() {
           <Button
             as='link'
             href='https://ui.danieljoffe.com'
-            variant='link'
+            variant='bare'
             size='sm'
             target='_blank'
             rel='noopener noreferrer'

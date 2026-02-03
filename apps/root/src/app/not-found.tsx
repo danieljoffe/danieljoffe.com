@@ -18,25 +18,27 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <PageContainer>
-      <div className='flex flex-col items-center justify-center gap-6 min-h-[60vh] text-center'>
-        <div>
-          <h1 className='text-foreground-muted'>404</h1>
-          <h2>Page Not Found</h2>
-          <p className='text-foreground-muted mb-6 max-w-md'>
-            The page you are looking for could not be found. Please check the
-            URL or return to the home page.
-          </p>
-        </div>
+    <main>
+      <PageContainer>
+        <div className='flex flex-col items-center justify-center gap-6 min-h-[60vh] text-center'>
+          <div>
+            <h1 className='text-foreground-muted'>404</h1>
+            <h2>Page Not Found</h2>
+            <p className='text-foreground-muted mb-6 max-w-md'>
+              The page you are looking for could not be found. Please check the
+              URL or return to the home page.
+            </p>
+          </div>
 
-        <Button
-          as='link'
-          href={HOME_LINK.href}
-          aria-label='Return to home page'
-        >
-          Back to Home
-        </Button>
-      </div>
-    </PageContainer>
+          <Button
+            as='link'
+            href={HOME_LINK.href}
+            aria-label='Return to home page'
+          >
+            Back to Home
+          </Button>
+        </div>
+      </PageContainer>
+    </main>
   );
 }

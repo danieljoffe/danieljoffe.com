@@ -32,7 +32,7 @@ export default function Logo() {
   return (
     <Button
       as='link'
-      variant='link'
+      variant='bare'
       size='sm'
       href={HOME_LINK.href}
       aria-label={HOME_LINK.label}

@@ -85,7 +85,7 @@ export default function UnsplashImage({
         <p className='text-white'>
           <Button
             as='link'
-            variant='link'
+            variant='bare'
             size='sm'
             href={`${UNSPLASH_URL}/${creator}`}
             target='_blank'
@@ -96,7 +96,7 @@ export default function UnsplashImage({
           </Button>
           <Button
             as='link'
-            variant='link'
+            variant='bare'
             size='sm'
             href={origin}
             target='_blank'

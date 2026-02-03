@@ -19,7 +19,7 @@ export default function FullTimeline() {
               <Card className='flex' padding='none' elevated>
                 <Button
                   as='link'
-                  variant='link'
+                  variant='bare'
                   size='lg'
                   className='w-full'
                   href={`${EXPERIENCE_LINK.href}/${company.slug}`}

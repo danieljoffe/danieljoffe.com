@@ -70,7 +70,7 @@ export default function Hero() {
               <Stack direction='horizontal' gap='none'>
                 <Button
                   size='sm'
-                  variant='icon'
+                  variant='bare'
                   aria-label='Send Email'
                   target='_blank'
                   rel='noopener noreferrer'
@@ -88,7 +88,7 @@ export default function Hero() {
                 </Button>
                 <Button
                   size='sm'
-                  variant='icon'
+                  variant='bare'
                   aria-label='Visit LinkedIn Profile'
                   target='_blank'
                   rel='noopener noreferrer'
@@ -106,7 +106,7 @@ export default function Hero() {
                 </Button>
                 <Button
                   size='sm'
-                  variant='icon'
+                  variant='bare'
                   aria-label='Visit GitHub Profile'
                   target='_blank'
                   rel='noopener noreferrer'
@@ -124,7 +124,7 @@ export default function Hero() {
                 </Button>
                 <Button
                   size='sm'
-                  variant='icon'
+                  variant='bare'
                   aria-label='Download Resume (PDF)'
                   title='Download Resume'
                   name='download resume'
