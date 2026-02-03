@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Script from 'next/script';
-import { GAParams } from './googleAnalytics.types';
+import { GAParams } from './GoogleAnalytics.types';
 import { devLog } from '@/utils/helpers';
 
 let currDataLayerName: string | undefined = undefined;

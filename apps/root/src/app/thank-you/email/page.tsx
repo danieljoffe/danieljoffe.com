@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { PageContainer } from '@danieljoffe.com/ui';
+import { PageContainer, Stack } from '@danieljoffe.com/ui';
 
 import type { Metadata } from 'next';
 import Button from '@/components/Button';
@@ -34,27 +34,25 @@ export default async function ThankYouEmail() {
   }
 
   return (
-    <>
-      <PageContainer>
-        <div className='flex flex-col items-center justify-center gap-4'>
-          <div>
-            <h1 className='text-center'>Thank you for reaching out!</h1>
-            <p className='text-lg text-center mb-2'>
-              I appreciate you taking the time to reach out.
-              <br />
-              I&apos;ll get back to you as soon as possible.
-            </p>
-          </div>
+    <PageContainer>
+      <Stack direction='vertical' align='center' justify='center' gap='md'>
+        <Stack direction='vertical' gap='sm'>
+          <h1 className='text-center'>Thank you for reaching out!</h1>
+          <p className='text-lg text-center mb-2'>
+            I appreciate you taking the time to reach out.
+            <br />
+            I&apos;ll get back to you as soon as possible.
+          </p>
+        </Stack>
 
-          <Button
-            as='link'
-            href={HOME_LINK.href}
-            aria-label='Return to home page'
-          >
-            Back to home
-          </Button>
-        </div>
-      </PageContainer>
-    </>
+        <Button
+          as='link'
+          href={HOME_LINK.href}
+          aria-label='Return to home page'
+        >
+          Back to home
+        </Button>
+      </Stack>
+    </PageContainer>
   );
 }

@@ -38,22 +38,28 @@ export default async function Scripts() {
         }}
         nonce={nonce}
       />
+      {/*
+        Suppress known third-party console errors in production.
+        These are benign errors from browser APIs and chunk loading that
+        don't affect functionality but clutter console output.
+      */}
       <Script
-        // Suppress known console errors in production for Lighthouse
         id='suppressConsoleErrors'
         strategy='beforeInteractive'
         dangerouslySetInnerHTML={{
           __html: `
               if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
                 const originalError = console.error;
+                const suppressedPatterns = [
+                  'Non-Error promise rejection',
+                  'ResizeObserver loop limit exceeded',
+                  'ChunkLoadError',
+                  'Loading chunk',
+                  'Loading CSS chunk'
+                ];
                 console.error = function(...args) {
-                  // Only suppress known third-party errors that don't affect functionality
                   const message = args.join(' ');
-                  if (message.includes('Non-Error promise rejection') ||
-                      message.includes('ResizeObserver loop limit exceeded') ||
-                      message.includes('ChunkLoadError') ||
-                      message.includes('Loading chunk') ||
-                      message.includes('Loading CSS chunk')) {
+                  if (suppressedPatterns.some(pattern => message.includes(pattern))) {
                     return;
                   }
                   originalError.apply(console, args);
@@ -63,9 +69,13 @@ export default async function Scripts() {
         }}
         nonce={nonce}
       />
+      {/*
+        Workaround for Next.js App Router streaming behavior where meta tags
+        may briefly render outside <head> during hydration, causing Lighthouse
+        "Document does not have a meta description" errors.
+        See: https://github.com/vercel/next.js/issues/49373
+      */}
       <Script
-        // TODO: remove once 'Document does not have a meta description'
-        // error is fixed on lighthouse
         id='ensureMetaInHead'
         strategy='afterInteractive'
         dangerouslySetInnerHTML={{

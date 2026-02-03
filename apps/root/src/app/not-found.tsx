@@ -1,4 +1,4 @@
-import { PageContainer } from '@danieljoffe.com/ui';
+import { PageContainer, Stack } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
 import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/base';
@@ -20,15 +20,21 @@ export default function NotFound() {
   return (
     <main>
       <PageContainer>
-        <div className='flex flex-col items-center justify-center gap-6 min-h-[60vh] text-center'>
-          <div>
+        <Stack
+          direction='vertical'
+          align='center'
+          justify='center'
+          gap='lg'
+          className='min-h-[60vh] text-center'
+        >
+          <Stack direction='vertical' gap='sm'>
             <h1 className='text-foreground-muted'>404</h1>
             <h2>Page Not Found</h2>
             <p className='text-foreground-muted mb-6 max-w-md'>
               The page you are looking for could not be found. Please check the
               URL or return to the home page.
             </p>
-          </div>
+          </Stack>
 
           <Button
             as='link'
@@ -37,7 +43,7 @@ export default function NotFound() {
           >
             Back to Home
           </Button>
-        </div>
+        </Stack>
       </PageContainer>
     </main>
   );
