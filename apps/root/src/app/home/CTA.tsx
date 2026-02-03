@@ -10,14 +10,17 @@ export default function CTA() {
     <CTASection
       headingId='cta-heading'
       heading="Let's Build Something Great Together"
-      description="Ready to discuss how I can help drive your team's success? I'm always excited to tackle new challenges and create meaningful impact."
+      description="Available for contract projects and fractional engineering engagements. Let's talk about your project."
       buttons={[
         {
-          label: 'Get in touch',
+          label: 'Start a conversation',
           href: `${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`,
-          ariaLabel: `Get in touch with ${FULL_NAME}`,
+          ariaLabel: `Start a conversation with ${FULL_NAME}`,
           onClick: () =>
-            analytics.ctaClick('get_in_touch', '/about?scrollTo=contact-form'),
+            analytics.ctaClick(
+              'start_conversation',
+              '/about?scrollTo=contact-form'
+            ),
         },
         {
           label: 'View my work',

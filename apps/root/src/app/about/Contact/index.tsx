@@ -13,10 +13,8 @@ export default function Contact() {
           Let&apos;s Connect
         </h2>
         <p className='text-center !mb-2'>
-          I&apos;m currently seeking senior frontend or full-stack engineering
-          roles—remote or LA-based. Whether you have an opportunity to discuss
-          or just want to chat about performance optimization, I&apos;d love to
-          hear from you.
+          Available for contract work, consulting, and fractional engineering
+          engagements. Have a project in mind? I&apos;d love to hear about it.
         </p>
         <p className='text-center text-sm font-medium'>
           <strong className='font-bold'>Response time:</strong> Usually within
