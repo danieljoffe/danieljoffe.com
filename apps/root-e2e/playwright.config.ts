@@ -85,6 +85,7 @@ export default defineConfig({
         {
           name: 'firefox',
           use: { ...devices['Desktop Firefox'] },
+          retries: 2, // Firefox can be flaky in headless mode
         },
         {
           name: 'webkit',

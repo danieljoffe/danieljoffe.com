@@ -34,10 +34,13 @@ describe('Services Hero', () => {
   it('renders the CTA button with correct link', () => {
     render(<Hero />);
     const ctaLink = screen.getByRole('link', {
-      name: /start a conversation/i,
+      name: /book a discovery call/i,
     });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute('href', '/about?scrollTo=contact-form');
+    expect(ctaLink).toHaveAttribute(
+      'href',
+      'https://calendly.com/hello-danieljoffe/30min'
+    );
   });
 
   it('has proper accessibility attributes', () => {
@@ -50,12 +53,12 @@ describe('Services Hero', () => {
     const { analytics } = await import('@/lib/analytics');
     render(<Hero />);
     const ctaLink = screen.getByRole('link', {
-      name: /start a conversation/i,
+      name: /book a discovery call/i,
     });
     fireEvent.click(ctaLink);
     expect(analytics.ctaClick).toHaveBeenCalledWith(
       'services_hero_cta',
-      '/about?scrollTo=contact-form'
+      'https://calendly.com/hello-danieljoffe/30min'
     );
   });
 });

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { ArrowUpRight, Download } from 'lucide-react';
-import { PageContainer, Section, Stack } from '@danieljoffe.com/ui';
+import { PageContainer, Section, Stack, Badge } from '@danieljoffe.com/ui';
 import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
 import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import { downloadResume } from '@/utils/helpers';
@@ -33,7 +33,10 @@ export default function Hero() {
             'self-center max-w-[35rem]',
           ].join(' ')}
         >
-          <div>
+          <div className='flex flex-col'>
+            <Badge variant='success' className='self-center'>
+              Available for contract work — Q1 2026
+            </Badge>
             <h1 id='hero-heading'>
               <span>Hello.</span>
               <br className='hidden md:block' />

@@ -19,3 +19,6 @@ export const NAV_LINKS: NavLinkI[] = [
 
 // Form IDs
 export const CONTACT_FORM_ID = 'contact-form';
+
+// External Links
+export const CALENDLY_URL = 'https://calendly.com/hello-danieljoffe/30min';

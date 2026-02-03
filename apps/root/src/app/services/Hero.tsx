@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from 'lucide-react';
 import { PageContainer, Section, Stack, Badge } from '@danieljoffe.com/ui';
-import { ABOUT_LINK, CONTACT_FORM_ID } from '@/utils/base';
+import { CALENDLY_URL } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
@@ -28,16 +28,14 @@ export default function Hero() {
           </div>
           <Button
             as='link'
-            href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
-            aria-label={`Start a conversation with ${FULL_NAME}`}
+            href={CALENDLY_URL}
+            target='_blank'
+            aria-label={`Book a discovery call with ${FULL_NAME}`}
             onClick={() =>
-              analytics.ctaClick(
-                'services_hero_cta',
-                '/about?scrollTo=contact-form'
-              )
+              analytics.ctaClick('services_hero_cta', CALENDLY_URL)
             }
           >
-            <span>Start a conversation</span>
+            <span>Book a Discovery Call</span>
             <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
           </Button>
         </Stack>

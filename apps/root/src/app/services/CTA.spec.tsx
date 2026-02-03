@@ -31,7 +31,10 @@ describe('Services CTA', () => {
       name: /book a discovery call/i,
     });
     expect(ctaLink).toBeInTheDocument();
-    expect(ctaLink).toHaveAttribute('href', '/about?scrollTo=contact-form');
+    expect(ctaLink).toHaveAttribute(
+      'href',
+      'https://calendly.com/hello-danieljoffe/30min'
+    );
   });
 
   it('has proper accessibility attributes', () => {
@@ -49,7 +52,7 @@ describe('Services CTA', () => {
     fireEvent.click(ctaLink);
     expect(analytics.ctaClick).toHaveBeenCalledWith(
       'services_cta_discovery_call',
-      '/about?scrollTo=contact-form'
+      'https://calendly.com/hello-danieljoffe/30min'
     );
   });
 });
