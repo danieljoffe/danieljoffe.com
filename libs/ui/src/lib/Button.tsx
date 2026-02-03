@@ -23,8 +23,12 @@ export interface UIButtonProps
   extends UIButtonBaseI,
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {}
 
-export const baseUIButtonStyles =
-  'inline-flex items-center justify-center gap-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed';
+export const baseUIButtonStyles = [
+  'inline-flex items-center justify-center gap-2 rounded-md transition-all',
+  'duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2',
+  'focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
+  'hover:cursor-pointer',
+].join(' ');
 
 export const variantUIButtonStyles: Record<UIButtonVariantT, string> = {
   bare: '',
