@@ -5,7 +5,7 @@ import { Stack, PageContainer } from '@danieljoffe.com/ui';
 import Button from '@/components/Button';
 import { NAV_LINKS } from '@/utils/base';
 import { profileData } from '@/utils/profileData';
-import { FULL_NAME } from '@/utils/constants';
+import { FULL_NAME, STORYBOOK_URL } from '@/utils/constants';
 
 const currentYear = new Date().getFullYear();
 
@@ -83,7 +83,7 @@ export default function Footer() {
 
           <Button
             as='link'
-            href='https://ui.danieljoffe.com'
+            href={STORYBOOK_URL}
             variant='bare'
             size='sm'
             target='_blank'

@@ -26,6 +26,7 @@ function LinkAsButton(props: AsLinkProps) {
   } = props;
   const classes = [
     baseUIButtonStyles,
+    'hover:text-accent',
     variantUIButtonStyles[variant ?? 'primary'],
     sizeUIButtonStyles[size ?? 'md'],
     highlighted ? 'text-accent underline underline-offset-4' : '',

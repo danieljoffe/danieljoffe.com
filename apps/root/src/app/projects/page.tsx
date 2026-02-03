@@ -8,6 +8,7 @@ import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
 import MainContent from '@/components/MainContent';
+import OpenSourceCallout from './OpenSourceCallout';
 
 const projectsList = Object.values(projectsRecords);
 export const metadata: Metadata = projectRootMetadata;
@@ -29,6 +30,8 @@ export default async function Projects() {
                 includes the challenge, my approach, and measurable outcomes.
               </p>
             </header>
+
+            <OpenSourceCallout />
 
             <section aria-labelledby='projects-heading'>
               <h2 id='projects-heading' className='sr-only'>
