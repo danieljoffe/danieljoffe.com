@@ -15,7 +15,10 @@ declare module '*.mdx' {
 }
 
 declare module 'mdx/types' {
+  // eslint-disable-next-line no-duplicate-imports -- separate module declaration scope
+  import type { ComponentType } from 'react';
+
   export interface MDXComponents {
-    [key: string]: React.ComponentType<unknown>;
+    [key: string]: ComponentType<Record<string, unknown>>;
   }
 }

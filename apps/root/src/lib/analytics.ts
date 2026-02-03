@@ -7,11 +7,7 @@ function trackEvent(eventName: string, params?: EventParams) {
   if (typeof window === 'undefined') return;
 
   // sendGAEvent pushes arguments to dataLayer, mimicking gtag('event', name, params)
-  sendGAEvent(
-    'event' as unknown as object,
-    eventName as unknown as object,
-    params as object
-  );
+  sendGAEvent('event', eventName, params);
 }
 
 export const analytics = {

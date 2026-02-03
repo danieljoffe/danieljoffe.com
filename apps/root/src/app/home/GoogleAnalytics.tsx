@@ -1,14 +1,20 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Script from 'next/script';
-import { GAParams } from './GoogleAnalytics.types';
 import { devLog } from '@/utils/helpers';
+
+type GAProps = {
+  gaId: string;
+  dataLayerName?: string;
+  debugMode?: boolean;
+  nonce?: string | undefined;
+};
 
 let currDataLayerName: string | undefined = undefined;
 
 // https://github.com/vercel/next.js/blob/canary/packages/third-parties/src/types/google.ts
-export function GoogleAnalytics(props: GAParams) {
+export function GoogleAnalytics(props: GAProps) {
   const { gaId, debugMode, dataLayerName = 'dataLayer', nonce } = props;
 
   if (currDataLayerName === undefined) {
@@ -56,15 +62,15 @@ export function GoogleAnalytics(props: GAParams) {
   );
 }
 
-export function sendGAEvent(..._args: object[]) {
-  if (currDataLayerName === undefined) {
+export function sendGAEvent(...args: [string, ...unknown[]]) {
+  if (currDataLayerName == null) {
     devLog('GA has not been initialized');
     return;
   }
-  if (window[currDataLayerName]) {
-    // @ts-expect-error - window[currDataLayerName] is not typed
-    // eslint-disable-next-line prefer-rest-params
-    window[currDataLayerName].push(arguments);
+
+  const dataLayer = window[currDataLayerName];
+  if (dataLayer) {
+    dataLayer.push(args);
   } else {
     devLog(`GA dataLayer ${currDataLayerName} does not exist`);
   }

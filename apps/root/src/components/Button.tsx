@@ -98,7 +98,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       }
     };
 
-    const { type, children, ...buttonRest } = restButton;
+    const { type = 'button', children, ...buttonRest } = restButton;
 
     if (buttonRest.name == null || buttonRest.name === '') {
       devLog('Button component: name is required');
@@ -109,7 +109,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...buttonRest}
         ref={ref}
         disabled={restButton.disabled}
-        type={type ?? 'button'}
+        type={type}
         onClick={restButton.disabled ? undefined : onClick}
         onKeyDown={onKeyDown}
       >

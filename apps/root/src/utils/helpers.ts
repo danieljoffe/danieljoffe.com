@@ -40,7 +40,11 @@ export const getBase64DataUrl = (
 
 export const devLog = (message: string, ...args: unknown[]) => {
   if (isProduction()) return;
-  console.log(`🔍 ${new Date().toISOString()} ${message}`, ...args);
+  console.log(
+    `%c${new Date().toISOString()} > ${message}`,
+    'background-color: darkorange; color: black; font-weight: 600; padding: 5px;',
+    ...args
+  );
 };
 
 // ============================================================================
