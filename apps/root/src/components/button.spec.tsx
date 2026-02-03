@@ -141,4 +141,86 @@ describe('Button component', () => {
     await user.click(link);
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  test('returns null when link href is empty', () => {
+    const { container } = render(
+      <Button as='link' href=''>
+        Empty
+      </Button>
+    );
+    expect(container.querySelector('a')).toBeNull();
+    expect(container.querySelector('span')).toBeNull();
+  });
+
+  test('handles keyboard Enter key on button', async () => {
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+    render(
+      <Button name='testing' onClick={onClick}>
+        Press
+      </Button>
+    );
+    const button = screen.getByRole('button', { name: /press/i });
+    button.focus();
+    await user.keyboard('{Enter}');
+    expect(onClick).toHaveBeenCalled();
+  });
+
+  test('handles keyboard Space key on button', async () => {
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+    render(
+      <Button name='testing' onClick={onClick}>
+        Press
+      </Button>
+    );
+    const button = screen.getByRole('button', { name: /press/i });
+    button.focus();
+    await user.keyboard(' ');
+    expect(onClick).toHaveBeenCalled();
+  });
+
+  test('does not fire onClick on keyboard when disabled', async () => {
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+    render(
+      <Button name='testing' disabled onClick={onClick}>
+        Disabled
+      </Button>
+    );
+    const button = screen.getByRole('button', { name: /disabled/i });
+    button.focus();
+    await user.keyboard('{Enter}');
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('generates id from aria-label when id not provided', () => {
+    render(
+      <Button as='link' href='/test' aria-label='Test Label'>
+        Link
+      </Button>
+    );
+    const link = screen.getByRole('link', { name: /test label/i });
+    expect(link).toHaveAttribute('id', 'Test-Label');
+  });
+
+  test('uses provided id over aria-label', () => {
+    render(
+      <Button as='link' href='/test' id='custom-id' aria-label='Test Label'>
+        Link
+      </Button>
+    );
+    const link = screen.getByRole('link', { name: /test label/i });
+    expect(link).toHaveAttribute('id', 'custom-id');
+  });
+
+  test('applies variant and size styles', () => {
+    render(
+      <Button as='link' href='/test' variant='secondary' size='lg'>
+        Styled
+      </Button>
+    );
+    const link = screen.getByRole('link', { name: /styled/i });
+    expect(link).toBeInTheDocument();
+  });
 });

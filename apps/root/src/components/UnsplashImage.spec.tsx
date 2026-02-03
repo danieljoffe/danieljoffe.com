@@ -53,23 +53,25 @@ jest.mock('next/image', () => {
       }
 
       return (
-        <img
-          ref={ref}
-          src={finalSrc}
-          alt={alt}
-          width={width}
-          height={height}
-          data-priority={priority}
-          data-fetch-priority={fetchPriority}
-          data-decoding={decoding}
-          data-sizes={sizes}
-          data-placeholder={placeholder}
-          data-blur-data-url={blurDataURL}
-          data-unoptimized={unoptimized}
-          data-fill={fill}
-          onLoad={onLoad}
-          {...rest}
-        />
+        <picture>
+          <img
+            ref={ref}
+            src={finalSrc}
+            alt={alt}
+            width={width}
+            height={height}
+            data-priority={priority}
+            data-fetch-priority={fetchPriority}
+            data-decoding={decoding}
+            data-sizes={sizes}
+            data-placeholder={placeholder}
+            data-blur-data-url={blurDataURL}
+            data-unoptimized={unoptimized}
+            data-fill={fill}
+            onLoad={onLoad}
+            {...rest}
+          />
+        </picture>
       );
     }
   );

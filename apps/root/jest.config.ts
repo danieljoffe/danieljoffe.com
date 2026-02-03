@@ -23,10 +23,10 @@ const config: Config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 23.5,
-      functions: 24.4,
-      lines: 24.7,
-      statements: 24.7,
+      branches: 25,
+      functions: 25,
+      lines: 25,
+      statements: 25,
     },
   },
   // Ensure Jest exits cleanly in Nx/Next test envs
