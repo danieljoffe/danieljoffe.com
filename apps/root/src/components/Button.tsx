@@ -1,6 +1,6 @@
 'use client';
 import React, { useCallback, type ComponentProps } from 'react';
-import Link from 'next/link';
+import { Link } from 'next-transition-router';
 import { Url } from 'next/dist/shared/lib/router/router';
 import { useRouter } from 'next/navigation';
 import {

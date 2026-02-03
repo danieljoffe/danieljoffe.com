@@ -1,5 +1,6 @@
 'use client';
 
+import gsap from 'gsap';
 import { TransitionRouter } from 'next-transition-router';
 import { startTransition, Suspense, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -15,44 +16,73 @@ const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
 });
 
 export default function AppContext({ children }: WChildrenT) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handleLeave = async (next: () => void) => {
-    const main = ref.current;
-    if (main) {
-      requestAnimationFrame(() => {
-        main.style.opacity = '0.9';
-        startTransition(next);
-      });
-    } else {
-      startTransition(next);
-    }
-    return () => undefined;
-  };
-
-  const handleEnter = async (next: () => void) => {
-    const main = ref.current;
-    if (main) {
-      requestAnimationFrame(() => {
-        main.style.transition = 'opacity 0.25s ease-out';
-        main.style.opacity = '1';
-        startTransition(next);
-      });
-    } else {
-      startTransition(next);
-    }
-
-    return () => undefined;
-  };
+  const slidingPane = useRef<HTMLDivElement | null>(null);
 
   return (
     <GlobalProvider>
-      <TransitionRouter auto={true} leave={handleLeave} enter={handleEnter}>
+      <TransitionRouter
+        auto={true}
+        leave={next => {
+          const tl = gsap
+            .timeline({
+              onComplete: next,
+            })
+            .fromTo(
+              slidingPane.current,
+              {
+                x: '100%',
+                y: 0,
+              },
+              {
+                x: 0,
+                duration: 0.65,
+                ease: 'power4.inOut',
+              }
+            );
+          return () => {
+            tl.kill();
+          };
+        }}
+        enter={next => {
+          const tl = gsap
+            .timeline()
+            .fromTo(
+              slidingPane.current,
+              {
+                x: 0,
+                y: 0,
+              },
+              {
+                x: '-100%',
+                duration: 0.65,
+                ease: 'power4.out',
+              },
+              '<50%'
+            )
+            .call(
+              () => {
+                requestAnimationFrame(() => {
+                  startTransition(next);
+                });
+              },
+              undefined,
+              '<50%'
+            );
+
+          return () => {
+            tl.kill();
+          };
+        }}
+      >
         <Modal />
         <Nav />
-        <div ref={ref} className='flex flex-col flex-1'>
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </div>
+        <ErrorBoundary>
+          <div className='flex flex-col flex-1'>{children}</div>
+          <div
+            ref={slidingPane}
+            className='fixed inset-0 z-50 translate-x-full bg-background'
+          />
+        </ErrorBoundary>
         <Footer />
         <Suspense fallback={null}>
           <ScrollToElement />
