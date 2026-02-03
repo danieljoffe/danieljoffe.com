@@ -1,7 +1,6 @@
 'use client';
 
-import { CALENDLY_URL } from '@/utils/base';
-import { FULL_NAME } from '@/utils/constants';
+import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import CTASection from '@/components/CTASection';
 
