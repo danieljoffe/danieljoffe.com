@@ -66,3 +66,7 @@ jobs:
           name: playwright-screenshots
           path: apps/root-e2e/test-results/
           retention-days: 30
+
+      - name: Nx self healing CI
+        run: yarn nx fix-ci
+        if: always()
