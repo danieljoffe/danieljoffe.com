@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: NX autofix=lint,tests
-        run: npx nx-cloud start-ci-run --fix-tasks="*test*" --auto-apply-fixes="lint"
+        run: npx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --fix-tasks="*test*" --auto-apply-fixes="lint"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
