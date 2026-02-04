@@ -1,5 +1,5 @@
 import { UNSPLASH_URL } from '@/utils/constants';
-import { PostThumbnailI } from '@/types/post.types';
+import { PostThumbnailI } from '@/types/postTypes';
 import { AllowedProjectSlugs } from '@/types/base';
 import { projectSlugs } from '@/data/project';
 import { PROJECTS_LINK } from '@/utils/base';
