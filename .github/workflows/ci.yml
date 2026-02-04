@@ -14,6 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: NX autofix=lint,tests
+        run: npx nx-cloud start-ci-run --fix-tasks="*test*" --auto-apply-fixes="lint"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -68,5 +71,5 @@ jobs:
           retention-days: 30
 
       - name: Nx self healing CI
-        run: yarn nx fix-ci
+        run: npx nx fix-ci
         if: always()
