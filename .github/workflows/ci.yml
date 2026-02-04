@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   test:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.14.0'
           cache: 'yarn'
 
       - name: Install dependencies
@@ -32,11 +32,11 @@ jobs:
       - name: Unit tests
         run: yarn test:coverage
 
-      - name: Build application
-        run: yarn nx build root
-
       - name: Build Storybook
         run: yarn nx build-storybook @danieljoffe.com/ui
+
+      - name: Build application
+        run: yarn nx build root --prod
 
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps
