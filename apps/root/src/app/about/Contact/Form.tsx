@@ -10,7 +10,7 @@ import { formSchema } from '@/app/api/email/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Stack, Input, Textarea, Loading } from '@danieljoffe.com/ui';
+import { Stack, Input, Textarea, Loading } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 

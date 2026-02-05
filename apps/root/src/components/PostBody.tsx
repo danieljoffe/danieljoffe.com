@@ -2,7 +2,7 @@ import { PostBodyI } from '@/types/postTypes';
 import UnsplashImage from './UnsplashImage';
 import PostContent from './PostContent';
 import BreadCrumbs from './BreadCrumbs';
-import { Stack } from '@danieljoffe.com/ui';
+import { Stack } from '@danieljoffe.com/shared-ui';
 
 export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
   return (

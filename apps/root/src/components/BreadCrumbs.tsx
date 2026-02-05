@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/Button';
 import { BreadCrumbsI } from '@/types/base';
-import { Stack } from '@danieljoffe.com/ui';
+import { Stack } from '@danieljoffe.com/shared-ui';
 
 export default function BreadCrumbs({ items }: BreadCrumbsI) {
   const pathname = usePathname();

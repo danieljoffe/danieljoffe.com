@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
 import MainContent from '@/components/MainContent';

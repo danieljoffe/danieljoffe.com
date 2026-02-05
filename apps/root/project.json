@@ -4,7 +4,7 @@
   "sourceRoot": "apps/root/src",
   "projectType": "application",
   "tags": ["scope:root", "type:app"],
-  "implicitDependencies": ["@danieljoffe.com/ui"],
+  "implicitDependencies": ["@danieljoffe.com/shared-ui"],
   "targets": {
     "build": {
       "options": {

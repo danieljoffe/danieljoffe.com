@@ -1,5 +1,5 @@
 import type React from 'react';
-import { UIButtonBaseI, UIButtonProps } from '@danieljoffe.com/ui';
+import { UIButtonBaseI, UIButtonProps } from '@danieljoffe.com/shared-ui';
 
 // Props when rendering as a native <button>
 export interface AsButtonProps extends UIButtonProps {

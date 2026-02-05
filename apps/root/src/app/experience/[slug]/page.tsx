@@ -8,7 +8,7 @@ import { experienceMdxComponents } from '@/data/content/experience';
 import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
-import { PageContainer, Section } from '@danieljoffe.com/ui';
+import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostBody from '@/components/PostBody';
 import MainContent from '@/components/MainContent';
 

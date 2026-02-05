@@ -8,7 +8,7 @@ import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
 import { projectMdxComponents } from '@/data/content/projects';
-import { PageContainer, Section } from '@danieljoffe.com/ui';
+import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostBody from '@/components/PostBody';
 import MainContent from '@/components/MainContent';
 

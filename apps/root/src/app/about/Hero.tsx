@@ -1,6 +1,6 @@
 'use client';
 import Button from '@/components/Button';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';

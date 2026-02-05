@@ -1,4 +1,4 @@
-import { Stack } from '@danieljoffe.com/ui';
+import { Stack } from '@danieljoffe.com/shared-ui';
 
 export default function Intro() {
   return (

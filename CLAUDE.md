@@ -43,7 +43,7 @@ yarn typecheck                     # TypeScript type checking
 
 ```bash
 npx nx storybook root              # Start Storybook for root app
-npx nx storybook @danieljoffe.com/ui  # Start Storybook for UI library
+npx nx storybook @danieljoffe.com/shared-ui  # Start Storybook for UI library
 ```
 
 ## Architecture
@@ -52,7 +52,7 @@ npx nx storybook @danieljoffe.com/ui  # Start Storybook for UI library
 
 - **apps/root**: Main Next.js 16 application (App Router)
 - **apps/root-e2e**: Playwright E2E tests
-- **libs/shared/ui**: Shared React component library (@danieljoffe.com/ui)
+- **libs/shared/ui**: Shared React component library (@danieljoffe.com/shared-ui)
 
 ### App Structure (apps/root/src/)
 

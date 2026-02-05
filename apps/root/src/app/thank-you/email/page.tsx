@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { PageContainer, Stack } from '@danieljoffe.com/ui';
+import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 
 import type { Metadata } from 'next';
 import Button from '@/components/Button';

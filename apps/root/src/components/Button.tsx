@@ -8,7 +8,7 @@ import {
   sizeUIButtonStyles,
   variantUIButtonStyles,
   Button as UIButton,
-} from '@danieljoffe.com/ui';
+} from '@danieljoffe.com/shared-ui';
 import { devLog } from '@/utils/helpers';
 import { AsButtonProps, AsLinkProps, ButtonProps } from '@/types/buttonTypes';
 

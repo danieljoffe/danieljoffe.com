@@ -1,5 +1,5 @@
 export default {
-  displayName: '@danieljoffe.com/ui',
+  displayName: '@danieljoffe.com/shared-ui',
   preset: '../../../jest.preset.js',
   transform: {
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
