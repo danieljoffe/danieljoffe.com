@@ -20,7 +20,8 @@ export default [
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
-            // Apps can depend on libraries
+            // === TYPE CONSTRAINTS ===
+            // Apps can depend on any library type
             {
               sourceTag: 'type:app',
               onlyDependOnLibsWithTags: [
@@ -58,6 +59,17 @@ export default [
             {
               sourceTag: 'type:data-access',
               onlyDependOnLibsWithTags: ['type:util', 'type:data-access'],
+            },
+            // === SCOPE CONSTRAINTS ===
+            // App-scoped projects can use shared libs but not other app scopes
+            {
+              sourceTag: 'scope:root',
+              onlyDependOnLibsWithTags: ['scope:root', 'scope:shared'],
+            },
+            // Shared libraries should only depend on other shared libraries
+            {
+              sourceTag: 'scope:shared',
+              onlyDependOnLibsWithTags: ['scope:shared'],
             },
           ],
         },
