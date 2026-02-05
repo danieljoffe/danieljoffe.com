@@ -1,5 +1,5 @@
 import { AllowedExperienceSlugs } from '@/types/base';
-import { PostThumbnailI } from '@/types/post.types';
+import { PostThumbnailI } from '@/types/postTypes';
 import { EXPERIENCE_LINK } from '@/utils/base';
 import { UNSPLASH_URL } from '@/utils/constants';
 import { experienceNames, experienceSlugs } from './experience';

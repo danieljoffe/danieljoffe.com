@@ -21,6 +21,22 @@ jest.mock('next/navigation', () => ({
   useParams: () => ({}),
 }));
 
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  headers: jest.fn(() =>
+    Promise.resolve({
+      get: jest.fn((key: string) => (key === 'x-nonce' ? 'test-nonce' : null)),
+    })
+  ),
+  cookies: jest.fn(() =>
+    Promise.resolve({
+      get: jest.fn(),
+      getAll: jest.fn(() => []),
+      has: jest.fn(() => false),
+    })
+  ),
+}));
+
 // Mock IntersectionObserver
 (
   global as unknown as { IntersectionObserver: typeof IntersectionObserver }

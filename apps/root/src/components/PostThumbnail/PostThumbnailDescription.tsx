@@ -1,4 +1,4 @@
-import { PostBaseI } from '@/types/post.types';
+import { PostBaseI } from '@/types/postTypes';
 
 export default function PostThumbnailIDescription({
   title,

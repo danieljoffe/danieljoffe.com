@@ -1,6 +1,6 @@
 'use client';
 
-import { PostThumbnailI } from '@/types/post.types';
+import { PostThumbnailI } from '@/types/postTypes';
 import UnsplashImage from '../UnsplashImage';
 import { Link } from 'next-transition-router';
 import PostThumbnailIDescription from './PostThumbnailDescription';
