@@ -10,6 +10,9 @@ permissions:
   actions: read
   contents: read
 
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -23,8 +26,11 @@ jobs:
       # Run this command as early as possible, before dependencies are installed
       # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
       # Uncomment this line to enable task distribution
+      - name: NX ci run
+        run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
+
       - name: NX autofix lint,tests
-        run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci" --fix-tasks="*test*" --auto-apply-fixes="lint"
+        run: npx nx fix-ci --fix-tasks="*test*" --auto-apply-fixes="lint"
 
       # Cache node_modules
       - uses: actions/setup-node@v4
