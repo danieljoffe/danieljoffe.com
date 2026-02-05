@@ -10,7 +10,7 @@ import {
   Button as UIButton,
 } from '@danieljoffe.com/ui';
 import { devLog } from '@/utils/helpers';
-import { AsButtonProps, AsLinkProps, ButtonProps } from './Button.types';
+import { AsButtonProps, AsLinkProps, ButtonProps } from '@/types/buttonTypes';
 
 function LinkAsButton(props: AsLinkProps) {
   const router = useRouter();

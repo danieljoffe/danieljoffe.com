@@ -3,7 +3,12 @@ import { MetadataRoute } from 'next';
 import { DOMAIN_URL } from '@/utils/constants';
 import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';
-import { ABOUT_LINK, EXPERIENCE_LINK, PROJECTS_LINK } from '@/utils/base';
+import {
+  ABOUT_LINK,
+  EXPERIENCE_LINK,
+  PROJECTS_LINK,
+  SERVICES_LINK,
+} from '@/utils/base';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static routes
@@ -19,6 +24,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
+    },
+    {
+      url: `${DOMAIN_URL}${SERVICES_LINK.href}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
     },
     {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}`,

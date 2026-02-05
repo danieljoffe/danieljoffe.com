@@ -1,4 +1,4 @@
-import { PostBodyI } from '@/types/post.types';
+import { PostBodyI } from '@/types/postTypes';
 import UnsplashImage from './UnsplashImage';
 import PostContent from './PostContent';
 import BreadCrumbs from './BreadCrumbs';
