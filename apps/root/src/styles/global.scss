@@ -23,8 +23,9 @@
   html {
     transition-timing-function: ease-in-out;
     transition-duration: 3.5s;
-    transition-property: --stop-color-one, --stop-color-two, --stop-color-three,
-      --stop-color-four, --stop-color-five, --stop-color-six, --stop-color-seven,
+    transition-property:
+      --stop-color-one, --stop-color-two, --stop-color-three, --stop-color-four,
+      --stop-color-five, --stop-color-six, --stop-color-seven,
       --stop-color-eight;
   }
 

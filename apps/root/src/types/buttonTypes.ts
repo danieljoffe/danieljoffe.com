@@ -8,7 +8,8 @@ export interface AsButtonProps extends UIButtonProps {
 
 // Props when rendering as a link (<a> via next/link)
 export interface AsLinkProps
-  extends React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  extends
+    React.AnchorHTMLAttributes<HTMLAnchorElement>,
     Omit<UIButtonBaseI, 'children'> {
   as: 'link';
   highlighted?: boolean;

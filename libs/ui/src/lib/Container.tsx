@@ -1,7 +1,9 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 
-export interface ContainerProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, 'className'> {
+export interface ContainerProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'className'
+> {
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   className?: string;
