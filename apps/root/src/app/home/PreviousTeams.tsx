@@ -6,7 +6,7 @@ import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 import { analytics } from '@/lib/analytics';
 import { EXPERIENCE_LINK } from '@/utils/base';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import ContentGrid from '@/components/ContentGrid';
 
 const companies = Object.values(experienceFull);

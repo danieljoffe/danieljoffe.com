@@ -20,9 +20,56 @@ export default [
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
+            // === TYPE CONSTRAINTS ===
+            // Apps can depend on any library type
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
+              sourceTag: 'type:app',
+              onlyDependOnLibsWithTags: [
+                'type:ui',
+                'type:util',
+                'type:data-access',
+                'type:feature',
+              ],
+            },
+            // E2E projects can only depend on apps (not libraries directly)
+            {
+              sourceTag: 'type:e2e',
+              onlyDependOnLibsWithTags: ['type:app'],
+            },
+            // UI libraries should only depend on other UI or utility libraries
+            {
+              sourceTag: 'type:ui',
+              onlyDependOnLibsWithTags: ['type:ui', 'type:util'],
+            },
+            // Utility libraries should only depend on other utilities
+            {
+              sourceTag: 'type:util',
+              onlyDependOnLibsWithTags: ['type:util'],
+            },
+            // Feature libraries can depend on UI, data-access, and utilities
+            {
+              sourceTag: 'type:feature',
+              onlyDependOnLibsWithTags: [
+                'type:ui',
+                'type:data-access',
+                'type:util',
+              ],
+            },
+            // Data-access libraries should only depend on utilities
+            {
+              sourceTag: 'type:data-access',
+              onlyDependOnLibsWithTags: ['type:util', 'type:data-access'],
+            },
+            // === SCOPE CONSTRAINTS ===
+            // App-scoped projects can use shared libs but not other app scopes
+            {
+              sourceTag: 'scope:root',
+              onlyDependOnLibsWithTags: ['scope:root', 'scope:shared'],
+            },
+            // Shared libraries should only depend on other shared libraries
+            {
+              sourceTag: 'scope:shared',
+              onlyDependOnLibsWithTags: ['scope:shared'],
             },
           ],
         },

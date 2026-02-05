@@ -1,4 +1,4 @@
-import { Grid } from '@danieljoffe.com/ui';
+import { Grid } from '@danieljoffe.com/shared-ui';
 import { WChildrenT } from '@/types/base';
 
 export default function ContentGrid({ children }: WChildrenT) {

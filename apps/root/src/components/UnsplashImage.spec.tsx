@@ -90,8 +90,7 @@ jest.mock('@/state/Global/Context', () => ({
 jest.mock('@/components/Button', () => {
   const React = require('react');
 
-  interface MockButtonProps
-    extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  interface MockButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     as?: 'button' | 'link';
     href?: string;
     variant?: string;

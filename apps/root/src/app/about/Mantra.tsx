@@ -1,4 +1,4 @@
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 
 export default function Mantra() {
   return (

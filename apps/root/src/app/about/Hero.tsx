@@ -1,6 +1,6 @@
 'use client';
 import Button from '@/components/Button';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
@@ -34,7 +34,7 @@ export default function Hero() {
               className='rounded-full min-w-[15.5rem] outline-2 outline-foreground outline-offset-[0.5rem]'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
               fetchPriority='high'
-              priority={true}
+              preload={true}
               decoding='async'
               loading='eager'
             />

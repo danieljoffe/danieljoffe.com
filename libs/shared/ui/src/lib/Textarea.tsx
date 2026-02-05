@@ -1,7 +1,6 @@
 import { forwardRef, type TextareaHTMLAttributes } from 'react';
 
-export interface TextareaProps
-  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string | undefined;
   error?: string | undefined;
   helperText?: string | undefined;

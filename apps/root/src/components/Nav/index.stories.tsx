@@ -1,4 +1,4 @@
-import type { Args, Meta, StoryObj } from '@storybook/react';
+import type { Args, Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import Nav from './index';
 import GlobalProvider from '@/state/Global/Provider';

@@ -251,8 +251,8 @@
   border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
   transition-duration: 10s;
   transition-timing-function: ease-in-out;
-  transition-property: transform, bottom, border-radius, opacity, filter,
-    background;
+  transition-property:
+    transform, bottom, border-radius, opacity, filter, background;
   transition-behavior: normal;
   will-change: transform, bottom, border-radius, opacity, filter, background;
 }
@@ -277,7 +277,8 @@
   /* Initial state matches blob-float-1 and blob-morph-1 at 0% */
   transform: translate(-55%, 10%) scaleY(0.95) scaleX(1.05);
   border-radius: 70% 30% 65% 35% / 35% 70% 30% 65%;
-  animation: blob-float-1 20s ease-in-out infinite,
+  animation:
+    blob-float-1 20s ease-in-out infinite,
     blob-morph-1 20s ease-in-out infinite;
   filter: blur(0.15rem);
 }
@@ -300,7 +301,8 @@
   /* Initial state matches blob-float-2 and blob-morph-2 at 0% */
   transform: translate(55%, 5%) scaleY(0.92) scaleX(1.08);
   border-radius: 35% 65% 40% 60% / 60% 35% 65% 40%;
-  animation: blob-float-2 12s ease-in-out infinite,
+  animation:
+    blob-float-2 12s ease-in-out infinite,
     blob-morph-2 12s ease-in-out infinite;
   filter: blur(0.13rem);
 }
@@ -316,7 +318,8 @@
     var(--stop-color-five) 25%,
     var(--stop-color-seven) 50%
   );
-  animation: p-float-2 14s ease-in-out infinite,
+  animation:
+    p-float-2 14s ease-in-out infinite,
     p-morph-2 18s ease-in-out infinite;
   filter: blur(0.15rem);
 }
@@ -332,7 +335,8 @@
     var(--stop-color-four) 40%,
     var(--stop-color-eight) 85%
   );
-  animation: p-float-3 18s ease-in-out infinite,
+  animation:
+    p-float-3 18s ease-in-out infinite,
     p-morph-3 22s ease-in-out infinite;
   filter: blur(0.125rem);
 }
@@ -349,7 +353,8 @@
     var(--stop-color-eight) 60%,
     var(--stop-color-two) 100%
   );
-  animation: p-float-4 12s ease-in-out infinite,
+  animation:
+    p-float-4 12s ease-in-out infinite,
     p-morph-4 16s ease-in-out infinite;
   filter: blur(0.5rem);
 }
@@ -365,7 +370,8 @@
     var(--stop-color-one) 35%,
     var(--stop-color-five) 70%
   );
-  animation: p-float-5 16s ease-in-out infinite,
+  animation:
+    p-float-5 16s ease-in-out infinite,
     p-morph-5 20s ease-in-out infinite;
   filter: blur(0.125rem);
 }
@@ -382,7 +388,8 @@
     var(--stop-color-three) 55%,
     var(--stop-color-six) 90%
   );
-  animation: p-float-6 20s ease-in-out infinite,
+  animation:
+    p-float-6 20s ease-in-out infinite,
     p-morph-6 24s ease-in-out infinite;
   filter: blur(0.25rem);
 }
@@ -398,7 +405,8 @@
     var(--stop-color-two) 45%,
     var(--stop-color-six) 100%
   );
-  animation: p-float-1 15s ease-in-out infinite,
+  animation:
+    p-float-1 15s ease-in-out infinite,
     p-morph-1 19s ease-in-out infinite;
   filter: blur(0.15rem);
 }

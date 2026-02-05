@@ -7,10 +7,7 @@
       "path": "./apps/root-e2e"
     },
     {
-      "path": "./apps/root"
-    },
-    {
-      "path": "./libs/ui"
+      "path": "./libs/shared/ui"
     }
   ],
   "ts-node": {

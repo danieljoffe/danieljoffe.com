@@ -15,7 +15,8 @@ export type UnsplashImageMeta = {
 };
 
 export type UnsplashImageProps = UnsplashImageMeta & {
-  priority: boolean;
+  priority?: boolean;
+  preload?: boolean;
   width?: number;
   height?: number;
   fill?: boolean;
@@ -32,6 +33,7 @@ export default function UnsplashImage({
   quality = 75,
   priority = false,
   fill = false,
+  preload = false,
 }: UnsplashImageProps) {
   if (!src || !alt || !creator || !origin) {
     throw new Error('Missing required props');
@@ -66,8 +68,15 @@ export default function UnsplashImage({
     imageProps.height = height as number;
   }
 
-  imageProps.fetchPriority = priority ? 'high' : 'low';
-  imageProps.loading = priority ? 'eager' : 'lazy';
+  if (preload) {
+    imageProps.preload = true;
+    imageProps.fetchPriority = 'auto';
+    imageProps.loading = undefined;
+  } else {
+    imageProps.fetchPriority = priority ? 'high' : 'low';
+    imageProps.loading = priority ? 'eager' : 'lazy';
+  }
+
   imageProps.className = imageClasses.join(' ');
 
   return (

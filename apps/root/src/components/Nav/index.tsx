@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useGlobal } from '@/state/Global/Context';
 import NavLinks from './Links';
-import { Spinner } from '@danieljoffe.com/ui';
+import { Spinner } from '@danieljoffe.com/shared-ui';
 
 const NavLoading = ({
   hasMobileClass: isMobile,

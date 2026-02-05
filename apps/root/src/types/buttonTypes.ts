@@ -1,5 +1,5 @@
 import type React from 'react';
-import { UIButtonBaseI, UIButtonProps } from '@danieljoffe.com/ui';
+import { UIButtonBaseI, UIButtonProps } from '@danieljoffe.com/shared-ui';
 
 // Props when rendering as a native <button>
 export interface AsButtonProps extends UIButtonProps {
@@ -8,7 +8,8 @@ export interface AsButtonProps extends UIButtonProps {
 
 // Props when rendering as a link (<a> via next/link)
 export interface AsLinkProps
-  extends React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  extends
+    React.AnchorHTMLAttributes<HTMLAnchorElement>,
     Omit<UIButtonBaseI, 'children'> {
   as: 'link';
   highlighted?: boolean;

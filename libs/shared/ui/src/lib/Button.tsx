@@ -20,7 +20,8 @@ export interface UIButtonBaseI {
 }
 
 export interface UIButtonProps
-  extends UIButtonBaseI,
+  extends
+    UIButtonBaseI,
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {}
 
 export const baseUIButtonStyles = [

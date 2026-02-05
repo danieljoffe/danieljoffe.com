@@ -1,7 +1,12 @@
 'use client';
 
 import { ArrowUpRight } from 'lucide-react';
-import { PageContainer, Section, Stack, Badge } from '@danieljoffe.com/ui';
+import {
+  PageContainer,
+  Section,
+  Stack,
+  Badge,
+} from '@danieljoffe.com/shared-ui';
 import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';

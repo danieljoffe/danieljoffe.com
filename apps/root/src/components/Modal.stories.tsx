@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import Modal from './Modal';
-import { expect } from 'storybook/internal/test';
+import { expect } from 'storybook/test';
 
 import Button from '@/components/Button';
 import GlobalProvider from '@/state/Global/Provider';

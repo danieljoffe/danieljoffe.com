@@ -1,11 +1,10 @@
-import type { Config } from 'jest';
-import nextJest from 'next/jest.js';
+const nextJest = require('next/jest.js').default ?? require('next/jest.js');
 
 const createJestConfig = nextJest({
   dir: './',
 });
 
-const config: Config = {
+const config = {
   displayName: '@danieljoffe.com/root',
   preset: '../../jest.preset.js',
   transform: {
@@ -42,4 +41,4 @@ const config: Config = {
   },
 };
 
-export default createJestConfig(config);
+module.exports = createJestConfig(config);
