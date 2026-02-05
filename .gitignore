@@ -48,3 +48,16 @@ Thumbs.db
 out
 
 test-output
+.env*
+*.pem
+
+storybook-static
+*.tsbuildinfo
+*-example-*
+
+playwright-report-json
+test-results*
+trace.zip
+.lighthouseci
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

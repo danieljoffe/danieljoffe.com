@@ -1,0 +1,162 @@
+# FightCamp
+
+**Duration:** November 2021 - January 2023
+
+**Role:** Full-Stack Engineer
+
+## The Context
+
+FightCamp, often described as "Peloton for boxing", was a connected fitness startup riding the pandemic home-workout boom. I joined a small web team of 3 engineers, reconnecting with a former mentee from Internet Brands who'd recommended me for the role.
+
+The company had grown fast, but the website's technical foundations hadn't kept pace. I discovered just how much during my first R&D Friday.
+
+## The Challenge
+
+### Performance Discovery
+
+FightCamp held monthly R&D Fridays, dedicated time for code cleanup, refactoring, and investigation. On my first one, I ran Lighthouse audits on the marketing site. The scores were bad. Really bad.
+
+Mobile First Contentful Paint was 8-12 seconds. Users on 3G/4G connections were bouncing before they could see any content. I dug into why:
+
+- **Images:** HD images (hundreds of megabytes total) served regardless of viewport size
+- **Videos:** Hero videos were 500-800 MB, downloaded entirely on page load
+- **Bundle bloat:** Duplicate libraries, no tree shaking, ~725 KB total
+- **No lazy loading:** Everything loaded upfront, blocking render
+- **Missing optimizations:** Incorrect image dimensions, missing HTML attributes
+
+I proposed a systematic fix to my manager. He approved, and it became my primary project.
+
+### Marketing Bottleneck (Again)
+
+Sound familiar? Just as at Winc, marketing relied on engineering for content updates. Every copy change, image swap, or new section required a developer. The pattern was clear; I'd solved this before.
+
+## The Solution
+
+### Performance Optimization
+
+I attacked each root cause systematically:
+
+_Images:_
+
+- Built a centralized image component with viewport-dependent srcset
+- Integrated with Storyblok CMS + fallback providers
+- Added lazy loading via Intersection Observer
+- Served device-appropriate quality and dimensions
+
+_Video:_
+
+- Manually optimized video assets, creating multiple quality tiers
+- Reduced file sizes from 500-800 MB to \<300 MB (MP4) / \<150 MB (WebM)
+- Built a lazy-load video component that deferred download until near-viewport
+
+_Bundle:_
+
+- Removed duplicate libraries
+- Tailored Nuxt.js build configuration
+- Streamlined task chaining
+- Reduced bundle from ~725 KB to ~275 KB
+
+_Discovery:_
+While debugging, I found that the Vue store alone caused a 20-point Lighthouse impact. Without the store loaded, scores jumped to 98-99. (We didn't remove it; the functionality was needed, but it explained the ceiling.)
+
+### Storyblok CMS Migration
+
+I analyzed 7 marketing pages for common patterns, then extended the UI component library with 10+ CMS-connected components:
+
+- PageSection, Copy, Video, Image, Hero, Thumbnail, and more
+- Each component is documented in Storybook with usage examples
+- Full Jest test coverage
+- Storyblok API integration with input validation rules
+
+This lets the content team build and update pages without engineering involvement.
+
+### A/B Testing Infrastructure
+
+Marketing wanted to run experiments on different copy angles, video variations, ands, but had no way to do so without offering a structure without engineering building each variant.
+
+I built configurable test components integrated with Google Optimize:
+
+- Quarterly collaboration with marketing on test design
+- 2-week test cycles
+- Test types: copy (health vs. training messaging), video (male vs. female athletes), images (action shots vs. stills), offers (control vs. discount variants)
+
+### Mentorship
+
+I paired with Sam, a junior developer, on complex TypeScript tickets. Focused on teaching component breakdown and task decomposition, the same approach my mentors had used with me.
+
+## The Impact
+
+<table>
+  <thead>
+    <tr>
+      <th scope='col'>Metric</th>
+      <th scope='col'>Before</th>
+      <th scope='col'>After</th>
+      <th scope='col'>Change</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>First Contentful Paint (Mobile)</td>
+      <td>8-12s</td>
+      <td>1.8-2.5s</td>
+      <td>~80% faster</td>
+    </tr>
+    <tr>
+      <td>Largest Contentful Paint</td>
+      <td>15-20s</td>
+      <td>5-8s</td>
+      <td>~63% faster</td>
+    </tr>
+    <tr>
+      <td>Total Blocking Time</td>
+      <td>3-4s</td>
+      <td>0.8-1.3s</td>
+      <td>~70% reduction</td>
+    </tr>
+    <tr>
+      <td>Cumulative Layout Shift</td>
+      <td>3-6s</td>
+      <td>0.6-1.25s</td>
+      <td>~79% improvement</td>
+    </tr>
+    <tr>
+      <td>Lighthouse Score</td>
+      <td>32-43</td>
+      <td>~80</td>
+      <td>+40 points</td>
+    </tr>
+    <tr>
+      <td>Bundle Size</td>
+      <td>650-800 KB</td>
+      <td>250-300 KB</td>
+      <td>~62% reduction</td>
+    </tr>
+    <tr>
+      <td>Mobile Bounce Rate</td>
+      <td>60-75%</td>
+      <td>37-45%</td>
+      <td>~39% reduction</td>
+    </tr>
+  </tbody>
+</table>
+
+### Other impacts:
+
+- **Engineering requests from content team** dropped from ~10/week to ~2/week (80% reduction)
+- **Sam promoted** from Junior to Front-End Developer within one year
+- **10+ CMS components** documented and tested
+
+## Why I Left
+
+I was furloughed in January 2023 during the post-pandemic market correction. Connected fitness contracted hard; Peloton's struggles around the same time tell the broader story. FightCamp had over-projected growth, and when the market shifted, they reduced headcount.
+
+## What I Learned
+
+This role reinforced a pattern I first saw at Winc: the highest-leverage engineering work often isn't the most technically complex; it's the work that removes friction for other teams. The CMS migration wasn't glamorous, but it changed how fast marketing could move.
+
+The performance work taught me something different: sometimes the biggest wins are hiding in plain sight. No one had run a Lighthouse audit. I did, and it became the most impactful project of my time there.
+
+## Tech Stack
+
+Vue.js, Nuxt.js, TypeScript, Storyblok CMS, Storybook, Jest, Google Optimize, Google Analytics, AWS S3, Lighthouse, Intersection Observer API, WebM/MP4 optimization

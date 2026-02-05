@@ -1,6 +1,6 @@
 'use client';
 
-import { WindowSizeInterface } from './hooks/windowResize';
+import { WindowSizeInterface } from '@/hooks/windowResize';
 import { createContext, useContext } from 'react';
 
 export type ModalInterface = {
@@ -10,7 +10,20 @@ export type ModalInterface = {
   setModalContent: (content: React.ReactNode) => void;
 };
 
-export type GlobalContextValue = WindowSizeInterface & ModalInterface & {};
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+export type ThemeInterface = {
+  themeMode: ThemeMode;
+  isDarkMode: boolean;
+  setThemeMode: (mode: ThemeMode) => void;
+  toggleDarkMode: () => void;
+};
+
+export type GlobalContextValue = WindowSizeInterface &
+  ModalInterface &
+  ThemeInterface;
+
+const noop = () => undefined;
 
 export const GlobalState: GlobalContextValue = {
   windowWidth: 400,
@@ -19,13 +32,13 @@ export const GlobalState: GlobalContextValue = {
   isTablet: false,
   isDesktop: false,
   isModalOpen: false,
-  toggleModal: () => {
-    return;
-  },
   modalContent: null,
-  setModalContent: () => {
-    return;
-  },
+  themeMode: 'system',
+  isDarkMode: false,
+  toggleModal: noop,
+  setModalContent: noop,
+  setThemeMode: noop,
+  toggleDarkMode: noop,
 };
 
 export const GlobalContext = createContext<GlobalContextValue>(GlobalState);

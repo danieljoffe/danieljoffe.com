@@ -1,0 +1,413 @@
+@keyframes blob-float-1 {
+  0%,
+  100% {
+    transform: translate(-55%, 10%) scaleY(0.95) scaleX(1.05);
+  }
+  15% {
+    transform: translate(-60%, -5%) scaleY(1.08) scaleX(0.92);
+  }
+  30% {
+    transform: translate(-52%, -20%) scaleY(1.15) scaleX(0.88);
+  }
+  45% {
+    transform: translate(-58%, -10%) scaleY(1.05) scaleX(0.95);
+  }
+  60% {
+    transform: translate(-50%, 5%) scaleY(0.92) scaleX(1.08);
+  }
+  75% {
+    transform: translate(-62%, 15%) scaleY(0.88) scaleX(1.12);
+  }
+  90% {
+    transform: translate(-57%, 8%) scaleY(0.93) scaleX(1.06);
+  }
+}
+
+@keyframes blob-float-2 {
+  0%,
+  100% {
+    transform: translate(55%, 5%) scaleY(0.92) scaleX(1.08);
+  }
+  20% {
+    transform: translate(60%, -10%) scaleY(1.05) scaleX(0.94);
+  }
+  40% {
+    transform: translate(52%, -18%) scaleY(1.12) scaleX(0.9);
+  }
+  60% {
+    transform: translate(58%, -8%) scaleY(1.02) scaleX(0.98);
+  }
+  80% {
+    transform: translate(50%, 10%) scaleY(0.9) scaleX(1.1);
+  }
+  90% {
+    transform: translate(60%, -10%) scaleY(1.05) scaleX(0.94);
+  }
+}
+
+/* Drifting sway */
+@keyframes p-float-1 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scaleY(1) scaleX(1);
+  }
+  40% {
+    transform: translate(5%, -6%) scaleY(1.04) scaleX(0.97);
+  }
+  80% {
+    transform: translate(-4%, -12%) scaleY(1.08) scaleX(0.93);
+  }
+}
+
+/* Gentle drift - rises slowly, minimal horizontal */
+@keyframes p-float-2 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scaleY(1) scaleX(1);
+  }
+  50% {
+    transform: translate(3%, -12%) scaleY(1.08) scaleX(0.94);
+  }
+}
+
+/* Lazy diagonal drift */
+@keyframes p-float-3 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scaleY(1) scaleX(1);
+  }
+  35% {
+    transform: translate(-6%, -8%) scaleY(1.06) scaleX(0.95);
+  }
+  70% {
+    transform: translate(4%, -15%) scaleY(1.1) scaleX(0.92);
+  }
+}
+
+/* Slow vertical bob */
+@keyframes p-float-4 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scaleY(1) scaleX(1);
+  }
+  30% {
+    transform: translate(2%, -10%) scaleY(1.05) scaleX(0.96);
+  }
+  60% {
+    transform: translate(-2%, -5%) scaleY(1.02) scaleX(0.98);
+  }
+}
+
+/* Wide gentle arc */
+@keyframes p-float-5 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scaleY(1) scaleX(1);
+  }
+  50% {
+    transform: translate(-8%, -10%) scaleY(1.07) scaleX(0.94);
+  }
+}
+
+/* Subtle hover with slight rise */
+@keyframes p-float-6 {
+  0%,
+  100% {
+    transform: translate(0%, 0%) scaleY(1) scaleX(1);
+  }
+  25% {
+    transform: translate(3%, -4%) scaleY(1.03) scaleX(0.97);
+  }
+  75% {
+    transform: translate(-3%, -8%) scaleY(1.05) scaleX(0.96);
+  }
+}
+
+@keyframes blob-morph-1 {
+  0%,
+  100% {
+    border-radius: 70% 30% 65% 35% / 35% 70% 30% 65%;
+  }
+  14% {
+    border-radius: 35% 65% 40% 60% / 70% 35% 65% 40%;
+  }
+  28% {
+    border-radius: 60% 40% 30% 70% / 45% 60% 40% 55%;
+  }
+  42% {
+    border-radius: 40% 60% 70% 30% / 60% 40% 70% 30%;
+  }
+  56% {
+    border-radius: 30% 70% 55% 45% / 35% 65% 35% 65%;
+  }
+  70% {
+    border-radius: 65% 35% 45% 55% / 70% 30% 60% 40%;
+  }
+  84% {
+    border-radius: 45% 55% 60% 40% / 40% 70% 30% 60%;
+  }
+  // 100% {
+  //   border-radius: 70% 30% 65% 35% / 35% 70% 30% 65%;
+  // }
+}
+
+@keyframes blob-morph-2 {
+  0%,
+  100% {
+    border-radius: 35% 65% 40% 60% / 60% 35% 65% 40%;
+  }
+  16% {
+    border-radius: 60% 40% 65% 35% / 40% 60% 35% 65%;
+  }
+  33% {
+    border-radius: 45% 55% 35% 65% / 65% 45% 55% 35%;
+  }
+  50% {
+    border-radius: 65% 35% 55% 45% / 35% 65% 40% 60%;
+  }
+  66% {
+    border-radius: 40% 60% 45% 55% / 55% 40% 60% 45%;
+  }
+  83% {
+    border-radius: 55% 45% 60% 40% / 45% 55% 45% 55%;
+  }
+}
+
+/* Independent morph variations */
+@keyframes p-morph-1 {
+  0%,
+  100% {
+    border-radius: 50% 50% 52% 48% / 48% 52% 50% 50%;
+  }
+  40% {
+    border-radius: 54% 46% 48% 52% / 52% 48% 54% 46%;
+  }
+  80% {
+    border-radius: 46% 54% 50% 50% / 50% 54% 46% 50%;
+  }
+}
+@keyframes p-morph-2 {
+  0%,
+  100% {
+    border-radius: 55% 45% 50% 50% / 50% 55% 45% 50%;
+  }
+  50% {
+    border-radius: 48% 52% 55% 45% / 55% 48% 52% 48%;
+  }
+}
+
+@keyframes p-morph-3 {
+  0%,
+  100% {
+    border-radius: 52% 48% 48% 52% / 48% 52% 52% 48%;
+  }
+  35% {
+    border-radius: 45% 55% 52% 48% / 55% 45% 48% 52%;
+  }
+  70% {
+    border-radius: 50% 50% 45% 55% / 52% 50% 55% 45%;
+  }
+}
+
+@keyframes p-morph-4 {
+  0%,
+  100% {
+    border-radius: 50% 50% 55% 45% / 45% 55% 50% 50%;
+  }
+  50% {
+    border-radius: 55% 45% 48% 52% / 52% 48% 45% 55%;
+  }
+}
+
+@keyframes p-morph-5 {
+  0%,
+  100% {
+    border-radius: 48% 52% 52% 48% / 52% 48% 48% 52%;
+  }
+  30% {
+    border-radius: 52% 48% 50% 50% / 48% 52% 55% 45%;
+  }
+  60% {
+    border-radius: 45% 55% 55% 45% / 55% 45% 50% 50%;
+  }
+}
+
+@keyframes p-morph-6 {
+  0%,
+  100% {
+    border-radius: 53% 47% 50% 50% / 50% 53% 47% 50%;
+  }
+  50% {
+    border-radius: 47% 53% 53% 47% / 47% 50% 50% 53%;
+  }
+}
+
+.blobShape,
+.blobShape2,
+.particle {
+  position: absolute;
+  left: 50%;
+  bottom: 0%;
+  border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
+  transition-duration: 10s;
+  transition-timing-function: ease-in-out;
+  transition-property: transform, bottom, border-radius, opacity, filter,
+    background;
+  transition-behavior: normal;
+  will-change: transform, bottom, border-radius, opacity, filter, background;
+}
+
+.blobShape {
+  height: 30rem;
+  width: 30rem;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-one, transparent) 0,
+    var(--stop-color-two, transparent) 12.5%,
+    var(--stop-color-three, transparent) 25%,
+    var(--stop-color-four, transparent) 37.5%,
+    var(--stop-color-five, transparent) 50%,
+    var(--stop-color-six, transparent) 62.5%,
+    var(--stop-color-seven, transparent) 75%,
+    var(--stop-color-eight, transparent) 87.5%,
+    var(--stop-color-one, transparent) 100%
+  );
+  bottom: 20%;
+  left: 5%;
+  /* Initial state matches blob-float-1 and blob-morph-1 at 0% */
+  transform: translate(-55%, 10%) scaleY(0.95) scaleX(1.05);
+  border-radius: 70% 30% 65% 35% / 35% 70% 30% 65%;
+  animation: blob-float-1 20s ease-in-out infinite,
+    blob-morph-1 20s ease-in-out infinite;
+  filter: blur(0.15rem);
+}
+.blobShape2 {
+  height: 24rem;
+  width: 24rem;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-four, transparent) 0%,
+    var(--stop-color-five, transparent) 15%,
+    var(--stop-color-six, transparent) 30%,
+    var(--stop-color-seven, transparent) 45%,
+    var(--stop-color-eight, transparent) 60%,
+    var(--stop-color-nine, transparent) 75%,
+    var(--stop-color-three, transparent) 90%,
+    var(--stop-color-four, transparent) 100%
+  );
+  bottom: -20%;
+  left: 65%;
+  /* Initial state matches blob-float-2 and blob-morph-2 at 0% */
+  transform: translate(55%, 5%) scaleY(0.92) scaleX(1.08);
+  border-radius: 35% 65% 40% 60% / 60% 35% 65% 40%;
+  animation: blob-float-2 12s ease-in-out infinite,
+    blob-morph-2 12s ease-in-out infinite;
+  filter: blur(0.13rem);
+}
+
+.particle1 {
+  width: 3rem;
+  height: 3rem;
+  bottom: 12%;
+  left: 37%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-two),
+    var(--stop-color-five) 25%,
+    var(--stop-color-seven) 50%
+  );
+  animation: p-float-2 14s ease-in-out infinite,
+    p-morph-2 18s ease-in-out infinite;
+  filter: blur(0.15rem);
+}
+
+.particle2 {
+  width: 4rem;
+  height: 4rem;
+  bottom: 25%;
+  left: 55%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-one) 0%,
+    var(--stop-color-four) 40%,
+    var(--stop-color-eight) 85%
+  );
+  animation: p-float-3 18s ease-in-out infinite,
+    p-morph-3 22s ease-in-out infinite;
+  filter: blur(0.125rem);
+}
+
+.particle3 {
+  width: 1.5rem;
+  height: 1.5rem;
+  bottom: 72%;
+  left: 45%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-three),
+    var(--stop-color-six) 30%,
+    var(--stop-color-eight) 60%,
+    var(--stop-color-two) 100%
+  );
+  animation: p-float-4 12s ease-in-out infinite,
+    p-morph-4 16s ease-in-out infinite;
+  filter: blur(0.5rem);
+}
+
+.particle4 {
+  width: 2rem;
+  height: 2rem;
+  bottom: 5%;
+  left: 75%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-three) 0%,
+    var(--stop-color-one) 35%,
+    var(--stop-color-five) 70%
+  );
+  animation: p-float-5 16s ease-in-out infinite,
+    p-morph-5 20s ease-in-out infinite;
+  filter: blur(0.125rem);
+}
+
+.particle5 {
+  width: 1.5rem;
+  height: 1.5rem;
+  bottom: 75%;
+  left: 65%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-four),
+    var(--stop-color-seven) 20%,
+    var(--stop-color-three) 55%,
+    var(--stop-color-six) 90%
+  );
+  animation: p-float-6 20s ease-in-out infinite,
+    p-morph-6 24s ease-in-out infinite;
+  filter: blur(0.25rem);
+}
+
+.particle6 {
+  width: 2.5rem;
+  height: 2.5rem;
+  bottom: 35%;
+  left: 25%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    var(--stop-color-eight) 0%,
+    var(--stop-color-two) 45%,
+    var(--stop-color-six) 100%
+  );
+  animation: p-float-1 15s ease-in-out infinite,
+    p-morph-1 19s ease-in-out infinite;
+  filter: blur(0.15rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blobShape,
+  .blobShape2,
+  .particle {
+    animation: none !important;
+    transition: none !important;
+  }
+}

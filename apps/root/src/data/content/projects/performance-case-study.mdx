@@ -1,0 +1,151 @@
+# Case Studies: Daniel Joffe Portfolio
+
+## Case Study 1: FightCamp — Performance Optimization
+
+### Overview
+
+**Company:** FightCamp ("Peloton of Boxing")
+
+**Role:** Full-Stack Engineer
+
+**Duration:** November 2021 - January 2023
+
+**Industry:** Connected Fitness / Consumer Tech
+
+### The Challenge
+
+FightCamp was experiencing explosive post-pandemic growth, but the web infrastructure couldn't keep up. Mobile users—representing over 70% of traffic—faced unacceptable 10+ second load times. Bounce rates were high, marketing couldn't iterate quickly, and the content team was completely dependent on engineering for page updates.
+
+#### Key Problems:
+
+- Mobile First Contentful Paint: 8-12 seconds
+- Lighthouse scores: 32-43 (failing)
+- Mobile bounce rate: 60-75%
+- Bundle size: 650-800KB
+- Videos downloading 500-800MB on page load
+- Content team submitting ~10 engineering requests per week
+
+### My Approach
+
+#### First: Performance Audit
+
+I discovered the performance issues during an R&D Friday and received approval to investigate. Using Lighthouse, Chrome DevTools, and bundle analyzers, I identified the root causes:
+
+- HD images served regardless of viewport size
+- Videos auto-downloading on page load (500-800MB each)
+- Duplicate libraries in the JavaScript bundle
+- No lazy loading implemented
+- Missing HTML attributes causing layout shifts
+
+#### Second: Image Optimization
+
+- Implemented viewport-dependent `srcset` for responsive images
+- Built centralized image component with Storyblok + fallback providers
+- Added lazy loading with proper dimensions to prevent layout shifts
+- Served device-appropriate quality levels
+
+#### Third: Video Optimization
+
+- Built custom lazy-loading video component using Intersection Observer API
+- Prevented auto-play of off-screen videos
+- Created multiple AWS S3 versions at different quality levels
+- Reduced video payloads from 500-800MB to \<300MB (MP4) / \<150MB (WebM)
+
+#### Fourth: Bundle Optimization
+
+- Removed duplicate libraries through bundle analysis
+- Implemented webpack tree-shaking and dynamic imports
+- Tailored Nuxt.js builds for production
+- Streamlined task chaining in build process
+
+#### Fifth: CMS Migration
+
+- Analyzed 7 marketing pages for common patterns
+- Extended UI component library with 10+ CMS-connected components
+- Integrated Storyblok CMS with composable component architecture
+- Documented everything in Storybook with Jest tests
+
+#### Sixth: A/B Testing Infrastructure
+
+- Built configurable test components integrated with Google Optimize
+- Enabled Marketing to run quarterly tests independently
+- Supported copy, video, image, and offer variations
+
+### The Results
+
+<table>
+  <thead>
+    <tr>
+      <th scope='col'>Metric</th>
+      <th scope='col'>Before</th>
+      <th scope='col'>After</th>
+      <th scope='col'>Improvement</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>First Contentful Paint (Mobile)</td>
+      <td>8-12s</td>
+      <td>1.8-2.5s</td>
+      <td>~80% faster</td>
+    </tr>
+    <tr>
+      <td>Largest Contentful Paint</td>
+      <td>15-20s</td>
+      <td>5-8s</td>
+      <td>~63% faster</td>
+    </tr>
+    <tr>
+      <td>Total Blocking Time</td>
+      <td>3-4s</td>
+      <td>0.8-1.3s</td>
+      <td>~70% reduction</td>
+    </tr>
+    <tr>
+      <td>Cumulative Layout Shift</td>
+      <td>3-6s</td>
+      <td>0.6-1.25s</td>
+      <td>~79% reduction</td>
+    </tr>
+    <tr>
+      <td>Speed Index</td>
+      <td>11-14s</td>
+      <td>4-6s</td>
+      <td>~60% faster</td>
+    </tr>
+    <tr>
+      <td>Lighthouse Score</td>
+      <td>32-43</td>
+      <td>~80</td>
+      <td>+40 points</td>
+    </tr>
+    <tr>
+      <td>Bundle Size</td>
+      <td>650-800KB</td>
+      <td>250-300KB</td>
+      <td>~62% reduction</td>
+    </tr>
+    <tr>
+      <td>Mobile Bounce Rate</td>
+      <td>60-75%</td>
+      <td>37-45%</td>
+      <td>~39% reduction</td>
+    </tr>
+    <tr>
+      <td>Engineering Requests</td>
+      <td>~10/week</td>
+      <td>~2/week</td>
+      <td>80% reduction</td>
+    </tr>
+  </tbody>
+</table>
+
+### Key Takeaways
+
+- **Performance is a business metric.** The 39% bounce rate reduction directly impacted user acquisition during a critical growth phase.
+- **Self-initiated improvements matter.** This project started as an R&D Friday discovery, not an assigned task.
+- **Empowering other teams multiplies impact.** The CMS migration freed engineering capacity while accelerating marketing velocity.
+
+### Technologies Used
+
+Vue.js, Nuxt.js, TypeScript, Webpack, Storybook, Jest, Storyblok CMS, Google Optimize, Google Analytics, AWS S3, Intersection Observer API, Lighthouse, Chrome DevTools

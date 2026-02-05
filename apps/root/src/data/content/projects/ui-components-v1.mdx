@@ -1,0 +1,104 @@
+# Building a Design System: UI Components for danieljoffe.com
+
+When building this portfolio, I wanted more than hastily assembled components—I wanted a design system that would scale. Here's what I built and why it matters. This is the first installment documenting the foundational components.
+
+## Form Components
+
+### Button
+
+A flexible button with three variants (primary, secondary, icon) and three sizes. Uses `React.forwardRef` for proper ref forwarding and includes built-in accessibility with ARIA attributes and keyboard navigation.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-button--default'
+  width='400'
+  height='100'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Input
+
+A polymorphic form component that renders as either `<input>` or `<textarea>`. Handles validation states, error messages, and success feedback with proper ARIA relationships using `React.useId()`.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-input--default'
+  width='400'
+  height='150'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Layout Components
+
+### Container
+
+A simple but essential wrapper that centers content and provides consistent spacing. Used on almost every page.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-container--default'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Grid
+
+A responsive grid layout for displaying content cards. Automatically adjusts columns based on viewport size.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-grid--two-columns'
+  width='400'
+  height='400'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Utility Components
+
+### Loading
+
+A loading spinner component for async states. Provides visual feedback during data fetching or processing.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-loading--default'
+  width='400'
+  height='200'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+### Modal
+
+A portal-based modal component controlled via global state. Renders content above the main application with proper focus management.
+
+<iframe
+  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-modal--default'
+  width='400'
+  height='300'
+  className='min-w-full rounded-md border-[0.5rem]'
+/>
+
+## Design Principles
+
+**Accessibility First**
+Every component starts with accessibility: ARIA attributes, keyboard navigation, screen reader compatibility. These aren't afterthoughts—they're the foundation.
+
+**Type Safety**
+Full TypeScript support catches errors at compile time. Proper prop interfaces and strict type checking have saved countless debugging hours.
+
+**Consistency via Tailwind**
+Tailwind CSS provides a consistent design language—neutral palette with blue accents—so I don't have to think about spacing or typography choices.
+
+## Key Takeaways
+
+- Always use labels—it's essential for accessibility
+- Meaningful error messages help users understand what went wrong
+- Test keyboard navigation—if you can't use it with a keyboard, it's broken
+- Semantic HTML matters—use the right elements for the right purposes
+
+## What's Next
+
+- ~~More input types (select, checkbox, switch)~~ Done! See [Part 2](/projects/ui-components-v2)
+- ~~Feedback components (alerts, tooltips, badges)~~ Done! See [Part 2](/projects/ui-components-v2)
+- ~~Layout primitives (cards, tabs, stacks)~~ Done! See [Part 2](/projects/ui-components-v2)
+- ~~Dark mode support~~ Done!
+- Animation integration
+- Expanded test coverage
+
+_These components taught me that the best design systems get out of your way and let you focus on creating great user experiences._

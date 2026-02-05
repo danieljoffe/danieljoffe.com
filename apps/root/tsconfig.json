@@ -1,6 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
     "jsx": "preserve",
     "noEmit": true,
     "emitDeclarationOnly": false,
@@ -17,11 +20,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@danieljoffe.com/ui": ["../../libs/ui/src/index.ts"]
     },
     "types": ["jest", "node"],
     "outDir": "dist",
-    "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [
@@ -32,7 +35,9 @@
     "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/types/**/*.d.ts",
+    "src/instrumentation.ts"
   ],
   "exclude": [
     "out-tsc",
@@ -44,6 +49,16 @@
     ".next",
     "eslint.config.js",
     "eslint.config.cjs",
-    "eslint.config.mjs"
+    "eslint.config.mjs",
+    "**/*.stories.ts",
+    "**/*.stories.js"
+  ],
+  "references": [
+    {
+      "path": "../../libs/ui"
+    },
+    {
+      "path": "./tsconfig.storybook.json"
+    }
   ]
 }

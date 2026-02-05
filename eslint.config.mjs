@@ -5,7 +5,11 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist'],
+    ignores: [
+      '**/dist',
+      '**/vite.config.*.timestamp*',
+      '**/vitest.config.*.timestamp*',
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
@@ -25,6 +29,7 @@ export default [
       ],
     },
   },
+  // Base rules for all files
   {
     files: [
       '**/*.ts',
@@ -36,7 +41,40 @@ export default [
       '**/*.cjs',
       '**/*.mjs',
     ],
-    // Override or add rules here
-    rules: {},
+    // Stricter rules for better code quality
+    rules: {
+      // TypeScript specific rules
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-inferrable-types': 'error',
+
+      // General JavaScript/TypeScript rules
+      'no-debugger': 'error',
+      'no-alert': 'error',
+      'no-var': 'error',
+      'prefer-const': 'error',
+      'no-unused-expressions': 'error',
+      'no-duplicate-imports': 'error',
+      'no-useless-return': 'error',
+      'no-useless-escape': 'error',
+      'prefer-template': 'error',
+      'object-shorthand': 'error',
+      'prefer-arrow-callback': 'error',
+    },
   },
 ];

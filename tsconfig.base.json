@@ -15,7 +15,9 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
     "target": "es2022",
-    "customConditions": ["development"]
+    "customConditions": ["@danieljoffe.com/source"]
   }
 }

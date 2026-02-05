@@ -1,13 +1,19 @@
+import {
+  EMAIL_ADDRESS,
+  GITHUB_PROFILE_URL,
+  JOB_TITLE,
+  LINKEDIN_PROFILE_URL,
+  FULL_NAME,
+} from './constants';
+
 export const profileData = {
-  name: 'Daniel Joffe',
-  title: 'Senior Software Engineer',
-  tagline:
-    'I build exceptional digital experiences that drive results and inspire users.',
-  location: 'Los Angeles, CA',
-  status: 'Available for Senior Frontend/Full-Stack roles',
+  name: FULL_NAME,
+  title: JOB_TITLE,
+  tagline: 'I build fast experiences that inspire.',
+  status: "Currently seeking new opportunities — let's talk.",
   social: {
-    email: 'hello@danieljoffe.com',
-    linkedin: 'https://www.linkedin.com/in/dannyk08/',
-    github: 'https://github.com/dannyk08',
+    email: EMAIL_ADDRESS,
+    linkedin: LINKEDIN_PROFILE_URL,
+    github: GITHUB_PROFILE_URL,
   },
 };

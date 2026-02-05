@@ -1,43 +1,62 @@
-'use client';
 import Image from 'next/image';
-import timeline from './timeline';
-import { ArrowUpRightIcon } from 'lucide-react';
-import Link from 'next/link';
+import { EXPERIENCE_LINK } from '@/utils/base';
+import { experienceFull, experiencePageSlugs } from '@/data/experience';
+import LinkHint from '@/components/LinkHint';
+import Button from '@/components/Button';
+import ContentGrid from '@/components/ContentGrid';
+import { Card, GridItem, Stack } from '@danieljoffe.com/ui';
 
 export default function FullTimeline() {
   return (
-    <div className="flex flex-col gap-4">
-      <h3 className="pb-2">{timeline.title}</h3>
-      <ul className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {timeline.items.map((item) => (
-          <li key={item.company} className="flex flex-col gap-4 ">
-            <Link
-              className="flex items-center gap-4 hover:underline underline-offset-4"
-              href={`/about/experience/${item.id}`}
-              aria-label={`View details for ${item.company}`}
-            >
-              <div className="flex items-center justify-center bg-neutral-200 rounded-full p-2 w-14 h-14">
-                <Image
-                  src={item.logo}
-                  alt={item.company}
-                  width={40}
-                  height={30}
-                  className="object-contain max-h-[2rem] max-w-[2rem]"
-                />
-              </div>
-              <h6 className="flex-1 m-0">
-                {item.company} - {item.year}
-                <br />
-                {item.role}
-              </h6>
+    <>
+      <h3>Detailed Professional Journey</h3>
+      <ContentGrid>
+        {experiencePageSlugs.map(slug => {
+          const company = experienceFull[slug] ?? {};
 
-              <div className="flex items-center justify-center min-w-8">
-                <ArrowUpRightIcon className="w-4 h-4" />
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+          return (
+            <GridItem as='li' key={company.slug}>
+              <Card className='flex' padding='none' elevated>
+                <Button
+                  as='link'
+                  variant='bare'
+                  size='lg'
+                  className='w-full'
+                  href={`${EXPERIENCE_LINK.href}/${company.slug}`}
+                  aria-label={`View details for ${company.company}`}
+                >
+                  <Stack direction='horizontal' className='flex-1'>
+                    <div className='flex w-full max-w-[4.5rem] h-[4.5rem] p-2 md:p-[.75rem] bg-background-elevated rounded-[50%] justify-center items-center'>
+                      <Image
+                        src={company.logo}
+                        alt={company.company}
+                        width={40}
+                        height={40}
+                        sizes='(max-width: 640px) 3rem, 3.5rem'
+                        unoptimized={true}
+                        fetchPriority='low'
+                        priority={false}
+                        loading='lazy'
+                        decoding='async'
+                        className='max-h-max w-[3rem]'
+                      />
+                    </div>
+
+                    <div className='flex-1'>
+                      <h4>{company.company}</h4>
+                      <p>{company.role}</p>
+                    </div>
+
+                    <div className='w-[1.5rem]'>
+                      <LinkHint />
+                    </div>
+                  </Stack>
+                </Button>
+              </Card>
+            </GridItem>
+          );
+        })}
+      </ContentGrid>
+    </>
   );
 }
