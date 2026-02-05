@@ -4,5 +4,12 @@
   "sourceRoot": "apps/root/src",
   "projectType": "application",
   "tags": ["scope:root", "type:app"],
-  "implicitDependencies": ["@danieljoffe.com/ui"]
+  "implicitDependencies": ["@danieljoffe.com/ui"],
+  "targets": {
+    "build": {
+      "options": {
+        "command": "next build --webpack"
+      }
+    }
+  }
 }

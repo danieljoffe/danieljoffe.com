@@ -1,4 +1,11 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { GlobalContext, GlobalState, ThemeMode } from './Context';
 import { useWindowResize } from '@/hooks/windowResize';
 
@@ -23,15 +30,14 @@ export default function GlobalProvider({ children }: { children: ReactNode }) {
     useWindowResize();
   const [isModalOpen, _setIsModalOpen] = useState(GlobalState.isModalOpen);
   const [modalContent, _setModalContent] = useState(GlobalState.modalContent);
-  const [themeMode, _setThemeMode] = useState<ThemeMode>('system');
-  const [systemPrefersDark, setSystemPrefersDark] = useState(false);
+  // Use lazy initialization to read from localStorage/system on first render
+  const [themeMode, _setThemeMode] = useState<ThemeMode>(getStoredThemeMode);
+  const [systemPrefersDark, setSystemPrefersDark] =
+    useState(getSystemPrefersDark);
+  const prevIsMobileRef = useRef(isMobile);
 
-  // Initialize theme from localStorage on mount
+  // Listen for system preference changes
   useEffect(() => {
-    _setThemeMode(getStoredThemeMode());
-    setSystemPrefersDark(getSystemPrefersDark());
-
-    // Listen for system preference changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
       setSystemPrefersDark(e.matches);
@@ -108,16 +114,28 @@ export default function GlobalProvider({ children }: { children: ReactNode }) {
     ]
   );
 
+  // Close modal when transitioning from mobile to desktop
   useEffect(() => {
-    if (isModalOpen && !isMobile) {
-      toggleModal();
+    const wasOnMobile = prevIsMobileRef.current;
+    const isNowDesktop = !isMobile;
+
+    // Only close if we were on mobile and are now on desktop
+    // Using queueMicrotask to avoid synchronous setState in effect (react-hooks/set-state-in-effect)
+    if (isModalOpen && wasOnMobile && isNowDesktop) {
+      queueMicrotask(() => _setIsModalOpen(false));
     }
+
+    prevIsMobileRef.current = isMobile;
+  }, [isMobile, isModalOpen]);
+
+  // Sync body overflow with modal state (DOM side effect)
+  useEffect(() => {
     if (isModalOpen) {
       document.body.classList.add('overflow-y-hidden');
     } else {
       document.body.classList.remove('overflow-y-hidden');
     }
-  }, [isModalOpen, isMobile, toggleModal, isDesktop]);
+  }, [isModalOpen]);
 
   return (
     <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>

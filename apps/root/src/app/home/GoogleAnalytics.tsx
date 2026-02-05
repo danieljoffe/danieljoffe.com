@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { devLog } from '@/utils/helpers';
 
@@ -11,15 +11,21 @@ type GAProps = {
   nonce?: string | undefined;
 };
 
+// Module-level ref to store the dataLayer name for sendGAEvent
 let currDataLayerName: string | undefined = undefined;
 
 // https://github.com/vercel/next.js/blob/canary/packages/third-parties/src/types/google.ts
 export function GoogleAnalytics(props: GAProps) {
   const { gaId, debugMode, dataLayerName = 'dataLayer', nonce } = props;
+  const isInitialized = useRef(false);
 
-  if (currDataLayerName === undefined) {
-    currDataLayerName = dataLayerName;
-  }
+  useEffect(() => {
+    // Set the dataLayer name only once on mount
+    if (!isInitialized.current) {
+      currDataLayerName = dataLayerName;
+      isInitialized.current = true;
+    }
+  }, [dataLayerName]);
 
   useEffect(() => {
     // performance.mark is being used as a feature use signal. While it is traditionally used for performance

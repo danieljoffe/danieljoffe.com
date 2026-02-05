@@ -6,15 +6,15 @@ import { useCallback, useRef } from 'react';
  * @param delay - The delay in milliseconds
  * @returns The throttled function
  */
-export function useThrottle<T extends (...args: unknown[]) => unknown>(
+export function useThrottle<T extends (...args: never[]) => void>(
   callback: T,
   delay: number
-): T {
+): (...args: Parameters<T>) => void {
   const lastCall = useRef<number>(0);
   const lastCallTimer = useRef<NodeJS.Timeout | null>(null);
 
   return useCallback(
-    ((...args: Parameters<T>) => {
+    (...args: Parameters<T>) => {
       const now = Date.now();
 
       if (now - lastCall.current >= delay) {
@@ -25,12 +25,15 @@ export function useThrottle<T extends (...args: unknown[]) => unknown>(
           clearTimeout(lastCallTimer.current);
         }
 
-        lastCallTimer.current = setTimeout(() => {
-          lastCall.current = Date.now();
-          callback(...args);
-        }, delay - (now - lastCall.current));
+        lastCallTimer.current = setTimeout(
+          () => {
+            lastCall.current = Date.now();
+            callback(...args);
+          },
+          delay - (now - lastCall.current)
+        );
       }
-    }) as T,
+    },
     [callback, delay]
   );
 }

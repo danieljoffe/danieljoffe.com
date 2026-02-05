@@ -1,19 +1,13 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import js from '@eslint/js';
-import { fixupConfigRules } from '@eslint/compat';
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from 'eslint-plugin-storybook';
+import nextConfig from 'eslint-config-next';
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import nx from '@nx/eslint-plugin';
 import baseConfig from '../../eslint.config.mjs';
 
-const compat = new FlatCompat({
-  baseDirectory: dirname(fileURLToPath(import.meta.url)),
-  recommendedConfig: js.configs.recommended,
-});
-
 const config = [
-  ...fixupConfigRules(compat.extends('next')),
-  ...fixupConfigRules(compat.extends('next/core-web-vitals')),
+  ...nextConfig,
+  ...nextCoreWebVitals,
   ...nx.configs['flat/react-typescript'],
   ...baseConfig,
   {
@@ -27,6 +21,7 @@ const config = [
       '.env*',
     ],
   },
+  ...storybook.configs['flat/recommended'],
 ];
 
 export default config;

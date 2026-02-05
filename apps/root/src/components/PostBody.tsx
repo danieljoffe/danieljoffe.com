@@ -16,7 +16,7 @@ export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
         blurHash={cover.blurHash}
         width={800}
         height={450}
-        priority={true}
+        preload={true}
       />
       <PostContent>{children}</PostContent>
     </Stack>

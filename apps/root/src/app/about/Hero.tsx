@@ -34,7 +34,7 @@ export default function Hero() {
               className='rounded-full min-w-[15.5rem] outline-2 outline-foreground outline-offset-[0.5rem]'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
               fetchPriority='high'
-              priority={true}
+              preload={true}
               decoding='async'
               loading='eager'
             />
