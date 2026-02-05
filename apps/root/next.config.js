@@ -197,6 +197,13 @@ const nextConfig = {
   webpack: (config, options) => {
     const { dev, isServer } = options;
 
+    // Add custom condition for workspace packages to resolve to source
+    config.resolve = config.resolve || {};
+    config.resolve.conditionNames = [
+      '@danieljoffe.com/source',
+      ...(config.resolve.conditionNames || ['import', 'require', 'default']),
+    ];
+
     // In test/CI environments, replace fonts.ts with fonts.mock.ts to avoid network requests
     if (isTest || isCI) {
       config.plugins = config.plugins || [];

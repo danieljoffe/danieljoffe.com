@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal portfolio website for Daniel Joffe built with Next.js 15 (App Router), React 19, and TypeScript. This is an Nx monorepo with Yarn workspaces.
+Personal portfolio website for Daniel Joffe built with Next.js 16 (App Router), React 19, and TypeScript. This is an Nx monorepo with Yarn workspaces.
 
 Live site: https://danieljoffe.com
 
@@ -50,9 +50,9 @@ npx nx storybook @danieljoffe.com/ui  # Start Storybook for UI library
 
 ### Monorepo Structure
 
-- **apps/root**: Main Next.js 15 application (App Router)
+- **apps/root**: Main Next.js 16 application (App Router)
 - **apps/root-e2e**: Playwright E2E tests
-- **libs/ui**: Shared React component library (@danieljoffe.com/ui)
+- **libs/shared/ui**: Shared React component library (@danieljoffe.com/ui)
 
 ### App Structure (apps/root/src/)
 
@@ -72,13 +72,13 @@ types/                  # TypeScript type definitions
 utils/                  # Helper functions and constants
 ```
 
-### UI Library (libs/ui/src/lib/)
+### UI Library (libs/shared/ui/src/lib/)
 
 Shared components: Alert, Badge, Button, Card, Checkbox, Container, Divider, Grid, Input, Loading, Modal, PageContainer, ProgressBar, Select, Spacer, Spinner, Stack, Switch, Tabs, Textarea, Tooltip
 
 ### Key Technologies
 
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 16 with App Router
 - **Styling**: Tailwind CSS 4
 - **Animations**: GSAP
 - **Forms**: react-hook-form with yup validation

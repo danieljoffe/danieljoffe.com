@@ -21,7 +21,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@danieljoffe.com/ui": ["../../libs/ui/src/index.ts"]
+      "@danieljoffe.com/ui": ["../../libs/shared/ui/src/index.ts"]
     },
     "types": ["jest", "node"],
     "outDir": "dist",
@@ -55,7 +55,7 @@
   ],
   "references": [
     {
-      "path": "../../libs/ui"
+      "path": "../../libs/shared/ui"
     },
     {
       "path": "./tsconfig.storybook.json"

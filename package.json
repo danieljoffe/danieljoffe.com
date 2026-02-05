@@ -127,7 +127,8 @@
   },
   "workspaces": [
     "apps/*",
-    "libs/*"
+    "libs/*",
+    "libs/shared/*"
   ],
   "resolutions": {
     "axios": "^1.13.4",

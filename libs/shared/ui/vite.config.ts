@@ -6,7 +6,7 @@ import dts from 'vite-plugin-dts';
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/libs/ui',
+  cacheDir: '../../../node_modules/.vite/libs/shared/ui',
   plugins: [
     react(),
     dts({
