@@ -1,4 +1,4 @@
-import { PageContainer, Stack } from '@danieljoffe.com/ui';
+import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/base';

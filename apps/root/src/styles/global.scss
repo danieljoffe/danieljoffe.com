@@ -1,12 +1,12 @@
 @use 'tailwindcss';
-@use '@danieljoffe.com/ui/styles/muted-violet.scss';
-@use '@danieljoffe.com/ui/styles/muted-violet-dark.scss';
+@use '@danieljoffe.com/shared-ui/styles/muted-violet.scss';
+@use '@danieljoffe.com/shared-ui/styles/muted-violet-dark.scss';
 
 // Content sources for Tailwind v4 class detection
 // Root app source files
 @source "../**/*.{ts,tsx,js,jsx}";
-// UI library components (relative path from this file to libs/ui/src)
-@source "../../../../libs/ui/src/**/*.{ts,tsx,js,jsx}";
+// UI library components (relative path from this file to libs/shared/ui/src)
+@source "../../../../libs/shared/ui/src/**/*.{ts,tsx,js,jsx}";
 
 @layer base {
   :root {
@@ -23,8 +23,9 @@
   html {
     transition-timing-function: ease-in-out;
     transition-duration: 3.5s;
-    transition-property: --stop-color-one, --stop-color-two, --stop-color-three,
-      --stop-color-four, --stop-color-five, --stop-color-six, --stop-color-seven,
+    transition-property:
+      --stop-color-one, --stop-color-two, --stop-color-three, --stop-color-four,
+      --stop-color-five, --stop-color-six, --stop-color-seven,
       --stop-color-eight;
   }
 

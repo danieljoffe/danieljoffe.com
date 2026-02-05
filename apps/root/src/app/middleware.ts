@@ -7,8 +7,8 @@ export function middleware(request: NextRequest) {
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https: ${
-    serverEnv.NODE_ENV !== 'production' ? `'unsafe-eval'` : ''
-  };
+      serverEnv.NODE_ENV !== 'production' ? `'unsafe-eval'` : ''
+    };
     style-src 'self' 'nonce-${nonce}' 'unsafe-inline';
     font-src 'self' https: data:;
     object-src 'none';

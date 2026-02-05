@@ -5,7 +5,7 @@ import {
   Section,
   Grid,
   GridItem,
-} from '@danieljoffe.com/ui';
+} from '@danieljoffe.com/shared-ui';
 
 const steps = [
   {

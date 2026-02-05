@@ -1,6 +1,6 @@
 'use client';
 
-import { Stack, PageContainer, Section } from '@danieljoffe.com/ui';
+import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 
 interface CTAButton {

@@ -1,7 +1,9 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 
-export interface SectionProps
-  extends Omit<HTMLAttributes<HTMLElement>, 'className'> {
+export interface SectionProps extends Omit<
+  HTMLAttributes<HTMLElement>,
+  'className'
+> {
   children: ReactNode;
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   background?: 'default' | 'alt' | 'elevated' | 'none';

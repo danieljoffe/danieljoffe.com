@@ -4,7 +4,7 @@ import {
   Section,
   Card,
   GridItem,
-} from '@danieljoffe.com/ui';
+} from '@danieljoffe.com/shared-ui';
 import ContentGrid from '@/components/ContentGrid';
 import { offerings } from '@/utils/offerings';
 

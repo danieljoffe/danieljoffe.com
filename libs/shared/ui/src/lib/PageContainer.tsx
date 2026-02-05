@@ -1,8 +1,10 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 import { Container } from './Container';
 
-export interface PageContainerProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, 'className'> {
+export interface PageContainerProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'className'
+> {
   children: ReactNode;
   /** Container size - defaults to 'sm' for page content */
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';

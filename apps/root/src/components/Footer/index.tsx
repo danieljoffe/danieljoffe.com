@@ -1,7 +1,7 @@
 'use client';
 
 import { Github, Linkedin, Mail } from 'lucide-react';
-import { Stack, PageContainer } from '@danieljoffe.com/ui';
+import { Stack, PageContainer } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 import { NAV_LINKS } from '@/utils/base';
 import { profileData } from '@/utils/profileData';

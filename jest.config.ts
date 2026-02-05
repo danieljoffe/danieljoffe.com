@@ -1,7 +1,6 @@
-import type { Config } from 'jest';
-import { getJestProjectsAsync } from '@nx/jest';
+const { getJestProjectsAsync } = require('@nx/jest');
 
-export default async (): Promise<Config> => ({
+module.exports = async () => ({
   projects: await getJestProjectsAsync(),
   moduleNameMapper: {
     '^next/navigation$': '<rootDir>/__mocks__/next.navigation.js',

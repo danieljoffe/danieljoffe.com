@@ -1,4 +1,4 @@
-import { PageContainer, Section } from '@danieljoffe.com/ui';
+import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import FullTimeline from './FullTimeline';
 import Image from 'next/image';
 

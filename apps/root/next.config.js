@@ -197,6 +197,13 @@ const nextConfig = {
   webpack: (config, options) => {
     const { dev, isServer } = options;
 
+    // Add custom condition for workspace packages to resolve to source
+    config.resolve = config.resolve || {};
+    config.resolve.conditionNames = [
+      '@danieljoffe.com/source',
+      ...(config.resolve.conditionNames || ['import', 'require', 'default']),
+    ];
+
     // In test/CI environments, replace fonts.ts with fonts.mock.ts to avoid network requests
     if (isTest || isCI) {
       config.plugins = config.plugins || [];
@@ -331,14 +338,16 @@ const finalConfig =
         // side errors will fail.
         tunnelRoute: '/monitoring',
 
-        // Automatically tree-shake Sentry logger statements to reduce bundle size
-        disableLogger: true,
-
-        // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-        // See the following for more information:
-        // https://docs.sentry.io/product/crons/
-        // https://vercel.com/docs/cron-jobs
-        automaticVercelMonitors: true,
+        // Webpack-specific Sentry options
+        webpack: {
+          // Tree-shake Sentry logger statements to reduce bundle size
+          treeshake: {
+            removeDebugLogging: true,
+          },
+          // Enables automatic instrumentation of Vercel Cron Monitors
+          // See: https://docs.sentry.io/product/crons/
+          automaticVercelMonitors: true,
+        },
       });
 
 module.exports = finalConfig;

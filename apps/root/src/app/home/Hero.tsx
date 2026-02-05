@@ -8,7 +8,7 @@ import {
   Stack,
   Badge,
   Spacer,
-} from '@danieljoffe.com/ui';
+} from '@danieljoffe.com/shared-ui';
 import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
 import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
 import { downloadResume } from '@/utils/helpers';

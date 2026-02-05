@@ -4,7 +4,7 @@ import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import LinkHint from '@/components/LinkHint';
 import Button from '@/components/Button';
 import ContentGrid from '@/components/ContentGrid';
-import { Card, GridItem, Stack } from '@danieljoffe.com/ui';
+import { Card, GridItem, Stack } from '@danieljoffe.com/shared-ui';
 
 export default function FullTimeline() {
   return (
