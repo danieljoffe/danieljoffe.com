@@ -15,6 +15,7 @@
     "test:lighthouse:assert": "lhci assert",
     "typecheck": "nx run-many --target=typecheck --all",
     "pom": "yarn typecheck && yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
+    "affected": "nx affected -t lint test build typecheck e2e",
     "dev": "nx run-many --target=dev --all",
     "prepare": "husky"
   },
