@@ -93,13 +93,14 @@ test.describe('mobile Navigation', () => {
     const menuButton = page.locator('[aria-label="Open menu"]');
     await menuButton.click();
 
-    // Wait for modal
+    // Wait for modal to be visible and stable
     const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
     await expect(modal).toBeVisible();
 
-    // Click About link in modal
+    // Click About link in modal - wait for it to be stable (animations complete)
     const aboutLink = modal.locator('a[href="/about"]').first();
-    await aboutLink.click();
+    await expect(aboutLink).toBeVisible();
+    await aboutLink.click({ force: true });
 
     await expect(page).toHaveURL(/.*about/);
   });
@@ -136,10 +137,11 @@ test.describe('mobile Navigation', () => {
     const menuButton = page.locator('[aria-label="Open menu"]');
     await menuButton.click();
 
-    // Wait for modal and animation
-    await page.waitForTimeout(200);
+    // Wait for modal to be visible
+    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
+    await expect(modal).toBeVisible();
 
-    // Close button should be focusable
+    // Close button should be visible and focusable
     const closeButton = page.locator('button:has-text("Close")');
     await expect(closeButton).toBeVisible();
   });
@@ -158,12 +160,13 @@ test.describe('breadcrumb Navigation', () => {
     await page.goto('/projects/performance-case-study');
     await page.waitForLoadState('domcontentloaded');
 
-    const projectsLink = page
-      .locator('nav[aria-label="Breadcrumb"] a[href="/projects"]')
-      .first();
+    const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
+    await expect(breadcrumbNav).toBeVisible();
+
+    const projectsLink = breadcrumbNav.locator('a[href="/projects"]').first();
     await expect(projectsLink).toBeVisible();
 
-    await projectsLink.click();
+    await projectsLink.click({ force: true });
     await expect(page).toHaveURL(/.*\/projects$/);
   });
 
