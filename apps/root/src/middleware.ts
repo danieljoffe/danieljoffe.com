@@ -9,13 +9,16 @@ export function middleware(request: NextRequest) {
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https: ${
       serverEnv.NODE_ENV !== 'production' ? `'unsafe-eval'` : ''
     };
-    style-src 'self' 'nonce-${nonce}' 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
     font-src 'self' https: data:;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
-    frame-ancestors 'none';
-    upgrade-insecure-requests;
+    frame-ancestors 'none';${
+      request.nextUrl.protocol === 'https:'
+        ? `\n    upgrade-insecure-requests;`
+        : ''
+    }
     connect-src 'self' ${allowedOrigins.join(' ')};
     img-src 'self' blob: data: ${allowedImageOrigins.join(' ')};
 `;

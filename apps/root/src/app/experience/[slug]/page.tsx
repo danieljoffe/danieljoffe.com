@@ -1,6 +1,4 @@
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import Script from 'next/script';
 import { AllowedExperienceSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { EXPERIENCE_LINK } from '@/utils/base';
 import { experienceRecords } from '@/data/experienceThumbnails';
@@ -27,8 +25,6 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
 }
 
 export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
-  const headersStore = await headers();
-  const nonce = headersStore.get('x-nonce') ?? undefined;
   const { slug } = (await params) ?? {};
 
   const Post = experienceMdxComponents[slug as AllowedExperienceSlugs];
@@ -56,13 +52,11 @@ export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
           </MainContent>
         </PostBody>
       </PageContainer>
-      <Script
-        id={`${slug}-structured-data`}
+      <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
         }}
-        nonce={nonce}
       />
     </Section>
   );

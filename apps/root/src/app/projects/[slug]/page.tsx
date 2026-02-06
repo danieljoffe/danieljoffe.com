@@ -1,5 +1,3 @@
-import Script from 'next/script';
-import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AllowedProjectSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
 import { PROJECTS_LINK } from '@/utils/base';
@@ -27,8 +25,6 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
 }
 
 export default async function SlugProjectPage({ params }: SlugPagePropsI) {
-  const headersStore = await headers();
-  const nonce = headersStore.get('x-nonce') ?? undefined;
   const { slug } = (await params) ?? {};
 
   const Post = projectMdxComponents[slug as AllowedProjectSlugs];
@@ -55,13 +51,11 @@ export default async function SlugProjectPage({ params }: SlugPagePropsI) {
           </MainContent>
         </PostBody>
       </PageContainer>
-      <Script
-        id={`${slug}-breadcrumb-structured-data`}
+      <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
         }}
-        nonce={nonce}
       />
     </Section>
   );

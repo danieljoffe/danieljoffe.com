@@ -184,6 +184,7 @@ test.describe('performance tests', () => {
           src: script.getAttribute('src'),
           async: script.hasAttribute('async'),
           defer: script.hasAttribute('defer'),
+          managedByNextScript: script.hasAttribute('data-nscript'),
         }));
     });
 
@@ -192,11 +193,14 @@ test.describe('performance tests', () => {
       console.log('Third-party scripts found:', thirdPartyScripts);
     }
 
-    // Third-party scripts should be async or deferred
+    // Third-party scripts should be async, deferred, or managed by next/script
+    // (next/script uses data-nscript attribute and handles loading optimization internally)
     // If no third-party scripts are found, that's also acceptable
     if (thirdPartyScripts.length > 0) {
       thirdPartyScripts.forEach(script => {
-        expect(script.async || script.defer).toBeTruthy();
+        expect(
+          script.async || script.defer || script.managedByNextScript
+        ).toBeTruthy();
       });
     } else {
       // No third-party scripts found, which is fine

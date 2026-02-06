@@ -29,8 +29,6 @@ const nextConfig = {
     // Enable critical CSS inlining with critters
     optimizeCss: true,
     optimizePackageImports: [
-      'lucide-react',
-      '@headlessui/react',
       '@gsap/react',
       'gsap',
       '@sentry/nextjs',
