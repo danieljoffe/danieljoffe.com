@@ -18,7 +18,7 @@ test.describe('visual Regression Tests', () => {
 
   test('homepage visual regression', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
     // Wait for GSAP animations to settle — they affect layout height
     await page.waitForTimeout(1000);
