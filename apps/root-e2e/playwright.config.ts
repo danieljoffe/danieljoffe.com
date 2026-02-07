@@ -54,6 +54,8 @@ export default defineConfig({
     env: {
       // Use test environment to enable font mocking (important!)
       NODE_ENV: 'test',
+      // Use hCaptcha test sitekey (always passes verification)
+      NEXT_PUBLIC_HCAPTCHA_SITE_ID: '10000000-ffff-ffff-ffff-000000000001',
       // Disable Sentry to speed up startup
       ...(isCI && {
         SENTRY_DSN: '',

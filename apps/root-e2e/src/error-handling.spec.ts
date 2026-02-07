@@ -3,15 +3,17 @@ import {
   expect,
   VALID_FORM_DATA,
   mockHCaptcha,
+  completeHCaptcha,
   mockEmailAPISuccess,
+  waitForHydration,
 } from './fixtures/base.fixture';
 
 test.describe('404 Error Page', () => {
   test('shows 404 for non-existent routes', async ({ page }) => {
     await page.goto('/this-page-definitely-does-not-exist-xyz');
 
-    // Wait a bit for client-side hydration
-    await page.waitForTimeout(500);
+    // Wait for page content to render
+    await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
     const is404 = await page.locator('h1:has-text("404")').isVisible();
     const isNotFound = await page
@@ -24,7 +26,7 @@ test.describe('404 Error Page', () => {
 
   test('404 page has link back to home', async ({ page }) => {
     await page.goto('/non-existent-page-abc');
-    await page.waitForTimeout(500);
+    await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
     // Look for the "Back to Home" button/link in main content area (not nav)
     const homeLink = page.locator('main a:has-text("Back to Home")').first();
@@ -35,7 +37,7 @@ test.describe('404 Error Page', () => {
 
   test('clicking home link on 404 navigates to homepage', async ({ page }) => {
     await page.goto('/non-existent-page-def');
-    await page.waitForTimeout(500);
+    await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
     // Use the specific "Back to Home" link in main content
     const homeLink = page.locator('main a:has-text("Back to Home")').first();
@@ -78,24 +80,19 @@ test.describe('thank-You Page Protection', () => {
     await page.goto('/thank-you/email');
 
     // Should redirect to home page
-    await page.waitForTimeout(1000);
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/', { timeout: 10000 });
   });
 
-  // Note: These tests are skipped because they require real hCaptcha interaction.
-  // The thank-you page can only be accessed after a successful form submission
-  // with captcha verification, which cannot be easily mocked in e2e tests.
-
-  test.skip('thank-you page accessible after form submission', async ({
-    page,
-  }) => {
-    // Set up mocks
+  test('thank-you page accessible after form submission', async ({ page }) => {
+    // Set up mocks before navigation
     await mockHCaptcha(page);
     await mockEmailAPISuccess(page);
 
-    // Start at about page and submit form
+    // Start at about page — wait for networkidle to ensure React hydration
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill and submit form
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
@@ -104,7 +101,8 @@ test.describe('thank-You Page Protection', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    await page.waitForTimeout(500);
+    // Complete hCaptcha verification
+    await completeHCaptcha(page);
 
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
@@ -117,14 +115,16 @@ test.describe('thank-You Page Protection', () => {
     await expect(thankYouHeading).toBeVisible();
   });
 
-  test.skip('thank-you page has noindex meta tag', async ({ page }) => {
+  test('thank-you page has noindex meta tag', async ({ page }) => {
     // Set up mocks
     await mockHCaptcha(page);
     await mockEmailAPISuccess(page);
 
-    // Navigate via form submission
+    // Navigate via form submission — wait for networkidle for hydration
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
     await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
@@ -132,7 +132,7 @@ test.describe('thank-You Page Protection', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    await page.waitForTimeout(500);
+    await completeHCaptcha(page);
 
     await page.locator('button[type="submit"]').click();
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
@@ -144,14 +144,16 @@ test.describe('thank-You Page Protection', () => {
     expect(content?.includes('noindex')).toBeTruthy();
   });
 
-  test.skip('thank-you page has link to home', async ({ page }) => {
+  test('thank-you page has link to home', async ({ page }) => {
     // Set up mocks
     await mockHCaptcha(page);
     await mockEmailAPISuccess(page);
 
-    // Navigate via form submission
+    // Navigate via form submission — wait for networkidle for hydration
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
     await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
@@ -159,13 +161,13 @@ test.describe('thank-You Page Protection', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    await page.waitForTimeout(500);
+    await completeHCaptcha(page);
 
     await page.locator('button[type="submit"]').click();
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
 
-    // Check for home link
-    const homeLink = page.locator('a[href="/"], a:has-text("Home")').first();
+    // Check for the "Back to home" button (not the nav link, which is hidden on mobile)
+    const homeLink = page.locator('a[aria-label="Return to home page"]');
     await expect(homeLink).toBeVisible();
   });
 });

@@ -9,36 +9,19 @@ test.describe('accessibility Tests', () => {
 
     const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
 
-    // Filter out known issues - only check for truly critical violations
-    const criticalViolations = accessibilityScanResults.violations.filter(v => {
-      // Skip color contrast unless critical
-      if (v.id === 'color-contrast') {
-        return (v.impact || '').toLowerCase() === 'critical';
-      }
-      // Skip aria-required-children for navigation (common pattern)
-      if (v.id === 'aria-required-children') {
-        return false;
-      }
-      // Skip landmark-unique (moderate impact)
-      if (v.id === 'landmark-unique') {
-        return false;
-      }
-      // Only fail on other critical violations
-      return (v.impact || '').toLowerCase() === 'critical';
-    });
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations.filter(v =>
+    // Fail on serious and critical violations
+    const failingViolations = accessibilityScanResults.violations.filter(v =>
       ['serious', 'critical'].includes((v.impact || '').toLowerCase())
     );
 
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ accessibility violations (${criticalViolations.length} critical)`
-      );
+    if (failingViolations.length > 0) {
+      const summary = failingViolations
+        .map(v => `  - ${v.id} (${v.impact}): ${v.description}`)
+        .join('\n');
+      console.log(`Accessibility violations:\n${summary}`);
     }
 
-    expect(criticalViolations).toStrictEqual([]);
+    expect(failingViolations).toStrictEqual([]);
   });
 
   test('about page should not have accessibility violations', async ({
@@ -48,36 +31,19 @@ test.describe('accessibility Tests', () => {
 
     const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
 
-    // Filter out known issues - only check for truly critical violations
-    const criticalViolations = accessibilityScanResults.violations.filter(v => {
-      // Skip color contrast unless critical
-      if (v.id === 'color-contrast') {
-        return (v.impact || '').toLowerCase() === 'critical';
-      }
-      // Skip aria-required-children for navigation (common pattern)
-      if (v.id === 'aria-required-children') {
-        return false;
-      }
-      // Skip landmark-unique (moderate impact)
-      if (v.id === 'landmark-unique') {
-        return false;
-      }
-      // Only fail on other critical violations
-      return (v.impact || '').toLowerCase() === 'critical';
-    });
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations.filter(v =>
+    // Fail on serious and critical violations
+    const failingViolations = accessibilityScanResults.violations.filter(v =>
       ['serious', 'critical'].includes((v.impact || '').toLowerCase())
     );
 
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ accessibility violations (${criticalViolations.length} critical)`
-      );
+    if (failingViolations.length > 0) {
+      const summary = failingViolations
+        .map(v => `  - ${v.id} (${v.impact}): ${v.description}`)
+        .join('\n');
+      console.log(`Accessibility violations:\n${summary}`);
     }
 
-    expect(criticalViolations).toStrictEqual([]);
+    expect(failingViolations).toStrictEqual([]);
   });
 
   test('projects page should not have accessibility violations', async ({
@@ -87,36 +53,19 @@ test.describe('accessibility Tests', () => {
 
     const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
 
-    // Filter out known issues - only check for truly critical violations
-    const criticalViolations = accessibilityScanResults.violations.filter(v => {
-      // Skip color contrast unless critical
-      if (v.id === 'color-contrast') {
-        return (v.impact || '').toLowerCase() === 'critical';
-      }
-      // Skip aria-required-children for navigation (common pattern)
-      if (v.id === 'aria-required-children') {
-        return false;
-      }
-      // Skip landmark-unique (moderate impact)
-      if (v.id === 'landmark-unique') {
-        return false;
-      }
-      // Only fail on other critical violations
-      return (v.impact || '').toLowerCase() === 'critical';
-    });
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations.filter(v =>
+    // Fail on serious and critical violations
+    const failingViolations = accessibilityScanResults.violations.filter(v =>
       ['serious', 'critical'].includes((v.impact || '').toLowerCase())
     );
 
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ accessibility violations (${criticalViolations.length} critical)`
-      );
+    if (failingViolations.length > 0) {
+      const summary = failingViolations
+        .map(v => `  - ${v.id} (${v.impact}): ${v.description}`)
+        .join('\n');
+      console.log(`Accessibility violations:\n${summary}`);
     }
 
-    expect(criticalViolations).toStrictEqual([]);
+    expect(failingViolations).toStrictEqual([]);
   });
 
   test('keyboard navigation works correctly', async ({ page, browserName }) => {
@@ -128,7 +77,14 @@ test.describe('accessibility Tests', () => {
     }
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(500); // Give time for interactive elements to load
+
+    // Wait for interactive elements to be ready
+    await page
+      .locator(
+        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      .first()
+      .waitFor({ state: 'visible' });
 
     // Try to reach a tabbable/interactive element with keyboard only
     const interactiveSelector =
@@ -193,8 +149,16 @@ test.describe('accessibility Tests', () => {
         // Check if focus moved to target or URL hash updated
         const targetId = await firstSkipLink.getAttribute('href');
         if (targetId && targetId.startsWith('#')) {
-          // Wait for navigation or focus change
-          await page.waitForTimeout(300);
+          // Wait for hash to update (async on Mobile Chrome after programmatic click)
+          await page
+            .waitForURL(`**/${targetId}`, { timeout: 3000 })
+            .catch(() => {});
+
+          // Wait for target element to exist
+          await page
+            .locator(targetId)
+            .waitFor({ state: 'attached', timeout: 3000 })
+            .catch(() => {});
 
           const result = await page.evaluate(selector => {
             const el = document.querySelector(selector) as HTMLElement | null;
@@ -258,26 +222,21 @@ test.describe('accessibility Tests', () => {
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze();
 
-    // Filter out color contrast violations - only check for critical issues
-    const colorContrastViolations = accessibilityScanResults.violations
-      .filter(v => v.id === 'color-contrast')
-      .filter(v => (v.impact || '').toLowerCase() === 'critical');
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations
+    // Fail on serious and critical color contrast violations
+    const failingViolations = accessibilityScanResults.violations
       .filter(v => v.id === 'color-contrast')
       .filter(v =>
         ['serious', 'critical'].includes((v.impact || '').toLowerCase())
       );
 
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ color contrast violations (${colorContrastViolations.length} critical)`
-      );
+    if (failingViolations.length > 0) {
+      const summary = failingViolations
+        .map(v => `  - ${v.id} (${v.impact}): ${v.nodes.length} element(s)`)
+        .join('\n');
+      console.log(`Color contrast violations:\n${summary}`);
     }
 
-    // Only fail on critical color contrast violations
-    expect(colorContrastViolations.length).toBe(0);
+    expect(failingViolations.length).toBe(0);
   });
 
   test('images have proper alt text', async ({ page }) => {
@@ -354,7 +313,6 @@ test.describe('accessibility Tests', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(500);
 
     // Look for mobile menu trigger (which opens a modal)
     const modalTrigger = page.locator('[aria-label="Open menu"]');

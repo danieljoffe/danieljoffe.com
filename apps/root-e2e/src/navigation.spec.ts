@@ -97,10 +97,10 @@ test.describe('mobile Navigation', () => {
     const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
     await expect(modal).toBeVisible();
 
-    // Click About link in modal - wait for it to be stable (animations complete)
+    // Click About link in modal - wait for animations to complete
     const aboutLink = modal.locator('a[href="/about"]').first();
     await expect(aboutLink).toBeVisible();
-    await aboutLink.click({ force: true });
+    await aboutLink.click();
 
     await expect(page).toHaveURL(/.*about/);
   });
@@ -123,9 +123,7 @@ test.describe('mobile Navigation', () => {
     // Press Escape
     await page.keyboard.press('Escape');
 
-    // Wait for close animation to complete
-    await page.waitForTimeout(300);
-
+    // Playwright's expect auto-retries, no need for manual delay
     await expect(modal).toBeHidden({ timeout: 5000 });
   });
 
@@ -166,7 +164,9 @@ test.describe('breadcrumb Navigation', () => {
     const projectsLink = breadcrumbNav.locator('a[href="/projects"]').first();
     await expect(projectsLink).toBeVisible();
 
-    await projectsLink.click({ force: true });
+    // Wait for the link to be stable (animations complete) before clicking
+    await projectsLink.waitFor({ state: 'visible' });
+    await projectsLink.click();
     await expect(page).toHaveURL(/.*\/projects$/);
   });
 

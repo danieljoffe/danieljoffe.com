@@ -41,18 +41,20 @@ export const validateFormData = async <T extends yup.AnyObject>(
   data: FormFieldSchema,
   schema: yup.ObjectSchema<T>
 ): Promise<ErrorResponse | null> => {
-  try {
-    // @ts-expect-error - address is a hidden field
-    if (data?.address?.length > 0) {
-      throw {
-        error: {
-          path: 'root.forbidden',
-          message: 'Forbidden',
-        },
-        statusCode: 403,
-      } as ErrorResponse;
-    }
+  // Honeypot check — outside try/catch so the 403 status code is not
+  // overwritten by the generic validation error handler below.
+  // @ts-expect-error - address is a hidden field
+  if (data?.address?.length > 0) {
+    throw {
+      error: {
+        path: 'root.forbidden',
+        message: 'Forbidden',
+      },
+      statusCode: 403,
+    } as ErrorResponse;
+  }
 
+  try {
     // Sanitize inputs
     const sanitized: FormFieldSchema = {
       name: DOMPurify.sanitize(data.name),

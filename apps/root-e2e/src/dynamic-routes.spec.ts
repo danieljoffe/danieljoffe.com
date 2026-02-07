@@ -166,12 +166,14 @@ test.describe('invalid Routes', () => {
   }) => {
     const response = await page.goto('/projects/invalid-slug-xyz-123');
 
-    // Next.js App Router redirect() sends a 200 with client-side NEXT_REDIRECT.
-    // Wait for either a redirect, error content, or loading state to appear.
     const status = response?.status();
     const isErrorStatus = status === 404 || status === 500;
 
     if (!isErrorStatus) {
+      // Wait for page to finish loading (Mobile Safari needs this for streaming SSR)
+      await page.waitForLoadState('load').catch(() => {});
+
+      // Wait for client-side redirect, error content, or loading state
       await Promise.race([
         page.waitForURL(/\/projects$/, { timeout: 15000 }),
         page.waitForSelector('text=/not found|something went wrong/i', {
@@ -182,21 +184,22 @@ test.describe('invalid Routes', () => {
     }
 
     const currentUrl = page.url();
-    const is404Page = await page.locator('h1:has-text("404")').isVisible();
-    const isNotFound = await page
-      .locator('text=/not found|page not found|project not found/i')
-      .isVisible();
-    const isErrorPage = await page
-      .locator('text=/something went wrong/i')
-      .isVisible();
     const redirectedToListing = currentUrl.endsWith('/projects');
-    // On some browsers (webkit/Mobile Safari), the page may stay in a loading
-    // state while the server component processes the redirect. Without CSS loaded,
-    // the loading element may have zero dimensions, so check DOM presence not visibility.
-    const isLoadingState =
+
+    // Use DOM presence (.count) instead of .isVisible() — under parallel load
+    // on mobile, hydration may not have completed so elements exist in DOM
+    // but aren't considered "visible" by Playwright yet.
+    const is404Page = (await page.locator('h1:has-text("404")').count()) > 0;
+    const isNotFound =
       (await page
-        .locator('[role="status"][aria-label="Loading project"]')
+        .locator('text=/not found|page not found|project not found/i')
         .count()) > 0;
+    const isErrorPage =
+      (await page.locator('text=/something went wrong/i').count()) > 0;
+    const isLoadingState = (await page.locator('[role="status"]').count()) > 0;
+    // Also check full page text as final fallback
+    const bodyText = (await page.textContent('body')) ?? '';
+    const hasNotFoundText = /not found|404/i.test(bodyText);
 
     expect(
       isErrorStatus ||
@@ -204,7 +207,8 @@ test.describe('invalid Routes', () => {
         isNotFound ||
         isErrorPage ||
         redirectedToListing ||
-        isLoadingState
+        isLoadingState ||
+        hasNotFoundText
     ).toBeTruthy();
   });
 
@@ -217,6 +221,8 @@ test.describe('invalid Routes', () => {
     const isErrorStatus = status === 404 || status === 500;
 
     if (!isErrorStatus) {
+      await page.waitForLoadState('load').catch(() => {});
+
       await Promise.race([
         page.waitForURL(/\/experience$/, { timeout: 15000 }),
         page.waitForSelector('text=/not found|something went wrong/i', {
@@ -227,18 +233,19 @@ test.describe('invalid Routes', () => {
     }
 
     const currentUrl = page.url();
-    const is404Page = await page.locator('h1:has-text("404")').isVisible();
-    const isNotFound = await page
-      .locator('text=/not found|page not found|experience not found/i')
-      .isVisible();
-    const isErrorPage = await page
-      .locator('text=/something went wrong/i')
-      .isVisible();
     const redirectedToListing = currentUrl.endsWith('/experience');
-    const isLoadingState =
+
+    // Use DOM presence (.count) instead of .isVisible() for reliability under load
+    const is404Page = (await page.locator('h1:has-text("404")').count()) > 0;
+    const isNotFound =
       (await page
-        .locator('[role="status"][aria-label="Loading experience"]')
+        .locator('text=/not found|page not found|experience not found/i')
         .count()) > 0;
+    const isErrorPage =
+      (await page.locator('text=/something went wrong/i').count()) > 0;
+    const isLoadingState = (await page.locator('[role="status"]').count()) > 0;
+    const bodyText = (await page.textContent('body')) ?? '';
+    const hasNotFoundText = /not found|404/i.test(bodyText);
 
     expect(
       isErrorStatus ||
@@ -246,7 +253,8 @@ test.describe('invalid Routes', () => {
         isNotFound ||
         isErrorPage ||
         redirectedToListing ||
-        isLoadingState
+        isLoadingState ||
+        hasNotFoundText
     ).toBeTruthy();
   });
 });

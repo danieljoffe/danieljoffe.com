@@ -4,14 +4,20 @@ import {
   VALID_FORM_DATA,
   INVALID_FORM_DATA,
   mockHCaptcha,
+  completeHCaptcha,
   mockEmailAPISuccess,
   mockEmailAPIError,
+  waitForHydration,
 } from './fixtures/base.fixture';
 
 test.describe('contact Form Validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/about');
-    // Wait for full page load including JS hydration (webkit hydrates slower)
+    // Wait for React hydration to complete before interacting with the form.
+    // Without this, webkit may show the form HTML before event handlers
+    // are attached, causing submit clicks to trigger native form submission
+    // instead of React's handleSubmit (no validation errors appear).
+    await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
   });
@@ -139,13 +145,7 @@ test.describe('contact Form Validation', () => {
 });
 
 test.describe('contact Form Submission', () => {
-  // Note: These tests are skipped because they require real hCaptcha interaction.
-  // The hCaptcha React component cannot be easily mocked in e2e tests since it
-  // uses a third-party widget that must be completed by a real user.
-  // For full submission testing, use manual testing or a staging environment
-  // with hCaptcha test keys (sitekey: 10000000-ffff-ffff-ffff-000000000001).
-
-  test.skip('successful submission redirects to thank-you page', async ({
+  test('successful submission redirects to thank-you page', async ({
     page,
   }) => {
     // Set up mocks before navigation
@@ -153,7 +153,9 @@ test.describe('contact Form Submission', () => {
     await mockEmailAPISuccess(page);
 
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill form with valid data
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
@@ -162,8 +164,8 @@ test.describe('contact Form Submission', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    // Wait for captcha to be potentially visible (lazy loaded)
-    await page.waitForTimeout(500);
+    // Complete hCaptcha verification
+    await completeHCaptcha(page);
 
     // Submit form
     const submitButton = page.locator('button[type="submit"]');
@@ -173,13 +175,15 @@ test.describe('contact Form Submission', () => {
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
   });
 
-  test.skip('shows error alert on API failure', async ({ page }) => {
+  test('shows error alert on API failure', async ({ page }) => {
     // Set up mocks
     await mockHCaptcha(page);
     await mockEmailAPIError(page);
 
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill form with valid data
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
@@ -188,15 +192,14 @@ test.describe('contact Form Submission', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    await page.waitForTimeout(500);
+    // Complete hCaptcha verification
+    await completeHCaptcha(page);
 
     // Submit form
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Wait for error alert - use specific ID to avoid conflict with Next.js route announcer
-    await page.waitForTimeout(1000);
-
+    // Wait for error alert
     const errorAlert = page.locator('#form-error');
     await expect(errorAlert).toBeVisible({ timeout: 5000 });
   });
@@ -205,6 +208,7 @@ test.describe('contact Form Submission', () => {
     page,
   }) => {
     await page.goto('/about');
+    await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
@@ -218,7 +222,9 @@ test.describe('contact Form Submission', () => {
     // Scroll to make captcha visible and wait for it to load
     const form = page.locator('form');
     await form.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
+
+    // Wait for the submit button to be ready
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Submit form without completing captcha
     const submitButton = page.locator('button[type="submit"]');
