@@ -6,6 +6,7 @@ const bundleAnalyzer = require('@next/bundle-analyzer');
 
 const isTest = process.env.NODE_ENV === 'test';
 const isCI = process.env.CI === 'true';
+const mockFonts = process.env.MOCK_FONTS === 'true';
 const isAnalyze = process.env.ANALYZE === 'true';
 
 // Bundle analyzer
@@ -202,13 +203,17 @@ const nextConfig = {
       ...(config.resolve.conditionNames || ['import', 'require', 'default']),
     ];
 
-    // In test/CI environments, replace fonts.ts with fonts.mock.ts to avoid network requests
-    if (isTest || isCI) {
+    // Replace real Google Fonts with system-font mocks to avoid network requests
+    // and ensure consistent rendering across environments.
+    // Triggers: CI=true (automatic in GitHub Actions) or MOCK_FONTS=true (local opt-in).
+    // This is a BUILD-TIME webpack plugin — must be set when running `next build`,
+    // not `next start` (which forces NODE_ENV=production regardless).
+    if (mockFonts || isCI) {
       config.plugins = config.plugins || [];
       config.plugins.push(
         new (require('webpack').NormalModuleReplacementPlugin)(
-          /src\/app\/fonts\.ts$/,
-          require.resolve('./src/fonts.mock.ts')
+          /src\/styles\/fonts\.ts$/,
+          require.resolve('./src/styles/fonts.mock.ts')
         )
       );
     }
