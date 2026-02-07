@@ -113,10 +113,7 @@ test.describe('accessibility Tests', () => {
     }
   });
 
-  test('skip links are present and functional', async ({
-    page,
-    browserName,
-  }) => {
+  test('skip links are present and functional', async ({ page }) => {
     await page.goto('/');
 
     // Look for skip links
@@ -196,17 +193,7 @@ test.describe('accessibility Tests', () => {
           }, targetId);
 
           expect(result.hasEl).toBeTruthy();
-
-          // On Mobile Safari, focus behavior is different, so we're more lenient
-          if (browserName === 'webkit') {
-            // For Mobile Safari, just check that the element exists and either hash matches or focus moved
-            expect(
-              result.elementExists &&
-                (result.hashMatches || result.focused || result.hasEl)
-            ).toBeTruthy();
-          } else {
-            expect(result.hashMatches || result.focused).toBeTruthy();
-          }
+          expect(result.hashMatches || result.focused).toBeTruthy();
         }
       }
     } else {

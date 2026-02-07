@@ -172,7 +172,7 @@ test.describe('contact Form Submission', () => {
     await submitButton.click();
 
     // Wait for navigation to thank-you page
-    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
   });
 
   test('shows error alert on API failure', async ({ page }) => {

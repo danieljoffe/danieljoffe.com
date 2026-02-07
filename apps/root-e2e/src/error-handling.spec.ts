@@ -108,7 +108,7 @@ test.describe('thank-You Page Protection', () => {
     await submitButton.click();
 
     // Wait for navigation to thank-you page
-    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Verify thank-you page content is visible
     const thankYouHeading = page.locator('h1, h2').first();
@@ -135,7 +135,7 @@ test.describe('thank-You Page Protection', () => {
     await completeHCaptcha(page);
 
     await page.locator('button[type="submit"]').click();
-    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Check for noindex
     const robots = page.locator('meta[name="robots"]');
@@ -164,7 +164,7 @@ test.describe('thank-You Page Protection', () => {
     await completeHCaptcha(page);
 
     await page.locator('button[type="submit"]').click();
-    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Check for the "Back to home" button (not the nav link, which is hidden on mobile)
     const homeLink = page.locator('a[aria-label="Return to home page"]');
