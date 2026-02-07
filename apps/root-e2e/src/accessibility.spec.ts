@@ -1,72 +1,39 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+/** Run axe and fail on serious/critical violations. */
+async function expectNoA11yViolations(page: Page) {
+  const { violations } = await new AxeBuilder({ page }).analyze();
+  const failing = violations.filter(v =>
+    ['serious', 'critical'].includes((v.impact || '').toLowerCase())
+  );
+  if (failing.length > 0) {
+    console.log(
+      `Accessibility violations:\n${failing.map(v => `  - ${v.id} (${v.impact}): ${v.description}`).join('\n')}`
+    );
+  }
+  expect(failing).toStrictEqual([]);
+}
+
 test.describe('accessibility Tests', () => {
-  test('homepage should not have accessibility violations', async ({
-    page,
-  }) => {
-    await page.goto('/');
+  const pages = [
+    { name: 'homepage', path: '/' },
+    { name: 'about page', path: '/about' },
+    { name: 'projects page', path: '/projects' },
+    { name: 'project detail page', path: '/projects/performance-case-study' },
+    { name: 'experience page', path: '/experience' },
+    { name: 'experience detail page', path: '/experience/fightcamp' },
+    { name: 'services page', path: '/services' },
+  ];
 
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-
-    // Fail on serious and critical violations
-    const failingViolations = accessibilityScanResults.violations.filter(v =>
-      ['serious', 'critical'].includes((v.impact || '').toLowerCase())
-    );
-
-    if (failingViolations.length > 0) {
-      const summary = failingViolations
-        .map(v => `  - ${v.id} (${v.impact}): ${v.description}`)
-        .join('\n');
-      console.log(`Accessibility violations:\n${summary}`);
-    }
-
-    expect(failingViolations).toStrictEqual([]);
-  });
-
-  test('about page should not have accessibility violations', async ({
-    page,
-  }) => {
-    await page.goto('/about');
-
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-
-    // Fail on serious and critical violations
-    const failingViolations = accessibilityScanResults.violations.filter(v =>
-      ['serious', 'critical'].includes((v.impact || '').toLowerCase())
-    );
-
-    if (failingViolations.length > 0) {
-      const summary = failingViolations
-        .map(v => `  - ${v.id} (${v.impact}): ${v.description}`)
-        .join('\n');
-      console.log(`Accessibility violations:\n${summary}`);
-    }
-
-    expect(failingViolations).toStrictEqual([]);
-  });
-
-  test('projects page should not have accessibility violations', async ({
-    page,
-  }) => {
-    await page.goto('/projects');
-
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-
-    // Fail on serious and critical violations
-    const failingViolations = accessibilityScanResults.violations.filter(v =>
-      ['serious', 'critical'].includes((v.impact || '').toLowerCase())
-    );
-
-    if (failingViolations.length > 0) {
-      const summary = failingViolations
-        .map(v => `  - ${v.id} (${v.impact}): ${v.description}`)
-        .join('\n');
-      console.log(`Accessibility violations:\n${summary}`);
-    }
-
-    expect(failingViolations).toStrictEqual([]);
-  });
+  for (const { name, path } of pages) {
+    test(`${name} should not have accessibility violations`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+      await expectNoA11yViolations(page);
+    });
+  }
 
   test('keyboard navigation works correctly', async ({ page, browserName }) => {
     if (browserName === 'webkit') {
