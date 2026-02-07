@@ -1,4 +1,4 @@
-import { test as base, expect, Page, Route } from '@playwright/test';
+import { test, expect, Page, Route } from '@playwright/test';
 
 // Re-export test data for convenience
 export {
@@ -9,26 +9,7 @@ export {
   INVALID_FORM_DATA,
 } from './test-data';
 
-// Custom fixture types
-type CustomFixtures = {
-  mobileViewport: Page;
-  desktopViewport: Page;
-};
-
-// Extend base test with custom fixtures
-export const test = base.extend<CustomFixtures>({
-  // Mobile viewport fixture (iPhone-like)
-  mobileViewport: async ({ page }, use) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await use(page);
-  },
-
-  // Desktop viewport fixture
-  desktopViewport: async ({ page }, use) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await use(page);
-  },
-});
+export { test };
 
 // Helper function to mock hCaptcha
 export async function mockHCaptcha(page: Page): Promise<void> {
