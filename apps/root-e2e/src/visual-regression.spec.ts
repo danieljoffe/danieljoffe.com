@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
 
+// VR baselines are captured with mocked system fonts (not Google Fonts).
+// Font mocking is a build-time webpack plugin triggered by CI=true or MOCK_FONTS=true.
+// Running without mocked fonts produces different rendering and fails the comparisons.
+const fontsAreMocked = !!process.env.CI || process.env.MOCK_FONTS === 'true';
+
 test.describe('visual Regression Tests', () => {
+  test.skip(
+    !fontsAreMocked,
+    'VR tests require mocked fonts (set MOCK_FONTS=true or run in CI)'
+  );
+
   test.beforeEach(async ({ page }) => {
     // Use consistent desktop viewport for screenshot comparisons
     await page.setViewportSize({ width: 1280, height: 720 });
