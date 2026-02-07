@@ -105,28 +105,6 @@ test.describe('mobile Navigation', () => {
     await expect(page).toHaveURL(/.*about/);
   });
 
-  test('mobile menu closes on Escape key', async ({ page }) => {
-    test.fixme(
-      true,
-      'Escape key is not a mobile interaction pattern and is flaky in mobile emulation'
-    );
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-
-    // Open menu
-    const menuButton = page.locator('[aria-label="Open menu"]');
-    await menuButton.click();
-
-    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
-    await expect(modal).toBeVisible();
-
-    // Press Escape
-    await page.keyboard.press('Escape');
-
-    // Playwright's expect auto-retries, no need for manual delay
-    await expect(modal).toBeHidden({ timeout: 5000 });
-  });
-
   test('mobile menu has close button focused on open', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
