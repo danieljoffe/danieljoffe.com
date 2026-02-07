@@ -76,39 +76,34 @@ export default defineConfig({
   },
   /* Where to put artifacts like screenshots, videos, traces and the JSON report */
   outputDir: 'playwright-report-json',
-  projects: isCI
-    ? [
-        // In CI, only run Chromium for faster execution
-        {
-          name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
-        },
-      ]
-    : [
-        // Local development - run all browsers
-        {
-          name: 'chromium',
-          use: { ...devices['Desktop Chrome'] },
-        },
-        {
-          name: 'firefox',
-          use: { ...devices['Desktop Firefox'] },
-          retries: 2, // Firefox can be flaky in headless mode
-        },
-        {
-          name: 'webkit',
-          use: { ...devices['Desktop Safari'] },
-          retries: 2, // WebKit is flaky in headless mode
-        },
-        // Mobile browsers support
-        {
-          name: 'Mobile Chrome',
-          use: { ...devices['Pixel 5'] },
-        },
-        {
-          name: 'Mobile Safari',
-          use: { ...devices['iPhone 12'] },
-          retries: 2, // WebKit-based, can be flaky
-        },
-      ],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      retries: 2, // Firefox can be flaky in headless mode
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      retries: 2, // WebKit is flaky in headless mode
+    },
+    // Mobile viewports — local only (slowest, most flaky)
+    ...(!isCI
+      ? [
+          {
+            name: 'Mobile Chrome',
+            use: { ...devices['Pixel 5'] },
+          },
+          {
+            name: 'Mobile Safari',
+            use: { ...devices['iPhone 12'] },
+            retries: 2, // WebKit-based, can be flaky
+          },
+        ]
+      : []),
+  ],
 });
