@@ -2,7 +2,7 @@ import { serverEnv } from '@/lib/env';
 import { allowedOrigins, allowedImageOrigins } from '@/utils/constants';
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
     default-src 'self';
