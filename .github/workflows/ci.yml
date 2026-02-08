@@ -6,6 +6,12 @@ on:
       - main
       - development
   pull_request:
+  workflow_dispatch:
+    inputs:
+      update-snapshots:
+        description: 'Regenerate VR baselines and upload as artifact'
+        type: boolean
+        default: false
 
 permissions:
   actions: read
@@ -51,8 +57,21 @@ jobs:
       - name: Run affected files
         run: yarn nx affected -t lint test build typecheck
 
-      - name: Update e2e Snapshots
+      - name: Run e2e tests
+        if: ${{ !inputs.update-snapshots }}
+        run: yarn nx e2e root-e2e
+
+      - name: Regenerate VR snapshots
+        if: ${{ inputs.update-snapshots }}
         run: yarn nx e2e root-e2e --update-snapshots
+
+      - name: Upload VR baselines
+        if: ${{ inputs.update-snapshots }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: vr-baselines
+          path: apps/root-e2e/src/visual-regression.spec.ts-snapshots/
+          if-no-files-found: error
 
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
       - name: Nx Self Heal
