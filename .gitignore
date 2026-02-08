@@ -61,3 +61,4 @@ trace.zip
 .lighthouseci
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+.playwright-mcp

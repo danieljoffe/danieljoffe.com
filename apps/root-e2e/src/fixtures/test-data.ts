@@ -4,21 +4,19 @@ export const NAV_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/experience', label: 'Experience' },
   { href: '/projects', label: 'Projects' },
+  { href: '/services', label: 'Services' },
 ];
 
 // Project slugs for parametrized tests (from apps/root/src/data/project.ts)
-// These are the working project slugs that have matching MDX files.
-//
-// BUG: The following slugs are configured in project.ts but have MDX filename mismatches:
-// - 'a11y-serials-case-study' → MDX file is 'accessibility-serials-study-case.mdx'
-// - 'modern-practice-case-study' → MDX file is 'portfolio-modern-practice-study-case.mdx'
-// - 'logistics-dashboard-case-study' → MDX file is 'logistics-dashboard-study-case.mdx'
-// These routes return 500 errors. Either rename the MDX files or update project.ts slugs.
 export const PROJECT_SLUGS = [
   'ui-components-v1',
+  'ui-components-v2',
   'performance-case-study',
   'component-library-case-study',
   'cms-tooling-case-study',
+  'accessibility-serials-study-case',
+  'portfolio-modern-practice-study-case',
+  'logistics-dashboard-study-case',
 ];
 
 // Experience slugs for parametrized tests (from apps/root/src/data/experience.ts)

@@ -3,7 +3,6 @@ import { rootMetadata } from '@/data/metadata/root';
 import { WChildrenT } from '@/types/base';
 import { fontVariables } from '@/styles/fonts';
 import '@/styles/global.scss';
-import Button from '@/components/Button';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
 import Head from './home/Head';
@@ -27,15 +26,13 @@ export default async function RootLayout({ children }: WChildrenT) {
           'focus-visible:outline-offset-2',
         ].join(' ')}
       >
-        <Button
-          as='link'
+        <a
           href='#main-content'
-          aria-label='Skip to main content'
-          className='sr-only focus:not-sr-only max-w-fit z-50'
+          className='sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:p-2 focus:bg-background focus:text-foreground focus:underline focus:rounded'
           id='skipToMainContent'
         >
           Skip to main content
-        </Button>
+        </a>
         <AppContext>{children}</AppContext>
         <Scripts />
       </body>

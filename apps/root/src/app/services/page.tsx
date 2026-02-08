@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
-import { headers } from 'next/headers';
 import { servicesMetadata } from '@/data/metadata/services';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import MainContent from '@/components/MainContent';
@@ -13,10 +11,7 @@ import CTA from './CTA';
 
 export const metadata: Metadata = servicesMetadata;
 
-export default async function Services() {
-  const headersStore = await headers();
-  const nonce = headersStore.get('x-nonce') ?? undefined;
-
+export default function Services() {
   return (
     <MainContent>
       <Hero />
@@ -25,13 +20,14 @@ export default async function Services() {
       <WhoIWorkWith />
       <FAQ />
       <CTA />
-      <Script
-        id='services-structured-data'
+      <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(servicesPageStructuredData),
+          __html: JSON.stringify(servicesPageStructuredData).replace(
+            /</g,
+            '\\u003c'
+          ),
         }}
-        nonce={nonce}
       />
     </MainContent>
   );

@@ -15,7 +15,7 @@ export function Loading({
 }: LoadingProps) {
   return (
     <div
-      className={`flex items-center justify-center min-h-[200px] w-full ${className}`}
+      className={`flex items-center justify-center min-h-50 w-full ${className}`}
       role='status'
       aria-live='polite'
       aria-label={ariaLabel}
