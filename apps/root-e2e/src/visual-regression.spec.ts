@@ -3,6 +3,21 @@ import { test, expect } from '@playwright/test';
 // VR baselines are captured with mocked system fonts (not Google Fonts).
 // Font mocking is a build-time webpack plugin triggered by CI=true or MOCK_FONTS=true.
 // Running without mocked fonts produces different rendering and fails the comparisons.
+//
+// IMPORTANT: Baseline snapshot generation for CI
+// ================================================
+// Visual regression baselines MUST be generated in the CI environment (Linux)
+// to ensure cross-platform consistency. Playwright uses platform-specific snapshot
+// names (e.g., homepage-chromium-linux.png vs homepage-chromium-darwin.png).
+//
+// To regenerate baselines in CI:
+// 1. Temporarily modify .github/workflows/ci.yml to add --update-snapshots flag
+// 2. Push changes and let CI run
+// 3. Download the updated snapshots from CI artifacts
+// 4. Commit the new baseline images
+// 5. Remove the --update-snapshots flag
+//
+// DO NOT commit darwin/macOS snapshots - they will not match in CI.
 const fontsAreMocked = !!process.env.CI || process.env.MOCK_FONTS === 'true';
 
 test.describe('visual Regression Tests', () => {

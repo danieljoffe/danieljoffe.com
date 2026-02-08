@@ -157,6 +157,7 @@ yarn format
 - **Retries**: 2 retries in CI, 0 locally
 - **Screenshots**: On failure
 - **Videos**: Retain on failure
+- **Visual Regression**: Cross-browser screenshot comparison with platform-specific baselines
 
 ### Lighthouse Configuration
 
@@ -244,6 +245,32 @@ test('page has no accessibility violations', async ({ page }) => {
   expect(accessibilityScanResults.violations).toEqual([]);
 });
 ```
+
+### Visual Regression Test Guidelines
+
+Visual regression tests compare screenshots across test runs to detect unintended UI changes.
+
+```typescript
+// Example visual regression test
+import { test, expect } from '@playwright/test';
+test('homepage visual regression', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('load');
+  await expect(page).toHaveScreenshot('homepage.png', {
+    fullPage: true,
+    maxDiffPixelRatio: 0.02,
+  });
+});
+```
+
+**Important Notes:**
+
+- Visual regression baselines MUST be generated in CI (Linux) to ensure consistency
+- Playwright uses platform-specific snapshot names (e.g., `homepage-chromium-linux.png`)
+- Local snapshots (darwin/macOS) will not match CI environment
+- To regenerate baselines: temporarily add `--update-snapshots` flag in CI, download artifacts, commit
+- Font mocking must be enabled (`MOCK_FONTS=true`) for consistent rendering
+- See `apps/root-e2e/src/visual-regression.spec.ts` for detailed documentation
 
 ## Best Practices
 
