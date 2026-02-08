@@ -48,7 +48,11 @@ jobs:
       # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
       # - run: yarn nx-cloud record -- echo Hello World
       # When you enable task distribution, run the e2e-ci task instead of e2e
-      - run: yarn nx affected -t lint test build typecheck e2e --update-snapshots
+      - name: Run affected files
+        run: yarn nx affected -t lint test build typecheck
+
+      - name: Update e2e Snapshots
+        run: yarn nx e2e root-e2e --update-snapshots
 
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
       - name: Nx Self Heal
