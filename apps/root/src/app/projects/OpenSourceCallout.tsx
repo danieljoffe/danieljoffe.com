@@ -1,5 +1,3 @@
-'use client';
-
 import { Github, BookOpen } from 'lucide-react';
 import { Stack } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';

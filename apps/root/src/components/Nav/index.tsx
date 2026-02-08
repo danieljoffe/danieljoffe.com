@@ -5,32 +5,18 @@ import dynamic from 'next/dynamic';
 import { useGlobal } from '@/state/Global/Context';
 import NavLinks from './Links';
 import { Spinner } from '@danieljoffe.com/shared-ui';
-
-const NavLoading = ({
-  hasMobileClass: isMobile,
-}: {
-  hasMobileClass: boolean;
-}) => (
-  <div
-    className={[
-      'flex items-center justify-center',
-      isMobile ? 'flex md:hidden' : 'hidden md:flex',
-    ].join(' ')}
-  >
-    <div className='h-[4.5rem] flex items-center justify-center'>
-      <Spinner size='sm' aria-label='Loading navigation' />
-    </div>
-  </div>
-);
+import TabletUpNav from './TabletUpNav';
 
 // Dynamically import MobileNav to avoid loading GSAP on desktop
 const MobileNav = dynamic(() => import('./MobileNav'), {
   ssr: false,
-  loading: () => <NavLoading hasMobileClass />,
-});
-const TabletUpNav = dynamic(() => import('./TabletUpNav'), {
-  ssr: false,
-  loading: () => <NavLoading hasMobileClass={false} />,
+  loading: () => (
+    <div className='flex md:hidden items-center justify-center'>
+      <div className='h-[4.5rem] flex items-center justify-center'>
+        <Spinner size='sm' aria-label='Loading navigation' />
+      </div>
+    </div>
+  ),
 });
 
 export default function Nav() {

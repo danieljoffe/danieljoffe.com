@@ -1,6 +1,4 @@
 import { Metadata } from 'next';
-import Script from 'next/script';
-import { headers } from 'next/headers';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceRootMetadata } from '@/data/metadata/experience';
@@ -12,10 +10,7 @@ import MainContent from '@/components/MainContent';
 const experienceList = Object.values(experienceRecords);
 export const metadata: Metadata = experienceRootMetadata;
 
-export default async function ExperiencePage() {
-  const headersStore = await headers();
-  const nonce = headersStore.get('x-nonce') ?? undefined;
-
+export default function ExperiencePage() {
   return (
     <MainContent>
       <Section className='min-h-min max-h-max'>
@@ -46,13 +41,14 @@ export default async function ExperiencePage() {
           </Stack>
         </PageContainer>
 
-        <Script
-          id='experience-structured-data'
+        <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(experienceRootStructuredData),
+            __html: JSON.stringify(experienceRootStructuredData).replace(
+              /</g,
+              '\\u003c'
+            ),
           }}
-          nonce={nonce}
         />
       </Section>
     </MainContent>

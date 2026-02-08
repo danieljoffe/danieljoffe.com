@@ -1,5 +1,5 @@
 import { publicEnv } from '@/lib/public.env';
-import { GoogleAnalytics } from './GoogleAnalytics';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { rootStructuredData } from '@/data/structuredData/root';
@@ -30,13 +30,11 @@ export default async function Scripts() {
         nonce={nonce}
       />
 
-      <Script
-        id='structuredData'
+      <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(rootStructuredData),
+          __html: JSON.stringify(rootStructuredData).replace(/</g, '\\u003c'),
         }}
-        nonce={nonce}
       />
       {/*
         Suppress known third-party console errors in production.
@@ -118,7 +116,7 @@ export default async function Scripts() {
       />
       <GoogleAnalytics
         gaId={publicEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID as string}
-        nonce={nonce}
+        {...(nonce ? { nonce } : {})}
       />
     </>
   );

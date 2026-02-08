@@ -1,5 +1,3 @@
-'use client';
-
 import { Github, Linkedin, Mail } from 'lucide-react';
 import { Stack, PageContainer } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';

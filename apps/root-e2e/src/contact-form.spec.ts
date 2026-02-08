@@ -4,14 +4,22 @@ import {
   VALID_FORM_DATA,
   INVALID_FORM_DATA,
   mockHCaptcha,
+  completeHCaptcha,
   mockEmailAPISuccess,
   mockEmailAPIError,
+  waitForHydration,
 } from './fixtures/base.fixture';
 
 test.describe('contact Form Validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    // Wait for React hydration to complete before interacting with the form.
+    // Without this, webkit may show the form HTML before event handlers
+    // are attached, causing submit clicks to trigger native form submission
+    // instead of React's handleSubmit (no validation errors appear).
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
   });
 
   test('form is visible on about page', async ({ page }) => {
@@ -23,15 +31,11 @@ test.describe('contact Form Validation', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Look for validation indicators
-    const nameInput = page.locator('input[name="name"]');
-    const isInvalid = (await nameInput.getAttribute('aria-invalid')) === 'true';
-    const hasError = await page
-      .locator('[role="alert"], .error')
-      .first()
-      .isVisible();
-
-    expect(isInvalid || hasError).toBeTruthy();
+    // Wait for validation to trigger and re-render
+    const errorOrInvalid = page.locator(
+      'input[name="name"][aria-invalid="true"], [role="alert"]'
+    );
+    await expect(errorOrInvalid.first()).toBeAttached({ timeout: 5000 });
   });
 
   test('shows validation error for short name on submit', async ({ page }) => {
@@ -48,16 +52,10 @@ test.describe('contact Form Validation', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    await page.waitForTimeout(500);
-
-    // Check for error message or aria-invalid
-    const errorMessage = page.locator(
-      'text=/Name must be at least 5 characters/i'
-    );
-    const ariaInvalid =
-      (await nameInput.getAttribute('aria-invalid')) === 'true';
-
-    expect((await errorMessage.isVisible()) || ariaInvalid).toBeTruthy();
+    // Wait for validation error to appear
+    await expect(nameInput).toHaveAttribute('aria-invalid', 'true', {
+      timeout: 5000,
+    });
   });
 
   test('shows validation error for invalid email on submit', async ({
@@ -76,13 +74,10 @@ test.describe('contact Form Validation', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    await page.waitForTimeout(500);
-
-    const ariaInvalid =
-      (await emailInput.getAttribute('aria-invalid')) === 'true';
-    const errorMessage = page.locator('text=/Invalid email address/i');
-
-    expect((await errorMessage.isVisible()) || ariaInvalid).toBeTruthy();
+    // Wait for validation error to appear
+    await expect(emailInput).toHaveAttribute('aria-invalid', 'true', {
+      timeout: 5000,
+    });
   });
 
   test('shows validation error for short message on submit', async ({
@@ -99,15 +94,10 @@ test.describe('contact Form Validation', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    await page.waitForTimeout(500);
-
-    const ariaInvalid =
-      (await messageInput.getAttribute('aria-invalid')) === 'true';
-    const errorMessage = page.locator(
-      'text=/Message must be at least 30 characters/i'
-    );
-
-    expect((await errorMessage.isVisible()) || ariaInvalid).toBeTruthy();
+    // Wait for validation error to appear
+    await expect(messageInput).toHaveAttribute('aria-invalid', 'true', {
+      timeout: 5000,
+    });
   });
 
   test('shows validation error for message with URL on submit', async ({
@@ -125,15 +115,10 @@ test.describe('contact Form Validation', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    await page.waitForTimeout(500);
-
-    const errorMessage = page.locator(
-      'text=/Please remove links from your message/i'
-    );
-    const ariaInvalid =
-      (await messageInput.getAttribute('aria-invalid')) === 'true';
-
-    expect((await errorMessage.isVisible()) || ariaInvalid).toBeTruthy();
+    // Wait for validation error to appear
+    await expect(messageInput).toHaveAttribute('aria-invalid', 'true', {
+      timeout: 5000,
+    });
   });
 
   test('form fields have associated labels', async ({ page }) => {
@@ -160,13 +145,7 @@ test.describe('contact Form Validation', () => {
 });
 
 test.describe('contact Form Submission', () => {
-  // Note: These tests are skipped because they require real hCaptcha interaction.
-  // The hCaptcha React component cannot be easily mocked in e2e tests since it
-  // uses a third-party widget that must be completed by a real user.
-  // For full submission testing, use manual testing or a staging environment
-  // with hCaptcha test keys (sitekey: 10000000-ffff-ffff-ffff-000000000001).
-
-  test.skip('successful submission redirects to thank-you page', async ({
+  test('successful submission redirects to thank-you page', async ({
     page,
   }) => {
     // Set up mocks before navigation
@@ -174,7 +153,9 @@ test.describe('contact Form Submission', () => {
     await mockEmailAPISuccess(page);
 
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill form with valid data
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
@@ -183,24 +164,26 @@ test.describe('contact Form Submission', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    // Wait for captcha to be potentially visible (lazy loaded)
-    await page.waitForTimeout(500);
+    // Complete hCaptcha verification
+    await completeHCaptcha(page);
 
     // Submit form
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
     // Wait for navigation to thank-you page
-    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 10000 });
+    await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
   });
 
-  test.skip('shows error alert on API failure', async ({ page }) => {
+  test('shows error alert on API failure', async ({ page }) => {
     // Set up mocks
     await mockHCaptcha(page);
     await mockEmailAPIError(page);
 
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill form with valid data
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
@@ -209,15 +192,14 @@ test.describe('contact Form Submission', () => {
       .locator('textarea[name="message"]')
       .fill(VALID_FORM_DATA.message);
 
-    await page.waitForTimeout(500);
+    // Complete hCaptcha verification
+    await completeHCaptcha(page);
 
     // Submit form
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Wait for error alert - use specific ID to avoid conflict with Next.js route announcer
-    await page.waitForTimeout(1000);
-
+    // Wait for error alert
     const errorAlert = page.locator('#form-error');
     await expect(errorAlert).toBeVisible({ timeout: 5000 });
   });
@@ -226,7 +208,9 @@ test.describe('contact Form Submission', () => {
     page,
   }) => {
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+    await page.locator('form').waitFor({ state: 'visible' });
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill form with valid data
     await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
@@ -238,27 +222,22 @@ test.describe('contact Form Submission', () => {
     // Scroll to make captcha visible and wait for it to load
     const form = page.locator('form');
     await form.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1000);
+
+    // Wait for the submit button to be ready
+    await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Submit form without completing captcha
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Should show captcha error
-    await page.waitForTimeout(500);
-
+    // Should show captcha error - wait for it to appear using auto-waiting
     const errorAlert = page.locator('#form-error');
-    const captchaError = page.locator('text=/captcha/i');
-
-    // Either the error alert with captcha message or general error should appear
-    expect(
-      (await errorAlert.isVisible()) || (await captchaError.isVisible())
-    ).toBeTruthy();
+    await expect(errorAlert).toBeVisible({ timeout: 5000 });
   });
 
   test('submit button is disabled during submission', async ({ page }) => {
     await page.goto('/about');
-    await page.waitForLoadState('domcontentloaded');
+    await page.locator('form').waitFor({ state: 'visible' });
 
     const submitButton = page.locator('button[type="submit"]');
 

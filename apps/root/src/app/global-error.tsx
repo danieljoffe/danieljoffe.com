@@ -1,26 +1,56 @@
 'use client';
 
 import * as Sentry from '@sentry/nextjs';
-import NextError from 'next/error';
 import { useEffect } from 'react';
 
 export default function GlobalError({
   error,
+  reset,
 }: {
   error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
 
   return (
-    <html>
+    <html lang='en'>
       <body>
-        {/* `NextError` is the default Next.js error page component. Its type
-        definition requires a `statusCode` prop. However, since the App Router
-        does not expose status codes for errors, we simply pass 0 to render a
-        generic error message. */}
-        <NextError statusCode={0} />
+        <div
+          style={{
+            display: 'flex',
+            minHeight: '100vh',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            padding: '1rem',
+            fontFamily:
+              'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          }}
+        >
+          <h2>Something went wrong!</h2>
+          <p
+            style={{ color: '#6b7280', maxWidth: '24rem', textAlign: 'center' }}
+          >
+            An unexpected error occurred. Please try again.
+          </p>
+          <button
+            onClick={() => reset()}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#0056b3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer',
+              fontSize: '1rem',
+            }}
+          >
+            Try again
+          </button>
+        </div>
       </body>
     </html>
   );

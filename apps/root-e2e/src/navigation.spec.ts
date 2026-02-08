@@ -97,36 +97,12 @@ test.describe('mobile Navigation', () => {
     const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
     await expect(modal).toBeVisible();
 
-    // Click About link in modal - wait for it to be stable (animations complete)
+    // Click About link in modal - wait for animations to complete
     const aboutLink = modal.locator('a[href="/about"]').first();
     await expect(aboutLink).toBeVisible();
-    await aboutLink.click({ force: true });
+    await aboutLink.click();
 
     await expect(page).toHaveURL(/.*about/);
-  });
-
-  test('mobile menu closes on Escape key', async ({ page }) => {
-    test.fixme(
-      true,
-      'Escape key is not a mobile interaction pattern and is flaky in mobile emulation'
-    );
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-
-    // Open menu
-    const menuButton = page.locator('[aria-label="Open menu"]');
-    await menuButton.click();
-
-    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
-    await expect(modal).toBeVisible();
-
-    // Press Escape
-    await page.keyboard.press('Escape');
-
-    // Wait for close animation to complete
-    await page.waitForTimeout(300);
-
-    await expect(modal).toBeHidden({ timeout: 5000 });
   });
 
   test('mobile menu has close button focused on open', async ({ page }) => {
@@ -166,7 +142,9 @@ test.describe('breadcrumb Navigation', () => {
     const projectsLink = breadcrumbNav.locator('a[href="/projects"]').first();
     await expect(projectsLink).toBeVisible();
 
-    await projectsLink.click({ force: true });
+    // Wait for the link to be stable (animations complete) before clicking
+    await projectsLink.waitFor({ state: 'visible' });
+    await projectsLink.click();
     await expect(page).toHaveURL(/.*\/projects$/);
   });
 

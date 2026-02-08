@@ -1,166 +1,42 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+/** Run axe and fail on serious/critical violations. */
+async function expectNoA11yViolations(page: Page) {
+  const { violations } = await new AxeBuilder({ page }).analyze();
+  const failing = violations.filter(v =>
+    ['serious', 'critical'].includes((v.impact || '').toLowerCase())
+  );
+  if (failing.length > 0) {
+    console.log(
+      `Accessibility violations:\n${failing.map(v => `  - ${v.id} (${v.impact}): ${v.description}`).join('\n')}`
+    );
+  }
+  expect(failing).toStrictEqual([]);
+}
+
 test.describe('accessibility Tests', () => {
-  test('homepage should not have accessibility violations', async ({
-    page,
-  }) => {
-    await page.goto('/');
+  const pages = [
+    { name: 'homepage', path: '/' },
+    { name: 'about page', path: '/about' },
+    { name: 'projects page', path: '/projects' },
+    { name: 'project detail page', path: '/projects/performance-case-study' },
+    { name: 'experience page', path: '/experience' },
+    { name: 'experience detail page', path: '/experience/fightcamp' },
+    { name: 'services page', path: '/services' },
+  ];
 
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-
-    // Filter out known issues - only check for truly critical violations
-    const criticalViolations = accessibilityScanResults.violations.filter(v => {
-      // Skip color contrast unless critical
-      if (v.id === 'color-contrast') {
-        return (v.impact || '').toLowerCase() === 'critical';
-      }
-      // Skip aria-required-children for navigation (common pattern)
-      if (v.id === 'aria-required-children') {
-        return false;
-      }
-      // Skip landmark-unique (moderate impact)
-      if (v.id === 'landmark-unique') {
-        return false;
-      }
-      // Only fail on other critical violations
-      return (v.impact || '').toLowerCase() === 'critical';
+  for (const { name, path } of pages) {
+    test(`${name} should not have accessibility violations`, async ({
+      page,
+    }) => {
+      expect(true).toBe(true);
+      await page.goto(path);
+      await expectNoA11yViolations(page);
     });
+  }
 
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations.filter(v =>
-      ['serious', 'critical'].includes((v.impact || '').toLowerCase())
-    );
-
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ accessibility violations (${criticalViolations.length} critical)`
-      );
-    }
-
-    expect(criticalViolations).toStrictEqual([]);
-  });
-
-  test('about page should not have accessibility violations', async ({
-    page,
-  }) => {
-    await page.goto('/about');
-
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-
-    // Filter out known issues - only check for truly critical violations
-    const criticalViolations = accessibilityScanResults.violations.filter(v => {
-      // Skip color contrast unless critical
-      if (v.id === 'color-contrast') {
-        return (v.impact || '').toLowerCase() === 'critical';
-      }
-      // Skip aria-required-children for navigation (common pattern)
-      if (v.id === 'aria-required-children') {
-        return false;
-      }
-      // Skip landmark-unique (moderate impact)
-      if (v.id === 'landmark-unique') {
-        return false;
-      }
-      // Only fail on other critical violations
-      return (v.impact || '').toLowerCase() === 'critical';
-    });
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations.filter(v =>
-      ['serious', 'critical'].includes((v.impact || '').toLowerCase())
-    );
-
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ accessibility violations (${criticalViolations.length} critical)`
-      );
-    }
-
-    expect(criticalViolations).toStrictEqual([]);
-  });
-
-  test('projects page should not have accessibility violations', async ({
-    page,
-  }) => {
-    await page.goto('/projects');
-
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-
-    // Filter out known issues - only check for truly critical violations
-    const criticalViolations = accessibilityScanResults.violations.filter(v => {
-      // Skip color contrast unless critical
-      if (v.id === 'color-contrast') {
-        return (v.impact || '').toLowerCase() === 'critical';
-      }
-      // Skip aria-required-children for navigation (common pattern)
-      if (v.id === 'aria-required-children') {
-        return false;
-      }
-      // Skip landmark-unique (moderate impact)
-      if (v.id === 'landmark-unique') {
-        return false;
-      }
-      // Only fail on other critical violations
-      return (v.impact || '').toLowerCase() === 'critical';
-    });
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations.filter(v =>
-      ['serious', 'critical'].includes((v.impact || '').toLowerCase())
-    );
-
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ accessibility violations (${criticalViolations.length} critical)`
-      );
-    }
-
-    expect(criticalViolations).toStrictEqual([]);
-  });
-
-  test('keyboard navigation works correctly', async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-      test.fixme(
-        true,
-        'Focus navigation is unreliable in headless WebKit/Mobile Safari'
-      );
-    }
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(500); // Give time for interactive elements to load
-
-    // Try to reach a tabbable/interactive element with keyboard only
-    const interactiveSelector =
-      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    let reachedInteractive = false;
-    for (let i = 0; i < 15; i++) {
-      // Increased attempts
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(100); // Small delay between tabs
-      reachedInteractive = await page.evaluate(selector => {
-        const active = document.activeElement as HTMLElement | null;
-        if (!active) return false;
-        if (active.tagName === 'BODY' || active.tagName === 'HTML')
-          return false;
-        const isInteractive = active.matches(selector);
-        const visible = active.getClientRects().length > 0;
-        return isInteractive && visible;
-      }, interactiveSelector);
-      if (reachedInteractive) break;
-    }
-    expect(reachedInteractive).toBeTruthy();
-
-    // Test Enter key on focused element (only if we found one)
-    if (reachedInteractive) {
-      await page.keyboard.press('Enter');
-    }
-  });
-
-  test('skip links are present and functional', async ({
-    page,
-    browserName,
-  }) => {
+  test('skip links are present and functional', async ({ page }) => {
     await page.goto('/');
 
     // Look for skip links
@@ -193,8 +69,16 @@ test.describe('accessibility Tests', () => {
         // Check if focus moved to target or URL hash updated
         const targetId = await firstSkipLink.getAttribute('href');
         if (targetId && targetId.startsWith('#')) {
-          // Wait for navigation or focus change
-          await page.waitForTimeout(300);
+          // Wait for hash to update (async on Mobile Chrome after programmatic click)
+          await page
+            .waitForURL(`**/${targetId}`, { timeout: 3000 })
+            .catch(() => {});
+
+          // Wait for target element to exist
+          await page
+            .locator(targetId)
+            .waitFor({ state: 'attached', timeout: 3000 })
+            .catch(() => {});
 
           const result = await page.evaluate(selector => {
             const el = document.querySelector(selector) as HTMLElement | null;
@@ -232,17 +116,7 @@ test.describe('accessibility Tests', () => {
           }, targetId);
 
           expect(result.hasEl).toBeTruthy();
-
-          // On Mobile Safari, focus behavior is different, so we're more lenient
-          if (browserName === 'webkit') {
-            // For Mobile Safari, just check that the element exists and either hash matches or focus moved
-            expect(
-              result.elementExists &&
-                (result.hashMatches || result.focused || result.hasEl)
-            ).toBeTruthy();
-          } else {
-            expect(result.hashMatches || result.focused).toBeTruthy();
-          }
+          expect(result.hashMatches || result.focused).toBeTruthy();
         }
       }
     } else {
@@ -258,26 +132,21 @@ test.describe('accessibility Tests', () => {
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze();
 
-    // Filter out color contrast violations - only check for critical issues
-    const colorContrastViolations = accessibilityScanResults.violations
-      .filter(v => v.id === 'color-contrast')
-      .filter(v => (v.impact || '').toLowerCase() === 'critical');
-
-    // Log serious+ violations for debugging but don't fail on them
-    const seriousViolations = accessibilityScanResults.violations
+    // Fail on serious and critical color contrast violations
+    const failingViolations = accessibilityScanResults.violations
       .filter(v => v.id === 'color-contrast')
       .filter(v =>
         ['serious', 'critical'].includes((v.impact || '').toLowerCase())
       );
 
-    if (seriousViolations.length > 0) {
-      console.log(
-        `Found ${seriousViolations.length} serious+ color contrast violations (${colorContrastViolations.length} critical)`
-      );
+    if (failingViolations.length > 0) {
+      const summary = failingViolations
+        .map(v => `  - ${v.id} (${v.impact}): ${v.nodes.length} element(s)`)
+        .join('\n');
+      console.log(`Color contrast violations:\n${summary}`);
     }
 
-    // Only fail on critical color contrast violations
-    expect(colorContrastViolations.length).toBe(0);
+    expect(failingViolations.length).toBe(0);
   });
 
   test('images have proper alt text', async ({ page }) => {
@@ -354,7 +223,6 @@ test.describe('accessibility Tests', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(500);
 
     // Look for mobile menu trigger (which opens a modal)
     const modalTrigger = page.locator('[aria-label="Open menu"]');

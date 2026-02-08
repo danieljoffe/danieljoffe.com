@@ -1,6 +1,4 @@
 import { Metadata } from 'next';
-import Script from 'next/script';
-import { headers } from 'next/headers';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
@@ -13,10 +11,7 @@ import OpenSourceCallout from './OpenSourceCallout';
 const projectsList = Object.values(projectsRecords);
 export const metadata: Metadata = projectRootMetadata;
 
-export default async function Projects() {
-  const headersStore = await headers();
-  const nonce = headersStore.get('x-nonce') ?? undefined;
-
+export default function Projects() {
   return (
     <MainContent>
       <Section className='min-h-min max-h-max'>
@@ -48,13 +43,14 @@ export default async function Projects() {
           </Stack>
         </PageContainer>
 
-        <Script
-          id='projects-structured-data'
+        <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(projectsRootStructuredData),
+            __html: JSON.stringify(projectsRootStructuredData).replace(
+              /</g,
+              '\\u003c'
+            ),
           }}
-          nonce={nonce}
         />
       </Section>
     </MainContent>
