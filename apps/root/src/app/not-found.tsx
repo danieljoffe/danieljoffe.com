@@ -11,9 +11,6 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
-  alternates: {
-    canonical: '/404',
-  },
 };
 
 export default function NotFound() {
