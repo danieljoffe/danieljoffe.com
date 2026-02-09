@@ -14,7 +14,7 @@ export interface GridProps<T extends GridElement = 'div'> {
   /** The HTML element to render as. Defaults to 'div'. Use 'ul' or 'ol' for semantic lists. */
   as?: T;
   children: ReactNode;
-  cols?: 1 | 2 | 3 | 4 | 6 | 12;
+  cols?: 0 | 1 | 2 | 3 | 4 | 6 | 12;
   gap?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -23,6 +23,7 @@ type PolymorphicGridProps<T extends GridElement = 'div'> = GridProps<T> &
   Omit<ComponentPropsWithoutRef<T>, keyof GridProps<T>>;
 
 const colClasses = {
+  0: '',
   1: 'grid-cols-1',
   2: 'grid-cols-1 sm:grid-cols-2',
   3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
@@ -91,7 +92,10 @@ export function GridItem<T extends GridItemElement = 'div'>({
   const Component = (as || 'div') as ElementType;
 
   return (
-    <Component className={cn(spanClasses[colSpan], className)} {...rest}>
+    <Component
+      className={cn('flex', spanClasses[colSpan], className)}
+      {...rest}
+    >
       {children}
     </Component>
   );

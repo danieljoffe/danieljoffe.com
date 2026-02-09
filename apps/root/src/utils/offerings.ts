@@ -45,22 +45,22 @@ export const offerings = {
     {
       icon: '🔍',
       title: 'I Audit Before I Build',
-      text: 'At FightCamp, a routine R&D Friday turned into a performance investigation. I discovered HD images and 800MB videos loading on every page visit. The fix? Lazy loading, srcset optimization, and bundle analysis—resulting in a 62% smaller bundle and 80% faster load times.',
+      text: 'At FightCamp, I found HD images and 800MB videos loading on every page. Lazy loading, srcset optimization, and bundle analysis cut bundle size by 62% and improved load times by 80%.',
     },
     {
       icon: '🚀',
       title: 'I Build for Autonomy',
-      text: "Marketing teams shouldn't wait on engineering to launch a landing page. At Winc and FightCamp, I built CMS tooling that let non-technical teams ship independently—200+ pages at Winc, 80% fewer engineering requests at FightCamp.",
+      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently — 200+ pages launched, 80% fewer engineering requests.",
     },
     {
       icon: '📊',
       title: 'I Measure What Matters',
-      text: 'Lighthouse scores, bounce rates, Core Web Vitals—I treat performance as a feature. At FightCamp, systematic optimization lifted Lighthouse from ~35 to ~80 and cut mobile bounce rates by 39%.',
+      text: 'Lighthouse scores, bounce rates, Core Web Vitals — I treat performance as a feature. At FightCamp, systematic optimization lifted Lighthouse from ~35 to ~80 and cut mobile bounce rates by 39%.',
     },
     {
       icon: '🌱',
       title: 'I Invest in People',
-      text: "Five developers I've mentored have gone on to promotions and dream jobs—including one now at JPL. Component architecture is learnable. Curiosity and drive aren't.",
+      text: "Five developers I've mentored have gone on to promotions and dream jobs — including one now at JPL. I believe component architecture is learnable, but curiosity and drive aren't.",
     },
   ],
 };

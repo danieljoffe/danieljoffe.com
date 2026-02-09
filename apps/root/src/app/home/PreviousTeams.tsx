@@ -1,13 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import LinkHint from '@/components/LinkHint';
 import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 import { analytics } from '@/lib/analytics';
 import { EXPERIENCE_LINK } from '@/utils/base';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
-import ContentGrid from '@/components/ContentGrid';
+import {
+  Stack,
+  PageContainer,
+  Section,
+  Grid,
+} from '@danieljoffe.com/shared-ui';
 
 const companies = Object.values(experienceFull);
 
@@ -22,9 +25,28 @@ export default function PreviousTeams() {
         <h2 className='text-center' id='previous-teams-heading'>
           Teams I&apos;ve worked with
         </h2>
-        <ContentGrid>
+
+        <Stack
+          direction='horizontal'
+          justify='center'
+          className='text-center max-w-lg mx-auto'
+        >
+          <p>
+            I&apos;ve worked with these companies to build fast, beautiful, and
+            inclusive digital experiences.
+          </p>
+        </Stack>
+
+        <Grid
+          as='ul'
+          cols={0}
+          className='grid-cols-2 sm:grid-cols-3 md:grid-cols-5'
+        >
           {companies.map((company, index) => (
-            <li className='flex flex-1 justify-center' key={company.slug}>
+            <li
+              className='flex flex-1 justify-center opacity-70 hover:opacity-100 transition-opacity'
+              key={company.slug}
+            >
               <Button
                 as='link'
                 variant='bare'
@@ -42,11 +64,14 @@ export default function PreviousTeams() {
                   className='w-full h-full'
                 >
                   <Image
-                    className='w-full h-full max-w-[10rem] max-h-[5rem] object-contain flex-1'
+                    className={[
+                      'w-full h-full max-w-[6.25rem] max-h-[3.25rem] object-contain flex-1',
+                      company.invert ? 'dark:invert dark:brightness-200' : '',
+                    ].join(' ')}
                     src={company.logo}
                     alt={company.company}
-                    width={145}
-                    height={45}
+                    width={100}
+                    height={50}
                     sizes='(max-width: 640px) 5rem, (max-width: 768px) 6rem, 7rem'
                     unoptimized={true}
                     decoding='async'
@@ -54,19 +79,11 @@ export default function PreviousTeams() {
                     priority={index < 2}
                     loading={index < 2 ? 'eager' : 'lazy'}
                   />
-                  <LinkHint />
                 </Stack>
               </Button>
             </li>
           ))}
-        </ContentGrid>
-
-        <Stack direction='horizontal' justify='center' className='text-center'>
-          <p>
-            I&apos;ve worked with these companies to build fast, beautiful, and
-            inclusive digital experiences.
-          </p>
-        </Stack>
+        </Grid>
       </PageContainer>
     </Section>
   );

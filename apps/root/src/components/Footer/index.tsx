@@ -39,7 +39,11 @@ export default function Footer() {
             aria-label='View UI component library'
             className='hover:text-accent'
           >
-            ui.danieljoffe.com
+            <span className='text-foreground-muted'>
+              Browse the design system
+            </span>
+            <span>&rarr;</span>
+            <span className='text-accent'>ui.danieljoffe.com</span>
           </Button>
 
           <p className='text-xs text-foreground-muted text-center'>

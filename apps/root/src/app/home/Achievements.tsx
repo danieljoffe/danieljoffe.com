@@ -19,7 +19,7 @@ export default function Achievements() {
           <h2 className='text-center' id='achievements-heading'>
             My Achievements
           </h2>
-          <Grid as='ul' cols={1} gap='lg' className='w-full'>
+          <Grid as='ul' cols={2} gap='lg' className='w-full'>
             {offerings.achievements.map((achievement, index) => (
               <GridItem key={index} as='li'>
                 <Card padding='md' elevated>

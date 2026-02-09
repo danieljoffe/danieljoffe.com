@@ -40,6 +40,7 @@ export default function CTASection({
               href={buttons[0].href}
               aria-label={buttons[0].ariaLabel}
               onClick={buttons[0].onClick}
+              className='font-semibold'
             >
               {buttons[0].label}
             </Button>
@@ -52,6 +53,7 @@ export default function CTASection({
                   href={button.href}
                   aria-label={button.ariaLabel}
                   onClick={button.onClick}
+                  className='font-semibold'
                 >
                   {button.label}
                 </Button>

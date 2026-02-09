@@ -50,6 +50,7 @@ export const experienceFull: Record<
     company: string;
     logo: string;
     role: string;
+    invert: boolean;
   }
 > = {
   [experienceSlugs.Winc]: {
@@ -57,29 +58,34 @@ export const experienceFull: Record<
     company: experienceNames.Winc,
     logo: experienceLogos.Winc,
     role: experienceRoles.Winc,
+    invert: true,
   },
   [experienceSlugs.IB]: {
     slug: experienceSlugs.IB,
     company: experienceNames.IB,
     logo: experienceLogos.IB,
     role: experienceRoles.IB,
+    invert: false,
   },
   [experienceSlugs.TLC]: {
     slug: experienceSlugs.TLC,
     company: experienceNames.TLC,
     logo: experienceLogos.TLC,
     role: experienceRoles.TLC,
+    invert: false,
   },
   [experienceSlugs.FC]: {
     slug: experienceSlugs.FC,
     company: experienceNames.FC,
     logo: experienceLogos.FC,
     role: experienceRoles.FC,
+    invert: true,
   },
   [experienceSlugs.SD]: {
     slug: experienceSlugs.SD,
     company: experienceNames.SD,
     logo: experienceLogos.SD,
     role: experienceRoles.SD,
+    invert: false,
   },
 };
