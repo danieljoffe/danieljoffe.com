@@ -1,7 +1,7 @@
-import { Fraunces, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
+import { Fraunces, IBM_Plex_Mono, Inter } from 'next/font/google';
 
 // HEADING FONT
-export const ibarraRealNova = Fraunces({
+export const fraunces = Fraunces({
   subsets: ['latin'],
   variable: '--font-heading',
   fallback: ['Georgia', 'Times New Roman', 'serif'],
@@ -13,17 +13,17 @@ export const ibarraRealNova = Fraunces({
 });
 
 // BODY FONT
-export const plusJakartaSans = Space_Grotesk({
+export const inter = Inter({
   subsets: ['latin'],
   variable: '--font-body',
   fallback: ['system-ui', '-apple-system', 'sans-serif'],
   display: 'swap',
+  weight: ['300', '400', '500', '600'],
   preload: true,
   adjustFontFallback: true,
-  style: ['normal'],
 });
 
-export const jetbrainsMono = IBM_Plex_Mono({
+export const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   fallback: ['Consolas', 'Monaco', 'monospace'],
@@ -34,4 +34,4 @@ export const jetbrainsMono = IBM_Plex_Mono({
 });
 
 // COMBINED FONT VARIABLES
-export const fontVariables = `${ibarraRealNova.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`;
+export const fontVariables = `${fraunces.variable} ${inter.variable} ${ibmPlexMono.variable}`;

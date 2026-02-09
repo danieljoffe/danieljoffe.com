@@ -28,6 +28,8 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   // Performance optimizations
   experimental: {
+    // Disable fetch caching across HMR refreshes so dev always shows fresh data
+    serverComponentsHmrCache: false,
     cssChunking: 'strict',
     // Enable critical CSS inlining with critters
     optimizeCss: true,
