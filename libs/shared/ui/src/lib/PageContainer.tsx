@@ -1,5 +1,6 @@
 import type { ReactNode, HTMLAttributes } from 'react';
 import { Container } from './Container';
+import { cn } from './utils';
 
 export interface PageContainerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -23,18 +24,18 @@ export interface PageContainerProps extends Omit<
 export function PageContainer({
   children,
   size = 'sm',
-  wrapperClassName = '',
-  className = '',
+  wrapperClassName,
+  className,
   ...rest
 }: PageContainerProps) {
   return (
     <div
-      className={`flex justify-center ${wrapperClassName}`}
+      className={cn('flex justify-center', wrapperClassName)}
       data-testid='page-container-outer'
     >
       <Container
         size={size}
-        className={`flex flex-col py-8 md:py-14 ${className}`}
+        className={cn('flex flex-col py-8 md:py-14', className)}
         data-testid='page-container-inner'
         {...rest}
       >

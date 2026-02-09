@@ -13,7 +13,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const SampleCard = ({ title, color }: { title: string; color: string }) => (
-  <div className={`${color} p-6 rounded-md text-white min-h-[10rem]`}>
+  <div
+    className={`${color} p-6 rounded-md text-accent-foreground min-h-[10rem]`}
+  >
     <h3 className='text-lg font-medium'>{title}</h3>
     <p>Sample content card</p>
   </div>

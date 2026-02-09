@@ -1,3 +1,5 @@
+import { cn } from './utils';
+
 type ProgressBarVariant = 'accent' | 'success' | 'warning' | 'error' | 'info';
 type ProgressBarSize = 'sm' | 'md' | 'lg';
 
@@ -31,7 +33,7 @@ export function ProgressBar({
   variant = 'accent',
   size = 'md',
   showLabel = false,
-  className = '',
+  className,
   'aria-label': ariaLabel = 'Progress',
 }: ProgressBarProps) {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
@@ -44,7 +46,11 @@ export function ProgressBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={ariaLabel}
-        className={`w-full bg-background-elevated rounded-full overflow-hidden ${sizeStyles[size]} ${className}`}
+        className={cn(
+          'w-full bg-background-elevated rounded-full overflow-hidden',
+          sizeStyles[size],
+          className
+        )}
       >
         <div
           className={`h-full ${variantStyles[variant]} transition-all duration-300 ease-out`}

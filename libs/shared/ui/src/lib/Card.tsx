@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { cn } from './utils';
 
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
@@ -33,29 +34,32 @@ const paddingStyles: Record<CardPadding, string> = {
 
 export function Card({
   children,
-  className = '',
+  className,
   elevated = false,
   padding = 'md',
 }: CardProps) {
   return (
     <div
-      className={`rounded-lg border border-border ${
-        elevated ? 'bg-background-elevated' : 'bg-card'
-      } ${paddingStyles[padding]} ${className}`}
+      className={cn(
+        'rounded-lg border border-border',
+        elevated ? 'bg-background-elevated' : 'bg-card',
+        paddingStyles[padding],
+        className
+      )}
     >
       {children}
     </div>
   );
 }
 
-export function CardHeader({ children, className = '' }: CardHeaderProps) {
-  return <div className={`mb-4 ${className}`}>{children}</div>;
+export function CardHeader({ children, className }: CardHeaderProps) {
+  return <div className={cn('mb-4', className)}>{children}</div>;
 }
 
-export function CardTitle({ children, className = '' }: CardTitleProps) {
-  return <h3 className={className}>{children}</h3>;
+export function CardTitle({ children, className }: CardTitleProps) {
+  return <h3 className={cn(className)}>{children}</h3>;
 }
 
-export function CardContent({ children, className = '' }: CardContentProps) {
-  return <div className={className}>{children}</div>;
+export function CardContent({ children, className }: CardContentProps) {
+  return <div className={cn(className)}>{children}</div>;
 }

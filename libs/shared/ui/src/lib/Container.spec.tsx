@@ -39,7 +39,7 @@ describe('Container', () => {
 
   it('applies xl size', () => {
     const { container } = render(<Container size='xl'>Content</Container>);
-    expect(container.firstChild).toHaveClass('max-w-[1400px]');
+    expect(container.firstChild).toHaveClass('max-w-8xl');
   });
 
   it('applies full size', () => {

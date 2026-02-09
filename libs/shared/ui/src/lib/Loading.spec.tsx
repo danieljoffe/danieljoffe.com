@@ -40,7 +40,7 @@ describe('Loading', () => {
   it('has minimum height', () => {
     render(<Loading />);
     const status = screen.getByRole('status');
-    expect(status).toHaveClass('min-h-50');
+    expect(status).toHaveClass('min-h-52');
   });
 
   it('renders bouncing dots', () => {

@@ -220,7 +220,7 @@ export default function Form() {
         errors.root?.unknownError ||
         errors.hcaptcha) && (
         <div id='form-error' role='alert' aria-live='assertive'>
-          <p className='text-rose-500 text-sm'>
+          <p className='text-error text-sm'>
             {errors.root?.serverError?.message ||
               errors.root?.configurationError?.message ||
               errors.root?.unknownError?.message ||

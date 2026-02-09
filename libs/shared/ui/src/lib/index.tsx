@@ -34,7 +34,7 @@ export { Textarea } from './Textarea';
 export { Tooltip } from './Tooltip';
 
 // Utilities
-export { validateProps, ErrorBoundary, ModalErrorBoundary } from './utils';
+export { cn, validateProps, ErrorBoundary, ModalErrorBoundary } from './utils';
 
 // Types
 export type { AlertProps } from './Alert';

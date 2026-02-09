@@ -1,0 +1,41 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Light Mode */
+  --background: #fdfbf7;
+  --background-alt: #f5f3ee;
+  --background-elevated: #ffffff;
+  --foreground: #1a1a1a;
+  --foreground-muted: #6b6b6b;
+  --foreground-subtle: #787878;
+
+  --accent: #0d7377;
+  --accent-hover: #0a5f62;
+  --accent-active: #084b4e;
+  --accent-muted: #e4f4f4;
+  --accent-foreground: #fdfbf7;
+
+  --border: #e5e2da;
+  --border-strong: #d0ccc2;
+
+  --success: #2d6a4f;
+  --success-muted: #e8f5ee;
+  --success-foreground: #fdfbf7;
+  --warning: #7a6520;
+  --warning-muted: #f5f0e0;
+  --warning-foreground: #fdfbf7;
+  --error: #b54332;
+  --error-muted: #fceeed;
+  --error-foreground: #fdfbf7;
+  --info: #2b6b8a;
+  --info-muted: #e8f2f7;
+  --info-foreground: #fdfbf7;
+
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --input: #ffffff;
+  --input-border: #d0ccc2;
+  --ring: #0d7377;
+
+  --radius: 0.25rem;
+}

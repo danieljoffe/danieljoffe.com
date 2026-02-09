@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { cn } from './utils';
 
 export interface AspectRatioProps {
   children: ReactNode;
@@ -9,11 +10,11 @@ export interface AspectRatioProps {
 export function AspectRatio({
   children,
   ratio = '16/9',
-  className = '',
+  className,
 }: AspectRatioProps) {
   return (
     <div
-      className={`relative w-full ${className}`}
+      className={cn('relative w-full', className)}
       style={{ aspectRatio: ratio }}
     >
       {children}

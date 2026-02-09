@@ -1,6 +1,7 @@
 @use 'tailwindcss';
-@use '@danieljoffe.com/shared-ui/styles/muted-violet.scss';
-@use '@danieljoffe.com/shared-ui/styles/muted-violet-dark.scss';
+@use '@danieljoffe.com/shared-ui/styles/deep-teal.scss';
+@use '@danieljoffe.com/shared-ui/styles/deep-teal-dark.scss';
+@use '@danieljoffe.com/shared-ui/styles/ui/index.scss';
 
 // Content sources for Tailwind v4 class detection
 // Root app source files
@@ -30,7 +31,7 @@
   }
 
   body {
-    @apply text-neutral-900;
+    @apply text-foreground;
   }
 
   code,

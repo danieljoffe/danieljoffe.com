@@ -1,3 +1,5 @@
+import { cn } from './utils';
+
 export interface LoadingProps {
   /** Accessible label for the loading state */
   'aria-label'?: string;
@@ -11,11 +13,14 @@ export interface LoadingProps {
  */
 export function Loading({
   'aria-label': ariaLabel = 'Loading content',
-  className = '',
+  className,
 }: LoadingProps) {
   return (
     <div
-      className={`flex items-center justify-center min-h-50 w-full ${className}`}
+      className={cn(
+        'flex items-center justify-center min-h-52 w-full',
+        className
+      )}
       role='status'
       aria-live='polite'
       aria-label={ariaLabel}

@@ -1,4 +1,5 @@
 import type { ReactNode, HTMLAttributes } from 'react';
+import { cn } from './utils';
 
 export interface SectionProps extends Omit<
   HTMLAttributes<HTMLElement>,
@@ -44,15 +45,19 @@ export function Section({
   center = true,
   overflow = 'hidden',
   fullWidth = true,
-  className = '',
+  className,
   ...rest
 }: SectionProps) {
-  const centerClasses = center ? 'flex flex-col justify-center' : '';
-  const widthClasses = fullWidth ? 'w-full' : '';
-
   return (
     <section
-      className={`${paddingClasses[padding]} ${backgroundClasses[background]} ${overflowClasses[overflow]} ${centerClasses} ${widthClasses} ${className}`}
+      className={cn(
+        paddingClasses[padding],
+        backgroundClasses[background],
+        overflowClasses[overflow],
+        center && 'flex flex-col justify-center',
+        fullWidth && 'w-full',
+        className
+      )}
       {...rest}
     >
       {children}

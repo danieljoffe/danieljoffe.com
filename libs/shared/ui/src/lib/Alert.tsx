@@ -1,5 +1,6 @@
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { cn } from './utils';
 
 type AlertVariant = 'info' | 'success' | 'warning' | 'error';
 
@@ -40,7 +41,7 @@ export function Alert({
   title,
   dismissible = false,
   onDismiss,
-  className = '',
+  className,
 }: AlertProps) {
   const { container, icon: Icon } = variantStyles[variant];
   const isUrgent = variant === 'error' || variant === 'warning';
@@ -49,7 +50,7 @@ export function Alert({
     <div
       role={isUrgent ? 'alert' : 'status'}
       aria-live={isUrgent ? 'assertive' : 'polite'}
-      className={`relative rounded-lg border p-4 ${container} ${className}`}
+      className={cn('relative rounded-lg border p-4', container, className)}
     >
       <div className='flex gap-3'>
         <Icon className='w-5 h-5 flex-shrink-0 mt-0.5' aria-hidden='true' />

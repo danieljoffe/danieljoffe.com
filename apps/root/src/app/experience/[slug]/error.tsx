@@ -34,7 +34,7 @@ export default function Error({
           <Stack direction='horizontal' gap='sm'>
             <button
               onClick={() => reset()}
-              className='rounded-lg bg-primary px-6 py-3 text-white hover:bg-primary/90'
+              className='rounded-lg bg-accent px-6 py-3 text-accent-foreground hover:bg-accent/90'
             >
               Try again
             </button>

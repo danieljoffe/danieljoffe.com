@@ -1,4 +1,7 @@
 @use 'tailwindcss';
-@use './muted-violet';
-@use './muted-violet-dark';
+@use 'typography.scss';
+@use './muted-violet/default.scss';
+@use './muted-violet/dark.scss';
+@use './tw-inline.scss';
+@use './base.scss';
 @source "../**/*.{js,ts,jsx,tsx}";

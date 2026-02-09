@@ -1,3 +1,5 @@
+import { cn } from './utils';
+
 type DividerOrientation = 'horizontal' | 'vertical';
 
 export interface DividerProps {
@@ -8,7 +10,7 @@ export interface DividerProps {
 
 export function Divider({
   orientation = 'horizontal',
-  className = '',
+  className,
   label,
 }: DividerProps) {
   if (orientation === 'vertical') {
@@ -16,7 +18,7 @@ export function Divider({
       <div
         role='separator'
         aria-orientation='vertical'
-        className={`w-px bg-border ${className}`}
+        className={cn('w-px bg-border', className)}
       />
     );
   }
@@ -26,7 +28,7 @@ export function Divider({
       <div
         role='separator'
         aria-orientation='horizontal'
-        className={`flex items-center gap-4 ${className}`}
+        className={cn('flex items-center gap-4', className)}
       >
         <div className='flex-1 h-px bg-border' aria-hidden='true' />
         <span className='text-sm text-foreground-muted'>{label}</span>
@@ -39,7 +41,7 @@ export function Divider({
     <div
       role='separator'
       aria-orientation='horizontal'
-      className={`h-px bg-border ${className}`}
+      className={cn('h-px bg-border', className)}
     />
   );
 }

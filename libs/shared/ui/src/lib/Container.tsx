@@ -1,4 +1,5 @@
 import type { ReactNode, HTMLAttributes } from 'react';
+import { cn } from './utils';
 
 export interface ContainerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -13,19 +14,23 @@ const sizeClasses = {
   sm: 'max-w-3xl',
   md: 'max-w-5xl',
   lg: 'max-w-7xl',
-  xl: 'max-w-[1400px]',
+  xl: 'max-w-8xl',
   full: 'max-w-full',
 };
 
 export function Container({
   children,
   size = 'full',
-  className = '',
+  className,
   ...rest
 }: ContainerProps) {
   return (
     <div
-      className={`mx-auto w-full px-4 sm:px-6 ${sizeClasses[size]} ${className}`}
+      className={cn(
+        'mx-auto w-full px-4 sm:px-6',
+        sizeClasses[size],
+        className
+      )}
       {...rest}
     >
       {children}

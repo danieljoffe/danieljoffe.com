@@ -1,4 +1,5 @@
 import type { ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
+import { cn } from './utils';
 
 type GridElement =
   | 'div'
@@ -43,14 +44,14 @@ export function Grid<T extends GridElement = 'div'>({
   children,
   cols = 12,
   gap = 'md',
-  className = '',
+  className,
   ...rest
 }: PolymorphicGridProps<T>) {
   const Component = (as || 'div') as ElementType;
 
   return (
     <Component
-      className={`grid ${colClasses[cols]} ${gapClasses[gap]} ${className}`}
+      className={cn('grid', colClasses[cols], gapClasses[gap], className)}
       {...rest}
     >
       {children}
@@ -84,13 +85,13 @@ export function GridItem<T extends GridItemElement = 'div'>({
   as,
   children,
   colSpan = 1,
-  className = '',
+  className,
   ...rest
 }: PolymorphicGridItemProps<T>) {
   const Component = (as || 'div') as ElementType;
 
   return (
-    <Component className={`${spanClasses[colSpan]} ${className}`} {...rest}>
+    <Component className={cn(spanClasses[colSpan], className)} {...rest}>
       {children}
     </Component>
   );

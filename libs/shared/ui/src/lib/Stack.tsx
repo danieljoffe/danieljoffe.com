@@ -1,4 +1,5 @@
 import type { ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
+import { cn } from './utils';
 
 type StackElement =
   | 'div'
@@ -65,15 +66,22 @@ export function Stack<T extends StackElement = 'div'>({
   align = 'stretch',
   justify = 'start',
   wrap = false,
-  className = '',
+  className,
   ...rest
 }: PolymorphicStackProps<T>) {
   const Component = (as || 'div') as ElementType;
-  const wrapClass = wrap ? 'flex-wrap' : '';
 
   return (
     <Component
-      className={`flex ${directionClasses[direction]} ${gapClasses[gap]} ${alignClasses[align]} ${justifyClasses[justify]} ${wrapClass} ${className}`}
+      className={cn(
+        'flex',
+        directionClasses[direction],
+        gapClasses[gap],
+        alignClasses[align],
+        justifyClasses[justify],
+        wrap && 'flex-wrap',
+        className
+      )}
       {...rest}
     >
       {children}
