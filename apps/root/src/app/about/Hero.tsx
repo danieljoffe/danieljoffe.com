@@ -1,13 +1,8 @@
 'use client';
-import Button from '@/components/Button';
 import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
-import { analytics } from '@/lib/analytics';
-import { PROJECTS_LINK } from '@/utils/base';
 import { FULL_NAME } from '@/utils/constants';
-import { downloadResume } from '@/utils/helpers';
-import { profileData } from '@/utils/profileData';
-import { Download, Github, Linkedin, AtSign } from 'lucide-react';
 import Image from 'next/image';
+import SocialLinks from '@/components/SocialLinks';
 
 export default function Hero() {
   return (
@@ -62,81 +57,7 @@ export default function Hero() {
               Explore my work below, and let&apos;s discuss how I can help your
               team.
             </p>
-            <Stack
-              direction='vertical'
-              align='center'
-              className='md:items-start'
-            >
-              <Stack direction='horizontal' gap='none'>
-                <Button
-                  size='sm'
-                  variant='bare'
-                  aria-label='Send Email'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  as='link'
-                  href={`mailto:${profileData.social.email}`}
-                  title='Email'
-                  onClick={() => {
-                    analytics.ctaClick(
-                      'click_email_message',
-                      PROJECTS_LINK.href
-                    );
-                  }}
-                >
-                  <AtSign absoluteStrokeWidth={true} />
-                </Button>
-                <Button
-                  size='sm'
-                  variant='bare'
-                  aria-label='Visit LinkedIn Profile'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  as='link'
-                  href={profileData.social.linkedin}
-                  title='LinkedIn'
-                  onClick={() => {
-                    analytics.ctaClick(
-                      'visit_linkedin_profile',
-                      PROJECTS_LINK.href
-                    );
-                  }}
-                >
-                  <Linkedin absoluteStrokeWidth={true} />
-                </Button>
-                <Button
-                  size='sm'
-                  variant='bare'
-                  aria-label='Visit GitHub Profile'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  as='link'
-                  href={profileData.social.github}
-                  title='GitHub'
-                  onClick={() => {
-                    analytics.ctaClick(
-                      'visit_github_profile',
-                      PROJECTS_LINK.href
-                    );
-                  }}
-                >
-                  <Github absoluteStrokeWidth={true} />
-                </Button>
-                <Button
-                  size='sm'
-                  variant='bare'
-                  aria-label='Download Resume (PDF)'
-                  title='Download Resume'
-                  name='download resume'
-                  onClick={() => {
-                    analytics.ctaClick('download_resume', PROJECTS_LINK.href);
-                    downloadResume();
-                  }}
-                >
-                  <Download absoluteStrokeWidth={true} />
-                </Button>
-              </Stack>
-            </Stack>
+            <SocialLinks />
           </Stack>
         </Stack>
       </PageContainer>

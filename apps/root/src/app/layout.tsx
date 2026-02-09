@@ -19,8 +19,9 @@ export default async function RootLayout({ children }: WChildrenT) {
   return (
     <html
       lang='en'
+      data-scroll-behavior='smooth'
       className={[
-        'scroll-smooth bg-background text-foreground',
+        'bg-background text-foreground',
         'text-[16px] ease-in-out duration-[3.5s]',
         fontVariables,
       ].join(' ')}
@@ -31,7 +32,7 @@ export default async function RootLayout({ children }: WChildrenT) {
           'bg-background text-foreground font-body',
           'focus:outline-accent focus:outline-2 focus:outline-offset-2',
           'focus-visible:outline-accent focus-visible:outline-2',
-          'focus-visible:outline-offset-2 pt-9',
+          'focus-visible:outline-offset-2 pt-15',
         ].join(' ')}
       >
         <a

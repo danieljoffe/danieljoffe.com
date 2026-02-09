@@ -8,7 +8,7 @@ export default function NavLinks({
   pathname,
   handleClick,
 }: {
-  pathname: string;
+  pathname?: string;
   handleClick?: () => void;
 }) {
   const handleLinkClick = (label: string) => {
@@ -36,6 +36,7 @@ export default function NavLinks({
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}
               aria-label={`Navigate to ${link.label} page`}
+              className='hover:text-accent'
             >
               {link.label}
             </Button>

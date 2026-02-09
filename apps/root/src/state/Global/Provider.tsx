@@ -30,11 +30,21 @@ export default function GlobalProvider({ children }: { children: ReactNode }) {
     useWindowResize();
   const [isModalOpen, _setIsModalOpen] = useState(GlobalState.isModalOpen);
   const [modalContent, _setModalContent] = useState(GlobalState.modalContent);
-  // Use lazy initialization to read from localStorage/system on first render
-  const [themeMode, _setThemeMode] = useState<ThemeMode>(getStoredThemeMode);
-  const [systemPrefersDark, setSystemPrefersDark] =
-    useState(getSystemPrefersDark);
+  // Initialize with server-safe defaults to prevent hydration mismatch.
+  // A blocking <script> in Head.tsx applies the correct `dark` class before
+  // paint, so the visual theme is correct even before this state syncs.
+  const [themeMode, _setThemeMode] = useState<ThemeMode>('system');
+  const [systemPrefersDark, setSystemPrefersDark] = useState(false);
   const prevIsMobileRef = useRef(isMobile);
+
+  // Sync theme state from localStorage/system preference after mount.
+  // Uses queueMicrotask to avoid synchronous setState within effect body.
+  useEffect(() => {
+    queueMicrotask(() => {
+      _setThemeMode(getStoredThemeMode());
+      setSystemPrefersDark(getSystemPrefersDark());
+    });
+  }, []);
 
   // Listen for system preference changes
   useEffect(() => {

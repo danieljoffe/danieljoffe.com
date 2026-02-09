@@ -25,9 +25,9 @@ export default async function Scripts() {
         These are benign errors from browser APIs and chunk loading that
         don't affect functionality but clutter console output.
       */}
-      <Script
-        id='suppressConsoleErrors'
-        strategy='beforeInteractive'
+      <script
+        suppressHydrationWarning
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `
               if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
@@ -49,7 +49,6 @@ export default async function Scripts() {
               }
             `,
         }}
-        nonce={nonce}
       />
       {/*
         Workaround for Next.js App Router streaming behavior where meta tags

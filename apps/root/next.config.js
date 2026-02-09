@@ -4,6 +4,7 @@ const { composePlugins, withNx } = require('@nx/next');
 const createMDX = require('@next/mdx');
 const bundleAnalyzer = require('@next/bundle-analyzer');
 
+const isDev = process.env.NODE_ENV === 'development';
 const isTest = process.env.NODE_ENV === 'test';
 const isCI = process.env.CI === 'true';
 const mockFonts = process.env.MOCK_FONTS === 'true';
@@ -23,6 +24,7 @@ const nextConfig = {
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
+  allowedDevOrigins: ['dev.host.com'],
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   // Performance optimizations
   experimental: {
@@ -90,10 +92,16 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
+          // COOP is ignored by browsers on non-trustworthy origins (non-HTTPS,
+          // non-localhost), so skip it in dev to avoid console warnings.
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: 'Cross-Origin-Opener-Policy',
+                  value: 'same-origin',
+                },
+              ]),
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',

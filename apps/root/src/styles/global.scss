@@ -29,31 +29,34 @@
   }
 
   p {
-    @apply mg-1;
+    margin-bottom: 0.5em;
   }
   p:last-child {
-    @apply mg-0;
+    margin-bottom: 0;
   }
 
   table {
-    @apply border-collapse w-full;
+    width: 100%;
+    border-collapse: collapse;
   }
 
   th,
   td {
-    @apply py-1 px-2 text-left;
+    text-align: left;
+    padding: 0.25rem 0.75rem;
   }
   th:first-child,
   td:first-child {
-    @apply pl-0;
+    padding-left: 0;
   }
   th:last-child,
   td:last-child {
-    @apply pr-0;
+    padding-right: 0;
   }
 
   code,
   pre {
-    @apply text-sm font-mono;
+    font-size: 0.875rem;
+    font-family: var(--font-mono);
   }
 }
