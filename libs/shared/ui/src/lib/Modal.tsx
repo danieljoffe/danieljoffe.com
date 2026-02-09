@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useEffect, useId, type ReactNode } from 'react';
+import { cn } from './utils';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 type ModalVariant =
@@ -32,14 +33,14 @@ const sizeStyles: Record<ModalSize, string> = {
 const variantStyles: Record<ModalVariant, string> = {
   default: 'bg-background-elevated border border-border-strong',
   accent:
-    'bg-background-elevated border-l-4 border-l-accent border border-border-strong',
+    'bg-background-elevated border border-border-strong border-l-4 border-l-accent',
   success:
-    'bg-background-elevated border-l-4 border-l-success border border-border-strong',
+    'bg-background-elevated border border-border-strong border-l-4 border-l-success',
   warning:
-    'bg-background-elevated border-l-4 border-l-warning border border-border-strong',
+    'bg-background-elevated border border-border-strong border-l-4 border-l-warning',
   error:
-    'bg-background-elevated border-l-4 border-l-error border border-border-strong',
-  info: 'bg-background-elevated border-l-4 border-l-info border border-border-strong',
+    'bg-background-elevated border border-border-strong border-l-4 border-l-error',
+  info: 'bg-background-elevated border border-border-strong border-l-4 border-l-info',
 };
 
 export function Modal({
@@ -94,7 +95,11 @@ export function Modal({
         aria-modal='true'
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : 'Dialog'}
-        className={`relative w-full ${sizeStyles[size]} ${variantStyles[variant]} rounded-lg shadow-2xl`}
+        className={cn(
+          'relative w-full rounded-lg shadow-2xl',
+          sizeStyles[size],
+          variantStyles[variant]
+        )}
       >
         {title && (
           <div className='flex items-center justify-between p-6 border-b border-border'>

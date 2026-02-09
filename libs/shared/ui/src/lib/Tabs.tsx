@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useId, useCallback, type ReactNode } from 'react';
+import { cn } from './utils';
 
 export interface Tab {
   id: string;
@@ -54,11 +55,13 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
               aria-controls={getPanelId(tab.id)}
               tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => handleTabChange(tab.id)}
-              className={`px-4 py-2.5 border-b-2 transition-colors ${
+              className={cn(
+                'px-4 py-2.5 border-b-2 transition-colors focus-visible:outline-none',
+                'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
                 activeTab === tab.id
                   ? 'border-accent text-accent'
                   : 'border-transparent text-foreground-muted hover:text-foreground hover:border-border-strong'
-              }`}
+              )}
             >
               {tab.label}
             </button>

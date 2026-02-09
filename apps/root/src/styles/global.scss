@@ -22,16 +22,34 @@
   }
 
   html {
-    transition-timing-function: ease-in-out;
-    transition-duration: 3.5s;
     transition-property:
       --stop-color-one, --stop-color-two, --stop-color-three, --stop-color-four,
       --stop-color-five, --stop-color-six, --stop-color-seven,
       --stop-color-eight;
   }
 
-  body {
-    @apply text-foreground;
+  p {
+    @apply mg-1;
+  }
+  p:last-child {
+    @apply mg-0;
+  }
+
+  table {
+    @apply border-collapse w-full;
+  }
+
+  th,
+  td {
+    @apply py-1 px-2 text-left;
+  }
+  th:first-child,
+  td:first-child {
+    @apply pl-0;
+  }
+  th:last-child,
+  td:last-child {
+    @apply pr-0;
   }
 
   code,

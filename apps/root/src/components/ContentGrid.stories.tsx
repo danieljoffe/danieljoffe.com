@@ -25,10 +25,10 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <SampleCard title='Card 1' color='bg-blue-600' />
-        <SampleCard title='Card 2' color='bg-green-600' />
-        <SampleCard title='Card 3' color='bg-purple-600' />
-        <SampleCard title='Card 4' color='bg-orange-600' />
+        <SampleCard title='Card 1' color='bg-accent' />
+        <SampleCard title='Card 2' color='bg-success' />
+        <SampleCard title='Card 3' color='bg-info' />
+        <SampleCard title='Card 4' color='bg-warning' />
       </>
     ),
   },
@@ -38,8 +38,8 @@ export const TwoItems: Story = {
   args: {
     children: (
       <>
-        <SampleCard title='Card 1' color='bg-blue-600' />
-        <SampleCard title='Card 2' color='bg-green-600' />
+        <SampleCard title='Card 1' color='bg-accent' />
+        <SampleCard title='Card 2' color='bg-success' />
       </>
     ),
   },
@@ -47,6 +47,6 @@ export const TwoItems: Story = {
 
 export const SingleItem: Story = {
   args: {
-    children: <SampleCard title='Single Card' color='bg-red-600' />,
+    children: <SampleCard title='Single Card' color='bg-error' />,
   },
 };

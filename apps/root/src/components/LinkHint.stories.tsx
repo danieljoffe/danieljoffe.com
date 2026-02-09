@@ -19,7 +19,7 @@ export const Default = {
   render: (props: { href: string }) => (
     <a
       {...(props as { href: string })}
-      className='flex items-center gap-2 text-blue-600 hover:text-blue-800'
+      className='flex items-center gap-2 text-accent hover:text-accent-hover'
     >
       Visit External Site
       <LinkHint />

@@ -1,3 +1,5 @@
+import { cn } from './utils';
+
 type SpinnerSize = 'sm' | 'md' | 'lg';
 type SpinnerVariant =
   | 'accent'
@@ -37,7 +39,11 @@ export function Spinner({
     <div
       role='status'
       aria-label={ariaLabel}
-      className={`inline-block ${sizeStyles[size]} ${variantStyles[variant]} rounded-full animate-spin`}
+      className={cn(
+        'inline-block rounded-full animate-spin',
+        sizeStyles[size],
+        variantStyles[variant]
+      )}
     />
   );
 }

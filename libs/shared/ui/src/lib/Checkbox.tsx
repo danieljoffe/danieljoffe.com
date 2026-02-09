@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import type { InputHTMLAttributes } from 'react';
+import { cn } from './utils';
 
 export interface CheckboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -10,7 +11,7 @@ export interface CheckboxProps extends Omit<
 
 export function Checkbox({
   label,
-  className = '',
+  className,
   id,
   checked,
   ...props
@@ -30,7 +31,14 @@ export function Checkbox({
         <label
           htmlFor={checkboxId}
           aria-hidden='true'
-          className={`flex items-center justify-center w-5 h-5 border-2 border-border-strong rounded bg-input cursor-pointer transition-all peer-checked:bg-accent peer-checked:border-accent peer-focus:ring-2 peer-focus:ring-accent peer-focus:ring-offset-2 peer-focus:ring-offset-background ${className}`}
+          className={cn(
+            'flex items-center justify-center w-5 h-5 border-2',
+            'border-border-strong rounded bg-input cursor-pointer transition-all',
+            'peer-checked:bg-accent peer-checked:border-accent peer-focus-visible:ring-2',
+            'peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 ',
+            'peer-focus-visible:ring-offset-background',
+            className
+          )}
         >
           {checked && (
             <Check

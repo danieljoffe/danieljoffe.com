@@ -6,7 +6,6 @@ import { rootStructuredData } from '@/data/structuredData/root';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import { serverEnv } from '@/lib/env';
-import { criticalStyles } from '@/styles/_critical-styles';
 
 const isProduction = serverEnv.NODE_ENV === 'production';
 export default async function Scripts() {
@@ -15,21 +14,6 @@ export default async function Scripts() {
 
   return (
     <>
-      <Script
-        id='injectCriticalStyles'
-        strategy='beforeInteractive'
-        dangerouslySetInnerHTML={{
-          __html: `
-          if (typeof window !== 'undefined') {
-            const styleElement = document.createElement("style");
-            styleElement.innerHTML = \`${criticalStyles}\`;
-            document.head.prepend(styleElement);
-          }
-          `,
-        }}
-        nonce={nonce}
-      />
-
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{

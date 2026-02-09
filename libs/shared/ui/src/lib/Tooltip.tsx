@@ -7,6 +7,7 @@ import {
   type ReactNode,
   type KeyboardEvent,
 } from 'react';
+import { cn } from './utils';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
@@ -71,11 +72,13 @@ export function Tooltip({
       <div
         role='tooltip'
         aria-hidden={!isVisible}
-        className={`absolute ${
-          positionStyles[position]
-        } z-50 px-3 py-1.5 bg-background-elevated border border-border-strong rounded-md text-sm text-foreground whitespace-nowrap pointer-events-none transition-opacity duration-150 ${
+        className={cn(
+          'absolute z-50 px-3 py-1.5 bg-background-elevated border',
+          'border-border-strong rounded-md text-sm text-foreground',
+          'whitespace-nowrap pointer-events-none transition-opacity duration-150',
+          positionStyles[position],
           isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+        )}
       >
         {content}
       </div>

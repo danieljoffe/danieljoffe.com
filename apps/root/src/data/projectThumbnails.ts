@@ -10,7 +10,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Case Studies: Daniel Joffe Portfolio',
     description:
       'How I cut mobile load times from 10s to 2s and reduced bounce rates by 39% at FightCamp.',
-    backgroundColor: 'bg-stone-950',
+    backgroundColor: 'bg-[#0c0a09]',
     link: {
       label: 'Performance Optimization Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csPerformance}`,
@@ -28,7 +28,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Case Study 2: Internet Brands — React Component Library',
     description:
       'Building a React component library adopted by 80% of applications—and training the team to own it.',
-    backgroundColor: 'bg-fuchsia-950',
+    backgroundColor: 'bg-[#4a044e]',
     link: {
       label: 'Component Library Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csCLibrary}`,
@@ -46,7 +46,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Case Study 3: Winc — Self-Serve Landing Page CMS',
     description:
       'From 3 pages per week to 200+ in two months: building self-serve tooling that eliminated engineering bottlenecks.',
-    backgroundColor: 'bg-amber-950',
+    backgroundColor: 'bg-[#451a03]',
     link: {
       label: 'CMS Tooling Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csCMSTooling}`,
@@ -65,7 +65,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Case Study: Modern Practice — Web Engineering Best Practices',
     description:
       'Building this portfolio: NX monorepo, GSAP animations, full test coverage, and what I learned along the way.',
-    backgroundColor: 'bg-cyan-950',
+    backgroundColor: 'bg-[#083344]',
     link: {
       label: 'Modern Practice Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csModernPractice}`,
@@ -83,7 +83,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Case Study: Accessibility Serials — Real-World A11y Solutions',
     description:
       'Fixing 200+ WCAG violations across legacy systems—and building accessibility into everything since.',
-    backgroundColor: 'bg-green-950',
+    backgroundColor: 'bg-[#052e16]',
     link: {
       label: 'Accessibility Case Study (Serials)',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csA11y}`,
@@ -101,7 +101,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Case Study: Logistics Dashboard MVP — Next.js & AWS Cognito',
     description:
       'Shipping a logistics dashboard MVP with Next.js and AWS Cognito for a seed-stage venture.',
-    backgroundColor: 'bg-blue-950',
+    backgroundColor: 'bg-[#172554]',
     link: {
       label: 'Logistics Dashboard Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csLogisticsDashboard}`,
@@ -119,7 +119,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Building a Design System: UI Components for danieljoffe.com',
     description:
       "This portfolio's design system: 20+ documented components built with accessibility and reusability in mind.",
-    backgroundColor: 'bg-slate-900',
+    backgroundColor: 'bg-[#0f172a]',
     link: {
       label: 'UI Components V1',
       href: `${PROJECTS_LINK.href}/${projectSlugs.uiV1}`,
@@ -137,7 +137,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
     title: 'Expanding the Design System: UI Components Part 2',
     description:
       "This portfolio's design system: form controls, feedback, and layout primitives completing the component library.",
-    backgroundColor: 'bg-violet-950',
+    backgroundColor: 'bg-[#2e1065]',
     link: {
       label: 'UI Components V2',
       href: `${PROJECTS_LINK.href}/${projectSlugs.uiV2}`,

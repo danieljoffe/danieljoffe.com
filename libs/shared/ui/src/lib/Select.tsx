@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import type { SelectHTMLAttributes } from 'react';
+import { cn } from './utils';
 
 export interface SelectOption {
   value: string;
@@ -16,7 +17,7 @@ export function Select({
   label,
   error,
   options,
-  className = '',
+  className,
   id,
   ...props
 }: SelectProps) {
@@ -35,9 +36,13 @@ export function Select({
           id={selectId}
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={errorId}
-          className={`w-full px-4 py-2.5 bg-input border border-input-border rounded-md text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${
-            error ? 'border-error focus:ring-error' : ''
-          } ${className}`}
+          className={cn(
+            'w-full px-4 py-2.5 bg-input border border-input-border rounded-md text-foreground',
+            'appearance-none focus-visible:outline-none focus-visible:ring-2',
+            'focus-visible:ring-accent focus-visible:border-transparent transition-all',
+            error && 'border-error focus-visible:ring-error',
+            className
+          )}
           {...props}
         >
           {options.map(option => (

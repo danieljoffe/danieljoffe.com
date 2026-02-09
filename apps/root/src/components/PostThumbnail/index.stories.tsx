@@ -39,7 +39,7 @@ export const Default: Story = {
       href: '/projects/sample-project',
       label: 'Sample Project',
     },
-    backgroundColor: 'bg-blue-600',
+    backgroundColor: 'bg-[#172554]',
     description:
       'A sample project showcasing modern web development techniques and best practices.',
     index: 0,
@@ -55,7 +55,7 @@ export const SecondaryPosition: Story = {
       href: '/projects/another-project',
       label: 'Another Project',
     },
-    backgroundColor: 'bg-purple-600',
+    backgroundColor: 'bg-[#2e1065]',
     description:
       'This project demonstrates lazy loading since it is not in the first two positions.',
     index: 2,
@@ -71,7 +71,7 @@ export const DifferentBackgroundColor: Story = {
       href: '/projects/styled-project',
       label: 'Styled Project',
     },
-    backgroundColor: 'bg-gradient-to-r from-pink-500 to-orange-500',
+    backgroundColor: 'bg-[#4a044e]',
     description: 'A project with a gradient background to showcase styling.',
     index: 1,
     title: '',

@@ -1,4 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { cn } from './utils';
 
 export type UIButtonVariantT =
   | 'bare'
@@ -26,8 +27,8 @@ export interface UIButtonProps
 
 export const baseUIButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition-all',
-  'duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2',
-  'focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
+  'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+  'focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
   'hover:cursor-pointer',
 ].join(' ');
 
@@ -56,13 +57,18 @@ export const sizeUIButtonStyles: Record<UIButtonSizeT, string> = {
 
 export const Button = forwardRef<HTMLButtonElement, UIButtonProps>(
   (
-    { variant = 'primary', size = 'md', children, className = '', ...props },
+    { variant = 'primary', size = 'md', children, className, ...props },
     ref
   ) => {
     return (
       <button
         ref={ref}
-        className={`${baseUIButtonStyles} ${variantUIButtonStyles[variant]} ${sizeUIButtonStyles[size]} ${className}`}
+        className={cn(
+          baseUIButtonStyles,
+          variantUIButtonStyles[variant],
+          sizeUIButtonStyles[size],
+          className
+        )}
         {...props}
       >
         {children}
