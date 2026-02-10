@@ -19,6 +19,8 @@ export interface PostBaseI {
 
 export interface PostThumbnailI extends PostBaseI {
   backgroundColor?: string;
+  duration?: string;
+  role?: string;
 }
 
 export interface PostBodyI extends WChildrenT {

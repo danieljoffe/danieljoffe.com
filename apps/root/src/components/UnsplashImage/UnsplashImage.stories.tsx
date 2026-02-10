@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import UnsplashImage from './UnsplashImage';
+import UnsplashImage from '.';
 
 const origin =
   'https://unsplash.com/photos/aerial-photo-of-foggy-mountains-1527pjeb6jg';

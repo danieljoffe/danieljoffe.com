@@ -9,7 +9,7 @@ const meta = {
   },
   decorators: [
     Story => (
-      <div className='w-[400px] bg-gradient-to-br from-blue-500 to-purple-600'>
+      <div className='w-[400px] bg-card border border-border rounded-md'>
         <Story />
       </div>
     ),
@@ -27,10 +27,21 @@ export const Default: Story = {
   },
 };
 
+export const WithDurationAndRole: Story = {
+  args: {
+    title: 'Winc',
+    description: 'The Foundation Years: Learning to Scale Marketing Operations',
+    duration: 'Jun 2015 - Oct 2017',
+    role: 'Frontend Developer',
+  },
+};
+
 export const ShortDescription: Story = {
   args: {
     title: 'Quick Project',
     description: 'A minimal project description.',
+    duration: 'Jan 2023 - Present',
+    role: 'Senior Frontend Developer',
   },
 };
 
@@ -39,5 +50,7 @@ export const LongDescription: Story = {
     title: 'Complex Project with Long Title',
     description:
       'This is a comprehensive project that spans multiple technologies and frameworks. It includes frontend development with React and TypeScript, backend services with Node.js, and cloud deployment infrastructure.',
+    duration: 'Mar 2018 - Aug 2019',
+    role: 'Full Stack Engineer',
   },
 };

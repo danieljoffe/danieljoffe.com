@@ -1,16 +1,19 @@
 'use client';
 
-import { PostThumbnailI } from '@/types/postTypes';
-import UnsplashImage from '../UnsplashImage';
 import { Link } from 'next-transition-router';
-import PostThumbnailIDescription from './PostThumbnailDescription';
+import { PostThumbnailI } from '@/types/postTypes';
 import { analytics } from '@/lib/analytics';
+import PostThumbnailDescription from './PostThumbnailDescription';
+import UnsplashDecorativeAttribution from '../UnsplashImage/UnsplashDecorativeAttribution';
+import { UnsplashFigure, UnsplashImg } from '../UnsplashImage';
 
 export default function PostThumbnail({
   slug,
   cover,
   link,
   description,
+  duration,
+  role,
   index,
 }: PostThumbnailI & { index: number }) {
   const handleClick = () => {
@@ -22,37 +25,38 @@ export default function PostThumbnail({
   };
 
   return (
-    <article
-      key={slug}
-      className={[
-        'flex flex-col overflow-hidden rounded-md transition',
-        'shadow-md/10 ease-in-out duration-300 h-full',
-        'hover:scale-102 hover:shadow-lg/30',
-      ].join(' ')}
-    >
-      <UnsplashImage
-        src={cover.src}
-        alt={cover.alt}
-        origin={cover.origin}
-        creator={cover.creator}
-        blurHash={cover.blurHash}
-        width={440}
-        height={460}
-        priority={index < 2}
-        quality={65}
-      />
+    <article className='group flex flex-col h-full'>
       <Link
         href={link.href}
         onClick={handleClick}
-        className={[
-          'row-span-1 col-span-1 flex-1',
-          'overflow-hidden shadow-lg',
-        ].join(' ')}
         aria-label={`View ${link.label} project details`}
+        className={[
+          'flex flex-col h-full overflow-hidden rounded-md',
+          'border border-border bg-card',
+          'transition-all duration-300 ease-in-out',
+          'hover:scale-[1.02] hover:shadow-lg hover:border-accent/40',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        ].join(' ')}
       >
-        <PostThumbnailIDescription
+        <div className='relative overflow-hidden'>
+          <UnsplashFigure width={440} height={460}>
+            <UnsplashImg
+              src={cover.src}
+              alt={cover.alt}
+              width={440}
+              height={460}
+              quality={65}
+              priority={index < 2}
+            />
+            <UnsplashDecorativeAttribution creator={cover.creator} />
+          </UnsplashFigure>
+        </div>
+
+        <PostThumbnailDescription
           title={link.label as string}
           description={description as string}
+          duration={duration as string}
+          role={role as string}
         />
       </Link>
     </article>

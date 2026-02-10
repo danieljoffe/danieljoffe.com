@@ -39,37 +39,51 @@ describe('PostThumbnailDescription', () => {
     expect(paragraph.tagName.toLowerCase()).toBe('p');
   });
 
-  test('applies container styling', () => {
+  test('renders duration badge when provided', () => {
+    render(
+      <PostThumbnailDescription
+        title='Title'
+        description='Desc'
+        duration='Jun 2015 - Oct 2017'
+      />
+    );
+    expect(screen.getByText('Jun 2015 - Oct 2017')).toBeInTheDocument();
+  });
+
+  test('renders role when provided', () => {
+    render(
+      <PostThumbnailDescription
+        title='Title'
+        description='Desc'
+        role='Frontend Developer'
+      />
+    );
+    expect(screen.getByText('Frontend Developer')).toBeInTheDocument();
+  });
+
+  test('does not render duration badge when not provided', () => {
+    const { container } = render(
+      <PostThumbnailDescription title='Title' description='Desc' />
+    );
+    const badge = container.querySelector('.inline-flex');
+    expect(badge).not.toBeInTheDocument();
+  });
+
+  test('does not render role when not provided', () => {
+    render(<PostThumbnailDescription title='Title' description='Desc' />);
+    const paragraphs = screen.getAllByText((_, element) => {
+      return element?.tagName.toLowerCase() === 'p';
+    });
+    // Only the description paragraph should be present
+    expect(paragraphs).toHaveLength(1);
+  });
+
+  test('applies card background styling', () => {
     const { container } = render(
       <PostThumbnailDescription title='Title' description='Desc' />
     );
     const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('overflow-hidden');
-    expect((outerDiv as HTMLElement)?.className).toContain('bg-foreground/25');
-  });
-
-  test('applies minimum height for consistent card sizing', () => {
-    const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
-    );
-    const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('min-h-[15rem]');
-  });
-
-  test('applies backdrop blur styling to inner container', () => {
-    const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
-    );
-    const innerDiv = container.querySelector('.backdrop-blur-md');
-    expect(innerDiv).toBeInTheDocument();
-  });
-
-  test('applies shadow styling', () => {
-    const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
-    );
-    const innerDiv = container.querySelector('.shadow-lg');
-    expect(innerDiv).toBeInTheDocument();
+    expect((outerDiv as HTMLElement)?.className).toContain('bg-card');
   });
 
   test('applies padding styling', () => {
@@ -78,7 +92,7 @@ describe('PostThumbnailDescription', () => {
     );
     const outerDiv = container.firstChild;
     expect((outerDiv as HTMLElement)?.className).toContain('px-4');
-    expect((outerDiv as HTMLElement)?.className).toContain('pt-6');
-    expect((outerDiv as HTMLElement)?.className).toContain('pb-8');
+    expect((outerDiv as HTMLElement)?.className).toContain('pt-4');
+    expect((outerDiv as HTMLElement)?.className).toContain('pb-6');
   });
 });

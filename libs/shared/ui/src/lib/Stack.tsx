@@ -3,6 +3,7 @@ import { cn } from './utils';
 
 type StackElement =
   | 'div'
+  | 'p'
   | 'ul'
   | 'ol'
   | 'nav'

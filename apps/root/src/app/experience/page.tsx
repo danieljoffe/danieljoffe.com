@@ -40,7 +40,7 @@ export default function ExperiencePage() {
                     key={data.slug}
                     className={
                       index === experienceList.length - 1
-                        ? 'md:col-span-2 md:w-1/2 md:mx-auto'
+                        ? 'md:col-span-2 max-h-[40rem]'
                         : ''
                     }
                   >
