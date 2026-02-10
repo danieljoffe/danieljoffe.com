@@ -52,7 +52,7 @@ export function Select({
           ))}
         </select>
         <ChevronDown
-          className='absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-subtle pointer-events-none'
+          className='absolute right-3 top-1/2 -translate-y-1/2 size-5 text-foreground-subtle pointer-events-none'
           aria-hidden='true'
         />
       </div>

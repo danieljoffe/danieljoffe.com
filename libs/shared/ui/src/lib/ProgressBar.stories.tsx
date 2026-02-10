@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ProgressBar } from './ProgressBar';
 
-const meta: Meta<typeof ProgressBar> = {
+const meta = {
   title: 'Components/ProgressBar',
   component: ProgressBar,
   tags: ['autodocs'],
@@ -41,10 +41,10 @@ const meta: Meta<typeof ProgressBar> = {
       },
     },
   },
-};
+} satisfies Meta<typeof ProgressBar>;
 export default meta;
 
-type Story = StoryObj<typeof ProgressBar>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -76,5 +76,53 @@ export const Complete: Story = {
     size: 'md',
     showLabel: true,
     'aria-label': 'Progress complete',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    value: 70,
+    variant: 'success',
+    'aria-label': 'Success progress',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    value: 45,
+    variant: 'warning',
+    'aria-label': 'Warning progress',
+  },
+};
+
+export const Error: Story = {
+  args: {
+    value: 20,
+    variant: 'error',
+    'aria-label': 'Error progress',
+  },
+};
+
+export const Info: Story = {
+  args: {
+    value: 60,
+    variant: 'info',
+    'aria-label': 'Info progress',
+  },
+};
+
+export const Small: Story = {
+  args: {
+    value: 50,
+    size: 'sm',
+    'aria-label': 'Small progress',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    value: 50,
+    size: 'lg',
+    'aria-label': 'Large progress',
   },
 };

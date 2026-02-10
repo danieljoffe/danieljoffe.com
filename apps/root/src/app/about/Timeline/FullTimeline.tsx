@@ -4,6 +4,7 @@ import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import Button from '@/components/Button';
 import ContentGrid from '@/components/ContentGrid';
 import { Card, GridItem, Stack } from '@danieljoffe.com/shared-ui';
+import { ChevronRight } from 'lucide-react';
 
 export default function FullTimeline() {
   return (
@@ -26,11 +27,12 @@ export default function FullTimeline() {
               <Card className='flex w-full' padding='none' elevated>
                 <Button
                   as='link'
-                  variant='bare'
+                  variant='outline'
                   size='lg'
-                  className='w-full hover:text-accent hover:shadow-lg/30'
+                  className='w-full'
                   href={`${EXPERIENCE_LINK.href}/${company.slug}`}
                   aria-label={`View details for ${company.company}`}
+                  outline
                 >
                   <Stack direction='horizontal' className='flex-1'>
                     <div className='flex w-full max-w-[4.5rem] h-[4.5rem] p-2 md:p-[.75rem] bg-background-elevated rounded-[50%] justify-center items-center'>
@@ -58,6 +60,10 @@ export default function FullTimeline() {
                       <h4>{company.company}</h4>
                       <p>{company.role}</p>
                     </div>
+                    <ChevronRight
+                      className='size-5 self-center text-background shrink-0'
+                      absoluteStrokeWidth={true}
+                    />
                   </Stack>
                 </Button>
               </Card>

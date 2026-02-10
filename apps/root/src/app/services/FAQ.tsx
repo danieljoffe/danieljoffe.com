@@ -54,7 +54,7 @@ function FAQItem({
         <span className='font-medium'>{question}</span>
         <ChevronDown
           className={[
-            'w-5 h-5 transition-transform duration-200',
+            'size-5 transition-transform duration-200',
             isOpen ? 'rotate-180' : '',
           ].join(' ')}
           aria-hidden='true'

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Loading } from './Loading';
 
-const meta: Meta<typeof Loading> = {
+const meta = {
   title: 'Components/Loading',
   component: Loading,
   tags: ['autodocs'],
@@ -26,10 +26,10 @@ const meta: Meta<typeof Loading> = {
       },
     },
   },
-};
+} satisfies Meta<typeof Loading>;
 
 export default meta;
-type Story = StoryObj<typeof Loading>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {},

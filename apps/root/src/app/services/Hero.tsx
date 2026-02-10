@@ -37,7 +37,7 @@ export default function Hero() {
             }
           >
             <span>Book a Discovery Call</span>
-            <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
+            <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
           </Button>
           <a
             href='#services-grid-heading'
@@ -45,7 +45,7 @@ export default function Hero() {
             aria-label='Scroll to services'
           >
             See what I offer
-            <ChevronDown className='w-4 h-4' />
+            <ChevronDown className='size-4' />
           </a>
         </Stack>
       </PageContainer>

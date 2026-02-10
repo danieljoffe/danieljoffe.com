@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from './Button';
 
-const meta: Meta<typeof Button> = {
+const meta = {
   title: 'Components/Button',
   component: Button,
   tags: ['autodocs'],
@@ -12,6 +12,7 @@ const meta: Meta<typeof Button> = {
       control: 'select',
       options: [
         undefined,
+        'bare',
         'primary',
         'secondary',
         'ghost',
@@ -43,10 +44,10 @@ const meta: Meta<typeof Button> = {
       control: 'text',
     },
   },
-};
+} satisfies Meta<typeof Button>;
 
 export default meta;
-type Story = StoryObj<typeof Button>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -83,6 +84,27 @@ export const Large: Story = {
     variant: 'primary',
     size: 'lg',
     children: 'Large',
+  },
+};
+
+export const Bare: Story = {
+  args: {
+    variant: 'bare',
+    children: 'Bare',
+  },
+};
+
+export const Outline: Story = {
+  args: {
+    variant: 'outline',
+    children: 'Outline',
+  },
+};
+
+export const Accent: Story = {
+  args: {
+    variant: 'accent',
+    children: 'Accent',
   },
 };
 

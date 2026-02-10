@@ -13,6 +13,7 @@ export interface AsLinkProps
     Omit<UIButtonBaseI, 'children'> {
   as: 'link';
   highlighted?: boolean;
+  outline?: boolean;
   disabled?: boolean;
 }
 

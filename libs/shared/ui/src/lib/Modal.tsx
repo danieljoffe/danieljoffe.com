@@ -109,7 +109,7 @@ export function Modal({
               aria-label='Close dialog'
               className='text-foreground-subtle hover:text-foreground transition-colors'
             >
-              <X className='w-5 h-5' aria-hidden='true' />
+              <X className='size-5' aria-hidden='true' />
             </button>
           </div>
         )}
@@ -119,7 +119,7 @@ export function Modal({
             aria-label='Close dialog'
             className='absolute top-4 right-4 text-foreground-subtle hover:text-foreground transition-colors'
           >
-            <X className='w-5 h-5' aria-hidden='true' />
+            <X className='size-5' aria-hidden='true' />
           </button>
         )}
         <div className='p-6'>{children}</div>

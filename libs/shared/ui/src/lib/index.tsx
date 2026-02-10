@@ -11,6 +11,7 @@ export {
   baseUIButtonStyles,
   sizeUIButtonStyles,
   variantUIButtonStyles,
+  variantUILinkOutline,
 } from './Button';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export { Checkbox } from './Checkbox';

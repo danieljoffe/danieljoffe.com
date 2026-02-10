@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PageContainer } from './PageContainer';
 
-const meta: Meta<typeof PageContainer> = {
+const meta = {
   title: 'Layout/PageContainer',
   component: PageContainer,
   tags: ['autodocs'],
@@ -39,10 +39,10 @@ const meta: Meta<typeof PageContainer> = {
       </div>
     ),
   ],
-};
+} satisfies Meta<typeof PageContainer>;
 
 export default meta;
-type Story = StoryObj<typeof PageContainer>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

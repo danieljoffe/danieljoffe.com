@@ -17,7 +17,7 @@ export default function CTA() {
           href: CALENDLY_URL,
           target: '_blank',
           ariaLabel: `Book a discovery call with ${FULL_NAME}`,
-          icon: <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />,
+          icon: <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />,
           onClick: () =>
             analytics.ctaClick('services_cta_discovery_call', CALENDLY_URL),
         },

@@ -115,4 +115,11 @@ describe('Select', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('Required field');
     });
   });
+
+  it('renders with empty options array', () => {
+    render(<Select options={[]} />);
+    const select = screen.getByRole('combobox');
+    expect(select).toBeInTheDocument();
+    expect(select.querySelectorAll('option')).toHaveLength(0);
+  });
 });

@@ -4,7 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from './Button';
 import { Modal } from './Modal';
 
-const meta: Meta<typeof Modal> = {
+const meta = {
   title: 'Components/Modal',
   component: Modal,
   tags: ['autodocs'],
@@ -54,16 +54,17 @@ const meta: Meta<typeof Modal> = {
       description: 'Optional footer content (typically action buttons)',
     },
   },
-};
+} satisfies Meta<typeof Modal>;
 
 export default meta;
-type Story = StoryObj<typeof Modal>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
     isOpen: true,
     title: 'Modal Title',
     children: 'This is the modal content.',
+    onClose: fn(),
   },
 };
 
@@ -74,6 +75,7 @@ export const WithFooter: Story = {
     children: 'Are you sure you want to proceed with this action?',
     size: 'md',
     variant: 'default',
+    onClose: fn(),
   },
 };
 
@@ -84,6 +86,7 @@ export const AccentVariant: Story = {
     children: 'This modal uses the accent variant.',
     size: 'md',
     variant: 'accent',
+    onClose: fn(),
   },
 };
 
@@ -94,6 +97,7 @@ export const Large: Story = {
     children: 'This is a large modal with more content space.',
     size: 'lg',
     variant: 'default',
+    onClose: fn(),
   },
 };
 
@@ -120,6 +124,7 @@ export const AccessibilityAttributes: Story = {
     isOpen: true,
     title: 'Accessible Modal',
     children: 'This modal has proper accessibility attributes.',
+    onClose: fn(),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -131,6 +136,11 @@ export const AccessibilityAttributes: Story = {
 };
 
 export const Controlled: Story = {
+  args: {
+    isOpen: false,
+    onClose: fn(),
+    children: null,
+  },
   render: function ControlledModal() {
     const [isOpen, setIsOpen] = useState(false);
     return (

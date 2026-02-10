@@ -1,4 +1,18 @@
-import { Check } from 'lucide-react';
+import {
+  Check,
+  Rocket,
+  Wrench,
+  FileText,
+  Monitor,
+  type LucideIcon,
+} from 'lucide-react';
+
+const iconMap: Record<string, LucideIcon> = {
+  Rocket,
+  Wrench,
+  FileText,
+  Monitor,
+};
 import {
   Card,
   Badge,
@@ -11,7 +25,7 @@ import {
 
 const services = [
   {
-    icon: '🚀',
+    icon: 'Rocket',
     title: 'Performance Audits & Optimization',
     highlighted: true,
     description:
@@ -27,7 +41,7 @@ const services = [
     price: '$5,000',
   },
   {
-    icon: '🔧',
+    icon: 'Wrench',
     title: 'Component Libraries & Design Systems',
     highlighted: false,
     description:
@@ -43,7 +57,7 @@ const services = [
     price: '$10,000',
   },
   {
-    icon: '📄',
+    icon: 'FileText',
     title: 'CMS & Self-Serve Tooling',
     highlighted: false,
     description:
@@ -59,7 +73,7 @@ const services = [
     price: '$8,000',
   },
   {
-    icon: '💻',
+    icon: 'Monitor',
     title: 'MVP & Product Frontend Builds',
     highlighted: false,
     description:
@@ -107,13 +121,16 @@ export default function ServicesGrid() {
                       align='center'
                       className='w-full'
                     >
-                      <span
-                        className='text-2xl leading-none flex-shrink-0'
-                        role='img'
-                        aria-hidden='true'
-                      >
-                        {service.icon}
-                      </span>
+                      {(() => {
+                        const Icon = iconMap[service.icon];
+                        return Icon ? (
+                          <Icon
+                            className='size-6 text-accent shrink-0'
+                            absoluteStrokeWidth={true}
+                            aria-hidden='true'
+                          />
+                        ) : null;
+                      })()}
                       <h3 className='!mb-0'>{service.title}</h3>
                     </Stack>
                     {service.highlighted && (
@@ -129,7 +146,7 @@ export default function ServicesGrid() {
                       {service.deliverables.map((item, i) => (
                         <li key={i} className='text-sm flex items-start gap-2'>
                           <Check
-                            className='w-4 h-4 text-success flex-shrink-0 mt-0.5'
+                            className='size-4 text-success shrink-0 mt-0.5'
                             aria-hidden='true'
                           />
                           <span>{item}</span>

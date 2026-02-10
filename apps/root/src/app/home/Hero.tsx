@@ -70,7 +70,7 @@ export default function Hero() {
                 }
               >
                 <span>View case studies</span>
-                <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
+                <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
               </Button>
               <Button
                 as='button'
@@ -81,7 +81,7 @@ export default function Hero() {
                   downloadResume();
                 }}
               >
-                <Download absoluteStrokeWidth={true} className='w-4 h-4' />
+                <Download absoluteStrokeWidth={true} className='size-4' />
                 <span>Download resume</span>
               </Button>
             </Stack>

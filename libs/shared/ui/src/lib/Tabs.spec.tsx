@@ -130,5 +130,37 @@ describe('Tabs', () => {
       expect(tabs[1]).toHaveAttribute('tabindex', '-1');
       expect(tabs[2]).toHaveAttribute('tabindex', '-1');
     });
+
+    it('moves to next tab on ArrowRight', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[0], { key: 'ArrowRight' });
+      expect(screen.getByText('Content 2')).toBeInTheDocument();
+      expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    });
+
+    it('moves to previous tab on ArrowLeft', () => {
+      render(<Tabs tabs={defaultTabs} defaultTab='tab2' />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[1], { key: 'ArrowLeft' });
+      expect(screen.getByText('Content 1')).toBeInTheDocument();
+      expect(screen.queryByText('Content 2')).not.toBeInTheDocument();
+    });
+
+    it('wraps to first tab on ArrowRight from last', () => {
+      render(<Tabs tabs={defaultTabs} defaultTab='tab3' />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[2], { key: 'ArrowRight' });
+      expect(screen.getByText('Content 1')).toBeInTheDocument();
+      expect(screen.queryByText('Content 3')).not.toBeInTheDocument();
+    });
+
+    it('wraps to last tab on ArrowLeft from first', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[0], { key: 'ArrowLeft' });
+      expect(screen.getByText('Content 3')).toBeInTheDocument();
+      expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    });
   });
 });

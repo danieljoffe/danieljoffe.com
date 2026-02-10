@@ -229,4 +229,19 @@ describe('Tooltip', () => {
 
     expect(tooltip).toHaveAttribute('aria-hidden', 'false');
   });
+
+  it('links trigger to tooltip via aria-describedby', () => {
+    const { container } = render(
+      <Tooltip content='Tooltip text'>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+    const tooltip = container.querySelector('[role="tooltip"]');
+    const trigger = container.querySelector('[role="presentation"]');
+    expect(tooltip).toHaveAttribute('id');
+    expect(trigger).toHaveAttribute(
+      'aria-describedby',
+      tooltip?.getAttribute('id')
+    );
+  });
 });

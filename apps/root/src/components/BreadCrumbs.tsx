@@ -26,10 +26,7 @@ export default function BreadCrumbs({ items }: BreadCrumbsI) {
                   className='flex h-full items-center justify-center'
                   aria-hidden='true'
                 >
-                  <ChevronRight
-                    absoluteStrokeWidth={true}
-                    className='w-4 h-4'
-                  />
+                  <ChevronRight absoluteStrokeWidth={true} className='size-4' />
                 </span>
               </Button>
             )}

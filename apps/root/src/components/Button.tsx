@@ -7,6 +7,7 @@ import {
   baseUIButtonStyles,
   sizeUIButtonStyles,
   variantUIButtonStyles,
+  variantUILinkOutline,
   Button as UIButton,
   cn,
 } from '@danieljoffe.com/shared-ui';
@@ -18,6 +19,7 @@ function LinkAsButton(props: AsLinkProps) {
   const {
     as: _as,
     highlighted,
+    outline,
     disabled,
     variant,
     size,
@@ -31,6 +33,7 @@ function LinkAsButton(props: AsLinkProps) {
     sizeUIButtonStyles[size ?? 'md'],
     highlighted && 'text-accent underline underline-offset-4',
     disabled && 'pointer-events-none',
+    outline && variantUILinkOutline[variant ?? 'bare'],
     className
   );
 

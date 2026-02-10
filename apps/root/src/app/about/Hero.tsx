@@ -12,7 +12,7 @@ export default function Hero() {
       background='alt'
     >
       <PageContainer>
-        <h1 className='text-center'>About Me</h1>
+        <h1 className='text-center'>Building Without Friction</h1>
         <Stack direction='vertical' gap='md' className='md:flex-row md:gap-8'>
           <Stack
             direction='horizontal'
@@ -26,7 +26,7 @@ export default function Hero() {
               title={FULL_NAME}
               width={250}
               height={250}
-              className='rounded-full min-w-[15.5rem] outline-2 outline-foreground outline-offset-[0.5rem]'
+              className='rounded-full min-w-[15.5rem] outline-2 outline-foreground dark:outline-accent outline-offset-[0.5rem]'
               sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
               fetchPriority='high'
               preload={true}

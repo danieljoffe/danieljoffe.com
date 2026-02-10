@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Section } from './Section';
 
-const meta: Meta<typeof Section> = {
+const meta = {
   title: 'Layout/Section',
   component: Section,
   tags: ['autodocs'],
@@ -45,10 +45,10 @@ const meta: Meta<typeof Section> = {
       },
     },
   },
-};
+} satisfies Meta<typeof Section>;
 
 export default meta;
-type Story = StoryObj<typeof Section>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

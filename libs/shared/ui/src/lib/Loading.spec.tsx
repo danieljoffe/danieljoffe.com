@@ -45,13 +45,13 @@ describe('Loading', () => {
 
   it('renders bouncing dots', () => {
     const { container } = render(<Loading />);
-    const dots = container.querySelectorAll('.rounded-full.w-2.h-2');
+    const dots = container.querySelectorAll('.rounded-full.size-2');
     expect(dots.length).toBe(4);
   });
 
   it('renders dots with correct color variants', () => {
     const { container } = render(<Loading />);
-    const dots = container.querySelectorAll('.rounded-full.w-2.h-2');
+    const dots = container.querySelectorAll('.rounded-full.size-2');
     expect(dots[0]).toHaveClass('bg-warning');
     expect(dots[1]).toHaveClass('bg-info');
     expect(dots[2]).toHaveClass('bg-warning');

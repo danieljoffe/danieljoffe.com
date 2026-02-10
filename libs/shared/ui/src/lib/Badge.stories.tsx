@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Badge } from './Badge';
 
-const meta: Meta<typeof Badge> = {
+const meta = {
   title: 'Components/Badge',
   component: Badge,
   tags: ['autodocs'],
@@ -27,10 +27,10 @@ const meta: Meta<typeof Badge> = {
       control: 'text',
     },
   },
-};
+} satisfies Meta<typeof Badge>;
 export default meta;
 
-type Story = StoryObj<typeof Badge>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -63,5 +63,12 @@ export const Error: Story = {
   args: {
     children: 'Error',
     variant: 'error',
+  },
+};
+
+export const Info: Story = {
+  args: {
+    children: 'Info',
+    variant: 'info',
   },
 };

@@ -24,7 +24,7 @@ export default function SocialLinks() {
             analytics.ctaClick('click_email_message', PROJECTS_LINK.href);
           }}
         >
-          <AtSign className='w-5 h-5' absoluteStrokeWidth={true} />
+          <AtSign className='size-5' absoluteStrokeWidth={true} />
         </Button>
         <Button
           size='sm'
@@ -40,7 +40,7 @@ export default function SocialLinks() {
             analytics.ctaClick('visit_linkedin_profile', PROJECTS_LINK.href);
           }}
         >
-          <Linkedin className='w-5 h-5' absoluteStrokeWidth={true} />
+          <Linkedin className='size-5' absoluteStrokeWidth={true} />
         </Button>
         <Button
           size='sm'
@@ -56,7 +56,7 @@ export default function SocialLinks() {
             analytics.ctaClick('visit_github_profile', PROJECTS_LINK.href);
           }}
         >
-          <Github className='w-5 h-5' absoluteStrokeWidth={true} />
+          <Github className='size-5' absoluteStrokeWidth={true} />
         </Button>
         <Button
           size='sm'
@@ -70,7 +70,7 @@ export default function SocialLinks() {
             downloadResume();
           }}
         >
-          <Download className='w-5 h-5' absoluteStrokeWidth={true} />
+          <Download className='size-5' absoluteStrokeWidth={true} />
         </Button>
       </Stack>
     </Stack>

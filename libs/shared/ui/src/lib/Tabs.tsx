@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useId, useCallback, type ReactNode } from 'react';
+import {
+  useState,
+  useId,
+  useCallback,
+  type ReactNode,
+  type KeyboardEvent,
+} from 'react';
 import { cn } from './utils';
 
 export interface Tab {
@@ -38,6 +44,37 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
     [baseId]
   );
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent, tabId: string) => {
+      const currentIndex = tabs.findIndex(t => t.id === tabId);
+      let newIndex: number | null = null;
+
+      switch (e.key) {
+        case 'ArrowRight':
+          newIndex = (currentIndex + 1) % tabs.length;
+          break;
+        case 'ArrowLeft':
+          newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case 'Home':
+          newIndex = 0;
+          break;
+        case 'End':
+          newIndex = tabs.length - 1;
+          break;
+      }
+
+      if (newIndex !== null) {
+        const newTab = tabs[newIndex];
+        if (!newTab) return;
+        e.preventDefault();
+        handleTabChange(newTab.id);
+        document.getElementById(getTabId(newTab.id))?.focus();
+      }
+    },
+    [tabs, handleTabChange, getTabId]
+  );
+
   if (tabs.length === 0) {
     return null;
   }
@@ -55,6 +92,7 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
               aria-controls={getPanelId(tab.id)}
               tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => handleTabChange(tab.id)}
+              onKeyDown={e => handleKeyDown(e, tab.id)}
               className={cn(
                 'px-4 py-2.5 border-b-2 transition-colors focus-visible:outline-none',
                 'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',

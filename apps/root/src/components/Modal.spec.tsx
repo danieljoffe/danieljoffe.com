@@ -216,12 +216,6 @@ describe('Modal', () => {
     });
   });
 
-  it.skip('has no accessibility violations', async () => {
-    // This test is complex to fix with mocked components
-    // The accessibility is tested in integration tests
-    expect(true).toBe(true);
-  });
-
   it('handles empty modal content gracefully', () => {
     mockUseGlobal.mockReturnValue({
       isModalOpen: true,

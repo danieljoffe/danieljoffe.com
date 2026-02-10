@@ -178,7 +178,7 @@ export default function Form() {
       </fieldset>
 
       {/* Honeypot field for spam protection */}
-      <div className='absolute top-0 left-0 w-0 h-0 pointer-events-none -z-1 hidden'>
+      <div className='absolute top-0 left-0 size-0 pointer-events-none -z-1 hidden'>
         <Input
           name='address'
           label='Address'

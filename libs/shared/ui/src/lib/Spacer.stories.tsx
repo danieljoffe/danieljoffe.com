@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Spacer } from './Spacer';
 
-const meta: Meta<typeof Spacer> = {
+const meta = {
   title: 'Layout/Spacer',
   component: Spacer,
   tags: ['autodocs'],
@@ -24,10 +24,10 @@ const meta: Meta<typeof Spacer> = {
       </div>
     ),
   ],
-};
+} satisfies Meta<typeof Spacer>;
 
 export default meta;
-type Story = StoryObj<typeof Spacer>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {},

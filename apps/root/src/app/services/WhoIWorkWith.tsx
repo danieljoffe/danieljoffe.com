@@ -6,26 +6,40 @@ import {
   Grid,
   GridItem,
 } from '@danieljoffe.com/shared-ui';
+import {
+  Rocket,
+  TrendingUp,
+  Building2,
+  Target,
+  type LucideIcon,
+} from 'lucide-react';
+
+const iconMap: Record<string, LucideIcon> = {
+  Rocket,
+  TrendingUp,
+  Building2,
+  Target,
+};
 
 const audiences = [
   {
-    icon: '🚀',
+    icon: 'Rocket',
     label: 'Founders',
     description: 'who need a senior frontend partner, not just a pair of hands',
   },
   {
-    icon: '📈',
+    icon: 'TrendingUp',
     label: 'Growing startups',
     description: 'whose engineering team is stretched thin',
   },
   {
-    icon: '🏢',
+    icon: 'Building2',
     label: 'Agencies',
     description:
       'that need overflow capacity from someone who can own a project end-to-end',
   },
   {
-    icon: '🎯',
+    icon: 'Target',
     label: 'Non-technical teams',
     description: 'drowning in engineering dependency for basic updates',
   },
@@ -46,12 +60,16 @@ export default function WhoIWorkWith() {
             <GridItem key={index} as='li'>
               <Card padding='sm' className='h-full'>
                 <Stack direction='horizontal' gap='sm' align='start'>
-                  <span
-                    className='text-xl leading-none mt-0.5'
-                    aria-hidden='true'
-                  >
-                    {audience.icon}
-                  </span>
+                  {(() => {
+                    const Icon = iconMap[audience.icon];
+                    return Icon ? (
+                      <Icon
+                        className='size-5 text-accent shrink-0 mt-0.5'
+                        absoluteStrokeWidth={true}
+                        aria-hidden='true'
+                      />
+                    ) : null;
+                  })()}
                   <p>
                     <strong>{audience.label}</strong> {audience.description}
                   </p>

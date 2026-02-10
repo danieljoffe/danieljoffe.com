@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from './Button';
 import { Tooltip } from './Tooltip';
 
-const meta: Meta<typeof Tooltip> = {
+const meta = {
   title: 'Components/Tooltip',
   component: Tooltip,
   tags: ['autodocs'],
@@ -28,10 +28,10 @@ const meta: Meta<typeof Tooltip> = {
       },
     },
   },
-};
+} satisfies Meta<typeof Tooltip>;
 
 export default meta;
-type Story = StoryObj<typeof Tooltip>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -92,8 +92,9 @@ export const HoverInteraction: Story = {
     await userEvent.hover(trigger);
 
     // Wait for tooltip to appear
-    await new Promise(resolve => setTimeout(resolve, 50));
-    await expect(tooltip).toHaveAttribute('aria-hidden', 'false');
+    await waitFor(() =>
+      expect(tooltip).toHaveAttribute('aria-hidden', 'false')
+    );
 
     // Unhover to hide tooltip
     await userEvent.unhover(trigger);

@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Button } from './Button';
 
@@ -117,5 +118,45 @@ describe('Button', () => {
     );
     const button = screen.getByTestId('submit-btn');
     expect(button).toHaveAttribute('type', 'submit');
+  });
+
+  it('accepts ref via forwardRef', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(<Button ref={ref}>Ref Button</Button>);
+    expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+  });
+
+  it('does not fire click when disabled', () => {
+    const handleClick = jest.fn();
+    render(
+      <Button disabled onClick={handleClick}>
+        Disabled
+      </Button>
+    );
+    fireEvent.click(screen.getByRole('button'));
+    expect(handleClick).not.toHaveBeenCalled();
+  });
+
+  describe('accessibility', () => {
+    it('has focus-visible ring styles', () => {
+      render(<Button>Focus</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('focus-visible:ring-2');
+    });
+
+    it('renders as HTML button element', () => {
+      render(<Button>Element</Button>);
+      const button = screen.getByRole('button');
+      expect(button.tagName).toBe('BUTTON');
+    });
+
+    it('supports aria-label for icon-only buttons', () => {
+      render(
+        <Button aria-label='Close'>
+          <span>×</span>
+        </Button>
+      );
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    });
   });
 });

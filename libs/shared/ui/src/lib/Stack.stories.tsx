@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Stack } from './Stack';
 
-const meta: Meta<typeof Stack> = {
+const meta = {
   title: 'Layout/Stack',
   component: Stack,
   tags: ['autodocs'],
@@ -66,10 +66,10 @@ const meta: Meta<typeof Stack> = {
       },
     },
   },
-};
+} satisfies Meta<typeof Stack>;
 
 export default meta;
-type Story = StoryObj<typeof Stack>;
+type Story = StoryObj<typeof meta>;
 
 const Box = ({ children }: { children: React.ReactNode }) => (
   <div className='bg-accent text-accent-foreground p-4 rounded'>{children}</div>

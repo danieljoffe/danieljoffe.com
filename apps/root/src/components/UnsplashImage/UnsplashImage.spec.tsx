@@ -266,14 +266,11 @@ describe('UnsplashImage', () => {
       );
     });
 
-    it('should render figcaption with creator links', () => {
+    it('should render figcaption with creator link', () => {
       render(<UnsplashImage {...mockProps} />);
 
-      const creatorLink = screen.getByText('Photo by @testuser,');
-      const unsplashLink = screen.getByText('Unsplash');
-
+      const creatorLink = screen.getByText('@testuser,');
       expect(creatorLink).toBeInTheDocument();
-      expect(unsplashLink).toBeInTheDocument();
     });
 
     it('should render image with correct alt text', () => {
@@ -339,15 +336,6 @@ describe('UnsplashImage', () => {
         'Photo by @testuser on Unsplash'
       );
       expect(creatorLink).toBeInTheDocument();
-    });
-
-    it('should have proper aria-label for unsplash link', () => {
-      render(<UnsplashImage {...mockProps} />);
-
-      const unsplashLink = screen.getByLabelText(
-        'View original photo on Unsplash'
-      );
-      expect(unsplashLink).toBeInTheDocument();
     });
 
     it('should have proper alt text for image', () => {

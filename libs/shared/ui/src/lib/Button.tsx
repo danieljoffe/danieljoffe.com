@@ -26,10 +26,10 @@ export interface UIButtonProps
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {}
 
 export const baseUIButtonStyles = [
-  'inline-flex items-center justify-center gap-2 rounded-md transition-all',
+  'inline-flex items-center justify-center gap-2 rounded-md transition-colors',
   'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
   'focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
-  'hover:cursor-pointer',
+  'hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none',
 ].join(' ');
 
 export const variantUIButtonStyles: Record<UIButtonVariantT, string> = {
@@ -47,6 +47,21 @@ export const variantUIButtonStyles: Record<UIButtonVariantT, string> = {
   error: 'bg-error text-error-foreground hover:opacity-90',
   warning: 'bg-warning text-warning-foreground hover:opacity-90',
   info: 'bg-info text-info-foreground hover:opacity-90',
+};
+
+const baseOutline =
+  'hover:outline hover:outline-2 hover:outline-offset-2 hover:shadow-lg/12.5';
+export const variantUILinkOutline: Record<UIButtonVariantT, string> = {
+  bare: '',
+  primary: `${baseOutline} hover:outline-accent`,
+  secondary: `${baseOutline} hover:outline-border-strong`,
+  ghost: `${baseOutline} hover:outline-foreground-muted`,
+  outline: `${baseOutline} hover:outline-border-strong`,
+  accent: `${baseOutline} hover:outline-accent`,
+  success: `${baseOutline} hover:outline-success`,
+  error: `${baseOutline} hover:outline-error`,
+  warning: `${baseOutline} hover:outline-warning`,
+  info: `${baseOutline} hover:outline-info`,
 };
 
 export const sizeUIButtonStyles: Record<UIButtonSizeT, string> = {

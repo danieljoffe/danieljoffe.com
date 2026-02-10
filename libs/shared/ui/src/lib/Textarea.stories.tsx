@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Textarea } from './Textarea';
 
-const meta: Meta<typeof Textarea> = {
+const meta = {
   title: 'Components/Textarea',
   component: Textarea,
   tags: ['autodocs'],
@@ -32,10 +32,10 @@ const meta: Meta<typeof Textarea> = {
       control: 'boolean',
     },
   },
-};
+} satisfies Meta<typeof Textarea>;
 
 export default meta;
-type Story = StoryObj<typeof Textarea>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {

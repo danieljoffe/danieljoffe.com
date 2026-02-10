@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Grid, GridItem } from './Grid';
 
-const meta: Meta<typeof Grid> = {
+const meta = {
   title: 'Layout/Grid',
   component: Grid,
   tags: ['autodocs'],
@@ -32,10 +32,10 @@ const meta: Meta<typeof Grid> = {
       },
     },
   },
-};
+} satisfies Meta<typeof Grid>;
 
 export default meta;
-type Story = StoryObj<typeof Grid>;
+type Story = StoryObj<typeof meta>;
 
 const Box = ({ children }: { children: React.ReactNode }) => (
   <div className='bg-accent text-accent-foreground p-4 rounded text-center'>

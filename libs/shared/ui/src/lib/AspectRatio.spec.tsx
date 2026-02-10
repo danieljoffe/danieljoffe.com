@@ -29,13 +29,13 @@ describe('AspectRatio', () => {
     expect(container.firstChild).toHaveClass('w-full');
   });
 
-  it('applies default ratio (16/9) via style', () => {
+  it('applies default ratio (16/9) via class', () => {
     const { container } = render(
       <AspectRatio>
         <div>Content</div>
       </AspectRatio>
     );
-    expect(container.firstChild).toHaveStyle({ aspectRatio: '16/9' });
+    expect(container.firstChild).toHaveClass('aspect-video');
   });
 
   it('applies 1/1 ratio', () => {
@@ -44,7 +44,7 @@ describe('AspectRatio', () => {
         <div>Content</div>
       </AspectRatio>
     );
-    expect(container.firstChild).toHaveStyle({ aspectRatio: '1/1' });
+    expect(container.firstChild).toHaveClass('aspect-square');
   });
 
   it('applies 4/3 ratio', () => {
@@ -53,7 +53,7 @@ describe('AspectRatio', () => {
         <div>Content</div>
       </AspectRatio>
     );
-    expect(container.firstChild).toHaveStyle({ aspectRatio: '4/3' });
+    expect(container.firstChild).toHaveClass('aspect-[4/3]');
   });
 
   it('applies 21/9 ratio', () => {
@@ -62,7 +62,7 @@ describe('AspectRatio', () => {
         <div>Content</div>
       </AspectRatio>
     );
-    expect(container.firstChild).toHaveStyle({ aspectRatio: '21/9' });
+    expect(container.firstChild).toHaveClass('aspect-[21/9]');
   });
 
   it('applies 3/4 ratio', () => {
@@ -71,7 +71,7 @@ describe('AspectRatio', () => {
         <div>Content</div>
       </AspectRatio>
     );
-    expect(container.firstChild).toHaveStyle({ aspectRatio: '3/4' });
+    expect(container.firstChild).toHaveClass('aspect-[3/4]');
   });
 
   it('applies 9/16 ratio', () => {
@@ -80,7 +80,7 @@ describe('AspectRatio', () => {
         <div>Content</div>
       </AspectRatio>
     );
-    expect(container.firstChild).toHaveStyle({ aspectRatio: '9/16' });
+    expect(container.firstChild).toHaveClass('aspect-[9/16]');
   });
 
   it('applies custom className', () => {

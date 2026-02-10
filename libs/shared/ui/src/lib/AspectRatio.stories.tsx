@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AspectRatio } from './AspectRatio';
 
-const meta: Meta<typeof AspectRatio> = {
+const meta = {
   title: 'Layout/AspectRatio',
   component: AspectRatio,
   tags: ['autodocs'],
@@ -22,10 +22,10 @@ const meta: Meta<typeof AspectRatio> = {
       </div>
     ),
   ],
-};
+} satisfies Meta<typeof AspectRatio>;
 
 export default meta;
-type Story = StoryObj<typeof AspectRatio>;
+type Story = StoryObj<typeof meta>;
 
 const PlaceholderImage = ({ label }: { label: string }) => (
   <div className='absolute inset-0 bg-accent flex items-center justify-center text-accent-foreground font-medium'>
@@ -89,7 +89,7 @@ export const WithImage: Story = {
       <img
         src='https://picsum.photos/800/450'
         alt='Placeholder'
-        className='absolute inset-0 w-full h-full object-cover rounded'
+        className='absolute inset-0 size-full object-cover rounded'
       />
     ),
   },

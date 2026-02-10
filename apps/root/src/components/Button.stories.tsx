@@ -100,7 +100,7 @@ export const Link: Story = {
   },
   render: props => (
     <Button {...props}>
-      Link <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
+      Link <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
     </Button>
   ),
 };

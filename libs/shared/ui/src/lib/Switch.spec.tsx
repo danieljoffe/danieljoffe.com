@@ -96,4 +96,24 @@ describe('Switch', () => {
     const thumb = container.querySelector('span');
     expect(thumb).toHaveClass('translate-x-1');
   });
+
+  describe('accessibility', () => {
+    it('has role="switch"', () => {
+      render(<Switch checked={false} onCheckedChange={() => {}} />);
+      expect(screen.getByRole('switch')).toBeInTheDocument();
+    });
+
+    it('has focus-visible ring styles', () => {
+      render(<Switch checked={false} onCheckedChange={() => {}} />);
+      const switchEl = screen.getByRole('switch');
+      expect(switchEl.className).toContain('focus-visible:ring-2');
+    });
+
+    it('renders label text', () => {
+      render(
+        <Switch checked={false} onCheckedChange={() => {}} label='Dark mode' />
+      );
+      expect(screen.getByText('Dark mode')).toBeVisible();
+    });
+  });
 });

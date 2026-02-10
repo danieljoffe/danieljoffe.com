@@ -16,9 +16,9 @@ export interface SpinnerProps {
 }
 
 const sizeStyles: Record<SpinnerSize, string> = {
-  sm: 'w-4 h-4 border-2',
-  md: 'w-8 h-8 border-2',
-  lg: 'w-12 h-12 border-3',
+  sm: 'size-4 border-2',
+  md: 'size-8 border-2',
+  lg: 'size-12 border-3',
 };
 
 const variantStyles: Record<SpinnerVariant, string> = {

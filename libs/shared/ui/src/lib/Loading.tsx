@@ -28,10 +28,10 @@ export function Loading({
       <div className='flex flex-col items-center gap-4'>
         {/* Bouncing dots */}
         <div className='flex gap-1'>
-          <div className='w-2 h-2 bg-warning rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite]' />
-          <div className='w-2 h-2 bg-info rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite_0.1s]' />
-          <div className='w-2 h-2 bg-warning rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite_0.2s]' />
-          <div className='w-2 h-2 bg-error rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite_0.3s]' />
+          <div className='size-2 bg-warning rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite]' />
+          <div className='size-2 bg-info rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite_0.1s]' />
+          <div className='size-2 bg-warning rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite_0.2s]' />
+          <div className='size-2 bg-error rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite_0.3s]' />
         </div>
 
         {/* Loading text */}

@@ -93,4 +93,19 @@ describe('Checkbox', () => {
     const visualLabel = container.querySelector('[aria-hidden="true"]');
     expect(visualLabel).toBeInTheDocument();
   });
+
+  describe('accessibility', () => {
+    it('is accessible by label text', () => {
+      render(<Checkbox label='Accept terms' />);
+      expect(screen.getByLabelText('Accept terms')).toBeInTheDocument();
+    });
+
+    it('associates label with checkbox via matching IDs', () => {
+      render(<Checkbox label='Accept terms' />);
+      const checkbox = screen.getByRole('checkbox');
+      const visibleLabel = screen.getByText('Accept terms');
+      expect(visibleLabel.tagName).toBe('LABEL');
+      expect(visibleLabel).toHaveAttribute('for', checkbox.id);
+    });
+  });
 });

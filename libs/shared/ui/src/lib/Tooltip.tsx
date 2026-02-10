@@ -4,6 +4,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useId,
   type ReactNode,
   type KeyboardEvent,
 } from 'react';
@@ -33,6 +34,7 @@ export function Tooltip({
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tooltipId = useId();
 
   const showTooltip = useCallback(() => {
     timeoutRef.current = setTimeout(() => {
@@ -66,10 +68,12 @@ export function Tooltip({
         onBlur={hideTooltip}
         onKeyDown={handleKeyDown}
         role='presentation'
+        aria-describedby={tooltipId}
       >
         {children}
       </div>
       <div
+        id={tooltipId}
         role='tooltip'
         aria-hidden={!isVisible}
         className={cn(

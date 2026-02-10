@@ -107,10 +107,26 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Reset')).toBeInTheDocument();
   });
 
-  it.skip('calls resetError when Try Again button is clicked', () => {
-    // This test is complex to implement properly with error boundaries
-    // The functionality is tested in integration tests
-    expect(true).toBe(true);
+  it('resets error state when Try Again button is clicked', () => {
+    let shouldThrow = true;
+    const RecoverableChild = () => {
+      if (shouldThrow) throw new Error('Test error');
+      return <div>Recovered</div>;
+    };
+
+    render(
+      <ErrorBoundary>
+        <RecoverableChild />
+      </ErrorBoundary>
+    );
+
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+
+    // Fix the cause so re-render succeeds
+    shouldThrow = false;
+    fireEvent.click(screen.getByText('Try Again'));
+
+    expect(screen.getByText('Recovered')).toBeInTheDocument();
   });
 
   it('calls router.refresh when Refresh Page button is clicked', () => {
@@ -172,10 +188,25 @@ describe('ErrorBoundary', () => {
     consoleSpy.mockRestore();
   });
 
-  it.skip('sends error to analytics in production', () => {
-    // This test is complex to mock properly due to module hoisting
-    // The functionality is tested in integration tests
-    expect(true).toBe(true);
+  it('sends error to analytics in production', () => {
+    jest.mocked(require('@/lib/public.env').publicEnv).NEXT_PUBLIC_NODE_ENV =
+      'production';
+
+    const mockGtag = jest.fn();
+    (window as unknown as Record<string, unknown>).gtag = mockGtag;
+
+    render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>
+    );
+
+    expect(mockGtag).toHaveBeenCalledWith('event', 'exception', {
+      description: 'Test error',
+      fatal: false,
+    });
+
+    delete (window as unknown as Record<string, unknown>).gtag;
   });
 
   it('has no accessibility violations', async () => {

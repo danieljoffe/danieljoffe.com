@@ -32,7 +32,7 @@ export function Checkbox({
           htmlFor={checkboxId}
           aria-hidden='true'
           className={cn(
-            'flex items-center justify-center w-5 h-5 border-2',
+            'flex items-center justify-center size-5 border-2',
             'border-border-strong rounded bg-input cursor-pointer transition-all',
             'peer-checked:bg-accent peer-checked:border-accent peer-focus-visible:ring-2',
             'peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 ',
@@ -42,7 +42,7 @@ export function Checkbox({
         >
           {checked && (
             <Check
-              className='w-3.5 h-3.5 text-accent-foreground'
+              className='size-3.5 text-accent-foreground'
               strokeWidth={3}
               aria-hidden='true'
             />

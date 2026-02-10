@@ -33,8 +33,8 @@ describe('ContentGrid', () => {
     );
     const grid = screen.getByText('Content').parentElement;
     // UI library Grid uses sm: breakpoint for 2 columns
+    expect(grid?.className).toContain('grid-cols-1');
     expect(grid?.className).toContain('sm:grid-cols-2');
-    expect(grid?.className).toContain('md:grid-rows-2');
   });
 
   test('applies max-width and centering classes', () => {

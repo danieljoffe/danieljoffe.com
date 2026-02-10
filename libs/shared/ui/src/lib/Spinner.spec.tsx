@@ -9,17 +9,17 @@ describe('Spinner', () => {
 
   it('applies md size by default', () => {
     const { container } = render(<Spinner />);
-    expect(container.firstChild).toHaveClass('w-8', 'h-8');
+    expect(container.firstChild).toHaveClass('size-8');
   });
 
   it('applies sm size styles', () => {
     const { container } = render(<Spinner size='sm' />);
-    expect(container.firstChild).toHaveClass('w-4', 'h-4');
+    expect(container.firstChild).toHaveClass('size-4');
   });
 
   it('applies lg size styles', () => {
     const { container } = render(<Spinner size='lg' />);
-    expect(container.firstChild).toHaveClass('w-12', 'h-12');
+    expect(container.firstChild).toHaveClass('size-12');
   });
 
   it('applies accent variant by default', () => {

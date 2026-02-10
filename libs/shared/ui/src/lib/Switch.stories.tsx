@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Switch } from './Switch';
 
-const meta: Meta<typeof Switch> = {
+const meta = {
   title: 'Components/Switch',
   component: Switch,
   tags: ['autodocs'],
@@ -25,15 +25,16 @@ const meta: Meta<typeof Switch> = {
       action: 'onCheckedChange executed!',
     },
   },
-};
+} satisfies Meta<typeof Switch>;
 
 export default meta;
-type Story = StoryObj<typeof Switch>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
     checked: false,
     label: 'Enable notifications',
+    onCheckedChange: fn(),
   },
 };
 
@@ -41,6 +42,7 @@ export const Checked: Story = {
   args: {
     checked: true,
     label: 'Dark mode',
+    onCheckedChange: fn(),
   },
 };
 
@@ -49,6 +51,7 @@ export const Disabled: Story = {
     checked: false,
     label: 'Disabled switch',
     disabled: true,
+    onCheckedChange: fn(),
   },
 };
 
@@ -88,6 +91,10 @@ export const KeyboardInteraction: Story = {
 };
 
 export const Controlled: Story = {
+  args: {
+    checked: false,
+    onCheckedChange: fn(),
+  },
   render: function ControlledSwitch() {
     const [checked, setChecked] = useState(false);
     return (

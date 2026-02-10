@@ -53,7 +53,7 @@ export function Alert({
       className={cn('relative rounded-lg border p-4', container, className)}
     >
       <div className='flex gap-3'>
-        <Icon className='w-5 h-5 flex-shrink-0 mt-0.5' aria-hidden='true' />
+        <Icon className='size-5 shrink-0 mt-0.5' aria-hidden='true' />
         <div className='flex-1'>
           {title && <h5 className='mb-1 mt-0'>{title}</h5>}
           <div className='text-sm text-foreground-muted'>{children}</div>
@@ -64,7 +64,7 @@ export function Alert({
             aria-label='Dismiss alert'
             className='text-foreground-subtle hover:text-foreground transition-colors'
           >
-            <X className='w-4 h-4' aria-hidden='true' />
+            <X className='size-4' aria-hidden='true' />
           </button>
         )}
       </div>

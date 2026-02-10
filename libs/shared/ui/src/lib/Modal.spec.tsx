@@ -251,5 +251,27 @@ describe('Modal', () => {
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-label', 'Dialog');
     });
+
+    it('close button has accessible name "Close dialog"', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}} title='Test'>
+          Content
+        </Modal>
+      );
+      expect(
+        screen.getByRole('button', { name: 'Close dialog' })
+      ).toBeInTheDocument();
+    });
+
+    it('close button is accessible when no title is provided', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      expect(
+        screen.getByRole('button', { name: 'Close dialog' })
+      ).toBeInTheDocument();
+    });
   });
 });

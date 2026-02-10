@@ -1,4 +1,5 @@
 import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import { Rocket, Handshake, BookOpen, Cog, TrendingUp } from 'lucide-react';
 
 export default function Mantra() {
   return (
@@ -24,7 +25,10 @@ export default function Mantra() {
         >
           <li className='col-span-4 col-start-2 md:col-start-1'>
             <Stack direction='horizontal' gap='sm'>
-              <p className='text-2xl'>🚀</p>
+              <Rocket
+                className='size-6 text-accent shrink-0 mt-1'
+                absoluteStrokeWidth={true}
+              />
               <div>
                 <h4>Winc</h4>
                 <p> Marketing velocity and brand transformation</p>
@@ -33,7 +37,10 @@ export default function Mantra() {
           </li>
           <li className='col-span-4 col-start-2'>
             <Stack direction='horizontal' gap='sm'>
-              <p className='text-2xl'>🤝</p>
+              <Handshake
+                className='size-6 text-accent shrink-0 mt-1'
+                absoluteStrokeWidth={true}
+              />
               <div>
                 <h4>Internet Brands</h4>
                 <p> Team leadership and regulatory compliance</p>
@@ -42,7 +49,10 @@ export default function Mantra() {
           </li>
           <li className='col-span-4 col-start-2 md:col-start-3'>
             <Stack direction='horizontal' gap='sm'>
-              <p className='text-2xl'>🧑‍💻</p>
+              <BookOpen
+                className='size-6 text-accent shrink-0 mt-1'
+                absoluteStrokeWidth={true}
+              />
               <div>
                 <h4>Library Corporation</h4>
                 <p> Domain specialization and accessibility</p>
@@ -51,7 +61,10 @@ export default function Mantra() {
           </li>
           <li className='col-span-4 col-start-2 md:col-start-4'>
             <Stack direction='horizontal' gap='sm'>
-              <p className='text-2xl'>⚙️</p>
+              <Cog
+                className='size-6 text-accent shrink-0 mt-1'
+                absoluteStrokeWidth={true}
+              />
               <div>
                 <h4>FightCamp</h4>
                 <p> Infrastructure scaling and team empowerment</p>
@@ -60,7 +73,10 @@ export default function Mantra() {
           </li>
           <li className='col-span-4 col-start-2 md:col-start-5'>
             <Stack direction='horizontal' gap='sm'>
-              <p className='text-2xl'>📈</p>
+              <TrendingUp
+                className='size-6 text-accent shrink-0 mt-1'
+                absoluteStrokeWidth={true}
+              />
               <div>
                 <h4>Current</h4>
                 <p> Foundation building and strategic growth</p>
