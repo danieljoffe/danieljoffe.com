@@ -139,6 +139,7 @@ export default function Form() {
             autoComplete='name'
             label='Name'
             required={true}
+            data-sentry-mask
             {...register('name')}
             error={errors?.name?.message}
             aria-describedby={errors?.name?.message ? 'name-error' : undefined}
@@ -151,6 +152,7 @@ export default function Form() {
             type='email'
             autoComplete='email'
             required={true}
+            data-sentry-mask
             {...register('email')}
             error={errors?.email?.message}
             aria-describedby={
@@ -165,6 +167,7 @@ export default function Form() {
             autoComplete='off'
             required={true}
             rows={5}
+            data-sentry-mask
             {...register('message')}
             error={errors?.message?.message}
             aria-describedby={

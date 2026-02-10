@@ -152,9 +152,8 @@ export const setGradientTheme = (): void => {
             initialValue: value,
           });
           registered.add(key);
-        } catch (_error) {
-          // Optionally, handle or log the error here
-          // e.g. Sentry.captureException(err);
+        } catch {
+          // CSS.registerProperty may throw if property was already registered
         }
       } else {
         document.documentElement.style.setProperty(key, value);

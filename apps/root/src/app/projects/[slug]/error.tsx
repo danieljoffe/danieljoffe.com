@@ -14,7 +14,13 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    Sentry.withScope(scope => {
+      scope.setTag('route', '/projects/[slug]');
+      if (error.digest) {
+        scope.setExtra('digest', error.digest);
+      }
+      Sentry.captureException(error);
+    });
   }, [error]);
 
   return (
