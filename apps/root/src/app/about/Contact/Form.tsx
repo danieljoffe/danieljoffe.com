@@ -189,6 +189,9 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
+        <label className='text-sm text-foreground-muted block mb-1'>
+          Security verification
+        </label>
         {shouldLoadCaptcha && (
           <HCaptcha
             sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}
@@ -199,9 +202,9 @@ export default function Form() {
         )}
       </div>
 
-      <div>
+      <div className='flex justify-center'>
         <Button
-          variant='secondary'
+          variant='primary'
           type='submit'
           disabled={isSubmitting}
           aria-describedby={

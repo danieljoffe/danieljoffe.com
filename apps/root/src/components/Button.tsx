@@ -8,6 +8,7 @@ import {
   sizeUIButtonStyles,
   variantUIButtonStyles,
   Button as UIButton,
+  cn,
 } from '@danieljoffe.com/shared-ui';
 import { devLog } from '@/utils/helpers';
 import { AsButtonProps, AsLinkProps, ButtonProps } from '@/types/buttonTypes';
@@ -24,16 +25,14 @@ function LinkAsButton(props: AsLinkProps) {
     className,
     ...rest
   } = props;
-  const classes = [
+  const classes = cn(
     baseUIButtonStyles,
     variantUIButtonStyles[variant ?? 'primary'],
     sizeUIButtonStyles[size ?? 'md'],
-    highlighted ? 'text-accent underline underline-offset-4' : '',
-    className ?? '',
-  ]
-    .concat(disabled ? 'pointer-events-none' : '')
-    .filter(Boolean)
-    .join(' ');
+    highlighted && 'text-accent underline underline-offset-4',
+    disabled && 'pointer-events-none',
+    className
+  );
 
   const handleMouseEnter = useCallback(
     (href: Url) => {

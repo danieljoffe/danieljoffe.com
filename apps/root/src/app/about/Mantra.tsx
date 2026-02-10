@@ -4,17 +4,16 @@ export default function Mantra() {
   return (
     <Section aria-labelledby='mantra-heading' className='min-h-min max-h-max'>
       <PageContainer>
-        <h2 id='mantra-heading'>Mantra</h2>
+        <h2 id='mantra-heading' className='text-center'>
+          Mantra
+        </h2>
         <p>
-          I&apos;m driven by the challenge of making complex systems simple and
-          empowering teams to do their best work. As a natural collaborator, I
-          thrive in cross-functional environments where I can translate between
-          technical and business needs. My leadership style is rooted in
-          mentorship. I believe in investing in people&apos;s growth because
-          when teams succeed, products succeed.
+          I thrive at the intersection of technical and business teams —
+          simplifying complex systems, removing friction, and investing in the
+          people around me. When teams succeed, products succeed.
         </p>
 
-        <h3>The Through-Line: Evolution of Impact</h3>
+        <h3 className='text-center'>The Through-Line: Evolution of Impact</h3>
         <p>
           Looking back, each role presented a fundamentally different challenge
           and there were valuable lessons learned.

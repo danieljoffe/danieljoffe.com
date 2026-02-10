@@ -1,4 +1,13 @@
-import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import { expertiseCategories } from '@/data/about';
+import {
+  Badge,
+  Card,
+  Grid,
+  GridItem,
+  PageContainer,
+  Section,
+  Stack,
+} from '@danieljoffe.com/shared-ui';
 
 export default function TechnicalExpertise() {
   return (
@@ -7,37 +16,25 @@ export default function TechnicalExpertise() {
       className='min-h-min max-h-max'
     >
       <PageContainer>
-        <h2 id='technical-expertise-heading'>Technical Expertise</h2>
-        <Stack as='ul' direction='vertical' gap='sm' className='list-none'>
-          <li>
-            <p>
-              <strong className='font-bold'>Frontend:</strong>{' '}
-              <br className='md:hidden' /> React, TypeScript, Vue.js, Nuxt.js,
-              Next.js, Angular, HTML5, CSS3, Tailwind CSS
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong className='font-bold'>Backend:</strong>{' '}
-              <br className='md:hidden' /> Node.js, Express, REST APIs, AWS (S3,
-              Cognito), PostgreSQL
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong className='font-bold'>Tools:</strong>{' '}
-              <br className='md:hidden' /> Jest, Cypress, Storybook, Webpack,
-              Git, CI/CD, Lighthouse, WCAG
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong className='font-bold'>Specializations:</strong>{' '}
-              <br className='md:hidden' /> Performance Optimization, Component
-              Libraries, Design Systems, Accessibility
-            </p>
-          </li>
-        </Stack>
+        <h2 id='technical-expertise-heading' className='text-center'>
+          Technical Expertise
+        </h2>
+        <Grid as='ul' cols={2} className='list-none !my-4'>
+          {expertiseCategories.map(category => (
+            <GridItem as='li' key={category.label}>
+              <Card className='h-full border-l-4 border-l-accent' padding='md'>
+                <h3 className='!mt-0 !mb-3'>{category.label}</h3>
+                <Stack direction='horizontal' className='flex-wrap' gap='sm'>
+                  {category.skills.map(skill => (
+                    <Badge key={skill} variant='accent'>
+                      {skill}
+                    </Badge>
+                  ))}
+                </Stack>
+              </Card>
+            </GridItem>
+          ))}
+        </Grid>
       </PageContainer>
     </Section>
   );

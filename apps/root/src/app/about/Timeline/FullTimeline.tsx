@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import { EXPERIENCE_LINK } from '@/utils/base';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
-import LinkHint from '@/components/LinkHint';
 import Button from '@/components/Button';
 import ContentGrid from '@/components/ContentGrid';
 import { Card, GridItem, Stack } from '@danieljoffe.com/shared-ui';
@@ -9,19 +8,19 @@ import { Card, GridItem, Stack } from '@danieljoffe.com/shared-ui';
 export default function FullTimeline() {
   return (
     <>
-      <h3>Detailed Professional Journey</h3>
+      <h3 className='text-center'>Detailed Professional Journey</h3>
       <ContentGrid>
         {experiencePageSlugs.map(slug => {
           const company = experienceFull[slug] ?? {};
 
           return (
             <GridItem as='li' key={company.slug}>
-              <Card className='flex' padding='none' elevated>
+              <Card className='flex w-full' padding='none' elevated>
                 <Button
                   as='link'
                   variant='bare'
                   size='lg'
-                  className='w-full'
+                  className='w-full hover:text-accent hover:shadow-lg/30'
                   href={`${EXPERIENCE_LINK.href}/${company.slug}`}
                   aria-label={`View details for ${company.company}`}
                 >
@@ -38,17 +37,18 @@ export default function FullTimeline() {
                         priority={false}
                         loading='lazy'
                         decoding='async'
-                        className='max-h-max w-[3rem]'
+                        className={[
+                          'max-h-max w-[3rem]',
+                          company.invert
+                            ? 'dark:invert dark:brightness-200'
+                            : '',
+                        ].join(' ')}
                       />
                     </div>
 
                     <div className='flex-1'>
                       <h4>{company.company}</h4>
                       <p>{company.role}</p>
-                    </div>
-
-                    <div className='w-[1.5rem]'>
-                      <LinkHint />
                     </div>
                   </Stack>
                 </Button>

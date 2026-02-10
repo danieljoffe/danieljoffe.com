@@ -54,8 +54,8 @@ export default function Hero() {
               faster, with less effort.
             </p>
             <p>
-              Explore my work below, and let&apos;s discuss how I can help your
-              team.
+              Explore my journey below, and let&apos;s discuss how I can help
+              your team.
             </p>
             <SocialLinks />
           </Stack>
