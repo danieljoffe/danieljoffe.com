@@ -10,11 +10,19 @@ export default function FullTimeline() {
     <>
       <h3 className='text-center'>Detailed Professional Journey</h3>
       <ContentGrid>
-        {experiencePageSlugs.map(slug => {
+        {experiencePageSlugs.map((slug, index) => {
           const company = experienceFull[slug] ?? {};
 
           return (
-            <GridItem as='li' key={company.slug}>
+            <GridItem
+              as='li'
+              key={company.slug}
+              className={
+                index === experiencePageSlugs.length - 1
+                  ? 'md:col-span-2 md:w-1/2 md:mx-auto'
+                  : ''
+              }
+            >
               <Card className='flex w-full' padding='none' elevated>
                 <Button
                   as='link'

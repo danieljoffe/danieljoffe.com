@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import Button from './Button';
-import { GithubIcon } from 'lucide-react';
-import LinkHint from './LinkHint';
+import { ArrowUpRight, GithubIcon } from 'lucide-react';
 
 const meta = {
   title: 'Components/Button',
@@ -101,7 +100,7 @@ export const Link: Story = {
   },
   render: props => (
     <Button {...props}>
-      Link <LinkHint />
+      Link <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
     </Button>
   ),
 };
