@@ -44,9 +44,12 @@ export default function WhoIWorkWith() {
         <Grid as='ul' cols={1} gap='sm' className='md:grid-cols-2 list-none'>
           {audiences.map((audience, index) => (
             <GridItem key={index} as='li'>
-              <Card padding='md' className='h-full'>
+              <Card padding='sm' className='h-full'>
                 <Stack direction='horizontal' gap='sm' align='start'>
-                  <span className='text-xl' aria-hidden='true'>
+                  <span
+                    className='text-xl leading-none mt-0.5'
+                    aria-hidden='true'
+                  >
                     {audience.icon}
                   </span>
                   <p>

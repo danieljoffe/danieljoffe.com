@@ -48,8 +48,8 @@ export default function HowIWork() {
         <Grid as='ol' cols={1} gap='md'>
           {steps.map((step, index) => (
             <GridItem key={index} as='li'>
-              <Card padding='md' className='flex w-full h-full'>
-                <Stack direction='vertical' gap='sm' align='start'>
+              <Card padding='none' className='flex w-full h-full py-3 px-4'>
+                <Stack direction='vertical' gap='xs' align='start'>
                   <h3 className='flex gap-4 items-center'>
                     <span className='inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent text-accent-foreground font-bold'>
                       {step.number}

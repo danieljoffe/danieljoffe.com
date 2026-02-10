@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import {
   Card,
+  Badge,
   Stack,
   PageContainer,
   Section,
@@ -12,6 +13,7 @@ const services = [
   {
     icon: '🚀',
     title: 'Performance Audits & Optimization',
+    highlighted: true,
     description:
       'Your site is slow and users are bouncing. I diagnose the root causes—bloated bundles, unoptimized assets, layout shifts—and fix them systematically.',
     deliverables: [
@@ -27,6 +29,7 @@ const services = [
   {
     icon: '🔧',
     title: 'Component Libraries & Design Systems',
+    highlighted: false,
     description:
       'Your codebase has inconsistent UI, duplicated components, and no documentation. I build shared component systems that scale.',
     deliverables: [
@@ -42,6 +45,7 @@ const services = [
   {
     icon: '📄',
     title: 'CMS & Self-Serve Tooling',
+    highlighted: false,
     description:
       'Your marketing team submits engineering tickets to change a headline. I build tooling that gives non-technical teams full autonomy.',
     deliverables: [
@@ -57,6 +61,7 @@ const services = [
   {
     icon: '💻',
     title: 'MVP & Product Frontend Builds',
+    highlighted: false,
     description:
       'You have a backend or an idea and need a production-quality frontend—fast. I architect and build complete frontend applications.',
     deliverables: [
@@ -85,16 +90,40 @@ export default function ServicesGrid() {
         <Grid as='ul' cols={1} gap='lg' className='md:grid-cols-2'>
           {services.map((service, index) => (
             <GridItem key={index} as='li'>
-              <Card padding='lg' elevated className='h-full'>
-                <Stack direction='vertical' gap='md'>
-                  <Stack direction='horizontal' gap='sm' align='center'>
-                    <span className='text-2xl' aria-hidden='true'>
-                      {service.icon}
-                    </span>
-                    <h3 className='!mb-0'>{service.title}</h3>
-                  </Stack>
+              <Card
+                padding='lg'
+                elevated
+                className={`h-full flex flex-col ${
+                  service.highlighted
+                    ? 'ring-2 ring-accent/40 border-accent/40'
+                    : ''
+                }`}
+              >
+                <Stack direction='vertical' gap='md' className='flex-1'>
+                  <div className='flex flex-col gap-2 items-start'>
+                    <Stack
+                      direction='horizontal'
+                      gap='sm'
+                      align='center'
+                      className='w-full'
+                    >
+                      <span
+                        className='text-2xl leading-none flex-shrink-0'
+                        role='img'
+                        aria-hidden='true'
+                      >
+                        {service.icon}
+                      </span>
+                      <h3 className='!mb-0'>{service.title}</h3>
+                    </Stack>
+                    {service.highlighted && (
+                      <Badge variant='accent' className='w-fit'>
+                        Most popular
+                      </Badge>
+                    )}
+                  </div>
                   <p>{service.description}</p>
-                  <div>
+                  <div className='flex-1'>
                     <p className='font-bold mb-2'>What you get:</p>
                     <ul className='space-y-2'>
                       {service.deliverables.map((item, i) => (
@@ -116,10 +145,10 @@ export default function ServicesGrid() {
                     gap='md'
                     className='pt-4 border-t border-border'
                   >
-                    <p className='text-sm'>
+                    <p className='text-sm whitespace-nowrap'>
                       <strong>Timeline:</strong> {service.timeline}
                     </p>
-                    <p className='text-sm'>
+                    <p className='text-sm whitespace-nowrap'>
                       <strong>Starting at:</strong> {service.price}
                     </p>
                   </Stack>

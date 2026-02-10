@@ -10,7 +10,7 @@ export const profileData = {
   name: FULL_NAME,
   title: JOB_TITLE,
   tagline: 'I build fast experiences that inspire.',
-  status: "Currently seeking new opportunities — let's talk.",
+  status: "Currently available — let's talk.",
   social: {
     email: EMAIL_ADDRESS,
     linkedin: LINKEDIN_PROFILE_URL,

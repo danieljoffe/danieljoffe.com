@@ -1,12 +1,7 @@
 'use client';
 
-import { ArrowUpRight } from 'lucide-react';
-import {
-  PageContainer,
-  Section,
-  Stack,
-  Badge,
-} from '@danieljoffe.com/shared-ui';
+import { ArrowUpRight, ChevronDown } from 'lucide-react';
+import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
 import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
@@ -20,7 +15,9 @@ export default function Hero() {
     >
       <PageContainer className='text-center max-w-[40rem]'>
         <Stack direction='vertical' gap='lg' align='center'>
-          <Badge variant='success'>Currently available for new projects</Badge>
+          <span className='inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-accent text-accent-foreground'>
+            Currently available for new projects
+          </span>
           <div>
             <h1 id='services-hero-heading'>
               Your frontend is costing you users.
@@ -42,6 +39,14 @@ export default function Hero() {
             <span>Book a Discovery Call</span>
             <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />
           </Button>
+          <a
+            href='#services-grid-heading'
+            className='text-sm text-foreground-muted hover:text-accent transition-colors flex items-center gap-1'
+            aria-label='Scroll to services'
+          >
+            See what I offer
+            <ChevronDown className='w-4 h-4' />
+          </a>
         </Stack>
       </PageContainer>
     </Section>
