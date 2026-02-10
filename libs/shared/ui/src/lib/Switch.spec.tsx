@@ -80,4 +80,20 @@ describe('Switch', () => {
     const switchEl = screen.getByRole('switch');
     expect(switchEl).toHaveAttribute('type', 'button');
   });
+
+  it('positions thumb at translate-x-6 when checked', () => {
+    const { container } = render(
+      <Switch checked={true} onCheckedChange={() => {}} />
+    );
+    const thumb = container.querySelector('span');
+    expect(thumb).toHaveClass('translate-x-6');
+  });
+
+  it('positions thumb at translate-x-1 when unchecked', () => {
+    const { container } = render(
+      <Switch checked={false} onCheckedChange={() => {}} />
+    );
+    const thumb = container.querySelector('span');
+    expect(thumb).toHaveClass('translate-x-1');
+  });
 });

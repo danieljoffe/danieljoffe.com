@@ -56,4 +56,41 @@ describe('Divider', () => {
     expect(screen.queryByText('OR')).not.toBeInTheDocument();
     expect(container.firstChild).toHaveClass('w-px');
   });
+
+  describe('accessibility', () => {
+    it('has role="separator" on horizontal divider', () => {
+      render(<Divider />);
+      expect(screen.getByRole('separator')).toBeInTheDocument();
+    });
+
+    it('has aria-orientation="horizontal" on horizontal divider', () => {
+      render(<Divider />);
+      expect(screen.getByRole('separator')).toHaveAttribute(
+        'aria-orientation',
+        'horizontal'
+      );
+    });
+
+    it('has aria-orientation="vertical" on vertical divider', () => {
+      render(<Divider orientation='vertical' />);
+      expect(screen.getByRole('separator')).toHaveAttribute(
+        'aria-orientation',
+        'vertical'
+      );
+    });
+
+    it('has aria-hidden="true" on decorative lines in labeled divider', () => {
+      const { container } = render(<Divider label='OR' />);
+      const hiddenLines = container.querySelectorAll('[aria-hidden="true"]');
+      expect(hiddenLines).toHaveLength(2);
+    });
+
+    it('has role="separator" on labeled divider', () => {
+      render(<Divider label='OR' />);
+      expect(screen.getByRole('separator')).toHaveAttribute(
+        'aria-orientation',
+        'horizontal'
+      );
+    });
+  });
 });

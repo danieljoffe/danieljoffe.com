@@ -67,4 +67,30 @@ describe('Checkbox', () => {
     const checkbox = screen.getByTestId('terms-checkbox');
     expect(checkbox).toHaveAttribute('name', 'terms');
   });
+
+  it('renders Check icon when checked', () => {
+    const { container } = render(<Checkbox checked onChange={() => {}} />);
+    const checkIcon = container.querySelector('svg');
+    expect(checkIcon).toBeInTheDocument();
+  });
+
+  it('does not render Check icon when unchecked', () => {
+    const { container } = render(
+      <Checkbox checked={false} onChange={() => {}} />
+    );
+    const checkIcon = container.querySelector('svg');
+    expect(checkIcon).toBeNull();
+  });
+
+  it('applies sr-only class to input for screen reader accessibility', () => {
+    render(<Checkbox />);
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toHaveClass('sr-only');
+  });
+
+  it('has aria-hidden="true" on visual label', () => {
+    const { container } = render(<Checkbox label='Accept' />);
+    const visualLabel = container.querySelector('[aria-hidden="true"]');
+    expect(visualLabel).toBeInTheDocument();
+  });
 });

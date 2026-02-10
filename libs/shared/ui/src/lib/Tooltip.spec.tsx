@@ -165,44 +165,44 @@ describe('Tooltip', () => {
     expect(tooltip).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('applies top position by default', () => {
+  it('applies top position with offset and centering by default', () => {
     const { container } = render(
       <Tooltip content='Tooltip text'>
         <button>Hover me</button>
       </Tooltip>
     );
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveClass('bottom-full');
+    expect(tooltip).toHaveClass('bottom-full', 'mb-2', '-translate-x-1/2');
   });
 
-  it('applies bottom position', () => {
+  it('applies bottom position with offset and centering', () => {
     const { container } = render(
       <Tooltip content='Tooltip text' position='bottom'>
         <button>Hover me</button>
       </Tooltip>
     );
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveClass('top-full');
+    expect(tooltip).toHaveClass('top-full', 'mt-2', '-translate-x-1/2');
   });
 
-  it('applies left position', () => {
+  it('applies left position with offset and centering', () => {
     const { container } = render(
       <Tooltip content='Tooltip text' position='left'>
         <button>Hover me</button>
       </Tooltip>
     );
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveClass('right-full');
+    expect(tooltip).toHaveClass('right-full', 'mr-2', '-translate-y-1/2');
   });
 
-  it('applies right position', () => {
+  it('applies right position with offset and centering', () => {
     const { container } = render(
       <Tooltip content='Tooltip text' position='right'>
         <button>Hover me</button>
       </Tooltip>
     );
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveClass('left-full');
+    expect(tooltip).toHaveClass('left-full', 'ml-2', '-translate-y-1/2');
   });
 
   it('uses custom delay', () => {

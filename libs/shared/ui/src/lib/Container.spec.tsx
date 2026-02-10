@@ -12,9 +12,9 @@ describe('Container', () => {
     expect(container.firstChild).toHaveClass('mx-auto', 'w-full');
   });
 
-  it('applies horizontal padding', () => {
+  it('applies horizontal padding with responsive breakpoint', () => {
     const { container } = render(<Container>Content</Container>);
-    expect(container.firstChild).toHaveClass('px-4');
+    expect(container.firstChild).toHaveClass('px-4', 'sm:px-6');
   });
 
   it('applies default size (full)', () => {

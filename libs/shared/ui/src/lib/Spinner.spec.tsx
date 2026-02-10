@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Spinner } from './Spinner';
 
 describe('Spinner', () => {
@@ -70,5 +70,28 @@ describe('Spinner', () => {
   it('applies thicker border for lg size', () => {
     const { container } = render(<Spinner size='lg' />);
     expect(container.firstChild).toHaveClass('border-3');
+  });
+
+  describe('accessibility', () => {
+    it('has role="status"', () => {
+      render(<Spinner />);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    it('has default aria-label="Loading"', () => {
+      render(<Spinner />);
+      expect(screen.getByRole('status')).toHaveAttribute(
+        'aria-label',
+        'Loading'
+      );
+    });
+
+    it('accepts custom aria-label', () => {
+      render(<Spinner aria-label='Submitting form' />);
+      expect(screen.getByRole('status')).toHaveAttribute(
+        'aria-label',
+        'Submitting form'
+      );
+    });
   });
 });

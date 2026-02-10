@@ -33,9 +33,9 @@ describe('Section', () => {
     expect(container.firstChild).toHaveClass('py-12');
   });
 
-  it('applies xl padding', () => {
+  it('applies xl padding with responsive breakpoint', () => {
     const { container } = render(<Section padding='xl'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-16');
+    expect(container.firstChild).toHaveClass('py-16', 'sm:py-24');
   });
 
   // Background tests

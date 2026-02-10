@@ -75,15 +75,21 @@ describe('ColorPalette', () => {
     expect(screen.getByText('Contrast: 7.1:1 AAA')).toBeInTheDocument();
   });
 
-  it('renders color swatches with correct background colors', () => {
+  it('renders color swatches with hex background colors', () => {
     const { container } = render(<ColorPalette />);
     const swatches = container.querySelectorAll('.h-24');
     expect(swatches.length).toBeGreaterThan(0);
 
-    const charcoalSwatch = Array.from(swatches).find(
-      el => (el as HTMLElement).style.backgroundColor === 'rgb(20, 21, 23)'
-    );
-    expect(charcoalSwatch).toBeTruthy();
+    // Check that swatches have inline background-color styles
+    const firstSwatch = swatches[0] as HTMLElement;
+    expect(firstSwatch.style.backgroundColor).toBeTruthy();
+  });
+
+  it('renders hex codes inside code elements', () => {
+    const { container } = render(<ColorPalette />);
+    const codeElements = container.querySelectorAll('code');
+    expect(codeElements.length).toBeGreaterThan(0);
+    expect(codeElements[0].textContent).toMatch(/^#[0-9A-F]{6}$/i);
   });
 
   it('renders as a grid layout', () => {

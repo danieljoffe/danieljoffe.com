@@ -94,6 +94,21 @@ describe('Button', () => {
     expect(button).toHaveClass('custom-class');
   });
 
+  it('applies bare variant styles (empty string)', () => {
+    render(<Button variant='bare'>Bare</Button>);
+    const button = screen.getByRole('button');
+    // bare variant has no bg-* or border-* variant styles
+    expect(button).not.toHaveClass('bg-accent');
+    expect(button).not.toHaveClass('bg-background-elevated');
+    expect(button).not.toHaveClass('border-border-strong');
+  });
+
+  it('applies accent variant styles', () => {
+    render(<Button variant='accent'>Accent</Button>);
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('bg-accent', 'text-accent-foreground');
+  });
+
   it('passes through additional props', () => {
     render(
       <Button type='submit' data-testid='submit-btn'>

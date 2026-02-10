@@ -208,4 +208,67 @@ describe('Stack', () => {
     );
     expect(container.firstChild).toHaveClass('custom-class');
   });
+
+  it('applies xl gap', () => {
+    const { container } = render(
+      <Stack gap='xl'>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('gap-8');
+  });
+
+  it('applies sm gap', () => {
+    const { container } = render(
+      <Stack gap='sm'>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('gap-2');
+  });
+
+  it('applies align end', () => {
+    const { container } = render(
+      <Stack align='end'>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('items-end');
+  });
+
+  it('applies default justify (start)', () => {
+    const { container } = render(
+      <Stack>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('justify-start');
+  });
+
+  it('applies justify end', () => {
+    const { container } = render(
+      <Stack justify='end'>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('justify-end');
+  });
+
+  it('applies justify around', () => {
+    const { container } = render(
+      <Stack justify='around'>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('justify-around');
+  });
+
+  it('applies justify evenly', () => {
+    const { container } = render(
+      <Stack justify='evenly'>
+        <div>Child</div>
+      </Stack>
+    );
+    expect(container.firstChild).toHaveClass('justify-evenly');
+  });
 });

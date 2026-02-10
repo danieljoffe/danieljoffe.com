@@ -116,4 +116,40 @@ describe('Input', () => {
     render(<Input ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
+
+  describe('accessibility', () => {
+    it('sets aria-invalid="true" when error is present', () => {
+      render(<Input error='Invalid' />);
+      expect(screen.getByRole('textbox')).toHaveAttribute(
+        'aria-invalid',
+        'true'
+      );
+    });
+
+    it('does not set aria-invalid when no error', () => {
+      render(<Input />);
+      expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-invalid');
+    });
+
+    it('links input to error message via aria-describedby', () => {
+      render(<Input id='email' error='Required' />);
+      const input = screen.getByRole('textbox');
+      const describedBy = input.getAttribute('aria-describedby');
+      expect(describedBy).toBe('email-error');
+      expect(screen.getByRole('alert')).toHaveAttribute('id', describedBy);
+    });
+
+    it('links input to helper text via aria-describedby', () => {
+      render(<Input id='email' helperText='Enter your email' />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveAttribute('aria-describedby', 'email-helper');
+    });
+
+    it('renders error message with role="alert"', () => {
+      render(<Input error='This field is required' />);
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'This field is required'
+      );
+    });
+  });
 });

@@ -96,7 +96,7 @@ describe('Grid', () => {
         <div>Child</div>
       </Grid>
     );
-    expect(container.firstChild).toHaveClass('grid-cols-1');
+    expect(container.firstChild).toHaveClass('grid-cols-1', 'sm:grid-cols-2');
   });
 
   it('applies 3 columns', () => {
@@ -105,7 +105,7 @@ describe('Grid', () => {
         <div>Child</div>
       </Grid>
     );
-    expect(container.firstChild).toHaveClass('grid-cols-1');
+    expect(container.firstChild).toHaveClass('grid-cols-1', 'lg:grid-cols-3');
   });
 
   it('applies 4 columns', () => {
@@ -114,7 +114,7 @@ describe('Grid', () => {
         <div>Child</div>
       </Grid>
     );
-    expect(container.firstChild).toHaveClass('grid-cols-1');
+    expect(container.firstChild).toHaveClass('grid-cols-1', 'lg:grid-cols-4');
   });
 
   it('applies default gap (md)', () => {
@@ -160,6 +160,29 @@ describe('Grid', () => {
       </Grid>
     );
     expect(container.firstChild).toHaveClass('gap-8');
+  });
+
+  it('applies 6 columns', () => {
+    const { container } = render(
+      <Grid cols={6}>
+        <div>Child</div>
+      </Grid>
+    );
+    expect(container.firstChild).toHaveClass(
+      'grid-cols-2',
+      'sm:grid-cols-3',
+      'lg:grid-cols-6'
+    );
+  });
+
+  it('applies 0 columns (no grid-cols class)', () => {
+    const { container } = render(
+      <Grid cols={0}>
+        <div>Child</div>
+      </Grid>
+    );
+    expect(container.firstChild).toHaveClass('grid');
+    expect(container.firstChild).not.toHaveClass('grid-cols-1');
   });
 
   it('applies custom className', () => {
@@ -210,17 +233,35 @@ describe('GridItem', () => {
 
   it('applies colSpan 2', () => {
     const { container } = render(<GridItem colSpan={2}>Content</GridItem>);
-    expect(container.firstChild).toHaveClass('col-span-1');
+    expect(container.firstChild).toHaveClass('col-span-1', 'sm:col-span-2');
   });
 
   it('applies colSpan 6', () => {
     const { container } = render(<GridItem colSpan={6}>Content</GridItem>);
-    expect(container.firstChild).toHaveClass('col-span-2');
+    expect(container.firstChild).toHaveClass('col-span-2', 'lg:col-span-6');
   });
 
   it('applies colSpan 12 (full width)', () => {
     const { container } = render(<GridItem colSpan={12}>Content</GridItem>);
     expect(container.firstChild).toHaveClass('col-span-full');
+  });
+
+  it('applies colSpan 3', () => {
+    const { container } = render(<GridItem colSpan={3}>Content</GridItem>);
+    expect(container.firstChild).toHaveClass(
+      'col-span-1',
+      'sm:col-span-2',
+      'lg:col-span-3'
+    );
+  });
+
+  it('applies colSpan 4', () => {
+    const { container } = render(<GridItem colSpan={4}>Content</GridItem>);
+    expect(container.firstChild).toHaveClass(
+      'col-span-1',
+      'sm:col-span-2',
+      'lg:col-span-4'
+    );
   });
 
   it('applies custom className', () => {

@@ -92,4 +92,27 @@ describe('Select', () => {
     const select = screen.getByTestId('country-select');
     expect(select).toHaveAttribute('name', 'country');
   });
+
+  describe('accessibility', () => {
+    it('sets aria-invalid="true" when error is present', () => {
+      render(<Select options={defaultOptions} error='Required' />);
+      const select = screen.getByRole('combobox');
+      expect(select).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('links select to error via aria-describedby', () => {
+      render(
+        <Select id='test-select' options={defaultOptions} error='Required' />
+      );
+      const select = screen.getByRole('combobox');
+      const errorId = select.getAttribute('aria-describedby');
+      expect(errorId).toBeTruthy();
+      expect(screen.getByRole('alert')).toHaveAttribute('id', errorId);
+    });
+
+    it('renders error message with role="alert"', () => {
+      render(<Select options={defaultOptions} error='Required field' />);
+      expect(screen.getByRole('alert')).toHaveTextContent('Required field');
+    });
+  });
 });
