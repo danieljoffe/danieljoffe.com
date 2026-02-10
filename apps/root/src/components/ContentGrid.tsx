@@ -7,7 +7,7 @@ export default function ContentGrid({ children }: WChildrenT) {
       as='ul'
       cols={2}
       gap='lg'
-      className='list-none md:grid-rows-2 max-w-[30rem] mx-auto md:max-w-full min-w-min'
+      className='list-none max-w-[30rem] mx-auto md:max-w-full min-w-min'
     >
       {children}
     </Grid>

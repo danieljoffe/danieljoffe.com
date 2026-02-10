@@ -11,7 +11,6 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
       title: experienceNames.Winc,
       description:
         'The Foundation Years: Learning to Scale Marketing Operations',
-      backgroundColor: 'bg-[#450a0a]',
       link: {
         label: experienceNames.Winc,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.Winc}`,
@@ -29,7 +28,6 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
       title: experienceNames.IB,
       description:
         'The Leadership Test: Managing Teams While Ensuring Compliance',
-      backgroundColor: 'bg-[#172554]',
       link: {
         label: experienceNames.IB,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.IB}`,
@@ -47,7 +45,6 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
       title: experienceNames.TLC,
       description:
         'The Specialization Challenge: Building for Unique User Needs',
-      backgroundColor: 'bg-[#451a03]',
       link: {
         label: experienceNames.TLC,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.TLC}`,
@@ -64,7 +61,6 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
       slug: experienceSlugs.FC,
       title: experienceNames.FC,
       description: 'The Scale Challenge: Infrastructure for Exponential Growth',
-      backgroundColor: 'bg-[#000000]',
       link: {
         label: experienceNames.FC,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.FC}`,
@@ -82,7 +78,6 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
       title: experienceNames.SD,
       description:
         'The Investment Phase: Deepening Expertise While Contributing',
-      backgroundColor: 'bg-[#052e16]',
       link: {
         label: experienceNames.SD,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.SD}`,

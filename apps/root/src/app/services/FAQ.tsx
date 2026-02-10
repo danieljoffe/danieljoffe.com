@@ -8,7 +8,7 @@ const faqs = [
   {
     question: "What's your availability?",
     answer:
-      'I take on 1-2 projects at a time to ensure quality. Currently booking for Q1 2026.',
+      "I take on 1-2 projects at a time to ensure quality. I'm currently available — reach out to discuss your timeline.",
   },
   {
     question: 'Do you do hourly work?',

@@ -16,7 +16,7 @@ export default function ExperiencePage() {
       <Section className='min-h-min max-h-max'>
         <PageContainer>
           <Stack direction='vertical' gap='md'>
-            <header>
+            <header className='text-center'>
               <h1>Experience</h1>
               <p>
                 An overview of my professional journey as a frontend
@@ -32,7 +32,14 @@ export default function ExperiencePage() {
               </h2>
               <ContentGrid>
                 {experienceList.map((data, index) => (
-                  <li key={data.slug}>
+                  <li
+                    key={data.slug}
+                    className={
+                      index === experienceList.length - 1
+                        ? 'md:col-span-2 md:w-1/2 md:mx-auto'
+                        : ''
+                    }
+                  >
                     <PostThumbnail {...data} index={index} />
                   </li>
                 ))}

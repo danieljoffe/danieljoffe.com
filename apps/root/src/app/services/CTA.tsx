@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowUpRight } from 'lucide-react';
 import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import CTASection from '@/components/CTASection';
@@ -14,7 +15,9 @@ export default function CTA() {
         {
           label: 'Book a Discovery Call',
           href: CALENDLY_URL,
+          target: '_blank',
           ariaLabel: `Book a discovery call with ${FULL_NAME}`,
+          icon: <ArrowUpRight absoluteStrokeWidth={true} className='w-4 h-4' />,
           onClick: () =>
             analytics.ctaClick('services_cta_discovery_call', CALENDLY_URL),
         },

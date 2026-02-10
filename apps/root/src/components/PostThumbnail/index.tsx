@@ -10,7 +10,6 @@ export default function PostThumbnail({
   slug,
   cover,
   link,
-  backgroundColor,
   description,
   index,
 }: PostThumbnailI & { index: number }) {
@@ -46,9 +45,8 @@ export default function PostThumbnail({
         href={link.href}
         onClick={handleClick}
         className={[
-          'row-span-1 col-span-1 flex-1 text-accent-foreground',
-          'overflow-hidden shadow-lg text-foreground',
-          backgroundColor,
+          'row-span-1 col-span-1 flex-1',
+          'overflow-hidden shadow-lg',
         ].join(' ')}
         aria-label={`View ${link.label} project details`}
       >

@@ -20,7 +20,7 @@ export default function Hero() {
     >
       <PageContainer className='text-center max-w-[40rem]'>
         <Stack direction='vertical' gap='lg' align='center'>
-          <Badge variant='success'>Available for new projects — Q1 2026</Badge>
+          <Badge variant='success'>Currently available for new projects</Badge>
           <div>
             <h1 id='services-hero-heading'>
               Your frontend is costing you users.

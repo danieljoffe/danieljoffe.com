@@ -8,7 +8,7 @@ export default function PostThumbnailIDescription({
     <div
       className={[
         'overflow-hidden min-h-[15rem] min-h-min',
-        'bg-foreground/25 backdrop-blur-md shadow-lg h-full',
+        'bg-card text-card-foreground shadow-lg h-full',
         'px-4 pt-6 pb-8',
       ].join(' ')}
     >

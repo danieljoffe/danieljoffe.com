@@ -108,7 +108,9 @@ export default function ServicesGrid() {
                       ))}
                     </ul>
                   </div>
-                  <p className='text-sm italic'>{service.proof}</p>
+                  <p className='text-sm italic border-l-2 border-l-accent pl-3'>
+                    {service.proof}
+                  </p>
                   <Stack
                     direction='horizontal'
                     gap='md'
