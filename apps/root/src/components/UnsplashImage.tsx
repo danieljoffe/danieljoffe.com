@@ -85,13 +85,8 @@ export default function UnsplashImage({
       style={{ aspectRatio: width && height ? `${width}/${height}` : '9/16' }}
     >
       <Image {...imageProps} alt={alt} />
-      <figcaption
-        className={[
-          'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t',
-          'from-black/75 to-transparent flex justify-end',
-        ].join(' ')}
-      >
-        <p className='text-accent-foreground'>
+      <figcaption className='absolute bottom-2 right-2'>
+        <p className='bg-background/85 text-foreground text-xs rounded-md px-2 py-1 whitespace-nowrap'>
           <Button
             as='link'
             variant='bare'
@@ -101,18 +96,7 @@ export default function UnsplashImage({
             rel='noopener noreferrer'
             aria-label={`Photo by ${creator} on Unsplash`}
           >
-            Photo by {creator},
-          </Button>
-          <Button
-            as='link'
-            variant='bare'
-            size='sm'
-            href={origin}
-            target='_blank'
-            rel='noopener noreferrer'
-            aria-label='View original photo on Unsplash'
-          >
-            Unsplash
+            unsplash{creator}
           </Button>
         </p>
       </figcaption>
