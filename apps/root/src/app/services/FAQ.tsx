@@ -3,34 +3,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
-
-const faqs = [
-  {
-    question: "What's your availability?",
-    answer:
-      "I take on 1-2 projects at a time to ensure quality. I'm currently available — reach out to discuss your timeline.",
-  },
-  {
-    question: 'Do you do hourly work?',
-    answer:
-      "I prefer project-based pricing so we're both aligned on outcomes, not hours. For ongoing partnerships, I offer monthly retainers.",
-  },
-  {
-    question: "What's your tech stack?",
-    answer:
-      "React, Next.js, TypeScript, Vue/Nuxt, Tailwind CSS. I'm framework-flexible—I pick whatever solves your problem best.",
-  },
-  {
-    question: 'Can you work with my existing team?',
-    answer:
-      "Absolutely. I've led teams of up to 6 developers and regularly collaborate with designers, PMs, and backend engineers.",
-  },
-  {
-    question: 'What about ongoing maintenance?',
-    answer:
-      'I offer monthly retainer packages for teams that need continued frontend support after the initial build.',
-  },
-];
+import { servicesFAQs } from '@/data/services';
 
 function FAQItem({
   question,
@@ -86,7 +59,7 @@ export default function FAQ() {
           Frequently Asked Questions
         </h2>
         <Stack direction='vertical' gap='none'>
-          {faqs.map((faq, index) => (
+          {servicesFAQs.map((faq, index) => (
             <FAQItem
               key={index}
               question={faq.question}
