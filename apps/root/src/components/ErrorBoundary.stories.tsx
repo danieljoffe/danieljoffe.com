@@ -1,13 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import ErrorBoundary from './ErrorBoundary';
 import { expect } from 'storybook/test';
+import ErrorBoundary from './ErrorBoundary';
 
-const meta: Meta<typeof ErrorBoundary> = {
+const meta = {
   component: ErrorBoundary,
   title: 'Components/ErrorBoundary',
+  tags: ['autodocs'],
   parameters: {
     nextjs: {
       appDirectory: true,
+    },
+  },
+  argTypes: {
+    children: {
+      description: 'Content to render inside the error boundary',
+    },
+    fallback: {
+      description: 'Custom fallback component to render on error',
     },
   },
   decorators: [
@@ -17,12 +26,11 @@ const meta: Meta<typeof ErrorBoundary> = {
       </div>
     ),
   ],
-};
+} satisfies Meta<typeof ErrorBoundary>;
 export default meta;
 
-type Story = StoryObj<typeof ErrorBoundary>;
+type Story = StoryObj<typeof meta>;
 
-// Dormant: ErrorBoundary wraps normal content, no error thrown
 export const Dormant: Story = {
   args: {
     children: <h1>Content to show</h1>,
@@ -32,7 +40,6 @@ export const Dormant: Story = {
   },
 };
 
-// Triggered: ErrorBoundary wraps a component that throws, so content is not shown
 const ComponentWithError = () => {
   throw new Error('Test error');
 };
@@ -42,9 +49,7 @@ export const Triggered: Story = {
     children: <ComponentWithError />,
   },
   play: async ({ canvasElement }) => {
-    // The error boundary fallback should be rendered, not the original content
     await expect(canvasElement.textContent).not.toMatch(/Content to show/gi);
-    // Optionally, check for fallback text
     await expect(canvasElement.textContent).toMatch(/Something went wrong/gi);
   },
 };

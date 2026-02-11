@@ -1,29 +1,24 @@
-import type { Args, Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import Nav from './index';
 import GlobalProvider from '@/state/Global/Provider';
 import Modal from '../Modal';
 
-const meta: Meta<typeof Nav> = {
+const meta = {
   component: Nav,
   title: 'Components/Nav',
+  tags: ['autodocs'],
   decorators: [
-    Story => {
-      return (
-        <GlobalProvider>
-          <Modal />
-          <Story />
-        </GlobalProvider>
-      );
-    },
+    Story => (
+      <GlobalProvider>
+        <Modal />
+        <Story />
+      </GlobalProvider>
+    ),
   ],
 } satisfies Meta<typeof Nav>;
 export default meta;
 
-type Story = StoryObj<typeof Nav> & {
-  args: Args;
-};
+type Story = StoryObj<typeof meta>;
 
-export const Index: Story = {
-  args: {},
-} satisfies Story;
+export const Index: Story = {};

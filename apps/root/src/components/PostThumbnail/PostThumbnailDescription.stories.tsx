@@ -4,8 +4,27 @@ import PostThumbnailDescription from './PostThumbnailDescription';
 const meta = {
   component: PostThumbnailDescription,
   title: 'Components/PostThumbnail/PostThumbnailDescription',
+  tags: ['autodocs'],
   parameters: {
     layout: 'centered',
+  },
+  argTypes: {
+    title: {
+      description: 'Post title text',
+      control: 'text',
+    },
+    description: {
+      description: 'Brief summary of the post',
+      control: 'text',
+    },
+    duration: {
+      description: 'Time period displayed as a badge',
+      control: 'text',
+    },
+    role: {
+      description: 'Job role displayed as a badge',
+      control: 'text',
+    },
   },
   decorators: [
     Story => (

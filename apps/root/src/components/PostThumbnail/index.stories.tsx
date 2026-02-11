@@ -13,10 +13,39 @@ const mockCover = {
 const meta = {
   component: PostThumbnail,
   title: 'Components/PostThumbnail',
+  tags: ['autodocs'],
   parameters: {
     layout: 'centered',
     nextjs: {
       appDirectory: true,
+    },
+  },
+  argTypes: {
+    slug: {
+      description: 'URL slug for the post',
+      control: 'text',
+    },
+    cover: {
+      description: 'Unsplash image metadata for the thumbnail',
+    },
+    link: {
+      description: 'Navigation link for the post',
+    },
+    description: {
+      description: 'Brief summary of the post',
+      control: 'text',
+    },
+    duration: {
+      description: 'Time period (e.g. "Jun 2015 - Oct 2017")',
+      control: 'text',
+    },
+    role: {
+      description: 'Job role or position title',
+      control: 'text',
+    },
+    index: {
+      description: 'Position index for priority loading (first 2 are eager)',
+      control: 'number',
     },
   },
   decorators: [

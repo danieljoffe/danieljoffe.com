@@ -4,8 +4,14 @@ import PostContent from './PostContent';
 const meta = {
   component: PostContent,
   title: 'Components/PostContent',
+  tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
+  },
+  argTypes: {
+    children: {
+      description: 'Prose-styled content to render inside the container',
+    },
   },
 } satisfies Meta<typeof PostContent>;
 

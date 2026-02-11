@@ -4,8 +4,14 @@ import ContentGrid from './ContentGrid';
 const meta = {
   component: ContentGrid,
   title: 'Components/ContentGrid',
+  tags: ['autodocs'],
   parameters: {
     layout: 'padded',
+  },
+  argTypes: {
+    children: {
+      description: 'Grid items to render in a responsive 2-column layout',
+    },
   },
 } satisfies Meta<typeof ContentGrid>;
 

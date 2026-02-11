@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-
 import BreadCrumbs from './BreadCrumbs';
 
 const meta = {
   component: BreadCrumbs,
   title: 'Components/BreadCrumbs',
+  tags: ['autodocs'],
   parameters: {
     nextjs: {
       appDirectory: true,
@@ -13,22 +13,24 @@ const meta = {
       },
     },
   },
-  decorators: [
-    Story => {
-      return (
-        // <Memoryrouter></>
-        <div className='flex p-4'>
-          <Story />
-        </div>
-      );
+  argTypes: {
+    items: {
+      description: 'Array of breadcrumb navigation links',
     },
+  },
+  decorators: [
+    Story => (
+      <div className='flex p-4'>
+        <Story />
+      </div>
+    ),
   ],
 } satisfies Meta<typeof BreadCrumbs>;
 export default meta;
 
-type Story = StoryObj<typeof BreadCrumbs>;
+type Story = StoryObj<typeof meta>;
 
-export const Default = {
+export const Default: Story = {
   args: {
     items: [
       { href: '/', label: 'Home' },
@@ -36,13 +38,13 @@ export const Default = {
       { href: '/projects/ui-components', label: 'UI Components' },
     ],
   },
-} satisfies Story;
+};
 
-export const Short = {
+export const Short: Story = {
   args: {
     items: [
       { href: '/projects', label: 'Projects' },
       { href: '/projects/ui-components', label: 'UI Components' },
     ],
   },
-} satisfies Story;
+};
