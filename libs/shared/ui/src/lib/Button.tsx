@@ -1,7 +1,7 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
 
-export type UIButtonVariantT =
+export type ButtonVariant =
   | 'bare'
   | 'primary'
   | 'secondary'
@@ -13,19 +13,19 @@ export type UIButtonVariantT =
   | 'warning'
   | 'info';
 
-export type UIButtonSizeT = 'sm' | 'md' | 'lg';
-export interface UIButtonBaseI {
-  variant?: UIButtonVariantT;
-  size?: UIButtonSizeT;
+export type ButtonSize = 'sm' | 'md' | 'lg';
+export interface ButtonBase {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   children: ReactNode;
 }
 
-export interface UIButtonProps
+export interface ButtonProps
   extends
-    UIButtonBaseI,
+    ButtonBase,
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {}
 
-export const baseUIButtonStyles = [
+export const baseButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition',
   'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
   'focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
@@ -33,7 +33,7 @@ export const baseUIButtonStyles = [
 ].join(' ');
 
 const regularButton = 'hover:shadow-lg/12.5';
-export const variantUIButtonStyles: Record<UIButtonVariantT, string> = {
+export const variantButtonStyles: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${
     regularButton
@@ -56,7 +56,7 @@ export const variantUIButtonStyles: Record<UIButtonVariantT, string> = {
 
 const baseOutline =
   'hover:outline hover:outline-2 hover:outline-offset-2 hover:shadow-lg/12.5';
-export const variantUILinkOutline: Record<UIButtonVariantT, string> = {
+export const variantLinkOutline: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${baseOutline} hover:outline-accent`,
   secondary: `${baseOutline} hover:outline-border-strong`,
@@ -69,13 +69,13 @@ export const variantUILinkOutline: Record<UIButtonVariantT, string> = {
   info: `${baseOutline} hover:outline-info`,
 };
 
-export const sizeUIButtonStyles: Record<UIButtonSizeT, string> = {
+export const sizeButtonStyles: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-sm hover:scale-[1.1]',
   md: 'px-4 py-3 hover:scale-[1.05]',
   lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
 };
 
-export const Button = forwardRef<HTMLButtonElement, UIButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { variant = 'primary', size = 'md', children, className, ...props },
     ref
@@ -84,9 +84,9 @@ export const Button = forwardRef<HTMLButtonElement, UIButtonProps>(
       <button
         ref={ref}
         className={cn(
-          baseUIButtonStyles,
-          variantUIButtonStyles[variant],
-          sizeUIButtonStyles[size],
+          baseButtonStyles,
+          variantButtonStyles[variant],
+          sizeButtonStyles[size],
           className
         )}
         {...props}

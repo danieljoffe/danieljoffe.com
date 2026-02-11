@@ -4,10 +4,10 @@ import { Link } from 'next-transition-router';
 import { Url } from 'next/dist/shared/lib/router/router';
 import { useRouter } from 'next/navigation';
 import {
-  baseUIButtonStyles,
-  sizeUIButtonStyles,
-  variantUIButtonStyles,
-  variantUILinkOutline,
+  baseButtonStyles,
+  sizeButtonStyles,
+  variantButtonStyles,
+  variantLinkOutline,
   Button as UIButton,
   cn,
 } from '@danieljoffe.com/shared-ui';
@@ -28,12 +28,12 @@ function LinkAsButton(props: AsLinkProps) {
     ...rest
   } = props;
   const classes = cn(
-    baseUIButtonStyles,
-    variantUIButtonStyles[variant ?? 'primary'],
-    sizeUIButtonStyles[size ?? 'md'],
+    baseButtonStyles,
+    variantButtonStyles[variant ?? 'primary'],
+    sizeButtonStyles[size ?? 'md'],
     highlighted && 'text-accent underline underline-offset-4',
     disabled && 'pointer-events-none',
-    outline && variantUILinkOutline[variant ?? 'bare'],
+    outline && variantLinkOutline[variant ?? 'bare'],
     className
   );
 

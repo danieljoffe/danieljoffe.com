@@ -3,15 +3,15 @@ export { Alert } from './Alert';
 export { AspectRatio } from './AspectRatio';
 export { Badge } from './Badge';
 export {
-  type UIButtonBaseI,
-  type UIButtonSizeT,
-  type UIButtonVariantT,
-  type UIButtonProps,
+  type ButtonBase,
+  type ButtonSize,
+  type ButtonVariant,
+  type ButtonProps,
   Button,
-  baseUIButtonStyles,
-  sizeUIButtonStyles,
-  variantUIButtonStyles,
-  variantUILinkOutline,
+  baseButtonStyles,
+  sizeButtonStyles,
+  variantButtonStyles,
+  variantLinkOutline,
 } from './Button';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export { Checkbox } from './Checkbox';
@@ -41,7 +41,6 @@ export { cn, validateProps, ErrorBoundary, ModalErrorBoundary } from './utils';
 export type { AlertProps } from './Alert';
 export type { AspectRatioProps } from './AspectRatio';
 export type { BadgeProps } from './Badge';
-export type { UIButtonProps as ButtonProps } from './Button';
 export type {
   CardProps,
   CardHeaderProps,

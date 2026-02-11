@@ -1,5 +1,8 @@
 import type React from 'react';
-import { UIButtonBaseI, UIButtonProps } from '@danieljoffe.com/shared-ui';
+import type {
+  ButtonBase,
+  ButtonProps as UIButtonProps,
+} from '@danieljoffe.com/shared-ui';
 
 // Props when rendering as a native <button>
 export interface AsButtonProps extends UIButtonProps {
@@ -10,7 +13,7 @@ export interface AsButtonProps extends UIButtonProps {
 export interface AsLinkProps
   extends
     React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    Omit<UIButtonBaseI, 'children'> {
+    Omit<ButtonBase, 'children'> {
   as: 'link';
   highlighted?: boolean;
   outline?: boolean;
