@@ -256,7 +256,7 @@ describe('Modal', () => {
     const backdrop = screen.getByTestId('dialog-backdrop');
     const panel = screen.getByTestId('dialog-panel');
 
-    expect(backdrop.className).toContain('transition-opacity');
-    expect(panel.className).toContain('transition-all');
+    expect(backdrop).toHaveClass('transition-opacity');
+    expect(panel).toHaveClass('transition-all');
   });
 });

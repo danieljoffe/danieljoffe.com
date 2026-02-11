@@ -16,6 +16,12 @@ describe('ScrollToElement', () => {
     mockGet.mockReturnValue(null);
   });
 
+  afterEach(() => {
+    // Clean up any DOM elements appended during tests
+    const target = document.getElementById('contact-form');
+    if (target) document.body.removeChild(target);
+  });
+
   it('renders nothing (returns null)', () => {
     const { container } = render(<ScrollToElement />);
     expect(container.innerHTML).toBe('');
@@ -32,8 +38,6 @@ describe('ScrollToElement', () => {
 
     render(<ScrollToElement />);
     expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: 'smooth' });
-
-    document.body.removeChild(targetElement);
   });
 
   it('does not call scrollIntoView when scrollTo param is missing', () => {
@@ -47,8 +51,6 @@ describe('ScrollToElement', () => {
 
     render(<ScrollToElement />);
     expect(scrollIntoViewMock).not.toHaveBeenCalled();
-
-    document.body.removeChild(targetElement);
   });
 
   it('does not throw when target element does not exist', () => {

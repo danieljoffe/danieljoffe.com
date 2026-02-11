@@ -55,6 +55,13 @@ const CustomFallback = ({
 );
 
 describe('ErrorBoundary', () => {
+  afterEach(() => {
+    // Reset mock mutation from production-mode tests
+    jest.mocked(require('@/lib/public.env').publicEnv).NEXT_PUBLIC_NODE_ENV =
+      'development';
+    delete (window as unknown as Record<string, unknown>).gtag;
+  });
+
   it('renders children when there is no error', () => {
     render(
       <ErrorBoundary>
@@ -185,8 +192,6 @@ describe('ErrorBoundary', () => {
       description: 'Test error',
       fatal: false,
     });
-
-    delete (window as unknown as Record<string, unknown>).gtag;
   });
 
   it('has no accessibility violations', async () => {

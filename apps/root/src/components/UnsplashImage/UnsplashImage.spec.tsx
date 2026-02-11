@@ -156,12 +156,7 @@ describe('UnsplashImage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
     jest.clearAllTimers();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
   });
 
   describe('Image component props', () => {
@@ -283,10 +278,6 @@ describe('UnsplashImage', () => {
 
   describe('Error handling', () => {
     it('should throw error when required props are missing', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        // Suppress error output during test
-      });
-
       expect(() => {
         render(
           <UnsplashImage
@@ -299,16 +290,9 @@ describe('UnsplashImage', () => {
           />
         );
       }).toThrow('Missing required props');
-
-      consoleSpy.mockRestore();
     });
 
     it('should throw error when width and height are missing for non-fill image', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        // Suppress error output during test
-      });
-
-      // Create props without width and height
       const propsWithoutDimensions = {
         src: mockProps.src,
         alt: mockProps.alt,
@@ -317,14 +301,11 @@ describe('UnsplashImage', () => {
         blurHash: mockProps.blurHash,
         priority: mockProps.priority,
         fill: false,
-        // Explicitly don't include width and height
       } as UnsplashImageProps;
 
       expect(() => {
         render(<UnsplashImage {...propsWithoutDimensions} />);
       }).toThrow('Missing required props');
-
-      consoleSpy.mockRestore();
     });
   });
 

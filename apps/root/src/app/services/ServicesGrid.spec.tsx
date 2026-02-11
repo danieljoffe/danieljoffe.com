@@ -17,13 +17,21 @@ describe('ServicesGrid', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders service descriptions', () => {
+  it('renders all service descriptions', () => {
     render(<ServicesGrid />);
     expect(
       screen.getByText(/Your site is slow and users are bouncing/i)
     ).toBeInTheDocument();
     expect(
       screen.getByText(/Your codebase has inconsistent UI/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your marketing team submits engineering tickets/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /You have a backend or an idea and need a production-quality frontend/i
+      )
     ).toBeInTheDocument();
   });
 
@@ -57,6 +65,17 @@ describe('ServicesGrid', () => {
     expect(
       screen.getByText(/Built a React component library adopted by 80%/i)
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Built CMS tooling that let marketing launch 200\+/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Built a logistics dashboard MVP/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders "Most popular" badge on highlighted service', () => {
+    render(<ServicesGrid />);
+    expect(screen.getByText('Most popular')).toBeInTheDocument();
   });
 
   it('renders service cards as list items', () => {
