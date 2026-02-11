@@ -3,7 +3,11 @@ import { fn } from 'storybook/test';
 import { ArrowUpRight, GithubIcon } from 'lucide-react';
 import Button from './Button';
 
-const meta = {
+// Button has a discriminated union type (AsButtonProps | AsLinkProps).
+// Storybook's type inference produces `never` for args on discriminated unions,
+// so we use `Meta` without a component generic for the meta and `StoryObj` without
+// deriving from typeof meta.
+const meta: Meta = {
   component: Button,
   title: 'Components/Button',
   tags: ['autodocs'],
@@ -62,7 +66,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof Button>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;

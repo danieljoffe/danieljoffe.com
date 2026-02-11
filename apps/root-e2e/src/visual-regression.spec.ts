@@ -20,7 +20,7 @@ import { test, expect } from '@playwright/test';
 // DO NOT commit darwin/macOS snapshots - they will not match in CI.
 const fontsAreMocked = !!process.env.CI || process.env.MOCK_FONTS === 'true';
 
-test.describe('visual Regression Tests', () => {
+test.describe('visual regression', () => {
   test.skip(
     !fontsAreMocked,
     'VR tests require mocked fonts (set MOCK_FONTS=true or run in CI)'

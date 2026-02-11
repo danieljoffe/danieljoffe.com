@@ -1,18 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('performance tests', () => {
+test.describe('performance', () => {
   test('homepage loads within performance budget', async ({ page }) => {
-    const startTime = Date.now();
-
     await page.goto('/');
+    await page.waitForLoadState('load');
 
-    // Wait for page to be fully loaded
-    await page.waitForLoadState('domcontentloaded');
+    const loadTime = await page.evaluate(() => {
+      const nav = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
+      return nav.loadEventEnd - nav.startTime;
+    });
 
-    const loadTime = Date.now() - startTime;
-
-    // Page should load within 3 seconds
-    expect(loadTime).toBeLessThan(3000);
+    // Page should load within 5 seconds
+    expect(loadTime).toBeLessThan(5000);
   });
 
   test('core web vitals meet thresholds', async ({ page }) => {

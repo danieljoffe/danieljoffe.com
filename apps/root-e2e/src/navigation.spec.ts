@@ -1,6 +1,7 @@
-import { test, expect, NAV_LINKS } from './fixtures/base.fixture';
+import { test, expect } from '@playwright/test';
+import { NAV_LINKS } from './fixtures/test-data';
 
-test.describe('desktop Navigation', () => {
+test.describe('desktop navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
   });
@@ -23,9 +24,9 @@ test.describe('desktop Navigation', () => {
     await page.waitForLoadState('domcontentloaded');
 
     for (const link of NAV_LINKS) {
-      const navLink = page.locator(
-        `a[aria-label="Navigate to ${link.label} page"]`
-      );
+      const navLink = page
+        .locator('nav[aria-label="Main navigation"]')
+        .locator(`a[aria-label="Navigate to ${link.label} page"]`);
       await expect(navLink).toBeAttached();
     }
   });
@@ -42,14 +43,17 @@ test.describe('desktop Navigation', () => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
 
-    const projectsLink = page.locator('a[href="/projects"]').first();
+    const projectsLink = page
+      .locator('nav[aria-label="Main navigation"]')
+      .locator('a[href="/projects"]')
+      .first();
     await projectsLink.click();
 
     await expect(page).toHaveURL(/.*projects/);
   });
 });
 
-test.describe('mobile Navigation', () => {
+test.describe('mobile navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
   });
@@ -58,7 +62,7 @@ test.describe('mobile Navigation', () => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
 
-    const menuButton = page.locator('[aria-label="Open menu"]');
+    const menuButton = page.getByLabel('Open menu');
     await expect(menuButton).toBeVisible();
 
     await menuButton.click();
@@ -72,14 +76,14 @@ test.describe('mobile Navigation', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Open menu
-    const menuButton = page.locator('[aria-label="Open menu"]');
+    const menuButton = page.getByLabel('Open menu');
     await menuButton.click();
 
     const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
     await expect(modal).toBeVisible();
 
     // Close menu
-    const closeButton = page.locator('button:has-text("Close")');
+    const closeButton = modal.getByRole('button', { name: 'Close' });
     await closeButton.click();
 
     await expect(modal).toBeHidden();
@@ -90,7 +94,7 @@ test.describe('mobile Navigation', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Open menu
-    const menuButton = page.locator('[aria-label="Open menu"]');
+    const menuButton = page.getByLabel('Open menu');
     await menuButton.click();
 
     // Wait for modal to be visible and stable
@@ -110,7 +114,7 @@ test.describe('mobile Navigation', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Open menu
-    const menuButton = page.locator('[aria-label="Open menu"]');
+    const menuButton = page.getByLabel('Open menu');
     await menuButton.click();
 
     // Wait for modal to be visible
@@ -118,12 +122,12 @@ test.describe('mobile Navigation', () => {
     await expect(modal).toBeVisible();
 
     // Close button should be visible and focusable
-    const closeButton = page.locator('button:has-text("Close")');
+    const closeButton = modal.getByRole('button', { name: 'Close' });
     await expect(closeButton).toBeVisible();
   });
 });
 
-test.describe('breadcrumb Navigation', () => {
+test.describe('breadcrumb navigation', () => {
   test('shows breadcrumbs on project detail page', async ({ page }) => {
     await page.goto('/projects/performance-case-study');
     await page.waitForLoadState('domcontentloaded');

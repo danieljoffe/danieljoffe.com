@@ -1,15 +1,4 @@
-import { test, expect, Page, Route } from '@playwright/test';
-
-// Re-export test data for convenience
-export {
-  NAV_LINKS,
-  PROJECT_SLUGS,
-  EXPERIENCE_SLUGS,
-  VALID_FORM_DATA,
-  INVALID_FORM_DATA,
-} from './test-data';
-
-export { test };
+import { Page, Route } from '@playwright/test';
 
 // Helper function to mock hCaptcha
 export async function mockHCaptcha(page: Page): Promise<void> {
@@ -43,11 +32,13 @@ export async function mockHCaptcha(page: Page): Promise<void> {
           // attribute to signal completion to the test harness.
           if (opts?.callback) {
             requestAnimationFrame(() => {
-              opts.callback!('mock-hcaptcha-token');
-              document.documentElement.setAttribute(
-                'data-hcaptcha-verified',
-                'true'
-              );
+              requestAnimationFrame(() => {
+                opts.callback!('mock-hcaptcha-token');
+                document.documentElement.setAttribute(
+                  'data-hcaptcha-verified',
+                  'true'
+                );
+              });
             });
           }
           return 'mock-widget-id';
@@ -151,6 +142,3 @@ export async function waitForHydration(page: Page): Promise<void> {
       )
   );
 }
-
-// Re-export expect for convenience
-export { expect };

@@ -1,8 +1,6 @@
+import { test, expect } from '@playwright/test';
+import { VALID_FORM_DATA, INVALID_FORM_DATA } from './fixtures/test-data';
 import {
-  test,
-  expect,
-  VALID_FORM_DATA,
-  INVALID_FORM_DATA,
   mockHCaptcha,
   completeHCaptcha,
   mockEmailAPISuccess,
@@ -10,7 +8,7 @@ import {
   waitForHydration,
 } from './fixtures/base.fixture';
 
-test.describe('contact Form Validation', () => {
+test.describe('contact form validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/about');
     // Wait for React hydration to complete before interacting with the form.
@@ -19,7 +17,7 @@ test.describe('contact Form Validation', () => {
     // instead of React's handleSubmit (no validation errors appear).
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
   });
 
   test('form is visible on about page', async ({ page }) => {
@@ -28,7 +26,7 @@ test.describe('contact Form Validation', () => {
   });
 
   test('shows validation error for empty name field', async ({ page }) => {
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for validation to trigger and re-render
@@ -39,17 +37,18 @@ test.describe('contact Form Validation', () => {
   });
 
   test('shows validation error for short name on submit', async ({ page }) => {
-    const nameInput = page.locator('input[name="name"]');
+    const nameInput = page.locator('form').getByLabel(/name/i);
     await nameInput.fill(INVALID_FORM_DATA.shortName);
 
     // Fill other fields to trigger name validation on submit
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
+    await page.locator('form').getByLabel(/email/i).fill(VALID_FORM_DATA.email);
     await page
-      .locator('textarea[name="message"]')
+      .locator('form')
+      .getByLabel(/message/i)
       .fill(VALID_FORM_DATA.message);
 
     // Submit form to trigger validation
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -62,16 +61,17 @@ test.describe('contact Form Validation', () => {
     page,
   }) => {
     // Fill name and message with valid data
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
+    await page.locator('form').getByLabel(/name/i).fill(VALID_FORM_DATA.name);
     await page
-      .locator('textarea[name="message"]')
+      .locator('form')
+      .getByLabel(/message/i)
       .fill(VALID_FORM_DATA.message);
 
-    const emailInput = page.locator('input[name="email"]');
+    const emailInput = page.locator('form').getByLabel(/email/i);
     await emailInput.fill(INVALID_FORM_DATA.invalidEmail);
 
     // Submit form to trigger validation
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -84,14 +84,14 @@ test.describe('contact Form Validation', () => {
     page,
   }) => {
     // Fill name and email with valid data
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
+    await page.locator('form').getByLabel(/name/i).fill(VALID_FORM_DATA.name);
+    await page.locator('form').getByLabel(/email/i).fill(VALID_FORM_DATA.email);
 
-    const messageInput = page.locator('textarea[name="message"]');
+    const messageInput = page.locator('form').getByLabel(/message/i);
     await messageInput.fill(INVALID_FORM_DATA.shortMessage);
 
     // Submit form to trigger validation
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -104,15 +104,15 @@ test.describe('contact Form Validation', () => {
     page,
   }) => {
     // Fill valid name and email first
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
+    await page.locator('form').getByLabel(/name/i).fill(VALID_FORM_DATA.name);
+    await page.locator('form').getByLabel(/email/i).fill(VALID_FORM_DATA.email);
 
     // Fill message with URL
-    const messageInput = page.locator('textarea[name="message"]');
+    const messageInput = page.locator('form').getByLabel(/message/i);
     await messageInput.fill(INVALID_FORM_DATA.messageWithUrl);
 
     // Submit form to trigger validation
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -134,9 +134,9 @@ test.describe('contact Form Validation', () => {
   });
 
   test('required fields are marked as required', async ({ page }) => {
-    const nameInput = page.locator('input[name="name"]');
-    const emailInput = page.locator('input[name="email"]');
-    const messageInput = page.locator('textarea[name="message"]');
+    const nameInput = page.locator('form').getByLabel(/name/i);
+    const emailInput = page.locator('form').getByLabel(/email/i);
+    const messageInput = page.locator('form').getByLabel(/message/i);
 
     await expect(nameInput).toHaveAttribute('required', '');
     await expect(emailInput).toHaveAttribute('required', '');
@@ -144,7 +144,7 @@ test.describe('contact Form Validation', () => {
   });
 });
 
-test.describe('contact Form Submission', () => {
+test.describe('contact form submission', () => {
   test('successful submission redirects to thank-you page', async ({
     page,
   }) => {
@@ -155,20 +155,21 @@ test.describe('contact Form Submission', () => {
     await page.goto('/about');
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
     // Fill form with valid data
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
+    await page.locator('form').getByLabel(/name/i).fill(VALID_FORM_DATA.name);
+    await page.locator('form').getByLabel(/email/i).fill(VALID_FORM_DATA.email);
     await page
-      .locator('textarea[name="message"]')
+      .locator('form')
+      .getByLabel(/message/i)
       .fill(VALID_FORM_DATA.message);
 
     // Complete hCaptcha verification
     await completeHCaptcha(page);
 
     // Submit form
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for navigation to thank-you page
@@ -183,20 +184,21 @@ test.describe('contact Form Submission', () => {
     await page.goto('/about');
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
     // Fill form with valid data
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
+    await page.locator('form').getByLabel(/name/i).fill(VALID_FORM_DATA.name);
+    await page.locator('form').getByLabel(/email/i).fill(VALID_FORM_DATA.email);
     await page
-      .locator('textarea[name="message"]')
+      .locator('form')
+      .getByLabel(/message/i)
       .fill(VALID_FORM_DATA.message);
 
     // Complete hCaptcha verification
     await completeHCaptcha(page);
 
     // Submit form
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for error alert
@@ -210,13 +212,14 @@ test.describe('contact Form Submission', () => {
     await page.goto('/about');
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
     // Fill form with valid data
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
+    await page.locator('form').getByLabel(/name/i).fill(VALID_FORM_DATA.name);
+    await page.locator('form').getByLabel(/email/i).fill(VALID_FORM_DATA.email);
     await page
-      .locator('textarea[name="message"]')
+      .locator('form')
+      .getByLabel(/message/i)
       .fill(VALID_FORM_DATA.message);
 
     // Scroll to make captcha visible and wait for it to load
@@ -224,10 +227,10 @@ test.describe('contact Form Submission', () => {
     await form.scrollIntoViewIfNeeded();
 
     // Wait for the submit button to be ready
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
     // Submit form without completing captcha
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Should show captcha error - wait for it to appear using auto-waiting
@@ -235,17 +238,11 @@ test.describe('contact Form Submission', () => {
     await expect(errorAlert).toBeVisible({ timeout: 5000 });
   });
 
-  test('submit button is disabled during submission', async ({ page }) => {
+  test('submit button is initially enabled', async ({ page }) => {
     await page.goto('/about');
     await page.locator('form').waitFor({ state: 'visible' });
 
-    const submitButton = page.locator('button[type="submit"]');
-
-    // Button should not be disabled initially
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await expect(submitButton).toBeEnabled();
-
-    // Verify button exists and is enabled
-    await expect(submitButton).toBeVisible();
-    await expect(submitButton).toHaveText(/submit/i);
   });
 });

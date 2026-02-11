@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('services Page', () => {
+test.describe('services page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/services');
     await page.waitForLoadState('domcontentloaded');
@@ -14,7 +14,7 @@ test.describe('services Page', () => {
       'MVP & Product Frontend Builds',
     ];
     for (const title of cards) {
-      await expect(page.locator(`h3:has-text("${title}")`)).toBeVisible();
+      await expect(page.getByRole('heading', { name: title })).toBeVisible();
     }
   });
 
