@@ -1,7 +1,7 @@
 import { UNSPLASH_URL } from '@/utils/constants';
-import { NavLinkI, WChildrenT } from './base';
+import { NavLink, WithChildren } from './base';
 
-export interface UnsplashImageMetaI {
+export interface UnsplashImageMeta {
   alt: string;
   src: `/photo-${string}`;
   origin: `${typeof UNSPLASH_URL}/photos${string}`;
@@ -9,21 +9,21 @@ export interface UnsplashImageMetaI {
   blurHash: string;
 }
 
-export interface PostBaseI {
+export interface PostBase {
   slug: string;
   title: string;
   description: string;
-  cover: UnsplashImageMetaI;
-  link: NavLinkI;
+  cover: UnsplashImageMeta;
+  link: NavLink;
 }
 
-export interface PostThumbnailI extends PostBaseI {
+export interface PostThumbnail extends PostBase {
   backgroundColor?: string;
   duration?: string;
   role?: string;
 }
 
-export interface PostBodyI extends WChildrenT {
-  breadcrumbs: NavLinkI[];
-  cover: UnsplashImageMetaI;
+export interface PostBodyProps extends WithChildren {
+  breadcrumbs: NavLink[];
+  cover: UnsplashImageMeta;
 }

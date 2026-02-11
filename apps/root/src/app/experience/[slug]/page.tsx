@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
-import { AllowedExperienceSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
-import { EXPERIENCE_LINK } from '@/utils/base';
+import { AllowedExperienceSlugs, NavLink, SlugPageProps } from '@/types/base';
+import { EXPERIENCE_LINK } from '@/utils/constants';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceMdxComponents } from '@/data/content/experience';
 import { experiencePageSlugs } from '@/data/experience';
@@ -10,7 +10,7 @@ import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostBody from '@/components/PostBody';
 import MainContent from '@/components/MainContent';
 
-export async function generateMetadata({ params }: SlugPagePropsI) {
+export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
   const record = experiencePagesMetadata[slug as AllowedExperienceSlugs];
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
   return record;
 }
 
-export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
+export default async function SlugExperiencePage({ params }: SlugPageProps) {
   const { slug } = (await params) ?? {};
 
   const Post = experienceMdxComponents[slug as AllowedExperienceSlugs];
@@ -35,7 +35,7 @@ export default async function SlugExperiencePage({ params }: SlugPagePropsI) {
   const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
 
-  const breadcrumbs: NavLinkI[] = [
+  const breadcrumbs: NavLink[] = [
     EXPERIENCE_LINK,
     {
       href: `${EXPERIENCE_LINK.href}/${slug}`,

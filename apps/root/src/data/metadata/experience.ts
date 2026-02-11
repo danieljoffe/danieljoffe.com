@@ -1,13 +1,12 @@
 import { AllowedExperienceSlugs } from '@/types/base';
 import { Metadata } from 'next';
-import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
+import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 import { experienceRecords } from '../experienceThumbnails';
 import {
   experienceRoles,
   experienceNames,
   experienceSlugs,
 } from '../experience';
-import { EXPERIENCE_LINK } from '@/utils/base';
 
 export const experienceRootMetadata: Metadata = {
   title: `Experience | ${FULL_NAME} - Frontend Engineer`,

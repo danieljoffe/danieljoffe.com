@@ -2,17 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useThrottle } from '@/hooks/useThrottle';
-
-export interface WindowSizeInterface {
-  windowWidth: number;
-  windowHeight: number;
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
-}
+import { WindowSize } from '@/types/base';
 
 export function useWindowResize() {
-  const [size, setSize] = useState<WindowSizeInterface>({
+  const [size, setSize] = useState<WindowSize>({
     windowWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
     windowHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,

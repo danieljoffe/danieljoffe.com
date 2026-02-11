@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import BreadCrumbs from './BreadCrumbs';
-import { NavLinkI } from '@/types/base';
+import { NavLink } from '@/types/base';
 
 // Mock next/navigation
 const mockUsePathname = jest.fn();
@@ -47,7 +47,7 @@ jest.mock('next/link', () => {
 });
 
 describe('BreadCrumbs', () => {
-  const items: NavLinkI[] = [
+  const items: NavLink[] = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/about/team', label: 'Team' },
@@ -79,7 +79,7 @@ describe('BreadCrumbs', () => {
 
   test('returns null when items is null', () => {
     const { container } = render(
-      <BreadCrumbs items={null as unknown as NavLinkI[]} />
+      <BreadCrumbs items={null as unknown as NavLink[]} />
     );
     expect(container.firstChild).toBeNull();
   });

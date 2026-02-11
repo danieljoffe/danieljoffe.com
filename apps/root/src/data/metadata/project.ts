@@ -1,9 +1,8 @@
-import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
+import { DOMAIN_URL, FULL_NAME, PROJECTS_LINK } from '@/utils/constants';
 import { Metadata } from 'next';
 import { AllowedProjectSlugs } from '@/types/base';
 import { projectSlugs } from '@/data/project';
 import { projectsRecords } from '../projectThumbnails';
-import { PROJECTS_LINK } from '@/utils/base';
 
 export const projectRootMetadata: Metadata = {
   title: 'Projects | Daniel Joffe - Frontend Engineer',

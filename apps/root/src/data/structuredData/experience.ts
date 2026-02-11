@@ -1,7 +1,4 @@
-import {
-  AllowedExperienceSlugs,
-  ExperienceStructuredDataI,
-} from '@/types/base';
+import { AllowedExperienceSlugs, ExperienceStructuredData } from '@/types/base';
 import {
   personStructuredData as member,
   CollectionPageStructuredData,
@@ -14,10 +11,9 @@ import {
   experiencePageSlugs,
 } from '../experience';
 import { experienceRecords } from '../experienceThumbnails';
-import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
-import { EXPERIENCE_LINK } from '@/utils/base';
+import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 
-export const wincExperienceSD: ExperienceStructuredDataI = {
+export const wincExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.Winc,
@@ -33,7 +29,7 @@ export const wincExperienceSD: ExperienceStructuredDataI = {
   member,
 };
 
-export const IBExperienceSD: ExperienceStructuredDataI = {
+export const IBExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.IB,
@@ -49,7 +45,7 @@ export const IBExperienceSD: ExperienceStructuredDataI = {
   member,
 };
 
-export const TLCExperienceSD: ExperienceStructuredDataI = {
+export const TLCExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.TLC,
@@ -65,7 +61,7 @@ export const TLCExperienceSD: ExperienceStructuredDataI = {
   member,
 };
 
-export const FCExperienceSD: ExperienceStructuredDataI = {
+export const FCExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.FC,
@@ -81,7 +77,7 @@ export const FCExperienceSD: ExperienceStructuredDataI = {
   member,
 };
 
-export const PDExperienceSD: ExperienceStructuredDataI = {
+export const PDExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.SD,
@@ -98,7 +94,7 @@ export const PDExperienceSD: ExperienceStructuredDataI = {
 
 export const experienceStructuredData: Record<
   AllowedExperienceSlugs,
-  ExperienceStructuredDataI
+  ExperienceStructuredData
 > = {
   [experienceSlugs.Winc]: wincExperienceSD,
   [experienceSlugs.IB]: IBExperienceSD,

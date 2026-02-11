@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useTransitionRouter } from 'next-transition-router';
 import dynamic from 'next/dynamic';
 import type { InferType } from 'yup';
-import { CONTACT_FORM_ID } from '@/utils/base';
+import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';

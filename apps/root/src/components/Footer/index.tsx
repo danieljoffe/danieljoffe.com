@@ -1,6 +1,6 @@
 import { Stack, PageContainer } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
-import { profileData } from '@/utils/profileData';
+import { profileData } from '@/data/profileData';
 import { FULL_NAME, STORYBOOK_URL } from '@/utils/constants';
 import NavLinks from '@/components/Nav/Links';
 import SocialLinks from '../SocialLinks';

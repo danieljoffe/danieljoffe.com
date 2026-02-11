@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { rootMetadata } from '@/data/metadata/root';
-import { WChildrenT } from '@/types/base';
+import { WithChildren } from '@/types/base';
 import { fontVariables } from '@/styles/fonts';
 import '@/styles/global.scss';
 import AppContext from './home/AppContext';
@@ -15,7 +15,7 @@ export const viewport: Viewport = {
   themeColor: '#0056b3',
 };
 
-export default async function RootLayout({ children }: WChildrenT) {
+export default async function RootLayout({ children }: WithChildren) {
   return (
     <html
       lang='en'

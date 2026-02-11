@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 import { PageContainer, Stack, Section } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
-import { EXPERIENCE_LINK } from '@/utils/base';
+import { EXPERIENCE_LINK } from '@/utils/constants';
 
 export default function Error({
   error,

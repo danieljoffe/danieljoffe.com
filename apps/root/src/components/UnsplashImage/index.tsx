@@ -1,17 +1,9 @@
 'use client';
 
-import { UNSPLASH_URL } from '@/utils/constants';
+import { UnsplashImageMeta } from '@/types/postTypes';
 import UnsplashFigure from './UnsplashFigure';
 import UnsplashImg from './UnsplashImg';
 import UnsplashAttribution from './UnsplashAttribution';
-
-export type UnsplashImageMeta = {
-  alt: string;
-  src: `/photo-${string}`;
-  origin: `${typeof UNSPLASH_URL}/photos${string}`;
-  creator: `@${string}`;
-  blurHash: string;
-};
 
 export type UnsplashImageProps = UnsplashImageMeta & {
   priority?: boolean;

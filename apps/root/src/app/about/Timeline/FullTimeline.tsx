@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { EXPERIENCE_LINK } from '@/utils/base';
+import { EXPERIENCE_LINK } from '@/utils/constants';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import Button from '@/components/Button';
 import ContentGrid from '@/components/ContentGrid';

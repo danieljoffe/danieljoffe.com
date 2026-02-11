@@ -1,10 +1,14 @@
-import { PostBodyI } from '@/types/postTypes';
+import { PostBodyProps } from '@/types/postTypes';
 import UnsplashImage from './UnsplashImage';
 import PostContent from './PostContent';
 import BreadCrumbs from './BreadCrumbs';
 import { Stack } from '@danieljoffe.com/shared-ui';
 
-export default function PostBody({ children, cover, breadcrumbs }: PostBodyI) {
+export default function PostBody({
+  children,
+  cover,
+  breadcrumbs,
+}: PostBodyProps) {
   return (
     <Stack>
       <BreadCrumbs items={breadcrumbs} />

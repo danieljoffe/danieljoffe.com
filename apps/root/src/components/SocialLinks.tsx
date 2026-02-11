@@ -1,8 +1,8 @@
 import { Stack } from '@danieljoffe.com/shared-ui';
 import Button from './Button';
-import { profileData } from '@/utils/profileData';
+import { profileData } from '@/data/profileData';
 import { analytics } from '@/lib/analytics';
-import { PROJECTS_LINK } from '@/utils/base';
+import { PROJECTS_LINK } from '@/utils/constants';
 import { AtSign, Download, Github, Linkedin } from 'lucide-react';
 import { downloadResume } from '@/utils/helpers';
 

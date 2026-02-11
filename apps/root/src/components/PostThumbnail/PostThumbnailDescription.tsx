@@ -1,8 +1,8 @@
-import { PostBaseI } from '@/types/postTypes';
+import { PostBase } from '@/types/postTypes';
 import { Badge, Stack } from '@danieljoffe.com/shared-ui';
 
 interface PostThumbnailDescriptionProps extends Pick<
-  PostBaseI,
+  PostBase,
   'title' | 'description'
 > {
   duration?: string;

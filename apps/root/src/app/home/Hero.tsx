@@ -9,8 +9,12 @@ import {
   Badge,
   Spacer,
 } from '@danieljoffe.com/shared-ui';
-import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
-import { HOME_LINK, PROJECTS_LINK } from '@/utils/base';
+import {
+  FULL_NAME,
+  JOB_TITLE,
+  HOME_LINK,
+  PROJECTS_LINK,
+} from '@/utils/constants';
 import { downloadResume } from '@/utils/helpers';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';

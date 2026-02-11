@@ -1,5 +1,4 @@
-import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
-import { SERVICES_LINK } from '@/utils/base';
+import { DOMAIN_URL, FULL_NAME, SERVICES_LINK } from '@/utils/constants';
 import { personStructuredData } from './base';
 
 const services = [

@@ -4,7 +4,7 @@ import {
   JOB_TITLE,
   LINKEDIN_PROFILE_URL,
   FULL_NAME,
-} from './constants';
+} from '@/utils/constants';
 
 export const profileData = {
   name: FULL_NAME,

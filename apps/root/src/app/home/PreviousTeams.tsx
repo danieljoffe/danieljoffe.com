@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
 import { analytics } from '@/lib/analytics';
-import { EXPERIENCE_LINK } from '@/utils/base';
+import { EXPERIENCE_LINK } from '@/utils/constants';
 import {
   Stack,
   PageContainer,

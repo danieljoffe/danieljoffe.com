@@ -65,7 +65,7 @@ export const experienceFull: Record<
     company: experienceNames.IB,
     logo: experienceLogos.IB,
     role: experienceRoles.IB,
-    invert: false,
+    invert: true,
   },
   [experienceSlugs.TLC]: {
     slug: experienceSlugs.TLC,

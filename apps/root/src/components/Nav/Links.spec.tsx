@@ -8,7 +8,7 @@ import {
   HOME_LINK,
   NAV_LINKS,
   PROJECTS_LINK,
-} from '@/utils/base';
+} from '@/utils/constants';
 
 // Mock next/link
 jest.mock('next/link', () => {

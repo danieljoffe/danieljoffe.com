@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import Methodologies from './Methodologies';
-import { offerings } from '@/utils/offerings';
+import { offerings } from '@/data/offerings';
 
 describe('Methodologies', () => {
   it('renders the section heading', () => {

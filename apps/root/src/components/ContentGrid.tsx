@@ -1,7 +1,7 @@
 import { Grid } from '@danieljoffe.com/shared-ui';
-import { WChildrenT } from '@/types/base';
+import { WithChildren } from '@/types/base';
 
-export default function ContentGrid({ children }: WChildrenT) {
+export default function ContentGrid({ children }: WithChildren) {
   return (
     <Grid
       as='ul'

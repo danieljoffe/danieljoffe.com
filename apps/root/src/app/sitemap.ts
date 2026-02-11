@@ -1,14 +1,14 @@
 import { MetadataRoute } from 'next';
 
-import { DOMAIN_URL } from '@/utils/constants';
-import { experiencePageSlugs } from '@/data/experience';
-import { projectPageSlugs } from '@/data/project';
 import {
+  DOMAIN_URL,
   ABOUT_LINK,
   EXPERIENCE_LINK,
   PROJECTS_LINK,
   SERVICES_LINK,
-} from '@/utils/base';
+} from '@/utils/constants';
+import { experiencePageSlugs } from '@/data/experience';
+import { projectPageSlugs } from '@/data/project';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static routes

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import Achievements from './Achievements';
-import { offerings } from '@/utils/offerings';
+import { offerings } from '@/data/offerings';
 
 describe('Achievements', () => {
   it('renders the section heading', () => {

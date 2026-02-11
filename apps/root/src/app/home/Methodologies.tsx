@@ -6,7 +6,7 @@ import {
   GridItem,
 } from '@danieljoffe.com/shared-ui';
 import ContentGrid from '@/components/ContentGrid';
-import { offerings } from '@/utils/offerings';
+import { offerings } from '@/data/offerings';
 import {
   Search,
   Rocket,

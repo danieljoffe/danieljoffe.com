@@ -1,5 +1,5 @@
 import Button from '@/components/Button';
-import { HOME_LINK } from '@/utils/base';
+import { HOME_LINK } from '@/utils/constants';
 
 const LogoImage = () => (
   <svg

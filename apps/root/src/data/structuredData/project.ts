@@ -1,16 +1,15 @@
-import { AllowedProjectSlugs, ProjectStructuredDataI } from '@/types/base';
+import { AllowedProjectSlugs, ProjectStructuredData } from '@/types/base';
 import { projectSlugs, projectPageSlugs } from '@/data/project';
 import { projectsRecords } from '@/data/projectThumbnails';
 import {
   personStructuredData as author,
   CollectionPageStructuredData,
 } from './base';
-import { DOMAIN_URL } from '@/utils/constants';
-import { PROJECTS_LINK } from '@/utils/base';
+import { DOMAIN_URL, PROJECTS_LINK } from '@/utils/constants';
 
 export const projectStructuredData: Record<
   AllowedProjectSlugs,
-  ProjectStructuredDataI
+  ProjectStructuredData
 > = {
   [projectSlugs.uiV1]: {
     '@context': 'https://schema.org',

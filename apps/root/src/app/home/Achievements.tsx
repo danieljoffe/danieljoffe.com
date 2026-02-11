@@ -6,7 +6,7 @@ import {
   Grid,
   GridItem,
 } from '@danieljoffe.com/shared-ui';
-import { offerings } from '@/utils/offerings';
+import { offerings } from '@/data/offerings';
 import {
   Rocket,
   BarChart3,

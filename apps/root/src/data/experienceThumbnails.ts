@@ -1,14 +1,13 @@
 import { AllowedExperienceSlugs } from '@/types/base';
-import { PostThumbnailI } from '@/types/postTypes';
-import { EXPERIENCE_LINK } from '@/utils/base';
-import { UNSPLASH_URL } from '@/utils/constants';
+import { PostThumbnail } from '@/types/postTypes';
+import { EXPERIENCE_LINK, UNSPLASH_URL } from '@/utils/constants';
 import {
   experienceNames,
   experienceRoles,
   experienceSlugs,
 } from './experience';
 
-export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
+export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnail> =
   {
     [experienceSlugs.Winc]: {
       slug: experienceSlugs.Winc,

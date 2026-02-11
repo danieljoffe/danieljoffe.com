@@ -1,7 +1,7 @@
 'use client';
 
 import { Link } from 'next-transition-router';
-import { PostThumbnailI } from '@/types/postTypes';
+import { PostThumbnail as PostThumbnailType } from '@/types/postTypes';
 import { analytics } from '@/lib/analytics';
 import PostThumbnailDescription from './PostThumbnailDescription';
 import UnsplashDecorativeAttribution from '../UnsplashImage/UnsplashDecorativeAttribution';
@@ -15,7 +15,7 @@ export default function PostThumbnail({
   duration,
   role,
   index,
-}: PostThumbnailI & { index: number }) {
+}: PostThumbnailType & { index: number }) {
   const handleClick = () => {
     if (link.href.includes('/projects/')) {
       analytics.projectClick(slug);

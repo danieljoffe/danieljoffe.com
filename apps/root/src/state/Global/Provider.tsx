@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 import { GlobalContext, GlobalState, ThemeMode } from './Context';
-import { useWindowResize } from '@/hooks/windowResize';
+import { useWindowResize } from '@/hooks/useWindowResize';
 
 const THEME_STORAGE_KEY = 'theme-mode';
 

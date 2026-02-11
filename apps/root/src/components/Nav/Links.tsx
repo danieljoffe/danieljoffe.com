@@ -2,7 +2,7 @@
 
 import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
-import { NAV_LINKS } from '@/utils/base';
+import { NAV_LINKS } from '@/utils/constants';
 
 export default function NavLinks({
   pathname,

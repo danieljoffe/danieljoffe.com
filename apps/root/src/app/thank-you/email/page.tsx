@@ -4,7 +4,7 @@ import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 
 import type { Metadata } from 'next';
 import Button from '@/components/Button';
-import { ABOUT_LINK, HOME_LINK } from '@/utils/base';
+import { ABOUT_LINK, HOME_LINK } from '@/utils/constants';
 
 export const metadata: Metadata = {
   title: 'Thank You - Message Received',

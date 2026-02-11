@@ -1,10 +1,9 @@
-import { UNSPLASH_URL } from '@/utils/constants';
-import { PostThumbnailI } from '@/types/postTypes';
+import { UNSPLASH_URL, PROJECTS_LINK } from '@/utils/constants';
+import { PostThumbnail } from '@/types/postTypes';
 import { AllowedProjectSlugs } from '@/types/base';
 import { projectSlugs } from '@/data/project';
-import { PROJECTS_LINK } from '@/utils/base';
 
-export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnailI> = {
+export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
   [projectSlugs.csPerformance]: {
     slug: projectSlugs.csPerformance,
     title: 'Case Studies: Daniel Joffe Portfolio',

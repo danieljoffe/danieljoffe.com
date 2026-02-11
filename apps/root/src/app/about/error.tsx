@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
-import { HOME_LINK } from '@/utils/base';
+import { HOME_LINK } from '@/utils/constants';
 
 export default function Error({
   error,
