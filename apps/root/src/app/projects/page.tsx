@@ -17,7 +17,7 @@ export default function Projects() {
       <Section className='min-h-min max-h-max'>
         <PageContainer>
           <Stack direction='vertical' gap='md'>
-            <header>
+            <header className='text-center'>
               <h1>Projects</h1>
               <p>
                 Case studies and projects showcasing performance optimization,
