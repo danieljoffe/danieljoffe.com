@@ -4,10 +4,12 @@ import { Link } from 'next-transition-router';
 import { Url } from 'next/dist/shared/lib/router/router';
 import { useRouter } from 'next/navigation';
 import {
-  baseUIButtonStyles,
-  sizeUIButtonStyles,
-  variantUIButtonStyles,
+  baseButtonStyles,
+  sizeButtonStyles,
+  variantButtonStyles,
+  variantLinkOutline,
   Button as UIButton,
+  cn,
 } from '@danieljoffe.com/shared-ui';
 import { devLog } from '@/utils/helpers';
 import { AsButtonProps, AsLinkProps, ButtonProps } from '@/types/buttonTypes';
@@ -17,6 +19,7 @@ function LinkAsButton(props: AsLinkProps) {
   const {
     as: _as,
     highlighted,
+    outline,
     disabled,
     variant,
     size,
@@ -24,17 +27,15 @@ function LinkAsButton(props: AsLinkProps) {
     className,
     ...rest
   } = props;
-  const classes = [
-    baseUIButtonStyles,
-    'hover:text-accent',
-    variantUIButtonStyles[variant ?? 'primary'],
-    sizeUIButtonStyles[size ?? 'md'],
-    highlighted ? 'text-accent underline underline-offset-4' : '',
-    className ?? '',
-  ]
-    .concat(disabled ? 'pointer-events-none' : '')
-    .filter(Boolean)
-    .join(' ');
+  const classes = cn(
+    baseButtonStyles,
+    variantButtonStyles[variant ?? 'primary'],
+    sizeButtonStyles[size ?? 'md'],
+    highlighted && 'text-accent underline underline-offset-4',
+    disabled && 'pointer-events-none',
+    outline && variantLinkOutline[variant ?? 'bare'],
+    className
+  );
 
   const handleMouseEnter = useCallback(
     (href: Url) => {

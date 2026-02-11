@@ -1,5 +1,6 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import { forwardRef, type ReactNode, type HTMLAttributes } from 'react';
 import { Container } from './Container';
+import { cn } from './utils';
 
 export interface PageContainerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -20,26 +21,24 @@ export interface PageContainerProps extends Omit<
  * - Inner Container with vertical padding
  * - Consistent page content width
  */
-export function PageContainer({
-  children,
-  size = 'sm',
-  wrapperClassName = '',
-  className = '',
-  ...rest
-}: PageContainerProps) {
-  return (
-    <div
-      className={`flex justify-center ${wrapperClassName}`}
-      data-testid='page-container-outer'
-    >
-      <Container
-        size={size}
-        className={`flex flex-col py-8 md:py-14 ${className}`}
-        data-testid='page-container-inner'
-        {...rest}
+export const PageContainer = forwardRef<HTMLDivElement, PageContainerProps>(
+  ({ children, size = 'sm', wrapperClassName, className, ...rest }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn('flex justify-center', wrapperClassName)}
+        data-testid='page-container-outer'
       >
-        {children}
-      </Container>
-    </div>
-  );
-}
+        <Container
+          size={size}
+          className={cn('flex flex-col py-8 md:py-14', className)}
+          data-testid='page-container-inner'
+          {...rest}
+        >
+          {children}
+        </Container>
+      </div>
+    );
+  }
+);
+PageContainer.displayName = 'PageContainer';

@@ -1,7 +1,6 @@
+import { test, expect } from '@playwright/test';
+import { VALID_FORM_DATA } from './fixtures/test-data';
 import {
-  test,
-  expect,
-  VALID_FORM_DATA,
   mockHCaptcha,
   completeHCaptcha,
   mockEmailAPISuccess,
@@ -74,7 +73,7 @@ test.describe('404 Error Page', () => {
   });
 });
 
-test.describe('thank-You Page Protection', () => {
+test.describe('thank-you page protection', () => {
   test('redirects to home when accessed directly', async ({ page }) => {
     // Try to access thank-you page directly
     await page.goto('/thank-you/email');

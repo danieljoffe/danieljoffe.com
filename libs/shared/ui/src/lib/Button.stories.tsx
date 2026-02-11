@@ -2,16 +2,20 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from './Button';
 
-const meta: Meta<typeof Button> = {
+const meta = {
   title: 'Components/Button',
   component: Button,
   tags: ['autodocs'],
+  args: {
+    children: 'Button',
+  },
   argTypes: {
     variant: {
       description: 'Visual style of the button',
       control: 'select',
       options: [
         undefined,
+        'bare',
         'primary',
         'secondary',
         'ghost',
@@ -37,27 +41,29 @@ const meta: Meta<typeof Button> = {
     disabled: {
       description: 'Disables interaction',
       control: 'boolean',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+    onClick: {
+      description: 'Callback fired when the button is clicked',
+      action: 'onClick executed!',
     },
     children: {
       description: 'Button content',
       control: 'text',
     },
   },
-};
+} satisfies Meta<typeof Button>;
 
 export default meta;
-type Story = StoryObj<typeof Button>;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    children: 'Button',
-  },
-};
+export const Default: Story = {};
 
 export const Secondary: Story = {
   args: {
     variant: 'secondary',
-    size: 'md',
     children: 'Secondary',
   },
 };
@@ -65,14 +71,61 @@ export const Secondary: Story = {
 export const Ghost: Story = {
   args: {
     variant: 'ghost',
-    size: 'md',
     children: 'Ghost',
+  },
+};
+
+export const Outline: Story = {
+  args: {
+    variant: 'outline',
+    children: 'Outline',
+  },
+};
+
+export const Bare: Story = {
+  args: {
+    variant: 'bare',
+    children: 'Bare',
+  },
+};
+
+export const Accent: Story = {
+  args: {
+    variant: 'accent',
+    children: 'Accent',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    variant: 'success',
+    children: 'Success',
+  },
+};
+
+export const Error: Story = {
+  args: {
+    variant: 'error',
+    children: 'Error',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    variant: 'warning',
+    children: 'Warning',
+  },
+};
+
+export const Info: Story = {
+  args: {
+    variant: 'info',
+    children: 'Info',
   },
 };
 
 export const Small: Story = {
   args: {
-    variant: 'primary',
     size: 'sm',
     children: 'Small',
   },
@@ -80,9 +133,15 @@ export const Small: Story = {
 
 export const Large: Story = {
   args: {
-    variant: 'primary',
     size: 'lg',
     children: 'Large',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: 'Disabled',
+    disabled: true,
   },
 };
 
@@ -122,17 +181,23 @@ export const KeyboardInteraction: Story = {
     children: 'Press Enter',
     onClick: fn(),
   },
-  play: async ({ args, canvasElement }) => {
+  play: async ({ args, canvasElement, step }) => {
     const canvas = within(canvasElement);
     const button = canvas.getByRole('button', { name: 'Press Enter' });
 
-    await userEvent.tab();
-    await expect(button).toHaveFocus();
+    await step('Focus button via Tab', async () => {
+      await userEvent.tab();
+      await expect(button).toHaveFocus();
+    });
 
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onClick).toHaveBeenCalledTimes(1);
+    await step('Activate with Enter key', async () => {
+      await userEvent.keyboard('{Enter}');
+      await expect(args.onClick).toHaveBeenCalledTimes(1);
+    });
 
-    await userEvent.keyboard(' ');
-    await expect(args.onClick).toHaveBeenCalledTimes(2);
+    await step('Activate with Space key', async () => {
+      await userEvent.keyboard(' ');
+      await expect(args.onClick).toHaveBeenCalledTimes(2);
+    });
   },
 };

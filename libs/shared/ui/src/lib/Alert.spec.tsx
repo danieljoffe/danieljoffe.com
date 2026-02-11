@@ -59,4 +59,49 @@ describe('Alert', () => {
     );
     expect(container.firstChild).toHaveClass('custom-class');
   });
+
+  describe('accessibility', () => {
+    it('has role="status" for info variant', () => {
+      render(<Alert variant='info'>Info message</Alert>);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    it('has role="status" for success variant', () => {
+      render(<Alert variant='success'>Success message</Alert>);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    it('has role="alert" for warning variant', () => {
+      render(<Alert variant='warning'>Warning message</Alert>);
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+
+    it('has role="alert" for error variant', () => {
+      render(<Alert variant='error'>Error message</Alert>);
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+
+    it('has aria-live="polite" for non-urgent variants', () => {
+      const { container } = render(<Alert variant='info'>Info</Alert>);
+      expect(container.firstChild).toHaveAttribute('aria-live', 'polite');
+    });
+
+    it('has aria-live="assertive" for urgent variants', () => {
+      const { container } = render(<Alert variant='error'>Error</Alert>);
+      expect(container.firstChild).toHaveAttribute('aria-live', 'assertive');
+    });
+
+    it('has aria-label="Dismiss alert" on dismiss button', () => {
+      render(<Alert dismissible>Content</Alert>);
+      expect(
+        screen.getByRole('button', { name: 'Dismiss alert' })
+      ).toBeInTheDocument();
+    });
+
+    it('has aria-hidden="true" on icon', () => {
+      const { container } = render(<Alert>Content</Alert>);
+      const icon = container.querySelector('[aria-hidden="true"]');
+      expect(icon).toBeInTheDocument();
+    });
+  });
 });

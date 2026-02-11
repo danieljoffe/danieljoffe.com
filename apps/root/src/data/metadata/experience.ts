@@ -1,13 +1,12 @@
 import { AllowedExperienceSlugs } from '@/types/base';
 import { Metadata } from 'next';
-import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
+import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 import { experienceRecords } from '../experienceThumbnails';
 import {
   experienceRoles,
   experienceNames,
   experienceSlugs,
 } from '../experience';
-import { EXPERIENCE_LINK } from '@/utils/base';
 
 export const experienceRootMetadata: Metadata = {
   title: `Experience | ${FULL_NAME} - Frontend Engineer`,
@@ -83,20 +82,11 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.Winc}`,
         type: 'article',
         siteName: FULL_NAME,
-        images: [
-          {
-            url: experienceRecords[experienceSlugs.Winc].cover.src,
-            width: 800,
-            height: 450,
-            alt: experienceRecords[experienceSlugs.Winc].cover.alt,
-          },
-        ],
       },
       twitter: {
         title: `${experienceRoles.Winc} at ${experienceNames.Winc} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.Winc].description,
         card: 'summary_large_image',
-        images: [experienceRecords[experienceSlugs.Winc].cover.src],
       },
     },
     [experienceSlugs.IB]: {
@@ -134,20 +124,11 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.IB}`,
         type: 'article',
         siteName: FULL_NAME,
-        images: [
-          {
-            url: experienceRecords[experienceSlugs.IB].cover.src,
-            width: 800,
-            height: 450,
-            alt: experienceRecords[experienceSlugs.IB].cover.alt,
-          },
-        ],
       },
       twitter: {
         title: `${experienceRoles.IB} at ${experienceNames.IB} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.IB].description,
         card: 'summary_large_image',
-        images: [experienceRecords[experienceSlugs.IB].cover.src],
       },
     },
     [experienceSlugs.TLC]: {
@@ -184,20 +165,11 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.TLC}`,
         type: 'article',
         siteName: FULL_NAME,
-        images: [
-          {
-            url: experienceRecords[experienceSlugs.TLC].cover.src,
-            width: 800,
-            height: 450,
-            alt: experienceRecords[experienceSlugs.TLC].cover.alt,
-          },
-        ],
       },
       twitter: {
         title: `${experienceRoles.TLC} at ${experienceNames.TLC} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.TLC].description,
         card: 'summary_large_image',
-        images: [experienceRecords[experienceSlugs.TLC].cover.src],
       },
     },
     [experienceSlugs.FC]: {
@@ -234,20 +206,11 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.FC}`,
         type: 'article',
         siteName: FULL_NAME,
-        images: [
-          {
-            url: experienceRecords[experienceSlugs.FC].cover.src,
-            width: 800,
-            height: 450,
-            alt: experienceRecords[experienceSlugs.FC].cover.alt,
-          },
-        ],
       },
       twitter: {
         title: `${experienceRoles.FC} at ${experienceNames.FC} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.FC].description,
         card: 'summary_large_image',
-        images: [experienceRecords[experienceSlugs.FC].cover.src],
       },
     },
     [experienceSlugs.SD]: {
@@ -284,20 +247,11 @@ export const experiencePagesMetadata: Record<AllowedExperienceSlugs, Metadata> =
         url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}/${experienceSlugs.SD}`,
         type: 'article',
         siteName: FULL_NAME,
-        images: [
-          {
-            url: experienceRecords[experienceSlugs.SD].cover.src,
-            width: 800,
-            height: 450,
-            alt: experienceRecords[experienceSlugs.SD].cover.alt,
-          },
-        ],
       },
       twitter: {
         title: `${experienceRoles.SD} - ${experienceNames.SD} - ${FULL_NAME}`,
         description: experienceRecords[experienceSlugs.SD].description,
         card: 'summary_large_image',
-        images: [experienceRecords[experienceSlugs.SD].cover.src],
       },
     },
   };

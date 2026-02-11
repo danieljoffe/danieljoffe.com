@@ -91,7 +91,7 @@ export default function MobileNav({
   };
 
   return (
-    <div className='md:hidden flex items-center justify-between w-full py-4 px-4 shadow'>
+    <div className='md:hidden flex items-center justify-between w-full py-2 px-2 shadow'>
       <Logo />
       <div className='flex items-center gap-2'>
         <DarkModeToggle />

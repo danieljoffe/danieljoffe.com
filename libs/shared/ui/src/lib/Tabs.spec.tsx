@@ -82,4 +82,101 @@ describe('Tabs', () => {
     expect(screen.getByText('Only Tab')).toBeInTheDocument();
     expect(screen.getByText('Only Content')).toBeInTheDocument();
   });
+
+  describe('accessibility', () => {
+    it('has role="tablist" on tab container', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
+    });
+
+    it('has role="tab" on tab buttons', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs).toHaveLength(3);
+    });
+
+    it('sets aria-selected correctly', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+      expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+      expect(tabs[2]).toHaveAttribute('aria-selected', 'false');
+    });
+
+    it('links tab to panel via aria-controls', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tab = screen.getAllByRole('tab')[0];
+      const panelId = tab.getAttribute('aria-controls');
+      expect(panelId).toBeTruthy();
+      expect(screen.getByRole('tabpanel')).toHaveAttribute('id', panelId);
+    });
+
+    it('has role="tabpanel" on content', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument();
+    });
+
+    it('links panel back to tab via aria-labelledby', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tab = screen.getAllByRole('tab')[0];
+      const panel = screen.getByRole('tabpanel');
+      expect(panel).toHaveAttribute('aria-labelledby', tab.id);
+    });
+
+    it('sets tabIndex 0 for active tab and -1 for inactive', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs[0]).toHaveAttribute('tabindex', '0');
+      expect(tabs[1]).toHaveAttribute('tabindex', '-1');
+      expect(tabs[2]).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('moves to next tab on ArrowRight', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[0], { key: 'ArrowRight' });
+      expect(screen.getByText('Content 2')).toBeInTheDocument();
+      expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    });
+
+    it('moves to previous tab on ArrowLeft', () => {
+      render(<Tabs tabs={defaultTabs} defaultTab='tab2' />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[1], { key: 'ArrowLeft' });
+      expect(screen.getByText('Content 1')).toBeInTheDocument();
+      expect(screen.queryByText('Content 2')).not.toBeInTheDocument();
+    });
+
+    it('wraps to first tab on ArrowRight from last', () => {
+      render(<Tabs tabs={defaultTabs} defaultTab='tab3' />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[2], { key: 'ArrowRight' });
+      expect(screen.getByText('Content 1')).toBeInTheDocument();
+      expect(screen.queryByText('Content 3')).not.toBeInTheDocument();
+    });
+
+    it('wraps to last tab on ArrowLeft from first', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[0], { key: 'ArrowLeft' });
+      expect(screen.getByText('Content 3')).toBeInTheDocument();
+      expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    });
+
+    it('moves to first tab on Home key', () => {
+      render(<Tabs tabs={defaultTabs} defaultTab='tab3' />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[2], { key: 'Home' });
+      expect(screen.getByText('Content 1')).toBeInTheDocument();
+      expect(screen.queryByText('Content 3')).not.toBeInTheDocument();
+    });
+
+    it('moves to last tab on End key', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[0], { key: 'End' });
+      expect(screen.getByText('Content 3')).toBeInTheDocument();
+      expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    });
+  });
 });

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Switch } from './Switch';
 
-const meta: Meta<typeof Switch> = {
+const meta = {
   title: 'Components/Switch',
   component: Switch,
   tags: ['autodocs'],
@@ -20,20 +20,21 @@ const meta: Meta<typeof Switch> = {
       description: 'Disables the switch',
       control: 'boolean',
     },
-    onCheckedChange: {
+    onChange: {
       description: 'Callback when switch state changes',
-      action: 'onCheckedChange executed!',
+      action: 'onChange executed!',
     },
   },
-};
+} satisfies Meta<typeof Switch>;
 
 export default meta;
-type Story = StoryObj<typeof Switch>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
     checked: false,
     label: 'Enable notifications',
+    onChange: fn(),
   },
 };
 
@@ -41,6 +42,7 @@ export const Checked: Story = {
   args: {
     checked: true,
     label: 'Dark mode',
+    onChange: fn(),
   },
 };
 
@@ -49,6 +51,7 @@ export const Disabled: Story = {
     checked: false,
     label: 'Disabled switch',
     disabled: true,
+    onChange: fn(),
   },
 };
 
@@ -56,7 +59,7 @@ export const ClickInteraction: Story = {
   args: {
     checked: false,
     label: 'Toggle me',
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -65,7 +68,7 @@ export const ClickInteraction: Story = {
     await expect(switchEl).toHaveAttribute('aria-checked', 'false');
 
     await userEvent.click(switchEl);
-    await expect(args.onCheckedChange).toHaveBeenCalledWith(true);
+    await expect(args.onChange).toHaveBeenCalledWith(true);
   },
 };
 
@@ -73,7 +76,7 @@ export const KeyboardInteraction: Story = {
   args: {
     checked: false,
     label: 'Press space to toggle',
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -83,18 +86,22 @@ export const KeyboardInteraction: Story = {
     await expect(switchEl).toHaveFocus();
 
     await userEvent.keyboard(' ');
-    await expect(args.onCheckedChange).toHaveBeenCalledWith(true);
+    await expect(args.onChange).toHaveBeenCalledWith(true);
   },
 };
 
 export const Controlled: Story = {
+  args: {
+    checked: false,
+    onChange: fn(),
+  },
   render: function ControlledSwitch() {
     const [checked, setChecked] = useState(false);
     return (
       <Switch
         label={`Switch is ${checked ? 'on' : 'off'}`}
         checked={checked}
-        onCheckedChange={setChecked}
+        onChange={setChecked}
       />
     );
   },

@@ -67,4 +67,45 @@ describe('Checkbox', () => {
     const checkbox = screen.getByTestId('terms-checkbox');
     expect(checkbox).toHaveAttribute('name', 'terms');
   });
+
+  it('renders Check icon when checked', () => {
+    const { container } = render(<Checkbox checked onChange={() => {}} />);
+    const checkIcon = container.querySelector('svg');
+    expect(checkIcon).toBeInTheDocument();
+  });
+
+  it('does not render Check icon when unchecked', () => {
+    const { container } = render(
+      <Checkbox checked={false} onChange={() => {}} />
+    );
+    const checkIcon = container.querySelector('svg');
+    expect(checkIcon).toBeNull();
+  });
+
+  it('applies sr-only class to input for screen reader accessibility', () => {
+    render(<Checkbox />);
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toHaveClass('sr-only');
+  });
+
+  it('has aria-hidden="true" on visual label', () => {
+    const { container } = render(<Checkbox label='Accept' />);
+    const visualLabel = container.querySelector('[aria-hidden="true"]');
+    expect(visualLabel).toBeInTheDocument();
+  });
+
+  describe('accessibility', () => {
+    it('is accessible by label text', () => {
+      render(<Checkbox label='Accept terms' />);
+      expect(screen.getByLabelText('Accept terms')).toBeInTheDocument();
+    });
+
+    it('associates label with checkbox via matching IDs', () => {
+      render(<Checkbox label='Accept terms' />);
+      const checkbox = screen.getByRole('checkbox');
+      const visibleLabel = screen.getByText('Accept terms');
+      expect(visibleLabel.tagName).toBe('LABEL');
+      expect(visibleLabel).toHaveAttribute('for', checkbox.id);
+    });
+  });
 });

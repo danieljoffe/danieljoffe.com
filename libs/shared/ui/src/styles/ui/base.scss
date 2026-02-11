@@ -1,0 +1,46 @@
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    font-size: 16px;
+    font-family: var(--font-body);
+    background-color: var(--background);
+    color: inherit;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-weight: var(--font-weight-normal);
+  }
+
+  ul:not(.prose ul),
+  ol:not(.prose ol) {
+    list-style: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.25rem 0.75rem;
+  }
+
+  th:first-child,
+  td:first-child {
+    padding-left: 0;
+  }
+
+  th:last-child,
+  td:last-child {
+    padding-right: 0;
+  }
+}

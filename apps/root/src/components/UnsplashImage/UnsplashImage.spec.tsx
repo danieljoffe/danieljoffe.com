@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import UnsplashImage, { UnsplashImageProps } from './UnsplashImage';
+import UnsplashImage, { UnsplashImageProps } from '.';
 import { UNSPLASH_URL } from '@/utils/constants';
 
 // Mock Next.js Image component
@@ -156,12 +156,7 @@ describe('UnsplashImage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
     jest.clearAllTimers();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
   });
 
   describe('Image component props', () => {
@@ -266,14 +261,11 @@ describe('UnsplashImage', () => {
       );
     });
 
-    it('should render figcaption with creator links', () => {
+    it('should render figcaption with creator link', () => {
       render(<UnsplashImage {...mockProps} />);
 
-      const creatorLink = screen.getByText('Photo by @testuser,');
-      const unsplashLink = screen.getByText('Unsplash');
-
+      const creatorLink = screen.getByText('@testuser,');
       expect(creatorLink).toBeInTheDocument();
-      expect(unsplashLink).toBeInTheDocument();
     });
 
     it('should render image with correct alt text', () => {
@@ -286,10 +278,6 @@ describe('UnsplashImage', () => {
 
   describe('Error handling', () => {
     it('should throw error when required props are missing', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        // Suppress error output during test
-      });
-
       expect(() => {
         render(
           <UnsplashImage
@@ -302,16 +290,9 @@ describe('UnsplashImage', () => {
           />
         );
       }).toThrow('Missing required props');
-
-      consoleSpy.mockRestore();
     });
 
     it('should throw error when width and height are missing for non-fill image', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-        // Suppress error output during test
-      });
-
-      // Create props without width and height
       const propsWithoutDimensions = {
         src: mockProps.src,
         alt: mockProps.alt,
@@ -320,14 +301,11 @@ describe('UnsplashImage', () => {
         blurHash: mockProps.blurHash,
         priority: mockProps.priority,
         fill: false,
-        // Explicitly don't include width and height
       } as UnsplashImageProps;
 
       expect(() => {
         render(<UnsplashImage {...propsWithoutDimensions} />);
       }).toThrow('Missing required props');
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -339,15 +317,6 @@ describe('UnsplashImage', () => {
         'Photo by @testuser on Unsplash'
       );
       expect(creatorLink).toBeInTheDocument();
-    });
-
-    it('should have proper aria-label for unsplash link', () => {
-      render(<UnsplashImage {...mockProps} />);
-
-      const unsplashLink = screen.getByLabelText(
-        'View original photo on Unsplash'
-      );
-      expect(unsplashLink).toBeInTheDocument();
     });
 
     it('should have proper alt text for image', () => {

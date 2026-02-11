@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Select } from './Select';
 
-const meta: Meta<typeof Select> = {
+const meta = {
   title: 'Components/Select',
   component: Select,
   tags: ['autodocs'],
@@ -23,10 +23,10 @@ const meta: Meta<typeof Select> = {
       control: 'boolean',
     },
   },
-};
+} satisfies Meta<typeof Select>;
 
 export default meta;
-type Story = StoryObj<typeof Select>;
+type Story = StoryObj<typeof meta>;
 
 const sampleOptions = [
   { value: 'option1', label: 'Option 1' },

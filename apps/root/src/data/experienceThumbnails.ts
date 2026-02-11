@@ -1,17 +1,21 @@
 import { AllowedExperienceSlugs } from '@/types/base';
-import { PostThumbnailI } from '@/types/postTypes';
-import { EXPERIENCE_LINK } from '@/utils/base';
-import { UNSPLASH_URL } from '@/utils/constants';
-import { experienceNames, experienceSlugs } from './experience';
+import { PostThumbnail } from '@/types/postTypes';
+import { EXPERIENCE_LINK, UNSPLASH_URL } from '@/utils/constants';
+import {
+  experienceNames,
+  experienceRoles,
+  experienceSlugs,
+} from './experience';
 
-export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
+export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnail> =
   {
     [experienceSlugs.Winc]: {
       slug: experienceSlugs.Winc,
       title: experienceNames.Winc,
+      role: experienceRoles.Winc,
+      duration: 'Jun 2015 - Oct 2017',
       description:
         'The Foundation Years: Learning to Scale Marketing Operations',
-      backgroundColor: 'bg-red-950',
       link: {
         label: experienceNames.Winc,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.Winc}`,
@@ -27,9 +31,10 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
     [experienceSlugs.IB]: {
       slug: experienceSlugs.IB,
       title: experienceNames.IB,
+      role: experienceRoles.IB,
+      duration: 'Mar 2018 - Aug 2019',
       description:
         'The Leadership Test: Managing Teams While Ensuring Compliance',
-      backgroundColor: 'bg-blue-950',
       link: {
         label: experienceNames.IB,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.IB}`,
@@ -45,9 +50,10 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
     [experienceSlugs.TLC]: {
       slug: experienceSlugs.TLC,
       title: experienceNames.TLC,
+      role: experienceRoles.TLC,
+      duration: 'Sep 2019 - Nov 2021',
       description:
         'The Specialization Challenge: Building for Unique User Needs',
-      backgroundColor: 'bg-amber-950',
       link: {
         label: experienceNames.TLC,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.TLC}`,
@@ -63,8 +69,9 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
     [experienceSlugs.FC]: {
       slug: experienceSlugs.FC,
       title: experienceNames.FC,
+      role: experienceRoles.FC,
+      duration: 'Nov 2021 - Jan 2023',
       description: 'The Scale Challenge: Infrastructure for Exponential Growth',
-      backgroundColor: 'bg-black',
       link: {
         label: experienceNames.FC,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.FC}`,
@@ -80,9 +87,10 @@ export const experienceRecords: Record<AllowedExperienceSlugs, PostThumbnailI> =
     [experienceSlugs.SD]: {
       slug: experienceSlugs.SD,
       title: experienceNames.SD,
+      role: experienceRoles.SD,
+      duration: 'Jan 2023 - Present',
       description:
         'The Investment Phase: Deepening Expertise While Contributing',
-      backgroundColor: 'bg-green-950',
       link: {
         label: experienceNames.SD,
         href: `${EXPERIENCE_LINK.href}/${experienceSlugs.SD}`,

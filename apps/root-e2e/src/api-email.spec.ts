@@ -22,7 +22,7 @@ const validPayload = {
   hcaptcha: 'mock-hcaptcha-token',
 };
 
-test.describe('API /api/email - Request Validation', () => {
+test.describe('api email - request validation', () => {
   test('rejects request without referer header', async ({ request }) => {
     const response = await request.post(API_URL, {
       headers: {
@@ -55,7 +55,7 @@ test.describe('API /api/email - Request Validation', () => {
   // making it impossible to simulate a missing IP via direct HTTP request.
 });
 
-test.describe('API /api/email - Form Validation', () => {
+test.describe('api email - form validation', () => {
   test('rejects empty fields', async ({ request }) => {
     const response = await request.post(API_URL, {
       headers: headersWithUniqueIP(),
@@ -136,7 +136,7 @@ test.describe('API /api/email - Form Validation', () => {
   });
 });
 
-test.describe('API /api/email - Honeypot', () => {
+test.describe('api email - honeypot', () => {
   test('rejects request with honeypot field filled', async ({ request }) => {
     const response = await request.post(API_URL, {
       headers: headersWithUniqueIP(),
@@ -151,7 +151,7 @@ test.describe('API /api/email - Honeypot', () => {
   });
 });
 
-test.describe('API /api/email - Rate Limiting', () => {
+test.describe('api email - rate limiting', () => {
   test('enforces rate limit after 5 requests from same IP', async ({
     request,
   }) => {

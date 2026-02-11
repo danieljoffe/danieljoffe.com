@@ -16,7 +16,6 @@ export default function OpenSourceCallout() {
             as='link'
             href={GITHUB_REPO_URL}
             variant='secondary'
-            size='sm'
             target='_blank'
             aria-label='View source code on GitHub'
           >
@@ -27,7 +26,6 @@ export default function OpenSourceCallout() {
             as='link'
             href={STORYBOOK_URL}
             variant='secondary'
-            size='sm'
             target='_blank'
             aria-label='Browse UI component library on Storybook'
           >

@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 import { PageContainer, Stack, Section } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
-import { PROJECTS_LINK } from '@/utils/base';
+import { PROJECTS_LINK } from '@/utils/constants';
 
 export default function Error({
   error,
@@ -14,7 +14,13 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    Sentry.withScope(scope => {
+      scope.setTag('route', '/projects/[slug]');
+      if (error.digest) {
+        scope.setExtra('digest', error.digest);
+      }
+      Sentry.captureException(error);
+    });
   }, [error]);
 
   return (
@@ -34,7 +40,7 @@ export default function Error({
           <Stack direction='horizontal' gap='sm'>
             <button
               onClick={() => reset()}
-              className='rounded-lg bg-primary px-6 py-3 text-white hover:bg-primary/90'
+              className='rounded-lg bg-accent px-6 py-3 text-accent-foreground hover:bg-accent/90'
             >
               Try again
             </button>

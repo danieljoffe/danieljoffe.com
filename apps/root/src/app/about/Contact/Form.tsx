@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useTransitionRouter } from 'next-transition-router';
 import dynamic from 'next/dynamic';
 import type { InferType } from 'yup';
-import { CONTACT_FORM_ID } from '@/utils/base';
+import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
@@ -139,6 +139,7 @@ export default function Form() {
             autoComplete='name'
             label='Name'
             required={true}
+            data-sentry-mask
             {...register('name')}
             error={errors?.name?.message}
             aria-describedby={errors?.name?.message ? 'name-error' : undefined}
@@ -151,6 +152,7 @@ export default function Form() {
             type='email'
             autoComplete='email'
             required={true}
+            data-sentry-mask
             {...register('email')}
             error={errors?.email?.message}
             aria-describedby={
@@ -165,6 +167,7 @@ export default function Form() {
             autoComplete='off'
             required={true}
             rows={5}
+            data-sentry-mask
             {...register('message')}
             error={errors?.message?.message}
             aria-describedby={
@@ -175,7 +178,7 @@ export default function Form() {
       </fieldset>
 
       {/* Honeypot field for spam protection */}
-      <div className='absolute top-0 left-0 w-0 h-0 pointer-events-none -z-1 hidden'>
+      <div className='absolute top-0 left-0 size-0 pointer-events-none -z-1 hidden'>
         <Input
           name='address'
           label='Address'
@@ -189,6 +192,9 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
+        <label className='text-sm text-foreground-muted block mb-1'>
+          Security verification
+        </label>
         {shouldLoadCaptcha && (
           <HCaptcha
             sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}
@@ -199,9 +205,9 @@ export default function Form() {
         )}
       </div>
 
-      <div>
+      <div className='flex justify-center'>
         <Button
-          variant='secondary'
+          variant='primary'
           type='submit'
           disabled={isSubmitting}
           aria-describedby={
@@ -220,7 +226,7 @@ export default function Form() {
         errors.root?.unknownError ||
         errors.hcaptcha) && (
         <div id='form-error' role='alert' aria-live='assertive'>
-          <p className='text-rose-500 text-sm'>
+          <p className='text-error text-sm'>
             {errors.root?.serverError?.message ||
               errors.root?.configurationError?.message ||
               errors.root?.unknownError?.message ||

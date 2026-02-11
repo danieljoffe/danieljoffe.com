@@ -2,13 +2,13 @@
 
 import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
-import { NAV_LINKS } from '@/utils/base';
+import { NAV_LINKS } from '@/utils/constants';
 
 export default function NavLinks({
   pathname,
   handleClick,
 }: {
-  pathname: string;
+  pathname?: string;
   handleClick?: () => void;
 }) {
   const handleLinkClick = (label: string) => {
@@ -36,6 +36,7 @@ export default function NavLinks({
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}
               aria-label={`Navigate to ${link.label} page`}
+              className='font-semibold hover:text-accent'
             >
               {link.label}
             </Button>

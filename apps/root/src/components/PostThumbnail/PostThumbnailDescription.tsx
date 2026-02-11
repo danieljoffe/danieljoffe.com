@@ -1,19 +1,36 @@
-import { PostBaseI } from '@/types/postTypes';
+import { PostBase } from '@/types/postTypes';
+import { Badge, Stack } from '@danieljoffe.com/shared-ui';
 
-export default function PostThumbnailIDescription({
+interface PostThumbnailDescriptionProps extends Pick<
+  PostBase,
+  'title' | 'description'
+> {
+  duration?: string;
+  role?: string;
+}
+
+export default function PostThumbnailDescription({
   title,
   description,
-}: Pick<PostBaseI, 'title' | 'description'>) {
+  duration,
+  role,
+}: PostThumbnailDescriptionProps) {
   return (
     <div
       className={[
-        'overflow-hidden min-h-[15rem] min-h-min',
-        'bg-foreground/25 backdrop-blur-md shadow-lg h-full',
-        'px-4 pt-6 pb-8',
+        'flex flex-col flex-1',
+        'bg-card text-card-foreground',
+        'px-4 pt-4 pb-6',
       ].join(' ')}
     >
-      <h3>{title}</h3>
-      <p>{description}</p>
+      <h3 className=''>{title}</h3>
+      {role && duration && (
+        <Stack as='p' direction='horizontal'>
+          <Badge variant='accent'>{role}</Badge>
+          <Badge>{duration}</Badge>
+        </Stack>
+      )}
+      <p className='text-sm'>{description}</p>
     </div>
   );
 }

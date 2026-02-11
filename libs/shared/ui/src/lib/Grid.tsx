@@ -1,4 +1,10 @@
-import type { ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
+import {
+  forwardRef,
+  type ReactNode,
+  type ElementType,
+  type ComponentPropsWithoutRef,
+} from 'react';
+import { cn } from './utils';
 
 type GridElement =
   | 'div'
@@ -13,7 +19,7 @@ export interface GridProps<T extends GridElement = 'div'> {
   /** The HTML element to render as. Defaults to 'div'. Use 'ul' or 'ol' for semantic lists. */
   as?: T;
   children: ReactNode;
-  cols?: 1 | 2 | 3 | 4 | 6 | 12;
+  cols?: 0 | 1 | 2 | 3 | 4 | 6 | 12;
   gap?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -22,6 +28,7 @@ type PolymorphicGridProps<T extends GridElement = 'div'> = GridProps<T> &
   Omit<ComponentPropsWithoutRef<T>, keyof GridProps<T>>;
 
 const colClasses = {
+  0: '',
   1: 'grid-cols-1',
   2: 'grid-cols-1 sm:grid-cols-2',
   3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
@@ -38,25 +45,34 @@ const gapClasses = {
   xl: 'gap-8 sm:gap-12',
 };
 
-export function Grid<T extends GridElement = 'div'>({
-  as,
-  children,
-  cols = 12,
-  gap = 'md',
-  className = '',
-  ...rest
-}: PolymorphicGridProps<T>) {
+function GridInner<T extends GridElement = 'div'>(
+  {
+    as,
+    children,
+    cols = 12,
+    gap = 'md',
+    className,
+    ...rest
+  }: PolymorphicGridProps<T>,
+  ref: React.ForwardedRef<Element>
+) {
   const Component = (as || 'div') as ElementType;
 
   return (
     <Component
-      className={`grid ${colClasses[cols]} ${gapClasses[gap]} ${className}`}
+      ref={ref}
+      className={cn('grid', colClasses[cols], gapClasses[gap], className)}
       {...rest}
     >
       {children}
     </Component>
   );
 }
+
+export const Grid = forwardRef(GridInner) as <T extends GridElement = 'div'>(
+  props: PolymorphicGridProps<T> & { ref?: React.Ref<Element> }
+) => React.ReactElement | null;
+(Grid as { displayName?: string }).displayName = 'Grid';
 
 type GridItemElement = 'div' | 'li' | 'article' | 'section';
 
@@ -80,18 +96,32 @@ const spanClasses = {
   12: 'col-span-full',
 };
 
-export function GridItem<T extends GridItemElement = 'div'>({
-  as,
-  children,
-  colSpan = 1,
-  className = '',
-  ...rest
-}: PolymorphicGridItemProps<T>) {
+function GridItemInner<T extends GridItemElement = 'div'>(
+  {
+    as,
+    children,
+    colSpan = 1,
+    className,
+    ...rest
+  }: PolymorphicGridItemProps<T>,
+  ref: React.ForwardedRef<Element>
+) {
   const Component = (as || 'div') as ElementType;
 
   return (
-    <Component className={`${spanClasses[colSpan]} ${className}`} {...rest}>
+    <Component
+      ref={ref}
+      className={cn('flex', spanClasses[colSpan], className)}
+      {...rest}
+    >
       {children}
     </Component>
   );
 }
+
+export const GridItem = forwardRef(GridItemInner) as <
+  T extends GridItemElement = 'div',
+>(
+  props: PolymorphicGridItemProps<T> & { ref?: React.Ref<Element> }
+) => React.ReactElement | null;
+(GridItem as { displayName?: string }).displayName = 'GridItem';

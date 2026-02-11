@@ -1,5 +1,6 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button } from './Button';
+import { Button, type ButtonVariant, type ButtonSize } from './Button';
 
 describe('Button', () => {
   it('renders children content', () => {
@@ -9,98 +10,139 @@ describe('Button', () => {
     ).toBeInTheDocument();
   });
 
-  it('applies default primary variant', () => {
-    render(<Button>Primary</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-accent');
-  });
+  describe('variants', () => {
+    it('applies primary variant by default', () => {
+      render(<Button>Primary</Button>);
+      expect(screen.getByRole('button')).toHaveClass('bg-accent');
+    });
 
-  it('applies secondary variant styles', () => {
-    render(<Button variant='secondary'>Secondary</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-background-elevated');
-  });
-
-  it('applies ghost variant styles', () => {
-    render(<Button variant='ghost'>Ghost</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('hover:bg-background-elevated');
-  });
-
-  it('applies outline variant styles', () => {
-    render(<Button variant='outline'>Outline</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('border-border-strong');
-  });
-
-  it('applies success variant styles', () => {
-    render(<Button variant='success'>Success</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-success');
-  });
-
-  it('applies error variant styles', () => {
-    render(<Button variant='error'>Error</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-error');
-  });
-
-  it('applies warning variant styles', () => {
-    render(<Button variant='warning'>Warning</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-warning');
-  });
-
-  it('applies info variant styles', () => {
-    render(<Button variant='info'>Info</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-info');
-  });
-
-  it('applies default md size', () => {
-    render(<Button>Medium</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('px-4', 'py-3');
-  });
-
-  it('applies sm size styles', () => {
-    render(<Button size='sm'>Small</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('px-3', 'py-1.5', 'text-sm');
-  });
-
-  it('applies lg size styles', () => {
-    render(<Button size='lg'>Large</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('px-6', 'py-3', 'text-lg');
-  });
-
-  it('handles click events', () => {
-    const handleClick = jest.fn();
-    render(<Button onClick={handleClick}>Click</Button>);
-    fireEvent.click(screen.getByRole('button'));
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-
-  it('applies disabled state', () => {
-    render(<Button disabled>Disabled</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toBeDisabled();
-  });
-
-  it('applies custom className', () => {
-    render(<Button className='custom-class'>Button</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('custom-class');
-  });
-
-  it('passes through additional props', () => {
-    render(
-      <Button type='submit' data-testid='submit-btn'>
-        Submit
-      </Button>
+    it.each([
+      ['secondary', ['bg-background-elevated']],
+      ['ghost', ['hover:bg-background-elevated']],
+      ['outline', ['border-border-strong']],
+      ['accent', ['bg-accent', 'text-accent-foreground']],
+      ['success', ['bg-success']],
+      ['error', ['bg-error']],
+      ['warning', ['bg-warning']],
+      ['info', ['bg-info']],
+    ] as [ButtonVariant, string[]][])(
+      'applies %s variant styles',
+      (variant, expectedClasses) => {
+        render(<Button variant={variant}>{variant}</Button>);
+        expect(screen.getByRole('button')).toHaveClass(...expectedClasses);
+      }
     );
-    const button = screen.getByTestId('submit-btn');
-    expect(button).toHaveAttribute('type', 'submit');
+
+    it('applies bare variant without background or border styles', () => {
+      render(<Button variant='bare'>Bare</Button>);
+      const button = screen.getByRole('button');
+      expect(button).not.toHaveClass('bg-accent');
+      expect(button).not.toHaveClass('bg-background-elevated');
+      expect(button).not.toHaveClass('border-border-strong');
+    });
+  });
+
+  describe('sizes', () => {
+    it('applies md size by default', () => {
+      render(<Button>Medium</Button>);
+      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-3');
+    });
+
+    it.each([
+      ['sm', ['px-3', 'py-1.5', 'text-sm']],
+      ['lg', ['px-6', 'py-3', 'text-lg']],
+    ] as [ButtonSize, string[]][])(
+      'applies %s size styles',
+      (size, expectedClasses) => {
+        render(<Button size={size}>{size}</Button>);
+        expect(screen.getByRole('button')).toHaveClass(...expectedClasses);
+      }
+    );
+  });
+
+  describe('interaction', () => {
+    it('fires onClick when clicked', () => {
+      const handleClick = jest.fn();
+      render(<Button onClick={handleClick}>Click</Button>);
+      fireEvent.click(screen.getByRole('button'));
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fire onClick when disabled', () => {
+      const handleClick = jest.fn();
+      render(
+        <Button disabled onClick={handleClick}>
+          Disabled
+        </Button>
+      );
+      fireEvent.click(screen.getByRole('button'));
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('props', () => {
+    it('applies disabled state', () => {
+      render(<Button disabled>Disabled</Button>);
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('merges custom className with variant and size styles', () => {
+      render(
+        <Button variant='secondary' size='lg' className='custom-class'>
+          Merged
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass(
+        'bg-background-elevated',
+        'px-6',
+        'text-lg',
+        'custom-class'
+      );
+    });
+
+    it('passes through additional HTML attributes', () => {
+      render(
+        <Button type='submit' data-testid='submit-btn'>
+          Submit
+        </Button>
+      );
+      expect(screen.getByTestId('submit-btn')).toHaveAttribute(
+        'type',
+        'submit'
+      );
+    });
+
+    it('forwards ref to the button element', () => {
+      const ref = createRef<HTMLButtonElement>();
+      render(<Button ref={ref}>Ref Button</Button>);
+      expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+    });
+
+    it('sets displayName for debugging', () => {
+      expect(Button.displayName).toBe('Button');
+    });
+  });
+
+  describe('accessibility', () => {
+    it('renders as an HTML button element', () => {
+      render(<Button>Element</Button>);
+      expect(screen.getByRole('button').tagName).toBe('BUTTON');
+    });
+
+    it('has focus-visible ring styles', () => {
+      render(<Button>Focus</Button>);
+      expect(screen.getByRole('button').className).toContain(
+        'focus-visible:ring-2'
+      );
+    });
+
+    it('supports aria-label for icon-only buttons', () => {
+      render(
+        <Button aria-label='Close'>
+          <span>×</span>
+        </Button>
+      );
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    });
   });
 });

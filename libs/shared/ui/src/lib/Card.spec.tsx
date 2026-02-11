@@ -113,4 +113,29 @@ describe('Card composition', () => {
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Test content')).toBeInTheDocument();
   });
+
+  describe('accessibility', () => {
+    it('CardTitle renders as heading level 3', () => {
+      render(
+        <Card>
+          <CardHeader>
+            <CardTitle>Accessible Title</CardTitle>
+          </CardHeader>
+          <CardContent>Body</CardContent>
+        </Card>
+      );
+      expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(
+        'Accessible Title'
+      );
+    });
+
+    it('card content is visible and accessible', () => {
+      render(
+        <Card>
+          <CardContent>Visible content</CardContent>
+        </Card>
+      );
+      expect(screen.getByText('Visible content')).toBeVisible();
+    });
+  });
 });

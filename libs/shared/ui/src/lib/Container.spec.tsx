@@ -12,9 +12,9 @@ describe('Container', () => {
     expect(container.firstChild).toHaveClass('mx-auto', 'w-full');
   });
 
-  it('applies horizontal padding', () => {
+  it('applies horizontal padding with responsive breakpoint', () => {
     const { container } = render(<Container>Content</Container>);
-    expect(container.firstChild).toHaveClass('px-4');
+    expect(container.firstChild).toHaveClass('px-4', 'sm:px-6');
   });
 
   it('applies default size (full)', () => {
@@ -39,7 +39,7 @@ describe('Container', () => {
 
   it('applies xl size', () => {
     const { container } = render(<Container size='xl'>Content</Container>);
-    expect(container.firstChild).toHaveClass('max-w-[1400px]');
+    expect(container.firstChild).toHaveClass('max-w-8xl');
   });
 
   it('applies full size', () => {

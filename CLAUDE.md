@@ -90,6 +90,18 @@ Shared components: Alert, Badge, Button, Card, Checkbox, Container, Divider, Gri
 
 - `@/` maps to `apps/root/src/` in the root app
 
+## Audits
+
+### Visual
+
+When running visual audits these are the instructions
+
+- Run a stylistic review of the requested page
+- the host should be at `http://localhost:3000`
+- run a hard refresh on the browser to avoid cache
+- provide actionable feedback on style/ux/ui implementation
+- bring up any questions if you have any
+
 ## Nx Plugins
 
 The workspace uses Nx plugins for automatic target inference:

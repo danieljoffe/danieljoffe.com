@@ -94,4 +94,42 @@ describe('ProgressBar', () => {
     );
     expect(container.querySelector('.custom-class')).toBeInTheDocument();
   });
+
+  describe('accessibility', () => {
+    it('has role="progressbar"', () => {
+      render(<ProgressBar value={50} />);
+      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    });
+
+    it('has default aria-label="Progress"', () => {
+      render(<ProgressBar value={50} />);
+      expect(screen.getByRole('progressbar')).toHaveAttribute(
+        'aria-label',
+        'Progress'
+      );
+    });
+
+    it('accepts custom aria-label', () => {
+      render(<ProgressBar value={50} aria-label='Upload progress' />);
+      expect(screen.getByRole('progressbar')).toHaveAttribute(
+        'aria-label',
+        'Upload progress'
+      );
+    });
+
+    it('sets aria-valuenow with rounded percentage', () => {
+      render(<ProgressBar value={33.7} />);
+      expect(screen.getByRole('progressbar')).toHaveAttribute(
+        'aria-valuenow',
+        '34'
+      );
+    });
+
+    it('sets aria-valuemin and aria-valuemax', () => {
+      render(<ProgressBar value={50} />);
+      const bar = screen.getByRole('progressbar');
+      expect(bar).toHaveAttribute('aria-valuemin', '0');
+      expect(bar).toHaveAttribute('aria-valuemax', '100');
+    });
+  });
 });

@@ -3,82 +3,67 @@ import { render, screen } from '@testing-library/react';
 import PostThumbnailDescription from './PostThumbnailDescription';
 
 describe('PostThumbnailDescription', () => {
-  test('renders title', () => {
-    render(
-      <PostThumbnailDescription
-        title='Project Title'
-        description='Description'
-      />
-    );
-    expect(screen.getByText('Project Title')).toBeInTheDocument();
-  });
+  const defaultProps = {
+    title: 'Project Title',
+    description: 'Project description text',
+  };
 
-  test('renders description', () => {
-    render(
-      <PostThumbnailDescription
-        title='Title'
-        description='Project description text'
-      />
-    );
-    expect(screen.getByText('Project description text')).toBeInTheDocument();
-  });
-
-  test('renders title in h3 element', () => {
-    render(
-      <PostThumbnailDescription title='Heading Title' description='Desc' />
-    );
+  it('renders title in an h3 element', () => {
+    render(<PostThumbnailDescription {...defaultProps} />);
     const heading = screen.getByRole('heading', { level: 3 });
-    expect(heading).toHaveTextContent('Heading Title');
+    expect(heading).toHaveTextContent('Project Title');
   });
 
-  test('renders description in paragraph element', () => {
-    render(
-      <PostThumbnailDescription title='Title' description='Para description' />
-    );
-    const paragraph = screen.getByText('Para description');
+  it('renders description in a paragraph element', () => {
+    render(<PostThumbnailDescription {...defaultProps} />);
+    const paragraph = screen.getByText('Project description text');
     expect(paragraph.tagName.toLowerCase()).toBe('p');
   });
 
-  test('applies container styling', () => {
-    const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
+  it('renders badges when both duration and role are provided', () => {
+    render(
+      <PostThumbnailDescription
+        {...defaultProps}
+        duration='Jun 2015 - Oct 2017'
+        role='Frontend Developer'
+      />
     );
-    const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('overflow-hidden');
-    expect((outerDiv as HTMLElement)?.className).toContain('bg-foreground/25');
+    expect(screen.getByText('Jun 2015 - Oct 2017')).toBeInTheDocument();
+    expect(screen.getByText('Frontend Developer')).toBeInTheDocument();
   });
 
-  test('applies minimum height for consistent card sizing', () => {
-    const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
+  it('does not render badges when only duration is provided', () => {
+    render(
+      <PostThumbnailDescription
+        {...defaultProps}
+        duration='Jun 2015 - Oct 2017'
+      />
     );
-    const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('min-h-[15rem]');
+    expect(screen.queryByText('Jun 2015 - Oct 2017')).not.toBeInTheDocument();
   });
 
-  test('applies backdrop blur styling to inner container', () => {
-    const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
+  it('does not render badges when only role is provided', () => {
+    render(
+      <PostThumbnailDescription {...defaultProps} role='Frontend Developer' />
     );
-    const innerDiv = container.querySelector('.backdrop-blur-md');
-    expect(innerDiv).toBeInTheDocument();
+    expect(screen.queryByText('Frontend Developer')).not.toBeInTheDocument();
   });
 
-  test('applies shadow styling', () => {
+  it('does not render badges when neither is provided', () => {
     const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
+      <PostThumbnailDescription {...defaultProps} />
     );
-    const innerDiv = container.querySelector('.shadow-lg');
-    expect(innerDiv).toBeInTheDocument();
+    expect(container.querySelector('[class*="badge"]')).not.toBeInTheDocument();
   });
 
-  test('applies padding styling', () => {
+  it('applies card styling to the container', () => {
     const { container } = render(
-      <PostThumbnailDescription title='Title' description='Desc' />
+      <PostThumbnailDescription {...defaultProps} />
     );
-    const outerDiv = container.firstChild;
-    expect((outerDiv as HTMLElement)?.className).toContain('px-4');
-    expect((outerDiv as HTMLElement)?.className).toContain('pt-6');
-    expect((outerDiv as HTMLElement)?.className).toContain('pb-8');
+    const outerDiv = container.firstChild as HTMLElement;
+    expect(outerDiv.className).toContain('bg-card');
+    expect(outerDiv.className).toContain('px-4');
+    expect(outerDiv.className).toContain('pt-4');
+    expect(outerDiv.className).toContain('pb-6');
   });
 });

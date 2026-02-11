@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Spinner } from './Spinner';
 
-const meta: Meta<typeof Spinner> = {
+const meta = {
   title: 'Components/Spinner',
   component: Spinner,
   tags: ['autodocs'],
@@ -17,16 +17,24 @@ const meta: Meta<typeof Spinner> = {
     variant: {
       description: 'Color variant of the spinner',
       control: 'select',
-      options: [undefined, 'accent', 'success', 'warning', 'error', 'info'],
+      options: [
+        undefined,
+        'accent',
+        'success',
+        'warning',
+        'error',
+        'info',
+        'foreground',
+      ],
       table: {
         defaultValue: { summary: 'accent' },
       },
     },
   },
-};
+} satisfies Meta<typeof Spinner>;
 export default meta;
 
-type Story = StoryObj<typeof Spinner>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -48,6 +56,41 @@ export const Large: Story = {
   args: {
     size: 'lg',
     variant: 'accent',
+    'aria-label': 'Loading',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    variant: 'success',
+    'aria-label': 'Loading',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    variant: 'warning',
+    'aria-label': 'Loading',
+  },
+};
+
+export const Error: Story = {
+  args: {
+    variant: 'error',
+    'aria-label': 'Loading',
+  },
+};
+
+export const Info: Story = {
+  args: {
+    variant: 'info',
+    'aria-label': 'Loading',
+  },
+};
+
+export const Foreground: Story = {
+  args: {
+    variant: 'foreground',
     'aria-label': 'Loading',
   },
 };

@@ -1,7 +1,11 @@
 'use client';
 
-import { ABOUT_LINK, CONTACT_FORM_ID, PROJECTS_LINK } from '@/utils/base';
-import { FULL_NAME } from '@/utils/constants';
+import {
+  ABOUT_LINK,
+  CONTACT_FORM_ID,
+  PROJECTS_LINK,
+  FULL_NAME,
+} from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
 import CTASection from '@/components/CTASection';
 

@@ -4,16 +4,16 @@ import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useGlobal } from '@/state/Global/Context';
 import NavLinks from './Links';
-import { Spinner } from '@danieljoffe.com/shared-ui';
+import { Spacer, Spinner } from '@danieljoffe.com/shared-ui';
 import TabletUpNav from './TabletUpNav';
 
 // Dynamically import MobileNav to avoid loading GSAP on desktop
 const MobileNav = dynamic(() => import('./MobileNav'), {
   ssr: false,
   loading: () => (
-    <div className='flex md:hidden items-center justify-center'>
-      <div className='h-[4.5rem] flex items-center justify-center'>
-        <Spinner size='sm' aria-label='Loading navigation' />
+    <div className='flex md:hidden items-center justify-center  py-2 px-2'>
+      <div className='h-12 flex items-center justify-center'>
+        <Spinner size='md' aria-label='Loading navigation' />
       </div>
     </div>
   ),
@@ -30,13 +30,16 @@ export default function Nav() {
   };
 
   return (
-    <nav
-      className='w-full fixed top-0 z-30 bg-background shadow-md'
-      role='navigation'
-      aria-label='Main navigation'
-    >
-      <TabletUpNav pathname={pathname} />
-      <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuOpen} />
-    </nav>
+    <section>
+      <nav
+        className='w-full fixed top-0 z-30 bg-background shadow-md'
+        role='navigation'
+        aria-label='Main navigation'
+      >
+        <TabletUpNav pathname={pathname} />
+        <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuOpen} />
+      </nav>
+      <Spacer size='xl' />
+    </section>
   );
 }

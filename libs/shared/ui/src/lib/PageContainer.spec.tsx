@@ -40,7 +40,7 @@ describe('PageContainer', () => {
   it('applies xl size', () => {
     render(<PageContainer size='xl'>Content</PageContainer>);
     const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('max-w-[1400px]');
+    expect(inner).toHaveClass('max-w-8xl');
   });
 
   it('applies full size', () => {

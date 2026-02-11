@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import ContentGrid from './ContentGrid';
 
@@ -17,12 +16,11 @@ describe('ContentGrid', () => {
   test('applies grid layout classes', () => {
     render(
       <ContentGrid>
-        <div data-testid='child'>Content</div>
+        <div>Content</div>
       </ContentGrid>
     );
     const grid = screen.getByText('Content').parentElement;
-    expect(grid?.className).toContain('grid');
-    expect(grid?.className).toContain('grid-cols-1');
+    expect(grid).toHaveClass('grid', 'grid-cols-1');
   });
 
   test('applies responsive grid classes', () => {
@@ -32,9 +30,7 @@ describe('ContentGrid', () => {
       </ContentGrid>
     );
     const grid = screen.getByText('Content').parentElement;
-    // UI library Grid uses sm: breakpoint for 2 columns
-    expect(grid?.className).toContain('sm:grid-cols-2');
-    expect(grid?.className).toContain('md:grid-rows-2');
+    expect(grid).toHaveClass('grid-cols-1', 'sm:grid-cols-2');
   });
 
   test('applies max-width and centering classes', () => {
@@ -44,8 +40,7 @@ describe('ContentGrid', () => {
       </ContentGrid>
     );
     const grid = screen.getByText('Content').parentElement;
-    expect(grid?.className).toContain('max-w-[30rem]');
-    expect(grid?.className).toContain('mx-auto');
+    expect(grid).toHaveClass('max-w-[30rem]', 'mx-auto');
   });
 
   test('applies gap styling', () => {
@@ -56,7 +51,7 @@ describe('ContentGrid', () => {
     );
     const grid = screen.getByText('Content').parentElement;
     // UI library Grid gap='lg' uses sm:gap-8
-    expect(grid?.className).toContain('sm:gap-8');
+    expect(grid).toHaveClass('sm:gap-8');
   });
 
   test('renders as semantic ul element', () => {

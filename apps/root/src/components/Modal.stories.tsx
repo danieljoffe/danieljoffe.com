@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import Modal from './Modal';
 import { expect } from 'storybook/test';
 
 import Button from '@/components/Button';
 import GlobalProvider from '@/state/Global/Provider';
 import { useGlobal } from '@/state/Global/Context';
+import Modal from './Modal';
 
-const meta: Meta<typeof Modal> = {
+const meta = {
   component: Modal,
   title: 'Components/Modal',
+  tags: ['autodocs'],
   decorators: [
     Story => {
       const ButtonTrigger = () => {
@@ -29,10 +30,10 @@ const meta: Meta<typeof Modal> = {
       );
     },
   ],
-};
+} satisfies Meta<typeof Modal>;
 export default meta;
 
-type Story = StoryObj<typeof Modal>;
+type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   play: async ({ canvas, canvasElement, userEvent }) => {
@@ -42,8 +43,7 @@ export const Primary: Story = {
     const [modalContent] =
       (await canvasElement.parentElement?.getElementsByTagName('main')) || [];
 
-    expect(modalContent).toBeInTheDocument();
-    expect(modalContent.textContent).toBe('Modal Content');
+    await expect(modalContent).toBeInTheDocument();
+    await expect(modalContent.textContent).toBe('Modal Content');
   },
-  args: {},
 };

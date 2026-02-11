@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
-import { AllowedProjectSlugs, NavLinkI, SlugPagePropsI } from '@/types/base';
-import { PROJECTS_LINK } from '@/utils/base';
+import { AllowedProjectSlugs, NavLink, SlugPageProps } from '@/types/base';
+import { PROJECTS_LINK } from '@/utils/constants';
 import { projectPagesMetadata } from '@/data/metadata/project';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
@@ -10,7 +10,7 @@ import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostBody from '@/components/PostBody';
 import MainContent from '@/components/MainContent';
 
-export async function generateMetadata({ params }: SlugPagePropsI) {
+export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
   const record = projectPagesMetadata[slug as AllowedProjectSlugs];
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: SlugPagePropsI) {
   return record;
 }
 
-export default async function SlugProjectPage({ params }: SlugPagePropsI) {
+export default async function SlugProjectPage({ params }: SlugPageProps) {
   const { slug } = (await params) ?? {};
 
   const Post = projectMdxComponents[slug as AllowedProjectSlugs];
@@ -34,7 +34,7 @@ export default async function SlugProjectPage({ params }: SlugPagePropsI) {
 
   const structuredData = projectStructuredData[slug as AllowedProjectSlugs];
 
-  const breadcrumbs: NavLinkI[] = [
+  const breadcrumbs: NavLink[] = [
     PROJECTS_LINK,
     {
       href: `${PROJECTS_LINK.href}/${slug}`,

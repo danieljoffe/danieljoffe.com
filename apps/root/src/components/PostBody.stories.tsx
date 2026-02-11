@@ -13,6 +13,7 @@ const mockCover = {
 const meta = {
   component: PostBody,
   title: 'Components/PostBody',
+  tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
     nextjs: {
@@ -20,6 +21,17 @@ const meta = {
       navigation: {
         pathname: '/projects/sample-project',
       },
+    },
+  },
+  argTypes: {
+    cover: {
+      description: 'Unsplash image metadata for the cover photo',
+    },
+    breadcrumbs: {
+      description: 'Navigation breadcrumb links',
+    },
+    children: {
+      description: 'Prose-styled page content',
     },
   },
 } satisfies Meta<typeof PostBody>;

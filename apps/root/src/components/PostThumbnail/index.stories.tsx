@@ -13,10 +13,39 @@ const mockCover = {
 const meta = {
   component: PostThumbnail,
   title: 'Components/PostThumbnail',
+  tags: ['autodocs'],
   parameters: {
     layout: 'centered',
     nextjs: {
       appDirectory: true,
+    },
+  },
+  argTypes: {
+    slug: {
+      description: 'URL slug for the post',
+      control: 'text',
+    },
+    cover: {
+      description: 'Unsplash image metadata for the thumbnail',
+    },
+    link: {
+      description: 'Navigation link for the post',
+    },
+    description: {
+      description: 'Brief summary of the post',
+      control: 'text',
+    },
+    duration: {
+      description: 'Time period (e.g. "Jun 2015 - Oct 2017")',
+      control: 'text',
+    },
+    role: {
+      description: 'Job role or position title',
+      control: 'text',
+    },
+    index: {
+      description: 'Position index for priority loading (first 2 are eager)',
+      control: 'number',
     },
   },
   decorators: [
@@ -36,12 +65,12 @@ export const Default: Story = {
     slug: 'sample-project',
     cover: mockCover,
     link: {
-      href: '/projects/sample-project',
-      label: 'Sample Project',
+      href: '/experience/sample-project',
+      label: 'Sample Company',
     },
-    backgroundColor: 'bg-blue-600',
-    description:
-      'A sample project showcasing modern web development techniques and best practices.',
+    description: 'The Foundation Years: Learning to Scale Marketing Operations',
+    duration: 'Jun 2015 - Oct 2017',
+    role: 'Frontend Developer',
     index: 0,
     title: '',
   },
@@ -52,27 +81,27 @@ export const SecondaryPosition: Story = {
     slug: 'another-project',
     cover: mockCover,
     link: {
-      href: '/projects/another-project',
-      label: 'Another Project',
+      href: '/experience/another-project',
+      label: 'Another Company',
     },
-    backgroundColor: 'bg-purple-600',
     description:
       'This project demonstrates lazy loading since it is not in the first two positions.',
+    duration: 'Mar 2018 - Aug 2019',
+    role: 'Full Stack Engineer',
     index: 2,
     title: '',
   },
 };
 
-export const DifferentBackgroundColor: Story = {
+export const WithoutDuration: Story = {
   args: {
-    slug: 'styled-project',
+    slug: 'no-duration',
     cover: mockCover,
     link: {
-      href: '/projects/styled-project',
-      label: 'Styled Project',
+      href: '/projects/no-duration',
+      label: 'Side Project',
     },
-    backgroundColor: 'bg-gradient-to-r from-pink-500 to-orange-500',
-    description: 'A project with a gradient background to showcase styling.',
+    description: 'A project card without duration or role metadata.',
     index: 1,
     title: '',
   },

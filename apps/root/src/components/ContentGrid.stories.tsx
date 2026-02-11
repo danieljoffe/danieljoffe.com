@@ -4,8 +4,14 @@ import ContentGrid from './ContentGrid';
 const meta = {
   component: ContentGrid,
   title: 'Components/ContentGrid',
+  tags: ['autodocs'],
   parameters: {
     layout: 'padded',
+  },
+  argTypes: {
+    children: {
+      description: 'Grid items to render in a responsive 2-column layout',
+    },
   },
 } satisfies Meta<typeof ContentGrid>;
 
@@ -13,7 +19,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const SampleCard = ({ title, color }: { title: string; color: string }) => (
-  <div className={`${color} p-6 rounded-md text-white min-h-[10rem]`}>
+  <div
+    className={`${color} p-6 rounded-md text-accent-foreground min-h-[10rem]`}
+  >
     <h3 className='text-lg font-medium'>{title}</h3>
     <p>Sample content card</p>
   </div>
@@ -23,10 +31,10 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <SampleCard title='Card 1' color='bg-blue-600' />
-        <SampleCard title='Card 2' color='bg-green-600' />
-        <SampleCard title='Card 3' color='bg-purple-600' />
-        <SampleCard title='Card 4' color='bg-orange-600' />
+        <SampleCard title='Card 1' color='bg-accent' />
+        <SampleCard title='Card 2' color='bg-success' />
+        <SampleCard title='Card 3' color='bg-info' />
+        <SampleCard title='Card 4' color='bg-warning' />
       </>
     ),
   },
@@ -36,8 +44,8 @@ export const TwoItems: Story = {
   args: {
     children: (
       <>
-        <SampleCard title='Card 1' color='bg-blue-600' />
-        <SampleCard title='Card 2' color='bg-green-600' />
+        <SampleCard title='Card 1' color='bg-accent' />
+        <SampleCard title='Card 2' color='bg-success' />
       </>
     ),
   },
@@ -45,6 +53,6 @@ export const TwoItems: Story = {
 
 export const SingleItem: Story = {
   args: {
-    children: <SampleCard title='Single Card' color='bg-red-600' />,
+    children: <SampleCard title='Single Card' color='bg-error' />,
   },
 };

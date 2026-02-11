@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Tabs } from './Tabs';
 
-const meta: Meta<typeof Tabs> = {
+const meta = {
   title: 'Components/Tabs',
   component: Tabs,
   tags: ['autodocs'],
@@ -19,10 +19,10 @@ const meta: Meta<typeof Tabs> = {
       action: 'onChange executed!',
     },
   },
-};
+} satisfies Meta<typeof Tabs>;
 
 export default meta;
-type Story = StoryObj<typeof Tabs>;
+type Story = StoryObj<typeof meta>;
 
 const sampleTabs = [
   { id: 'tab1', label: 'Tab 1', content: 'Content for Tab 1' },

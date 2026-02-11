@@ -1,24 +1,26 @@
-import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import { servicesAudience } from '@/data/services';
+import {
+  Card,
+  Stack,
+  PageContainer,
+  Section,
+  Grid,
+  GridItem,
+} from '@danieljoffe.com/shared-ui';
+import {
+  Rocket,
+  TrendingUp,
+  Building2,
+  Target,
+  type LucideIcon,
+} from 'lucide-react';
 
-const audiences = [
-  {
-    label: 'Founders',
-    description: 'who need a senior frontend partner, not just a pair of hands',
-  },
-  {
-    label: 'Growing startups',
-    description: 'whose engineering team is stretched thin',
-  },
-  {
-    label: 'Agencies',
-    description:
-      'that need overflow capacity from someone who can own a project end-to-end',
-  },
-  {
-    label: 'Non-technical teams',
-    description: 'drowning in engineering dependency for basic updates',
-  },
-];
+const iconMap: Record<string, LucideIcon> = {
+  Rocket,
+  TrendingUp,
+  Building2,
+  Target,
+};
 
 export default function WhoIWorkWith() {
   return (
@@ -30,16 +32,29 @@ export default function WhoIWorkWith() {
         <h2 id='who-i-work-with-heading' className='text-center'>
           Who I Work Best With
         </h2>
-        <Stack as='ul' direction='vertical' gap='sm' className='list-none'>
-          {audiences.map((audience, index) => (
-            <li key={index}>
-              <p>
-                <strong className='font-bold'>{audience.label}</strong>{' '}
-                {audience.description}
-              </p>
-            </li>
+        <Grid as='ul' cols={1} gap='sm' className='md:grid-cols-2 list-none'>
+          {servicesAudience.map((audience, index) => (
+            <GridItem key={index} as='li'>
+              <Card padding='sm' className='h-full'>
+                <Stack direction='horizontal' gap='sm' align='start'>
+                  {(() => {
+                    const Icon = iconMap[audience.icon];
+                    return Icon ? (
+                      <Icon
+                        className='size-5 text-accent shrink-0 mt-0.5'
+                        absoluteStrokeWidth={true}
+                        aria-hidden='true'
+                      />
+                    ) : null;
+                  })()}
+                  <p>
+                    <strong>{audience.label}</strong> {audience.description}
+                  </p>
+                </Stack>
+              </Card>
+            </GridItem>
           ))}
-        </Stack>
+        </Grid>
       </PageContainer>
     </Section>
   );

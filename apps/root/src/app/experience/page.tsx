@@ -2,9 +2,13 @@ import { Metadata } from 'next';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceRootMetadata } from '@/data/metadata/experience';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import {
+  Stack,
+  PageContainer,
+  Section,
+  Grid,
+} from '@danieljoffe.com/shared-ui';
 import PostThumbnail from '@/components/PostThumbnail';
-import ContentGrid from '@/components/ContentGrid';
 import MainContent from '@/components/MainContent';
 
 const experienceList = Object.values(experienceRecords);
@@ -16,7 +20,7 @@ export default function ExperiencePage() {
       <Section className='min-h-min max-h-max'>
         <PageContainer>
           <Stack direction='vertical' gap='md'>
-            <header>
+            <header className='text-center'>
               <h1>Experience</h1>
               <p>
                 An overview of my professional journey as a frontend
@@ -30,13 +34,20 @@ export default function ExperiencePage() {
               <h2 id='experience-heading' className='sr-only'>
                 Portfolio Experience section
               </h2>
-              <ContentGrid>
+              <Grid as='ul' cols={0} className='grid-cols-1 md:grid-cols-2'>
                 {experienceList.map((data, index) => (
-                  <li key={data.slug}>
+                  <li
+                    key={data.slug}
+                    className={
+                      index === experienceList.length - 1
+                        ? 'md:col-span-2 max-h-[40rem]'
+                        : ''
+                    }
+                  >
                     <PostThumbnail {...data} index={index} />
                   </li>
                 ))}
-              </ContentGrid>
+              </Grid>
             </section>
           </Stack>
         </PageContainer>

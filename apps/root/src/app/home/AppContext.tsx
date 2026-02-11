@@ -4,7 +4,7 @@ import gsap from 'gsap';
 import { TransitionRouter } from 'next-transition-router';
 import { startTransition, Suspense, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { WChildrenT } from '@/types/base';
+import { WithChildren } from '@/types/base';
 import GlobalProvider from '@/state/Global/Provider';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
@@ -15,7 +15,7 @@ const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
   ssr: false,
 });
 
-export default function AppContext({ children }: WChildrenT) {
+export default function AppContext({ children }: WithChildren) {
   const slidingPane = useRef<HTMLDivElement | null>(null);
 
   return (
@@ -77,7 +77,7 @@ export default function AppContext({ children }: WChildrenT) {
         <Modal />
         <Nav />
         <ErrorBoundary>
-          <div className='flex flex-col flex-1'>{children}</div>
+          {children}
           <div
             ref={slidingPane}
             className='fixed inset-0 z-50 translate-x-full bg-background'

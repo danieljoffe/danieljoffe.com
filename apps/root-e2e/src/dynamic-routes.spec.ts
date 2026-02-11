@@ -1,11 +1,7 @@
-import {
-  test,
-  expect,
-  PROJECT_SLUGS,
-  EXPERIENCE_SLUGS,
-} from './fixtures/base.fixture';
+import { test, expect } from '@playwright/test';
+import { PROJECT_SLUGS, EXPERIENCE_SLUGS } from './fixtures/test-data';
 
-test.describe('projects Listing Page', () => {
+test.describe('projects listing page', () => {
   test('displays projects page with heading', async ({ page }) => {
     await page.goto('/projects');
     await page.waitForLoadState('domcontentloaded');
@@ -39,7 +35,7 @@ test.describe('projects Listing Page', () => {
   });
 });
 
-test.describe('project Detail Pages', () => {
+test.describe('project detail pages', () => {
   for (const slug of PROJECT_SLUGS) {
     test(`loads ${slug} project page`, async ({ page }) => {
       await page.goto(`/projects/${slug}`);
@@ -86,7 +82,7 @@ test.describe('project Detail Pages', () => {
   });
 });
 
-test.describe('experience Listing Page', () => {
+test.describe('experience listing page', () => {
   test('displays experience page with heading', async ({ page }) => {
     await page.goto('/experience');
     await page.waitForLoadState('domcontentloaded');
@@ -120,7 +116,7 @@ test.describe('experience Listing Page', () => {
   });
 });
 
-test.describe('experience Detail Pages', () => {
+test.describe('experience detail pages', () => {
   for (const slug of EXPERIENCE_SLUGS) {
     test(`loads ${slug} experience page`, async ({ page }) => {
       await page.goto(`/experience/${slug}`);
@@ -156,105 +152,42 @@ test.describe('experience Detail Pages', () => {
   });
 });
 
-test.describe('invalid Routes', () => {
-  // Note: Invalid slugs are handled gracefully by the app.
-  // With dynamicParams=false, Next.js may return 404 OR the page component
-  // may redirect to the listing page. Both behaviors are valid error handling.
+test.describe('invalid routes', () => {
+  // With dynamicParams=false, Next.js returns 404, renders error content,
+  // or falls back to the parent listing page. All are valid error handling.
 
-  test('invalid project slug shows error page or redirects to listing', async ({
+  test('invalid project slug does not render detail content', async ({
     page,
   }) => {
     const response = await page.goto('/projects/invalid-slug-xyz-123');
-
     const status = response?.status();
-    const isErrorStatus = status === 404 || status === 500;
+    if (status === 404 || status === 500) return;
 
-    if (!isErrorStatus) {
-      // Wait for page to finish loading (Mobile Safari needs this for streaming SSR)
-      await page.waitForLoadState('load').catch(() => {});
-
-      // Wait for client-side redirect, error content, or loading state
-      await Promise.race([
-        page.waitForURL(/\/projects$/, { timeout: 15000 }),
-        page.waitForSelector('text=/not found|something went wrong/i', {
-          timeout: 15000,
-        }),
-        page.waitForSelector('[role="status"]', { timeout: 15000 }),
-      ]).catch(() => {});
-    }
-
-    const currentUrl = page.url();
-    const redirectedToListing = currentUrl.endsWith('/projects');
-
-    // Use DOM presence (.count) instead of .isVisible() — under parallel load
-    // on mobile, hydration may not have completed so elements exist in DOM
-    // but aren't considered "visible" by Playwright yet.
-    const is404Page = (await page.locator('h1:has-text("404")').count()) > 0;
-    const isNotFound =
-      (await page
-        .locator('text=/not found|page not found|project not found/i')
-        .count()) > 0;
-    const isErrorPage =
-      (await page.locator('text=/something went wrong/i').count()) > 0;
-    const isLoadingState = (await page.locator('[role="status"]').count()) > 0;
-    // Also check full page text as final fallback
-    const bodyText = (await page.textContent('body')) ?? '';
-    const hasNotFoundText = /not found|404/i.test(bodyText);
-
+    await page.waitForLoadState('load');
+    const url = page.url();
+    const heading = (await page.locator('h1').first().textContent()) ?? '';
+    // Accept: 404 content, error boundary, or parent listing page fallback
     expect(
-      isErrorStatus ||
-        is404Page ||
-        isNotFound ||
-        isErrorPage ||
-        redirectedToListing ||
-        isLoadingState ||
-        hasNotFoundText
+      url.endsWith('/projects') ||
+        /not found|404/i.test(heading) ||
+        heading.toLowerCase() === 'projects'
     ).toBeTruthy();
   });
 
-  test('invalid experience slug shows error page or redirects to listing', async ({
+  test('invalid experience slug does not render detail content', async ({
     page,
   }) => {
     const response = await page.goto('/experience/invalid-company-xyz');
-
     const status = response?.status();
-    const isErrorStatus = status === 404 || status === 500;
+    if (status === 404 || status === 500) return;
 
-    if (!isErrorStatus) {
-      await page.waitForLoadState('load').catch(() => {});
-
-      await Promise.race([
-        page.waitForURL(/\/experience$/, { timeout: 15000 }),
-        page.waitForSelector('text=/not found|something went wrong/i', {
-          timeout: 15000,
-        }),
-        page.waitForSelector('[role="status"]', { timeout: 15000 }),
-      ]).catch(() => {});
-    }
-
-    const currentUrl = page.url();
-    const redirectedToListing = currentUrl.endsWith('/experience');
-
-    // Use DOM presence (.count) instead of .isVisible() for reliability under load
-    const is404Page = (await page.locator('h1:has-text("404")').count()) > 0;
-    const isNotFound =
-      (await page
-        .locator('text=/not found|page not found|experience not found/i')
-        .count()) > 0;
-    const isErrorPage =
-      (await page.locator('text=/something went wrong/i').count()) > 0;
-    const isLoadingState = (await page.locator('[role="status"]').count()) > 0;
-    const bodyText = (await page.textContent('body')) ?? '';
-    const hasNotFoundText = /not found|404/i.test(bodyText);
-
+    await page.waitForLoadState('load');
+    const url = page.url();
+    const heading = (await page.locator('h1').first().textContent()) ?? '';
     expect(
-      isErrorStatus ||
-        is404Page ||
-        isNotFound ||
-        isErrorPage ||
-        redirectedToListing ||
-        isLoadingState ||
-        hasNotFoundText
+      url.endsWith('/experience') ||
+        /not found|404/i.test(heading) ||
+        heading.toLowerCase() === 'experience'
     ).toBeTruthy();
   });
 });

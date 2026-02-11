@@ -1,9 +1,9 @@
 'use client';
 
-import { WindowSizeInterface } from '@/hooks/windowResize';
+import { WindowSize } from '@/types/base';
 import { createContext, useContext } from 'react';
 
-export type ModalInterface = {
+export type ModalState = {
   isModalOpen: boolean;
   toggleModal: () => void;
   modalContent: React.ReactNode | null;
@@ -12,16 +12,14 @@ export type ModalInterface = {
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-export type ThemeInterface = {
+export type ThemeState = {
   themeMode: ThemeMode;
   isDarkMode: boolean;
   setThemeMode: (mode: ThemeMode) => void;
   toggleDarkMode: () => void;
 };
 
-export type GlobalContextValue = WindowSizeInterface &
-  ModalInterface &
-  ThemeInterface;
+export type GlobalContextValue = WindowSize & ModalState & ThemeState;
 
 const noop = () => undefined;
 

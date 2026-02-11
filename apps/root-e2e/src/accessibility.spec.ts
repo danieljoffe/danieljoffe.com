@@ -15,7 +15,7 @@ async function expectNoA11yViolations(page: Page) {
   expect(failing).toStrictEqual([]);
 }
 
-test.describe('accessibility Tests', () => {
+test.describe('accessibility tests', () => {
   const pages = [
     { name: 'homepage', path: '/' },
     { name: 'about page', path: '/about' },
@@ -30,7 +30,6 @@ test.describe('accessibility Tests', () => {
     test(`${name} should not have accessibility violations`, async ({
       page,
     }) => {
-      expect(true).toBe(true);
       await page.goto(path);
       await expectNoA11yViolations(page);
     });
@@ -42,86 +41,81 @@ test.describe('accessibility Tests', () => {
     // Look for skip links
     const skipLinks = page.locator('a[href^="#"]').filter({ hasText: /skip/i });
 
-    if ((await skipLinks.count()) > 0) {
-      const firstSkipLink = skipLinks.first();
+    await expect(skipLinks).toHaveCount(1);
+    const firstSkipLink = skipLinks.first();
 
-      // Make sure the skip link is focusable by tabbing to it
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(100);
+    // Make sure the skip link is focusable by tabbing to it
+    await page.keyboard.press('Tab');
 
-      // Check if we can focus the skip link
-      const isFocusable = await firstSkipLink.evaluate(el => {
-        const style = window.getComputedStyle(el);
-        return (
-          style.position !== 'absolute' ||
-          style.clip === 'auto' ||
-          el.matches(':focus') ||
-          el.matches('.focus\\:not-sr-only')
-        );
-      });
+    // Check if we can focus the skip link
+    const isFocusable = await firstSkipLink.evaluate(el => {
+      const style = window.getComputedStyle(el);
+      return (
+        style.position !== 'absolute' ||
+        style.clip === 'auto' ||
+        el.matches(':focus') ||
+        el.matches('.focus\\:not-sr-only')
+      );
+    });
 
-      if (isFocusable) {
-        await firstSkipLink.focus();
-        // Use evaluate to trigger click since sr-only positions element outside viewport
-        // and Playwright's click() cannot interact with it even with force: true
-        await firstSkipLink.evaluate((el: HTMLElement) => el.click());
+    if (isFocusable) {
+      await firstSkipLink.focus();
+      // Use evaluate to trigger click since sr-only positions element outside viewport
+      // and Playwright's click() cannot interact with it even with force: true
+      await firstSkipLink.evaluate((el: HTMLElement) => el.click());
 
-        // Check if focus moved to target or URL hash updated
-        const targetId = await firstSkipLink.getAttribute('href');
-        if (targetId && targetId.startsWith('#')) {
-          // Wait for hash to update (async on Mobile Chrome after programmatic click)
-          await page
-            .waitForURL(`**/${targetId}`, { timeout: 3000 })
-            .catch(() => {});
+      // Check if focus moved to target or URL hash updated
+      const targetId = await firstSkipLink.getAttribute('href');
+      if (targetId && targetId.startsWith('#')) {
+        // Wait for hash to update (async on Mobile Chrome after programmatic click)
+        await page
+          .waitForURL(`**/${targetId}`, { timeout: 3000 })
+          .catch(() => {});
 
-          // Wait for target element to exist
-          await page
-            .locator(targetId)
-            .waitFor({ state: 'attached', timeout: 3000 })
-            .catch(() => {});
+        // Wait for target element to exist
+        await page
+          .locator(targetId)
+          .waitFor({ state: 'attached', timeout: 3000 })
+          .catch(() => {});
 
-          const result = await page.evaluate(selector => {
-            const el = document.querySelector(selector) as HTMLElement | null;
-            const active = document.activeElement as HTMLElement | null;
-            const hashMatches = window.location.hash === selector;
+        const result = await page.evaluate(selector => {
+          const el = document.querySelector(selector) as HTMLElement | null;
+          const active = document.activeElement as HTMLElement | null;
+          const hashMatches = window.location.hash === selector;
 
-            if (!el)
-              return {
-                hasEl: false,
-                hashMatches,
-                focused: false,
-                elementExists: false,
-              };
+          if (!el)
+            return {
+              hasEl: false,
+              hashMatches,
+              focused: false,
+              elementExists: false,
+            };
 
-            // Check if element is focusable
-            const isFocusable =
-              el.tabIndex >= 0 ||
-              ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA', 'A'].includes(
-                el.tagName
-              ) ||
-              el.hasAttribute('tabindex');
+          // Check if element is focusable
+          const isFocusable =
+            el.tabIndex >= 0 ||
+            ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA', 'A'].includes(
+              el.tagName
+            ) ||
+            el.hasAttribute('tabindex');
 
-            // For non-focusable elements, just check if they exist and hash matches
-            if (!isFocusable) {
-              return {
-                hasEl: true,
-                hashMatches,
-                focused: hashMatches,
-                elementExists: true,
-              };
-            }
+          // For non-focusable elements, just check if they exist and hash matches
+          if (!isFocusable) {
+            return {
+              hasEl: true,
+              hashMatches,
+              focused: hashMatches,
+              elementExists: true,
+            };
+          }
 
-            const focused = !!active && (active === el || el.contains(active));
-            return { hasEl: true, hashMatches, focused, elementExists: true };
-          }, targetId);
+          const focused = !!active && (active === el || el.contains(active));
+          return { hasEl: true, hashMatches, focused, elementExists: true };
+        }, targetId);
 
-          expect(result.hasEl).toBeTruthy();
-          expect(result.hashMatches || result.focused).toBeTruthy();
-        }
+        expect(result.hasEl).toBeTruthy();
+        expect(result.hashMatches || result.focused).toBeTruthy();
       }
-    } else {
-      // If no skip links found, that's also acceptable - just log it
-      console.log('No skip links found on the page');
     }
   });
 
@@ -248,7 +242,7 @@ test.describe('accessibility Tests', () => {
         expect(focusableCount).toBeGreaterThan(0);
 
         // Close the modal to clean up
-        const closeButton = page.locator('button:has-text("Close")');
+        const closeButton = modal.getByRole('button', { name: 'Close' });
         if (await closeButton.isVisible()) {
           await closeButton.click();
         }

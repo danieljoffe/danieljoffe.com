@@ -7,7 +7,7 @@ import {
   validateFormData,
   rateLimit,
 } from './helpers';
-import { ABOUT_LINK } from '@/utils/base';
+import { ABOUT_LINK } from '@/utils/constants';
 import { captureApiError } from '@/lib/errorTracking';
 
 /**

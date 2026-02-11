@@ -11,7 +11,14 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    Sentry.withScope(scope => {
+      scope.setLevel('fatal');
+      scope.setTag('error.boundary', 'global');
+      if (error.digest) {
+        scope.setExtra('digest', error.digest);
+      }
+      Sentry.captureException(error);
+    });
   }, [error]);
 
   return (

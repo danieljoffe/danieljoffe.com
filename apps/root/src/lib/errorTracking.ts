@@ -136,12 +136,16 @@ export function captureApiError(
   statusCode: number,
   metadata?: Record<string, unknown>
 ): void {
-  // Don't capture client errors (4xx) as they're expected behavior
+  // Handle client errors (4xx)
   if (statusCode >= 400 && statusCode < 500) {
-    // Log validation/client errors at info level for monitoring
+    // Auth failures are more significant than general validation errors
+    const isAuthError = statusCode === 401 || statusCode === 403;
+    const level: ErrorSeverity = isAuthError ? 'warning' : 'info';
+    const category: ErrorCategory = isAuthError ? 'auth' : 'validation';
+
     Sentry.withScope(scope => {
-      scope.setLevel('info');
-      scope.setTag('error.category', 'validation');
+      scope.setLevel(level);
+      scope.setTag('error.category', category);
       scope.setTag('api.route', route);
       scope.setTag('api.method', method);
       scope.setTag('http.status_code', statusCode.toString());
@@ -151,7 +155,7 @@ export function captureApiError(
       }
 
       if (error instanceof Error) {
-        Sentry.captureMessage(`Client error: ${error.message}`, 'info');
+        Sentry.captureMessage(`Client error: ${error.message}`, level);
       }
     });
     return;

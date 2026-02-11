@@ -91,3 +91,28 @@ export const A11Y = {
   LOADING_TEXT: 'Content is loading, please wait.',
   ERROR_TEXT: 'An error occurred. Please try again.',
 } as const;
+
+// ============================================================================
+// NAVIGATION CONSTANTS
+// ============================================================================
+import { NavLink } from '@/types/base';
+
+export const HOME_LINK: NavLink = { href: '/', label: 'Home' };
+export const ABOUT_LINK: NavLink = { href: '/about', label: 'About' };
+export const SERVICES_LINK: NavLink = { href: '/services', label: 'Services' };
+export const PROJECTS_LINK: NavLink = { href: '/projects', label: 'Projects' };
+export const EXPERIENCE_LINK: NavLink = {
+  href: '/experience',
+  label: 'Experience',
+};
+
+export const NAV_LINKS: NavLink[] = [
+  HOME_LINK,
+  ABOUT_LINK,
+  SERVICES_LINK,
+  EXPERIENCE_LINK,
+  PROJECTS_LINK,
+];
+
+// Form IDs
+export const CONTACT_FORM_ID = 'contact-form';

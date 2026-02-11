@@ -1,6 +1,6 @@
 import { Container } from '@danieljoffe.com/shared-ui';
-import { WChildrenT } from '@/types/base';
+import { WithChildren } from '@/types/base';
 
-export default function PostContent({ children }: WChildrenT) {
+export default function PostContent({ children }: WithChildren) {
   return <Container size='sm'>{children}</Container>;
 }

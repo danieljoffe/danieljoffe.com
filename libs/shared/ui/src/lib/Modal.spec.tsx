@@ -46,7 +46,7 @@ describe('Modal', () => {
       </Modal>
     );
 
-    const backdrop = document.querySelector('.bg-background\\/80');
+    const backdrop = document.querySelector('[aria-hidden="true"]');
     fireEvent.click(backdrop!);
 
     expect(handleClose).toHaveBeenCalledTimes(1);
@@ -169,5 +169,109 @@ describe('Modal', () => {
       </Modal>
     );
     expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  it('applies info variant styles', () => {
+    const { container } = render(
+      <Modal isOpen={true} onClose={() => {}} variant='info'>
+        Content
+      </Modal>
+    );
+    expect(container.querySelector('.border-l-info')).toBeInTheDocument();
+  });
+
+  describe('body scroll cleanup', () => {
+    afterEach(() => {
+      document.body.style.overflow = '';
+    });
+
+    it('locks body scroll when open', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      expect(document.body.style.overflow).toBe('hidden');
+    });
+
+    it('restores body scroll when closed', () => {
+      const { rerender } = render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      rerender(
+        <Modal isOpen={false} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      expect(document.body.style.overflow).toBe('unset');
+    });
+
+    it('restores body scroll on unmount', () => {
+      const { unmount } = render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      unmount();
+      expect(document.body.style.overflow).toBe('unset');
+    });
+  });
+
+  describe('ARIA dialog', () => {
+    it('has role="dialog" and aria-modal', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
+    });
+
+    it('has aria-labelledby when title is provided', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}} title='My Dialog'>
+          Content
+        </Modal>
+      );
+      const dialog = screen.getByRole('dialog');
+      const labelledBy = dialog.getAttribute('aria-labelledby');
+      expect(labelledBy).toBeTruthy();
+      expect(screen.getByText('My Dialog')).toHaveAttribute('id', labelledBy);
+    });
+
+    it('has aria-label="Dialog" when no title', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('aria-label', 'Dialog');
+    });
+
+    it('close button has accessible name "Close dialog"', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}} title='Test'>
+          Content
+        </Modal>
+      );
+      expect(
+        screen.getByRole('button', { name: 'Close dialog' })
+      ).toBeInTheDocument();
+    });
+
+    it('close button is accessible when no title is provided', () => {
+      render(
+        <Modal isOpen={true} onClose={() => {}}>
+          Content
+        </Modal>
+      );
+      expect(
+        screen.getByRole('button', { name: 'Close dialog' })
+      ).toBeInTheDocument();
+    });
   });
 });

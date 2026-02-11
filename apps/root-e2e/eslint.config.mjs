@@ -14,7 +14,10 @@ export default [
       'playwright/no-conditional-in-test': 'off',
       'playwright/no-conditional-expect': 'off',
       // Enable other useful Playwright rules
-      'playwright/expect-expect': 'error',
+      'playwright/expect-expect': [
+        'error',
+        { assertFunctionNames: ['expect', 'expectNoA11yViolations'] },
+      ],
       'playwright/no-page-pause': 'error',
       'playwright/no-restricted-matchers': 'error',
       'playwright/prefer-lowercase-title': 'warn',

@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Card, CardHeader, CardTitle, CardContent } from './Card';
 
-// Card Stories
-const cardMeta: Meta<typeof Card> = {
+const meta = {
   title: 'Components/Card',
   component: Card,
   tags: ['autodocs'],
@@ -27,40 +26,40 @@ const cardMeta: Meta<typeof Card> = {
       control: 'text',
     },
   },
-};
-export default cardMeta;
+} satisfies Meta<typeof Card>;
+export default meta;
 
-type CardStory = StoryObj<typeof Card>;
+type Story = StoryObj<typeof meta>;
 
-export const Default: CardStory = {
+export const Default: Story = {
   args: {
     children: 'Card content goes here',
   },
 };
 
-export const Elevated: CardStory = {
+export const Elevated: Story = {
   args: {
     children: 'Elevated card content',
     elevated: true,
   },
 };
 
-export const NoPadding: CardStory = {
+export const NoPadding: Story = {
   args: {
     children: 'Card without padding',
     padding: 'none',
   },
 };
 
-export const LargePadding: CardStory = {
+export const LargePadding: Story = {
   args: {
     children: 'Card with large padding',
     padding: 'lg',
   },
 };
 
-// Full Card Example with all sub-components
-export const FullCard: CardStory = {
+export const FullCard: Story = {
+  args: { children: null },
   render: () => (
     <Card>
       <CardHeader>
@@ -73,68 +72,33 @@ export const FullCard: CardStory = {
   ),
 };
 
-// CardHeader Stories
-const cardHeaderMeta: Meta<typeof CardHeader> = {
-  title: 'Components/Card/CardHeader',
-  component: CardHeader,
-  tags: ['autodocs'],
-  argTypes: {
-    children: {
-      description: 'Header content (typically contains CardTitle)',
-      control: 'text',
-    },
-  },
+export const HeaderDefault: Story = {
+  args: { children: null },
+  render: () => (
+    <Card>
+      <CardHeader>Card Header Content</CardHeader>
+    </Card>
+  ),
 };
 
-type CardHeaderStory = StoryObj<typeof CardHeader>;
-
-export const HeaderDefault: CardHeaderStory = {
-  ...cardHeaderMeta,
-  args: {
-    children: 'Card Header Content',
-  },
+export const TitleDefault: Story = {
+  args: { children: null },
+  render: () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Card Title</CardTitle>
+      </CardHeader>
+    </Card>
+  ),
 };
 
-// CardTitle Stories
-const cardTitleMeta: Meta<typeof CardTitle> = {
-  title: 'Components/Card/CardTitle',
-  component: CardTitle,
-  tags: ['autodocs'],
-  argTypes: {
-    children: {
-      description: 'Title text content',
-      control: 'text',
-    },
-  },
-};
-
-type CardTitleStory = StoryObj<typeof CardTitle>;
-
-export const TitleDefault: CardTitleStory = {
-  ...cardTitleMeta,
-  args: {
-    children: 'Card Title',
-  },
-};
-
-// CardContent Stories
-const cardContentMeta: Meta<typeof CardContent> = {
-  title: 'Components/Card/CardContent',
-  component: CardContent,
-  tags: ['autodocs'],
-  argTypes: {
-    children: {
-      description: 'Content area of the card',
-      control: 'text',
-    },
-  },
-};
-
-type CardContentStory = StoryObj<typeof CardContent>;
-
-export const ContentDefault: CardContentStory = {
-  ...cardContentMeta,
-  args: {
-    children: 'This is the card content area where you can place any content.',
-  },
+export const ContentDefault: Story = {
+  args: { children: null },
+  render: () => (
+    <Card>
+      <CardContent>
+        This is the card content area where you can place any content.
+      </CardContent>
+    </Card>
+  ),
 };

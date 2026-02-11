@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Spinner } from './Spinner';
 
 describe('Spinner', () => {
@@ -9,17 +9,17 @@ describe('Spinner', () => {
 
   it('applies md size by default', () => {
     const { container } = render(<Spinner />);
-    expect(container.firstChild).toHaveClass('w-8', 'h-8');
+    expect(container.firstChild).toHaveClass('size-8');
   });
 
   it('applies sm size styles', () => {
     const { container } = render(<Spinner size='sm' />);
-    expect(container.firstChild).toHaveClass('w-4', 'h-4');
+    expect(container.firstChild).toHaveClass('size-4');
   });
 
   it('applies lg size styles', () => {
     const { container } = render(<Spinner size='lg' />);
-    expect(container.firstChild).toHaveClass('w-12', 'h-12');
+    expect(container.firstChild).toHaveClass('size-12');
   });
 
   it('applies accent variant by default', () => {
@@ -70,5 +70,28 @@ describe('Spinner', () => {
   it('applies thicker border for lg size', () => {
     const { container } = render(<Spinner size='lg' />);
     expect(container.firstChild).toHaveClass('border-3');
+  });
+
+  describe('accessibility', () => {
+    it('has role="status"', () => {
+      render(<Spinner />);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    it('has default aria-label="Loading"', () => {
+      render(<Spinner />);
+      expect(screen.getByRole('status')).toHaveAttribute(
+        'aria-label',
+        'Loading'
+      );
+    });
+
+    it('accepts custom aria-label', () => {
+      render(<Spinner aria-label='Submitting form' />);
+      expect(screen.getByRole('status')).toHaveAttribute(
+        'aria-label',
+        'Submitting form'
+      );
+    });
   });
 });

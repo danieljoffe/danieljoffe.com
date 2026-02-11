@@ -1,4 +1,5 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
+import { cn } from './utils';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string | undefined;
@@ -9,16 +10,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    {
-      label,
-      error,
-      helperText,
-      success,
-      className = '',
-      id,
-      required,
-      ...props
-    },
+    { label, error, helperText, success, className, id, required, ...props },
     ref
   ) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
@@ -27,8 +19,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const describedBy = errorId || helperId;
 
     const getStateClasses = () => {
-      if (error) return 'border-error focus:ring-error';
-      if (success) return 'border-success focus:ring-success';
+      if (error) return 'border-error focus-visible:ring-error';
+      if (success) return 'border-success focus-visible:ring-success';
       return '';
     };
 
@@ -47,7 +39,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-required={required || undefined}
           aria-describedby={describedBy}
           required={required}
-          className={`w-full px-4 py-2.5 bg-input border border-input-border rounded-md text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all ${getStateClasses()} ${className}`}
+          className={cn(
+            'w-full px-4 py-2.5 bg-input border border-input-border rounded-md',
+            'text-foreground placeholder:text-foreground-subtle focus-visible:outline-none',
+            'focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-transparent',
+            'transition-all',
+            getStateClasses(),
+            className
+          )}
           {...props}
         />
         {error && (

@@ -54,4 +54,17 @@ describe('Badge', () => {
     const badge = screen.getByText('Badge');
     expect(badge.tagName).toBe('SPAN');
   });
+
+  describe('accessibility', () => {
+    it('renders as inline text visible to screen readers', () => {
+      render(<Badge>Status</Badge>);
+      expect(screen.getByText('Status')).toBeVisible();
+    });
+
+    it('does not use a role that implies interactivity', () => {
+      render(<Badge>Info</Badge>);
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    });
+  });
 });
