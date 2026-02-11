@@ -69,3 +69,20 @@ export function getUnsplashUrl(
 ): string {
   return `${UNSPLASH_PHOTOS_URL}${src}?w=${width}&h=${height}&fit=crop&auto=format&q=80`;
 }
+
+export async function getUnsplashImageBase64(
+  src: string,
+  width: number,
+  height: number
+): Promise<string | null> {
+  const url = getUnsplashUrl(src, width, height);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buffer = await res.arrayBuffer();
+    const contentType = res.headers.get('content-type') ?? 'image/jpeg';
+    return `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
+  } catch {
+    return null;
+  }
+}

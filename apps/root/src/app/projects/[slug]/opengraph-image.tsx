@@ -1,5 +1,9 @@
 import { ImageResponse } from 'next/og';
-import { getOgFonts, getProfileImageBase64, getUnsplashUrl } from '@/lib/og';
+import {
+  getOgFonts,
+  getProfileImageBase64,
+  getUnsplashImageBase64,
+} from '@/lib/og';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectPageSlugs } from '@/data/project';
 import { AllowedProjectSlugs } from '@/types/base';
@@ -20,12 +24,11 @@ export default async function OgImage({
   const { slug } = await params;
   const project = projectsRecords[slug as AllowedProjectSlugs];
 
-  const [fonts, profileSrc] = await Promise.all([
+  const [fonts, profileSrc, coverSrc] = await Promise.all([
     getOgFonts(),
     getProfileImageBase64(),
+    getUnsplashImageBase64(project.cover.src, 600, 630),
   ]);
-
-  const coverUrl = getUnsplashUrl(project.cover.src, 600, 630);
 
   return new ImageResponse(
     <div
@@ -124,19 +127,24 @@ export default async function OgImage({
           display: 'flex',
           width: '40%',
           height: '100%',
+          background: '#0d7377',
         }}
       >
-        <picture>
-          <img
-            src={coverUrl}
-            alt=''
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-          />
-        </picture>
+        {coverSrc && (
+          <picture>
+            <img
+              src={coverSrc}
+              alt=''
+              width={480}
+              height={630}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          </picture>
+        )}
       </div>
     </div>,
     {
