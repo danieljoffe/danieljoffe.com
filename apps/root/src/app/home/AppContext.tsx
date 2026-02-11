@@ -77,7 +77,7 @@ export default function AppContext({ children }: WChildrenT) {
         <Modal />
         <Nav />
         <ErrorBoundary>
-          <div className='flex flex-col flex-1'>{children}</div>
+          {children}
           <div
             ref={slidingPane}
             className='fixed inset-0 z-50 translate-x-full bg-background'

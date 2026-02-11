@@ -9,15 +9,6 @@ function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
 }
 
 describe('ErrorBoundary', () => {
-  beforeEach(() => {
-    // Suppress React error boundary console output in tests
-    jest.spyOn(console, 'error').mockImplementation();
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
   it('renders children when no error', () => {
     render(
       <ErrorBoundary>

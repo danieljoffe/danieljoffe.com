@@ -10,12 +10,10 @@ function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
 
 describe('ModalErrorBoundary', () => {
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation();
     document.body.style.overflow = '';
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
     document.body.style.overflow = '';
   });
 

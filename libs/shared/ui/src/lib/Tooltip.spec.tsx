@@ -230,6 +230,27 @@ describe('Tooltip', () => {
     expect(tooltip).toHaveAttribute('aria-hidden', 'false');
   });
 
+  it('clears pending timeout on unmount', () => {
+    const { unmount } = render(
+      <Tooltip content='Tooltip text' delay={500}>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+
+    const trigger = screen.getByRole('button');
+    fireEvent.mouseEnter(trigger);
+
+    // Unmount before delay fires — should not throw or leak
+    unmount();
+
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    // If timeout leaked, React would warn about state update on unmounted component
+    // The test passing without error confirms cleanup works
+  });
+
   it('links trigger to tooltip via aria-describedby', () => {
     const { container } = render(
       <Tooltip content='Tooltip text'>

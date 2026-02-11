@@ -31,11 +31,11 @@ export default function PostThumbnail({
         onClick={handleClick}
         aria-label={`View ${link.label} project details`}
         className={[
-          'flex flex-col h-full overflow-hidden rounded-md',
-          'border border-border bg-card',
-          'transition-all duration-300 ease-in-out',
-          'hover:scale-[1.02] hover:shadow-lg hover:border-accent/40',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          'flex flex-col h-full overflow-hidden rounded-md border border-border bg-card',
+          'transition-[scale] duration-300 ease-in-out hover:outline-accent',
+          'hover:scale-[1.025] hover:outline hover:outline-2 hover:outline-offset-2 hover:shadow-lg/12.5',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         ].join(' ')}
       >
         <div className='relative overflow-hidden'>

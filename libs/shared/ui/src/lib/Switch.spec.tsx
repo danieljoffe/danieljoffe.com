@@ -98,18 +98,13 @@ describe('Switch', () => {
   });
 
   describe('accessibility', () => {
-    it('has role="switch"', () => {
-      render(<Switch checked={false} onCheckedChange={() => {}} />);
-      expect(screen.getByRole('switch')).toBeInTheDocument();
-    });
-
     it('has focus-visible ring styles', () => {
       render(<Switch checked={false} onCheckedChange={() => {}} />);
       const switchEl = screen.getByRole('switch');
-      expect(switchEl.className).toContain('focus-visible:ring-2');
+      expect(switchEl).toHaveClass('focus-visible:ring-2');
     });
 
-    it('renders label text', () => {
+    it('is labelled by adjacent text', () => {
       render(
         <Switch checked={false} onCheckedChange={() => {}} label='Dark mode' />
       );

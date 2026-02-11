@@ -55,20 +55,6 @@ const CustomFallback = ({
 );
 
 describe('ErrorBoundary', () => {
-  beforeEach(() => {
-    // Suppress console.error and console.warn for tests
-    jest.spyOn(console, 'error').mockImplementation(() => {
-      // Suppress console.error for tests
-    });
-    jest.spyOn(console, 'warn').mockImplementation(() => {
-      // Suppress console.warn for tests
-    });
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
   it('renders children when there is no error', () => {
     render(
       <ErrorBoundary>
@@ -172,20 +158,14 @@ describe('ErrorBoundary', () => {
   });
 
   it('logs error to console in development', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {
-      // Suppress console.error for tests
-    });
-
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
       </ErrorBoundary>
     );
 
-    // Check that console.error was called (React's error boundary calls it)
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
+    // console.error is already spied on globally via test-setup.ts
+    expect(console.error).toHaveBeenCalled();
   });
 
   it('sends error to analytics in production', () => {

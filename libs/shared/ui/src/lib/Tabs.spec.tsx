@@ -162,5 +162,21 @@ describe('Tabs', () => {
       expect(screen.getByText('Content 3')).toBeInTheDocument();
       expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
     });
+
+    it('moves to first tab on Home key', () => {
+      render(<Tabs tabs={defaultTabs} defaultTab='tab3' />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[2], { key: 'Home' });
+      expect(screen.getByText('Content 1')).toBeInTheDocument();
+      expect(screen.queryByText('Content 3')).not.toBeInTheDocument();
+    });
+
+    it('moves to last tab on End key', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.keyDown(tabs[0], { key: 'End' });
+      expect(screen.getByText('Content 3')).toBeInTheDocument();
+      expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    });
   });
 });

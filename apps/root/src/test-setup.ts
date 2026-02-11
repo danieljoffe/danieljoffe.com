@@ -80,6 +80,18 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Suppress noisy console output during tests (e.g. React error boundary logs).
+// Tests that need to assert on console calls can still spy on these.
+beforeEach(() => {
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 // Mock scrollTo
 Object.defineProperty(window, 'scrollTo', {
   writable: true,

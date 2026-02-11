@@ -66,7 +66,11 @@ describe('Section', () => {
   // Center tests
   it('applies centering by default', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).toHaveClass('flex', 'justify-center');
+    expect(container.firstChild).toHaveClass(
+      'flex',
+      'flex-col',
+      'justify-center'
+    );
   });
 
   it('removes centering when center=false', () => {

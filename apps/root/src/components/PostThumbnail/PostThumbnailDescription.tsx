@@ -24,10 +24,12 @@ export default function PostThumbnailDescription({
       ].join(' ')}
     >
       <h3 className=''>{title}</h3>
-      <Stack as='p' direction='horizontal'>
-        <Badge variant='accent'>{role}</Badge>
-        <Badge>{duration}</Badge>
-      </Stack>
+      {role && duration && (
+        <Stack as='p' direction='horizontal'>
+          <Badge variant='accent'>{role}</Badge>
+          <Badge>{duration}</Badge>
+        </Stack>
+      )}
       <p className='text-sm'>{description}</p>
     </div>
   );

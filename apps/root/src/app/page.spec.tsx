@@ -1,35 +1,40 @@
 import { render, screen } from '@testing-library/react';
 import Page from './page';
 
-function Hero() {
-  return <div data-testid='hero' />;
-}
-Hero.displayName = 'Hero';
-jest.mock('./home/Hero', Hero);
+jest.mock('./home/Hero', () => ({
+  __esModule: true,
+  default: function Hero() {
+    return <div data-testid='hero' />;
+  },
+}));
 
-function PreviousTeams() {
-  return <div data-testid='previous-teams' />;
-}
-PreviousTeams.displayName = 'PreviousTeams';
-jest.mock('./home/PreviousTeams', PreviousTeams);
+jest.mock('./home/PreviousTeams', () => ({
+  __esModule: true,
+  default: function PreviousTeams() {
+    return <div data-testid='previous-teams' />;
+  },
+}));
 
-function Achievements() {
-  return <div data-testid='achievements' />;
-}
-Achievements.displayName = 'Achievements';
-jest.mock('./home/Achievements', Achievements);
+jest.mock('./home/Achievements', () => ({
+  __esModule: true,
+  default: function Achievements() {
+    return <div data-testid='achievements' />;
+  },
+}));
 
-function Methodologies() {
-  return <div data-testid='methodologies' />;
-}
-Methodologies.displayName = 'Methodologies';
-jest.mock('./home/Methodologies', Methodologies);
+jest.mock('./home/Methodologies', () => ({
+  __esModule: true,
+  default: function Methodologies() {
+    return <div data-testid='methodologies' />;
+  },
+}));
 
-function CTA() {
-  return <div data-testid='cta' />;
-}
-CTA.displayName = 'CTA';
-jest.mock('./home/CTA', CTA);
+jest.mock('./home/CTA', () => ({
+  __esModule: true,
+  default: function CTA() {
+    return <div data-testid='cta' />;
+  },
+}));
 
 describe('Homepage', () => {
   it('renders inside MainContent wrapper', () => {

@@ -46,7 +46,7 @@ describe('Modal', () => {
       </Modal>
     );
 
-    const backdrop = document.querySelector('.bg-background\\/80');
+    const backdrop = document.querySelector('[aria-hidden="true"]');
     fireEvent.click(backdrop!);
 
     expect(handleClose).toHaveBeenCalledTimes(1);

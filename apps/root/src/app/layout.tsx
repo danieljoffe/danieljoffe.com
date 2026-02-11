@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: WChildrenT) {
           'bg-background text-foreground font-body',
           'focus:outline-accent focus:outline-2 focus:outline-offset-2',
           'focus-visible:outline-accent focus-visible:outline-2',
-          'focus-visible:outline-offset-2 pt-15',
+          'focus-visible:outline-offset-2',
         ].join(' ')}
       >
         <a
