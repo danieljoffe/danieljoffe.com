@@ -71,27 +71,11 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.uiV1}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.uiV1].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'UI Components V1',
-        },
-      ],
     },
     twitter: {
       title: 'Project | UI Components V1',
       description: projectsRecords[projectSlugs.uiV1].description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.uiV1].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'UI Components V1',
-        },
-      ],
     },
   },
   [projectSlugs.uiV2]: {
@@ -125,27 +109,11 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.uiV2}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.uiV2].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'UI Components V2',
-        },
-      ],
     },
     twitter: {
       title: 'Project | UI Components V2',
       description: projectsRecords[projectSlugs.uiV2].description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.uiV2].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'UI Components V2',
-        },
-      ],
     },
   },
   [projectSlugs.csPerformance]: {
@@ -179,28 +147,12 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.csPerformance}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csPerformance].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Performance Optimization Case Study',
-        },
-      ],
     },
     twitter: {
       title: 'Project | Performance Optimization Case Study',
       description: projectsRecords[projectSlugs.csPerformance]
         .description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csPerformance].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Performance Optimization Case Study',
-        },
-      ],
     },
   },
   [projectSlugs.csCLibrary]: {
@@ -234,28 +186,12 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.csCLibrary}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csCLibrary].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Component Library Case Study',
-        },
-      ],
     },
     twitter: {
       title: 'Project | Component Library Case Study',
       description: projectsRecords[projectSlugs.csCLibrary]
         .description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csCLibrary].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Component Library Case Study',
-        },
-      ],
     },
   },
   [projectSlugs.csCMSTooling]: {
@@ -288,28 +224,12 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.csCMSTooling}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csCMSTooling].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'CMS Tooling Case Study',
-        },
-      ],
     },
     twitter: {
       title: 'Project | CMS Tooling Case Study',
       description: projectsRecords[projectSlugs.csCMSTooling]
         .description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csCMSTooling].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'CMS Tooling Case Study',
-        },
-      ],
     },
   },
   [projectSlugs.csModernPractice]: {
@@ -342,28 +262,12 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.csModernPractice}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csModernPractice].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Modern Practice Case Study',
-        },
-      ],
     },
     twitter: {
       title: 'Project | Modern Practice Case Study',
       description: projectsRecords[projectSlugs.csModernPractice]
         .description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csModernPractice].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Modern Practice Case Study',
-        },
-      ],
     },
   },
   [projectSlugs.csA11y]: {
@@ -395,27 +299,11 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.csA11y}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csA11y].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Accessibility Case Study (Serials)',
-        },
-      ],
     },
     twitter: {
       title: 'Project | Accessibility Case Study (Serials)',
       description: projectsRecords[projectSlugs.csA11y].description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csA11y].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Accessibility Case Study (Serials)',
-        },
-      ],
     },
   },
   [projectSlugs.csLogisticsDashboard]: {
@@ -449,28 +337,12 @@ export const projectPagesMetadata: Record<AllowedProjectSlugs, Metadata> = {
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${projectSlugs.csLogisticsDashboard}`,
       type: 'article',
       siteName: FULL_NAME,
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csLogisticsDashboard].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Logistics Dashboard Case Study',
-        },
-      ],
     },
     twitter: {
       title: 'Project | Logistics Dashboard Case Study',
       description: projectsRecords[projectSlugs.csLogisticsDashboard]
         .description as string,
       card: 'summary_large_image',
-      images: [
-        {
-          url: projectsRecords[projectSlugs.csLogisticsDashboard].cover.src,
-          width: 4042,
-          height: 2695,
-          alt: 'Logistics Dashboard Case Study',
-        },
-      ],
     },
   },
 };

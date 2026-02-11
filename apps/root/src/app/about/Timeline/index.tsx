@@ -28,7 +28,7 @@ export default function Timeline() {
             alt='Career timeline overview'
             width={375}
             height={667}
-            className='w-full dark:hidden rounded-lg outline-2 outline-foreground-muted outline-offset-[0.5rem]'
+            className='w-full dark:hidden rounded-2xl contained border border-foreground-muted'
             sizes='100vw'
             unoptimized={true}
             fetchPriority='low'
@@ -41,7 +41,7 @@ export default function Timeline() {
             alt='Career timeline overview'
             width={375}
             height={667}
-            className='w-full hidden dark:block rounded-lg outline-2 outline-foreground-muted outline-offset-[0.5rem]'
+            className='w-full hidden dark:block rounded-2xl contained border border-foreground-muted'
             sizes='100vw'
             unoptimized={true}
             fetchPriority='low'
@@ -57,7 +57,7 @@ export default function Timeline() {
             alt='Career timeline overview'
             height={768}
             width={1024}
-            className='w-full dark:hidden rounded-lg outline-2 outline-foreground-muted outline-offset-[0.5rem]'
+            className='w-full dark:hidden rounded-2xl contained border border-foreground-muted'
             sizes='(min-width: 768px) 50vw, (min-width: 1024px) 33vw'
             unoptimized={true}
             fetchPriority='low'
@@ -70,7 +70,7 @@ export default function Timeline() {
             alt='Career timeline overview'
             height={768}
             width={1024}
-            className='w-full hidden dark:block rounded-lg outline-2 outline-foreground-muted outline-offset-[0.5rem]'
+            className='w-full hidden dark:block rounded-2xl contained border border-foreground-muted'
             sizes='(min-width: 768px) 50vw, (min-width: 1024px) 33vw'
             unoptimized={true}
             fetchPriority='low'

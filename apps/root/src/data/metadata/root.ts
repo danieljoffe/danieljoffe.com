@@ -44,21 +44,12 @@ export const rootMetadata: Metadata = {
     description:
       'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps.',
     siteName: 'Daniel Joffe',
-    images: [
-      {
-        url: '/images/daniel-joffe-profile.png',
-        width: 800,
-        height: 800,
-        alt: 'Daniel Joffe - Full-Stack Engineer',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Daniel Joffe | Senior Frontend Engineer',
     description:
       'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Seeking remote or LA-based roles.',
-    images: ['/images/daniel-joffe-profile.png'],
     creator: '@danieljoffe',
   },
   robots: {

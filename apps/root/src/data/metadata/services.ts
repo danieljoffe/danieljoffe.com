@@ -30,14 +30,6 @@ export const servicesMetadata: Metadata = {
     url: 'https://danieljoffe.com/services',
     type: 'website',
     siteName: 'Daniel Joffe',
-    images: [
-      {
-        url: '/images/daniel-joffe-profile.png',
-        width: 800,
-        height: 800,
-        alt: 'Daniel Joffe - Frontend Development Services',
-      },
-    ],
   },
   twitter: {
     title: 'Services | Daniel Joffe - Frontend Development & Consulting',
@@ -45,6 +37,5 @@ export const servicesMetadata: Metadata = {
       'Performance audits, component libraries, CMS tooling, and MVP builds. Ship faster with a senior frontend partner.',
     card: 'summary_large_image',
     creator: '@danieljoffe',
-    images: ['/images/daniel-joffe-profile.png'],
   },
 };

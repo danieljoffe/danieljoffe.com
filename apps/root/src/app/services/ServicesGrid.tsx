@@ -37,15 +37,7 @@ export default function ServicesGrid() {
         <Grid as='ul' cols={1} gap='lg' className='md:grid-cols-2'>
           {services.map((service, index) => (
             <GridItem key={index} as='li'>
-              <Card
-                padding='lg'
-                elevated
-                className={`h-full flex flex-col ${
-                  service.highlighted
-                    ? 'ring-2 ring-accent/40 border-accent/40'
-                    : ''
-                }`}
-              >
+              <Card padding='lg' elevated className='h-full flex flex-col'>
                 <Stack direction='vertical' gap='md' className='flex-1'>
                   <div className='flex flex-col gap-2 items-start'>
                     <Stack
@@ -67,9 +59,11 @@ export default function ServicesGrid() {
                       <h3 className='!mb-0'>{service.title}</h3>
                     </Stack>
                     {service.highlighted && (
-                      <Badge variant='accent' className='w-fit'>
-                        Most popular
-                      </Badge>
+                      <p className='w-full text-center'>
+                        <Badge variant='accent' className='w-fit'>
+                          Most popular
+                        </Badge>
+                      </p>
                     )}
                   </div>
                   <p>{service.description}</p>

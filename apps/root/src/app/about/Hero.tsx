@@ -14,26 +14,19 @@ export default function Hero() {
       <PageContainer>
         <h1 className='text-center'>Building Without Friction</h1>
         <Stack direction='vertical' gap='md' className='md:flex-row md:gap-8'>
-          <Stack
-            direction='horizontal'
-            justify='center'
-            align='start'
-            className='p-[1rem]'
-          >
-            <Image
-              src='/images/daniel-joffe-profile.png'
-              alt={FULL_NAME}
-              title={FULL_NAME}
-              width={250}
-              height={250}
-              className='rounded-full min-w-[15.5rem] outline-2 outline-foreground dark:outline-accent outline-offset-[0.5rem]'
-              sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
-              fetchPriority='high'
-              preload={true}
-              decoding='async'
-              loading='eager'
-            />
-          </Stack>
+          <Image
+            src='/images/daniel-joffe-profile.png'
+            alt={FULL_NAME}
+            title={FULL_NAME}
+            width={200}
+            height={200}
+            className='rounded-full size-[12.5rem] contained border border-foreground-muted'
+            sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
+            fetchPriority='high'
+            preload={true}
+            decoding='async'
+            loading='eager'
+          />
           <Stack
             direction='vertical'
             gap='md'

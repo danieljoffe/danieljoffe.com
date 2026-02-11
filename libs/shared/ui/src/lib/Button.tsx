@@ -40,7 +40,7 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   } bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-active`,
   secondary: `${
     regularButton
-  } bg-background-elevated text-foreground hover:bg-border-strong border border-border`,
+  } bg-background-elevated text-foreground hover:bg-background border border-border`,
   ghost: `${
     regularButton
   } text-foreground-muted hover:bg-background-elevated hover:text-foreground`,

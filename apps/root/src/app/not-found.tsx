@@ -2,16 +2,9 @@ import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/constants';
+import { notFoundMetadata } from '@/data/metadata/notFound';
 
-export const metadata: Metadata = {
-  title: 'Page Not Found - 404',
-  description:
-    'The page you are looking for could not be found. Please check the URL or return to the home page.',
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+export const metadata: Metadata = notFoundMetadata;
 
 export default function NotFound() {
   return (
