@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import { forwardRef, type ReactNode, type HTMLAttributes } from 'react';
 import { cn } from './utils';
 
 export interface SectionProps extends Omit<
@@ -38,29 +38,36 @@ const overflowClasses = {
   auto: 'overflow-auto',
 };
 
-export function Section({
-  children,
-  padding = 'none',
-  background = 'none',
-  center = true,
-  overflow = 'hidden',
-  fullWidth = true,
-  className,
-  ...rest
-}: SectionProps) {
-  return (
-    <section
-      className={cn(
-        paddingClasses[padding],
-        backgroundClasses[background],
-        overflowClasses[overflow],
-        center && 'flex flex-col justify-center',
-        fullWidth && 'w-full',
-        className
-      )}
-      {...rest}
-    >
-      {children}
-    </section>
-  );
-}
+export const Section = forwardRef<HTMLElement, SectionProps>(
+  (
+    {
+      children,
+      padding = 'none',
+      background = 'none',
+      center = true,
+      overflow = 'hidden',
+      fullWidth = true,
+      className,
+      ...rest
+    },
+    ref
+  ) => {
+    return (
+      <section
+        ref={ref}
+        className={cn(
+          paddingClasses[padding],
+          backgroundClasses[background],
+          overflowClasses[overflow],
+          center && 'flex flex-col justify-center',
+          fullWidth && 'w-full',
+          className
+        )}
+        {...rest}
+      >
+        {children}
+      </section>
+    );
+  }
+);
+Section.displayName = 'Section';

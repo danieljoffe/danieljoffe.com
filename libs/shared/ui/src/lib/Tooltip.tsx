@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  forwardRef,
   useState,
   useRef,
   useCallback,
@@ -17,6 +18,7 @@ export interface TooltipProps {
   children: ReactNode;
   position?: TooltipPosition;
   delay?: number;
+  className?: string | undefined;
 }
 
 const positionStyles: Record<TooltipPosition, string> = {
@@ -26,66 +28,64 @@ const positionStyles: Record<TooltipPosition, string> = {
   right: 'left-full top-1/2 -translate-y-1/2 ml-2',
 };
 
-export function Tooltip({
-  content,
-  children,
-  position = 'top',
-  delay = 200,
-}: TooltipProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tooltipId = useId();
+export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
+  ({ content, children, position = 'top', delay = 200, className }, ref) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const tooltipId = useId();
 
-  const showTooltip = useCallback(() => {
-    timeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, delay);
-  }, [delay]);
+    const showTooltip = useCallback(() => {
+      timeoutRef.current = setTimeout(() => {
+        setIsVisible(true);
+      }, delay);
+    }, [delay]);
 
-  const hideTooltip = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    setIsVisible(false);
-  }, []);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        hideTooltip();
+    const hideTooltip = useCallback(() => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
-    },
-    [hideTooltip]
-  );
+      setIsVisible(false);
+    }, []);
 
-  return (
-    <div className='relative inline-block'>
-      <div
-        onMouseEnter={showTooltip}
-        onMouseLeave={hideTooltip}
-        onFocus={showTooltip}
-        onBlur={hideTooltip}
-        onKeyDown={handleKeyDown}
-        role='presentation'
-        aria-describedby={tooltipId}
-      >
-        {children}
+    const handleKeyDown = useCallback(
+      (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          hideTooltip();
+        }
+      },
+      [hideTooltip]
+    );
+
+    return (
+      <div ref={ref} className={cn('relative inline-block', className)}>
+        <div
+          onMouseEnter={showTooltip}
+          onMouseLeave={hideTooltip}
+          onFocus={showTooltip}
+          onBlur={hideTooltip}
+          onKeyDown={handleKeyDown}
+          role='presentation'
+          aria-describedby={tooltipId}
+        >
+          {children}
+        </div>
+        <div
+          id={tooltipId}
+          role='tooltip'
+          aria-hidden={!isVisible}
+          className={cn(
+            'absolute z-50 px-3 py-1.5 bg-background-elevated border',
+            'border-border-strong rounded-md text-sm text-foreground',
+            'whitespace-nowrap pointer-events-none transition-opacity duration-150',
+            positionStyles[position],
+            isVisible ? 'opacity-100' : 'opacity-0'
+          )}
+        >
+          {content}
+        </div>
       </div>
-      <div
-        id={tooltipId}
-        role='tooltip'
-        aria-hidden={!isVisible}
-        className={cn(
-          'absolute z-50 px-3 py-1.5 bg-background-elevated border',
-          'border-border-strong rounded-md text-sm text-foreground',
-          'whitespace-nowrap pointer-events-none transition-opacity duration-150',
-          positionStyles[position],
-          isVisible ? 'opacity-100' : 'opacity-0'
-        )}
-      >
-        {content}
-      </div>
-    </div>
-  );
-}
+    );
+  }
+);
+Tooltip.displayName = 'Tooltip';

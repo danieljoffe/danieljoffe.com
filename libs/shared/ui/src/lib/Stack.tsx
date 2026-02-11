@@ -1,4 +1,9 @@
-import type { ReactNode, ElementType, ComponentPropsWithoutRef } from 'react';
+import {
+  forwardRef,
+  type ReactNode,
+  type ElementType,
+  type ComponentPropsWithoutRef,
+} from 'react';
 import { cn } from './utils';
 
 type StackElement =
@@ -59,21 +64,25 @@ const justifyClasses = {
   evenly: 'justify-evenly',
 };
 
-export function Stack<T extends StackElement = 'div'>({
-  as,
-  children,
-  direction = 'vertical',
-  gap = 'md',
-  align = 'stretch',
-  justify = 'start',
-  wrap = false,
-  className,
-  ...rest
-}: PolymorphicStackProps<T>) {
+function StackInner<T extends StackElement = 'div'>(
+  {
+    as,
+    children,
+    direction = 'vertical',
+    gap = 'md',
+    align = 'stretch',
+    justify = 'start',
+    wrap = false,
+    className,
+    ...rest
+  }: PolymorphicStackProps<T>,
+  ref: React.ForwardedRef<Element>
+) {
   const Component = (as || 'div') as ElementType;
 
   return (
     <Component
+      ref={ref}
       className={cn(
         'flex',
         directionClasses[direction],
@@ -89,3 +98,8 @@ export function Stack<T extends StackElement = 'div'>({
     </Component>
   );
 }
+
+export const Stack = forwardRef(StackInner) as <T extends StackElement = 'div'>(
+  props: PolymorphicStackProps<T> & { ref?: React.Ref<Element> }
+) => React.ReactElement | null;
+(Stack as { displayName?: string }).displayName = 'Stack';

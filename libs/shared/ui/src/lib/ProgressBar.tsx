@@ -1,16 +1,19 @@
+import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from './utils';
 
 type ProgressBarVariant = 'accent' | 'success' | 'warning' | 'error' | 'info';
 type ProgressBarSize = 'sm' | 'md' | 'lg';
 
-export interface ProgressBarProps {
+export interface ProgressBarProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'className'
+> {
   value: number;
   max?: number;
   variant?: ProgressBarVariant;
   size?: ProgressBarSize;
   showLabel?: boolean;
   className?: string;
-  'aria-label'?: string;
 }
 
 const variantStyles: Record<ProgressBarVariant, string> = {
@@ -27,47 +30,54 @@ const sizeStyles: Record<ProgressBarSize, string> = {
   lg: 'h-3',
 };
 
-export function ProgressBar({
-  value,
-  max = 100,
-  variant = 'accent',
-  size = 'md',
-  showLabel = false,
-  className,
-  'aria-label': ariaLabel = 'Progress',
-}: ProgressBarProps) {
-  const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
+export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
+  (
+    {
+      value,
+      max = 100,
+      variant = 'accent',
+      size = 'md',
+      showLabel = false,
+      className,
+      'aria-label': ariaLabel = 'Progress',
+      ...props
+    },
+    ref
+  ) => {
+    const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
-  return (
-    <div className='w-full'>
-      <div
-        role='progressbar'
-        aria-valuenow={Math.round(percentage)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={ariaLabel}
-        className={cn(
-          'w-full bg-background-elevated rounded-full overflow-hidden',
-          sizeStyles[size],
-          className
-        )}
-      >
+    return (
+      <div ref={ref} className='w-full' {...props}>
         <div
+          role='progressbar'
+          aria-valuenow={Math.round(percentage)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={ariaLabel}
           className={cn(
-            'h-full transition-all duration-300 ease-out',
-            variantStyles[variant]
+            'w-full bg-background-elevated rounded-full overflow-hidden',
+            sizeStyles[size],
+            className
           )}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      {showLabel && (
-        <p
-          className='mt-1.5 text-sm text-foreground-muted text-right'
-          aria-hidden='true'
         >
-          {Math.round(percentage)}%
-        </p>
-      )}
-    </div>
-  );
-}
+          <div
+            className={cn(
+              'h-full transition-all duration-300 ease-out',
+              variantStyles[variant]
+            )}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        {showLabel && (
+          <p
+            className='mt-1.5 text-sm text-foreground-muted text-right'
+            aria-hidden='true'
+          >
+            {Math.round(percentage)}%
+          </p>
+        )}
+      </div>
+    );
+  }
+);
+ProgressBar.displayName = 'ProgressBar';

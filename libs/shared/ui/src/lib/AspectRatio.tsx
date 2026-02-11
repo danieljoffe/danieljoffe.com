@@ -1,10 +1,12 @@
-import type { ReactNode } from 'react';
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
 
-export interface AspectRatioProps {
+export interface AspectRatioProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
   children: ReactNode;
   ratio?: '1/1' | '4/3' | '16/9' | '21/9' | '3/4' | '9/16';
-  className?: string;
 }
 
 const ratioClasses: Record<NonNullable<AspectRatioProps['ratio']>, string> = {
@@ -16,14 +18,17 @@ const ratioClasses: Record<NonNullable<AspectRatioProps['ratio']>, string> = {
   '9/16': 'aspect-[9/16]',
 };
 
-export function AspectRatio({
-  children,
-  ratio = '16/9',
-  className,
-}: AspectRatioProps) {
-  return (
-    <div className={cn('relative w-full', ratioClasses[ratio], className)}>
-      {children}
-    </div>
-  );
-}
+export const AspectRatio = forwardRef<HTMLDivElement, AspectRatioProps>(
+  ({ children, ratio = '16/9', className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn('relative w-full', ratioClasses[ratio], className)}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+AspectRatio.displayName = 'AspectRatio';

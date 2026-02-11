@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import { forwardRef, type ReactNode, type HTMLAttributes } from 'react';
 import { cn } from './utils';
 
 export interface ContainerProps extends Omit<
@@ -18,22 +18,21 @@ const sizeClasses = {
   full: 'max-w-full',
 };
 
-export function Container({
-  children,
-  size = 'full',
-  className,
-  ...rest
-}: ContainerProps) {
-  return (
-    <div
-      className={cn(
-        'mx-auto w-full px-4 sm:px-6',
-        sizeClasses[size],
-        className
-      )}
-      {...rest}
-    >
-      {children}
-    </div>
-  );
-}
+export const Container = forwardRef<HTMLDivElement, ContainerProps>(
+  ({ children, size = 'full', className, ...rest }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'mx-auto w-full px-4 sm:px-6',
+          sizeClasses[size],
+          className
+        )}
+        {...rest}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+Container.displayName = 'Container';

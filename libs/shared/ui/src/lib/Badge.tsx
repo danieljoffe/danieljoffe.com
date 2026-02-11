@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
 
 type BadgeVariant =
@@ -9,10 +9,12 @@ type BadgeVariant =
   | 'error'
   | 'info';
 
-export interface BadgeProps {
+export interface BadgeProps extends Omit<
+  HTMLAttributes<HTMLSpanElement>,
+  'children'
+> {
   children: ReactNode;
   variant?: BadgeVariant;
-  className?: string;
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
@@ -24,20 +26,21 @@ const variantStyles: Record<BadgeVariant, string> = {
   info: 'bg-info-muted text-info border border-info/30',
 };
 
-export function Badge({
-  children,
-  variant = 'default',
-  className,
-}: BadgeProps) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium',
-        variantStyles[variant],
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
-}
+export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+  ({ children, variant = 'default', className, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn(
+          'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium',
+          variantStyles[variant],
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  }
+);
+Badge.displayName = 'Badge';

@@ -1,28 +1,36 @@
-import type { ReactNode } from 'react';
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
 
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
-export interface CardProps {
+export interface CardProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
   children: ReactNode;
-  className?: string;
   elevated?: boolean;
   padding?: CardPadding;
 }
 
-export interface CardHeaderProps {
+export interface CardHeaderProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
   children: ReactNode;
-  className?: string;
 }
 
-export interface CardTitleProps {
+export interface CardTitleProps extends Omit<
+  HTMLAttributes<HTMLHeadingElement>,
+  'children'
+> {
   children: ReactNode;
-  className?: string;
 }
 
-export interface CardContentProps {
+export interface CardContentProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
   children: ReactNode;
-  className?: string;
 }
 
 const paddingStyles: Record<CardPadding, string> = {
@@ -32,34 +40,58 @@ const paddingStyles: Record<CardPadding, string> = {
   lg: 'p-8',
 };
 
-export function Card({
-  children,
-  className,
-  elevated = false,
-  padding = 'md',
-}: CardProps) {
-  return (
-    <div
-      className={cn(
-        'rounded-lg border border-border',
-        elevated ? 'bg-background-elevated' : 'bg-card',
-        paddingStyles[padding],
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  (
+    { children, className, elevated = false, padding = 'md', ...props },
+    ref
+  ) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'rounded-lg border border-border',
+          elevated ? 'bg-background-elevated' : 'bg-card',
+          paddingStyles[padding],
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+Card.displayName = 'Card';
 
-export function CardHeader({ children, className }: CardHeaderProps) {
-  return <div className={cn('mb-4', className)}>{children}</div>;
-}
+export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn('mb-4', className)} {...props}>
+        {children}
+      </div>
+    );
+  }
+);
+CardHeader.displayName = 'CardHeader';
 
-export function CardTitle({ children, className }: CardTitleProps) {
-  return <h3 className={cn(className)}>{children}</h3>;
-}
+export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <h3 ref={ref} className={cn(className)} {...props}>
+        {children}
+      </h3>
+    );
+  }
+);
+CardTitle.displayName = 'CardTitle';
 
-export function CardContent({ children, className }: CardContentProps) {
-  return <div className={cn(className)}>{children}</div>;
-}
+export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn(className)} {...props}>
+        {children}
+      </div>
+    );
+  }
+);
+CardContent.displayName = 'CardContent';

@@ -1,5 +1,12 @@
-export interface SpacerProps {
+import { forwardRef, type HTMLAttributes } from 'react';
+import { cn } from './utils';
+
+export interface SpacerProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'className'
+> {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  className?: string;
 }
 
 const sizeClasses = {
@@ -11,6 +18,11 @@ const sizeClasses = {
   '2xl': 'h-24',
 };
 
-export function Spacer({ size = 'md' }: SpacerProps) {
-  return <div className={sizeClasses[size]} />;
-}
+export const Spacer = forwardRef<HTMLDivElement, SpacerProps>(
+  ({ size = 'md', className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn(sizeClasses[size], className)} {...props} />
+    );
+  }
+);
+Spacer.displayName = 'Spacer';

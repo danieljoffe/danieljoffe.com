@@ -20,9 +20,9 @@ const meta = {
       description: 'Disables the switch',
       control: 'boolean',
     },
-    onCheckedChange: {
+    onChange: {
       description: 'Callback when switch state changes',
-      action: 'onCheckedChange executed!',
+      action: 'onChange executed!',
     },
   },
 } satisfies Meta<typeof Switch>;
@@ -34,7 +34,7 @@ export const Default: Story = {
   args: {
     checked: false,
     label: 'Enable notifications',
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -42,7 +42,7 @@ export const Checked: Story = {
   args: {
     checked: true,
     label: 'Dark mode',
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -51,7 +51,7 @@ export const Disabled: Story = {
     checked: false,
     label: 'Disabled switch',
     disabled: true,
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
 };
 
@@ -59,7 +59,7 @@ export const ClickInteraction: Story = {
   args: {
     checked: false,
     label: 'Toggle me',
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -68,7 +68,7 @@ export const ClickInteraction: Story = {
     await expect(switchEl).toHaveAttribute('aria-checked', 'false');
 
     await userEvent.click(switchEl);
-    await expect(args.onCheckedChange).toHaveBeenCalledWith(true);
+    await expect(args.onChange).toHaveBeenCalledWith(true);
   },
 };
 
@@ -76,7 +76,7 @@ export const KeyboardInteraction: Story = {
   args: {
     checked: false,
     label: 'Press space to toggle',
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
@@ -86,14 +86,14 @@ export const KeyboardInteraction: Story = {
     await expect(switchEl).toHaveFocus();
 
     await userEvent.keyboard(' ');
-    await expect(args.onCheckedChange).toHaveBeenCalledWith(true);
+    await expect(args.onChange).toHaveBeenCalledWith(true);
   },
 };
 
 export const Controlled: Story = {
   args: {
     checked: false,
-    onCheckedChange: fn(),
+    onChange: fn(),
   },
   render: function ControlledSwitch() {
     const [checked, setChecked] = useState(false);
@@ -101,7 +101,7 @@ export const Controlled: Story = {
       <Switch
         label={`Switch is ${checked ? 'on' : 'off'}`}
         checked={checked}
-        onCheckedChange={setChecked}
+        onChange={setChecked}
       />
     );
   },
