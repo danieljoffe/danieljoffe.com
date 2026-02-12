@@ -1,0 +1,38 @@
+name: CI Pipeline
+description: Setup workspace and run CI checks (lint, typecheck, test, build, e2e)
+
+inputs:
+  run-e2e:
+    description: Whether to run e2e tests
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: yarn
+
+    - name: Install dependencies
+      shell: bash
+      run: yarn install --frozen-lockfile
+
+    - name: Install Playwright
+      shell: bash
+      run: yarn playwright install --with-deps
+
+    - uses: nrwl/nx-set-shas@v4
+
+    - name: Run affected tasks
+      shell: bash
+      run: yarn nx affected -t lint test build typecheck
+      env:
+        NX_NO_CLOUD: 'true'
+
+    - name: Run e2e tests
+      if: ${{ inputs.run-e2e == 'true' }}
+      shell: bash
+      run: yarn nx e2e root-e2e
+      env:
+        NX_NO_CLOUD: 'true'
