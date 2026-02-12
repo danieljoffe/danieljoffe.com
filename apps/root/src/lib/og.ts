@@ -2,33 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { UNSPLASH_PHOTOS_URL } from '@/utils/constants';
 
-async function fetchGoogleFont(
-  family: string,
-  weight: number
-): Promise<ArrayBuffer> {
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}`;
-  const css = await fetch(cssUrl, {
-    headers: {
-      // Use a user-agent that triggers TrueType format (not woff2)
-      'User-Agent':
-        'Mozilla/5.0 (BB10; Touch) AppleWebKit/537.1+ (KHTML, like Gecko) Version/10.0.9.2372 Mobile Safari/537.1+',
-    },
-  }).then(res => res.text());
-
-  const fontUrl = css.match(/src: url\((.+?)\) format\('truetype'\)/)?.[1];
-
-  if (!fontUrl) {
-    throw new Error(`Could not find TrueType font URL for ${family}:${weight}`);
-  }
-
-  return fetch(fontUrl).then(res => res.arrayBuffer());
-}
+const FONTS_DIR = 'assets/fonts/og';
 
 export async function getOgFonts() {
   const [interRegular, interMedium, frauncesRegular] = await Promise.all([
-    fetchGoogleFont('Inter', 400),
-    fetchGoogleFont('Inter', 500),
-    fetchGoogleFont('Fraunces', 700),
+    readFile(join(process.cwd(), FONTS_DIR, 'Inter-Regular.ttf')),
+    readFile(join(process.cwd(), FONTS_DIR, 'Inter-Medium.ttf')),
+    readFile(join(process.cwd(), FONTS_DIR, 'Fraunces-Bold.ttf')),
   ]);
 
   return [
