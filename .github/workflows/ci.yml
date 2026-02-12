@@ -3,9 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - main
-      - development
+      - develop
   pull_request:
+    branches-ignore:
+      - main # PRs to main are handled by ci-preview.yml
   workflow_dispatch:
     inputs:
       update-snapshots:
@@ -18,7 +19,8 @@ permissions:
   contents: read
 
 jobs:
-  main:
+  ci:
+    if: ${{ !inputs.update-snapshots }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,35 +28,29 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/ci
+
+  update-snapshots:
+    if: ${{ inputs.update-snapshots }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
-          node-version: 22
-          cache: 'yarn'
+          filter: tree:0
+          fetch-depth: 0
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - run: yarn playwright install --with-deps
-      - uses: nrwl/nx-set-shas@v4
-
-      - name: Run affected tasks
-        run: yarn nx affected -t lint test build typecheck
-
-      - name: Run e2e tests
-        if: ${{ !inputs.update-snapshots }}
-        run: yarn nx e2e root-e2e
+      - uses: ./.github/actions/ci
+        with:
+          run-e2e: 'false'
 
       - name: Build app for snapshot generation
-        if: ${{ inputs.update-snapshots }}
         run: yarn nx build root
 
       - name: Regenerate VR snapshots
-        if: ${{ inputs.update-snapshots }}
         working-directory: apps/root-e2e
         run: npx playwright test src/visual-regression.spec.ts --update-snapshots
 
       - name: Upload VR baselines
-        if: ${{ inputs.update-snapshots }}
         uses: actions/upload-artifact@v4
         with:
           name: vr-baselines

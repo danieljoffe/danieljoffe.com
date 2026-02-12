@@ -5,15 +5,20 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   check-source:
     runs-on: ubuntu-latest
     steps:
       - name: Check source branch
         if: github.head_ref != 'develop'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          echo "❌ PRs to main must come from develop, not '${{ github.head_ref }}'"
+          echo "PRs to main must come from develop, not '${HEAD_REF}'"
           exit 1
       - name: Source branch OK
         if: github.head_ref == 'develop'
-        run: echo "✅ PR is from develop"
+        run: echo "PR is from develop"
