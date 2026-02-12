@@ -49,6 +49,7 @@ out
 
 test-output
 .env*
+!.env.example
 *.pem
 
 storybook-static
