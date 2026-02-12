@@ -1,6 +1,7 @@
 import nx from '@nx/eslint-plugin';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
@@ -125,4 +126,4 @@ export default [
       'prefer-arrow-callback': 'error',
     },
   },
-];
+);
