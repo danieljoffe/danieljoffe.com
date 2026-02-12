@@ -17,9 +17,6 @@ permissions:
   actions: read
   contents: read
 
-env:
-  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -29,19 +26,6 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      # Skip distribution for snapshot regeneration — snapshots must stay on this runner
-      - name: NX ci run
-        if: ${{ !inputs.update-snapshots }}
-        run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
-
-      - name: NX autofix lint,tests
-        if: ${{ !inputs.update-snapshots }}
-        run: npx nx fix-ci --fix-tasks="*test*" --auto-apply-fixes="lint"
-
-      # Cache node_modules
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -53,10 +37,7 @@ jobs:
       - run: yarn playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
 
-      # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-      # - run: yarn nx-cloud record -- echo Hello World
-      # When you enable task distribution, run the e2e-ci task instead of e2e
-      - name: Run affected files
+      - name: Run affected tasks
         run: yarn nx affected -t lint test build typecheck
 
       - name: Run e2e tests
@@ -79,8 +60,3 @@ jobs:
           name: vr-baselines
           path: apps/root-e2e/src/visual-regression.spec.ts-snapshots/
           if-no-files-found: error
-
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
-      - name: Nx Self Heal
-        run: npx nx fix-ci
-        if: always()
