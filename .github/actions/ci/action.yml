@@ -27,8 +27,12 @@ runs:
     - name: Run affected tasks
       shell: bash
       run: yarn nx affected -t lint test build typecheck
+      env:
+        NX_NO_CLOUD: 'true'
 
     - name: Run e2e tests
       if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
       run: yarn nx e2e root-e2e
+      env:
+        NX_NO_CLOUD: 'true'
