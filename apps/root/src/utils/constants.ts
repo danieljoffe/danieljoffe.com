@@ -13,6 +13,7 @@ export const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
 export const SENTRY_URL = 'https://www.sentry.io';
 export const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
+export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
 
 // ============================================================================
 // PERSONAL INFORMATION

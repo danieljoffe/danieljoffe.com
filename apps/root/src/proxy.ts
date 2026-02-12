@@ -1,5 +1,10 @@
 import { serverEnv } from '@/lib/env';
-import { allowedOrigins, allowedImageOrigins } from '@/utils/constants';
+import {
+  allowedOrigins,
+  allowedImageOrigins,
+  HCAPTCHA_URL,
+  HCAPTCHA_ASSETS_URL,
+} from '@/utils/constants';
 import { NextRequest, NextResponse } from 'next/server';
 
 export function proxy(request: NextRequest) {
@@ -14,6 +19,7 @@ export function proxy(request: NextRequest) {
     object-src 'none';
     base-uri 'self';
     form-action 'self';
+    frame-src ${HCAPTCHA_URL} ${HCAPTCHA_ASSETS_URL};
     frame-ancestors 'none';${
       request.nextUrl.protocol === 'https:'
         ? `\n    upgrade-insecure-requests;`
