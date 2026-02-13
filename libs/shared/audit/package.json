@@ -15,7 +15,7 @@
   },
   "nx": {
     "tags": [
-      "scope:audit",
+      "scope:shared",
       "type:lib",
       "platform:shared"
     ]
