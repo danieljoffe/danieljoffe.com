@@ -1,0 +1,107 @@
+{
+  "name": "@danieljoffe.com/audit-scan-service",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "defaultConfiguration": "production",
+        "options": {
+          "platform": "node",
+          "outputPath": "apps/audit-scan-service/dist",
+          "format": [
+            "cjs"
+          ],
+          "bundle": true,
+          "thirdParty": false,
+          "main": "apps/audit-scan-service/src/main.ts",
+          "tsConfig": "apps/audit-scan-service/tsconfig.app.json",
+          "assets": [
+            "apps/audit-scan-service/src/assets"
+          ],
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
+        "configurations": {
+          "development": {},
+          "production": {
+            "generateLockfile": true,
+            "esbuildOptions": {
+              "sourcemap": false,
+              "outExtension": {
+                ".js": ".js"
+              }
+            }
+          }
+        }
+      },
+      "prune-lockfile": {
+        "dependsOn": [
+          "build"
+        ],
+        "cache": true,
+        "executor": "@nx/js:prune-lockfile",
+        "outputs": [
+          "{workspaceRoot}/apps/audit-scan-service/dist/package.json",
+          "{workspaceRoot}/apps/audit-scan-service/dist/yarn.lock"
+        ],
+        "options": {
+          "buildTarget": "build"
+        }
+      },
+      "prune": {
+        "dependsOn": [
+          "prune-lockfile"
+        ],
+        "executor": "nx:noop"
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@danieljoffe.com/audit-scan-service:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@danieljoffe.com/audit-scan-service:build:development"
+          },
+          "production": {
+            "buildTarget": "@danieljoffe.com/audit-scan-service:build:production"
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      },
+      "docker:build": {
+        "dependsOn": [
+          "build",
+          "prune"
+        ]
+      }
+    },
+    "tags": [
+      "scope:audit",
+      "type:app",
+      "platform:node"
+    ]
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
