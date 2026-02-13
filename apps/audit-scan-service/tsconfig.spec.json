@@ -6,16 +6,10 @@
     "module": "nodenext",
     "moduleResolution": "nodenext"
   },
-  "include": [
-    "jest.config.ts",
-    "jest.config.cts",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.d.ts"
-  ],
+  "include": ["jest.config.ts", "jest.config.cts", "src/**/*.ts"],
   "references": [
     {
-      "path": "./tsconfig.app.json"
+      "path": "../../libs/shared/audit/tsconfig.lib.json"
     }
   ]
 }

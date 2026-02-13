@@ -131,5 +131,5 @@ export default tseslint.config(
       'object-shorthand': 'error',
       'prefer-arrow-callback': 'error',
     },
-  },
+  }
 );
