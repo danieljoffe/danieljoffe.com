@@ -17,7 +17,10 @@
     "pom": "yarn typecheck && yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
     "affected": "nx affected -t lint test build typecheck e2e",
     "dev": "nx run-many --target=dev --all",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "db:gen-types": "supabase gen types typescript --linked > libs/shared/audit/src/lib/database.types.ts"
   },
   "private": true,
   "browserslist": [
@@ -134,6 +137,7 @@
     "prettier": "^3.8.1",
     "storybook": "10.2.8",
     "storybook-react-context": "^0.10.0",
+    "supabase": "^2.76.8",
     "tailwindcss": "4.1.18",
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",

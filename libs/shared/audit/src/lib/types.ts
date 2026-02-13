@@ -19,7 +19,10 @@ export interface Scan {
   page_title: string | null;
   page_description: string | null;
   page_screenshot_url: string | null;
+  lighthouse_raw: Record<string, unknown> | null;
+  axe_raw: Record<string, unknown> | null;
   source: string;
+  ip_hash: string | null;
 }
 
 export interface ScanIssue {
@@ -46,6 +49,16 @@ export interface Lead {
   created_at: string;
   email_sequence_step: number;
   last_email_at: string | null;
+  unsubscribed: boolean;
+  unsubscribed_at: string | null;
+}
+
+export interface EmailLog {
+  id: string;
+  lead_id: string;
+  template: string;
+  sent_at: string;
+  resend_id: string | null;
 }
 
 export interface GradeInfo {

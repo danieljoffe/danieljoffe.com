@@ -64,3 +64,6 @@ vite.config.*.timestamp*
 vitest.config.*.timestamp*
 .playwright-mcp
 .sentryclirc
+
+# Supabase
+supabase/.temp/
