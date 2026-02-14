@@ -62,12 +62,12 @@ export async function POST(request: NextRequest) {
       .eq('normalized_url', normalized)
       .eq('status', 'completed')
       .gte(
-        'created_at',
+        'completed_at',
         new Date(Date.now() - CACHE_WINDOW_HOURS * 60 * 60 * 1000).toISOString()
       )
-      .order('created_at', { ascending: false })
+      .order('completed_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (cachedScan) {
       return NextResponse.json({

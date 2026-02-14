@@ -102,7 +102,7 @@ describe('POST /api/audit/scan', () => {
       gte: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
+      maybeSingle: jest.fn().mockResolvedValue({
         data: { id: 'cached-scan-id', status: 'completed' },
         error: null,
       }),
@@ -133,9 +133,7 @@ describe('POST /api/audit/scan', () => {
       gte: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      single: jest
-        .fn()
-        .mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
     };
     mockSelect.mockReturnValueOnce(cacheChain);
 
