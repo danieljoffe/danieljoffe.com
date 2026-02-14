@@ -1,6 +1,7 @@
 import nx from '@nx/eslint-plugin';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
@@ -27,6 +28,7 @@ export default [
               sourceTag: 'type:app',
               onlyDependOnLibsWithTags: [
                 'type:ui',
+                'type:lib',
                 'type:util',
                 'type:data-access',
                 'type:feature',
@@ -66,6 +68,11 @@ export default [
             {
               sourceTag: 'scope:root',
               onlyDependOnLibsWithTags: ['scope:root', 'scope:shared'],
+            },
+            // Audit-scoped projects can use audit and shared libs
+            {
+              sourceTag: 'scope:audit',
+              onlyDependOnLibsWithTags: ['scope:audit', 'scope:shared'],
             },
             // Shared libraries should only depend on other shared libraries
             {
@@ -124,5 +131,5 @@ export default [
       'object-shorthand': 'error',
       'prefer-arrow-callback': 'error',
     },
-  },
-];
+  }
+);
