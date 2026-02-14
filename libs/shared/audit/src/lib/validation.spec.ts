@@ -1,4 +1,4 @@
-import { normalizeUrl, isValidUrl, hashIp } from './validation.js';
+import { normalizeUrl, isValidUrl, hashIp, isValidUuid } from './validation.js';
 
 describe('normalizeUrl', () => {
   it('adds https:// when no protocol is given', () => {
@@ -94,6 +94,31 @@ describe('isValidUrl', () => {
     // IPs with dots pass the TLD check, so these are valid public IPs
     expect(isValidUrl('http://172.15.0.1')).toBe(true);
     expect(isValidUrl('http://172.32.0.1')).toBe(true);
+  });
+});
+
+describe('isValidUuid', () => {
+  it('accepts valid UUIDs', () => {
+    expect(isValidUuid('550e8400-e29b-41d4-a716-446655440000')).toBe(true);
+    expect(isValidUuid('6ba7b810-9dad-11d1-80b4-00c04fd430c8')).toBe(true);
+  });
+
+  it('accepts uppercase UUIDs', () => {
+    expect(isValidUuid('550E8400-E29B-41D4-A716-446655440000')).toBe(true);
+  });
+
+  it('rejects empty string', () => {
+    expect(isValidUuid('')).toBe(false);
+  });
+
+  it('rejects non-UUID strings', () => {
+    expect(isValidUuid('not-a-uuid')).toBe(false);
+    expect(isValidUuid('550e8400e29b41d4a716446655440000')).toBe(false);
+    expect(isValidUuid('550e8400-e29b-41d4-a716')).toBe(false);
+  });
+
+  it('rejects UUIDs with invalid characters', () => {
+    expect(isValidUuid('550e8400-e29b-41d4-a716-44665544000g')).toBe(false);
   });
 });
 

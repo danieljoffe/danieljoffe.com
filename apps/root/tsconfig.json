@@ -56,6 +56,9 @@
   ],
   "references": [
     {
+      "path": "../../libs/shared/audit"
+    },
+    {
       "path": "../../libs/shared/ui"
     },
     {
