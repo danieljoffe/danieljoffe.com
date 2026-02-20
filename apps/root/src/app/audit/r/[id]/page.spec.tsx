@@ -1,0 +1,136 @@
+import { render, screen } from '@testing-library/react';
+
+const mockScan = {
+  id: 'test-uuid-1234',
+  url: 'https://example.com',
+  normalized_url: 'https://example.com',
+  status: 'completed',
+  created_at: '2026-01-01T00:00:00Z',
+  completed_at: '2026-01-01T00:01:00Z',
+  error_message: null,
+  score_performance: 85,
+  score_accessibility: 92,
+  score_best_practices: 88,
+  score_seo: 78,
+  grade_overall: 'B',
+  fcp_ms: 1250,
+  lcp_ms: 2100,
+  tbt_ms: 150,
+  cls: 0.05,
+  si_ms: 3200,
+  page_title: 'Example Site',
+  page_description: 'An example site',
+  page_screenshot_url: null,
+  source: 'organic',
+};
+
+const mockIssues = [
+  {
+    id: 'issue-1',
+    scan_id: 'test-uuid-1234',
+    category: 'performance',
+    severity: 'critical',
+    title: 'Main content takes too long',
+    description: 'LCP is slow.',
+    impact: 'Users leave.',
+    fix_difficulty: 'moderate',
+    technical_detail: null,
+    sort_order: 0,
+  },
+];
+
+jest.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: () => ({
+    from: (table: string) => ({
+      select: () => ({
+        eq: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: table === 'scans' ? mockScan : null,
+              error: null,
+            }),
+          }),
+          order: jest.fn().mockResolvedValue({
+            data: table === 'scan_issues' ? mockIssues : [],
+            error: null,
+          }),
+        }),
+      }),
+    }),
+  }),
+}));
+
+jest.mock('./ReportHeader', () => ({
+  __esModule: true,
+  default: function ReportHeader() {
+    return <div data-testid='report-header' />;
+  },
+}));
+
+jest.mock('./ScoreCards', () => ({
+  __esModule: true,
+  default: function ScoreCards() {
+    return <div data-testid='score-cards' />;
+  },
+}));
+
+jest.mock('./CoreWebVitals', () => ({
+  __esModule: true,
+  default: function CoreWebVitals() {
+    return <div data-testid='core-web-vitals' />;
+  },
+}));
+
+jest.mock('./IssueList', () => ({
+  __esModule: true,
+  default: function IssueList() {
+    return <div data-testid='issue-list' />;
+  },
+}));
+
+jest.mock('./CTASection', () => ({
+  __esModule: true,
+  default: function CTASection() {
+    return <div data-testid='cta-section' />;
+  },
+}));
+
+// We need to test the page component by calling it as a function (async server component)
+import ReportPage from './page';
+
+describe('Report Page', () => {
+  const params = Promise.resolve({
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  });
+
+  it('renders inside MainContent wrapper', async () => {
+    render(await ReportPage({ params }));
+    const main = screen.getByRole('main');
+    expect(main).toHaveAttribute('id', 'main-content');
+  });
+
+  it('renders ReportHeader section', async () => {
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('report-header')).toBeInTheDocument();
+  });
+
+  it('renders ScoreCards section', async () => {
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('score-cards')).toBeInTheDocument();
+  });
+
+  it('renders CoreWebVitals section', async () => {
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('core-web-vitals')).toBeInTheDocument();
+  });
+
+  it('renders IssueList section', async () => {
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('issue-list')).toBeInTheDocument();
+  });
+
+  it('renders CTASection', async () => {
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('cta-section')).toBeInTheDocument();
+  });
+});
