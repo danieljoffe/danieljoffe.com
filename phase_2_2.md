@@ -400,29 +400,29 @@ Custom 404 for invalid/missing scan IDs:
 
 ## Acceptance Criteria
 
-- [ ] `/audit/r/[id]` renders full report for a completed scan
-- [ ] Returns 404 for invalid/missing/non-completed scans
-- [ ] Dynamic `generateMetadata` produces correct title, description, OG tags
-- [ ] ReportHeader shows grade badge with correct `GRADE_MAP` color
-- [ ] ReportHeader shows page title, URL, screenshot (or placeholder), and scan date
-- [ ] 4 score cards display performance, accessibility, SEO, best practices scores
-- [ ] Score cards are color-coded based on score thresholds
-- [ ] Core Web Vitals section displays all 5 metrics with formatted values
-- [ ] Core Web Vitals shows pass/fail indicators based on thresholds
-- [ ] First 3 issues display fully visible
-- [ ] Issues 4+ are blurred behind email gate
-- [ ] Email gate submits to `POST /api/leads/capture` and reveals issues on success
-- [ ] Email gate handles `already_captured` response (reveals issues)
-- [ ] Email gate shows validation error for invalid email
-- [ ] CTA section renders with Calendly link
-- [ ] Back link navigates to `/audit`
-- [ ] Null scores/metrics handled gracefully (show "N/A" or skip)
-- [ ] Responsive layout (mobile-first, 320px+)
-- [ ] Uses existing design tokens (CSS variables, `GRADE_MAP` colors)
-- [ ] Loading state shows spinner
-- [ ] Error boundary catches runtime errors with Sentry
-- [ ] `npx nx test root` passes (existing + new tests)
-- [ ] `npx nx build root` succeeds
+- [x] `/audit/r/[id]` renders full report for a completed scan
+- [x] Returns 404 for invalid/missing/non-completed scans
+- [x] Dynamic `generateMetadata` produces correct title, description, OG tags
+- [x] ReportHeader shows grade badge with correct `GRADE_MAP` color
+- [x] ReportHeader shows page title, URL, screenshot (or placeholder), and scan date
+- [x] 4 score cards display performance, accessibility, SEO, best practices scores
+- [x] Score cards are color-coded based on score thresholds
+- [x] Core Web Vitals section displays all 5 metrics with formatted values
+- [x] Core Web Vitals shows pass/fail indicators based on thresholds
+- [x] First 3 issues display fully visible
+- [x] Issues 4+ are blurred behind email gate
+- [x] Email gate submits to `POST /api/leads/capture` and reveals issues on success
+- [x] Email gate handles `already_captured` response (reveals issues)
+- [x] Email gate shows validation error for invalid email
+- [x] CTA section renders with Calendly link
+- [x] Back link navigates to `/audit`
+- [x] Null scores/metrics handled gracefully (show "N/A" or skip)
+- [x] Responsive layout (mobile-first, 320px+)
+- [x] Uses existing design tokens (CSS variables, `GRADE_MAP` colors)
+- [x] Loading state shows spinner
+- [x] Error boundary catches runtime errors with Sentry
+- [x] `npx nx test root` passes (existing + new tests)
+- [x] `npx nx build root` succeeds
 
 ---
 
