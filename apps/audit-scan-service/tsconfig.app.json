@@ -2,10 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "module": "nodenext",
+    "module": "esnext",
     "types": ["node"],
     "rootDir": "src",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],

@@ -15,7 +15,7 @@ export default function Error({
 }) {
   useEffect(() => {
     Sentry.withScope(scope => {
-      scope.setTag('route', '/about');
+      scope.setTag('route', '/audit/r/[id]');
       if (error.digest) {
         scope.setExtra('digest', error.digest);
       }
@@ -34,7 +34,7 @@ export default function Error({
       >
         <h2>Something went wrong</h2>
         <p className='text-foreground-muted max-w-md'>
-          There was an error loading this page. Please try again.
+          There was an error loading this report. Please try again.
         </p>
         <Stack direction='horizontal' gap='sm'>
           <Button onClick={() => reset()} variant='primary'>

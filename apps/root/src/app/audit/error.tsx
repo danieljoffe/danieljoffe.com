@@ -15,7 +15,7 @@ export default function Error({
 }) {
   useEffect(() => {
     Sentry.withScope(scope => {
-      scope.setTag('route', '/about');
+      scope.setTag('route', '/audit');
       if (error.digest) {
         scope.setExtra('digest', error.digest);
       }
