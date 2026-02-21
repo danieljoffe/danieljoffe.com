@@ -17,7 +17,7 @@ const isCI = process.env.CI === 'true';
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
   reporter: [
-    ['line'],
+    ['list'],
     ['json', { outputFile: 'playwright-report-json/report.json' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -33,9 +33,14 @@ export default defineConfig({
     actionTimeout: 10000,
     /* Global timeout for navigation */
     navigationTimeout: 30000,
+    /* Block service workers so page.route() intercepts all requests reliably.
+     * WebKit treats requests passing through a SW fetch handler as "handled",
+     * even when the SW doesn't call event.respondWith(), which prevents
+     * Playwright route mocks from firing. */
+    serviceWorkers: 'block',
   },
   /* Global test timeout */
-  timeout: isCI ? 45000 : 30000, // Longer timeout in CI
+  timeout: 45000,
   /* Expect timeout */
   expect: {
     timeout: isCI ? 15000 : 10000, // Longer expect timeout in CI
@@ -43,7 +48,7 @@ export default defineConfig({
   /* Retry failed tests */
   retries: isCI ? 2 : 0,
   /* Parallel execution */
-  ...(isCI ? { workers: 1 } : {}),
+  ...(isCI ? { workers: 2 } : {}),
   /* Run your local dev server before starting the tests.
    * When running via Nx (npx nx e2e root-e2e), Nx handles build→start→e2e
    * and Playwright reuses the running server. This command is a fallback
@@ -62,13 +67,11 @@ export default defineConfig({
       MOCK_FONTS: 'true',
       // Use hCaptcha test sitekey (always passes verification)
       NEXT_PUBLIC_HCAPTCHA_SITE_ID: '10000000-ffff-ffff-ffff-000000000001',
-      // Disable Sentry to speed up startup
       ...(isCI && {
+        // Disable Sentry to speed up startup
         SENTRY_DSN: '',
         SENTRY_AUTH_TOKEN: '',
-      }),
-      // Disable analytics and other non-essential services
-      ...(isCI && {
+        // Disable analytics and other non-essential services
         NEXT_TELEMETRY_DISABLED: '1',
         ANALYZE: 'false',
       }),

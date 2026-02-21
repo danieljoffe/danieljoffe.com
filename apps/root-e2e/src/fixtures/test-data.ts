@@ -44,3 +44,7 @@ export const INVALID_FORM_DATA = {
   messageWithUrl:
     'Check out https://example.com for more info about this topic.',
 };
+
+// Audit page test data
+export const VALID_AUDIT_URL = 'example.com';
+export const INVALID_AUDIT_URLS = ['no-tld', 'localhost', '192.168.1.1'];

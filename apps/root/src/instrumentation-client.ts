@@ -3,20 +3,18 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
-import { publicEnv, PublicEnvVars } from '@/lib/public.env';
-
-const isProduction =
-  publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] === 'production';
+import { publicEnv } from '@/lib/public.env';
+import { isProduction } from '@/utils/helpers';
 
 Sentry.init({
-  dsn: publicEnv[PublicEnvVars.NEXT_PUBLIC_SENTRY_CONFIG_ID] as string,
+  dsn: publicEnv.NEXT_PUBLIC_SENTRY_CONFIG_ID as string,
 
   // Environment identification
-  environment: publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] || 'development',
+  environment: publicEnv.NEXT_PUBLIC_NODE_ENV,
 
   // Sample 100% of errors, but only 10% of performance traces in production
   // to balance visibility with quota usage
-  tracesSampleRate: isProduction ? 0.1 : 1.0,
+  tracesSampleRate: isProduction() ? 0.1 : 1.0,
 
   // Sample rate for error events (1.0 = 100% of errors)
   sampleRate: 1.0,
@@ -35,7 +33,7 @@ Sentry.init({
   ],
 
   // Session Replay sampling
-  replaysSessionSampleRate: isProduction ? 0.1 : 0,
+  replaysSessionSampleRate: isProduction() ? 0.1 : 0,
   replaysOnErrorSampleRate: 1.0, // Always capture replay when error occurs
 
   // Filter out noisy errors that aren't actionable

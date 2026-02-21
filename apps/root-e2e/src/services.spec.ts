@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { waitForHydration } from './fixtures/base.fixture';
 
 test.describe('services page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/services');
+    await page.goto('/services', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
+    // Wait for hydration before interacting with accordion buttons
+    await waitForHydration(page);
   });
 
   test('renders all service cards', async ({ page }) => {

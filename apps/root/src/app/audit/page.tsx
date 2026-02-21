@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 async function getCompletedScanCount(): Promise<number> {
   try {
     const supabase = createServerSupabaseClient();
+    if (!supabase) return 0;
     const { count } = await supabase
       .from('scans')
       .select('id', { count: 'exact', head: true })

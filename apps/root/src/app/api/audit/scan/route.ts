@@ -28,6 +28,12 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Service unavailable' },
+        { status: 503 }
+      );
+    }
 
     // Rate limiting by IP hash
     // x-forwarded-for is always set on Vercel. The 'unknown' fallback only

@@ -29,6 +29,12 @@ export async function POST(request: Request) {
     }
 
     const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Service unavailable' },
+        { status: 503 }
+      );
+    }
 
     // Look up scan URL if scan_id provided
     let urlScanned: string | null = null;

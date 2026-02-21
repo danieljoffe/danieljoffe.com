@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { waitForHydration } from './fixtures/base.fixture';
 
 /** Run axe and fail on serious/critical violations. */
 async function expectNoA11yViolations(page: Page) {
@@ -30,13 +31,14 @@ test.describe('accessibility tests', () => {
     test(`${name} should not have accessibility violations`, async ({
       page,
     }) => {
-      await page.goto(path);
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
       await expectNoA11yViolations(page);
     });
   }
 
   test('skip links are present and functional', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
     // Look for skip links
     const skipLinks = page.locator('a[href^="#"]').filter({ hasText: /skip/i });
@@ -70,13 +72,13 @@ test.describe('accessibility tests', () => {
         // Wait for hash to update (async on Mobile Chrome after programmatic click)
         await page
           .waitForURL(`**/${targetId}`, { timeout: 3000 })
-          .catch(() => {});
+          .catch(() => undefined);
 
         // Wait for target element to exist
         await page
           .locator(targetId)
           .waitFor({ state: 'attached', timeout: 3000 })
-          .catch(() => {});
+          .catch(() => undefined);
 
         const result = await page.evaluate(selector => {
           const el = document.querySelector(selector) as HTMLElement | null;
@@ -120,7 +122,7 @@ test.describe('accessibility tests', () => {
   });
 
   test('color contrast meets WCAG standards', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -144,7 +146,7 @@ test.describe('accessibility tests', () => {
   });
 
   test('images have proper alt text', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     const images = page.locator('img');
     const imageCount = await images.count();
@@ -160,7 +162,7 @@ test.describe('accessibility tests', () => {
   });
 
   test('form labels are properly associated', async ({ page }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
 
     const inputs = page.locator('input, textarea, select');
     const inputCount = await inputs.count();
@@ -183,7 +185,7 @@ test.describe('accessibility tests', () => {
   });
 
   test('headings follow proper hierarchy', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     const headings = page.locator('h1, h2, h3, h4, h5, h6');
@@ -215,7 +217,7 @@ test.describe('accessibility tests', () => {
   test('modal accessibility when opened', async ({ page }) => {
     // Set mobile viewport to trigger mobile menu
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     // Look for mobile menu trigger (which opens a modal)

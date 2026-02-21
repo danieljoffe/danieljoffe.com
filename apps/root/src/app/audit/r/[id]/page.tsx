@@ -45,6 +45,7 @@ type ScanReport = Pick<
 
 async function getReportData(id: string) {
   const supabase = createServerSupabaseClient();
+  if (!supabase) return notFound();
 
   const { data: scan, error: scanError } = await supabase
     .from('scans')

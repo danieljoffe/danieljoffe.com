@@ -1,4 +1,66 @@
-import { Page, Route } from '@playwright/test';
+import { expect, Locator, Page, Route } from '@playwright/test';
+
+// ---------------------------------------------------------------------------
+// Audit API mock helpers
+// ---------------------------------------------------------------------------
+
+interface MockResponse {
+  status: number;
+  body: unknown;
+}
+
+/**
+ * Mock POST /api/audit/scan with a fixed response.
+ */
+export async function mockAuditScanAPI(
+  page: Page,
+  status: number,
+  body: unknown
+): Promise<void> {
+  await page.route('**/api/audit/scan', async (route: Route) => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
+
+/**
+ * Mock GET /api/audit/status/[id] with sequential responses.
+ * Each poll consumes the next response; the last one repeats forever.
+ */
+export async function mockAuditStatusAPI(
+  page: Page,
+  responses: MockResponse[]
+): Promise<void> {
+  let callIndex = 0;
+  await page.route('**/api/audit/status/**', async (route: Route) => {
+    const resp = responses[Math.min(callIndex++, responses.length - 1)];
+    await route.fulfill({
+      status: resp.status,
+      contentType: 'application/json',
+      body: JSON.stringify(resp.body),
+    });
+  });
+}
+
+/**
+ * Mock POST /api/leads/capture with a fixed response.
+ */
+export async function mockLeadsCaptureAPI(
+  page: Page,
+  status: number,
+  body: unknown
+): Promise<void> {
+  await page.route('**/api/leads/capture', async (route: Route) => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
 
 // Helper function to mock hCaptcha
 export async function mockHCaptcha(page: Page): Promise<void> {
@@ -31,9 +93,10 @@ export async function mockHCaptcha(page: Page): Promise<void> {
           // fires after the component has fully mounted. Then set the DOM
           // attribute to signal completion to the test harness.
           if (opts?.callback) {
+            const cb = opts.callback;
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
-                opts.callback!('mock-hcaptcha-token');
+                cb('mock-hcaptcha-token');
                 document.documentElement.setAttribute(
                   'data-hcaptcha-verified',
                   'true'
@@ -46,8 +109,8 @@ export async function mockHCaptcha(page: Page): Promise<void> {
         execute: () => Promise.resolve({ response: 'mock-hcaptcha-token' }),
         getResponse: () => 'mock-hcaptcha-token',
         getRespKey: () => 'mock-resp-key',
-        reset: () => {},
-        remove: () => {},
+        reset: () => undefined,
+        remove: () => undefined,
       },
       writable: true,
       configurable: true,
@@ -118,22 +181,31 @@ export async function mockEmailAPIError(page: Page): Promise<void> {
 }
 
 /**
+ * Fill a form input using pressSequentially instead of fill().
+ * WebKit doesn't reliably trigger React's onChange via Playwright's fill()
+ * on controlled inputs. pressSequentially dispatches real key events that
+ * all browser engines route correctly to React's synthetic event system.
+ */
+export async function fillInput(
+  locator: Locator,
+  value: string
+): Promise<void> {
+  await locator.clear();
+  // A small per-key delay prevents WebKit from dropping keystrokes
+  // when typing long strings with special characters (e.g. "://").
+  await locator.pressSequentially(value, { delay: 5 });
+}
+
+/**
  * Wait for React hydration to complete on the current page.
- * Detects hydration by waiting for Next.js to set up its client-side router,
- * which only happens after React has finished hydrating.
+ * Detects hydration by checking for the data-hydrated="true" attribute
+ * set by the TestingOnly component after the client initializes.
  * Use this before interacting with forms or other client-side features.
  */
 export async function waitForHydration(page: Page): Promise<void> {
-  await page.waitForLoadState('load');
-  // Next.js sets __next_f on the window during hydration. Wait for it,
-  // then yield a frame to ensure React event handlers are attached.
-  await page.waitForFunction(
-    () =>
-      typeof (window as unknown as Record<string, unknown>).__next_f !==
-      'undefined',
-    null,
-    { timeout: 15000 }
-  );
+  await expect(page.locator('[data-hydrated="true"]')).toBeAttached({
+    timeout: 15000,
+  });
   // Yield two animation frames to let React finalize event handler attachment
   await page.evaluate(
     () =>

@@ -15,6 +15,12 @@ export async function GET(
     }
 
     const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Service unavailable' },
+        { status: 503 }
+      );
+    }
 
     const { data: scan, error: scanError } = await supabase
       .from('scans')
