@@ -177,6 +177,6 @@ test.describe('api email - rate limiting', () => {
     });
 
     const body = await response.json();
-    expect(body.statusCode).toBe(403);
+    expect(body.statusCode).toBe(429);
   });
 });
