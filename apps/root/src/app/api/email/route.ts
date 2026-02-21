@@ -40,7 +40,7 @@ import { captureApiError } from '@/lib/errorTracking';
  *   }
  * }
  *
- * // Error response (400 for validation, 403 for forbidden, 500 for server errors)
+ * // Error response (400 for validation, 403 for forbidden, 429 for rate limit, 500 for server errors)
  * {
  *   error: {
  *     path: "email",
@@ -93,6 +93,14 @@ export async function POST(
       }
     );
 
-    return NextResponse.json(error, { status: error.statusCode });
+    const headers: HeadersInit = {};
+    if (error.statusCode === 429 && error.retryAfter) {
+      headers['Retry-After'] = String(error.retryAfter);
+    }
+
+    return NextResponse.json(error, {
+      status: error.statusCode,
+      headers,
+    });
   }
 }
