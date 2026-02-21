@@ -40,7 +40,7 @@ export default defineConfig({
     serviceWorkers: 'block',
   },
   /* Global test timeout */
-  timeout: isCI ? 45000 : 30000, // Longer timeout in CI
+  timeout: 45000,
   /* Expect timeout */
   expect: {
     timeout: isCI ? 15000 : 10000, // Longer expect timeout in CI

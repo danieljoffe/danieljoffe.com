@@ -12,5 +12,5 @@ export default function TestingOnly() {
 
   // Mark hydration complete for e2e tests
   // This element serves as a hydration checkpoint in Playwright tests
-  return <div data-hydrated={hasHydrated ? 'true' : undefined} hidden />;
+  return <div data-hydrated={hasHydrated && 'true'} hidden />;
 }

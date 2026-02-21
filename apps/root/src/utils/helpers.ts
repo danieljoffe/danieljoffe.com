@@ -1,18 +1,49 @@
 import { publicEnv } from '@/lib/public.env';
 import { RESUME_URL } from './constants';
+import { serverEnv } from '@/lib/env';
 
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
-export const devLog = (message: string, ...args: unknown[]) => {
+export function devLog(message: string, ...args: unknown[]) {
   if (process.env.NODE_ENV !== 'development') return;
   console.log(
     `%c${new Date().toISOString()} > ${message}`,
     'background-color: darkorange; color: black; font-weight: 600; padding: 5px;',
     ...args
   );
-};
+}
+
+// ============================================================================
+// ENVIRONMENT VALIDATION (runs at module load time)
+// ============================================================================
+
+function validatePublicEnv() {
+  Object.entries(publicEnv).forEach(([key, value]) => {
+    if (value == null) {
+      devLog(`Missing required environment variable: ${key}`);
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+  });
+}
+
+function validateEnv() {
+  // Server env vars are only available on the server
+  if (typeof window !== 'undefined') return;
+  // Skip validation in test/CI environments
+  if (process.env.NODE_ENV === 'test' || process.env.CI) return;
+
+  Object.entries(serverEnv).forEach(([key, value]) => {
+    if (value == null) {
+      devLog(`Missing required environment variable: ${key}`);
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+  });
+}
+
+validatePublicEnv();
+validateEnv();
 
 // ============================================================================
 // ENVIRONMENT UTILITIES

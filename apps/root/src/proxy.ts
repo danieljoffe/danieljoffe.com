@@ -5,7 +5,7 @@ import {
   HCAPTCHA_ASSETS_URL,
 } from '@/utils/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import { isProduction } from './utils/helpers';
+import { isProduction } from '@/utils/helpers';
 
 export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');

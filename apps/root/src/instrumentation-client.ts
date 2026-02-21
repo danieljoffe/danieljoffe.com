@@ -4,7 +4,7 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { publicEnv } from '@/lib/public.env';
-import { isProduction } from './utils/helpers';
+import { isProduction } from '@/utils/helpers';
 
 Sentry.init({
   dsn: publicEnv.NEXT_PUBLIC_SENTRY_CONFIG_ID as string,
