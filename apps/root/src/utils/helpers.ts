@@ -20,6 +20,9 @@ export function devLog(message: string, ...args: unknown[]) {
 // ============================================================================
 
 function validatePublicEnv() {
+  // Only validate in development to catch misconfigurations early
+  if (process.env.NODE_ENV !== 'development') return;
+
   Object.entries(publicEnv).forEach(([key, value]) => {
     if (value == null) {
       devLog(`Missing required environment variable: ${key}`);
@@ -31,8 +34,8 @@ function validatePublicEnv() {
 function validateEnv() {
   // Server env vars are only available on the server
   if (typeof window !== 'undefined') return;
-  // Skip validation in test/CI environments
-  if (process.env.NODE_ENV === 'test' || process.env.CI) return;
+  // Only validate in development to catch misconfigurations early
+  if (process.env.NODE_ENV !== 'development') return;
 
   Object.entries(serverEnv).forEach(([key, value]) => {
     if (value == null) {
