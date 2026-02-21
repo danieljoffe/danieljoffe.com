@@ -24,7 +24,7 @@ const AUDIT_URL = '/audit';
 
 test.describe('audit scan page - static rendering', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(AUDIT_URL);
+    await page.goto(AUDIT_URL, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
   });
 
@@ -75,7 +75,7 @@ test.describe('audit scan page - static rendering', () => {
 
 test.describe('audit scan page - form validation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(AUDIT_URL);
+    await page.goto(AUDIT_URL, { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
   });
 
@@ -144,7 +144,7 @@ test.describe('audit scan page - form validation', () => {
 
 test.describe('audit scan page - successful scan flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(AUDIT_URL);
+    await page.goto(AUDIT_URL, { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
   });
 
@@ -190,8 +190,9 @@ test.describe('audit scan page - successful scan flow', () => {
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     // Should redirect to the report page
-    await page.waitForURL(`**/audit/r/${MOCK_SCAN_ID}`, { timeout: 15000 });
-    expect(page.url()).toContain(`/audit/r/${MOCK_SCAN_ID}`);
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
   });
 
   test('cached scan redirects immediately', async ({ page }) => {
@@ -200,8 +201,9 @@ test.describe('audit scan page - successful scan flow', () => {
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
-    await page.waitForURL(`**/audit/r/${MOCK_SCAN_ID}`, { timeout: 15000 });
-    expect(page.url()).toContain(`/audit/r/${MOCK_SCAN_ID}`);
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
   });
 });
 
@@ -211,7 +213,7 @@ test.describe('audit scan page - successful scan flow', () => {
 
 test.describe('audit scan page - error handling', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(AUDIT_URL);
+    await page.goto(AUDIT_URL, { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
   });
 
@@ -321,7 +323,7 @@ test.describe('audit scan page - error handling', () => {
 
 test.describe('audit scan page - accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(AUDIT_URL);
+    await page.goto(AUDIT_URL, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
   });
 

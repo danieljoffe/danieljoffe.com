@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('performance', () => {
   test('homepage loads within performance budget', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
 
     const loadTime = await page.evaluate(() => {
@@ -34,7 +34,7 @@ test.describe('performance', () => {
       observer.observe({ entryTypes: ['layout-shift'] });
     });
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
 
     // Measure LCP
@@ -96,7 +96,7 @@ test.describe('performance', () => {
   });
 
   test('images are optimized and load efficiently', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Check for lazy loading on images
     const images = page.locator('img');
@@ -128,7 +128,7 @@ test.describe('performance', () => {
       }
     });
 
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     // Calculate total JS bundle size
@@ -141,7 +141,7 @@ test.describe('performance', () => {
   });
 
   test('css is optimized and not blocking', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Check for critical CSS inlining
     const { hasInlineCriticalCSS, hasPreloadedStyles, hasStylesheets } =
@@ -169,7 +169,7 @@ test.describe('performance', () => {
   });
 
   test('third-party scripts are optimized', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Check for third-party script optimization
     const thirdPartyScripts = await page.evaluate(() => {
@@ -208,7 +208,7 @@ test.describe('performance', () => {
   });
 
   test('page has proper caching headers', async ({ page }) => {
-    const response = await page.goto('/');
+    const response = await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Check for caching headers
     const cacheControl = response?.headers()['cache-control'];
@@ -219,7 +219,7 @@ test.describe('performance', () => {
   });
 
   test('navigation performance is optimized', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Find the About link — open mobile menu if needed (don't time this part)
     let targetLink = page.getByRole('link', { name: /about/i }).first();
@@ -247,13 +247,13 @@ test.describe('performance', () => {
       expect(navigationTime).toBeLessThan(3000);
     } else {
       // Fallback: navigate directly and just verify it loads
-      await page.goto('/about');
+      await page.goto('/about', { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('domcontentloaded');
     }
   });
 
   test('memory usage is reasonable', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Check memory usage
     const memoryInfo = await page.evaluate(() => {
@@ -277,92 +277,100 @@ test.describe('performance', () => {
     }
   });
 
-  test('service worker is properly configured', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('load');
+  // Service worker tests need SW enabled — override the global 'block' setting
+  test.describe('service worker', () => {
+    test.use({ serviceWorkers: 'allow' });
 
-    // Check for service worker support
-    const hasServiceWorker = await page.evaluate(
-      () => 'serviceWorker' in navigator
-    );
+    test('service worker is properly configured', async ({ page }) => {
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('load');
 
-    if (!hasServiceWorker) {
-      test.skip(true, 'Service worker not supported in this browser');
-      return;
-    }
+      // Check for service worker support
+      const hasServiceWorker = await page.evaluate(
+        () => 'serviceWorker' in navigator
+      );
 
-    // Wait for SW registration — the registration script uses afterInteractive + load event,
-    // so if load already fired, manually register the SW as a fallback.
-    // Always wait for navigator.serviceWorker.ready to ensure the SW is active
-    // before reading scriptURL (it may be empty during install phase).
-    const registration = await page.evaluate(async () => {
-      try {
+      if (!hasServiceWorker) {
+        test.skip(true, 'Service worker not supported in this browser');
+        return;
+      }
+
+      // Wait for SW registration — the registration script uses afterInteractive + load event,
+      // so if load already fired, manually register the SW as a fallback.
+      // Always wait for navigator.serviceWorker.ready to ensure the SW is active
+      // before reading scriptURL (it may be empty during install phase).
+      const registration = await page.evaluate(async () => {
+        try {
+          let reg = await navigator.serviceWorker.getRegistration();
+          if (!reg) {
+            reg = await navigator.serviceWorker.register('/sw.js');
+          }
+          // Wait for SW to become active — this is the key step that was missing
+          // under parallel load, the SW may still be installing when we read it
+          const activeReg = await navigator.serviceWorker.ready;
+          return {
+            scope: activeReg.scope,
+            scriptURL: activeReg.active?.scriptURL ?? '',
+          };
+        } catch (_e) {
+          return null;
+        }
+      });
+
+      if (!registration) {
+        test.skip(
+          true,
+          'Service worker registration failed in this environment'
+        );
+        return;
+      }
+
+      // Verify SW registration details
+      expect(registration.scope).toContain('localhost:3000');
+      expect(registration.scriptURL).toContain('sw.js');
+    });
+
+    test('service worker caches static assets', async ({ page }) => {
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('load');
+
+      const hasServiceWorker = await page.evaluate(
+        () => 'serviceWorker' in navigator
+      );
+      if (!hasServiceWorker) {
+        test.skip(true, 'Service worker not supported in this browser');
+        return;
+      }
+
+      // Ensure SW is active
+      await page.evaluate(async () => {
         let reg = await navigator.serviceWorker.getRegistration();
         if (!reg) {
           reg = await navigator.serviceWorker.register('/sw.js');
         }
-        // Wait for SW to become active — this is the key step that was missing
-        // under parallel load, the SW may still be installing when we read it
-        const activeReg = await navigator.serviceWorker.ready;
+        await navigator.serviceWorker.ready;
+      });
+
+      // Wait for SW to install and cache assets
+      const cacheInfo = await page.evaluate(async () => {
+        const cacheNames = await caches.keys();
+        const staticCache = cacheNames.find(name =>
+          name.startsWith('danieljoffe-static')
+        );
+        if (!staticCache) return { exists: false, urls: [] as string[] };
+
+        const cache = await caches.open(staticCache);
+        const keys = await cache.keys();
         return {
-          scope: activeReg.scope,
-          scriptURL: activeReg.active?.scriptURL ?? '',
+          exists: true,
+          urls: keys.map(req => new URL(req.url).pathname),
         };
-      } catch (_e) {
-        return null;
-      }
+      });
+
+      expect(cacheInfo.exists).toBeTruthy();
+      expect(cacheInfo.urls).toContain('/');
+      expect(cacheInfo.urls).toContain('/about');
+      expect(cacheInfo.urls).toContain('/projects');
     });
-
-    if (!registration) {
-      test.skip(true, 'Service worker registration failed in this environment');
-      return;
-    }
-
-    // Verify SW registration details
-    expect(registration.scope).toContain('localhost:3000');
-    expect(registration.scriptURL).toContain('sw.js');
-  });
-
-  test('service worker caches static assets', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('load');
-
-    const hasServiceWorker = await page.evaluate(
-      () => 'serviceWorker' in navigator
-    );
-    if (!hasServiceWorker) {
-      test.skip(true, 'Service worker not supported in this browser');
-      return;
-    }
-
-    // Ensure SW is active
-    await page.evaluate(async () => {
-      let reg = await navigator.serviceWorker.getRegistration();
-      if (!reg) {
-        reg = await navigator.serviceWorker.register('/sw.js');
-      }
-      await navigator.serviceWorker.ready;
-    });
-
-    // Wait for SW to install and cache assets
-    const cacheInfo = await page.evaluate(async () => {
-      const cacheNames = await caches.keys();
-      const staticCache = cacheNames.find(name =>
-        name.startsWith('danieljoffe-static')
-      );
-      if (!staticCache) return { exists: false, urls: [] as string[] };
-
-      const cache = await caches.open(staticCache);
-      const keys = await cache.keys();
-      return {
-        exists: true,
-        urls: keys.map(req => new URL(req.url).pathname),
-      };
-    });
-
-    expect(cacheInfo.exists).toBeTruthy();
-    expect(cacheInfo.urls).toContain('/');
-    expect(cacheInfo.urls).toContain('/about');
-    expect(cacheInfo.urls).toContain('/projects');
   });
 });

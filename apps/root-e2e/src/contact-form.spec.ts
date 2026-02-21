@@ -11,7 +11,7 @@ import {
 
 test.describe('contact form validation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     // Wait for React hydration to complete before interacting with the form.
     // Without this, webkit may show the form HTML before event handlers
     // are attached, causing submit clicks to trigger native form submission
@@ -167,7 +167,7 @@ test.describe('contact form submission', () => {
     await mockHCaptcha(page);
     await mockEmailAPISuccess(page);
 
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
@@ -202,7 +202,7 @@ test.describe('contact form submission', () => {
     await mockHCaptcha(page);
     await mockEmailAPIError(page);
 
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
@@ -236,7 +236,7 @@ test.describe('contact form submission', () => {
   test('shows captcha error when submitting without captcha', async ({
     page,
   }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
@@ -272,7 +272,7 @@ test.describe('contact form submission', () => {
   });
 
   test('submit button is initially enabled', async ({ page }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.locator('form').waitFor({ state: 'visible' });
 
     const submitButton = page.getByRole('button', { name: /submit/i });

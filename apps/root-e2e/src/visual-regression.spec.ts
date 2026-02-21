@@ -32,7 +32,7 @@ test.describe('visual regression', () => {
   });
 
   test('homepage visual regression', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
     // Wait for GSAP animations to settle — they affect layout height.
@@ -58,7 +58,7 @@ test.describe('visual regression', () => {
   });
 
   test('about page visual regression', async ({ page }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
@@ -74,7 +74,7 @@ test.describe('visual regression', () => {
   });
 
   test('experience listing visual regression', async ({ page }) => {
-    await page.goto('/experience');
+    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
@@ -86,7 +86,7 @@ test.describe('visual regression', () => {
   });
 
   test('experience detail visual regression', async ({ page }) => {
-    await page.goto('/experience/fightcamp');
+    await page.goto('/experience/fightcamp', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h2').first().waitFor({ state: 'visible' });
 
@@ -98,7 +98,7 @@ test.describe('visual regression', () => {
   });
 
   test('projects listing visual regression', async ({ page }) => {
-    await page.goto('/projects');
+    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
@@ -110,7 +110,9 @@ test.describe('visual regression', () => {
   });
 
   test('project detail visual regression', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('load');
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
@@ -122,7 +124,7 @@ test.describe('visual regression', () => {
   });
 
   test('services page visual regression', async ({ page }) => {
-    await page.goto('/services');
+    await page.goto('/services', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 

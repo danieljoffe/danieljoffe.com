@@ -21,7 +21,9 @@ const HAS_SUPABASE = !!process.env['NEXT_PUBLIC_SUPABASE_URL'];
 
 test.describe('audit report - not found states', () => {
   test('invalid UUID shows 404', async ({ page }) => {
-    await page.goto(`/audit/r/${INVALID_UUID}`);
+    await page.goto(`/audit/r/${INVALID_UUID}`, {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('load');
 
     await expect(
@@ -30,7 +32,9 @@ test.describe('audit report - not found states', () => {
   });
 
   test('404 page has "Run a new audit" link', async ({ page }) => {
-    await page.goto(`/audit/r/${INVALID_UUID}`);
+    await page.goto(`/audit/r/${INVALID_UUID}`, {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('load');
 
     const link = page.getByRole('link', { name: 'Run a new audit' });
@@ -39,7 +43,9 @@ test.describe('audit report - not found states', () => {
   });
 
   test('"Run a new audit" navigates to /audit', async ({ page }) => {
-    await page.goto(`/audit/r/${INVALID_UUID}`);
+    await page.goto(`/audit/r/${INVALID_UUID}`, {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('load');
 
     await page.getByRole('link', { name: 'Run a new audit' }).click();
@@ -54,7 +60,9 @@ test.describe('audit report - not found states', () => {
 if (HAS_SUPABASE) {
   test.describe('audit report - not found (requires Supabase)', () => {
     test('nonexistent UUID shows 404', async ({ page }) => {
-      await page.goto(`/audit/r/${NONEXISTENT_UUID}`);
+      await page.goto(`/audit/r/${NONEXISTENT_UUID}`, {
+        waitUntil: 'domcontentloaded',
+      });
       await page.waitForLoadState('load');
 
       await expect(
@@ -75,7 +83,9 @@ const E2E_SCAN_ID = process.env['AUDIT_E2E_SCAN_ID'];
 if (E2E_SCAN_ID) {
   test.describe('audit report - email gate', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto(`/audit/r/${E2E_SCAN_ID}`);
+      await page.goto(`/audit/r/${E2E_SCAN_ID}`, {
+        waitUntil: 'domcontentloaded',
+      });
       await waitForHydration(page);
     });
 
@@ -174,7 +184,9 @@ if (E2E_SCAN_ID) {
 
 test.describe('audit report - navigation', () => {
   test('404 page has correct title', async ({ page }) => {
-    await page.goto(`/audit/r/${INVALID_UUID}`);
+    await page.goto(`/audit/r/${INVALID_UUID}`, {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('load');
 
     await expect(page).toHaveTitle(/report not found/i);
@@ -184,14 +196,18 @@ test.describe('audit report - navigation', () => {
 if (E2E_SCAN_ID) {
   test.describe('audit report - navigation (requires scan)', () => {
     test('valid report has correct title format', async ({ page }) => {
-      await page.goto(`/audit/r/${E2E_SCAN_ID}`);
+      await page.goto(`/audit/r/${E2E_SCAN_ID}`, {
+        waitUntil: 'domcontentloaded',
+      });
       await page.waitForLoadState('load');
 
       await expect(page).toHaveTitle(/audit:.*grade.*daniel joffe/i);
     });
 
     test('cTA section has booking link', async ({ page }) => {
-      await page.goto(`/audit/r/${E2E_SCAN_ID}`);
+      await page.goto(`/audit/r/${E2E_SCAN_ID}`, {
+        waitUntil: 'domcontentloaded',
+      });
       await page.waitForLoadState('load');
 
       await expect(

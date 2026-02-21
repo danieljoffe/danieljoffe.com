@@ -33,6 +33,11 @@ export default defineConfig({
     actionTimeout: 10000,
     /* Global timeout for navigation */
     navigationTimeout: 30000,
+    /* Block service workers so page.route() intercepts all requests reliably.
+     * WebKit treats requests passing through a SW fetch handler as "handled",
+     * even when the SW doesn't call event.respondWith(), which prevents
+     * Playwright route mocks from firing. */
+    serviceWorkers: 'block',
   },
   /* Global test timeout */
   timeout: isCI ? 45000 : 30000, // Longer timeout in CI

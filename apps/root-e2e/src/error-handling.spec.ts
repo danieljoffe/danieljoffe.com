@@ -10,7 +10,9 @@ import {
 
 test.describe('404 Error Page', () => {
   test('shows 404 for non-existent routes', async ({ page }) => {
-    await page.goto('/this-page-definitely-does-not-exist-xyz');
+    await page.goto('/this-page-definitely-does-not-exist-xyz', {
+      waitUntil: 'domcontentloaded',
+    });
 
     // Wait for page content to render
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
@@ -25,7 +27,9 @@ test.describe('404 Error Page', () => {
   });
 
   test('404 page has link back to home', async ({ page }) => {
-    await page.goto('/non-existent-page-abc');
+    await page.goto('/non-existent-page-abc', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
     // Look for the "Back to Home" button/link in main content area (not nav)
@@ -36,7 +40,9 @@ test.describe('404 Error Page', () => {
   });
 
   test('clicking home link on 404 navigates to homepage', async ({ page }) => {
-    await page.goto('/non-existent-page-def');
+    await page.goto('/non-existent-page-def', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
     // Use the specific "Back to Home" link in main content
@@ -49,7 +55,9 @@ test.describe('404 Error Page', () => {
   });
 
   test('404 page has noindex meta tag', async ({ page }) => {
-    await page.goto('/non-existent-page-ghi');
+    await page.goto('/non-existent-page-ghi', {
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for robots meta tag - may have multiple with different content
     const robots = page.locator('meta[name="robots"]');
@@ -77,7 +85,7 @@ test.describe('404 Error Page', () => {
 test.describe('thank-you page protection', () => {
   test('redirects to home when accessed directly', async ({ page }) => {
     // Try to access thank-you page directly
-    await page.goto('/thank-you/email');
+    await page.goto('/thank-you/email', { waitUntil: 'domcontentloaded' });
 
     // Should redirect to home page
     await expect(page).toHaveURL('/', { timeout: 10000 });
@@ -89,7 +97,7 @@ test.describe('thank-you page protection', () => {
     await mockEmailAPISuccess(page);
 
     // Start at about page — wait for networkidle to ensure React hydration
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
@@ -122,7 +130,7 @@ test.describe('thank-you page protection', () => {
     await mockEmailAPISuccess(page);
 
     // Navigate via form submission — wait for networkidle for hydration
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
@@ -152,7 +160,7 @@ test.describe('thank-you page protection', () => {
     await mockEmailAPISuccess(page);
 
     // Navigate via form submission — wait for networkidle for hydration
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
