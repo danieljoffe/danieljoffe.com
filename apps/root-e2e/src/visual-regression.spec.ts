@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { INVALID_UUID } from './fixtures/audit-mock-data';
 
 // VR baselines are captured with mocked system fonts (not Google Fonts).
 // Font mocking is a build-time webpack plugin triggered by CI=true or MOCK_FONTS=true.
@@ -129,6 +130,34 @@ test.describe('visual regression', () => {
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
     await expect(page).toHaveScreenshot('services.png', {
+      fullPage: true,
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-gsap]')],
+    });
+  });
+
+  test('audit scan page visual regression', async ({ page }) => {
+    await page.goto('/audit', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
+    await page.locator('h1').first().waitFor({ state: 'visible' });
+
+    await expect(page).toHaveScreenshot('audit-scan.png', {
+      fullPage: true,
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-gsap]')],
+    });
+  });
+
+  test('audit report not-found visual regression', async ({ page }) => {
+    await page.goto(`/audit/r/${INVALID_UUID}`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.waitForLoadState('load');
+    await page
+      .getByRole('heading', { name: 'Report Not Found' })
+      .waitFor({ state: 'visible' });
+
+    await expect(page).toHaveScreenshot('audit-report-not-found.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.02,
       mask: [page.locator('[data-gsap]')],
