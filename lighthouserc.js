@@ -14,9 +14,9 @@ const config = {
         `${baseUrl}/experience/winc`,
         `${baseUrl}/experience/professional-development`,
         `${baseUrl}/projects`,
+        `${baseUrl}/services`,
       ],
-      // numberOfRuns: 3,
-      numberOfRuns: 1,
+      numberOfRuns: 3,
       // Ensure server is properly stopped after collection
       settings: {
         chromeFlags: isNotDev
@@ -32,17 +32,16 @@ const config = {
           }),
     },
     assert: {
-      // only warn about issues
       assertions: {
-        'largest-contentful-paint': ['warn', { maxNumericValue: 6000 }],
-        'first-contentful-paint': ['warn', { maxNumericValue: 3000 }],
-        'categories:best-practices': ['warn', { minScore: 0.75 }],
-        'categories:performance': ['warn', { minScore: 0.75 }],
-        'categories:accessibility': ['warn', { minScore: 0.75 }],
-        'categories:seo': ['warn', { minScore: 0.75 }],
-        'cumulative-layout-shift': ['warn', { maxNumericValue: 0.5 }],
-        'total-blocking-time': ['warn', { maxNumericValue: 500 }],
-        'speed-index': ['warn', { maxNumericValue: 4000 }],
+        'largest-contentful-paint': ['warn', { maxNumericValue: 5000 }],
+        'first-contentful-paint': ['warn', { maxNumericValue: 2500 }],
+        'categories:best-practices': ['error', { minScore: 0.85 }],
+        'categories:performance': ['warn', { minScore: 0.85 }],
+        'categories:accessibility': ['error', { minScore: 0.85 }],
+        'categories:seo': ['error', { minScore: 0.85 }],
+        'cumulative-layout-shift': ['warn', { maxNumericValue: 0.25 }],
+        'total-blocking-time': ['warn', { maxNumericValue: 400 }],
+        'speed-index': ['warn', { maxNumericValue: 3500 }],
       },
     },
     upload: {
