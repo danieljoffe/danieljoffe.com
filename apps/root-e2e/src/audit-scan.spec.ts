@@ -75,6 +75,7 @@ test.describe('audit scan page - static rendering', () => {
 test.describe('audit scan page - form validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL);
+    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
   });
 
@@ -143,6 +144,7 @@ test.describe('audit scan page - form validation', () => {
 test.describe('audit scan page - successful scan flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL);
+    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
   });
 
@@ -210,6 +212,7 @@ test.describe('audit scan page - successful scan flow', () => {
 test.describe('audit scan page - error handling', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL);
+    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
   });
 
@@ -333,6 +336,7 @@ test.describe('audit scan page - accessibility', () => {
   test('button text changes to "Starting scan..." while submitting', async ({
     page,
   }) => {
+    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
 
     // Hang the request to keep submitting state
@@ -347,6 +351,7 @@ test.describe('audit scan page - accessibility', () => {
   });
 
   test('progress steps use list with aria-label', async ({ page }) => {
+    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
 
     await mockAuditScanAPI(page, 200, makeScanCreatedResponse());
