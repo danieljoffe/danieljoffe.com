@@ -21,7 +21,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@danieljoffe.com/shared-ui": ["../../libs/shared/ui/src/index.ts"]
+      "@danieljoffe.com/shared-ui": ["../../libs/shared/ui/src/index.ts"],
+      "@danieljoffe.com/shared-audit": ["../../libs/shared/audit/src/index.ts"]
     },
     "types": ["jest", "node"],
     "outDir": "dist",

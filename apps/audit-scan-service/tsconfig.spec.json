@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/jest",
+    "types": ["jest", "node"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
+  },
+  "include": ["jest.config.ts", "jest.config.cts", "src/**/*.ts"],
+  "references": [
+    {
+      "path": "../../libs/shared/audit/tsconfig.lib.json"
+    }
+  ]
+}
