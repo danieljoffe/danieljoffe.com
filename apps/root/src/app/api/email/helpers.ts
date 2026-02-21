@@ -1,6 +1,7 @@
 import {
   ErrorResponse,
   FormFieldSchema,
+  RawFormData,
   ValidKitErrorResponse,
   WebFormsResponse,
 } from './schema';
@@ -38,13 +39,12 @@ const RATE_LIMIT_MAX = FORM_LIMITS.RATE_LIMIT_REQUESTS;
  * ```
  */
 export const validateFormData = async <T extends yup.AnyObject>(
-  data: FormFieldSchema,
+  data: RawFormData,
   schema: yup.ObjectSchema<T>
 ): Promise<ErrorResponse | null> => {
   // Honeypot check — outside try/catch so the 403 status code is not
   // overwritten by the generic validation error handler below.
-  // @ts-expect-error - address is a hidden field
-  if (data?.address?.length > 0) {
+  if (data?.address && data.address.length > 0) {
     throw {
       error: {
         path: 'root.forbidden',
@@ -56,14 +56,13 @@ export const validateFormData = async <T extends yup.AnyObject>(
 
   try {
     // Sanitize inputs
-    const sanitized: FormFieldSchema = {
+    const sanitized: RawFormData = {
       name: DOMPurify.sanitize(data.name),
       email: DOMPurify.sanitize(data.email),
       message: DOMPurify.sanitize(data.message),
       hcaptcha: data.hcaptcha,
-      // @ts-expect-error - address is a hidden field
       address: data.address,
-    } as unknown as FormFieldSchema;
+    };
 
     await schema.validate(sanitized, {
       stripUnknown: true,
@@ -76,7 +75,7 @@ export const validateFormData = async <T extends yup.AnyObject>(
         path: error.path ?? 'root.unknownError',
         message: error.message,
       },
-      statusCode: 200,
+      statusCode: 400,
     } as ErrorResponse;
   }
 };
@@ -109,7 +108,7 @@ export const validateEmail = async (
         path: 'root.configurationError',
         message: `Sorry, we're experiencing technical difficulties. Please try again later.`,
       },
-      statusCode: 200,
+      statusCode: 500,
     } as ErrorResponse;
   }
 
@@ -172,7 +171,7 @@ export const sendEmail = async (
         path: 'root.configurationError',
         message: `Sorry, we're experiencing technical difficulties. Please try again later.`,
       },
-      statusCode: 200,
+      statusCode: 500,
     } as ErrorResponse;
   }
 
@@ -315,20 +314,20 @@ export const rateLimit = async (
  *
  * @internal This function is not exported and only used by rateLimit()
  */
+type RateLimitEntry = { count: number; reset: number };
+
+const globalStore = globalThis as typeof globalThis & {
+  __apiRateLimitStore?: Map<string, RateLimitEntry>;
+};
+
 const incrementRateLimit = (ip: string) => {
   const now = Date.now();
 
-  // @ts-expect-error - global is not defined in the browser
-  if (!global.__apiRateLimitStore) {
-    // @ts-expect-error - global is not defined in the browser
-    global.__apiRateLimitStore = new Map();
+  if (!globalStore.__apiRateLimitStore) {
+    globalStore.__apiRateLimitStore = new Map();
   }
 
-  // @ts-expect-error - server-only code
-  const store = global.__apiRateLimitStore as Map<
-    string,
-    { count: number; reset: number }
-  >;
+  const store = globalStore.__apiRateLimitStore;
 
   let entry = store.get(ip);
   if (!entry || entry.reset < now) {

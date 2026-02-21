@@ -40,13 +40,13 @@ import { captureApiError } from '@/lib/errorTracking';
  *   }
  * }
  *
- * // Error response
+ * // Error response (400 for validation, 403 for forbidden, 500 for server errors)
  * {
  *   error: {
  *     path: "email",
  *     message: "Invalid email address"
  *   },
- *   statusCode: 200
+ *   statusCode: 400
  * }
  * ```
  *

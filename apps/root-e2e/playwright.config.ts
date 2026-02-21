@@ -48,7 +48,7 @@ export default defineConfig({
   /* Retry failed tests */
   retries: isCI ? 2 : 0,
   /* Parallel execution */
-  ...(isCI ? { workers: 1 } : {}),
+  ...(isCI ? { workers: 2 } : {}),
   /* Run your local dev server before starting the tests.
    * When running via Nx (npx nx e2e root-e2e), Nx handles build→start→e2e
    * and Playwright reuses the running server. This command is a fallback
