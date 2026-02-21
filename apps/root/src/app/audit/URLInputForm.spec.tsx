@@ -67,11 +67,19 @@ describe('URLInputForm', () => {
   });
 
   it('submits valid URL and shows progress', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ scan_id: 'abc-123', status: 'pending' }),
-    });
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ scan_id: 'abc-123', status: 'pending' }),
+      })
+      // Immediate poll fires once polling phase starts
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({ id: 'abc-123', status: 'pending', grade: null }),
+      });
 
     render(<URLInputForm />);
     const input = screen.getByRole('textbox', { name: /website url/i });

@@ -35,8 +35,19 @@ test.describe('visual regression', () => {
     await page.goto('/');
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
-    // Wait for GSAP animations to settle — they affect layout height
-    await page.waitForTimeout(1000);
+    // Wait for GSAP animations to settle — they affect layout height.
+    // Poll until document height stabilises (two consecutive reads match).
+    await expect
+      .poll(
+        async () => {
+          const h1 = await page.evaluate(() => document.body.scrollHeight);
+          await new Promise(r => setTimeout(r, 250));
+          const h2 = await page.evaluate(() => document.body.scrollHeight);
+          return h1 === h2;
+        },
+        { timeout: 5000 }
+      )
+      .toBeTruthy();
 
     await expect(page).toHaveScreenshot('homepage.png', {
       fullPage: true,

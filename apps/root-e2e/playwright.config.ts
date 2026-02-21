@@ -17,7 +17,7 @@ const isCI = process.env.CI === 'true';
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
   reporter: [
-    ['line'],
+    ['list'],
     ['json', { outputFile: 'playwright-report-json/report.json' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -62,13 +62,11 @@ export default defineConfig({
       MOCK_FONTS: 'true',
       // Use hCaptcha test sitekey (always passes verification)
       NEXT_PUBLIC_HCAPTCHA_SITE_ID: '10000000-ffff-ffff-ffff-000000000001',
-      // Disable Sentry to speed up startup
       ...(isCI && {
+        // Disable Sentry to speed up startup
         SENTRY_DSN: '',
         SENTRY_AUTH_TOKEN: '',
-      }),
-      // Disable analytics and other non-essential services
-      ...(isCI && {
+        // Disable analytics and other non-essential services
         NEXT_TELEMETRY_DISABLED: '1',
         ANALYZE: 'false',
       }),

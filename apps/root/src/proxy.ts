@@ -1,4 +1,3 @@
-import { serverEnv } from '@/lib/env';
 import {
   allowedOrigins,
   allowedImageOrigins,
@@ -6,13 +5,14 @@ import {
   HCAPTCHA_ASSETS_URL,
 } from '@/utils/constants';
 import { NextRequest, NextResponse } from 'next/server';
+import { isProduction } from './utils/helpers';
 
 export function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https: ${
-      serverEnv.NODE_ENV !== 'production' ? `'unsafe-eval'` : ''
+      !isProduction() ? `'unsafe-eval'` : ''
     };
     style-src 'self' 'unsafe-inline';
     font-src 'self' https: data:;

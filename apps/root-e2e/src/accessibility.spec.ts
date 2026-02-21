@@ -70,13 +70,13 @@ test.describe('accessibility tests', () => {
         // Wait for hash to update (async on Mobile Chrome after programmatic click)
         await page
           .waitForURL(`**/${targetId}`, { timeout: 3000 })
-          .catch(() => {});
+          .catch(() => undefined);
 
         // Wait for target element to exist
         await page
           .locator(targetId)
           .waitFor({ state: 'attached', timeout: 3000 })
-          .catch(() => {});
+          .catch(() => undefined);
 
         const result = await page.evaluate(selector => {
           const el = document.querySelector(selector) as HTMLElement | null;

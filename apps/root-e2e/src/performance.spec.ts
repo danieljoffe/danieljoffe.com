@@ -195,11 +195,6 @@ test.describe('performance', () => {
         }));
     });
 
-    // Log the scripts for debugging
-    if (thirdPartyScripts.length > 0) {
-      console.log('Third-party scripts found:', thirdPartyScripts);
-    }
-
     // Third-party scripts should be async, deferred, or managed by next/script
     // (next/script uses data-nscript attribute and handles loading optimization internally)
     // If no third-party scripts are found, that's also acceptable
@@ -209,9 +204,6 @@ test.describe('performance', () => {
           script.async || script.defer || script.managedByNextScript
         ).toBeTruthy();
       });
-    } else {
-      // No third-party scripts found, which is fine
-      console.log('No third-party scripts detected');
     }
   });
 
@@ -282,9 +274,6 @@ test.describe('performance', () => {
     if (memoryInfo && memoryInfo.usedJSHeapSize) {
       // Used JS heap size should be under 100MB (increased threshold for CI stability)
       expect(memoryInfo.usedJSHeapSize).toBeLessThan(100 * 1024 * 1024);
-    } else {
-      // Skip test if memory API is not available
-      console.log('Memory API not available, skipping memory usage test');
     }
   });
 

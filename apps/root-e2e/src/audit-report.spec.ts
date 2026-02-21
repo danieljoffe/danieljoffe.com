@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { mockLeadsCaptureAPI, waitForHydration } from './fixtures/base.fixture';
+import {
+  fillInput,
+  mockLeadsCaptureAPI,
+  waitForHydration,
+} from './fixtures/base.fixture';
 import {
   INVALID_UUID,
   NONEXISTENT_UUID,
@@ -88,7 +92,7 @@ if (E2E_SCAN_ID) {
     });
 
     test('invalid email shows validation error', async ({ page }) => {
-      await page.getByLabel('Email address').fill('not-an-email');
+      await fillInput(page.getByLabel('Email address'), 'not-an-email');
       await page.getByRole('button', { name: 'Get full report' }).click();
 
       await expect(
@@ -99,7 +103,7 @@ if (E2E_SCAN_ID) {
     test('successful lead capture unlocks gated issues', async ({ page }) => {
       await mockLeadsCaptureAPI(page, 200, makeLeadCaptured());
 
-      await page.getByLabel('Email address').fill('test@example.com');
+      await fillInput(page.getByLabel('Email address'), 'test@example.com');
       await page.getByRole('button', { name: 'Get full report' }).click();
 
       // The gate overlay should disappear and gated issues should be visible
@@ -109,7 +113,7 @@ if (E2E_SCAN_ID) {
     test('already_captured response also unlocks gate', async ({ page }) => {
       await mockLeadsCaptureAPI(page, 200, makeLeadAlreadyCaptured());
 
-      await page.getByLabel('Email address').fill('test@example.com');
+      await fillInput(page.getByLabel('Email address'), 'test@example.com');
       await page.getByRole('button', { name: 'Get full report' }).click();
 
       await expect(page.getByText(/unlock \d+ more fix/i)).toBeHidden();
@@ -120,7 +124,7 @@ if (E2E_SCAN_ID) {
         error: 'Internal server error',
       });
 
-      await page.getByLabel('Email address').fill('test@example.com');
+      await fillInput(page.getByLabel('Email address'), 'test@example.com');
       await page.getByRole('button', { name: 'Get full report' }).click();
 
       await expect(
@@ -131,7 +135,7 @@ if (E2E_SCAN_ID) {
     test('network error shows network error message', async ({ page }) => {
       await page.route('**/api/leads/capture', route => route.abort());
 
-      await page.getByLabel('Email address').fill('test@example.com');
+      await fillInput(page.getByLabel('Email address'), 'test@example.com');
       await page.getByRole('button', { name: 'Get full report' }).click();
 
       await expect(
@@ -142,7 +146,7 @@ if (E2E_SCAN_ID) {
     test('"Try again" resets to locked state', async ({ page }) => {
       await mockLeadsCaptureAPI(page, 500, { error: 'Internal server error' });
 
-      await page.getByLabel('Email address').fill('test@example.com');
+      await fillInput(page.getByLabel('Email address'), 'test@example.com');
       await page.getByRole('button', { name: 'Get full report' }).click();
 
       // Wait for error

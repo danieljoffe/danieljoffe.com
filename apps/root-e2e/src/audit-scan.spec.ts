@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
+  fillInput,
   mockAuditScanAPI,
   mockAuditStatusAPI,
   waitForHydration,
@@ -75,7 +76,6 @@ test.describe('audit scan page - static rendering', () => {
 test.describe('audit scan page - form validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL);
-    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
   });
 
@@ -86,7 +86,7 @@ test.describe('audit scan page - form validation', () => {
   });
 
   test('invalid URL shows validation error', async ({ page }) => {
-    await page.getByLabel('Website URL').fill('no-tld');
+    await fillInput(page.getByLabel('Website URL'), 'no-tld');
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(
@@ -96,7 +96,7 @@ test.describe('audit scan page - form validation', () => {
 
   test('blur on invalid input shows validation error', async ({ page }) => {
     const input = page.getByLabel('Website URL');
-    await input.fill('no-tld');
+    await fillInput(input, 'no-tld');
     await input.blur();
 
     await expect(
@@ -112,22 +112,23 @@ test.describe('audit scan page - form validation', () => {
     await expect(page.getByText('Please enter a URL.')).toBeVisible();
 
     // Typing should clear it
-    await input.fill('e');
+    await fillInput(input, 'e');
     await expect(page.getByText('Please enter a URL.')).toBeHidden();
   });
 
   test('input and button disabled while submitting', async ({ page }) => {
-    // Mock the scan API to hang (never resolve) by using a delayed response
-    await page.route('**/api/audit/scan', async () => {
-      // Don't fulfill — let the request hang to keep submitting state
-    });
+    // Route handler must return a never-resolving promise to keep the
+    // request (and therefore the submitting state) pending indefinitely.
+    // An async handler that returns without calling fulfill/continue/abort
+    // may be auto-aborted by Playwright, racing the assertion.
+    await page.route('**/api/audit/scan', () => new Promise(() => {}));
 
     const input = page.getByLabel('Website URL');
     const button = page.getByRole('button', {
       name: /audit this site|starting scan/i,
     });
 
-    await input.fill(VALID_AUDIT_URL);
+    await fillInput(input, VALID_AUDIT_URL);
     await button.click();
 
     await expect(input).toBeDisabled();
@@ -144,7 +145,6 @@ test.describe('audit scan page - form validation', () => {
 test.describe('audit scan page - successful scan flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL);
-    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
   });
 
@@ -155,7 +155,7 @@ test.describe('audit scan page - successful scan flow', () => {
       { status: 200, body: makeStatusPending() },
     ]);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     // ScanProgress should appear with progress bar
@@ -170,7 +170,7 @@ test.describe('audit scan page - successful scan flow', () => {
       { status: 200, body: makeStatusPending() },
     ]);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(page.getByText(`Scanning ${VALID_AUDIT_URL}`)).toBeVisible();
@@ -186,7 +186,7 @@ test.describe('audit scan page - successful scan flow', () => {
       { status: 200, body: makeStatusCompleted() },
     ]);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     // Should redirect to the report page
@@ -197,7 +197,7 @@ test.describe('audit scan page - successful scan flow', () => {
   test('cached scan redirects immediately', async ({ page }) => {
     await mockAuditScanAPI(page, 200, makeScanCachedResponse());
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await page.waitForURL(`**/audit/r/${MOCK_SCAN_ID}`, { timeout: 15000 });
@@ -212,7 +212,6 @@ test.describe('audit scan page - successful scan flow', () => {
 test.describe('audit scan page - error handling', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL);
-    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
   });
 
@@ -220,7 +219,7 @@ test.describe('audit scan page - error handling', () => {
     // Empty body so client falls back to "Something went wrong..." message
     await mockAuditScanAPI(page, 500, {});
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(
@@ -233,7 +232,7 @@ test.describe('audit scan page - error handling', () => {
       error: 'Rate limit exceeded. Please try again later.',
     });
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(
@@ -244,7 +243,7 @@ test.describe('audit scan page - error handling', () => {
   test('scan API 400 shows server error message', async ({ page }) => {
     await mockAuditScanAPI(page, 400, { error: 'Invalid or disallowed URL' });
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(page.getByText('Invalid or disallowed URL')).toBeVisible();
@@ -256,7 +255,7 @@ test.describe('audit scan page - error handling', () => {
       { status: 500, body: { error: 'Internal server error' } },
     ]);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(page.getByText('Failed to check scan status.')).toBeVisible({
@@ -273,7 +272,7 @@ test.describe('audit scan page - error handling', () => {
       },
     ]);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(page.getByText('Page returned 404')).toBeVisible({
@@ -284,7 +283,7 @@ test.describe('audit scan page - error handling', () => {
   test('network error shows network error message', async ({ page }) => {
     await page.route('**/api/audit/scan', route => route.abort());
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(
@@ -295,7 +294,7 @@ test.describe('audit scan page - error handling', () => {
   test('"Try again" button resets form to idle', async ({ page }) => {
     await mockAuditScanAPI(page, 500, {});
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     // Wait for error to appear
@@ -336,13 +335,12 @@ test.describe('audit scan page - accessibility', () => {
   test('button text changes to "Starting scan..." while submitting', async ({
     page,
   }) => {
-    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
 
     // Hang the request to keep submitting state
     await page.route('**/api/audit/scan', async () => undefined);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(
@@ -351,7 +349,6 @@ test.describe('audit scan page - accessibility', () => {
   });
 
   test('progress steps use list with aria-label', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
     await waitForHydration(page);
 
     await mockAuditScanAPI(page, 200, makeScanCreatedResponse());
@@ -359,7 +356,7 @@ test.describe('audit scan page - accessibility', () => {
       { status: 200, body: makeStatusPending() },
     ]);
 
-    await page.getByLabel('Website URL').fill(VALID_AUDIT_URL);
+    await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
     await expect(page.getByRole('list', { name: 'Scan steps' })).toBeVisible();

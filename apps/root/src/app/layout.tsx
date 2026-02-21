@@ -6,6 +6,7 @@ import '@/styles/global.scss';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
 import Head from './home/Head';
+import TestingOnly from './home/TestingOnly';
 
 export const metadata: Metadata = rootMetadata;
 export const viewport: Viewport = {
@@ -48,6 +49,7 @@ export default async function RootLayout({ children }: WithChildren) {
         </a>
         <AppContext>{children}</AppContext>
         <Scripts />
+        <TestingOnly />
       </body>
     </html>
   );

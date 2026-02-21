@@ -89,6 +89,7 @@ export default function URLInputForm() {
       }
     };
 
+    poll(); // Check immediately, then poll on interval
     pollRef.current = setInterval(poll, POLL_INTERVAL_MS);
     return clearPoll;
   }, [state, clearPoll, router]);

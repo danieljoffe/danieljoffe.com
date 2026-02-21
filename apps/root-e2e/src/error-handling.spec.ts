@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { VALID_FORM_DATA } from './fixtures/test-data';
 import {
+  fillInput,
   mockHCaptcha,
   completeHCaptcha,
   mockEmailAPISuccess,
@@ -94,11 +95,12 @@ test.describe('thank-you page protection', () => {
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
     // Fill and submit form
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
-    await page
-      .locator('textarea[name="message"]')
-      .fill(VALID_FORM_DATA.message);
+    await fillInput(page.locator('input[name="name"]'), VALID_FORM_DATA.name);
+    await fillInput(page.locator('input[name="email"]'), VALID_FORM_DATA.email);
+    await fillInput(
+      page.locator('textarea[name="message"]'),
+      VALID_FORM_DATA.message
+    );
 
     // Complete hCaptcha verification
     await completeHCaptcha(page);
@@ -125,11 +127,12 @@ test.describe('thank-you page protection', () => {
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
-    await page
-      .locator('textarea[name="message"]')
-      .fill(VALID_FORM_DATA.message);
+    await fillInput(page.locator('input[name="name"]'), VALID_FORM_DATA.name);
+    await fillInput(page.locator('input[name="email"]'), VALID_FORM_DATA.email);
+    await fillInput(
+      page.locator('textarea[name="message"]'),
+      VALID_FORM_DATA.message
+    );
 
     await completeHCaptcha(page);
 
@@ -154,11 +157,12 @@ test.describe('thank-you page protection', () => {
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
 
-    await page.locator('input[name="name"]').fill(VALID_FORM_DATA.name);
-    await page.locator('input[name="email"]').fill(VALID_FORM_DATA.email);
-    await page
-      .locator('textarea[name="message"]')
-      .fill(VALID_FORM_DATA.message);
+    await fillInput(page.locator('input[name="name"]'), VALID_FORM_DATA.name);
+    await fillInput(page.locator('input[name="email"]'), VALID_FORM_DATA.email);
+    await fillInput(
+      page.locator('textarea[name="message"]'),
+      VALID_FORM_DATA.message
+    );
 
     await completeHCaptcha(page);
 

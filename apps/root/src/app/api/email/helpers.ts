@@ -6,7 +6,7 @@ import {
 } from './schema';
 import * as yup from 'yup';
 import { ValidationError } from 'yup';
-import { serverEnv, RequiredEnvVars } from '@/lib/env';
+import { serverEnv } from '@/lib/env';
 import { NextRequest } from 'next/server';
 import DOMPurify from 'isomorphic-dompurify';
 import { FORM_LIMITS } from '@/utils/constants';
@@ -166,7 +166,7 @@ export const sendEmail = async (
   data: FormFieldSchema
 ): Promise<ErrorResponse | null> => {
   if (!serverEnv.WEB3FORMS_ACCESS_KEY) {
-    devLog(`${RequiredEnvVars.WEB3FORMS_ACCESS_KEY} is not configured.`);
+    devLog('WEB3FORMS_ACCESS_KEY is not configured. Cannot send email.');
     throw {
       error: {
         path: 'root.configurationError',
