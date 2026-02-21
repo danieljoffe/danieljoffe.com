@@ -1,3 +1,4 @@
+import { UNSPLASH_URL } from '@/utils/constants';
 import Button from '@/components/Button';
 
 export interface UnsplashAttributionProps {
