@@ -29,7 +29,7 @@ export type FormFieldError = Record<ErrorSource, { message: string }>;
 export type FormFieldSchema<T = string> = Record<FormField, T>;
 
 /** Raw form data from the client, including the honeypot field */
-export type RawFormData = FormFieldSchema & { address?: string };
+export type RawFormData = FormFieldSchema & { address?: string | undefined };
 
 /**
  * Standardized error response format
