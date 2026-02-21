@@ -13,6 +13,17 @@ const config: StorybookConfig = {
   docs: {
     defaultName: 'autodocs',
   },
+  viteFinal(config) {
+    // Provide a browser-compatible shim for Node's `url` module.
+    // next-transition-router imports `format` from `url` which Vite
+    // externalizes, causing the build to fail.
+    config.resolve ??= {};
+    config.resolve.alias ??= {};
+    (config.resolve.alias as Record<string, string>)['url'] = fileURLToPath(
+      new URL('url-shim.ts', import.meta.url)
+    );
+    return config;
+  },
 };
 
 export default config;
