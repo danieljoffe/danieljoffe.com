@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `danieljoffe-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `danieljoffe-dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `danieljoffe-images-${CACHE_VERSION}`;
@@ -79,9 +79,11 @@ function getCacheStrategy(request) {
     return { cache: IMAGE_CACHE, strategy: 'cache-first', limit: IMAGE_CACHE_LIMIT };
   }
 
-  // Static assets (JS, CSS) - cache first
+  // Static assets (JS, CSS) - skip SW caching
+  // Next.js uses content-hashed filenames with proper cache headers,
+  // so browser HTTP cache handles these optimally already.
   if (url.pathname.startsWith('/_next/static/')) {
-    return { cache: STATIC_CACHE, strategy: 'cache-first' };
+    return { strategy: 'network-only' };
   }
 
   // API requests - network only
@@ -127,7 +129,7 @@ self.addEventListener('fetch', event => {
             });
 
             return response;
-          });
+          }).catch(() => caches.match(event.request));
         })
       );
       break;
