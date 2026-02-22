@@ -28,6 +28,9 @@ export type FormFieldError = Record<ErrorSource, { message: string }>;
 /** Contact form data structure */
 export type FormFieldSchema<T = string> = Record<FormField, T>;
 
+/** Raw form data from the client, including the honeypot field */
+export type RawFormData = FormFieldSchema & { address?: string | undefined };
+
 /**
  * Standardized error response format
  *
@@ -41,7 +44,9 @@ export type ErrorResponse = {
     message: string;
   };
   /** HTTP status code */
-  statusCode: 200 | 400 | 500 | 403;
+  statusCode: 400 | 403 | 429 | 500;
+  /** Seconds until the client should retry (set on 429 responses) */
+  retryAfter?: number;
 };
 
 /**

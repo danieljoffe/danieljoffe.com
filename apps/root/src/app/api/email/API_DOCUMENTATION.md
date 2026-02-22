@@ -80,7 +80,7 @@ Referer: https://danieljoffe.com/about (required)
 }
 ```
 
-**Error Response (200/400/403/500):**
+**Error Response (400/403/500):**
 
 ```json
 {
@@ -88,7 +88,7 @@ Referer: https://danieljoffe.com/about (required)
     "path": "email",
     "message": "Invalid email address"
   },
-  "statusCode": 200
+  "statusCode": 400
 }
 ```
 
@@ -96,13 +96,13 @@ Referer: https://danieljoffe.com/about (required)
 
 | Error Path                | Status | Description                           |
 | ------------------------- | ------ | ------------------------------------- |
-| `name`                    | 200    | Name validation failed                |
-| `email`                   | 200    | Email format or deliverability issue  |
-| `message`                 | 200    | Message validation failed             |
-| `hcaptcha`                | 200    | CAPTCHA verification failed           |
+| `name`                    | 400    | Name validation failed                |
+| `email`                   | 400    | Email format or deliverability issue  |
+| `message`                 | 400    | Message validation failed             |
+| `hcaptcha`                | 400    | CAPTCHA verification failed           |
 | `root.forbidden`          | 403    | Rate limit exceeded or invalid source |
-| `root.configurationError` | 200    | Server configuration issue            |
-| `root.serviceError`       | 200    | External service failure              |
+| `root.configurationError` | 500    | Server configuration issue            |
+| `root.serviceError`       | 500    | External service failure              |
 
 #### Rate Limiting
 

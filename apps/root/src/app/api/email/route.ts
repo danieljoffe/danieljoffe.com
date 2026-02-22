@@ -40,13 +40,13 @@ import { captureApiError } from '@/lib/errorTracking';
  *   }
  * }
  *
- * // Error response
+ * // Error response (400 for validation, 403 for forbidden, 429 for rate limit, 500 for server errors)
  * {
  *   error: {
  *     path: "email",
  *     message: "Invalid email address"
  *   },
- *   statusCode: 200
+ *   statusCode: 400
  * }
  * ```
  *
@@ -93,6 +93,14 @@ export async function POST(
       }
     );
 
-    return NextResponse.json(error, { status: error.statusCode });
+    const headers: HeadersInit = {};
+    if (error.statusCode === 429 && error.retryAfter) {
+      headers['Retry-After'] = String(error.retryAfter);
+    }
+
+    return NextResponse.json(error, {
+      status: error.statusCode,
+      headers,
+    });
   }
 }

@@ -1,6 +1,7 @@
 import {
   ErrorResponse,
   FormFieldSchema,
+  RawFormData,
   ValidKitErrorResponse,
   WebFormsResponse,
 } from './schema';
@@ -38,13 +39,12 @@ const RATE_LIMIT_MAX = FORM_LIMITS.RATE_LIMIT_REQUESTS;
  * ```
  */
 export const validateFormData = async <T extends yup.AnyObject>(
-  data: FormFieldSchema,
+  data: RawFormData,
   schema: yup.ObjectSchema<T>
 ): Promise<ErrorResponse | null> => {
   // Honeypot check — outside try/catch so the 403 status code is not
   // overwritten by the generic validation error handler below.
-  // @ts-expect-error - address is a hidden field
-  if (data?.address?.length > 0) {
+  if (data?.address && data.address.length > 0) {
     throw {
       error: {
         path: 'root.forbidden',
@@ -56,14 +56,13 @@ export const validateFormData = async <T extends yup.AnyObject>(
 
   try {
     // Sanitize inputs
-    const sanitized: FormFieldSchema = {
+    const sanitized: RawFormData = {
       name: DOMPurify.sanitize(data.name),
       email: DOMPurify.sanitize(data.email),
       message: DOMPurify.sanitize(data.message),
       hcaptcha: data.hcaptcha,
-      // @ts-expect-error - address is a hidden field
       address: data.address,
-    } as unknown as FormFieldSchema;
+    };
 
     await schema.validate(sanitized, {
       stripUnknown: true,
@@ -76,7 +75,7 @@ export const validateFormData = async <T extends yup.AnyObject>(
         path: error.path ?? 'root.unknownError',
         message: error.message,
       },
-      statusCode: 200,
+      statusCode: 400,
     } as ErrorResponse;
   }
 };
@@ -109,7 +108,7 @@ export const validateEmail = async (
         path: 'root.configurationError',
         message: `Sorry, we're experiencing technical difficulties. Please try again later.`,
       },
-      statusCode: 200,
+      statusCode: 500,
     } as ErrorResponse;
   }
 
@@ -172,7 +171,7 @@ export const sendEmail = async (
         path: 'root.configurationError',
         message: `Sorry, we're experiencing technical difficulties. Please try again later.`,
       },
-      statusCode: 200,
+      statusCode: 500,
     } as ErrorResponse;
   }
 
@@ -258,6 +257,7 @@ export const requestFromSource = async (
  *
  * Prevents abuse by limiting the number of requests per IP address
  * within a specified time window. Uses in-memory storage for tracking.
+ * Returns proper HTTP 429 status with Retry-After information when exceeded.
  *
  * Rate limits:
  * - Maximum requests per IP: Configured in FORM_LIMITS.RATE_LIMIT_REQUESTS
@@ -265,42 +265,46 @@ export const requestFromSource = async (
  *
  * @param req - The incoming Next.js request object
  * @returns Promise that resolves to null if within rate limits
- * @throws {ErrorResponse} When rate limit is exceeded
+ * @throws {ErrorResponse} 429 when rate limit exceeded, 403 when IP missing
  *
  * @example
  * ```typescript
  * await rateLimit(request);
- * // Throws 403 error if too many requests from same IP
+ * // Throws 429 error if too many requests from same IP
  * ```
  */
 export const rateLimit = async (
   req: NextRequest
 ): Promise<ErrorResponse | null> => {
-  const errorResponse: ErrorResponse = {
-    error: {
-      path: 'root.forbidden',
-      message: 'Forbidden',
-    },
-    statusCode: 403,
-  };
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip');
 
-  try {
-    const ip = req.headers.get('x-forwarded-for');
-    if (!ip) {
-      throw errorResponse;
-    }
-
-    const entry = incrementRateLimit(ip);
-
-    if (entry.count > RATE_LIMIT_MAX) {
-      throw errorResponse;
-    }
-
-    return Promise.resolve(null);
-  } catch (e: unknown) {
-    const error = e as ErrorResponse;
-    throw error;
+  if (!ip) {
+    throw {
+      error: {
+        path: 'root.forbidden',
+        message: 'Forbidden',
+      },
+      statusCode: 403,
+    } as ErrorResponse;
   }
+
+  const entry = incrementRateLimit(ip);
+
+  if (entry.count > RATE_LIMIT_MAX) {
+    const retryAfterSeconds = Math.ceil((entry.reset - Date.now()) / 1000);
+    throw {
+      error: {
+        path: 'root.forbidden',
+        message: 'Too many requests. Please try again later.',
+      },
+      statusCode: 429,
+      retryAfter: retryAfterSeconds,
+    } as ErrorResponse;
+  }
+
+  return null;
 };
 
 /**
@@ -315,20 +319,34 @@ export const rateLimit = async (
  *
  * @internal This function is not exported and only used by rateLimit()
  */
+type RateLimitEntry = { count: number; reset: number };
+
+const globalStore = globalThis as typeof globalThis & {
+  __apiRateLimitStore?: Map<string, RateLimitEntry>;
+  __apiRateLimitLastCleanup?: number;
+};
+
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
 const incrementRateLimit = (ip: string) => {
   const now = Date.now();
 
-  // @ts-expect-error - global is not defined in the browser
-  if (!global.__apiRateLimitStore) {
-    // @ts-expect-error - global is not defined in the browser
-    global.__apiRateLimitStore = new Map();
+  if (!globalStore.__apiRateLimitStore) {
+    globalStore.__apiRateLimitStore = new Map();
   }
 
-  // @ts-expect-error - server-only code
-  const store = global.__apiRateLimitStore as Map<
-    string,
-    { count: number; reset: number }
-  >;
+  const store = globalStore.__apiRateLimitStore;
+
+  // Periodically purge expired entries to prevent unbounded growth
+  if (
+    !globalStore.__apiRateLimitLastCleanup ||
+    now - globalStore.__apiRateLimitLastCleanup > CLEANUP_INTERVAL_MS
+  ) {
+    for (const [key, val] of store) {
+      if (val.reset < now) store.delete(key);
+    }
+    globalStore.__apiRateLimitLastCleanup = now;
+  }
 
   let entry = store.get(ip);
   if (!entry || entry.reset < now) {

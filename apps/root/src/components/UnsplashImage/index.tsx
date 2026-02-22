@@ -47,7 +47,7 @@ export default function UnsplashImage({
         fill={fill}
         preload={preload}
       />
-      <UnsplashAttribution creator={creator} origin={origin} />
+      <UnsplashAttribution creator={creator} />
     </UnsplashFigure>
   );
 }

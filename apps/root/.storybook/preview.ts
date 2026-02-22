@@ -1,4 +1,3 @@
-import '@/styles/tailwind.scss';
 import '@/styles/global.scss';
 import '@/styles/fonts';
 import type { Preview } from '@storybook/react';
