@@ -1,7 +1,4 @@
-'use client';
-
 import dynamic from 'next/dynamic';
-import { ArrowUpRight, Download } from 'lucide-react';
 import {
   PageContainer,
   Section,
@@ -9,15 +6,8 @@ import {
   Badge,
   Spacer,
 } from '@danieljoffe.com/shared-ui';
-import {
-  FULL_NAME,
-  JOB_TITLE,
-  HOME_LINK,
-  PROJECTS_LINK,
-} from '@/utils/constants';
-import { downloadResume } from '@/utils/helpers';
-import { analytics } from '@/lib/analytics';
-import Button from '@/components/Button';
+import { JOB_TITLE } from '@/utils/constants';
+import HeroActions from './HeroActions';
 
 const Blob = dynamic(() => import('./Blob'), {
   loading: () => <div />,
@@ -63,32 +53,7 @@ export default function Hero() {
               <p>And I love eliminating engineering bottlenecks.</p>
             </div>
 
-            <Stack direction='vertical' className='items-start'>
-              <Button
-                as='link'
-                className='max-w-max'
-                href={PROJECTS_LINK.href}
-                aria-label={`View ${FULL_NAME}'s case studies`}
-                onClick={() =>
-                  analytics.ctaClick('view_case_studies', PROJECTS_LINK.href)
-                }
-              >
-                <span>View case studies</span>
-                <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
-              </Button>
-              <Button
-                as='button'
-                className='max-w-max'
-                aria-label={`Download ${FULL_NAME}'s resume`}
-                onClick={() => {
-                  analytics.ctaClick('download_resume', HOME_LINK.href);
-                  downloadResume();
-                }}
-              >
-                <Download absoluteStrokeWidth={true} className='size-4' />
-                <span>Download resume</span>
-              </Button>
-            </Stack>
+            <HeroActions />
           </Stack>
         </div>
       </PageContainer>

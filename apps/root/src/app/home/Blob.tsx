@@ -1,14 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { setGradientTheme } from '@/styles/blob.utils';
 import styles from './blob.module.scss';
 
 export default function Blob() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // Randomly set gradient theme on mount and periodically
+    const el = containerRef.current;
+    if (!el) return;
+
+    // Set initial gradient theme on the scoped container
+    setGradientTheme(el);
+
+    // Periodically change gradient theme
     const interval = setInterval(
-      setGradientTheme,
+      () => setGradientTheme(el),
       Math.max(
         Math.floor(5250 * Math.random()),
         Math.floor(2525 * Math.random())
@@ -20,7 +28,8 @@ export default function Blob() {
 
   return (
     <div
-      className='relative w-full h-full overflow-hidden bg-background'
+      ref={containerRef}
+      className={`relative w-full h-full overflow-hidden bg-background ${styles.blobContainer}`}
       aria-hidden='true'
       role='img'
       aria-label='Decorative background animation'

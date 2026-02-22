@@ -52,7 +52,7 @@ export default function UnsplashImg({
 
   if (preload) {
     imageProps.preload = true;
-    imageProps.fetchPriority = 'auto';
+    imageProps.fetchPriority = 'high';
     imageProps.loading = undefined;
   } else {
     imageProps.fetchPriority = priority ? 'high' : 'low';

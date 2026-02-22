@@ -20,7 +20,7 @@ export default function Hero() {
             title={FULL_NAME}
             width={200}
             height={200}
-            className='rounded-full size-[12.5rem] contained border border-foreground-muted'
+            className='rounded-full size-[12.5rem] contained border border-foreground-muted self-center md:self-start'
             sizes='(max-width: 640px) 12rem, (max-width: 768px) 14rem, 16rem'
             fetchPriority='high'
             preload={true}
