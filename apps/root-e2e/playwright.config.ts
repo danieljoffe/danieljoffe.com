@@ -42,6 +42,8 @@ export default defineConfig({
   },
   /* Retry failed tests */
   retries: isCI ? 2 : 0,
+  /* Stop after first failure in CI — no point running remaining specs */
+  maxFailures: isCI ? 1 : 0,
   /* Parallel execution */
   ...(isCI ? { workers: 2 } : {}),
   /* Run your local dev server before starting the tests.
