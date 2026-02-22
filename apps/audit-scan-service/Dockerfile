@@ -55,8 +55,10 @@ COPY --from=builder /app/apps/audit-scan-service/dist .
 
 RUN npm install --omit=dev
 
-# Run as non-root user
-RUN groupadd -r scanner && useradd -r -g scanner scanner
+# Run as non-root user with a writable home dir for Chromium temp/crash files
+RUN groupadd -r scanner && useradd -r -g scanner -m scanner \
+    && mkdir -p /home/scanner/.cache /tmp/.chromium \
+    && chown -R scanner:scanner /home/scanner /tmp/.chromium
 USER scanner
 
 EXPOSE 3001
