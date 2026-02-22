@@ -32,7 +32,7 @@
 Set these in `apps/root/.env` (local) and in Vercel dashboard (production):
 
 - [ ] `NEXT_PUBLIC_SUPABASE_URL`
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_ID`
 - [ ] `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] `RESEND_API_KEY`
 - [ ] `SCAN_SERVICE_URL` (Railway URL from step 2)
