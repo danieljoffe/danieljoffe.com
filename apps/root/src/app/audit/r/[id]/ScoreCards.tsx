@@ -1,10 +1,4 @@
-import {
-  Card,
-  Grid,
-  GridItem,
-  PageContainer,
-  Section,
-} from '@danieljoffe.com/shared-ui';
+import { Card, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 
 interface ScoreCardsProps {
   performance: number | null;
@@ -52,20 +46,12 @@ export default function ScoreCards({
         <h2 id='scores-heading' className='sr-only'>
           Scores
         </h2>
-        <Grid cols={4} gap='md'>
-          <GridItem>
-            <ScoreCardItem label='Performance' score={performance} />
-          </GridItem>
-          <GridItem>
-            <ScoreCardItem label='Accessibility' score={accessibility} />
-          </GridItem>
-          <GridItem>
-            <ScoreCardItem label='SEO' score={seo} />
-          </GridItem>
-          <GridItem>
-            <ScoreCardItem label='Best Practices' score={bestPractices} />
-          </GridItem>
-        </Grid>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+          <ScoreCardItem label='Performance' score={performance} />
+          <ScoreCardItem label='Accessibility' score={accessibility} />
+          <ScoreCardItem label='SEO' score={seo} />
+          <ScoreCardItem label='Best Practices' score={bestPractices} />
+        </div>
       </PageContainer>
     </Section>
   );
