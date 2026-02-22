@@ -25,11 +25,7 @@ Sentry.init({
   // Capture unhandled promise rejections
   integrations: [
     Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration({
-      // Capture 10% of sessions for replay in production
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
+    // Replay integration is deferred below to avoid blocking LCP paint
   ],
 
   // Session Replay sampling
@@ -67,5 +63,25 @@ Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
 });
+
+// Defer Sentry Replay to avoid blocking initial paint.
+// Sample rates (replaysSessionSampleRate, replaysOnErrorSampleRate) are read
+// when the integration is added, not at init time.
+if (typeof window !== 'undefined') {
+  const loadReplay = () => {
+    Sentry.addIntegration(
+      Sentry.replayIntegration({
+        maskAllText: false,
+        blockAllMedia: false,
+      })
+    );
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(loadReplay);
+  } else {
+    setTimeout(loadReplay, 0);
+  }
+}
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
