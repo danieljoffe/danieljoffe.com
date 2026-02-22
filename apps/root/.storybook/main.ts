@@ -4,10 +4,7 @@ import type { StorybookConfig } from '@storybook/nextjs-vite';
 
 const config: StorybookConfig = {
   stories: ['../**/*.@(stories.@(js|jsx|ts|tsx|mdx))'],
-  addons: [
-    getAbsolutePath('@storybook/addon-links'),
-    getAbsolutePath('@storybook/addon-docs'),
-  ],
+  addons: [getAbsolutePath('@storybook/addon-docs')],
   framework: {
     name: getAbsolutePath('@storybook/nextjs-vite'),
     options: {},
@@ -15,6 +12,17 @@ const config: StorybookConfig = {
   staticDirs: ['../public'],
   docs: {
     defaultName: 'autodocs',
+  },
+  viteFinal(config) {
+    // Provide a browser-compatible shim for Node's `url` module.
+    // next-transition-router imports `format` from `url` which Vite
+    // externalizes, causing the build to fail.
+    config.resolve ??= {};
+    config.resolve.alias ??= {};
+    (config.resolve.alias as Record<string, string>)['url'] = fileURLToPath(
+      new URL('url-shim.ts', import.meta.url)
+    );
+    return config;
   },
 };
 
