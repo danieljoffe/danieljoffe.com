@@ -5,6 +5,9 @@ inputs:
   run-e2e:
     description: Whether to run e2e tests
     default: 'true'
+  github-token:
+    description: GitHub token for Lighthouse CI status checks
+    default: ''
 
 runs:
   using: composite
@@ -19,6 +22,7 @@ runs:
       run: yarn install --frozen-lockfile
 
     - name: Install Playwright
+      if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
       run: yarn playwright install --with-deps
 
@@ -26,7 +30,7 @@ runs:
 
     - name: Run affected tasks
       shell: bash
-      run: yarn nx affected -t lint test build typecheck build-storybook
+      run: yarn nx affected -t lint test build typecheck build-storybook --nxBail
       env:
         NX_NO_CLOUD: 'true'
 
@@ -36,3 +40,10 @@ runs:
       run: yarn nx e2e root-e2e
       env:
         NX_NO_CLOUD: 'true'
+
+    - name: Run Lighthouse CI
+      if: ${{ inputs.run-e2e == 'true' }}
+      shell: bash
+      run: yarn test:lighthouse
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ inputs.github-token }}
