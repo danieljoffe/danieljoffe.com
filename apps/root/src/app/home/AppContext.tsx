@@ -1,6 +1,5 @@
 'use client';
 
-import gsap from 'gsap';
 import { TransitionRouter } from 'next-transition-router';
 import { startTransition, Suspense, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -15,6 +14,17 @@ const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
   ssr: false,
 });
 
+// GSAP is loaded dynamically to keep it off the critical rendering path.
+// It's only needed for page transition animations, not on initial load.
+let gsapModule: typeof import('gsap').default | null = null;
+
+async function loadGsap() {
+  if (!gsapModule) {
+    gsapModule = (await import('gsap')).default;
+  }
+  return gsapModule;
+}
+
 export default function AppContext({ children }: WithChildren) {
   const slidingPane = useRef<HTMLDivElement | null>(null);
 
@@ -22,7 +32,8 @@ export default function AppContext({ children }: WithChildren) {
     <GlobalProvider>
       <TransitionRouter
         auto={true}
-        leave={next => {
+        leave={async next => {
+          const gsap = await loadGsap();
           const tl = gsap
             .timeline({
               onComplete: next,
@@ -43,7 +54,8 @@ export default function AppContext({ children }: WithChildren) {
             tl.kill();
           };
         }}
-        enter={next => {
+        enter={async next => {
+          const gsap = await loadGsap();
           const tl = gsap
             .timeline()
             .fromTo(

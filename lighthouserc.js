@@ -1,4 +1,3 @@
-const isNotDev = process.env.NODE_ENV !== 'development';
 const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
 /**
@@ -17,19 +16,12 @@ const config = {
         `${baseUrl}/services`,
       ],
       numberOfRuns: 3,
-      // Ensure server is properly stopped after collection
       settings: {
-        chromeFlags: isNotDev
-          ? ['--headless', '--no-sandbox', '--disable-dev-shm-usage']
-          : [],
+        chromeFlags: ['--headless', '--no-sandbox', '--disable-dev-shm-usage'],
       },
-      ...(isNotDev
-        ? {}
-        : {
-            startServerCommand: 'npx nx run @danieljoffe.com/root:start',
-            startServerReadyPattern: 'ready - started server on',
-            startServerReadyTimeout: 30000,
-          }),
+      startServerCommand: 'npx nx start root --prod',
+      startServerReadyPattern: 'Ready in',
+      startServerReadyTimeout: 60000,
     },
     assert: {
       assertions: {

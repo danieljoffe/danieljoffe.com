@@ -251,10 +251,9 @@
   border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
   transition-duration: 10s;
   transition-timing-function: ease-in-out;
-  transition-property:
-    transform, bottom, border-radius, opacity, filter, background;
+  transition-property: transform, border-radius, opacity, filter, background;
   transition-behavior: normal;
-  will-change: transform, bottom, border-radius, opacity, filter, background;
+  will-change: transform, border-radius, opacity, filter, background;
 }
 
 .blobShape {
