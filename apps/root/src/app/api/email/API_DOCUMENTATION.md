@@ -179,7 +179,7 @@ WEB3FORMS_API_URL=https://api.web3forms.com/submit
 NODE_ENV=production
 
 # Public environment variables
-NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your_hcaptcha_site_key
+NEXT_PUBLIC_HCAPTCHA_SITE_ID=your_hcaptcha_site_key
 ```
 
 ### Development Setup
