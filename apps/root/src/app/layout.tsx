@@ -21,8 +21,7 @@ export default async function RootLayout({ children }: WithChildren) {
       lang='en'
       data-scroll-behavior='smooth'
       className={[
-        'bg-background text-foreground',
-        'text-[16px] ease-in-out duration-[3.5s]',
+        'bg-background text-foreground text-[16px]',
         fontVariables,
       ].join(' ')}
     >

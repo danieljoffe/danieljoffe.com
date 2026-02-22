@@ -242,6 +242,17 @@
   }
 }
 
+// Scoped container for gradient transitions — keeps paint work
+// isolated from the rest of the document tree.
+.blobContainer {
+  contain: content;
+  transition-property:
+    --stop-color-one, --stop-color-two, --stop-color-three, --stop-color-four,
+    --stop-color-five, --stop-color-six, --stop-color-seven, --stop-color-eight;
+  transition-duration: 3.5s;
+  transition-timing-function: ease-in-out;
+}
+
 .blobShape,
 .blobShape2,
 .particle {
@@ -249,11 +260,10 @@
   left: 50%;
   bottom: 0%;
   border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
-  transition-duration: 10s;
-  transition-timing-function: ease-in-out;
-  transition-property: transform, border-radius, opacity, filter, background;
-  transition-behavior: normal;
-  will-change: transform, border-radius, opacity, filter, background;
+  // Only hint compositor-friendly properties to reduce GPU memory overhead.
+  // border-radius, filter, and background are not composited — listing them
+  // in will-change just wastes memory without avoiding repaints.
+  will-change: transform;
 }
 
 .blobShape {
