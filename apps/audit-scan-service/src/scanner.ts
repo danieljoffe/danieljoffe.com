@@ -23,6 +23,7 @@ export async function runScan(url: string): Promise<ScanResults> {
       '--disable-dev-shm-usage',
       '--disable-extensions',
       '--disable-background-networking',
+      '--disable-crash-reporter',
     ],
   });
 

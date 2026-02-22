@@ -254,7 +254,7 @@ CREATE POLICY "Public can read issues for completed scans"
 
 4. Note the following values from Supabase dashboard → Settings → API:
    - Project URL (`NEXT_PUBLIC_SUPABASE_URL`)
-   - Anon public key (`NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+   - Anon public key (`NEXT_PUBLIC_SUPABASE_ANON_ID`)
    - Service role key (`SUPABASE_SERVICE_ROLE_KEY`)
 
 **Acceptance Criteria:**
@@ -1186,7 +1186,7 @@ npm install @supabase/supabase-js resend @react-email/components
 ```env
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_ID=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Resend
@@ -1224,7 +1224,7 @@ import { createClient } from '@supabase/supabase-js';
 export function createBrowserClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_ID!
   );
 }
 ```

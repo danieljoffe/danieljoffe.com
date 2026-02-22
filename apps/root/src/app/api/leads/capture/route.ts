@@ -95,9 +95,7 @@ export async function POST(request: Request) {
     let resendId: string | null = null;
 
     try {
-      const reportUrl = scan_id
-        ? `${siteUrl}/audit/report/${scan_id}`
-        : siteUrl;
+      const reportUrl = scan_id ? `${siteUrl}/audit/r/${scan_id}` : siteUrl;
 
       if (!resendApiKey) {
         throw new Error('Missing RESEND_API_KEY environment variable');

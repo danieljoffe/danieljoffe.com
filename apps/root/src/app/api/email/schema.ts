@@ -44,7 +44,9 @@ export type ErrorResponse = {
     message: string;
   };
   /** HTTP status code */
-  statusCode: 400 | 403 | 500;
+  statusCode: 400 | 403 | 429 | 500;
+  /** Seconds until the client should retry (set on 429 responses) */
+  retryAfter?: number;
 };
 
 /**

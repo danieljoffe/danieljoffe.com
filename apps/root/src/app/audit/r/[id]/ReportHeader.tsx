@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { ArrowLeft, Globe } from 'lucide-react';
-import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
+import { ArrowLeft } from 'lucide-react';
+import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
+import ExpandableScreenshot from './ExpandableScreenshot';
 
 interface ReportHeaderProps {
   url: string;
@@ -36,54 +37,30 @@ export default function ReportHeader({
       background='alt'
     >
       <PageContainer className='py-12 md:py-16'>
-        <Stack direction='vertical' gap='lg'>
-          <Link
-            href='/audit'
-            className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
-          >
-            <ArrowLeft className='size-4' aria-hidden='true' />
-            New audit
-          </Link>
+        <Link
+          href='/audit'
+          className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
+        >
+          <ArrowLeft className='size-4' aria-hidden='true' />
+          New audit
+        </Link>
 
-          <div className='flex flex-col md:flex-row md:items-start md:justify-between gap-6'>
-            <Stack direction='horizontal' gap='md' align='start'>
-              {screenshotUrl ? (
-                <picture>
-                  <img
-                    src={screenshotUrl}
-                    alt={`Screenshot of ${pageTitle || url}`}
-                    className='w-16 h-12 rounded border border-border object-cover shrink-0'
-                  />
-                </picture>
-              ) : (
-                <span className='inline-flex items-center justify-center w-16 h-12 rounded border border-border bg-background-elevated shrink-0'>
-                  <Globe
-                    className='size-6 text-foreground-subtle'
-                    aria-hidden='true'
-                  />
-                </span>
-              )}
-              <div className='min-w-0'>
-                <h1
-                  id='report-header-heading'
-                  className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
-                >
-                  {pageTitle || url}
-                </h1>
-                <p className='text-sm text-foreground-muted truncate max-w-md mt-1'>
-                  {url}
-                </p>
-                {completedAt && (
-                  <p className='text-xs text-foreground-subtle mt-1'>
-                    Scanned {formatDate(completedAt)}
-                  </p>
-                )}
-              </div>
-            </Stack>
+        <div className='mt-6 flex flex-col gap-6 md:flex-row md:items-start'>
+          {/* Mobile: image centered; Tablet+: flush left */}
+          <div className='flex justify-center md:justify-start shrink-0'>
+            <ExpandableScreenshot
+              screenshotUrl={screenshotUrl}
+              alt={`Screenshot of ${pageTitle || url}`}
+            />
+          </div>
 
+          {/* Grade + Page data row
+              Mobile: grade left, page data right
+              Tablet+: page data left, grade flush right */}
+          <div className='flex flex-row items-start gap-4 flex-1 min-w-0'>
             {grade && (
               <div
-                className='flex flex-col items-center shrink-0'
+                className='flex flex-col items-center shrink-0 order-first md:order-last'
                 aria-label={`Overall grade: ${grade.grade}, ${grade.label}`}
               >
                 <span
@@ -97,8 +74,25 @@ export default function ReportHeader({
                 </span>
               </div>
             )}
+
+            <div className='min-w-0 flex-1'>
+              <h1
+                id='report-header-heading'
+                className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
+              >
+                {pageTitle || url}
+              </h1>
+              <p className='text-sm text-foreground-muted truncate max-w-md mt-1'>
+                {url}
+              </p>
+              {completedAt && (
+                <p className='text-xs text-foreground-subtle mt-1'>
+                  Scanned {formatDate(completedAt)}
+                </p>
+              )}
+            </div>
           </div>
-        </Stack>
+        </div>
       </PageContainer>
     </Section>
   );

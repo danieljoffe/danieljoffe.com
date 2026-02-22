@@ -38,6 +38,7 @@ const nextConfig = {
       '@sentry/nextjs',
       'yup',
       'schema-dts',
+      '@danieljoffe.com/shared-ui',
     ],
     // Disable in CI/test
     webpackBuildWorker: !isTest && !isCI,
@@ -261,7 +262,7 @@ const nextConfig = {
             priority: 10,
           },
           ui: {
-            test: /[\\/]node_modules[\\/](@headlessui|lucide-react)[\\/]/,
+            test: /[\\/]node_modules[\\/](lucide-react)[\\/]/,
             name: 'ui',
             chunks: 'all',
             priority: 5,

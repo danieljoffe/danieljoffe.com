@@ -4,8 +4,12 @@ const createJestConfig = nextJest({
   dir: './',
 });
 
+const isCI = process.env.CI === 'true';
+
 const config = {
   displayName: '@danieljoffe.com/root',
+  // Stop at first test failure in CI for fast feedback
+  bail: isCI ? 1 : 0,
   preset: '../../jest.preset.js',
   transform: {
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
@@ -22,10 +26,10 @@ const config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 40,
-      functions: 40,
-      lines: 40,
-      statements: 40,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
   // Ensure Jest exits cleanly in Nx/Next test envs
