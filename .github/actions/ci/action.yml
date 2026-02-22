@@ -27,13 +27,7 @@ runs:
 
     - name: Run affected tasks
       shell: bash
-      run: yarn nx affected -t lint build typecheck build-storybook
-      env:
-        NX_NO_CLOUD: 'true'
-
-    - name: Run affected tests (fail-fast)
-      shell: bash
-      run: yarn nx affected -t test -- --bail
+      run: yarn nx affected -t lint test build typecheck build-storybook --nxBail
       env:
         NX_NO_CLOUD: 'true'
 
