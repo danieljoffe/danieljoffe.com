@@ -76,6 +76,7 @@ test.describe('audit scan page - static rendering', () => {
 test.describe('audit scan page - form validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(AUDIT_URL, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
     await waitForHydration(page);
   });
 
