@@ -9,6 +9,8 @@ import {
 } from './helpers';
 import { ABOUT_LINK } from '@/utils/constants';
 import { captureApiError } from '@/lib/errorTracking';
+import { devLog } from '@/utils/helpers';
+import { serverEnv } from '@/lib/env';
 
 /**
  * Contact Form API Endpoint
@@ -57,7 +59,10 @@ export async function POST(
 ): Promise<NextResponse<ErrorResponse | WebFormsResponse>> {
   const data = await request.json();
 
+  devLog('HELLO!', data);
   try {
+    devLog('serverEnv.WEB3FORMS_ACCESS_KEY', serverEnv.WEB3FORMS_ACCESS_KEY);
+
     await rateLimit(request);
     await requestFromSource(request, ABOUT_LINK.href);
     await validateFormData(data, formSchema);
@@ -84,7 +89,7 @@ export async function POST(
       e instanceof Error
         ? e
         : new Error(error.error?.message || 'Unknown API error'),
-      '/api/email',
+      '/api/email/contact',
       'POST',
       error.statusCode,
       {

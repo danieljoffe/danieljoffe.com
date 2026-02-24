@@ -199,7 +199,9 @@ describe('requestFromSource', () => {
     if (referer) {
       headers.set('referer', referer);
     }
-    return new NextRequest('https://danieljoffe.com/api/email', { headers });
+    return new NextRequest('https://danieljoffe.com/api/email/contact', {
+      headers,
+    });
   }
 
   it('returns null when referer matches source', async () => {
@@ -227,7 +229,9 @@ describe('rateLimit', () => {
   function makeRequest(ip: string): NextRequest {
     const headers = new Headers();
     headers.set('x-forwarded-for', ip);
-    return new NextRequest('https://danieljoffe.com/api/email', { headers });
+    return new NextRequest('https://danieljoffe.com/api/email/contact', {
+      headers,
+    });
   }
 
   // Clear rate limit store between tests
@@ -247,7 +251,7 @@ describe('rateLimit', () => {
   });
 
   it('throws 403 when no IP is available', async () => {
-    const req = new NextRequest('https://danieljoffe.com/api/email');
+    const req = new NextRequest('https://danieljoffe.com/api/email/contact');
     await expect(rateLimit(req)).rejects.toMatchObject({
       statusCode: 403,
     });
@@ -271,7 +275,7 @@ describe('rateLimit', () => {
   it('uses x-real-ip as fallback', async () => {
     const headers = new Headers();
     headers.set('x-real-ip', '172.16.0.1');
-    const req = new NextRequest('https://danieljoffe.com/api/email', {
+    const req = new NextRequest('https://danieljoffe.com/api/email/contact', {
       headers,
     });
     const result = await rateLimit(req);

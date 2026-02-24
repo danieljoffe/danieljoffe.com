@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { InferType } from 'yup';
 import { CONTACT_FORM_ID } from '@/utils/constants';
-import { formSchema } from '@/app/api/email/schema';
+import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -77,7 +77,7 @@ export default function Form() {
     }
 
     try {
-      const response = await fetch('/api/email', {
+      const response = await fetch('/api/email/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

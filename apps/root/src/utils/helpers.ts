@@ -7,10 +7,11 @@ import { serverEnv } from '@/lib/env';
 // ============================================================================
 
 export function devLog(message: string, ...args: unknown[]) {
-  if (process.env.NODE_ENV !== 'development') return;
-  console.log(
-    `%c${new Date().toISOString()} > ${message}`,
-    'background-color: darkorange; color: black; font-weight: 600; padding: 5px;',
+  if (serverEnv.NODE_ENV !== 'development') return;
+
+  const timestamp = new Date().toLocaleTimeString();
+  console.debug(
+    `\x1b[90m[${timestamp}]\x1b[0m \x1b[36mDEBUG\x1b[0m ${message}`,
     ...args
   );
 }
@@ -21,7 +22,7 @@ export function devLog(message: string, ...args: unknown[]) {
 
 function validatePublicEnv() {
   // Only validate in development to catch misconfigurations early
-  if (process.env.NODE_ENV !== 'development') return;
+  if (serverEnv.NODE_ENV !== 'development') return;
 
   Object.entries(publicEnv).forEach(([key, value]) => {
     if (value == null) {
@@ -35,7 +36,7 @@ function validateEnv() {
   // Server env vars are only available on the server
   if (typeof window !== 'undefined') return;
   // Only validate in development to catch misconfigurations early
-  if (process.env.NODE_ENV !== 'development') return;
+  if (serverEnv.NODE_ENV !== 'development') return;
 
   Object.entries(serverEnv).forEach(([key, value]) => {
     if (value == null) {

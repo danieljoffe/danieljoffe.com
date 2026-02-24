@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createResendClient, EMAIL_FROM } from '@/lib/email/resend';
+import { buildUnsubscribeUrl } from '@/lib/email/tokens';
 import { captureApiError } from '@/lib/errorTracking';
-import { isValidUuid } from '@danieljoffe.com/shared-audit';
-import { Resend } from 'resend';
+import { isValidUuid, GRADE_MAP } from '@danieljoffe.com/shared-audit';
+import FullReportEmail from '@/components/emails/FullReport';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,17 +38,45 @@ export async function POST(request: Request) {
       );
     }
 
-    // Look up scan URL if scan_id provided
+    // Look up scan data if scan_id provided
     let urlScanned: string | null = null;
+    let scanData: {
+      url: string;
+      grade_overall: string | null;
+      score_performance: number | null;
+      score_accessibility: number | null;
+      score_seo: number | null;
+      score_best_practices: number | null;
+    } | null = null;
+    let topIssues: Array<{
+      title: string;
+      severity: string;
+      category: string;
+    }> = [];
+
     if (scan_id) {
       const { data: scan } = await supabase
         .from('scans')
-        .select('url')
+        .select(
+          'url, grade_overall, score_performance, score_accessibility, score_seo, score_best_practices'
+        )
         .eq('id', scan_id)
         .single();
 
       if (scan) {
         urlScanned = scan.url;
+        scanData = scan;
+      }
+
+      const { data: issues } = await supabase
+        .from('scan_issues')
+        .select('title, severity, category')
+        .eq('scan_id', scan_id)
+        .order('sort_order', { ascending: true })
+        .limit(3);
+
+      if (issues) {
+        topIssues = issues;
       }
     }
 
@@ -88,31 +118,44 @@ export async function POST(request: Request) {
     }
 
     // Send report email (non-blocking — lead capture succeeds even if email fails)
-    // Env vars read per-request for testability and key rotation without restart
     const siteUrl =
       process.env['NEXT_PUBLIC_SITE_URL'] || 'https://danieljoffe.com';
-    const resendApiKey = process.env['RESEND_API_KEY'];
     let resendId: string | null = null;
 
     try {
-      const reportUrl = scan_id ? `${siteUrl}/audit/r/${scan_id}` : siteUrl;
-
-      if (!resendApiKey) {
+      const resend = createResendClient();
+      if (!resend) {
         throw new Error('Missing RESEND_API_KEY environment variable');
       }
-      const resend = new Resend(resendApiKey);
+
+      const reportUrl = scan_id ? `${siteUrl}/audit/r/${scan_id}` : siteUrl;
+      const unsubscribeUrl = buildUnsubscribeUrl(newLead.id, siteUrl);
+      const gradeInfo = scanData?.grade_overall
+        ? GRADE_MAP[scanData.grade_overall]
+        : null;
 
       const emailResult = await resend.emails.send({
-        from: 'Daniel Joffe <noreply@danieljoffe.com>',
+        from: EMAIL_FROM,
         to: email,
-        subject: 'Your Website Audit Report',
-        html: `
-          <h1>Your Website Audit Report</h1>
-          <p>Hi${name ? ` ${name}` : ''},</p>
-          <p>Thank you for using our website audit tool. Your report is ready:</p>
-          <p><a href="${reportUrl}">View your full report</a></p>
-          <p>Best regards,<br/>Daniel Joffe</p>
-        `,
+        subject: scanData?.grade_overall
+          ? `Your Website Audit: Grade ${scanData.grade_overall} — ${scanData.url}`
+          : 'Your Website Audit Report',
+        react: FullReportEmail({
+          name: name || null,
+          url: scanData?.url || urlScanned || '',
+          grade: scanData?.grade_overall || '?',
+          gradeLabel: gradeInfo?.label || '',
+          gradeColor: gradeInfo?.color || '#888',
+          scores: {
+            performance: scanData?.score_performance ?? null,
+            accessibility: scanData?.score_accessibility ?? null,
+            seo: scanData?.score_seo ?? null,
+            bestPractices: scanData?.score_best_practices ?? null,
+          },
+          topIssues,
+          reportUrl,
+          unsubscribeUrl,
+        }),
       });
 
       resendId = emailResult.data?.id || null;
@@ -132,7 +175,7 @@ export async function POST(request: Request) {
     if (resendId) {
       await supabase.from('email_log').insert({
         lead_id: newLead.id,
-        template: 'report_delivery',
+        template: 'full_report',
         sent_at: new Date().toISOString(),
         resend_id: resendId,
       });

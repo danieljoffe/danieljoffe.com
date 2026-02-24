@@ -102,6 +102,9 @@ export const validateFormData = async <T extends yup.AnyObject>(
 export const validateEmail = async (
   email: string
 ): Promise<ErrorResponse | null> => {
+  // Skip external email validation in development to avoid hitting API rate limits
+  if (serverEnv.NODE_ENV === 'development') return null;
+
   if (!serverEnv.VALIDKIT_API_KEY) {
     throw {
       error: {
@@ -176,29 +179,47 @@ export const sendEmail = async (
   }
 
   try {
-    await fetch(serverEnv.WEB3FORMS_API_URL ?? '', {
+    const formData = new FormData();
+    formData.append('from_name', data.name);
+    formData.append('from_email', data.email);
+    formData.append('message', data.message);
+    formData.append('subject', `📥 Web3Forms: New message from ${data.name}`);
+    formData.append('access_key', serverEnv.WEB3FORMS_ACCESS_KEY);
+
+    const res = await fetch(serverEnv.WEB3FORMS_API_URL ?? '', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from_name: data.name,
-        from_email: data.email,
-        message: data.message,
-        subject: `📥 Web3Forms: New message from ${data.name}`,
-        access_key: serverEnv.WEB3FORMS_ACCESS_KEY,
-      }),
+      // headers: {
+      //   'Content-Type': 'application/json',
+      // },
+      body: formData,
     });
+
+    if (!res.ok) {
+      const response = (await res
+        .json()
+        .catch(() => null)) as WebFormsResponse | null;
+      devLog('Web3Forms error response', { status: res.status, response });
+      throw {
+        error: {
+          path: 'root.serviceError',
+          message:
+            response?.body?.message ??
+            'Failed to send email. Please try again later.',
+        },
+        statusCode: res.status === 429 ? 429 : 500,
+      } as ErrorResponse;
+    }
 
     return null;
   } catch (e: unknown) {
-    const error = e as WebFormsResponse;
+    devLog('sendEmail error', e);
+    if ((e as ErrorResponse).statusCode) throw e;
     throw {
       error: {
         path: 'root.serviceError',
-        message: error.body.message,
+        message: 'Failed to send email. Please try again later.',
       },
-      statusCode: error.statusCode,
+      statusCode: 500,
     } as ErrorResponse;
   }
 };
@@ -276,6 +297,9 @@ export const requestFromSource = async (
 export const rateLimit = async (
   req: NextRequest
 ): Promise<ErrorResponse | null> => {
+  // Skip rate limiting in development to avoid blocking during testing
+  if (serverEnv.NODE_ENV === 'development') return null;
+
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip');
