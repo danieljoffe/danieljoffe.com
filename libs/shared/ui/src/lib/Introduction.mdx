@@ -1,0 +1,619 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title='Introduction' />
+
+<style>
+  {`
+    .intro-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 0 4rem;
+      font-family: var(--font-body);
+      color: var(--foreground);
+    }
+
+    .intro-title {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h1);
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      margin: 0 0 0.5rem !important;
+      color: var(--foreground);
+      font-variation-settings: 'opsz' 144, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .intro-tagline {
+      font-size: 1.125rem;
+      color: var(--foreground-muted);
+      margin: 0 0 3rem !important;
+      line-height: 1.6;
+    }
+
+    .intro-section-heading {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .intro-sub-heading {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .swatch {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .swatch-color {
+      height: 56px;
+    }
+
+    .swatch-label {
+      padding: 0.5rem 0.75rem;
+      background: var(--background-elevated);
+      border-top: 1px solid var(--border);
+    }
+
+    .swatch-name {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--foreground);
+      font-family: var(--font-body);
+    }
+
+    .swatch-value {
+      font-size: 0.6875rem;
+      color: var(--foreground-muted);
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    .type-scale {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      align-items: start;
+      gap: 1.5rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .type-meta {
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      color: var(--foreground-muted);
+      text-align: right;
+      padding-top: 0.2rem;
+      line-height: 1.5;
+    }
+
+    /* Reset ALL heading margins inside type rows */
+    .type-row h1,
+    .type-row h2,
+    .type-row h3,
+    .type-row h4,
+    .type-row h5,
+    .type-row h6 {
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      color: var(--foreground) !important;
+    }
+
+    .type-sample-p {
+      margin: 0;
+      padding: 0;
+      color: var(--foreground);
+      line-height: 1.6;
+    }
+
+    .radius-grid {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .radius-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .radius-box {
+      width: 64px;
+      height: 64px;
+      background: var(--accent-muted);
+      border: 2px solid var(--accent);
+    }
+
+    .radius-label {
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      color: var(--foreground-muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .font-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .font-item {
+      padding: 1rem 1.25rem;
+      background: var(--background-alt);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .font-item-name {
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      color: var(--foreground-muted);
+      margin-bottom: 0.375rem;
+    }
+
+    .font-item-sample {
+      font-size: 1.25rem;
+      color: var(--foreground);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .principles {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .principle {
+      padding: 1rem 1.25rem;
+      background: var(--background-alt);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+    }
+
+    .principle-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--foreground);
+      margin-bottom: 0.25rem;
+      font-family: var(--font-body);
+    }
+
+    .principle-body {
+      font-size: 0.875rem;
+      color: var(--foreground-muted);
+      margin: 0;
+      line-height: 1.6;
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="intro-wrap">
+
+<h1 className='intro-title'>danieljoffe/ui</h1>
+<p className='intro-tagline'>
+  A focused component library built for danieljoffe.com — dark-first,
+  accessibility-first, and opinionated about the details that matter.
+</p>
+
+<h2 className='intro-section-heading'>Colors — Brand & Neutral</h2>
+
+<div className='swatch-grid'>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--accent)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Accent</div>
+      <div className='swatch-value'>--accent</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--accent-hover)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Accent Hover</div>
+      <div className='swatch-value'>--accent-hover</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--accent-muted)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Accent Muted</div>
+      <div className='swatch-value'>--accent-muted</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{
+        background: 'var(--background)',
+        outline: '1px solid var(--border)',
+        outlineOffset: '-1px',
+      }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Background</div>
+      <div className='swatch-value'>--background</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--background-alt)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Background Alt</div>
+      <div className='swatch-value'>--background-alt</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{
+        background: 'var(--background-elevated)',
+        outline: '1px solid var(--border)',
+        outlineOffset: '-1px',
+      }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Elevated</div>
+      <div className='swatch-value'>--background-elevated</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--foreground)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Foreground</div>
+      <div className='swatch-value'>--foreground</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--foreground-muted)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Foreground Muted</div>
+      <div className='swatch-value'>--foreground-muted</div>
+    </div>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Colors — Status</h2>
+
+<div className='swatch-grid'>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--success)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Success</div>
+      <div className='swatch-value'>--success</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--success-muted)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Success Muted</div>
+      <div className='swatch-value'>--success-muted</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--warning)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Warning</div>
+      <div className='swatch-value'>--warning</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--warning-muted)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Warning Muted</div>
+      <div className='swatch-value'>--warning-muted</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--error)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Error</div>
+      <div className='swatch-value'>--error</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--error-muted)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Error Muted</div>
+      <div className='swatch-value'>--error-muted</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--info)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Info</div>
+      <div className='swatch-value'>--info</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--info-muted)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Info Muted</div>
+      <div className='swatch-value'>--info-muted</div>
+    </div>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Typography</h2>
+
+<h3 className='intro-sub-heading'>Typefaces</h3>
+
+<div className='font-stack'>
+  <div className='font-item'>
+    <div className='font-item-name'>--font-heading · Fraunces</div>
+    <p
+      className='font-item-sample'
+      style={{
+        fontFamily: 'var(--font-heading)',
+        fontVariationSettings: "'opsz' 72, 'WONK' 1",
+      }}
+    >
+      The quick brown fox jumps over the lazy dog
+    </p>
+  </div>
+  <div className='font-item'>
+    <div className='font-item-name'>--font-body · Inter</div>
+    <p className='font-item-sample' style={{ fontFamily: 'var(--font-body)' }}>
+      The quick brown fox jumps over the lazy dog
+    </p>
+  </div>
+  <div className='font-item'>
+    <div className='font-item-name'>--font-mono · IBM Plex Mono</div>
+    <p
+      className='font-item-sample'
+      style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem' }}
+    >
+      const value = tokens['--accent'];
+    </p>
+  </div>
+</div>
+
+<h3 className='intro-sub-heading'>Type Scale</h3>
+
+<div className='type-scale'>
+  <div className='type-row'>
+    <div className='type-meta'>
+      h1
+      <br />
+      clamp(2–2.441rem)
+    </div>
+    <h1>Heading One</h1>
+  </div>
+  <div className='type-row'>
+    <div className='type-meta'>
+      h2
+      <br />
+      1.953rem
+    </div>
+    <h2>Heading Two</h2>
+  </div>
+  <div className='type-row'>
+    <div className='type-meta'>
+      h3
+      <br />
+      1.563rem
+    </div>
+    <h3>Heading Three</h3>
+  </div>
+  <div className='type-row'>
+    <div className='type-meta'>
+      h4
+      <br />
+      1.25rem
+    </div>
+    <h4>Heading Four</h4>
+  </div>
+  <div className='type-row'>
+    <div className='type-meta'>
+      body
+      <br />
+      1rem
+    </div>
+    <p
+      className='type-sample-p'
+      style={{ fontFamily: 'var(--font-body)', fontSize: '1rem' }}
+    >
+      Body text — Inter 300. Used for paragraphs, descriptions, and general UI
+      copy.
+    </p>
+  </div>
+  <div className='type-row'>
+    <div className='type-meta'>
+      small
+      <br />
+      0.875rem
+    </div>
+    <p
+      className='type-sample-p'
+      style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: '0.875rem',
+        color: 'var(--foreground-muted)',
+      }}
+    >
+      Small / muted. Used for helper text, captions, metadata.
+    </p>
+  </div>
+  <div className='type-row'>
+    <div className='type-meta'>
+      code
+      <br />
+      0.9375rem
+    </div>
+    <code>const accent = '#0d7377'</code>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Border Radius</h2>
+
+<div className='radius-grid'>
+  <div className='radius-item'>
+    <div className='radius-box' style={{ borderRadius: 0 }} />
+    <div className='radius-label'>
+      none
+      <br />
+      0px
+    </div>
+  </div>
+  <div className='radius-item'>
+    <div className='radius-box' style={{ borderRadius: 'var(--radius-sm)' }} />
+    <div className='radius-label'>
+      sm
+      <br />
+      --radius-sm
+    </div>
+  </div>
+  <div className='radius-item'>
+    <div className='radius-box' style={{ borderRadius: 'var(--radius-md)' }} />
+    <div className='radius-label'>
+      md (base)
+      <br />
+      --radius-md
+    </div>
+  </div>
+  <div className='radius-item'>
+    <div className='radius-box' style={{ borderRadius: 'var(--radius-lg)' }} />
+    <div className='radius-label'>
+      lg
+      <br />
+      --radius-lg
+    </div>
+  </div>
+  <div className='radius-item'>
+    <div className='radius-box' style={{ borderRadius: 'var(--radius-xl)' }} />
+    <div className='radius-label'>
+      xl
+      <br />
+      --radius-xl
+    </div>
+  </div>
+  <div className='radius-item'>
+    <div className='radius-box' style={{ borderRadius: '9999px' }} />
+    <div className='radius-label'>
+      full
+      <br />
+      9999px
+    </div>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Borders</h2>
+
+<div className='swatch-grid'>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--border)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Border</div>
+      <div className='swatch-value'>--border</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--border-strong)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Border Strong</div>
+      <div className='swatch-value'>--border-strong</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div className='swatch-color' style={{ background: 'var(--ring)' }} />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Focus Ring</div>
+      <div className='swatch-value'>--ring</div>
+    </div>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Principles</h2>
+
+<div className='principles'>
+  <div className='principle'>
+    <div className='principle-title'>Dark-first</div>
+    <p className='principle-body'>
+      All components are designed in dark mode first, then verified in light.
+      Toggle the background in the toolbar above to switch contexts.
+    </p>
+  </div>
+  <div className='principle'>
+    <div className='principle-title'>Token-bound</div>
+    <p className='principle-body'>
+      Every color, radius, and font references a CSS variable. Nothing is
+      hardcoded. The entire system can be re-themed by swapping tokens.
+    </p>
+  </div>
+  <div className='principle'>
+    <div className='principle-title'>Accessible by default</div>
+    <p className='principle-body'>
+      Every interactive component includes keyboard interaction stories and ARIA
+      role stories. WCAG AA contrast is the minimum bar.
+    </p>
+  </div>
+  <div className='principle'>
+    <div className='principle-title'>Composable, not prescriptive</div>
+    <p className='principle-body'>
+      Components expose <code>className</code> for extension and don't assume
+      layout context. Bring your own wrapper.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>
