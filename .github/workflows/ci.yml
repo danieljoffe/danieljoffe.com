@@ -59,7 +59,7 @@ jobs:
 
       - name: Regenerate VR snapshots
         working-directory: apps/root-e2e
-        run: npx playwright test src/visual-regression.spec.ts --update-snapshots
+        run: npx playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium
 
       - name: Upload VR baselines
         uses: actions/upload-artifact@v4
