@@ -52,14 +52,14 @@ jobs:
           run-e2e: 'false'
 
       - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium
+        run: yarn playwright install --with-deps chromium firefox webkit
 
       - name: Build app for snapshot generation
         run: yarn nx build root
 
       - name: Regenerate VR snapshots
         working-directory: apps/root-e2e
-        run: npx playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium
+        run: npx playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium --project=firefox --project=webkit
 
       - name: Upload VR baselines
         uses: actions/upload-artifact@v4
