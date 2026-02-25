@@ -16,7 +16,7 @@ export default function PreviousTeamsGrid() {
       cols={0}
       className='grid-cols-2 sm:grid-cols-3 md:grid-cols-5'
     >
-      {companies.map((company, index) => (
+      {companies.map(company => (
         <li
           className='flex flex-1 justify-center opacity-70 hover:opacity-100 transition-opacity'
           key={company.slug}
@@ -49,9 +49,6 @@ export default function PreviousTeamsGrid() {
                 sizes='(max-width: 640px) 5rem, (max-width: 768px) 6rem, 7rem'
                 unoptimized={true}
                 decoding='async'
-                fetchPriority={index < 2 ? 'high' : 'low'}
-                priority={index < 2}
-                loading={index < 2 ? 'eager' : 'lazy'}
               />
             </Stack>
           </Button>
