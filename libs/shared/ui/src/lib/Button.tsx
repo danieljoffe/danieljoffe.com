@@ -1,4 +1,10 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import {
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type ElementType,
+  type ReactNode,
+} from 'react';
+import { Spinner } from './Spinner';
 import { cn } from './utils';
 
 export type ButtonVariant =
@@ -23,7 +29,13 @@ export interface ButtonBase {
 export interface ButtonProps
   extends
     ButtonBase,
-    Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {}
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  loading?: boolean;
+  as?: ElementType;
+  href?: string;
+  target?: string;
+  rel?: string;
+}
 
 export const baseButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition',
@@ -75,13 +87,28 @@ export const sizeButtonStyles: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
 };
 
+const spinnerSizeStyles: Record<ButtonSize, string> = {
+  sm: 'size-3.5',
+  md: 'size-4',
+  lg: 'size-5',
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { variant = 'primary', size = 'md', children, className, ...props },
+    {
+      variant = 'primary',
+      size = 'md',
+      loading = false,
+      as: Component = 'button',
+      children,
+      className,
+      disabled,
+      ...props
+    },
     ref
   ) => {
     return (
-      <button
+      <Component
         ref={ref}
         className={cn(
           baseButtonStyles,
@@ -89,10 +116,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           sizeButtonStyles[size],
           className
         )}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
         {...props}
       >
+        {loading && (
+          <Spinner
+            size='sm'
+            className={cn(
+              'border-current/30 border-t-current',
+              spinnerSizeStyles[size]
+            )}
+            aria-hidden='true'
+          />
+        )}
         {children}
-      </button>
+      </Component>
     );
   }
 );

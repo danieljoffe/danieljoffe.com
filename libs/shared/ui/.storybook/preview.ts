@@ -21,6 +21,7 @@ const preview: Preview = {
   decorators: [withThemeClass],
 
   parameters: {
+    layout: 'fullscreen',
     backgrounds: {
       options: {
         dark: { name: 'Dark', value: '#1c1917' },

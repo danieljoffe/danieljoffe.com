@@ -3,7 +3,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from './Button';
 
 const meta = {
-  title: 'Components/Button',
+  title: 'Forms/Button',
   component: Button,
   tags: ['autodocs'],
   args: {
@@ -36,6 +36,13 @@ const meta = {
       options: [undefined, 'sm', 'md', 'lg'],
       table: {
         defaultValue: { summary: 'md' },
+      },
+    },
+    loading: {
+      description: 'Shows a spinner and disables the button',
+      control: 'boolean',
+      table: {
+        defaultValue: { summary: 'false' },
       },
     },
     disabled: {
@@ -142,6 +149,40 @@ export const Disabled: Story = {
   args: {
     children: 'Disabled',
     disabled: true,
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    children: 'Submitting…',
+    loading: true,
+  },
+};
+
+export const LoadingSmall: Story = {
+  args: {
+    children: 'Saving',
+    loading: true,
+    size: 'sm',
+  },
+};
+
+export const LoadingLarge: Story = {
+  args: {
+    children: 'Processing',
+    loading: true,
+    size: 'lg',
+  },
+};
+
+export const AsLink: Story = {
+  args: {
+    as: 'a',
+    href: 'https://danieljoffe.com',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+    children: 'Visit Site',
+    variant: 'primary',
   },
 };
 

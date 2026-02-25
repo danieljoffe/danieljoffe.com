@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Loading } from './Loading';
 
 const meta = {
-  title: 'Components/Loading',
+  title: 'Feedback/Loading',
   component: Loading,
   tags: ['autodocs'],
   argTypes: {
