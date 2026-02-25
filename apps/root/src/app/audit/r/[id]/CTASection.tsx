@@ -1,6 +1,5 @@
 import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
-import Button from '@/components/Button';
-import { CALENDLY_URL } from '@/utils/constants';
+import CalendlyButton from './CalendlyButton';
 
 export default function CTASection() {
   return (
@@ -18,9 +17,7 @@ export default function CTASection() {
             I help teams ship faster, more accessible websites. Let&apos;s talk
             about what&apos;s slowing yours down.
           </p>
-          <Button as='link' href={CALENDLY_URL} variant='primary' size='lg'>
-            Book a free discovery call
-          </Button>
+          <CalendlyButton />
         </Stack>
       </PageContainer>
     </Section>

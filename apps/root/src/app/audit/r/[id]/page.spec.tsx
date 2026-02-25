@@ -95,6 +95,13 @@ jest.mock('./CTASection', () => ({
   },
 }));
 
+jest.mock('./ReportAnalytics', () => ({
+  __esModule: true,
+  default: function ReportAnalytics() {
+    return null;
+  },
+}));
+
 // We need to test the page component by calling it as a function (async server component)
 import ReportPage from './page';
 

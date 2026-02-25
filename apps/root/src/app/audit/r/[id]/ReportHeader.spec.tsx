@@ -3,6 +3,7 @@ import ReportHeader from './ReportHeader';
 
 describe('ReportHeader', () => {
   const defaultProps = {
+    scanId: '123e4567-e89b-12d3-a456-426614174000',
     url: 'https://example.com',
     pageTitle: 'Example Site',
     screenshotUrl: null,

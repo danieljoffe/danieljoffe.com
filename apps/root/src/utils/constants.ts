@@ -108,6 +108,7 @@ export const EXPERIENCE_LINK: NavLink = {
   href: '/experience',
   label: 'Experience',
 };
+export const AUDIT_LINK: NavLink = { href: '/audit', label: 'Free Audit' };
 
 export const NAV_LINKS: NavLink[] = [
   HOME_LINK,

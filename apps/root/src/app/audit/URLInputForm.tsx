@@ -9,6 +9,7 @@ import {
   Spinner,
   Stack,
 } from '@danieljoffe.com/shared-ui';
+import { analytics } from '@/lib/analytics';
 import ScanProgress from './ScanProgress';
 
 type ScanState =
@@ -120,19 +121,16 @@ export default function URLInputForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 429) {
-          setState({
-            phase: 'error',
-            message: 'Too many scans. Please try again in an hour.',
-          });
-        } else {
-          setState({
-            phase: 'error',
-            message: data.error || 'Something went wrong. Please try again.',
-          });
-        }
+        const message =
+          res.status === 429
+            ? 'Too many scans. Please try again in an hour.'
+            : data.error || 'Something went wrong. Please try again.';
+        analytics.auditScanFailed(trimmed, message);
+        setState({ phase: 'error', message });
         return;
       }
+
+      analytics.auditScanStarted(trimmed);
 
       // Cached scan — redirect immediately
       if (data.cached) {
@@ -143,7 +141,9 @@ export default function URLInputForm() {
       // Start polling
       setState({ phase: 'polling', scanId: data.scan_id, url: trimmed });
     } catch {
-      setState({ phase: 'error', message: 'Network error. Please try again.' });
+      const message = 'Network error. Please try again.';
+      analytics.auditScanFailed(trimmed, message);
+      setState({ phase: 'error', message });
     }
   };
 
