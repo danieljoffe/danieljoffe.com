@@ -3,8 +3,9 @@ import {
   FormFieldSchema,
   RawFormData,
   ValidKitErrorResponse,
-  WebFormsResponse,
 } from './schema';
+import { createResendClient, EMAIL_FROM, EMAIL_TO } from '@/lib/email/resend';
+import ContactNotification from '@/components/emails/ContactNotification';
 import * as yup from 'yup';
 import { ValidationError } from 'yup';
 import { serverEnv } from '@/lib/env';
@@ -144,31 +145,21 @@ export const validateEmail = async (
 };
 
 /**
- * Sends contact form email using Web3Forms service
+ * Sends contact form notification email via Resend
  *
- * Formats and sends the contact form data as an email notification.
- * Includes sender information, message content, and proper subject line.
+ * Delivers a notification to the site owner with the sender's details
+ * and message. Uses reply-to so responding goes directly to the sender.
  *
  * @param data - Validated form data containing name, email, and message
  * @returns Promise that resolves to null on success
  * @throws {ErrorResponse} When email service is unavailable or fails
- *
- * @example
- * ```typescript
- * const formData = {
- *   name: "John Doe",
- *   email: "john@example.com",
- *   message: "Hello world",
- *   hcaptcha: "token"
- * };
- * await sendEmail(formData);
- * ```
  */
 export const sendEmail = async (
   data: FormFieldSchema
 ): Promise<ErrorResponse | null> => {
-  if (!serverEnv.WEB3FORMS_ACCESS_KEY) {
-    devLog('WEB3FORMS_ACCESS_KEY is not configured. Cannot send email.');
+  const resend = createResendClient();
+  if (!resend) {
+    devLog('RESEND_API_KEY is not configured. Cannot send email.');
     throw {
       error: {
         path: 'root.configurationError',
@@ -179,34 +170,26 @@ export const sendEmail = async (
   }
 
   try {
-    const formData = new FormData();
-    formData.append('from_name', data.name);
-    formData.append('from_email', data.email);
-    formData.append('message', data.message);
-    formData.append('subject', `📥 Web3Forms: New message from ${data.name}`);
-    formData.append('access_key', serverEnv.WEB3FORMS_ACCESS_KEY);
-
-    const res = await fetch(serverEnv.WEB3FORMS_API_URL ?? '', {
-      method: 'POST',
-      // headers: {
-      //   'Content-Type': 'application/json',
-      // },
-      body: formData,
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: EMAIL_TO,
+      replyTo: data.email,
+      subject: `New message from ${data.name}`,
+      react: ContactNotification({
+        name: data.name,
+        email: data.email,
+        message: data.message,
+      }),
     });
 
-    if (!res.ok) {
-      const response = (await res
-        .json()
-        .catch(() => null)) as WebFormsResponse | null;
-      devLog('Web3Forms error response', { status: res.status, response });
+    if (error) {
+      devLog('Resend error', error);
       throw {
         error: {
           path: 'root.serviceError',
-          message:
-            response?.body?.message ??
-            'Failed to send email. Please try again later.',
+          message: 'Failed to send email. Please try again later.',
         },
-        statusCode: res.status === 429 ? 429 : 500,
+        statusCode: 500,
       } as ErrorResponse;
     }
 

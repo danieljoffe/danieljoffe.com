@@ -8,3 +8,4 @@ export function createResendClient(): Resend | null {
 }
 
 export const EMAIL_FROM = 'Daniel Joffe <noreply@danieljoffe.com>';
+export const EMAIL_TO = 'hello@danieljoffe.com';
