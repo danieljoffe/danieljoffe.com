@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ErrorResponse, formSchema, WebFormsResponse } from './schema';
+import { ErrorResponse, formSchema, SuccessResponse } from './schema';
 import {
   requestFromSource,
   sendEmail,
@@ -14,47 +14,16 @@ import { captureApiError } from '@/lib/errorTracking';
  * Contact Form API Endpoint
  *
  * Handles contact form submissions with comprehensive validation, rate limiting,
- * and email delivery. This endpoint processes form data from the contact page
- * and sends emails via Web3Forms service.
+ * and email delivery via Resend.
  *
  * @param request - The incoming HTTP request containing form data
  * @returns Promise resolving to NextResponse with success or error data
- *
- * @example
- * ```typescript
- * // Request body structure
- * {
- *   name: "John Doe",
- *   email: "john@example.com",
- *   message: "Hello, I'd like to get in touch...",
- *   hcaptcha: "hcaptcha_token_here"
- * }
- *
- * // Success response
- * {
- *   statusCode: 200,
- *   success: true,
- *   body: {
- *     data: {},
- *     message: "Email sent successfully"
- *   }
- * }
- *
- * // Error response (400 for validation, 403 for forbidden, 429 for rate limit, 500 for server errors)
- * {
- *   error: {
- *     path: "email",
- *     message: "Invalid email address"
- *   },
- *   statusCode: 400
- * }
- * ```
  *
  * @throws {ErrorResponse} When validation fails, rate limit exceeded, or service errors occur
  */
 export async function POST(
   request: NextRequest
-): Promise<NextResponse<ErrorResponse | WebFormsResponse>> {
+): Promise<NextResponse<ErrorResponse | SuccessResponse>> {
   const data = await request.json();
 
   try {
@@ -64,27 +33,21 @@ export async function POST(
     await validateEmail(data.email);
     await sendEmail(data);
 
-    const successResponse = {
+    const successResponse: SuccessResponse = {
       statusCode: 200,
       success: true,
-      body: {
-        data: {},
-        message: 'Email sent successfully',
-      },
-    } as WebFormsResponse;
+      message: 'Email sent successfully',
+    };
 
-    return NextResponse.json(successResponse, {
-      status: successResponse.statusCode,
-    });
+    return NextResponse.json(successResponse, { status: 200 });
   } catch (e: unknown) {
     const error = e as ErrorResponse;
 
-    // Capture API errors in Sentry for monitoring
     captureApiError(
       e instanceof Error
         ? e
         : new Error(error.error?.message || 'Unknown API error'),
-      '/api/email',
+      '/api/email/contact',
       'POST',
       error.statusCode,
       {

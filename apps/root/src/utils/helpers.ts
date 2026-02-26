@@ -1,6 +1,5 @@
 import { publicEnv } from '@/lib/public.env';
 import { RESUME_URL } from './constants';
-import { serverEnv } from '@/lib/env';
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -8,9 +7,10 @@ import { serverEnv } from '@/lib/env';
 
 export function devLog(message: string, ...args: unknown[]) {
   if (process.env.NODE_ENV !== 'development') return;
-  console.log(
-    `%c${new Date().toISOString()} > ${message}`,
-    'background-color: darkorange; color: black; font-weight: 600; padding: 5px;',
+
+  const timestamp = new Date().toLocaleTimeString();
+  console.debug(
+    `\x1b[90m[${timestamp}]\x1b[0m \x1b[36mDEBUG\x1b[0m ${message}`,
     ...args
   );
 }
@@ -20,7 +20,6 @@ export function devLog(message: string, ...args: unknown[]) {
 // ============================================================================
 
 function validatePublicEnv() {
-  // Only validate in development to catch misconfigurations early
   if (process.env.NODE_ENV !== 'development') return;
 
   Object.entries(publicEnv).forEach(([key, value]) => {
@@ -34,8 +33,10 @@ function validatePublicEnv() {
 function validateEnv() {
   // Server env vars are only available on the server
   if (typeof window !== 'undefined') return;
-  // Only validate in development to catch misconfigurations early
   if (process.env.NODE_ENV !== 'development') return;
+
+  // Lazy import to avoid pulling server-only env into the client bundle
+  const { serverEnv } = require('@/lib/env') as typeof import('@/lib/env');
 
   Object.entries(serverEnv).forEach(([key, value]) => {
     if (value == null) {

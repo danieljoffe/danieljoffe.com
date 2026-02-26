@@ -152,7 +152,7 @@ export async function completeHCaptcha(page: Page): Promise<void> {
 
 // Helper function to mock API email endpoint for success
 export async function mockEmailAPISuccess(page: Page): Promise<void> {
-  await page.route('**/api/email', async (route: Route) => {
+  await page.route('**/api/email/contact', async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -167,7 +167,7 @@ export async function mockEmailAPISuccess(page: Page): Promise<void> {
 
 // Helper function to mock API email endpoint for error
 export async function mockEmailAPIError(page: Page): Promise<void> {
-  await page.route('**/api/email', async (route: Route) => {
+  await page.route('**/api/email/contact', async (route: Route) => {
     await route.fulfill({
       status: 500,
       contentType: 'application/json',

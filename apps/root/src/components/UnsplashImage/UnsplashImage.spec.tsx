@@ -11,6 +11,7 @@ jest.mock('next/image', () => {
     priority?: boolean;
     fetchPriority?: 'high' | 'low';
     decoding?: 'sync' | 'async' | 'auto';
+    quality?: number;
     loader?: (params: {
       src: string;
       width: number;
@@ -33,6 +34,7 @@ jest.mock('next/image', () => {
         priority,
         fetchPriority,
         decoding,
+        quality,
         loader,
         sizes,
         placeholder,
@@ -49,6 +51,7 @@ jest.mock('next/image', () => {
         finalSrc = loader({
           src: src as string,
           width: width as number,
+          quality: props.quality as number,
         });
       }
 
@@ -207,7 +210,8 @@ describe('UnsplashImage', () => {
       const src = image.getAttribute('src');
       expect(src).toContain('w=800');
       expect(src).toContain('h=500');
-      expect(src).toContain('q=75'); // Default quality is 75 for better compression
+      // q is omitted — auto=compress handles quality (perceptual q=45)
+      expect(src).not.toContain('q=');
       expect(src).toContain('auto=format%2Ccompress');
       expect(src).toContain('fit=crop');
       expect(src).toContain('crop=faces%2Cfocalpoint');
@@ -225,6 +229,22 @@ describe('UnsplashImage', () => {
       const src = image.getAttribute('src');
       expect(src).toContain('w=400');
       expect(src).toContain('h=225');
+    });
+
+    it('should add q param when quality is below 45', () => {
+      render(<UnsplashImage {...mockProps} quality={35} />);
+
+      const image = screen.getByRole('img');
+      const src = image.getAttribute('src');
+      expect(src).toContain('q=35');
+    });
+
+    it('should not add q param when quality is 45 or above', () => {
+      render(<UnsplashImage {...mockProps} quality={75} />);
+
+      const image = screen.getByRole('img');
+      const src = image.getAttribute('src');
+      expect(src).not.toContain('q=');
     });
 
     it('should use 9:16 aspect ratio when no height specified', () => {

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { VALID_FORM_DATA, INVALID_FORM_DATA } from './fixtures/test-data';
 
-const API_URL = '/api/email';
+const API_URL = '/api/email/contact';
 
 // Each test invocation gets a globally unique IP to avoid rate limit
 // interference when multiple browser projects (chromium, firefox, webkit,

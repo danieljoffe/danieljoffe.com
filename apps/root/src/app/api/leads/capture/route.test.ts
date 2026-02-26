@@ -7,6 +7,8 @@ import { POST } from './route';
 interface SelectChain {
   eq: jest.Mock;
   single: jest.Mock;
+  order: jest.Mock;
+  limit: jest.Mock;
 }
 
 interface InsertChain {
@@ -25,6 +27,8 @@ const mockSelectChain = jest.fn(
   (): SelectChain => ({
     eq: jest.fn().mockReturnThis(),
     single: mockSingle,
+    order: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
   })
 );
 const mockInsertChain = jest.fn(
@@ -45,18 +49,30 @@ jest.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: () => ({ from: mockFrom }),
 }));
 
-// Mock Resend
+// Mock Resend via the new resend module
 const mockSend = jest.fn();
-jest.mock('resend', () => ({
-  Resend: jest.fn().mockImplementation(() => ({
-    emails: {
-      send: (...args: unknown[]) => mockSend(...args),
-    },
+jest.mock('@/lib/email/resend', () => ({
+  createResendClient: jest.fn(() => ({
+    emails: { send: (...args: unknown[]) => mockSend(...args) },
   })),
+  EMAIL_FROM: 'Daniel Joffe <noreply@danieljoffe.com>',
+}));
+
+jest.mock('@/lib/email/tokens', () => ({
+  buildUnsubscribeUrl: jest.fn(
+    (id: string) =>
+      `https://danieljoffe.com/api/email/unsubscribe?lead_id=${id}&token=test`
+  ),
 }));
 
 jest.mock('@/lib/errorTracking', () => ({
   captureApiError: jest.fn(),
+}));
+
+// Mock the email template to avoid JSX rendering in tests
+jest.mock('@/components/emails/FullReport', () => ({
+  __esModule: true,
+  default: jest.fn(() => '<FullReportEmail />'),
 }));
 
 function createRequest(body: Record<string, unknown>) {
@@ -72,6 +88,7 @@ describe('POST /api/leads/capture', () => {
     jest.clearAllMocks();
     process.env['NEXT_PUBLIC_SITE_URL'] = 'https://danieljoffe.com';
     process.env['RESEND_API_KEY'] = 'test-resend-key';
+    process.env['UNSUBSCRIBE_SECRET'] = 'test-secret';
   });
 
   it('returns 400 for missing email', async () => {
@@ -105,9 +122,26 @@ describe('POST /api/leads/capture', () => {
     const scanLookupChain: SelectChain = {
       eq: jest.fn().mockReturnThis(),
       single: jest.fn().mockResolvedValue({
-        data: { url: 'https://example.com' },
+        data: {
+          url: 'https://example.com',
+          grade_overall: 'C',
+          score_performance: 60,
+          score_accessibility: 70,
+          score_seo: 80,
+          score_best_practices: 65,
+        },
         error: null,
       }),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+    };
+
+    // Issues lookup chain (returns after scan query)
+    const issuesChain: SelectChain = {
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: [], error: null }),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockResolvedValue({ data: [], error: null }),
     };
 
     const dupCheckChain: SelectChain = {
@@ -116,11 +150,16 @@ describe('POST /api/leads/capture', () => {
         data: { id: 'existing-lead-id' },
         error: null,
       }),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
     };
 
     mockFrom
       .mockReturnValueOnce({
         select: jest.fn(() => scanLookupChain),
+      } as TableMock)
+      .mockReturnValueOnce({
+        select: jest.fn(() => issuesChain),
       } as TableMock)
       .mockReturnValueOnce({
         select: jest.fn(() => dupCheckChain),
@@ -134,13 +173,38 @@ describe('POST /api/leads/capture', () => {
     expect(json.lead_id).toBe('existing-lead-id');
   });
 
-  it('captures lead and sends email', async () => {
+  it('captures lead and sends email with react template', async () => {
     const scanId = '550e8400-e29b-41d4-a716-446655440000';
 
     const scanLookupChain: SelectChain = {
       eq: jest.fn().mockReturnThis(),
       single: jest.fn().mockResolvedValue({
-        data: { url: 'https://example.com' },
+        data: {
+          url: 'https://example.com',
+          grade_overall: 'C',
+          score_performance: 60,
+          score_accessibility: 70,
+          score_seo: 80,
+          score_best_practices: 65,
+        },
+        error: null,
+      }),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+    };
+
+    const issuesChain: SelectChain = {
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: [], error: null }),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockResolvedValue({
+        data: [
+          {
+            title: 'Images not compressed',
+            severity: 'warning',
+            category: 'performance',
+          },
+        ],
         error: null,
       }),
     };
@@ -151,6 +215,8 @@ describe('POST /api/leads/capture', () => {
         data: null,
         error: { code: 'PGRST116' },
       }),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
     };
 
     const insertChain: InsertChain = {
@@ -169,6 +235,9 @@ describe('POST /api/leads/capture', () => {
     mockFrom
       .mockReturnValueOnce({
         select: jest.fn(() => scanLookupChain),
+      } as TableMock)
+      .mockReturnValueOnce({
+        select: jest.fn(() => issuesChain),
       } as TableMock)
       .mockReturnValueOnce({
         select: jest.fn(() => dupCheckChain),
@@ -195,7 +264,12 @@ describe('POST /api/leads/capture', () => {
     const json = await res.json();
     expect(json.status).toBe('captured');
     expect(json.lead_id).toBe('new-lead-id');
-    expect(mockSend).toHaveBeenCalled();
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'user@example.com',
+        react: expect.anything(),
+      })
+    );
   });
 
   it('captures lead even when email send fails', async () => {

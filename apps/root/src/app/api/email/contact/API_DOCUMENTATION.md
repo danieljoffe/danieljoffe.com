@@ -22,7 +22,7 @@ No authentication is required for public API endpoints. All endpoints implement 
 
 ## Endpoints
 
-### POST /api/email
+### POST /api/email/contact
 
 **Contact Form Submission**
 
@@ -124,7 +124,7 @@ Referer: https://danieljoffe.com/about (required)
 **JavaScript/Fetch:**
 
 ```javascript
-const response = await fetch('/api/email', {
+const response = await fetch('/api/email/contact', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ if (result.success) {
 **cURL:**
 
 ```bash
-curl -X POST https://danieljoffe.com/api/email \
+curl -X POST https://danieljoffe.com/api/email/contact \
   -H "Content-Type: application/json" \
   -H "Referer: https://danieljoffe.com/about" \
   -d '{
@@ -227,7 +227,7 @@ To test rate limiting, make multiple requests quickly:
 ```javascript
 // This should trigger rate limiting after 5 requests
 for (let i = 0; i < 10; i++) {
-  fetch('/api/email', {
+  fetch('/api/email/contact', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
