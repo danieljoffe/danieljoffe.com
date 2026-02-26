@@ -3,8 +3,10 @@ import { ArrowLeft } from 'lucide-react';
 import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import ExpandableScreenshot from './ExpandableScreenshot';
+import ShareButton from './ShareButton';
 
 interface ReportHeaderProps {
+  scanId: string;
   url: string;
   pageTitle: string | null;
   screenshotUrl: string | null;
@@ -22,6 +24,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function ReportHeader({
+  scanId,
   url,
   pageTitle,
   screenshotUrl,
@@ -37,13 +40,16 @@ export default function ReportHeader({
       background='alt'
     >
       <PageContainer className='py-12 md:py-16'>
-        <Link
-          href='/audit'
-          className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
-        >
-          <ArrowLeft className='size-4' aria-hidden='true' />
-          New audit
-        </Link>
+        <div className='flex items-center justify-between'>
+          <Link
+            href='/audit'
+            className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
+          >
+            <ArrowLeft className='size-4' aria-hidden='true' />
+            New audit
+          </Link>
+          <ShareButton scanId={scanId} />
+        </div>
 
         <div className='mt-6 flex flex-col gap-6 md:flex-row md:items-start'>
           {/* Mobile: image centered; Tablet+: flush left */}

@@ -10,6 +10,7 @@ import {
   Stack,
 } from '@danieljoffe.com/shared-ui';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
+import { analytics } from '@/lib/analytics';
 import IssueCard from './IssueCard';
 
 interface EmailGateProps {
@@ -76,6 +77,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
       }
 
       // Both 'captured' and 'already_captured' unlock the gate
+      analytics.auditEmailCaptured(scanId);
       setState({ phase: 'unlocked' });
     } catch {
       setState({

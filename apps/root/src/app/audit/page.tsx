@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import MainContent from '@/components/MainContent';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { auditFaqStructuredData } from '@/data/structuredData/audit';
 import ScanHero from './ScanHero';
 import HowItWorks from './HowItWorks';
 
@@ -34,6 +35,15 @@ export default async function AuditPage() {
 
   return (
     <MainContent>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(auditFaqStructuredData).replace(
+            /</g,
+            '\\u003c'
+          ),
+        }}
+      />
       <ScanHero scanCount={scanCount} />
       <HowItWorks />
     </MainContent>

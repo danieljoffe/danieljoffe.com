@@ -36,4 +36,16 @@ export const analytics = {
   // Theme events
   themeToggle: (theme: 'light' | 'dark') =>
     trackEvent('theme_toggle', { theme }),
+
+  // Audit events
+  auditScanStarted: (url: string) => trackEvent('audit_scan_started', { url }),
+  auditScanCompleted: (scanId: string, grade: string) =>
+    trackEvent('audit_scan_completed', { scan_id: scanId, grade }),
+  auditScanFailed: (url: string, error: string) =>
+    trackEvent('audit_scan_failed', { url, error_message: error }),
+  auditEmailCaptured: (scanId: string) =>
+    trackEvent('audit_email_captured', { scan_id: scanId }),
+  auditCalendlyClicked: () => trackEvent('audit_calendly_clicked'),
+  auditReportShared: (scanId: string) =>
+    trackEvent('audit_report_shared', { scan_id: scanId }),
 };

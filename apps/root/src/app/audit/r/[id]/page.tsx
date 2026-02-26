@@ -13,6 +13,7 @@ import ScoreCards from './ScoreCards';
 import CoreWebVitals from './CoreWebVitals';
 import IssueList from './IssueList';
 import CTASection from './CTASection';
+import ReportAnalytics from './ReportAnalytics';
 
 interface ReportPageProps {
   params: Promise<{ id: string }>;
@@ -121,6 +122,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
   return (
     <MainContent>
       <ReportHeader
+        scanId={scan.id}
         url={scan.url}
         pageTitle={scan.page_title}
         screenshotUrl={scan.page_screenshot_url}
@@ -142,6 +144,9 @@ export default async function ReportPage({ params }: ReportPageProps) {
       />
       <IssueList issues={issues} scanId={scan.id} />
       <CTASection />
+      {scan.grade_overall && (
+        <ReportAnalytics scanId={scan.id} grade={scan.grade_overall} />
+      )}
     </MainContent>
   );
 }
