@@ -83,4 +83,59 @@ describe('analytics', () => {
       theme: 'dark',
     });
   });
+
+  // Audit events
+  it('tracks audit scan started events', () => {
+    analytics.auditScanStarted('https://example.com');
+    expect(mockedSendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'audit_scan_started',
+      { url: 'https://example.com' }
+    );
+  });
+
+  it('tracks audit scan completed events', () => {
+    analytics.auditScanCompleted('scan-123', 'B');
+    expect(mockedSendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'audit_scan_completed',
+      { scan_id: 'scan-123', grade: 'B' }
+    );
+  });
+
+  it('tracks audit scan failed events', () => {
+    analytics.auditScanFailed('https://example.com', 'Timeout');
+    expect(mockedSendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'audit_scan_failed',
+      { url: 'https://example.com', error_message: 'Timeout' }
+    );
+  });
+
+  it('tracks audit email captured events', () => {
+    analytics.auditEmailCaptured('scan-456');
+    expect(mockedSendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'audit_email_captured',
+      { scan_id: 'scan-456' }
+    );
+  });
+
+  it('tracks audit calendly clicked events', () => {
+    analytics.auditCalendlyClicked();
+    expect(mockedSendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'audit_calendly_clicked',
+      {}
+    );
+  });
+
+  it('tracks audit report shared events', () => {
+    analytics.auditReportShared('scan-789');
+    expect(mockedSendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'audit_report_shared',
+      { scan_id: 'scan-789' }
+    );
+  });
 });
