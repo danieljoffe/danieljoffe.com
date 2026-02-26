@@ -8,6 +8,9 @@ inputs:
   github-token:
     description: GitHub token for Lighthouse CI status checks
     default: ''
+  chromatic-project-token:
+    description: Chromatic project token for visual regression testing
+    default: ''
 
 runs:
   using: composite
@@ -40,6 +43,13 @@ runs:
       run: yarn nx e2e root-e2e
       env:
         NX_NO_CLOUD: 'true'
+
+    - name: Run Chromatic visual tests
+      if: ${{ inputs.chromatic-project-token != '' }}
+      shell: bash
+      run: yarn chromatic:ui --exit-zero-on-changes --exit-once-sent
+      env:
+        CHROMATIC_PROJECT_TOKEN: ${{ inputs.chromatic-project-token }}
 
     - name: Run Lighthouse CI
       if: ${{ inputs.run-e2e == 'true' }}

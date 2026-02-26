@@ -36,6 +36,7 @@ const sampleOptions = [
 
 export const Default: Story = {
   args: {
+    label: 'Select an option',
     options: sampleOptions,
   },
 };

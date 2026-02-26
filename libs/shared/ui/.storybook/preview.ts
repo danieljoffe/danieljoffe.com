@@ -1,44 +1,30 @@
-import type { Decorator, Preview } from '@storybook/react-vite';
+import type { Preview } from '@storybook/react-vite';
+import { withThemeByClassName } from '@storybook/addon-themes';
 
 import '../src/styles/preview.scss';
 
-// Syncs the background toggle with Tailwind's .dark class
-// Without this, the canvas color changes but components stay in light mode
-const withThemeClass: Decorator = (Story, context) => {
-  const background = context.globals.backgrounds?.value;
-  const isDark = background === '#1c1917';
-
-  if (isDark) {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-
-  return Story();
-};
-
 const preview: Preview = {
-  decorators: [withThemeClass],
+  decorators: [
+    withThemeByClassName({
+      themes: {
+        light: '',
+        dark: 'dark',
+      },
+      defaultTheme: 'dark',
+    }),
+  ],
 
   parameters: {
     layout: 'fullscreen',
-    backgrounds: {
-      options: {
-        dark: { name: 'Dark', value: '#1c1917' },
-        light: { name: 'Light', value: '#fdfbf7' },
-      },
-    },
+
     docs: {
-      // Makes the docs background match the selected theme
       canvas: {
         sourceState: 'shown',
       },
     },
-  },
 
-  initialGlobals: {
-    backgrounds: {
-      value: '#1c1917',
+    a11y: {
+      test: 'todo',
     },
   },
 };

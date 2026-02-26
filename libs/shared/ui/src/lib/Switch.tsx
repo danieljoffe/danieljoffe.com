@@ -12,6 +12,8 @@ export interface SwitchProps {
 
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
   ({ checked, onChange, label, disabled = false, className, id }, ref) => {
+    const labelId = label ? `${id || 'switch'}-label` : undefined;
+
     return (
       <div className='flex items-center gap-2'>
         <button
@@ -20,6 +22,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           role='switch'
           id={id}
           aria-checked={checked}
+          aria-labelledby={labelId}
           disabled={disabled}
           onClick={() => onChange(!checked)}
           className={cn(
@@ -38,7 +41,11 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
             )}
           />
         </button>
-        {label && <span className='text-foreground select-none'>{label}</span>}
+        {label && (
+          <span id={labelId} className='text-foreground select-none'>
+            {label}
+          </span>
+        )}
       </div>
     );
   }

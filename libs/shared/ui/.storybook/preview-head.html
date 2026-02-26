@@ -6,9 +6,68 @@
   rel="stylesheet"
 />
 
+<!--
+  Sync Tailwind's .dark class with the addon-themes toolbar toggle.
+  The withThemeByClassName decorator handles story pages, but during
+  initial load something clears the class before the decorator's
+  useEffect fires. A MutationObserver guards the initial state, and
+  a channel listener keeps MDX docs pages (where decorators don't
+  run) in sync with the toolbar.
+-->
+<script>
+  (function () {
+    var DARK = 'dark';
+    var html = document.documentElement;
+    var currentTheme = DARK;
+
+    function apply() {
+      html.classList.toggle(DARK, currentTheme === DARK);
+    }
+
+    // Set initial dark class (matches preview.ts defaultTheme: 'dark')
+    apply();
+
+    // Guard against anything that clears the class during init.
+    // Once the channel listener is active, the observer only acts
+    // as a safety net — both the decorator and the listener set
+    // the same value so there is no conflict.
+    var observer = new MutationObserver(function () {
+      if (currentTheme === DARK && !html.classList.contains(DARK)) {
+        observer.disconnect();
+        apply();
+        observer.observe(html, {
+          attributes: true,
+          attributeFilter: ['class'],
+        });
+      }
+    });
+    observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+
+    // Poll for the Storybook channel (it's created after this script).
+    var timer = setInterval(function () {
+      var ch = window.__STORYBOOK_ADDONS_CHANNEL__;
+      if (!ch) return;
+      clearInterval(timer);
+
+      ch.on('globalsUpdated', function (args) {
+        var theme = args && args.globals && args.globals.theme;
+        if (theme) {
+          currentTheme = theme;
+          apply();
+        }
+      });
+    }, 50);
+  })();
+</script>
+
 <style>
   .sb-main-fullscreen.sb-show-main {
     height: 100vh;
+  }
+
+  body #storybook-root,
+  body #storybook-docs {
+    color: var(--foreground);
   }
 
   #storybook-docs > div {
@@ -19,7 +78,23 @@
   #storybook-root,
   #storybook-docs > div {
     height: 100%;
-    background-color: var(--background);
+    background-color: transparent;
+  }
+
+  #storybook-root h1,
+  #storybook-docs .sbdocs-title {
+    color: var(--foreground);
+  }
+
+  #storybook-docs .sbdocs-preview {
+    background-color: var(--background-elevated);
+    /* border-color: var(--background-elevated); */
+  }
+  #storybook-docs [role="toolbar"],
+  #storybook-docs table thead > tr > *,
+  #storybook-docs table tbody > tr > *  {
+    background-color: var(--background-elevated);
+    color: var(--foreground);
   }
 
   #storybook-root,
