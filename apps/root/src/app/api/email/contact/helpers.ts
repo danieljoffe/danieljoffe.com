@@ -3,8 +3,9 @@ import {
   FormFieldSchema,
   RawFormData,
   ValidKitErrorResponse,
-  WebFormsResponse,
 } from './schema';
+import { createResendClient, EMAIL_FROM, EMAIL_TO } from '@/lib/email/resend';
+import ContactNotification from '@/components/emails/ContactNotification';
 import * as yup from 'yup';
 import { ValidationError } from 'yup';
 import { serverEnv } from '@/lib/env';
@@ -102,6 +103,9 @@ export const validateFormData = async <T extends yup.AnyObject>(
 export const validateEmail = async (
   email: string
 ): Promise<ErrorResponse | null> => {
+  // Skip external email validation in development to avoid hitting API rate limits
+  if (serverEnv.NODE_ENV === 'development') return null;
+
   if (!serverEnv.VALIDKIT_API_KEY) {
     throw {
       error: {
@@ -141,31 +145,21 @@ export const validateEmail = async (
 };
 
 /**
- * Sends contact form email using Web3Forms service
+ * Sends contact form notification email via Resend
  *
- * Formats and sends the contact form data as an email notification.
- * Includes sender information, message content, and proper subject line.
+ * Delivers a notification to the site owner with the sender's details
+ * and message. Uses reply-to so responding goes directly to the sender.
  *
  * @param data - Validated form data containing name, email, and message
  * @returns Promise that resolves to null on success
  * @throws {ErrorResponse} When email service is unavailable or fails
- *
- * @example
- * ```typescript
- * const formData = {
- *   name: "John Doe",
- *   email: "john@example.com",
- *   message: "Hello world",
- *   hcaptcha: "token"
- * };
- * await sendEmail(formData);
- * ```
  */
 export const sendEmail = async (
   data: FormFieldSchema
 ): Promise<ErrorResponse | null> => {
-  if (!serverEnv.WEB3FORMS_ACCESS_KEY) {
-    devLog('WEB3FORMS_ACCESS_KEY is not configured. Cannot send email.');
+  const resend = createResendClient();
+  if (!resend) {
+    devLog('RESEND_API_KEY is not configured. Cannot send email.');
     throw {
       error: {
         path: 'root.configurationError',
@@ -176,29 +170,39 @@ export const sendEmail = async (
   }
 
   try {
-    await fetch(serverEnv.WEB3FORMS_API_URL ?? '', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from_name: data.name,
-        from_email: data.email,
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: EMAIL_TO,
+      replyTo: data.email,
+      subject: `New message from ${data.name}`,
+      react: ContactNotification({
+        name: data.name,
+        email: data.email,
         message: data.message,
-        subject: `📥 Web3Forms: New message from ${data.name}`,
-        access_key: serverEnv.WEB3FORMS_ACCESS_KEY,
       }),
     });
 
+    if (error) {
+      devLog('Resend error', error);
+      throw {
+        error: {
+          path: 'root.serviceError',
+          message: 'Failed to send email. Please try again later.',
+        },
+        statusCode: 500,
+      } as ErrorResponse;
+    }
+
     return null;
   } catch (e: unknown) {
-    const error = e as WebFormsResponse;
+    devLog('sendEmail error', e);
+    if ((e as ErrorResponse).statusCode) throw e;
     throw {
       error: {
         path: 'root.serviceError',
-        message: error.body.message,
+        message: 'Failed to send email. Please try again later.',
       },
-      statusCode: error.statusCode,
+      statusCode: 500,
     } as ErrorResponse;
   }
 };
@@ -276,6 +280,9 @@ export const requestFromSource = async (
 export const rateLimit = async (
   req: NextRequest
 ): Promise<ErrorResponse | null> => {
+  // Skip rate limiting in development to avoid blocking during testing
+  if (serverEnv.NODE_ENV === 'development') return null;
+
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip');

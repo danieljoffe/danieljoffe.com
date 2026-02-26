@@ -13,6 +13,7 @@ export interface UnsplashImgProps {
   quality?: number;
   priority?: boolean;
   preload?: boolean;
+  sizes?: string;
 }
 
 export default function UnsplashImg({
@@ -24,6 +25,7 @@ export default function UnsplashImg({
   priority = false,
   fill = false,
   preload = false,
+  sizes,
 }: UnsplashImgProps) {
   const loader = useMemo(() => {
     return unsplashLoader(width, height);
@@ -36,11 +38,15 @@ export default function UnsplashImg({
     priority,
     fill,
     quality,
-    sizes:
-      '(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 80vw, 800px',
     unoptimized: false,
     decoding: 'async',
   };
+
+  // Only pass sizes when explicitly provided. Without sizes, Next.js uses
+  // x-descriptors capped at 2× width — giving tighter control over srcset.
+  if (sizes) {
+    imageProps.sizes = sizes;
+  }
 
   const imageClasses = ['object-cover'];
 

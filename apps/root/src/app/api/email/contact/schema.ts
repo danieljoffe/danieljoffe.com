@@ -62,18 +62,11 @@ export type ValidKitErrorResponse = {
   };
 };
 
-/**
- * Web3Forms service response format
- *
- * Standard response structure from the Web3Forms email service.
- */
-export type WebFormsResponse<T = FormFieldSchema> = {
-  statusCode: 200 | 400 | 500;
-  success: boolean;
-  body: {
-    data: T;
-    message: string;
-  };
+/** Success response from the contact form API */
+export type SuccessResponse = {
+  statusCode: 200;
+  success: true;
+  message: string;
 };
 
 /** Validation length constraints */

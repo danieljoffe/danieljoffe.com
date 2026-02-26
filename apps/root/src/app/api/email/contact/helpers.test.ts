@@ -4,15 +4,26 @@
 import { NextRequest } from 'next/server';
 import { formSchema } from './schema';
 
+const mockSend = jest.fn();
+
 // Mock dependencies before importing the module under test
 jest.mock('@/lib/env', () => ({
   serverEnv: {
     VALIDKIT_API_KEY: 'test-validkit-key',
     VALIDKIT_API_URL: 'https://api.validkit.test/validate',
-    WEB3FORMS_ACCESS_KEY: 'test-web3forms-key',
-    WEB3FORMS_API_URL: 'https://api.web3forms.test/submit',
     NODE_ENV: 'test',
   },
+}));
+
+jest.mock('@/lib/email/resend', () => ({
+  createResendClient: jest.fn(() => ({ emails: { send: mockSend } })),
+  EMAIL_FROM: 'Test <test@test.com>',
+  EMAIL_TO: 'recipient@test.com',
+}));
+
+jest.mock('@/components/emails/ContactNotification', () => ({
+  __esModule: true,
+  default: jest.fn(() => '<mock-email />'),
 }));
 
 jest.mock('@/utils/helpers', () => ({
@@ -134,16 +145,12 @@ describe('validateEmail', () => {
 });
 
 describe('sendEmail', () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
+  beforeEach(() => {
+    mockSend.mockReset();
   });
 
   it('returns null on successful send', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      json: () => Promise.resolve({ success: true, body: { message: 'Sent' } }),
-    });
+    mockSend.mockResolvedValue({ data: { id: 'resend-123' }, error: null });
 
     const result = await sendEmail({
       name: 'Jane',
@@ -154,10 +161,8 @@ describe('sendEmail', () => {
     expect(result).toBeNull();
   });
 
-  it('sends with correct payload', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      json: () => Promise.resolve({ success: true }),
-    });
+  it('sends with correct Resend payload', async () => {
+    mockSend.mockResolvedValue({ data: { id: 'resend-123' }, error: null });
 
     await sendEmail({
       name: 'Jane',
@@ -166,19 +171,20 @@ describe('sendEmail', () => {
       hcaptcha: 'token',
     });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://api.web3forms.test/submit',
+    expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'POST',
-        body: expect.stringContaining('"from_name":"Jane"'),
+        from: 'Test <test@test.com>',
+        to: 'recipient@test.com',
+        replyTo: 'jane@example.com',
+        subject: 'New message from Jane',
+        react: expect.anything(),
       })
     );
   });
 
-  it('throws 500 when API key is missing', async () => {
-    const envModule = require('@/lib/env');
-    const original = envModule.serverEnv.WEB3FORMS_ACCESS_KEY;
-    envModule.serverEnv.WEB3FORMS_ACCESS_KEY = '';
+  it('throws 500 when Resend API key is missing', async () => {
+    const resendModule = require('@/lib/email/resend');
+    resendModule.createResendClient.mockReturnValueOnce(null);
 
     await expect(
       sendEmail({
@@ -188,8 +194,25 @@ describe('sendEmail', () => {
         hcaptcha: 'token',
       })
     ).rejects.toMatchObject({ statusCode: 500 });
+  });
 
-    envModule.serverEnv.WEB3FORMS_ACCESS_KEY = original;
+  it('throws 500 when Resend returns an error', async () => {
+    mockSend.mockResolvedValue({
+      data: null,
+      error: { message: 'Rate limited' },
+    });
+
+    await expect(
+      sendEmail({
+        name: 'Jane',
+        email: 'jane@example.com',
+        message: 'Hello',
+        hcaptcha: 'token',
+      })
+    ).rejects.toMatchObject({
+      statusCode: 500,
+      error: { path: 'root.serviceError' },
+    });
   });
 });
 
@@ -199,7 +222,9 @@ describe('requestFromSource', () => {
     if (referer) {
       headers.set('referer', referer);
     }
-    return new NextRequest('https://danieljoffe.com/api/email', { headers });
+    return new NextRequest('https://danieljoffe.com/api/email/contact', {
+      headers,
+    });
   }
 
   it('returns null when referer matches source', async () => {
@@ -227,7 +252,9 @@ describe('rateLimit', () => {
   function makeRequest(ip: string): NextRequest {
     const headers = new Headers();
     headers.set('x-forwarded-for', ip);
-    return new NextRequest('https://danieljoffe.com/api/email', { headers });
+    return new NextRequest('https://danieljoffe.com/api/email/contact', {
+      headers,
+    });
   }
 
   // Clear rate limit store between tests
@@ -247,7 +274,7 @@ describe('rateLimit', () => {
   });
 
   it('throws 403 when no IP is available', async () => {
-    const req = new NextRequest('https://danieljoffe.com/api/email');
+    const req = new NextRequest('https://danieljoffe.com/api/email/contact');
     await expect(rateLimit(req)).rejects.toMatchObject({
       statusCode: 403,
     });
@@ -271,7 +298,7 @@ describe('rateLimit', () => {
   it('uses x-real-ip as fallback', async () => {
     const headers = new Headers();
     headers.set('x-real-ip', '172.16.0.1');
-    const req = new NextRequest('https://danieljoffe.com/api/email', {
+    const req = new NextRequest('https://danieljoffe.com/api/email/contact', {
       headers,
     });
     const result = await rateLimit(req);
