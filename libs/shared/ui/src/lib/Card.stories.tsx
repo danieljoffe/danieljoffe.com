@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Card, CardHeader, CardTitle, CardContent } from './Card';
+import { Button } from './Button';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 
 const meta = {
-  title: 'Components/Card',
+  title: 'Data Display/Card',
   component: Card,
   tags: ['autodocs'],
   argTypes: {
@@ -68,6 +69,12 @@ export const FullCard: Story = {
       <CardContent>
         This is the card content area where you can place any content.
       </CardContent>
+      <CardFooter>
+        <Button size='sm'>Save</Button>
+        <Button size='sm' variant='ghost'>
+          Cancel
+        </Button>
+      </CardFooter>
     </Card>
   ),
 };
@@ -99,6 +106,18 @@ export const ContentDefault: Story = {
       <CardContent>
         This is the card content area where you can place any content.
       </CardContent>
+    </Card>
+  ),
+};
+
+export const FooterDefault: Story = {
+  args: { children: null },
+  render: () => (
+    <Card>
+      <CardContent>Content above the footer.</CardContent>
+      <CardFooter>
+        <Button size='sm'>Action</Button>
+      </CardFooter>
     </Card>
   ),
 };

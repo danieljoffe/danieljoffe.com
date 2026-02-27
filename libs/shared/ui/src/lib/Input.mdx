@@ -1,0 +1,252 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Input } from './Input';
+
+<Meta title='Forms/Input/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-body);
+      color: var(--foreground);
+      background: var(--background);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--foreground);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--foreground-muted);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--foreground-muted);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-p code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-example {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      max-width: 400px;
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--success); }
+    .doc-dont-label { color: var(--error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--foreground-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Input</h1>
+<p className='doc-lead'>
+  Single-line text field with built-in label, validation, and helper text.
+  Handles the full lifecycle from empty to error without external wiring.
+</p>
+
+<h2 className='doc-section'>Anatomy</h2>
+
+<p className='doc-p'>
+  Input bundles four elements: a <code>label</code>, the <code>input</code>{' '}
+  field, an <code>error</code> message, and a <code>helperText</code> hint. Each
+  is optional and controlled via props — no wrapper components needed.
+</p>
+
+<div className='doc-example'>
+  <Input label='Full Name' placeholder='Jane Doe' />
+  <Input
+    label='Email'
+    placeholder='jane@example.com'
+    helperText="We'll never share your email."
+  />
+  <Input
+    label='Password'
+    type='password'
+    error='Password must be at least 8 characters.'
+  />
+  <Input label='Username' placeholder='jdoe' success />
+</div>
+
+<h2 className='doc-section'>States</h2>
+
+<p className='doc-p'>
+  Inputs move through four visual states. The component automatically wires ARIA
+  attributes for each — <code>aria-invalid</code> for errors,
+  <code>aria-describedby</code> linking to helper/error text, and
+  <code>aria-required</code> when <code>required</code> is set.
+</p>
+
+<div className='doc-example'>
+  <Input label='Default' placeholder='Type here...' />
+  <Input
+    label='With Helper'
+    helperText='Helper text appears below the input.'
+    placeholder='Type here...'
+  />
+  <Input label='Error State' error='This field is required.' />
+  <Input label='Success State' defaultValue='Valid input' success />
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Always provide a <code>label</code>. If the design requires a visually
+      hidden label, use <code>aria-label</code> on the input instead.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't use <code>placeholder</code> as a substitute for <code>label</code>.
+      Placeholders disappear on focus and fail WCAG.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>Validation Patterns</h2>
+
+<p className='doc-p'>
+  Error messages are rendered as <code>role="alert"</code>, so screen readers
+  announce them immediately. When both <code>error</code> and{' '}
+  <code>helperText</code>
+  are provided, the error takes precedence — helper text is hidden to avoid
+  contradictory guidance.
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Write error messages that tell the user how to fix the problem: "Password
+      must be at least 8 characters" not "Invalid password."
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't show errors on first render. Validate on blur or submit so the user
+      has a chance to type before being told they're wrong.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>Required Fields</h2>
+
+<p className='doc-p'>
+  Setting <code>required</code> renders a red asterisk after the label and adds
+  <code>aria-required="true"</code> to the input. The native{' '}
+  <code>required</code>
+  attribute is also forwarded for browser-level validation.
+</p>
+
+<div className='doc-example'>
+  <Input label='Email Address' required placeholder='jane@example.com' />
+</div>
+
+<h2 className='doc-section'>Accessibility Checklist</h2>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Built in</div>
+    <p className='doc-do-body'>
+      Auto-generated <code>id</code> from label text. <code>htmlFor</code>{' '}
+      linking.
+      <code>aria-invalid</code> on error. <code>aria-describedby</code> pointing
+      to helper/error text. <code>aria-required</code> on required fields.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Your responsibility</div>
+    <p className='doc-dont-body'>
+      Providing meaningful labels, writing actionable error messages, and
+      ensuring the input has sufficient color contrast in custom themes.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

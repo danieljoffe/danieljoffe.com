@@ -60,7 +60,7 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     deviceSizes: [640, 768, 1024, 1280],
     imageSizes: [16, 32, 48, 64],
-    qualities: [80, 90],
+    qualities: [65, 80, 90],
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },

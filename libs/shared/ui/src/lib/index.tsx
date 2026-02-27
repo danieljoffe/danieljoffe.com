@@ -13,9 +13,8 @@ export {
   variantButtonStyles,
   variantLinkOutline,
 } from './Button';
-export { Card, CardHeader, CardTitle, CardContent } from './Card';
+export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 export { Checkbox } from './Checkbox';
-export { ColorPalette } from './ColorPalette';
 export { Container } from './Container';
 export { Divider } from './Divider';
 export { PageContainer } from './PageContainer';
@@ -46,6 +45,7 @@ export type {
   CardHeaderProps,
   CardTitleProps,
   CardContentProps,
+  CardFooterProps,
 } from './Card';
 export type { CheckboxProps } from './Checkbox';
 export type { ContainerProps } from './Container';
