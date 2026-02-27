@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { forwardRef, type InputHTMLAttributes } from 'react';
+import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { cn } from './utils';
 
 export interface CheckboxProps extends Omit<
@@ -11,7 +11,8 @@ export interface CheckboxProps extends Omit<
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, className, id, checked, ...props }, ref) => {
-    const checkboxId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const generatedId = useId();
+    const checkboxId = id ?? generatedId;
 
     return (
       <div className='flex items-center gap-2'>
@@ -24,9 +25,9 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className='peer sr-only'
             {...props}
           />
-          <label
-            htmlFor={checkboxId}
+          <span
             aria-hidden='true'
+            onClick={() => document.getElementById(checkboxId)?.click()}
             className={cn(
               'flex items-center justify-center size-5 border-2',
               'border-border-strong rounded bg-input cursor-pointer transition-all',
@@ -43,7 +44,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                 aria-hidden='true'
               />
             )}
-          </label>
+          </span>
         </div>
         {label && (
           <label

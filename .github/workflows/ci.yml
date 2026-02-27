@@ -37,6 +37,7 @@ jobs:
         with:
           run-e2e: ${{ github.event_name != 'push' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          chromatic-project-token: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   update-snapshots:
     if: ${{ inputs.update-snapshots }}

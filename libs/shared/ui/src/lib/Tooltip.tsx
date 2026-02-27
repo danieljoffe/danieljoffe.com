@@ -5,6 +5,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useEffect,
   useId,
   type ReactNode,
   type KeyboardEvent,
@@ -57,6 +58,12 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
       [hideTooltip]
     );
 
+    useEffect(() => {
+      return () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      };
+    }, []);
+
     return (
       <div ref={ref} className={cn('relative inline-block', className)}>
         <div
@@ -73,7 +80,6 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
         <div
           id={tooltipId}
           role='tooltip'
-          aria-hidden={!isVisible}
           className={cn(
             'absolute z-50 px-3 py-1.5 bg-background-elevated border',
             'border-border-strong rounded-md text-sm text-foreground',

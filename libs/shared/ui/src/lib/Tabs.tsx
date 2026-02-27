@@ -114,6 +114,7 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(
         <div
           id={getPanelId(activeTab)}
           role='tabpanel'
+          tabIndex={0}
           aria-labelledby={getTabId(activeTab)}
           className='mt-4'
         >
