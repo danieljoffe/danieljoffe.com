@@ -1,0 +1,368 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import { Button } from './Button';
+import { Spinner } from './Spinner';
+
+<Meta title='Forms/Button/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-body);
+      color: var(--foreground);
+      background: var(--background);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--foreground);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--foreground-muted);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-sub {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--foreground-muted);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-grid {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--foreground);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--foreground-muted);
+    }
+
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--success); }
+    .doc-dont-label { color: var(--error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--foreground-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Button</h1>
+<p className='doc-lead'>
+  Triggers actions. The primary interactive element across the system — use the
+  right variant for the right context.
+</p>
+
+<h2 className='doc-section'>When to Use What</h2>
+
+<p className='doc-p'>
+  Buttons are the most common interactive element. Choosing the right variant
+  prevents visual noise and maintains hierarchy.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Use when</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>primary</code>
+      </td>
+      <td>The main call-to-action on a page. Limit to one per section.</td>
+      <td>Submit form, Send message</td>
+    </tr>
+    <tr>
+      <td>
+        <code>secondary</code>
+      </td>
+      <td>
+        A supporting action alongside a primary. Visually present but lower
+        emphasis.
+      </td>
+      <td>Cancel, Back, Save draft</td>
+    </tr>
+    <tr>
+      <td>
+        <code>ghost</code>
+      </td>
+      <td>Tertiary actions that shouldn't compete with primary/secondary.</td>
+      <td>Settings, View more, Filter</td>
+    </tr>
+    <tr>
+      <td>
+        <code>outline</code>
+      </td>
+      <td>
+        Actions that need a clear boundary but not the weight of a filled
+        button.
+      </td>
+      <td>Edit, Download, Export</td>
+    </tr>
+    <tr>
+      <td>
+        <code>bare</code>
+      </td>
+      <td>
+        Custom-styled buttons where you want only the base interaction behavior.
+      </td>
+      <td>Icon buttons, custom UI chrome</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 className='doc-sub'>Semantic Variants</h3>
+
+<p className='doc-p'>
+  Use <code>success</code>, <code>error</code>, <code>warning</code>, and{' '}
+  <code>info</code> only when the action itself has semantic meaning — not for
+  decoration.
+</p>
+
+<div className='doc-grid'>
+  <Button variant='success' size='sm'>
+    Approve
+  </Button>
+  <Button variant='error' size='sm'>
+    Delete
+  </Button>
+  <Button variant='warning' size='sm'>
+    Archive
+  </Button>
+  <Button variant='info' size='sm'>
+    Learn More
+  </Button>
+</div>
+
+<h2 className='doc-section'>Sizes</h2>
+
+<p className='doc-p'>
+  Choose size based on context, not personal preference. Dense UIs use{' '}
+  <code>sm</code>. Page-level CTAs use <code>lg</code>. Default to{' '}
+  <code>md</code> unless there's a reason not to.
+</p>
+
+<div className='doc-grid'>
+  <Button size='sm'>Small</Button>
+  <Button size='md'>Medium</Button>
+  <Button size='lg'>Large</Button>
+</div>
+
+<h2 className='doc-section'>Loading State</h2>
+
+<p className='doc-p'>
+  Set <code>loading</code> to show an inline spinner and automatically disable
+  the button. The button retains its label so the width stays stable — no layout
+  shift. The spinner inherits the button's text color.
+</p>
+
+<div className='doc-grid'>
+  <Button loading size='sm'>
+    Saving
+  </Button>
+  <Button loading>Submitting…</Button>
+  <Button loading size='lg'>
+    Processing
+  </Button>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Use <code>loading</code> for async operations. Keep the label descriptive
+      so users know what's happening.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't replace button content with a standalone Spinner — the button width
+      will jump and the user loses context.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>Polymorphic Rendering</h2>
+
+<p className='doc-p'>
+  Pass <code>as="a"</code> to render the button as an anchor element. This is
+  useful for navigation links that should look like buttons. All button styles
+  are applied to the rendered element.
+</p>
+
+<div className='doc-grid'>
+  <Button
+    as='a'
+    href='https://danieljoffe.com'
+    target='_blank'
+    rel='noopener noreferrer'
+  >
+    Visit Site
+  </Button>
+  <Button as='a' href='#' variant='outline'>
+    Anchor Outline
+  </Button>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Use <code>as="a"</code> for actual navigation. Add{' '}
+      <code>rel="noopener noreferrer"</code> for external links with{' '}
+      <code>target="_blank"</code>.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't use <code>as="a"</code> for actions that don't navigate — use a
+      regular button. Anchors without <code>href</code> are semantically
+      incorrect.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>Accessibility</h2>
+
+<p className='doc-p'>
+  Every Button receives a visible focus ring via{' '}
+  <code>focus-visible:ring-2</code>, offset from the background. Disabled
+  buttons have <code>opacity-50</code> and
+  <code>cursor-not-allowed</code>. Loading buttons set{' '}
+  <code>aria-busy="true"</code> and hide the spinner from screen readers (the
+  button's busy state conveys the message).
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Add <code>aria-label</code> to icon-only buttons. Always provide visible
+      text or an accessible name.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't rely on color alone to convey meaning. Pair semantic variants with
+      clear labels ("Delete", "Approve") rather than just colored icons.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

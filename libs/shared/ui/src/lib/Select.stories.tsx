@@ -3,7 +3,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { Select } from './Select';
 
 const meta = {
-  title: 'Components/Select',
+  title: 'Forms/Select',
   component: Select,
   tags: ['autodocs'],
   argTypes: {
@@ -36,6 +36,7 @@ const sampleOptions = [
 
 export const Default: Story = {
   args: {
+    label: 'Select an option',
     options: sampleOptions,
   },
 };

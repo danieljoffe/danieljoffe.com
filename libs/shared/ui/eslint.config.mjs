@@ -37,7 +37,10 @@ export default [
       'jsx-a11y/no-interactive-element-to-noninteractive-role': 'error',
       'jsx-a11y/no-noninteractive-element-interactions': 'error',
       'jsx-a11y/no-noninteractive-element-to-interactive-role': 'error',
-      'jsx-a11y/no-noninteractive-tabindex': 'error',
+      'jsx-a11y/no-noninteractive-tabindex': [
+        'error',
+        { roles: ['tabpanel'] },
+      ],
       'jsx-a11y/no-redundant-roles': 'error',
       'jsx-a11y/no-static-element-interactions': 'error',
       'jsx-a11y/role-has-required-aria-props': 'error',

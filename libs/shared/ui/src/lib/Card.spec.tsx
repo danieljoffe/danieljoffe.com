@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { Card, CardHeader, CardTitle, CardContent } from './Card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 
 describe('Card', () => {
   it('renders children content', () => {
@@ -14,7 +14,11 @@ describe('Card', () => {
 
   it('applies elevated styles when elevated is true', () => {
     const { container } = render(<Card elevated>Content</Card>);
-    expect(container.firstChild).toHaveClass('bg-background-elevated');
+    expect(container.firstChild).toHaveClass(
+      'bg-background-elevated',
+      'shadow-md',
+      'border-border-strong'
+    );
   });
 
   it('applies default md padding', () => {
@@ -99,6 +103,30 @@ describe('CardContent', () => {
   });
 });
 
+describe('CardFooter', () => {
+  it('renders children content', () => {
+    render(<CardFooter>Footer content</CardFooter>);
+    expect(screen.getByText('Footer content')).toBeInTheDocument();
+  });
+
+  it('applies flex layout styles', () => {
+    const { container } = render(<CardFooter>Footer</CardFooter>);
+    expect(container.firstChild).toHaveClass(
+      'mt-4',
+      'flex',
+      'items-center',
+      'gap-2'
+    );
+  });
+
+  it('applies custom className', () => {
+    const { container } = render(
+      <CardFooter className='custom-class'>Footer</CardFooter>
+    );
+    expect(container.firstChild).toHaveClass('custom-class');
+  });
+});
+
 describe('Card composition', () => {
   it('renders complete card with all subcomponents', () => {
     render(
@@ -107,11 +135,13 @@ describe('Card composition', () => {
           <CardTitle>Test Title</CardTitle>
         </CardHeader>
         <CardContent>Test content</CardContent>
+        <CardFooter>Test footer</CardFooter>
       </Card>
     );
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Test content')).toBeInTheDocument();
+    expect(screen.getByText('Test footer')).toBeInTheDocument();
   });
 
   describe('accessibility', () => {

@@ -1,0 +1,418 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Button } from './Button';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
+
+<Meta title='Data Display/Card/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-body);
+      color: var(--foreground);
+      background: var(--background);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--foreground);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--foreground-muted);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-sub {
+      font-family: var(--font-heading);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--foreground);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--foreground-muted);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-p code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-example-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-example-single {
+      max-width: 400px;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--foreground);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--foreground-muted);
+    }
+
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--success); }
+    .doc-dont-label { color: var(--error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--foreground-muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent);
+      background: var(--background-alt);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Card</h1>
+<p className='doc-lead'>
+  A compound container for grouping related content with optional structure. Use
+  it flat or compose it with header, title, content, and footer slots.
+</p>
+
+<h2 className='doc-section'>Compound Components</h2>
+
+<p className='doc-p'>
+  Card uses a compound component pattern — each slot is a separate export that
+  composes inside a parent <code>Card</code>. All slots are optional. Use only
+  what you need.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Element</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>Card</code>
+      </td>
+      <td>
+        <code>div</code>
+      </td>
+      <td>Root container with border, background, and padding.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>CardHeader</code>
+      </td>
+      <td>
+        <code>div</code>
+      </td>
+      <td>Top section with bottom margin. Contains title and metadata.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>CardTitle</code>
+      </td>
+      <td>
+        <code>h3</code>
+      </td>
+      <td>Semantic heading for the card's primary label.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>CardContent</code>
+      </td>
+      <td>
+        <code>div</code>
+      </td>
+      <td>Main body area. No default styles — fully flexible.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>CardFooter</code>
+      </td>
+      <td>
+        <code>div</code>
+      </td>
+      <td>Bottom section with flex layout for actions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Composition Examples</h2>
+
+<h3 className='doc-sub'>Full Card</h3>
+
+<p className='doc-p'>
+  The most complete composition — header with title, body content, and footer
+  with action buttons.
+</p>
+
+<div className='doc-example-single'>
+  <Card>
+    <CardHeader>
+      <CardTitle>Project Details</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p
+        style={{
+          margin: 0,
+          color: 'var(--foreground-muted)',
+          fontSize: '0.9375rem',
+          lineHeight: 1.6,
+        }}
+      >
+        A brief description of the project goes here. The content area accepts
+        any children — text, forms, images, other components.
+      </p>
+    </CardContent>
+    <CardFooter>
+      <Button size='sm'>Save</Button>
+      <Button size='sm' variant='ghost'>
+        Cancel
+      </Button>
+    </CardFooter>
+  </Card>
+</div>
+
+<h3 className='doc-sub'>Content Only</h3>
+
+<p className='doc-p'>
+  For simple containers that just need a bordered box around content. Skip the
+  header and footer entirely.
+</p>
+
+<div className='doc-example-grid'>
+  <Card>
+    <CardContent>
+      <p
+        style={{
+          margin: 0,
+          color: 'var(--foreground-muted)',
+          fontSize: '0.9375rem',
+        }}
+      >
+        Simple content card with default padding.
+      </p>
+    </CardContent>
+  </Card>
+  <Card elevated>
+    <CardContent>
+      <p
+        style={{
+          margin: 0,
+          color: 'var(--foreground-muted)',
+          fontSize: '0.9375rem',
+        }}
+      >
+        Elevated card — raised background for emphasis.
+      </p>
+    </CardContent>
+  </Card>
+</div>
+
+<h2 className='doc-section'>Padding</h2>
+
+<p className='doc-p'>
+  The <code>padding</code> prop controls spacing on the root <code>Card</code>.
+  Sub-components don't add their own padding — this avoids double-padding issues
+  and gives you full control.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Class</th>
+      <th>When to use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>none</code>
+      </td>
+      <td>—</td>
+      <td>Cards with edge-to-edge content (images, tables).</td>
+    </tr>
+    <tr>
+      <td>
+        <code>sm</code>
+      </td>
+      <td>
+        <code>p-4</code>
+      </td>
+      <td>Compact cards in dense layouts or sidebars.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>md</code> (default)
+      </td>
+      <td>
+        <code>p-6</code>
+      </td>
+      <td>Standard card spacing. Works for most contexts.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>lg</code>
+      </td>
+      <td>
+        <code>p-8</code>
+      </td>
+      <td>
+        Prominent cards that need breathing room — hero content, features.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Elevated vs Flat</h2>
+
+<p className='doc-p'>
+  Use <code>elevated</code> to raise a card above the default surface. This is
+  useful for cards that need visual prominence or to separate a card from a busy
+  background. The default flat style uses <code>bg-card</code>; elevated uses{' '}
+  <code>bg-background-elevated</code>.
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Use <code>elevated</code> to highlight a featured item in a grid of cards,
+      or for cards that sit on top of a colored section.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't elevate every card. If everything is elevated, nothing stands out.
+      Use it as an exception, not the default.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>Composition Guidelines</h2>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Use compound components for structured content. Pass{' '}
+      <code>className</code> to any sub-component for one-off overrides. Let{' '}
+      <code>CardFooter</code> handle action button layout.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't nest Cards inside Cards. Don't add padding to sub-components when
+      the root Card already has padding — adjust the root's
+      <code>padding</code> prop instead.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

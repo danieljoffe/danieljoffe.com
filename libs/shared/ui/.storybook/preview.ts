@@ -1,20 +1,30 @@
+import { withThemeByClassName } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/react-vite';
 
 import '../src/styles/preview.scss';
 
 const preview: Preview = {
+  decorators: [
+    withThemeByClassName({
+      themes: {
+        light: '',
+        dark: 'dark',
+      },
+      defaultTheme: 'dark',
+    }),
+  ],
+
   parameters: {
-    backgrounds: {
-      options: {
-        dark: { name: 'dark', value: '#0a0a0f' },
-        light: { name: 'light', value: '#ffffff' },
+    layout: 'fullscreen',
+
+    docs: {
+      canvas: {
+        sourceState: 'shown',
       },
     },
-  },
 
-  initialGlobals: {
-    backgrounds: {
-      value: 'dark',
+    a11y: {
+      test: 'todo',
     },
   },
 };

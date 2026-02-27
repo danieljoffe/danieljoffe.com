@@ -131,13 +131,6 @@ jest.mock('@/components/Button', () => {
   return MockButton;
 });
 
-// Mock utils
-jest.mock('@/utils/helpers', () => ({
-  getBase64DataUrl: jest.fn(
-    (color: string) => `data:image/svg+xml;base64,${color}`
-  ),
-}));
-
 describe('UnsplashImage', () => {
   jest.setTimeout(10000); // 10 second timeout
   const mockProps: UnsplashImageProps = {
