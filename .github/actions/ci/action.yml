@@ -25,7 +25,6 @@ runs:
       run: yarn install --frozen-lockfile
 
     - name: Install Playwright
-      if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
       run: yarn playwright install --with-deps
 
