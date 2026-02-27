@@ -13,7 +13,6 @@ export type ButtonVariant =
   | 'secondary'
   | 'ghost'
   | 'outline'
-  | 'accent'
   | 'success'
   | 'error'
   | 'warning'
@@ -59,7 +58,6 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   outline: `${
     regularButton
   } border border-border-strong text-foreground hover:bg-background-elevated`,
-  accent: `${regularButton} bg-accent text-accent-foreground hover:opacity-90`,
   success: `${regularButton} bg-success text-success-foreground hover:opacity-90`,
   error: `${regularButton} bg-error text-error-foreground hover:opacity-90`,
   warning: `${regularButton} bg-warning text-warning-foreground hover:opacity-90`,
@@ -74,7 +72,6 @@ export const variantLinkOutline: Record<ButtonVariant, string> = {
   secondary: `${baseOutline} hover:outline-border-strong`,
   ghost: `${baseOutline} hover:outline-foreground-muted`,
   outline: `${baseOutline} hover:outline-border-strong`,
-  accent: `${baseOutline} hover:outline-accent`,
   success: `${baseOutline} hover:outline-success`,
   error: `${baseOutline} hover:outline-error`,
   warning: `${baseOutline} hover:outline-warning`,

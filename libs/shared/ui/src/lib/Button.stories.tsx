@@ -20,7 +20,6 @@ const meta = {
         'secondary',
         'ghost',
         'outline',
-        'accent',
         'success',
         'error',
         'warning',
@@ -93,13 +92,6 @@ export const Bare: Story = {
   args: {
     variant: 'bare',
     children: 'Bare',
-  },
-};
-
-export const Accent: Story = {
-  args: {
-    variant: 'accent',
-    children: 'Accent',
   },
 };
 

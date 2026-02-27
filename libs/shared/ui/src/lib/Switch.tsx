@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { cn } from './utils';
 
 export interface SwitchProps {
@@ -12,7 +12,9 @@ export interface SwitchProps {
 
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
   ({ checked, onChange, label, disabled = false, className, id }, ref) => {
-    const labelId = label ? `${id || 'switch'}-label` : undefined;
+    const generatedId = useId();
+    const resolvedId = id || generatedId;
+    const labelId = label ? `${resolvedId}-label` : undefined;
 
     return (
       <div className='flex items-center gap-2'>
@@ -20,7 +22,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           ref={ref}
           type='button'
           role='switch'
-          id={id}
+          id={resolvedId}
           aria-checked={checked}
           aria-labelledby={labelId}
           disabled={disabled}

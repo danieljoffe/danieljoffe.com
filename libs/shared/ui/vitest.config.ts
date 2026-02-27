@@ -13,6 +13,7 @@ const dirname =
 // https://storybook.js.org/docs/writing-tests/integrations/vitest-addon
 export default defineConfig({
   test: {
+    watch: false,
     projects: [
       {
         extends: true,

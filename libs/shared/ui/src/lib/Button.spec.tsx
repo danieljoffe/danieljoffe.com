@@ -20,7 +20,6 @@ describe('Button', () => {
       ['secondary', ['bg-background-elevated']],
       ['ghost', ['hover:bg-background-elevated']],
       ['outline', ['border-border-strong']],
-      ['accent', ['bg-accent', 'text-accent-foreground']],
       ['success', ['bg-success']],
       ['error', ['bg-error']],
       ['warning', ['bg-warning']],

@@ -36,6 +36,7 @@ export const Checked: Story = {
   args: {
     label: 'Remember me',
     checked: true,
+    onChange: fn(),
   },
 };
 
