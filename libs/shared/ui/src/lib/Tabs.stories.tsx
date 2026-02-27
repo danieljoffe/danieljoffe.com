@@ -3,7 +3,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import { Tabs } from './Tabs';
 
 const meta = {
-  title: 'Components/Tabs',
+  title: 'Data Display/Tabs',
   component: Tabs,
   tags: ['autodocs'],
   argTypes: {
@@ -79,16 +79,36 @@ export const KeyboardNavigation: Story = {
     tabs: sampleTabs,
     onChange: fn(),
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ args, canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    // Tab to the first tab button
-    await userEvent.tab();
-    await expect(canvas.getByRole('tab', { name: 'Tab 1' })).toHaveFocus();
+    await step('Focus first tab via Tab key', async () => {
+      await userEvent.tab();
+      await expect(canvas.getByRole('tab', { name: 'Tab 1' })).toHaveFocus();
+    });
 
-    // Click to switch tabs (keyboard navigation between tabs)
-    await userEvent.tab();
-    await expect(canvas.getByRole('tabpanel')).toHaveFocus();
+    await step('ArrowRight moves focus to next tab', async () => {
+      await userEvent.keyboard('{ArrowRight}');
+      await expect(canvas.getByRole('tab', { name: 'Tab 2' })).toHaveFocus();
+      await expect(args.onChange).toHaveBeenCalledWith('tab2');
+    });
+
+    await step('ArrowRight wraps around to first tab', async () => {
+      await userEvent.keyboard('{ArrowRight}');
+      await expect(canvas.getByRole('tab', { name: 'Tab 3' })).toHaveFocus();
+      await userEvent.keyboard('{ArrowRight}');
+      await expect(canvas.getByRole('tab', { name: 'Tab 1' })).toHaveFocus();
+    });
+
+    await step('ArrowLeft moves focus to previous tab', async () => {
+      await userEvent.keyboard('{ArrowLeft}');
+      await expect(canvas.getByRole('tab', { name: 'Tab 3' })).toHaveFocus();
+    });
+
+    await step('Tab moves focus to tabpanel', async () => {
+      await userEvent.tab();
+      await expect(canvas.getByRole('tabpanel')).toHaveFocus();
+    });
   },
 };
 

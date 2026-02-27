@@ -1,7 +1,15 @@
 'use client';
 
+import FocusTrap from 'focus-trap-react';
 import { X } from 'lucide-react';
-import { forwardRef, useEffect, useId, type ReactNode } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  type ReactNode,
+} from 'react';
 import { cn } from './utils';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -58,32 +66,42 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
     },
     ref
   ) => {
+    const triggerRef = useRef<Element | null>(null);
+
     useEffect(() => {
       if (typeof document === 'undefined') return;
 
       if (isOpen) {
+        triggerRef.current = document.activeElement;
         document.body.style.overflow = 'hidden';
       } else {
-        document.body.style.overflow = 'unset';
+        document.body.style.overflow = '';
       }
 
       return () => {
-        document.body.style.overflow = 'unset';
+        document.body.style.overflow = '';
       };
     }, [isOpen]);
+
+    const handleClose = useCallback(() => {
+      onClose();
+      if (triggerRef.current instanceof HTMLElement) {
+        triggerRef.current.focus();
+      }
+    }, [onClose]);
 
     useEffect(() => {
       if (typeof window === 'undefined') return;
 
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === 'Escape' && isOpen) {
-          onClose();
+          handleClose();
         }
       };
 
       window.addEventListener('keydown', handleEscape);
       return () => window.removeEventListener('keydown', handleEscape);
-    }, [isOpen, onClose]);
+    }, [isOpen, handleClose]);
 
     const titleId = useId();
 
@@ -93,50 +111,57 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
         <div
           className='absolute inset-0 bg-background/80 backdrop-blur-sm'
-          onClick={onClose}
+          onClick={handleClose}
           aria-hidden='true'
         />
-        <div
-          ref={ref}
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby={title ? titleId : undefined}
-          aria-label={title ? undefined : 'Dialog'}
-          className={cn(
-            'relative w-full rounded-lg shadow-2xl',
-            sizeStyles[size],
-            variantStyles[variant],
-            className
-          )}
+        <FocusTrap
+          focusTrapOptions={{
+            allowOutsideClick: true,
+            escapeDeactivates: false,
+          }}
         >
-          {title && (
-            <div className='flex items-center justify-between p-6 border-b border-border'>
-              <h3 id={titleId}>{title}</h3>
+          <div
+            ref={ref}
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby={title ? titleId : undefined}
+            aria-label={title ? undefined : 'Dialog'}
+            className={cn(
+              'relative w-full rounded-lg shadow-2xl',
+              sizeStyles[size],
+              variantStyles[variant],
+              className
+            )}
+          >
+            {title && (
+              <div className='flex items-center justify-between p-6 border-b border-border'>
+                <h3 id={titleId}>{title}</h3>
+                <button
+                  onClick={handleClose}
+                  aria-label='Close dialog'
+                  className='text-foreground-subtle hover:text-foreground transition-colors'
+                >
+                  <X className='size-5' aria-hidden='true' />
+                </button>
+              </div>
+            )}
+            {!title && (
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 aria-label='Close dialog'
-                className='text-foreground-subtle hover:text-foreground transition-colors'
+                className='absolute top-4 right-4 text-foreground-subtle hover:text-foreground transition-colors'
               >
                 <X className='size-5' aria-hidden='true' />
               </button>
-            </div>
-          )}
-          {!title && (
-            <button
-              onClick={onClose}
-              aria-label='Close dialog'
-              className='absolute top-4 right-4 text-foreground-subtle hover:text-foreground transition-colors'
-            >
-              <X className='size-5' aria-hidden='true' />
-            </button>
-          )}
-          <div className='p-6'>{children}</div>
-          {footer && (
-            <div className='flex items-center justify-end gap-3 p-6 border-t border-border'>
-              {footer}
-            </div>
-          )}
-        </div>
+            )}
+            <div className='p-6'>{children}</div>
+            {footer && (
+              <div className='flex items-center justify-end gap-3 p-6 border-t border-border'>
+                {footer}
+              </div>
+            )}
+          </div>
+        </FocusTrap>
       </div>
     );
   }

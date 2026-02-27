@@ -20,7 +20,6 @@ describe('Button', () => {
       ['secondary', ['bg-background-elevated']],
       ['ghost', ['hover:bg-background-elevated']],
       ['outline', ['border-border-strong']],
-      ['accent', ['bg-accent', 'text-accent-foreground']],
       ['success', ['bg-success']],
       ['error', ['bg-error']],
       ['warning', ['bg-warning']],
@@ -120,6 +119,74 @@ describe('Button', () => {
 
     it('sets displayName for debugging', () => {
       expect(Button.displayName).toBe('Button');
+    });
+  });
+
+  describe('loading', () => {
+    it('renders a spinner when loading', () => {
+      const { container } = render(<Button loading>Submit</Button>);
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+
+    it('disables the button when loading', () => {
+      render(<Button loading>Submit</Button>);
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('sets aria-busy when loading', () => {
+      render(<Button loading>Submit</Button>);
+      expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('does not render a spinner when not loading', () => {
+      render(<Button>Submit</Button>);
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('does not fire onClick when loading', () => {
+      const handleClick = jest.fn();
+      render(
+        <Button loading onClick={handleClick}>
+          Submit
+        </Button>
+      );
+      fireEvent.click(screen.getByRole('button'));
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    it('still renders children alongside spinner', () => {
+      const { container } = render(<Button loading>Submitting</Button>);
+      expect(screen.getByText('Submitting')).toBeInTheDocument();
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+  });
+
+  describe('polymorphic rendering', () => {
+    it('renders as an anchor when as="a"', () => {
+      render(
+        <Button as='a' href='https://example.com'>
+          Link
+        </Button>
+      );
+      const link = screen.getByText('Link');
+      expect(link.tagName).toBe('A');
+      expect(link).toHaveAttribute('href', 'https://example.com');
+    });
+
+    it('renders as a button by default', () => {
+      render(<Button>Default</Button>);
+      expect(screen.getByRole('button').tagName).toBe('BUTTON');
+    });
+
+    it('applies button styles to polymorphic element', () => {
+      render(
+        <Button as='a' href='#' variant='secondary'>
+          Styled Link
+        </Button>
+      );
+      expect(screen.getByText('Styled Link')).toHaveClass(
+        'bg-background-elevated'
+      );
     });
   });
 

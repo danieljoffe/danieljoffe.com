@@ -33,6 +33,13 @@ export interface CardContentProps extends Omit<
   children: ReactNode;
 }
 
+export interface CardFooterProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
+  children: ReactNode;
+}
+
 const paddingStyles: Record<CardPadding, string> = {
   none: '',
   sm: 'p-4',
@@ -50,7 +57,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={cn(
           'rounded-lg border border-border',
-          elevated ? 'bg-background-elevated' : 'bg-card',
+          elevated
+            ? 'bg-background-elevated shadow-md shadow-black/10 border-border-strong'
+            : 'bg-card',
           paddingStyles[padding],
           className
         )}
@@ -77,7 +86,11 @@ CardHeader.displayName = 'CardHeader';
 export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <h3 ref={ref} className={cn(className)} {...props}>
+      <h3
+        ref={ref}
+        className={cn('text-lg font-semibold text-foreground', className)}
+        {...props}
+      >
         {children}
       </h3>
     );
@@ -95,3 +108,18 @@ export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
   }
 );
 CardContent.displayName = 'CardContent';
+
+export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn('mt-4 flex items-center gap-2', className)}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+CardFooter.displayName = 'CardFooter';

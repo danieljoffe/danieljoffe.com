@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Loading } from './Loading';
 
 const meta = {
-  title: 'Components/Loading',
+  title: 'Feedback/Loading',
   component: Loading,
   tags: ['autodocs'],
   argTypes: {
@@ -43,7 +43,7 @@ export const CustomLabel: Story = {
 
 export const WithCustomClass: Story = {
   args: {
-    className: 'bg-neutral-100 rounded-lg',
+    className: 'bg-background-elevated rounded-lg',
   },
   parameters: {
     docs: {
