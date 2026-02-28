@@ -1,7 +1,11 @@
 import puppeteer from 'puppeteer';
 import lighthouse from 'lighthouse';
 import AxePuppeteer from '@axe-core/puppeteer';
-import { LIGHTHOUSE_CONFIG } from './config/lighthouse.js';
+import type { DeviceMode } from '@danieljoffe.com/shared-audit';
+import {
+  LIGHTHOUSE_CONFIG,
+  LIGHTHOUSE_DESKTOP_CONFIG,
+} from './config/lighthouse.js';
 import { supabase } from './supabase.js';
 
 export interface ScanResults {
@@ -13,7 +17,10 @@ export interface ScanResults {
 }
 const executablePath = process.env['CHROME_PATH'] || '/usr/bin/chromium';
 
-export async function runScan(url: string): Promise<ScanResults> {
+export async function runScan(
+  url: string,
+  deviceMode: DeviceMode = 'mobile'
+): Promise<ScanResults> {
   const browser = await puppeteer.launch({
     executablePath,
     args: [
@@ -27,11 +34,14 @@ export async function runScan(url: string): Promise<ScanResults> {
     ],
   });
 
+  const isDesktop = deviceMode === 'desktop';
+  const lhConfig = isDesktop ? LIGHTHOUSE_DESKTOP_CONFIG : LIGHTHOUSE_CONFIG;
+
   try {
     // Run Lighthouse
     const port = Number(new URL(browser.wsEndpoint()).port);
     const lighthouseResult = await lighthouse(url, {
-      ...LIGHTHOUSE_CONFIG,
+      ...lhConfig,
       port,
     });
 
@@ -41,9 +51,13 @@ export async function runScan(url: string): Promise<ScanResults> {
 
     const lhr = lighthouseResult.lhr;
 
-    // Run axe-core
+    // Run axe-core — match viewport to device mode
     const page = await browser.newPage();
-    await page.setViewport({ width: 375, height: 812, deviceScaleFactor: 3 });
+    await page.setViewport({
+      width: lhConfig.screenEmulation.width,
+      height: lhConfig.screenEmulation.height,
+      deviceScaleFactor: lhConfig.screenEmulation.deviceScaleFactor,
+    });
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
     const axeResults = await new AxePuppeteer(page).analyze();

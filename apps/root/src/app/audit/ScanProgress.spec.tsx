@@ -61,4 +61,15 @@ describe('ScanProgress', () => {
     expect(valueAfter5s).toBeGreaterThan(0);
     expect(valueAfter5s).toBeLessThanOrEqual(90);
   });
+
+  it('shows device label in footer text', () => {
+    render(<ScanProgress url='https://example.com' device='desktop' />);
+    expect(screen.getByText(/desktop/i)).toBeInTheDocument();
+  });
+
+  it('shows both-mode steps when device is both', () => {
+    render(<ScanProgress url='https://example.com' device='both' />);
+    expect(screen.getByText('Running mobile scan...')).toBeInTheDocument();
+    expect(screen.getByText('Running desktop scan...')).toBeInTheDocument();
+  });
 });

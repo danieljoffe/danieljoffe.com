@@ -1,3 +1,5 @@
+export type DeviceMode = 'mobile' | 'desktop';
+
 export interface Scan {
   id: string;
   url: string;
@@ -23,6 +25,8 @@ export interface Scan {
   axe_raw: Record<string, unknown> | null;
   source: string;
   ip_hash: string | null;
+  device_mode: DeviceMode;
+  paired_scan_id: string | null;
 }
 
 export interface ScanIssue {

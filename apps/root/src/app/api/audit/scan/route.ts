@@ -11,10 +11,62 @@ const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_HOURS = 1;
 const CACHE_WINDOW_HOURS = 1;
 
+type DeviceSelection = 'mobile' | 'desktop' | 'both';
+
+function parseDevice(raw: unknown): DeviceSelection {
+  if (raw === 'desktop') return 'desktop';
+  if (raw === 'both') return 'both';
+  return 'mobile';
+}
+
+function fireScan(
+  serviceUrl: string,
+  apiKey: string,
+  payload: { scan_id: string; url: string; device_mode: string },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any
+) {
+  fetch(`${serviceUrl}/run-scan`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    },
+    body: JSON.stringify(payload),
+  }).catch(async (fetchError: unknown) => {
+    await supabase
+      .from('scans')
+      .update({
+        status: 'failed',
+        error_message: 'Failed to reach scan service',
+      })
+      .eq('id', payload.scan_id);
+
+    captureApiError(
+      fetchError instanceof Error
+        ? fetchError
+        : new Error('Scan service fetch failed'),
+      '/api/audit/scan',
+      'POST',
+      500,
+      { scanId: payload.scan_id }
+    );
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, source } = body as { url?: string; source?: string };
+    const {
+      url,
+      source,
+      device: rawDevice,
+    } = body as {
+      url?: string;
+      source?: string;
+      device?: string;
+    };
+    const device = parseDevice(rawDevice);
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
@@ -52,7 +104,9 @@ export async function POST(request: NextRequest) {
       .eq('ip_hash', ipHash)
       .gte('created_at', oneHourAgo);
 
-    if (recentScans !== null && recentScans >= RATE_LIMIT_MAX) {
+    // "both" counts as 2 scans against the limit
+    const scanCount = device === 'both' ? 2 : 1;
+    if (recentScans !== null && recentScans + scanCount > RATE_LIMIT_MAX) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
         { status: 429 }
@@ -62,36 +116,121 @@ export async function POST(request: NextRequest) {
     // Normalize and check for cached result
     const normalized = normalizeUrl(url);
 
-    const { data: cachedScan } = await supabase
-      .from('scans')
-      .select('id, status')
-      .eq('normalized_url', normalized)
-      .eq('status', 'completed')
-      .gte(
-        'completed_at',
-        new Date(Date.now() - CACHE_WINDOW_HOURS * 60 * 60 * 1000).toISOString()
-      )
-      .order('completed_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // For single-device scans, check cache with device_mode filter
+    if (device !== 'both') {
+      const { data: cachedScan } = await supabase
+        .from('scans')
+        .select('id, status')
+        .eq('normalized_url', normalized)
+        .eq('device_mode', device)
+        .eq('status', 'completed')
+        .gte(
+          'completed_at',
+          new Date(
+            Date.now() - CACHE_WINDOW_HOURS * 60 * 60 * 1000
+          ).toISOString()
+        )
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (cachedScan) {
+      if (cachedScan) {
+        return NextResponse.json({
+          scan_id: cachedScan.id,
+          status: 'completed',
+          cached: true,
+        });
+      }
+    }
+
+    const scanServiceUrl = process.env['SCAN_SERVICE_URL'];
+    const scanServiceApiKey = process.env['SCAN_SERVICE_API_KEY'];
+    const sourceValue = source || 'organic';
+
+    // --- "both" mode: create two scans, link them ---
+    if (device === 'both') {
+      const { data: mobileScan, error: mobileErr } = await supabase
+        .from('scans')
+        .insert({
+          url,
+          normalized_url: normalized,
+          status: 'pending',
+          source: sourceValue,
+          ip_hash: ipHash,
+          device_mode: 'mobile',
+        })
+        .select('id')
+        .single();
+
+      if (mobileErr || !mobileScan) {
+        throw new Error(mobileErr?.message || 'Failed to create mobile scan');
+      }
+
+      const { data: desktopScan, error: desktopErr } = await supabase
+        .from('scans')
+        .insert({
+          url,
+          normalized_url: normalized,
+          status: 'pending',
+          source: sourceValue,
+          ip_hash: ipHash,
+          device_mode: 'desktop',
+        })
+        .select('id')
+        .single();
+
+      if (desktopErr || !desktopScan) {
+        throw new Error(desktopErr?.message || 'Failed to create desktop scan');
+      }
+
+      // Link the two scans to each other
+      await supabase
+        .from('scans')
+        .update({ paired_scan_id: desktopScan.id })
+        .eq('id', mobileScan.id);
+      await supabase
+        .from('scans')
+        .update({ paired_scan_id: mobileScan.id })
+        .eq('id', desktopScan.id);
+
+      // Fire both scans
+      if (scanServiceUrl && scanServiceApiKey) {
+        fireScan(
+          scanServiceUrl,
+          scanServiceApiKey,
+          { scan_id: mobileScan.id, url: normalized, device_mode: 'mobile' },
+          supabase
+        );
+        fireScan(
+          scanServiceUrl,
+          scanServiceApiKey,
+          {
+            scan_id: desktopScan.id,
+            url: normalized,
+            device_mode: 'desktop',
+          },
+          supabase
+        );
+      }
+
       return NextResponse.json({
-        scan_id: cachedScan.id,
-        status: 'completed',
-        cached: true,
+        scan_id: mobileScan.id,
+        desktop_scan_id: desktopScan.id,
+        status: 'pending',
+        device: 'both',
       });
     }
 
-    // Create new scan
+    // --- Single device mode ---
     const { data: newScan, error: insertError } = await supabase
       .from('scans')
       .insert({
         url,
         normalized_url: normalized,
         status: 'pending',
-        source: source || 'organic',
+        source: sourceValue,
         ip_hash: ipHash,
+        device_mode: device,
       })
       .select('id')
       .single();
@@ -101,36 +240,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Fire-and-forget scan trigger
-    const scanServiceUrl = process.env['SCAN_SERVICE_URL'];
-    const scanServiceApiKey = process.env['SCAN_SERVICE_API_KEY'];
-
     if (scanServiceUrl && scanServiceApiKey) {
-      fetch(`${scanServiceUrl}/run-scan`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': scanServiceApiKey,
-        },
-        body: JSON.stringify({ scan_id: newScan.id, url: normalized }),
-      }).catch(async fetchError => {
-        await supabase
-          .from('scans')
-          .update({
-            status: 'failed',
-            error_message: 'Failed to reach scan service',
-          })
-          .eq('id', newScan.id);
-
-        captureApiError(
-          fetchError instanceof Error
-            ? fetchError
-            : new Error('Scan service fetch failed'),
-          '/api/audit/scan',
-          'POST',
-          500,
-          { scanId: newScan.id }
-        );
-      });
+      fireScan(
+        scanServiceUrl,
+        scanServiceApiKey,
+        { scan_id: newScan.id, url: normalized, device_mode: device },
+        supabase
+      );
     }
 
     return NextResponse.json({

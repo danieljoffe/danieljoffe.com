@@ -25,7 +25,15 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/run-scan', authMiddleware, (req, res) => {
-  const { scan_id, url } = req.body as { scan_id?: string; url?: string };
+  const { scan_id, url, device_mode } = req.body as {
+    scan_id?: string;
+    url?: string;
+    device_mode?: string;
+  };
+  const device =
+    device_mode === 'mobile' || device_mode === 'desktop'
+      ? device_mode
+      : 'mobile';
 
   if (!scan_id || !url) {
     res.status(400).json({ error: 'Missing scan_id or url' });
@@ -52,7 +60,7 @@ app.post('/run-scan', authMiddleware, (req, res) => {
         .eq('id', scan_id);
 
       const results = await Promise.race([
-        runScan(url),
+        runScan(url, device),
         new Promise<never>((_resolve, reject) =>
           setTimeout(
             () => reject(new Error('Scan timed out after 90s')),
@@ -132,7 +140,7 @@ app.post('/run-scan', authMiddleware, (req, res) => {
       }
 
       console.log(
-        `Scan completed: ${scan_id} | Grade: ${grade.grade} | Issues: ${issues.length}`
+        `Scan completed: ${scan_id} | ${device} | Grade: ${grade.grade} | Issues: ${issues.length}`
       );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';

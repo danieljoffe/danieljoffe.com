@@ -22,6 +22,8 @@ const mockScan = {
   page_description: 'An example site',
   page_screenshot_url: null,
   source: 'organic',
+  device_mode: 'mobile',
+  paired_scan_id: null,
 };
 
 const mockIssues = [
@@ -98,6 +100,13 @@ jest.mock('./CTASection', () => ({
 jest.mock('./ReportAnalytics', () => ({
   __esModule: true,
   default: function ReportAnalytics() {
+    return null;
+  },
+}));
+
+jest.mock('./DeviceTabs', () => ({
+  __esModule: true,
+  default: function DeviceTabs() {
     return null;
   },
 }));

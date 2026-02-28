@@ -39,6 +39,40 @@ describe('URLInputForm', () => {
     ).toBeInTheDocument();
   });
 
+  it('renders the device selector with Mobile selected by default', () => {
+    render(<URLInputForm />);
+    const mobileRadio = screen.getByRole('radio', { name: /mobile/i });
+    expect(mobileRadio).toBeChecked();
+  });
+
+  it('sends device in the POST body', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          scan_id: 'cached-id',
+          status: 'completed',
+          cached: true,
+        }),
+    });
+
+    render(<URLInputForm />);
+    const input = screen.getByRole('textbox', { name: /website url/i });
+
+    // Select desktop
+    fireEvent.click(screen.getByRole('radio', { name: /desktop/i }));
+
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'https://example.com' } });
+      fireEvent.click(screen.getByRole('button', { name: /audit this site/i }));
+    });
+
+    const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+    const body = JSON.parse(fetchCall[1].body);
+    expect(body.device).toBe('desktop');
+  });
+
   it('shows validation error for empty URL', async () => {
     render(<URLInputForm />);
     fireEvent.click(screen.getByRole('button', { name: /audit this site/i }));

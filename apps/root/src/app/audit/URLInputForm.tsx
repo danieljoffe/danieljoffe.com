@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Check, Monitor, Smartphone } from 'lucide-react';
 import {
   Alert,
   Button,
@@ -12,10 +13,12 @@ import {
 import { analytics } from '@/lib/analytics';
 import ScanProgress from './ScanProgress';
 
+type DeviceSelection = 'mobile' | 'desktop' | 'both';
+
 type ScanState =
   | { phase: 'idle' }
   | { phase: 'submitting' }
-  | { phase: 'polling'; scanId: string; url: string }
+  | { phase: 'polling'; scanId: string; url: string; device: DeviceSelection }
   | { phase: 'error'; message: string };
 
 /** Client-safe URL validation (no node:crypto dependency). */
@@ -40,9 +43,16 @@ function isValidClientUrl(url: string): boolean {
 
 const POLL_INTERVAL_MS = 2000;
 
+const DEVICE_OPTIONS: { value: DeviceSelection; label: string }[] = [
+  { value: 'mobile', label: 'Mobile' },
+  { value: 'desktop', label: 'Desktop' },
+  { value: 'both', label: 'Both' },
+];
+
 export default function URLInputForm() {
   const router = useRouter();
   const [url, setUrl] = useState('');
+  const [device, setDevice] = useState<DeviceSelection>('mobile');
   const [validationError, setValidationError] = useState('');
   const [state, setState] = useState<ScanState>({ phase: 'idle' });
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -116,7 +126,7 @@ export default function URLInputForm() {
       const res = await fetch('/api/audit/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: trimmed, source: 'organic' }),
+        body: JSON.stringify({ url: trimmed, source: 'organic', device }),
       });
 
       const data = await res.json();
@@ -139,8 +149,13 @@ export default function URLInputForm() {
         return;
       }
 
-      // Start polling
-      setState({ phase: 'polling', scanId: data.scan_id, url: trimmed });
+      // Start polling (for "both", poll the mobile scan — it's the primary)
+      setState({
+        phase: 'polling',
+        scanId: data.scan_id,
+        url: trimmed,
+        device,
+      });
     } catch {
       const message = 'Network error. Please try again.';
       analytics.auditScanFailed(trimmed, message);
@@ -149,7 +164,7 @@ export default function URLInputForm() {
   };
 
   if (state.phase === 'polling') {
-    return <ScanProgress url={state.url} />;
+    return <ScanProgress url={state.url} device={state.device} />;
   }
 
   return (
@@ -175,6 +190,58 @@ export default function URLInputForm() {
             error={validationError || undefined}
             disabled={state.phase === 'submitting'}
           />
+          <fieldset
+            className='flex justify-around'
+            aria-label='Device type'
+            disabled={state.phase === 'submitting'}
+          >
+            {DEVICE_OPTIONS.map(opt => {
+              const selected = device === opt.value;
+              return (
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-2 cursor-pointer text-sm font-medium transition-colors ${
+                    selected
+                      ? 'text-foreground'
+                      : 'text-foreground-muted hover:text-foreground'
+                  }`}
+                >
+                  <input
+                    type='radio'
+                    name='device'
+                    value={opt.value}
+                    checked={selected}
+                    onChange={() => setDevice(opt.value)}
+                    className='sr-only peer'
+                  />
+                  <span
+                    className={`inline-flex items-center justify-center size-5 rounded-full border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 ${
+                      selected
+                        ? 'border-accent bg-accent text-background'
+                        : 'border-border bg-background'
+                    }`}
+                    aria-hidden='true'
+                  >
+                    {selected && <Check className='size-3' strokeWidth={3} />}
+                  </span>
+                  {opt.value === 'mobile' && (
+                    <Smartphone className='size-4' aria-hidden='true' />
+                  )}
+                  {opt.value === 'desktop' && (
+                    <Monitor className='size-4' aria-hidden='true' />
+                  )}
+                  {opt.value === 'both' && (
+                    <>
+                      <Smartphone className='size-3.5' aria-hidden='true' />
+                      <span aria-hidden='true'>+</span>
+                      <Monitor className='size-3.5' aria-hidden='true' />
+                    </>
+                  )}
+                  {opt.label}
+                </label>
+              );
+            })}
+          </fieldset>
           <Button
             type='submit'
             variant='primary'

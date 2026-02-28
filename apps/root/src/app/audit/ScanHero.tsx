@@ -22,7 +22,8 @@ export default function ScanHero({ scanCount }: ScanHeroProps) {
               Free website performance audit
             </h1>
             <p className='text-lg text-foreground-muted mt-4'>
-              Paste your URL. Get a detailed report in 30 seconds.
+              Paste your URL. <br />
+              Get a detailed report in 30 seconds.
             </p>
           </div>
           <URLInputForm />

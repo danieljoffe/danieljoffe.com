@@ -1,5 +1,9 @@
 const nextJest = require('next/jest.js').default ?? require('next/jest.js');
 
+// Ensure NODE_ENV=test so react-dom/test-utils loads the development build
+// (the production build removed React.act in React 19, causing flaky failures).
+process.env.NODE_ENV = 'test';
+
 const createJestConfig = nextJest({
   dir: './',
 });

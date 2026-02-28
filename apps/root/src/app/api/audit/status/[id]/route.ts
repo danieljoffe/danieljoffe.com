@@ -24,7 +24,9 @@ export async function GET(
 
     const { data: scan, error } = await supabase
       .from('scans')
-      .select('id, status, error_message, grade_overall')
+      .select(
+        'id, status, error_message, grade_overall, device_mode, paired_scan_id'
+      )
       .eq('id', id)
       .single();
 
@@ -32,11 +34,25 @@ export async function GET(
       return NextResponse.json({ error: 'Scan not found' }, { status: 404 });
     }
 
+    // If this scan has a paired scan, include its status
+    let paired_status: string | null = null;
+    if (scan.paired_scan_id) {
+      const { data: paired } = await supabase
+        .from('scans')
+        .select('status')
+        .eq('id', scan.paired_scan_id)
+        .single();
+      paired_status = paired?.status ?? null;
+    }
+
     return NextResponse.json({
       id: scan.id,
       status: scan.status,
       error_message: scan.error_message,
       grade: scan.grade_overall,
+      device_mode: scan.device_mode,
+      paired_scan_id: scan.paired_scan_id,
+      paired_status,
     });
   } catch (error) {
     captureApiError(

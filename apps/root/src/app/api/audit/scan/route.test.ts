@@ -158,6 +158,92 @@ describe('POST /api/audit/scan', () => {
     expect(json.status).toBe('pending');
   });
 
+  it('passes device_mode in scan insert', async () => {
+    // Rate limit check: under limit
+    const rateLimitChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+    };
+    mockSelect.mockReturnValueOnce(rateLimitChain);
+    rateLimitChain.gte.mockResolvedValueOnce({ count: 0 });
+
+    // Cache check: no cached result
+    const cacheChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    mockSelect.mockReturnValueOnce(cacheChain);
+
+    // Insert scan
+    const insertChain = {
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { id: 'desktop-scan-id' },
+        error: null,
+      }),
+    };
+    mockInsert.mockReturnValueOnce(insertChain);
+
+    const req = createRequest({
+      url: 'https://example.com',
+      device: 'desktop',
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    // Verify insert was called with device_mode
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ device_mode: 'desktop' })
+    );
+  });
+
+  it('creates two scans for both mode', async () => {
+    // Rate limit check: under limit
+    const rateLimitChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+    };
+    mockSelect.mockReturnValueOnce(rateLimitChain);
+    rateLimitChain.gte.mockResolvedValueOnce({ count: 0 });
+
+    // Two inserts (mobile + desktop)
+    const mobileInsertChain = {
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { id: 'mobile-scan-id' },
+        error: null,
+      }),
+    };
+    const desktopInsertChain = {
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { id: 'desktop-scan-id' },
+        error: null,
+      }),
+    };
+    mockInsert
+      .mockReturnValueOnce(mobileInsertChain)
+      .mockReturnValueOnce(desktopInsertChain);
+
+    // Two paired_scan_id updates
+    const updateChain = { eq: jest.fn().mockResolvedValue({ error: null }) };
+    mockUpdate.mockReturnValue(updateChain);
+
+    const req = createRequest({
+      url: 'https://example.com',
+      device: 'both',
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.scan_id).toBe('mobile-scan-id');
+    expect(json.desktop_scan_id).toBe('desktop-scan-id');
+    expect(json.device).toBe('both');
+  });
+
   it('returns 500 on unexpected error', async () => {
     // Make Supabase throw
     mockSelect.mockImplementationOnce(() => {

@@ -56,12 +56,14 @@ describe('GET /api/audit/status/[id]', () => {
     expect(json.error).toBe('Scan not found');
   });
 
-  it('returns scan status for valid UUID', async () => {
+  it('returns scan status with device_mode for valid UUID', async () => {
     const scanData = {
       id: '550e8400-e29b-41d4-a716-446655440000',
       status: 'completed',
       error_message: null,
       grade_overall: 'B',
+      device_mode: 'mobile',
+      paired_scan_id: null,
     };
     mockSingle.mockResolvedValueOnce({ data: scanData, error: null });
 
@@ -74,7 +76,9 @@ describe('GET /api/audit/status/[id]', () => {
     expect(json.id).toBe(scanData.id);
     expect(json.status).toBe('completed');
     expect(json.grade).toBe('B');
-    expect(json.error_message).toBeNull();
+    expect(json.device_mode).toBe('mobile');
+    expect(json.paired_scan_id).toBeNull();
+    expect(json.paired_status).toBeNull();
   });
 
   it('returns pending status with no grade', async () => {
@@ -83,6 +87,8 @@ describe('GET /api/audit/status/[id]', () => {
       status: 'pending',
       error_message: null,
       grade_overall: null,
+      device_mode: 'desktop',
+      paired_scan_id: null,
     };
     mockSingle.mockResolvedValueOnce({ data: scanData, error: null });
 
@@ -94,5 +100,33 @@ describe('GET /api/audit/status/[id]', () => {
     const json = await res.json();
     expect(json.status).toBe('pending');
     expect(json.grade).toBeNull();
+    expect(json.device_mode).toBe('desktop');
+  });
+
+  it('returns paired_status when paired_scan_id exists', async () => {
+    const scanData = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      status: 'completed',
+      error_message: null,
+      grade_overall: 'B',
+      device_mode: 'mobile',
+      paired_scan_id: '660e8400-e29b-41d4-a716-446655440000',
+    };
+    // First call: main scan lookup
+    mockSingle.mockResolvedValueOnce({ data: scanData, error: null });
+    // Second call: paired scan status lookup
+    mockSingle.mockResolvedValueOnce({
+      data: { status: 'running' },
+      error: null,
+    });
+
+    const req = createRequest(scanData.id);
+    const res = await GET(req, {
+      params: Promise.resolve({ id: scanData.id }),
+    });
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.paired_scan_id).toBe('660e8400-e29b-41d4-a716-446655440000');
+    expect(json.paired_status).toBe('running');
   });
 });

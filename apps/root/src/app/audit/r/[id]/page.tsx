@@ -7,6 +7,7 @@ import {
   GRADE_MAP,
   type Scan,
   type ScanIssue,
+  type DeviceMode,
 } from '@danieljoffe.com/shared-audit';
 import ReportHeader from './ReportHeader';
 import ScoreCards from './ScoreCards';
@@ -14,6 +15,7 @@ import CoreWebVitals from './CoreWebVitals';
 import IssueList from './IssueList';
 import CTASection from './CTASection';
 import ReportAnalytics from './ReportAnalytics';
+import DeviceTabs from './DeviceTabs';
 
 interface ReportPageProps {
   params: Promise<{ id: string }>;
@@ -42,6 +44,8 @@ type ScanReport = Pick<
   | 'page_description'
   | 'page_screenshot_url'
   | 'source'
+  | 'device_mode'
+  | 'paired_scan_id'
 >;
 
 async function getReportData(id: string) {
@@ -55,7 +59,8 @@ async function getReportData(id: string) {
         'id, url, normalized_url, status, created_at, completed_at,',
         'error_message, score_performance, score_accessibility, score_best_practices,',
         'score_seo, grade_overall, fcp_ms, lcp_ms, tbt_ms, cls, si_ms,',
-        'page_title, page_description, page_screenshot_url, source',
+        'page_title, page_description, page_screenshot_url, source,',
+        'device_mode, paired_scan_id',
       ].join(' ')
     )
     .eq('id', id)
@@ -118,6 +123,8 @@ export default async function ReportPage({ params }: ReportPageProps) {
   }
 
   const { scan, issues } = data;
+  const deviceMode: DeviceMode =
+    scan.device_mode === 'desktop' ? 'desktop' : 'mobile';
 
   return (
     <MainContent>
@@ -128,14 +135,19 @@ export default async function ReportPage({ params }: ReportPageProps) {
         screenshotUrl={scan.page_screenshot_url}
         gradeOverall={scan.grade_overall}
         completedAt={scan.completed_at}
-        deviceMode='mobile'
+        deviceMode={deviceMode}
+      />
+      <DeviceTabs
+        currentDevice={deviceMode}
+        currentScanId={scan.id}
+        pairedScanId={scan.paired_scan_id}
       />
       <ScoreCards
         performance={scan.score_performance}
         accessibility={scan.score_accessibility}
         seo={scan.score_seo}
         bestPractices={scan.score_best_practices}
-        deviceMode='mobile'
+        deviceMode={deviceMode}
       />
       <CoreWebVitals
         fcpMs={scan.fcp_ms}
@@ -143,7 +155,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
         tbtMs={scan.tbt_ms}
         cls={scan.cls}
         siMs={scan.si_ms}
-        deviceMode='mobile'
+        deviceMode={deviceMode}
       />
       <IssueList issues={issues} scanId={scan.id} />
       <CTASection />
