@@ -44,6 +44,43 @@ const nextConfig = {
     webpackBuildWorker: !isTest && !isCI,
   },
 
+  // Include OG image fonts and profile image in serverless function bundles.
+  // readFile(process.cwd()) paths aren't auto-traced by Next.js file tracing.
+  outputFileTracingIncludes: {
+    '/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/about/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/experience/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/experience/[slug]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/projects/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/projects/[slug]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/services/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/audit/r/[id]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+  },
+
   // Image optimization
   images: {
     remotePatterns: [

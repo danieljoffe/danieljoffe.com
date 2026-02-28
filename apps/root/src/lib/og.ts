@@ -2,14 +2,31 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { UNSPLASH_PHOTOS_URL } from '@/utils/constants';
 
-const FONTS_DIR = 'assets/fonts/og';
+// Lazy-loaded font and image data, cached after first call.
+// Uses readFile + process.cwd() (the official Next.js pattern for OG fonts).
+// outputFileTracingIncludes in next.config.js ensures these files are bundled
+// into Vercel serverless functions.
+let _fontsPromise: Promise<Buffer[]> | null = null;
+let _profilePromise: Promise<Buffer> | null = null;
+
+function loadFonts(): Promise<Buffer[]> {
+  const dir = join(process.cwd(), 'assets', 'fonts', 'og');
+  return Promise.all([
+    readFile(join(dir, 'Inter-Regular.ttf')),
+    readFile(join(dir, 'Inter-Medium.ttf')),
+    readFile(join(dir, 'Fraunces-Bold.ttf')),
+  ]);
+}
+
+function loadProfileImage(): Promise<Buffer> {
+  return readFile(
+    join(process.cwd(), 'public', 'images', 'daniel-joffe-profile.png')
+  );
+}
 
 export async function getOgFonts() {
-  const [interRegular, interMedium, frauncesRegular] = await Promise.all([
-    readFile(join(process.cwd(), FONTS_DIR, 'Inter-Regular.ttf')),
-    readFile(join(process.cwd(), FONTS_DIR, 'Inter-Medium.ttf')),
-    readFile(join(process.cwd(), FONTS_DIR, 'Fraunces-Bold.ttf')),
-  ]);
+  if (!_fontsPromise) _fontsPromise = loadFonts();
+  const [interRegular, interMedium, frauncesRegular] = await _fontsPromise;
 
   return [
     {
@@ -34,11 +51,8 @@ export async function getOgFonts() {
 }
 
 export async function getProfileImageBase64(): Promise<string> {
-  const filePath = join(
-    process.cwd(),
-    'public/images/daniel-joffe-profile.png'
-  );
-  const buffer = await readFile(filePath);
+  if (!_profilePromise) _profilePromise = loadProfileImage();
+  const buffer = await _profilePromise;
   return `data:image/png;base64,${buffer.toString('base64')}`;
 }
 
