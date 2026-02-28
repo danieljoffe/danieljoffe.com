@@ -28,6 +28,7 @@ function isValidClientUrl(url: string): boolean {
     ) {
       normalized = `https://${normalized}`;
     }
+    if (/\s/.test(normalized)) return false;
     const parsed = new URL(normalized);
     if (!['http:', 'https:'].includes(parsed.protocol)) return false;
     if (!parsed.hostname.includes('.')) return false;
