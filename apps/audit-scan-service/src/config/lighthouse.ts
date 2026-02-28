@@ -9,7 +9,7 @@ export const LIGHTHOUSE_CONFIG = {
   ] as string[],
   formFactor: 'mobile' as const,
   throttling: {
-    cpuSlowdownMultiplier: 4,
+    cpuSlowdownMultiplier: 2,
     downloadThroughputKbps: 1600,
     uploadThroughputKbps: 750,
     rttMs: 150,

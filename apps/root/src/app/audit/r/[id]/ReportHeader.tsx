@@ -12,6 +12,7 @@ interface ReportHeaderProps {
   screenshotUrl: string | null;
   gradeOverall: string | null;
   completedAt: string | null;
+  deviceMode?: 'mobile' | 'desktop';
 }
 
 function formatDate(dateStr: string | null): string {
@@ -30,6 +31,7 @@ export default function ReportHeader({
   screenshotUrl,
   gradeOverall,
   completedAt,
+  deviceMode,
 }: ReportHeaderProps) {
   const grade = gradeOverall ? GRADE_MAP[gradeOverall] : null;
 
@@ -96,6 +98,11 @@ export default function ReportHeader({
                   Scanned {formatDate(completedAt)}
                 </p>
               )}
+              <p className='text-xs text-foreground-subtle mt-0.5'>
+                {deviceMode === 'desktop'
+                  ? 'Tested on Desktop (Broadband)'
+                  : 'Tested on Mobile (4G)'}
+              </p>
             </div>
           </div>
         </div>

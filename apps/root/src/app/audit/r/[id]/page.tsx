@@ -128,12 +128,14 @@ export default async function ReportPage({ params }: ReportPageProps) {
         screenshotUrl={scan.page_screenshot_url}
         gradeOverall={scan.grade_overall}
         completedAt={scan.completed_at}
+        deviceMode='mobile'
       />
       <ScoreCards
         performance={scan.score_performance}
         accessibility={scan.score_accessibility}
         seo={scan.score_seo}
         bestPractices={scan.score_best_practices}
+        deviceMode='mobile'
       />
       <CoreWebVitals
         fcpMs={scan.fcp_ms}
@@ -141,6 +143,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
         tbtMs={scan.tbt_ms}
         cls={scan.cls}
         siMs={scan.si_ms}
+        deviceMode='mobile'
       />
       <IssueList issues={issues} scanId={scan.id} />
       <CTASection />
