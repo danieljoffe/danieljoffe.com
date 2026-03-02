@@ -59,6 +59,7 @@ export default function ReportHeader({
             <ExpandableScreenshot
               screenshotUrl={screenshotUrl}
               alt={`Screenshot of ${pageTitle || url}`}
+              deviceMode={deviceMode}
             />
           </div>
 
