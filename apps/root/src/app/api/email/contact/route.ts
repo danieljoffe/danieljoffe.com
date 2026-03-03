@@ -3,7 +3,6 @@ import { ErrorResponse, formSchema, SuccessResponse } from './schema';
 import {
   requestFromSource,
   sendEmail,
-  validateEmail,
   validateFormData,
   rateLimit,
 } from './helpers';
@@ -30,7 +29,6 @@ export async function POST(
     await rateLimit(request);
     await requestFromSource(request, ABOUT_LINK.href);
     await validateFormData(data, formSchema);
-    await validateEmail(data.email);
     await sendEmail(data);
 
     const successResponse: SuccessResponse = {

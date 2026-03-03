@@ -69,6 +69,8 @@ export default defineConfig({
       MOCK_FONTS: 'true',
       // Use hCaptcha test sitekey (always passes verification)
       NEXT_PUBLIC_HCAPTCHA_SITE_ID: '10000000-ffff-ffff-ffff-000000000001',
+      // Disable Resend so E2E tests never send real emails
+      RESEND_API_KEY: '',
       ...(isCI && {
         // Disable Sentry to speed up startup
         SENTRY_DSN: '',

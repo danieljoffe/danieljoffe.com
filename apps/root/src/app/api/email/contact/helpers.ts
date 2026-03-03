@@ -1,14 +1,8 @@
-import {
-  ErrorResponse,
-  FormFieldSchema,
-  RawFormData,
-  ValidKitErrorResponse,
-} from './schema';
+import { ErrorResponse, FormFieldSchema, RawFormData } from './schema';
 import { createResendClient, EMAIL_FROM, EMAIL_TO } from '@/lib/email/resend';
 import ContactNotification from '@/components/emails/ContactNotification';
 import * as yup from 'yup';
 import { ValidationError } from 'yup';
-import { serverEnv } from '@/lib/env';
 import { NextRequest } from 'next/server';
 import DOMPurify from 'isomorphic-dompurify';
 import { FORM_LIMITS } from '@/utils/constants';
@@ -77,69 +71,6 @@ export const validateFormData = async <T extends yup.AnyObject>(
         message: error.message,
       },
       statusCode: 400,
-    } as ErrorResponse;
-  }
-};
-
-/**
- * Validates email address using ValidKit API service
- *
- * Performs real-time email validation to check:
- * - Email format validity
- * - Domain existence
- * - Mailbox deliverability
- * - Disposable email detection
- *
- * @param email - Email address to validate
- * @returns Promise that resolves to null on success
- * @throws {ErrorResponse} When email is invalid or service is unavailable
- *
- * @example
- * ```typescript
- * await validateEmail("user@example.com");
- * // Throws error if email is invalid or undeliverable
- * ```
- */
-export const validateEmail = async (
-  email: string
-): Promise<ErrorResponse | null> => {
-  // Skip external email validation in development to avoid hitting API rate limits
-  if (serverEnv.NODE_ENV === 'development') return null;
-
-  if (!serverEnv.VALIDKIT_API_KEY) {
-    throw {
-      error: {
-        path: 'root.configurationError',
-        message: `Sorry, we're experiencing technical difficulties. Please try again later.`,
-      },
-      statusCode: 500,
-    } as ErrorResponse;
-  }
-
-  try {
-    const res = await fetch(serverEnv.VALIDKIT_API_URL ?? '', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': serverEnv.VALIDKIT_API_KEY ?? '',
-      },
-    });
-    const response = await res.json();
-    const { error } = response as ValidKitErrorResponse;
-
-    if (error) {
-      throw response;
-    }
-    return null;
-  } catch (e: unknown) {
-    const error = e as ValidKitErrorResponse;
-    throw {
-      error: {
-        path: 'email',
-        message: error.error.message,
-      },
-      statusCode: error.error.statusCode,
     } as ErrorResponse;
   }
 };
@@ -280,9 +211,6 @@ export const requestFromSource = async (
 export const rateLimit = async (
   req: NextRequest
 ): Promise<ErrorResponse | null> => {
-  // Skip rate limiting in development to avoid blocking during testing
-  if (serverEnv.NODE_ENV === 'development') return null;
-
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip');

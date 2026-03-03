@@ -10,6 +10,13 @@ import {
   PROJECTS_LINK,
 } from '@/utils/constants';
 
+const mockPush = jest.fn();
+
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush, prefetch: jest.fn() }),
+}));
+
 // Mock next/link
 jest.mock('next/link', () => {
   const React = require('react');
@@ -98,10 +105,10 @@ describe('NavLinks', () => {
     expect(projectsLink).toHaveAttribute('aria-current', 'page');
   });
 
-  test('calls handleClick after link click with delay', async () => {
-    jest.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+  test('calls handleClick and router.push immediately on link click in mobile context', async () => {
+    const user = userEvent.setup();
     const handleClick = jest.fn();
+    mockPush.mockReset();
 
     render(<NavLinks pathname='/' handleClick={handleClick} />);
     const aboutLink = screen.getByRole('menuitem', {
@@ -110,13 +117,8 @@ describe('NavLinks', () => {
 
     await user.click(aboutLink);
 
-    expect(handleClick).not.toHaveBeenCalled();
-
-    jest.advanceTimersByTime(150);
-
     expect(handleClick).toHaveBeenCalledTimes(1);
-
-    jest.useRealTimers();
+    expect(mockPush).toHaveBeenCalledWith('/about');
   });
 
   test('renders links with correct href values', () => {

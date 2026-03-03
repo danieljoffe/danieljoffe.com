@@ -6,14 +6,12 @@ import { NextRequest } from 'next/server';
 const mockRateLimit = jest.fn();
 const mockRequestFromSource = jest.fn();
 const mockValidateFormData = jest.fn();
-const mockValidateEmail = jest.fn();
 const mockSendEmail = jest.fn();
 
 jest.mock('./helpers', () => ({
   rateLimit: (...args: unknown[]) => mockRateLimit(...args),
   requestFromSource: (...args: unknown[]) => mockRequestFromSource(...args),
   validateFormData: (...args: unknown[]) => mockValidateFormData(...args),
-  validateEmail: (...args: unknown[]) => mockValidateEmail(...args),
   sendEmail: (...args: unknown[]) => mockSendEmail(...args),
 }));
 
@@ -52,7 +50,6 @@ describe('POST /api/email/contact', () => {
     mockRateLimit.mockResolvedValue(null);
     mockRequestFromSource.mockResolvedValue(null);
     mockValidateFormData.mockResolvedValue(null);
-    mockValidateEmail.mockResolvedValue(null);
     mockSendEmail.mockResolvedValue(null);
   });
 
@@ -78,7 +75,6 @@ describe('POST /api/email/contact', () => {
       '/about'
     );
     expect(mockValidateFormData).toHaveBeenCalledWith(validBody, {});
-    expect(mockValidateEmail).toHaveBeenCalledWith(validBody.email);
     expect(mockSendEmail).toHaveBeenCalledWith(validBody);
   });
 

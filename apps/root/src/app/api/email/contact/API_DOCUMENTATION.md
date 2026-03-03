@@ -60,7 +60,7 @@ Referer: https://danieljoffe.com/about (required)
 #### Validation Rules
 
 - **Name**: Must contain only letters, spaces, hyphens, and apostrophes
-- **Email**: Must be a valid email format and pass deliverability check
+- **Email**: Must be a valid email format
 - **Message**: Cannot contain URLs (anti-spam protection)
 - **CAPTCHA**: Must be a valid hCaptcha token
 - **Honeypot**: Hidden `address` field must be empty (anti-bot protection)
@@ -97,7 +97,7 @@ Referer: https://danieljoffe.com/about (required)
 | Error Path                | Status | Description                           |
 | ------------------------- | ------ | ------------------------------------- |
 | `name`                    | 400    | Name validation failed                |
-| `email`                   | 400    | Email format or deliverability issue  |
+| `email`                   | 400    | Email format validation failed        |
 | `message`                 | 400    | Message validation failed             |
 | `hcaptcha`                | 400    | CAPTCHA verification failed           |
 | `root.forbidden`          | 403    | Rate limit exceeded or invalid source |
@@ -115,9 +115,8 @@ Referer: https://danieljoffe.com/about (required)
 1. **Source Validation**: Must be called from `/about` page
 2. **Rate Limiting**: IP-based request throttling
 3. **Input Sanitization**: All inputs sanitized with DOMPurify
-4. **Email Validation**: Real-time deliverability checking via ValidKit
-5. **Anti-Spam**: URL detection and honeypot field
-6. **CAPTCHA**: hCaptcha verification required
+4. **Anti-Spam**: URL detection and honeypot field
+5. **CAPTCHA**: hCaptcha verification required
 
 #### Example Usage
 
@@ -167,14 +166,6 @@ The API requires the following environment variables:
 ### Required for Production
 
 ```bash
-# Email validation service
-VALIDKIT_API_KEY=your_validkit_api_key
-VALIDKIT_API_URL=https://api.validkit.io/v1/validate
-
-# Email delivery service
-WEB3FORMS_ACCESS_KEY=your_web3forms_access_key
-WEB3FORMS_API_URL=https://api.web3forms.com/submit
-
 # Application environment
 NODE_ENV=production
 
