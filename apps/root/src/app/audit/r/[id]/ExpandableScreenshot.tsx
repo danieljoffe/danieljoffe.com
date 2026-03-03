@@ -2,17 +2,34 @@
 
 import { useState } from 'react';
 import { Globe } from 'lucide-react';
+import type { DeviceMode } from '@danieljoffe.com/shared-audit';
+import { cn } from '@danieljoffe.com/shared-ui';
+import Image from 'next/image';
 
 interface ExpandableScreenshotProps {
   screenshotUrl: string | null;
   alt: string;
+  deviceMode?: DeviceMode | undefined;
 }
+
+const dimensions = {
+  mobile: {
+    collapsed: 'w-[9rem] h-[16rem]',
+    expanded: 'w-[13.5rem] h-[24rem] md:w-[18.75rem] md:h-[33.3rem]',
+  },
+  desktop: {
+    collapsed: 'w-[16rem] h-[11rem]',
+    expanded: 'w-[24rem] h-[16.5rem] md:w-[33.75rem] md:h-[23.5rem]',
+  },
+};
 
 export default function ExpandableScreenshot({
   screenshotUrl,
   alt,
+  deviceMode = 'mobile',
 }: ExpandableScreenshotProps) {
   const [expanded, setExpanded] = useState(false);
+  const size = dimensions[deviceMode];
 
   if (!screenshotUrl) {
     return (
@@ -30,17 +47,20 @@ export default function ExpandableScreenshot({
       aria-expanded={expanded}
       aria-label={expanded ? 'Collapse screenshot' : 'Expand screenshot'}
     >
-      <picture>
-        <img
+      <div
+        className={cn(
+          'relative max-w-full rounded border border-border overflow-hidden transition-all duration-300 ease-in-out',
+          expanded ? size.expanded : size.collapsed
+        )}
+      >
+        <Image
           src={screenshotUrl}
           alt={alt}
-          className={`rounded border border-border object-cover object-top transition-all duration-300 ease-in-out ${
-            expanded
-              ? 'w-[13.5rem] h-[24rem] md:w-[18.75rem] md:h-[36rem]'
-              : 'w-[9rem] h-[16rem]'
-          }`}
+          fill
+          className='object-cover object-top'
+          sizes='(max-width: 768px) 18.75rem, 33.75rem'
         />
-      </picture>
+      </div>
     </button>
   );
 }

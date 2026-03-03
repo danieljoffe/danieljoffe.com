@@ -69,4 +69,33 @@ describe('ScoreCards', () => {
     const scoreEl = screen.getByText('30');
     expect(scoreEl.style.color).toBe('rgb(255, 107, 107)');
   });
+
+  it('renders mobile context note by default', () => {
+    render(
+      <ScoreCards
+        performance={85}
+        accessibility={92}
+        seo={78}
+        bestPractices={88}
+      />
+    );
+    expect(
+      screen.getByText(/scores reflect a mobile device/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders desktop context note when deviceMode is desktop', () => {
+    render(
+      <ScoreCards
+        performance={85}
+        accessibility={92}
+        seo={78}
+        bestPractices={88}
+        deviceMode='desktop'
+      />
+    );
+    expect(
+      screen.getByText(/scores reflect a desktop device/i)
+    ).toBeInTheDocument();
+  });
 });

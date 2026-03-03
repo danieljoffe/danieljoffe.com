@@ -159,7 +159,10 @@ test.describe('audit scan page - successful scan flow', () => {
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
-    // ScanProgress should appear with progress bar
+    // Redirects to report page which shows ScanProgress via ScanPending
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
     await expect(
       page.getByRole('progressbar', { name: 'Scan progress' })
     ).toBeVisible();
@@ -174,6 +177,9 @@ test.describe('audit scan page - successful scan flow', () => {
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
     await expect(page.getByText(`Scanning ${VALID_AUDIT_URL}`)).toBeVisible();
   });
 
@@ -261,24 +267,34 @@ test.describe('audit scan page - error handling', () => {
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
+    // Error now shows on the report page via ScanPending
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
     await expect(page.getByText('Failed to check scan status.')).toBeVisible({
       timeout: 10000,
     });
   });
 
-  test('status returns failed shows error_message', async ({ page }) => {
+  test('status returns failed shows friendly error', async ({ page }) => {
     await mockAuditScanAPI(page, 200, makeScanCreatedResponse());
     await mockAuditStatusAPI(page, [
       {
         status: 200,
-        body: makeStatusFailed(MOCK_SCAN_ID, 'Page returned 404'),
+        body: makeStatusFailed(MOCK_SCAN_ID, 'Scan timed out after 90s'),
       },
     ]);
 
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
-    await expect(page.getByText('Page returned 404')).toBeVisible({
+    // Error now shows on the report page with a user-friendly message
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
+    await expect(
+      page.getByText('This site took too long to load. Please try again.')
+    ).toBeVisible({
       timeout: 10000,
     });
   });
@@ -362,6 +378,10 @@ test.describe('audit scan page - accessibility', () => {
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
 
+    // Progress steps now render on the report page via ScanPending
+    await expect(page).toHaveURL(new RegExp(`/audit/r/${MOCK_SCAN_ID}`), {
+      timeout: 15000,
+    });
     await expect(page.getByRole('list', { name: 'Scan steps' })).toBeVisible();
   });
 });

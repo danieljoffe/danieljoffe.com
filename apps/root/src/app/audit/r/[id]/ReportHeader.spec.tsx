@@ -60,9 +60,20 @@ describe('ReportHeader', () => {
       />
     );
     const img = screen.getByRole('img');
-    expect(img).toHaveAttribute(
-      'src',
-      'https://storage.example.com/screenshot.png'
+    expect(img.getAttribute('src')).toContain(
+      encodeURIComponent('https://storage.example.com/screenshot.png')
     );
+  });
+
+  it('renders mobile device label by default', () => {
+    render(<ReportHeader {...defaultProps} />);
+    expect(screen.getByText('Tested on Mobile (4G)')).toBeInTheDocument();
+  });
+
+  it('renders desktop device label when deviceMode is desktop', () => {
+    render(<ReportHeader {...defaultProps} deviceMode='desktop' />);
+    expect(
+      screen.getByText('Tested on Desktop (Broadband)')
+    ).toBeInTheDocument();
   });
 });

@@ -85,14 +85,57 @@ describe('ExpandableScreenshot', () => {
       />
     );
 
-    const img = screen.getByAltText('Test');
+    // Dimension classes are on the wrapper div, not the img
+    const wrapper = screen.getByAltText('Test').parentElement!;
 
     // Collapsed: should have the small dimensions
-    expect(img.className).toContain('w-[9rem]');
+    expect(wrapper.className).toContain('w-[9rem]');
 
     await user.click(screen.getByRole('button'));
 
     // Expanded: should have the larger dimensions
-    expect(img.className).toContain('w-[13.5rem]');
+    expect(wrapper.className).toContain('w-[13.5rem]');
+  });
+
+  it('uses portrait dimensions for mobile (default)', () => {
+    render(
+      <ExpandableScreenshot
+        screenshotUrl='https://example.com/shot.png'
+        alt='Mobile'
+      />
+    );
+    const wrapper = screen.getByAltText('Mobile').parentElement!;
+    expect(wrapper.className).toContain('w-[9rem]');
+    expect(wrapper.className).toContain('h-[16rem]');
+  });
+
+  it('uses landscape dimensions for desktop', () => {
+    render(
+      <ExpandableScreenshot
+        screenshotUrl='https://example.com/shot.png'
+        alt='Desktop'
+        deviceMode='desktop'
+      />
+    );
+    const wrapper = screen.getByAltText('Desktop').parentElement!;
+    expect(wrapper.className).toContain('w-[16rem]');
+    expect(wrapper.className).toContain('h-[11rem]');
+  });
+
+  it('applies desktop expanded dimensions on click', async () => {
+    const user = userEvent.setup();
+    render(
+      <ExpandableScreenshot
+        screenshotUrl='https://example.com/shot.png'
+        alt='Desktop'
+        deviceMode='desktop'
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+
+    const wrapper = screen.getByAltText('Desktop').parentElement!;
+    expect(wrapper.className).toContain('w-[24rem]');
+    expect(wrapper.className).toContain('h-[16.5rem]');
   });
 });

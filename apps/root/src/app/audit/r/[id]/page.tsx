@@ -7,6 +7,7 @@ import {
   GRADE_MAP,
   type Scan,
   type ScanIssue,
+  type DeviceMode,
 } from '@danieljoffe.com/shared-audit';
 import ReportHeader from './ReportHeader';
 import ScoreCards from './ScoreCards';
@@ -14,9 +15,13 @@ import CoreWebVitals from './CoreWebVitals';
 import IssueList from './IssueList';
 import CTASection from './CTASection';
 import ReportAnalytics from './ReportAnalytics';
+import DeviceTabs from './DeviceTabs';
+import ScanPending from './ScanPending';
+import ScanFailed from './ScanFailed';
 
 interface ReportPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 type ScanReport = Pick<
@@ -42,11 +47,13 @@ type ScanReport = Pick<
   | 'page_description'
   | 'page_screenshot_url'
   | 'source'
+  | 'device_mode'
+  | 'paired_scan_id'
 >;
 
-async function getReportData(id: string) {
+async function getScanData(id: string) {
   const supabase = createServerSupabaseClient();
-  if (!supabase) return notFound();
+  if (!supabase) return null;
 
   const { data: scan, error: scanError } = await supabase
     .from('scans')
@@ -55,14 +62,21 @@ async function getReportData(id: string) {
         'id, url, normalized_url, status, created_at, completed_at,',
         'error_message, score_performance, score_accessibility, score_best_practices,',
         'score_seo, grade_overall, fcp_ms, lcp_ms, tbt_ms, cls, si_ms,',
-        'page_title, page_description, page_screenshot_url, source',
+        'page_title, page_description, page_screenshot_url, source,',
+        'device_mode, paired_scan_id',
       ].join(' ')
     )
     .eq('id', id)
-    .eq('status', 'completed')
     .single();
 
   if (scanError || !scan) return null;
+
+  const typedScan = scan as unknown as ScanReport;
+
+  // Only fetch issues for completed scans
+  if (typedScan.status !== 'completed') {
+    return { scan: typedScan, issues: [] as ScanIssue[] };
+  }
 
   const { data: issues } = await supabase
     .from('scan_issues')
@@ -71,13 +85,14 @@ async function getReportData(id: string) {
     .order('sort_order', { ascending: true });
 
   return {
-    scan: scan as unknown as ScanReport,
+    scan: typedScan,
     issues: (issues || []) as ScanIssue[],
   };
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ReportPageProps): Promise<Metadata> {
   const { id } = await params;
 
@@ -85,12 +100,25 @@ export async function generateMetadata({
     return { title: 'Report Not Found | Daniel Joffe' };
   }
 
-  const data = await getReportData(id);
+  const data = await getScanData(id);
+
+  // Scan not in DB yet — freshly redirected from form
   if (!data) {
+    const sp = await searchParams;
+    if (sp.url) return { title: 'Scanning... | Daniel Joffe' };
     return { title: 'Report Not Found | Daniel Joffe' };
   }
 
   const { scan } = data;
+
+  if (scan.status === 'pending' || scan.status === 'running') {
+    return { title: 'Scanning... | Daniel Joffe' };
+  }
+
+  if (scan.status === 'failed') {
+    return { title: 'Scan Failed | Daniel Joffe' };
+  }
+
   const grade = scan.grade_overall as string;
   const gradeInfo = GRADE_MAP[grade];
   const title = scan.page_title || scan.url;
@@ -105,20 +133,70 @@ export async function generateMetadata({
   };
 }
 
-export default async function ReportPage({ params }: ReportPageProps) {
+export default async function ReportPage({
+  params,
+  searchParams,
+}: ReportPageProps) {
   const { id } = await params;
 
   if (!isValidUuid(id)) {
     notFound();
   }
 
-  const data = await getReportData(id);
+  const data = await getScanData(id);
+
+  // Scan not in DB yet — freshly redirected from form (or race condition).
+  // The searchParams carry enough info to render the polling UI.
   if (!data) {
+    const sp = await searchParams;
+    const urlParam = typeof sp.url === 'string' ? sp.url : undefined;
+
+    if (urlParam) {
+      const deviceParam = sp.device === 'desktop' ? 'desktop' : 'mobile';
+      const isPaired = sp.device === 'both';
+      return (
+        <MainContent>
+          <ScanPending
+            scanId={id}
+            url={urlParam}
+            deviceMode={deviceParam as DeviceMode}
+            isPaired={isPaired}
+          />
+        </MainContent>
+      );
+    }
+
     notFound();
   }
 
   const { scan, issues } = data;
+  const deviceMode: DeviceMode =
+    scan.device_mode === 'desktop' ? 'desktop' : 'mobile';
 
+  // Scan still in progress — show polling UI
+  if (scan.status === 'pending' || scan.status === 'running') {
+    return (
+      <MainContent>
+        <ScanPending
+          scanId={scan.id}
+          url={scan.url}
+          deviceMode={deviceMode}
+          isPaired={scan.paired_scan_id !== null}
+        />
+      </MainContent>
+    );
+  }
+
+  // Scan failed — show friendly error
+  if (scan.status === 'failed') {
+    return (
+      <MainContent>
+        <ScanFailed url={scan.url} errorMessage={scan.error_message} />
+      </MainContent>
+    );
+  }
+
+  // Completed — render full report
   return (
     <MainContent>
       <ReportHeader
@@ -128,12 +206,19 @@ export default async function ReportPage({ params }: ReportPageProps) {
         screenshotUrl={scan.page_screenshot_url}
         gradeOverall={scan.grade_overall}
         completedAt={scan.completed_at}
+        deviceMode={deviceMode}
+      />
+      <DeviceTabs
+        currentDevice={deviceMode}
+        currentScanId={scan.id}
+        pairedScanId={scan.paired_scan_id}
       />
       <ScoreCards
         performance={scan.score_performance}
         accessibility={scan.score_accessibility}
         seo={scan.score_seo}
         bestPractices={scan.score_best_practices}
+        deviceMode={deviceMode}
       />
       <CoreWebVitals
         fcpMs={scan.fcp_ms}
@@ -141,6 +226,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
         tbtMs={scan.tbt_ms}
         cls={scan.cls}
         siMs={scan.si_ms}
+        deviceMode={deviceMode}
       />
       <IssueList issues={issues} scanId={scan.id} />
       <CTASection />

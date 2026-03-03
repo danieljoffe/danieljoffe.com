@@ -5,6 +5,7 @@ interface ScoreCardsProps {
   accessibility: number | null;
   seo: number | null;
   bestPractices: number | null;
+  deviceMode?: 'mobile' | 'desktop';
 }
 
 function getScoreColor(score: number | null): string {
@@ -39,6 +40,7 @@ export default function ScoreCards({
   accessibility,
   seo,
   bestPractices,
+  deviceMode,
 }: ScoreCardsProps) {
   return (
     <Section aria-labelledby='scores-heading' className='min-h-min max-h-max'>
@@ -52,6 +54,11 @@ export default function ScoreCards({
           <ScoreCardItem label='SEO' score={seo} />
           <ScoreCardItem label='Best Practices' score={bestPractices} />
         </div>
+        <p className='text-xs text-foreground-muted text-center mt-3'>
+          {deviceMode === 'desktop'
+            ? 'Scores reflect a desktop device on a broadband connection.'
+            : 'Scores reflect a mobile device on a 4G connection. Results may differ on desktop or faster networks.'}
+        </p>
       </PageContainer>
     </Section>
   );

@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Check, Monitor, Smartphone } from 'lucide-react';
 import {
   Alert,
   Button,
@@ -10,12 +11,12 @@ import {
   Stack,
 } from '@danieljoffe.com/shared-ui';
 import { analytics } from '@/lib/analytics';
-import ScanProgress from './ScanProgress';
+
+type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
 type ScanState =
   | { phase: 'idle' }
   | { phase: 'submitting' }
-  | { phase: 'polling'; scanId: string; url: string }
   | { phase: 'error'; message: string };
 
 /** Client-safe URL validation (no node:crypto dependency). */
@@ -38,63 +39,18 @@ function isValidClientUrl(url: string): boolean {
   }
 }
 
-const POLL_INTERVAL_MS = 2000;
+const DEVICE_OPTIONS: { value: DeviceSelection; label: string }[] = [
+  { value: 'mobile', label: 'Mobile' },
+  { value: 'desktop', label: 'Desktop' },
+  { value: 'both', label: 'Both' },
+];
 
 export default function URLInputForm() {
   const router = useRouter();
   const [url, setUrl] = useState('');
+  const [device, setDevice] = useState<DeviceSelection>('mobile');
   const [validationError, setValidationError] = useState('');
   const [state, setState] = useState<ScanState>({ phase: 'idle' });
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const clearPoll = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
-  // Cleanup polling on unmount
-  useEffect(() => clearPoll, [clearPoll]);
-
-  // Start polling when entering polling phase
-  useEffect(() => {
-    if (state.phase !== 'polling') return;
-
-    const { scanId } = state;
-
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/audit/status/${scanId}`);
-        if (!res.ok) {
-          clearPoll();
-          setState({ phase: 'error', message: 'Failed to check scan status.' });
-          return;
-        }
-        const data = await res.json();
-        if (data.status === 'completed') {
-          clearPoll();
-          router.push(`/audit/r/${scanId}`);
-        } else if (data.status === 'failed') {
-          clearPoll();
-          setState({
-            phase: 'error',
-            message: data.error_message || 'Scan failed. Please try again.',
-          });
-        }
-      } catch {
-        clearPoll();
-        setState({
-          phase: 'error',
-          message: 'Network error. Please try again.',
-        });
-      }
-    };
-
-    poll(); // Check immediately, then poll on interval
-    pollRef.current = setInterval(poll, POLL_INTERVAL_MS);
-    return clearPoll;
-  }, [state, clearPoll, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +72,7 @@ export default function URLInputForm() {
       const res = await fetch('/api/audit/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: trimmed, source: 'organic' }),
+        body: JSON.stringify({ url: trimmed, source: 'organic', device }),
       });
 
       const data = await res.json();
@@ -133,24 +89,23 @@ export default function URLInputForm() {
 
       analytics.auditScanStarted(trimmed);
 
-      // Cached scan — redirect immediately
       if (data.cached) {
+        // Cached scan — report already in DB, no searchParams needed
         router.push(`/audit/r/${data.scan_id}`);
         return;
       }
 
-      // Start polling
-      setState({ phase: 'polling', scanId: data.scan_id, url: trimmed });
+      // Redirect to report page — it handles pending/completed/failed states.
+      // Pass url & device as searchParams so the page can render the polling UI
+      // even before the DB record is visible to the server component.
+      const sp = new URLSearchParams({ url: trimmed, device });
+      router.push(`/audit/r/${data.scan_id}?${sp}`);
     } catch {
       const message = 'Network error. Please try again.';
       analytics.auditScanFailed(trimmed, message);
       setState({ phase: 'error', message });
     }
   };
-
-  if (state.phase === 'polling') {
-    return <ScanProgress url={state.url} />;
-  }
 
   return (
     <Stack direction='vertical' gap='sm' className='w-full max-w-md'>
@@ -175,6 +130,58 @@ export default function URLInputForm() {
             error={validationError || undefined}
             disabled={state.phase === 'submitting'}
           />
+          <fieldset
+            className='flex justify-around'
+            aria-label='Device type'
+            disabled={state.phase === 'submitting'}
+          >
+            {DEVICE_OPTIONS.map(opt => {
+              const selected = device === opt.value;
+              return (
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-2 cursor-pointer text-sm font-medium transition-colors ${
+                    selected
+                      ? 'text-foreground'
+                      : 'text-foreground-muted hover:text-foreground'
+                  }`}
+                >
+                  <input
+                    type='radio'
+                    name='device'
+                    value={opt.value}
+                    checked={selected}
+                    onChange={() => setDevice(opt.value)}
+                    className='sr-only peer'
+                  />
+                  <span
+                    className={`inline-flex items-center justify-center size-5 rounded-full border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 ${
+                      selected
+                        ? 'border-accent bg-accent text-background'
+                        : 'border-border bg-background'
+                    }`}
+                    aria-hidden='true'
+                  >
+                    {selected && <Check className='size-3' strokeWidth={3} />}
+                  </span>
+                  {opt.value === 'mobile' && (
+                    <Smartphone className='size-4' aria-hidden='true' />
+                  )}
+                  {opt.value === 'desktop' && (
+                    <Monitor className='size-4' aria-hidden='true' />
+                  )}
+                  {opt.value === 'both' && (
+                    <>
+                      <Smartphone className='size-3.5' aria-hidden='true' />
+                      <span aria-hidden='true'>+</span>
+                      <Monitor className='size-3.5' aria-hidden='true' />
+                    </>
+                  )}
+                  {opt.label}
+                </label>
+              );
+            })}
+          </fieldset>
           <Button
             type='submit'
             variant='primary'

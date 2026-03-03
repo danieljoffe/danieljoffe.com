@@ -85,4 +85,18 @@ describe('CoreWebVitals', () => {
       screen.getByRole('heading', { name: /core web vitals/i })
     ).toBeInTheDocument();
   });
+
+  it('renders mobile context note by default', () => {
+    render(<CoreWebVitals {...defaultProps} />);
+    expect(
+      screen.getByText(/simulated mobile conditions/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders desktop context note when deviceMode is desktop', () => {
+    render(<CoreWebVitals {...defaultProps} deviceMode='desktop' />);
+    expect(
+      screen.getByText(/simulated desktop conditions/i)
+    ).toBeInTheDocument();
+  });
 });

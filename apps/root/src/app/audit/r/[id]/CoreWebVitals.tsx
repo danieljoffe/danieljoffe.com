@@ -12,6 +12,7 @@ interface CoreWebVitalsProps {
   tbtMs: number | null;
   cls: number | null;
   siMs: number | null;
+  deviceMode?: 'mobile' | 'desktop';
 }
 
 interface Metric {
@@ -63,6 +64,7 @@ export default function CoreWebVitals({
   tbtMs,
   cls,
   siMs,
+  deviceMode,
 }: CoreWebVitalsProps) {
   const metrics: Metric[] = [
     {
@@ -110,6 +112,11 @@ export default function CoreWebVitals({
     >
       <PageContainer>
         <h2 id='core-web-vitals-heading'>Core Web Vitals</h2>
+        <p className='text-xs text-foreground-muted mb-4'>
+          {deviceMode === 'desktop'
+            ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'
+            : 'Measured under simulated mobile conditions (2x CPU slowdown, 4G network).'}
+        </p>
         <Card>
           <Stack direction='vertical' gap='none'>
             {metrics.map((metric, i) => {

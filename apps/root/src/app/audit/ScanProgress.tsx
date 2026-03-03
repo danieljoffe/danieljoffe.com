@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { ProgressBar, Spinner, Stack } from '@danieljoffe.com/shared-ui';
 
-const STEPS = [
+type DeviceSelection = 'mobile' | 'desktop' | 'both';
+
+const SINGLE_STEPS = [
   { label: 'Launching browser...', completesAt: 2 },
   { label: 'Loading your page...', completesAt: 5 },
   { label: 'Measuring performance...', completesAt: 10 },
@@ -12,12 +14,26 @@ const STEPS = [
   { label: 'Generating report...', completesAt: 20 },
 ] as const;
 
+const BOTH_STEPS = [
+  { label: 'Launching browser...', completesAt: 2 },
+  { label: 'Loading your page...', completesAt: 5 },
+  { label: 'Running mobile scan...', completesAt: 12 },
+  { label: 'Running desktop scan...', completesAt: 20 },
+  { label: 'Generating report...', completesAt: 25 },
+] as const;
+
 interface ScanProgressProps {
   url: string;
+  device?: DeviceSelection;
 }
 
-export default function ScanProgress({ url }: ScanProgressProps) {
+export default function ScanProgress({
+  url,
+  device = 'mobile',
+}: ScanProgressProps) {
   const [elapsed, setElapsed] = useState(0);
+  const steps = device === 'both' ? BOTH_STEPS : SINGLE_STEPS;
+  const maxTime = device === 'both' ? 30 : 25;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -26,18 +42,23 @@ export default function ScanProgress({ url }: ScanProgressProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const progress = Math.min(90, (elapsed / 25) * 90);
+  const progress = Math.min(90, (elapsed / maxTime) * 90);
+
+  const deviceLabel =
+    device === 'both'
+      ? 'mobile + desktop'
+      : device === 'desktop'
+        ? 'desktop'
+        : 'mobile';
 
   return (
     <Stack direction='vertical' gap='md' className='w-full max-w-md'>
       <ProgressBar value={progress} size='md' aria-label='Scan progress' />
       <ul className='space-y-3' aria-label='Scan steps'>
-        {STEPS.map(step => {
+        {steps.map((step, i) => {
           const isComplete = elapsed >= step.completesAt;
           const isActive =
-            !isComplete &&
-            (step === STEPS[0] ||
-              elapsed >= STEPS[STEPS.indexOf(step) - 1].completesAt);
+            !isComplete && (i === 0 || elapsed >= steps[i - 1].completesAt);
 
           return (
             <li key={step.label} className='flex items-center gap-3'>
@@ -66,7 +87,7 @@ export default function ScanProgress({ url }: ScanProgressProps) {
         })}
       </ul>
       <p className='text-sm text-foreground-muted text-center truncate'>
-        Scanning {url}
+        Scanning {url} ({deviceLabel})
       </p>
     </Stack>
   );

@@ -177,6 +177,7 @@ export type Database = {
           cls: number | null;
           completed_at: string | null;
           created_at: string | null;
+          device_mode: string;
           error_message: string | null;
           fcp_ms: number | null;
           grade_overall: string | null;
@@ -188,6 +189,7 @@ export type Database = {
           page_description: string | null;
           page_screenshot_url: string | null;
           page_title: string | null;
+          paired_scan_id: string | null;
           score_accessibility: number | null;
           score_best_practices: number | null;
           score_performance: number | null;
@@ -203,6 +205,7 @@ export type Database = {
           cls?: number | null;
           completed_at?: string | null;
           created_at?: string | null;
+          device_mode?: string;
           error_message?: string | null;
           fcp_ms?: number | null;
           grade_overall?: string | null;
@@ -214,6 +217,7 @@ export type Database = {
           page_description?: string | null;
           page_screenshot_url?: string | null;
           page_title?: string | null;
+          paired_scan_id?: string | null;
           score_accessibility?: number | null;
           score_best_practices?: number | null;
           score_performance?: number | null;
@@ -229,6 +233,7 @@ export type Database = {
           cls?: number | null;
           completed_at?: string | null;
           created_at?: string | null;
+          device_mode?: string;
           error_message?: string | null;
           fcp_ms?: number | null;
           grade_overall?: string | null;
@@ -240,6 +245,7 @@ export type Database = {
           page_description?: string | null;
           page_screenshot_url?: string | null;
           page_title?: string | null;
+          paired_scan_id?: string | null;
           score_accessibility?: number | null;
           score_best_practices?: number | null;
           score_performance?: number | null;
