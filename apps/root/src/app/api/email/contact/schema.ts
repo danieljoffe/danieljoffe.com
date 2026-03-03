@@ -49,19 +49,6 @@ export type ErrorResponse = {
   retryAfter?: number;
 };
 
-/**
- * ValidKit email validation service error response format
- *
- * Used when email validation fails via the ValidKit API.
- */
-export type ValidKitErrorResponse = {
-  error: {
-    message: string;
-    code: string;
-    statusCode: 400;
-  };
-};
-
 /** Success response from the contact form API */
 export type SuccessResponse = {
   statusCode: 200;

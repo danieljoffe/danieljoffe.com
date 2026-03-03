@@ -7,14 +7,6 @@ import { formSchema } from './schema';
 const mockSend = jest.fn();
 
 // Mock dependencies before importing the module under test
-jest.mock('@/lib/env', () => ({
-  serverEnv: {
-    VALIDKIT_API_KEY: 'test-validkit-key',
-    VALIDKIT_API_URL: 'https://api.validkit.test/validate',
-    NODE_ENV: 'test',
-  },
-}));
-
 jest.mock('@/lib/email/resend', () => ({
   createResendClient: jest.fn(() => ({ emails: { send: mockSend } })),
   EMAIL_FROM: 'Test <test@test.com>',
@@ -36,7 +28,6 @@ jest.mock('@/lib/public.env', () => ({
 
 import {
   validateFormData,
-  validateEmail,
   sendEmail,
   requestFromSource,
   rateLimit,
@@ -93,54 +84,6 @@ describe('validateFormData', () => {
     await expect(validateFormData(badData, formSchema)).rejects.toMatchObject({
       statusCode: 400,
     });
-  });
-});
-
-describe('validateEmail', () => {
-  const originalFetch = global.fetch;
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
-  it('returns null for valid email', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      json: () => Promise.resolve({ valid: true }),
-    });
-
-    const result = await validateEmail('test@example.com');
-    expect(result).toBeNull();
-  });
-
-  it('throws when ValidKit returns an error', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      json: () =>
-        Promise.resolve({
-          error: {
-            message: 'Invalid email',
-            code: 'INVALID_EMAIL',
-            statusCode: 400,
-          },
-        }),
-    });
-
-    await expect(validateEmail('bad@email.com')).rejects.toMatchObject({
-      statusCode: 400,
-      error: { path: 'email', message: 'Invalid email' },
-    });
-  });
-
-  it('throws 500 when API key is missing', async () => {
-    // Temporarily override the mock
-    const envModule = require('@/lib/env');
-    const original = envModule.serverEnv.VALIDKIT_API_KEY;
-    envModule.serverEnv.VALIDKIT_API_KEY = '';
-
-    await expect(validateEmail('test@example.com')).rejects.toMatchObject({
-      statusCode: 500,
-    });
-
-    envModule.serverEnv.VALIDKIT_API_KEY = original;
   });
 });
 
