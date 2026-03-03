@@ -85,15 +85,16 @@ describe('ExpandableScreenshot', () => {
       />
     );
 
-    const img = screen.getByAltText('Test');
+    // Dimension classes are on the wrapper div, not the img
+    const wrapper = screen.getByAltText('Test').parentElement!;
 
     // Collapsed: should have the small dimensions
-    expect(img.className).toContain('w-[9rem]');
+    expect(wrapper.className).toContain('w-[9rem]');
 
     await user.click(screen.getByRole('button'));
 
     // Expanded: should have the larger dimensions
-    expect(img.className).toContain('w-[13.5rem]');
+    expect(wrapper.className).toContain('w-[13.5rem]');
   });
 
   it('uses portrait dimensions for mobile (default)', () => {
@@ -103,9 +104,9 @@ describe('ExpandableScreenshot', () => {
         alt='Mobile'
       />
     );
-    const img = screen.getByAltText('Mobile');
-    expect(img.className).toContain('w-[9rem]');
-    expect(img.className).toContain('h-[16rem]');
+    const wrapper = screen.getByAltText('Mobile').parentElement!;
+    expect(wrapper.className).toContain('w-[9rem]');
+    expect(wrapper.className).toContain('h-[16rem]');
   });
 
   it('uses landscape dimensions for desktop', () => {
@@ -116,9 +117,9 @@ describe('ExpandableScreenshot', () => {
         deviceMode='desktop'
       />
     );
-    const img = screen.getByAltText('Desktop');
-    expect(img.className).toContain('w-[16rem]');
-    expect(img.className).toContain('h-[11rem]');
+    const wrapper = screen.getByAltText('Desktop').parentElement!;
+    expect(wrapper.className).toContain('w-[16rem]');
+    expect(wrapper.className).toContain('h-[11rem]');
   });
 
   it('applies desktop expanded dimensions on click', async () => {
@@ -133,8 +134,8 @@ describe('ExpandableScreenshot', () => {
 
     await user.click(screen.getByRole('button'));
 
-    const img = screen.getByAltText('Desktop');
-    expect(img.className).toContain('w-[24rem]');
-    expect(img.className).toContain('h-[16.5rem]');
+    const wrapper = screen.getByAltText('Desktop').parentElement!;
+    expect(wrapper.className).toContain('w-[24rem]');
+    expect(wrapper.className).toContain('h-[16.5rem]');
   });
 });

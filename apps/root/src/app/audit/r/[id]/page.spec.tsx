@@ -7,7 +7,7 @@ const mockScan = {
   status: 'completed',
   created_at: '2026-01-01T00:00:00Z',
   completed_at: '2026-01-01T00:01:00Z',
-  error_message: null,
+  error_message: null as string | null,
   score_performance: 85,
   score_accessibility: 92,
   score_best_practices: 88,
@@ -41,16 +41,16 @@ const mockIssues = [
   },
 ];
 
+let currentMockScan = mockScan;
+
 jest.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: () => ({
     from: (table: string) => ({
       select: () => ({
         eq: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            single: jest.fn().mockResolvedValue({
-              data: table === 'scans' ? mockScan : null,
-              error: null,
-            }),
+          single: jest.fn().mockResolvedValue({
+            data: table === 'scans' ? currentMockScan : null,
+            error: null,
           }),
           order: jest.fn().mockResolvedValue({
             data: table === 'scan_issues' ? mockIssues : [],
@@ -111,12 +111,30 @@ jest.mock('./DeviceTabs', () => ({
   },
 }));
 
+jest.mock('./ScanPending', () => ({
+  __esModule: true,
+  default: function ScanPending() {
+    return <div data-testid='scan-pending' />;
+  },
+}));
+
+jest.mock('./ScanFailed', () => ({
+  __esModule: true,
+  default: function ScanFailed() {
+    return <div data-testid='scan-failed' />;
+  },
+}));
+
 // We need to test the page component by calling it as a function (async server component)
 import ReportPage from './page';
 
 describe('Report Page', () => {
   const params = Promise.resolve({
     id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  });
+
+  beforeEach(() => {
+    currentMockScan = mockScan;
   });
 
   it('renders inside MainContent wrapper', async () => {
@@ -148,5 +166,29 @@ describe('Report Page', () => {
   it('renders CTASection', async () => {
     render(await ReportPage({ params }));
     expect(screen.getByTestId('cta-section')).toBeInTheDocument();
+  });
+
+  it('renders ScanPending for pending scans', async () => {
+    currentMockScan = { ...mockScan, status: 'pending' };
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('scan-pending')).toBeInTheDocument();
+    expect(screen.queryByTestId('report-header')).not.toBeInTheDocument();
+  });
+
+  it('renders ScanPending for running scans', async () => {
+    currentMockScan = { ...mockScan, status: 'running' };
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('scan-pending')).toBeInTheDocument();
+  });
+
+  it('renders ScanFailed for failed scans', async () => {
+    currentMockScan = {
+      ...mockScan,
+      status: 'failed',
+      error_message: 'Scan timed out after 90s',
+    };
+    render(await ReportPage({ params }));
+    expect(screen.getByTestId('scan-failed')).toBeInTheDocument();
+    expect(screen.queryByTestId('report-header')).not.toBeInTheDocument();
   });
 });

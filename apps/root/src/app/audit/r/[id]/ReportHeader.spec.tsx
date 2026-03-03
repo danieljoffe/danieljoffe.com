@@ -60,9 +60,8 @@ describe('ReportHeader', () => {
       />
     );
     const img = screen.getByRole('img');
-    expect(img).toHaveAttribute(
-      'src',
-      'https://storage.example.com/screenshot.png'
+    expect(img.getAttribute('src')).toContain(
+      encodeURIComponent('https://storage.example.com/screenshot.png')
     );
   });
 
