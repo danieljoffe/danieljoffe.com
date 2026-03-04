@@ -7,7 +7,7 @@ import {
   hashIp,
 } from '@danieljoffe.com/shared-audit';
 
-const RATE_LIMIT_MAX = process.env.NODE_ENV === 'development' ? 999 : 5;
+const RATE_LIMIT_MAX = process.env.NODE_ENV === 'development' ? 999 : 10;
 const RATE_LIMIT_WINDOW_HOURS = 1;
 const CACHE_WINDOW_HOURS = 1;
 

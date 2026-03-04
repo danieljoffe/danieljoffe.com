@@ -78,7 +78,7 @@ describe('POST /api/audit/scan', () => {
       gte: jest.fn().mockReturnThis(),
     };
     mockSelect.mockReturnValueOnce(rateLimitChain);
-    rateLimitChain.gte.mockResolvedValueOnce({ count: 5 });
+    rateLimitChain.gte.mockResolvedValueOnce({ count: 10 });
 
     const req = createRequest({ url: 'https://example.com' });
     const res = await POST(req);
