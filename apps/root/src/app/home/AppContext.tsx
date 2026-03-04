@@ -1,7 +1,7 @@
 'use client';
 
 import { TransitionRouter } from 'next-transition-router';
-import { startTransition, Suspense, useRef } from 'react';
+import { Suspense, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { WithChildren } from '@/types/base';
 import GlobalProvider from '@/state/Global/Provider';
@@ -26,7 +26,7 @@ async function loadGsap() {
 }
 
 export default function AppContext({ children }: WithChildren) {
-  const slidingPane = useRef<HTMLDivElement | null>(null);
+  const transitionEffectRef = useRef<HTMLDivElement>(null);
 
   return (
     <GlobalProvider>
@@ -34,68 +34,39 @@ export default function AppContext({ children }: WithChildren) {
         auto={true}
         leave={async next => {
           const gsap = await loadGsap();
-          const tl = gsap
-            .timeline({
+          gsap.fromTo(
+            transitionEffectRef.current,
+            { autoAlpha: 1, y: 0 },
+            {
+              autoAlpha: 0,
+              y: -8,
+              duration: 0.25,
+              ease: 'power2.in',
               onComplete: next,
-            })
-            .fromTo(
-              slidingPane.current,
-              {
-                x: '100%',
-                y: 0,
-              },
-              {
-                x: 0,
-                duration: 0.65,
-                ease: 'power4.inOut',
-              }
-            );
-          return () => {
-            tl.kill();
-          };
+            }
+          );
         }}
         enter={async next => {
           const gsap = await loadGsap();
-          const tl = gsap
-            .timeline()
-            .fromTo(
-              slidingPane.current,
-              {
-                x: 0,
-                y: 0,
-              },
-              {
-                x: '-100%',
-                duration: 0.65,
-                ease: 'power4.out',
-              },
-              '<50%'
-            )
-            .call(
-              () => {
-                requestAnimationFrame(() => {
-                  startTransition(next);
-                });
-              },
-              undefined,
-              '<50%'
-            );
-
-          return () => {
-            tl.kill();
-          };
+          gsap.fromTo(
+            transitionEffectRef.current,
+            { autoAlpha: 0, y: -8 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.5,
+              ease: 'power2.out',
+              onComplete: next,
+            }
+          );
         }}
       >
-        <Modal />
         <Nav />
         <ErrorBoundary>
-          {children}
-          <div
-            ref={slidingPane}
-            className='fixed inset-0 z-50 translate-x-full bg-background'
-          />
+          <div ref={transitionEffectRef}>{children}</div>
         </ErrorBoundary>
         <Footer />
+        <Modal />
         <Suspense fallback={null}>
           <ScrollToElement />
         </Suspense>
