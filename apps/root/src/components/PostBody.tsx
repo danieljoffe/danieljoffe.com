@@ -18,9 +18,10 @@ export default function PostBody({
         origin={cover.origin}
         creator={cover.creator}
         blurHash={cover.blurHash}
-        width={800}
-        height={450}
+        width={512}
+        height={288}
         preload={true}
+        sizes='(max-width: 640px) calc(100vw - 2rem), (max-width: 720px) calc(100vw - 3rem), 720px'
       />
       <PostContent>{children}</PostContent>
     </Stack>

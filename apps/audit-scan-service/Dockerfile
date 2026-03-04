@@ -4,17 +4,14 @@
 # Stage 1: Build
 FROM docker.io/node:lts-alpine AS builder
 
-RUN corepack enable
-
 WORKDIR /app
 
 # Copy workspace root files needed for install + build
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn .yarn
+COPY package.json yarn.lock ./
 COPY apps/audit-scan-service/package.json apps/audit-scan-service/package.json
 COPY libs/shared/audit/package.json libs/shared/audit/package.json
 
-RUN yarn install --immutable
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY nx.json tsconfig.base.json ./
@@ -58,8 +55,10 @@ COPY --from=builder /app/apps/audit-scan-service/dist .
 
 RUN npm install --omit=dev
 
-# Run as non-root user
-RUN groupadd -r scanner && useradd -r -g scanner scanner
+# Run as non-root user with a writable home dir for Chromium temp/crash files
+RUN groupadd -r scanner && useradd -r -g scanner -m scanner \
+    && mkdir -p /home/scanner/.cache /tmp/.chromium \
+    && chown -R scanner:scanner /home/scanner /tmp/.chromium
 USER scanner
 
 EXPOSE 3001

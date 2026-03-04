@@ -92,7 +92,7 @@ export const rootMetadata: Metadata = {
   other: {
     'theme-color': '#0056b3',
     'msapplication-TileColor': '#0056b3',
-    'apple-mobile-web-app-capable': 'yes',
+    'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'https://danieljoffe.com',
   },

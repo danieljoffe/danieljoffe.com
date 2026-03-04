@@ -2,8 +2,13 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
-import { PageContainer, Stack, Section } from '@danieljoffe.com/shared-ui';
-import Button from '@/components/Button';
+import {
+  Button,
+  PageContainer,
+  Stack,
+  Section,
+} from '@danieljoffe.com/shared-ui';
+import AppButton from '@/components/Button';
 import { EXPERIENCE_LINK } from '@/utils/constants';
 
 export default function Error({
@@ -38,15 +43,12 @@ export default function Error({
             There was an error loading this experience page. Please try again.
           </p>
           <Stack direction='horizontal' gap='sm'>
-            <button
-              onClick={() => reset()}
-              className='rounded-lg bg-accent px-6 py-3 text-accent-foreground hover:bg-accent/90'
-            >
+            <Button onClick={() => reset()} variant='primary'>
               Try again
-            </button>
-            <Button as='link' href={EXPERIENCE_LINK.href} variant='outline'>
-              Back to Experience
             </Button>
+            <AppButton as='link' href={EXPERIENCE_LINK.href} variant='outline'>
+              Back to Experience
+            </AppButton>
           </Stack>
         </Stack>
       </PageContainer>

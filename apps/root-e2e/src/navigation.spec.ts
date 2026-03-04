@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { NAV_LINKS } from './fixtures/test-data';
+import { waitForHydration } from './fixtures/base.fixture';
 
 test.describe('desktop navigation', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,7 +8,7 @@ test.describe('desktop navigation', () => {
   });
 
   test('navigates through all main nav links', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     for (const link of NAV_LINKS) {
@@ -20,7 +21,7 @@ test.describe('desktop navigation', () => {
   });
 
   test('nav links have correct aria-labels', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     for (const link of NAV_LINKS) {
@@ -32,7 +33,7 @@ test.describe('desktop navigation', () => {
   });
 
   test('highlights current page with aria-current', async ({ page }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     const aboutLink = page.locator('a[href="/about"][aria-current="page"]');
@@ -40,7 +41,7 @@ test.describe('desktop navigation', () => {
   });
 
   test('clicking nav link navigates to correct page', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     const projectsLink = page
@@ -59,8 +60,8 @@ test.describe('mobile navigation', () => {
   });
 
   test('opens mobile menu on hamburger click', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
     const menuButton = page.getByLabel('Open menu');
     await expect(menuButton).toBeVisible();
@@ -72,8 +73,8 @@ test.describe('mobile navigation', () => {
   });
 
   test('closes mobile menu on close button click', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
     // Open menu
     const menuButton = page.getByLabel('Open menu');
@@ -90,8 +91,8 @@ test.describe('mobile navigation', () => {
   });
 
   test('navigates from mobile menu', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
     // Open menu
     const menuButton = page.getByLabel('Open menu');
@@ -110,8 +111,8 @@ test.describe('mobile navigation', () => {
   });
 
   test('mobile menu has close button focused on open', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
     // Open menu
     const menuButton = page.getByLabel('Open menu');
@@ -129,7 +130,9 @@ test.describe('mobile navigation', () => {
 
 test.describe('breadcrumb navigation', () => {
   test('shows breadcrumbs on project detail page', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
@@ -137,7 +140,9 @@ test.describe('breadcrumb navigation', () => {
   });
 
   test('breadcrumb links navigate correctly', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
@@ -153,7 +158,9 @@ test.describe('breadcrumb navigation', () => {
   });
 
   test('current page in breadcrumb has aria-current', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('domcontentloaded');
 
     const currentPage = page.locator(
@@ -163,7 +170,7 @@ test.describe('breadcrumb navigation', () => {
   });
 
   test('shows breadcrumbs on experience detail page', async ({ page }) => {
-    await page.goto('/experience/winc');
+    await page.goto('/experience/winc', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');

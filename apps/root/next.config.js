@@ -44,6 +44,43 @@ const nextConfig = {
     webpackBuildWorker: !isTest && !isCI,
   },
 
+  // Include OG image fonts and profile image in serverless function bundles.
+  // readFile(process.cwd()) paths aren't auto-traced by Next.js file tracing.
+  outputFileTracingIncludes: {
+    '/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/about/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/experience/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/experience/[slug]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/projects/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/projects/[slug]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/services/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+    '/audit/r/[id]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.png',
+    ],
+  },
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -55,12 +92,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     deviceSizes: [640, 768, 1024, 1280],
-    imageSizes: [16, 32, 48, 64],
-    qualities: [65, 80, 90],
+    imageSizes: [16, 32, 48, 64, 256, 400],
+    qualities: [80, 90],
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },

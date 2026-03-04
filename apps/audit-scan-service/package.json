@@ -102,6 +102,11 @@
     ]
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "@axe-core/puppeteer": "^4.11.1",
+    "@supabase/supabase-js": "^2.95.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "lighthouse": "^13.0.3",
+    "puppeteer": "^24.37.2"
   }
 }

@@ -2,7 +2,8 @@
 
 import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
-import { NAV_LINKS } from '@/utils/constants';
+import { AUDIT_LINK, NAV_LINKS } from '@/utils/constants';
+import { useRouter } from 'next/navigation';
 
 export default function NavLinks({
   pathname,
@@ -11,15 +12,27 @@ export default function NavLinks({
   pathname?: string;
   handleClick?: () => void;
 }) {
-  const handleLinkClick = (label: string) => {
+  const router = useRouter();
+
+  const handleLinkClick = (
+    e: React.MouseEvent,
+    label: string,
+    href: string
+  ) => {
     analytics.navClick(label);
-    setTimeout(() => {
-      handleClick?.();
-    }, 150);
+    if (handleClick) {
+      // Mobile modal context: navigate programmatically because the
+      // HeadlessUI Dialog renders in a portal outside the TransitionRouter's
+      // DOM subtree, preventing next-transition-router from intercepting
+      // the Link click. router.push() triggers the transition via auto mode.
+      e.preventDefault();
+      handleClick();
+      router.push(href);
+    }
   };
 
   return (
-    <div className='flex flex-col h-full w-full justify-center items-center'>
+    <div className='flex flex-col gap-4 h-full w-full justify-center items-center md:flex-row md:justify-end'>
       <ul
         className='flex flex-col gap-4 items-center md:flex-row lowercase'
         role='menubar'
@@ -31,7 +44,9 @@ export default function NavLinks({
               size='sm'
               as='link'
               href={link.href}
-              onClick={() => handleLinkClick(link.label)}
+              onClick={(e: React.MouseEvent) =>
+                handleLinkClick(e, link.label, link.href)
+              }
               highlighted={pathname === link.href}
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}
@@ -43,6 +58,20 @@ export default function NavLinks({
           </li>
         ))}
       </ul>
+      <Button
+        variant='primary'
+        size='sm'
+        as='link'
+        href={AUDIT_LINK.href}
+        onClick={(e: React.MouseEvent) =>
+          handleLinkClick(e, AUDIT_LINK.label, AUDIT_LINK.href)
+        }
+        aria-current={pathname === AUDIT_LINK.href ? 'page' : undefined}
+        aria-label={`Navigate to ${AUDIT_LINK.label} page`}
+        className='md:ml-4 lowercase'
+      >
+        {AUDIT_LINK.label}
+      </Button>
     </div>
   );
 }

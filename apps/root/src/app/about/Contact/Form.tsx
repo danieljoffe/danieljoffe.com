@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useTransitionRouter } from 'next-transition-router';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { InferType } from 'yup';
 import { CONTACT_FORM_ID } from '@/utils/constants';
-import { formSchema } from '@/app/api/email/schema';
+import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,7 +22,7 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
 type ContactFormData = InferType<typeof formSchema>;
 
 export default function Form() {
-  const router = useTransitionRouter();
+  const router = useRouter();
   const [shouldLoadCaptcha, setShouldLoadCaptcha] = useState(false);
   const captchaContainerRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +77,7 @@ export default function Form() {
     }
 
     try {
-      const response = await fetch('/api/email', {
+      const response = await fetch('/api/email/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

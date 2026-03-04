@@ -39,13 +39,13 @@ export default function PostThumbnail({
         ].join(' ')}
       >
         <div className='relative overflow-hidden'>
-          <UnsplashFigure width={440} height={460}>
+          <UnsplashFigure width={160} height={173}>
             <UnsplashImg
               src={cover.src}
               alt={cover.alt}
-              width={440}
-              height={460}
-              quality={65}
+              width={160}
+              height={173}
+              quality={33}
               priority={index < 2}
             />
             <UnsplashDecorativeAttribution creator={cover.creator} />
