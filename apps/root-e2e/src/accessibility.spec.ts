@@ -218,7 +218,7 @@ test.describe('accessibility tests', () => {
     // Set mobile viewport to trigger mobile menu
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
     // Look for mobile menu trigger (which opens a modal)
     const modalTrigger = page.locator('[aria-label="Open menu"]');

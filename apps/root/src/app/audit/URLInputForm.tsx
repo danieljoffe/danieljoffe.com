@@ -202,10 +202,10 @@ export default function URLInputForm() {
       </form>
       {state.phase === 'error' && (
         <Alert variant='error'>
-          {state.message}
+          {state.message}{' '}
           <button
             onClick={() => setState({ phase: 'idle' })}
-            className='block mt-2 text-sm font-medium underline hover:no-underline'
+            className='inline-block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer'
           >
             Try again
           </button>

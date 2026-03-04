@@ -2,7 +2,7 @@
 
 import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
-import { NAV_LINKS } from '@/utils/constants';
+import { AUDIT_LINK, NAV_LINKS } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 
 export default function NavLinks({
@@ -32,7 +32,7 @@ export default function NavLinks({
   };
 
   return (
-    <div className='flex flex-col h-full w-full justify-center items-center'>
+    <div className='flex flex-col gap-4 h-full w-full justify-center items-center md:flex-row md:justify-end'>
       <ul
         className='flex flex-col gap-4 items-center md:flex-row lowercase'
         role='menubar'
@@ -58,6 +58,20 @@ export default function NavLinks({
           </li>
         ))}
       </ul>
+      <Button
+        variant='primary'
+        size='sm'
+        as='link'
+        href={AUDIT_LINK.href}
+        onClick={(e: React.MouseEvent) =>
+          handleLinkClick(e, AUDIT_LINK.label, AUDIT_LINK.href)
+        }
+        aria-current={pathname === AUDIT_LINK.href ? 'page' : undefined}
+        aria-label={`Navigate to ${AUDIT_LINK.label} page`}
+        className='md:ml-4 lowercase'
+      >
+        {AUDIT_LINK.label}
+      </Button>
     </div>
   );
 }

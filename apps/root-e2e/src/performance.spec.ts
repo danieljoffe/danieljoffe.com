@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForHydration } from './fixtures/base.fixture';
 
 test.describe('performance', () => {
   // Web vitals timing tests (LCP, INP, CLS, load time) are covered by
@@ -130,6 +131,7 @@ test.describe('performance', () => {
 
   test('navigation performance is optimized', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
     // Find the About link — open mobile menu if needed (don't time this part)
     let targetLink = page.getByRole('link', { name: /about/i }).first();
