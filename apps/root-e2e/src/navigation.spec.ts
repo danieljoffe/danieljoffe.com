@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { NAV_LINKS } from './fixtures/test-data';
+import { waitForHydration } from './fixtures/base.fixture';
 
 test.describe('desktop navigation', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,7 +61,7 @@ test.describe('mobile navigation', () => {
 
   test('opens mobile menu on hamburger click', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
     const menuButton = page.getByLabel('Open menu');
     await expect(menuButton).toBeVisible();
@@ -73,7 +74,7 @@ test.describe('mobile navigation', () => {
 
   test('closes mobile menu on close button click', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
     // Open menu
     const menuButton = page.getByLabel('Open menu');
@@ -91,7 +92,7 @@ test.describe('mobile navigation', () => {
 
   test('navigates from mobile menu', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
     // Open menu
     const menuButton = page.getByLabel('Open menu');
@@ -111,7 +112,7 @@ test.describe('mobile navigation', () => {
 
   test('mobile menu has close button focused on open', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
     // Open menu
     const menuButton = page.getByLabel('Open menu');
