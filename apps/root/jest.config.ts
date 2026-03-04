@@ -1,5 +1,9 @@
 const nextJest = require('next/jest.js').default ?? require('next/jest.js');
 
+// Ensure NODE_ENV=test so react-dom/test-utils loads the development build
+// (the production build removed React.act in React 19, causing flaky failures).
+process.env.NODE_ENV = 'test';
+
 const createJestConfig = nextJest({
   dir: './',
 });
@@ -26,10 +30,10 @@ const config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 40,
-      functions: 40,
-      lines: 40,
-      statements: 40,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
   // Ensure Jest exits cleanly in Nx/Next test envs

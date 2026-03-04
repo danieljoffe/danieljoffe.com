@@ -4,98 +4,11 @@ jest.mock('@/lib/public.env', () => ({
 }));
 
 import { publicEnv } from '@/lib/public.env';
-import {
-  getBase64DataUrl,
-  devLog,
-  isProduction,
-  downloadResume,
-} from '../helpers';
+import { devLog, isProduction, downloadResume } from '../helpers';
 
 const mockPublicEnv = publicEnv as Record<string, string | undefined>;
 
 describe('helpers', () => {
-  // ============================================================================
-  // getBase64DataUrl
-  // ============================================================================
-  describe('getBase64DataUrl', () => {
-    it('uses canvas path when window is defined and ctx is available', () => {
-      const mockCtx = {
-        fillStyle: '',
-        fillRect: jest.fn(),
-      };
-      const mockCanvas = {
-        width: 0,
-        height: 0,
-        getContext: jest.fn().mockReturnValue(mockCtx),
-        toDataURL: jest.fn().mockReturnValue('data:image/png;base64,mock'),
-      };
-
-      const originalCreateElement = document.createElement.bind(document);
-      jest
-        .spyOn(document, 'createElement')
-        .mockImplementation((tag: string) => {
-          if (tag === 'canvas')
-            return mockCanvas as unknown as HTMLCanvasElement;
-          return originalCreateElement(tag);
-        });
-
-      const result = getBase64DataUrl('rgb(10,20,30)');
-
-      expect(mockCanvas.width).toBe(40);
-      expect(mockCanvas.height).toBe(40);
-      expect(mockCanvas.getContext).toHaveBeenCalledWith('2d');
-      expect(mockCtx.fillStyle).toBe('rgb(10,20,30)');
-      expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, 40, 40);
-      expect(mockCanvas.toDataURL).toHaveBeenCalled();
-      expect(result).toBe('data:image/png;base64,mock');
-    });
-
-    it('skips fillStyle/fillRect when getContext returns null', () => {
-      const mockCanvas = {
-        width: 0,
-        height: 0,
-        getContext: jest.fn().mockReturnValue(null),
-        toDataURL: jest.fn().mockReturnValue('data:image/png;base64,empty'),
-      };
-
-      const originalCreateElement = document.createElement.bind(document);
-      jest
-        .spyOn(document, 'createElement')
-        .mockImplementation((tag: string) => {
-          if (tag === 'canvas')
-            return mockCanvas as unknown as HTMLCanvasElement;
-          return originalCreateElement(tag);
-        });
-
-      const result = getBase64DataUrl('rgb(50,60,70)');
-
-      expect(mockCanvas.getContext).toHaveBeenCalledWith('2d');
-      // fillRect should NOT have been called since ctx was null
-      expect(mockCanvas.toDataURL).toHaveBeenCalled();
-      expect(result).toBe('data:image/png;base64,empty');
-    });
-
-    it('returns an SVG base64 data URL when canvas is null (SSR fallback)', () => {
-      // Mock createElement to return null for canvas, simulating SSR
-      const originalCreateElement = document.createElement.bind(document);
-      jest
-        .spyOn(document, 'createElement')
-        .mockImplementation((tag: string) => {
-          if (tag === 'canvas') return null as unknown as HTMLCanvasElement;
-          return originalCreateElement(tag);
-        });
-
-      const result = getBase64DataUrl('rgb(100,200,50)');
-
-      expect(result).toMatch(/^data:image\/svg\+xml;base64,/);
-      const base64Part = result.replace('data:image/svg+xml;base64,', '');
-      const decoded = Buffer.from(base64Part, 'base64').toString('utf8');
-      expect(decoded).toContain('rgb(100,200,50)');
-      expect(decoded).toContain('<svg');
-      expect(decoded).toContain('<rect');
-    });
-  });
-
   // ============================================================================
   // isProduction
   // ============================================================================
@@ -129,16 +42,17 @@ describe('helpers', () => {
   // devLog
   // ============================================================================
   describe('devLog', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+
     afterEach(() => {
-      mockPublicEnv['NEXT_PUBLIC_NODE_ENV'] = 'test';
+      process.env.NODE_ENV = originalNodeEnv;
     });
 
-    it('does not call console.log when isProduction() returns true', () => {
-      mockPublicEnv['NEXT_PUBLIC_NODE_ENV'] = 'production';
+    it('does not call console.debug when not in development mode', () => {
+      process.env.NODE_ENV = 'production';
 
-      // Restore test-setup spy, then add our own so we can assert
       jest.restoreAllMocks();
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
+      const consoleSpy = jest.spyOn(console, 'debug').mockImplementation(() => {
         /* noop */
       });
 
@@ -146,57 +60,66 @@ describe('helpers', () => {
       expect(consoleSpy).not.toHaveBeenCalled();
     });
 
-    it('calls console.log with formatted message when isProduction() returns false', () => {
-      mockPublicEnv['NEXT_PUBLIC_NODE_ENV'] = 'test';
+    it('calls console.debug with formatted message in development mode', () => {
+      process.env.NODE_ENV = 'development';
 
       jest.restoreAllMocks();
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
+      const consoleSpy = jest.spyOn(console, 'debug').mockImplementation(() => {
         /* noop */
       });
 
       devLog('hello world', { extra: 'data' });
 
       expect(consoleSpy).toHaveBeenCalledTimes(1);
-      const [format, style, ...rest] = consoleSpy.mock.calls[0];
-      expect(format).toMatch(/^%c.*> hello world$/);
-      expect(style).toContain('background-color: darkorange');
+      const [format, ...rest] = consoleSpy.mock.calls[0];
+      expect(format).toContain('DEBUG');
+      expect(format).toContain('hello world');
       expect(rest).toEqual([{ extra: 'data' }]);
     });
 
     it('passes multiple extra arguments through', () => {
-      mockPublicEnv['NEXT_PUBLIC_NODE_ENV'] = 'development';
+      process.env.NODE_ENV = 'development';
 
       jest.restoreAllMocks();
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
+      const consoleSpy = jest.spyOn(console, 'debug').mockImplementation(() => {
         /* noop */
       });
 
       devLog('test', 1, 'two', { three: 3 });
 
       expect(consoleSpy).toHaveBeenCalledTimes(1);
-      const args = consoleSpy.mock.calls[0];
-      // format string, style string, then the 3 extra args
-      expect(args.length).toBe(5);
-      expect(args[2]).toBe(1);
-      expect(args[3]).toBe('two');
-      expect(args[4]).toEqual({ three: 3 });
+      const [, ...rest] = consoleSpy.mock.calls[0];
+      expect(rest).toEqual([1, 'two', { three: 3 }]);
     });
 
-    it('includes an ISO timestamp in the formatted message', () => {
-      mockPublicEnv['NEXT_PUBLIC_NODE_ENV'] = 'test';
+    it('includes a timestamp in the formatted message', () => {
+      process.env.NODE_ENV = 'development';
 
       jest.restoreAllMocks();
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {
+      const consoleSpy = jest.spyOn(console, 'debug').mockImplementation(() => {
         /* noop */
       });
 
       devLog('timestamp check');
 
       const [format] = consoleSpy.mock.calls[0];
-      // ISO 8601 timestamp pattern
-      expect(format).toMatch(
-        /^%c\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z > timestamp check$/
-      );
+      // Should contain the message and ANSI-formatted output with a timestamp
+      expect(format).toContain('timestamp check');
+      expect(format).toContain('DEBUG');
+      // Timestamp is wrapped in ANSI codes: \x1b[90m[...]\x1b[0m
+      expect(format).toMatch(/\[.+\]/);
+    });
+
+    it('does nothing in test environment', () => {
+      process.env.NODE_ENV = 'test';
+
+      jest.restoreAllMocks();
+      const consoleSpy = jest.spyOn(console, 'debug').mockImplementation(() => {
+        /* noop */
+      });
+
+      devLog('should not appear');
+      expect(consoleSpy).not.toHaveBeenCalled();
     });
   });
 

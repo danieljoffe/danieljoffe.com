@@ -12,6 +12,7 @@ export type UnsplashImageProps = UnsplashImageMeta & {
   height?: number;
   fill?: boolean;
   quality?: number;
+  sizes?: string;
 };
 
 export default function UnsplashImage({
@@ -25,6 +26,7 @@ export default function UnsplashImage({
   priority = false,
   fill = false,
   preload = false,
+  sizes,
 }: UnsplashImageProps) {
   if (!src || !alt || !creator || !origin) {
     throw new Error('Missing required props');
@@ -46,6 +48,7 @@ export default function UnsplashImage({
         priority={priority}
         fill={fill}
         preload={preload}
+        {...(sizes ? { sizes } : {})}
       />
       <UnsplashAttribution creator={creator} />
     </UnsplashFigure>

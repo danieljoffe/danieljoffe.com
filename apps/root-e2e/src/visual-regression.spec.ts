@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { INVALID_UUID } from './fixtures/audit-mock-data';
 
 // VR baselines are captured with mocked system fonts (not Google Fonts).
 // Font mocking is a build-time webpack plugin triggered by CI=true or MOCK_FONTS=true.
@@ -32,11 +33,22 @@ test.describe('visual regression', () => {
   });
 
   test('homepage visual regression', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
-    // Wait for GSAP animations to settle — they affect layout height
-    await page.waitForTimeout(1000);
+    // Wait for GSAP animations to settle — they affect layout height.
+    // Poll until document height stabilises (two consecutive reads match).
+    await expect
+      .poll(
+        async () => {
+          const h1 = await page.evaluate(() => document.body.scrollHeight);
+          await new Promise(r => setTimeout(r, 250));
+          const h2 = await page.evaluate(() => document.body.scrollHeight);
+          return h1 === h2;
+        },
+        { timeout: 5000 }
+      )
+      .toBeTruthy();
 
     await expect(page).toHaveScreenshot('homepage.png', {
       fullPage: true,
@@ -47,7 +59,7 @@ test.describe('visual regression', () => {
   });
 
   test('about page visual regression', async ({ page }) => {
-    await page.goto('/about');
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
@@ -63,7 +75,7 @@ test.describe('visual regression', () => {
   });
 
   test('experience listing visual regression', async ({ page }) => {
-    await page.goto('/experience');
+    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
@@ -75,7 +87,7 @@ test.describe('visual regression', () => {
   });
 
   test('experience detail visual regression', async ({ page }) => {
-    await page.goto('/experience/fightcamp');
+    await page.goto('/experience/fightcamp', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h2').first().waitFor({ state: 'visible' });
 
@@ -87,7 +99,7 @@ test.describe('visual regression', () => {
   });
 
   test('projects listing visual regression', async ({ page }) => {
-    await page.goto('/projects');
+    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
@@ -99,7 +111,9 @@ test.describe('visual regression', () => {
   });
 
   test('project detail visual regression', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForLoadState('load');
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
@@ -111,11 +125,39 @@ test.describe('visual regression', () => {
   });
 
   test('services page visual regression', async ({ page }) => {
-    await page.goto('/services');
+    await page.goto('/services', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('load');
     await page.locator('h1').first().waitFor({ state: 'visible' });
 
     await expect(page).toHaveScreenshot('services.png', {
+      fullPage: true,
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-gsap]')],
+    });
+  });
+
+  test('audit scan page visual regression', async ({ page }) => {
+    await page.goto('/audit', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
+    await page.locator('h1').first().waitFor({ state: 'visible' });
+
+    await expect(page).toHaveScreenshot('audit-scan.png', {
+      fullPage: true,
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-gsap]')],
+    });
+  });
+
+  test('audit report not-found visual regression', async ({ page }) => {
+    await page.goto(`/audit/r/${INVALID_UUID}`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.waitForLoadState('load');
+    await page
+      .getByRole('heading', { name: 'Report Not Found' })
+      .waitFor({ state: 'visible' });
+
+    await expect(page).toHaveScreenshot('audit-report-not-found.png', {
       fullPage: true,
       maxDiffPixelRatio: 0.02,
       mask: [page.locator('[data-gsap]')],

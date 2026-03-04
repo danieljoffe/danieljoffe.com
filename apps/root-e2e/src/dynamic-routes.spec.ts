@@ -3,16 +3,14 @@ import { PROJECT_SLUGS, EXPERIENCE_SLUGS } from './fixtures/test-data';
 
 test.describe('projects listing page', () => {
   test('displays projects page with heading', async ({ page }) => {
-    await page.goto('/projects');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
 
     const heading = page.locator('h1');
     await expect(heading).toBeVisible();
   });
 
   test('displays project thumbnails', async ({ page }) => {
-    await page.goto('/projects');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
 
     // Check for project links
     const projectLinks = page.locator('article a[href^="/projects/"]');
@@ -22,8 +20,7 @@ test.describe('projects listing page', () => {
   });
 
   test('project thumbnail links to detail page', async ({ page }) => {
-    await page.goto('/projects');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
 
     const firstProjectLink = page
       .locator('article a[href^="/projects/"]')
@@ -38,8 +35,7 @@ test.describe('projects listing page', () => {
 test.describe('project detail pages', () => {
   for (const slug of PROJECT_SLUGS) {
     test(`loads ${slug} project page`, async ({ page }) => {
-      await page.goto(`/projects/${slug}`);
-      await page.waitForLoadState('domcontentloaded');
+      await page.goto(`/projects/${slug}`, { waitUntil: 'domcontentloaded' });
 
       // Page should load without error - project pages use h1 or h2 as main heading
       const heading = page.locator('h1, h2').first();
@@ -52,7 +48,9 @@ test.describe('project detail pages', () => {
   }
 
   test('project page has structured data', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
 
     // Check for structured data script - may be multiple so use first()
     const structuredData = page
@@ -62,8 +60,9 @@ test.describe('project detail pages', () => {
   });
 
   test('project page has meta description', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
 
     const metaDescription = page.locator('meta[name="description"]');
     await expect(metaDescription).toBeAttached();
@@ -71,8 +70,9 @@ test.describe('project detail pages', () => {
   });
 
   test('project page has Open Graph tags', async ({ page }) => {
-    await page.goto('/projects/performance-case-study');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/projects/performance-case-study', {
+      waitUntil: 'domcontentloaded',
+    });
 
     const ogTitle = page.locator('meta[property="og:title"]');
     await expect(ogTitle).toBeAttached();
@@ -84,16 +84,14 @@ test.describe('project detail pages', () => {
 
 test.describe('experience listing page', () => {
   test('displays experience page with heading', async ({ page }) => {
-    await page.goto('/experience');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
 
     const heading = page.locator('h1');
     await expect(heading).toBeVisible();
   });
 
   test('displays experience thumbnails', async ({ page }) => {
-    await page.goto('/experience');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
 
     // Check for experience links
     const experienceLinks = page.locator('article a[href^="/experience/"]');
@@ -103,8 +101,7 @@ test.describe('experience listing page', () => {
   });
 
   test('experience thumbnail links to detail page', async ({ page }) => {
-    await page.goto('/experience');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
 
     const firstExperienceLink = page
       .locator('article a[href^="/experience/"]')
@@ -119,8 +116,7 @@ test.describe('experience listing page', () => {
 test.describe('experience detail pages', () => {
   for (const slug of EXPERIENCE_SLUGS) {
     test(`loads ${slug} experience page`, async ({ page }) => {
-      await page.goto(`/experience/${slug}`);
-      await page.waitForLoadState('domcontentloaded');
+      await page.goto(`/experience/${slug}`, { waitUntil: 'domcontentloaded' });
 
       // Page should load without error - experience pages use h2 as main heading
       const heading = page.locator('h2').first();
@@ -133,7 +129,7 @@ test.describe('experience detail pages', () => {
   }
 
   test('experience page has structured data', async ({ page }) => {
-    await page.goto('/experience/winc');
+    await page.goto('/experience/winc', { waitUntil: 'domcontentloaded' });
 
     // Check for structured data script - may be multiple so use first()
     const structuredData = page
@@ -143,8 +139,7 @@ test.describe('experience detail pages', () => {
   });
 
   test('experience page has meta description', async ({ page }) => {
-    await page.goto('/experience/winc');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/experience/winc', { waitUntil: 'domcontentloaded' });
 
     const metaDescription = page.locator('meta[name="description"]');
     await expect(metaDescription).toBeAttached();
@@ -159,7 +154,9 @@ test.describe('invalid routes', () => {
   test('invalid project slug does not render detail content', async ({
     page,
   }) => {
-    const response = await page.goto('/projects/invalid-slug-xyz-123');
+    const response = await page.goto('/projects/invalid-slug-xyz-123', {
+      waitUntil: 'domcontentloaded',
+    });
     const status = response?.status();
     if (status === 404 || status === 500) return;
 
@@ -177,7 +174,9 @@ test.describe('invalid routes', () => {
   test('invalid experience slug does not render detail content', async ({
     page,
   }) => {
-    const response = await page.goto('/experience/invalid-company-xyz');
+    const response = await page.goto('/experience/invalid-company-xyz', {
+      waitUntil: 'domcontentloaded',
+    });
     const status = response?.status();
     if (status === 404 || status === 500) return;
 

@@ -3,9 +3,8 @@
 import React from 'react';
 import Button from '@/components/Button';
 import { useTransitionRouter } from 'next-transition-router';
-import { publicEnv, PublicEnvVars } from '@/lib/public.env';
 import { A11Y } from '@/utils/constants';
-import { devLog } from '@/utils/helpers';
+import { devLog, isProduction } from '@/utils/helpers';
 import { captureRenderError, addBreadcrumb } from '@/lib/errorTracking';
 
 interface ErrorBoundaryState {
@@ -79,17 +78,16 @@ const ErrorComponent = ({
               Refresh Page
             </Button>
           </div>
-          {publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] !== 'production' &&
-            error && (
-              <details className='mt-4 text-left'>
-                <summary className='cursor-pointer text-sm text-foreground-muted hover:text-foreground'>
-                  Error Details (Non-Production)
-                </summary>
-                <pre className='mt-2 text-sm bg-background-alt p-3 rounded overflow-auto'>
-                  {error.stack}
-                </pre>
-              </details>
-            )}
+          {!isProduction() && error && (
+            <details className='mt-4 text-left'>
+              <summary className='cursor-pointer text-sm text-foreground-muted hover:text-foreground'>
+                Error Details (Non-Production)
+              </summary>
+              <pre className='mt-2 text-sm bg-background-alt p-3 rounded overflow-auto'>
+                {error.stack}
+              </pre>
+            </details>
+          )}
         </div>
       </div>
     </div>
@@ -118,11 +116,7 @@ class ErrorBoundary extends React.Component<
     captureRenderError(error, errorInfo, 'ErrorBoundary');
 
     // Send error to analytics in production
-    if (
-      publicEnv[PublicEnvVars.NEXT_PUBLIC_NODE_ENV] === 'production' &&
-      typeof window !== 'undefined' &&
-      window.gtag
-    ) {
+    if (isProduction() && typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'exception', {
         description: error.message,
         fatal: false,

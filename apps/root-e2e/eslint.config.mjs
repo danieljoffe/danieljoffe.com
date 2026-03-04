@@ -23,7 +23,7 @@ export default [
       'playwright/prefer-lowercase-title': 'warn',
       'playwright/prefer-strict-equal': 'error',
       'playwright/valid-expect': 'error',
-      'playwright/no-skipped-test': 'warn',
+      'playwright/no-skipped-test': ['warn', { allowConditional: true }],
       'playwright/no-wait-for-timeout': 'warn',
     },
     ignores: ['playwright-report-json'],

@@ -1,0 +1,113 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
+import ExpandableScreenshot from './ExpandableScreenshot';
+import ShareButton from './ShareButton';
+
+interface ReportHeaderProps {
+  scanId: string;
+  url: string;
+  pageTitle: string | null;
+  screenshotUrl: string | null;
+  gradeOverall: string | null;
+  completedAt: string | null;
+  deviceMode?: 'mobile' | 'desktop';
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export default function ReportHeader({
+  scanId,
+  url,
+  pageTitle,
+  screenshotUrl,
+  gradeOverall,
+  completedAt,
+  deviceMode,
+}: ReportHeaderProps) {
+  const grade = gradeOverall ? GRADE_MAP[gradeOverall] : null;
+
+  return (
+    <Section
+      className='min-h-min max-h-max'
+      aria-labelledby='report-header-heading'
+      background='alt'
+    >
+      <PageContainer className='py-12 md:py-16'>
+        <div className='flex items-center justify-between'>
+          <Link
+            href='/audit'
+            className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
+          >
+            <ArrowLeft className='size-4' aria-hidden='true' />
+            New audit
+          </Link>
+          <ShareButton scanId={scanId} />
+        </div>
+
+        <div className='mt-6 flex flex-col gap-6 md:flex-row md:items-start'>
+          {/* Mobile: image centered; Tablet+: flush left */}
+          <div className='flex justify-center md:justify-start shrink-0'>
+            <ExpandableScreenshot
+              screenshotUrl={screenshotUrl}
+              alt={`Screenshot of ${pageTitle || url}`}
+              deviceMode={deviceMode}
+            />
+          </div>
+
+          {/* Grade + Page data row
+              Mobile: grade left, page data right
+              Tablet+: page data left, grade flush right */}
+          <div className='flex flex-row items-start gap-4 flex-1 min-w-0'>
+            {grade && (
+              <div
+                className='flex flex-col items-center shrink-0 order-first md:order-last'
+                aria-label={`Overall grade: ${grade.grade}, ${grade.label}`}
+              >
+                <span
+                  className='inline-flex items-center justify-center size-16 rounded-xl text-3xl font-bold text-white'
+                  style={{ backgroundColor: grade.color }}
+                >
+                  {grade.grade}
+                </span>
+                <span className='text-sm font-medium mt-1.5'>
+                  {grade.label}
+                </span>
+              </div>
+            )}
+
+            <div className='min-w-0 flex-1'>
+              <h1
+                id='report-header-heading'
+                className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
+              >
+                {pageTitle || url}
+              </h1>
+              <p className='text-sm text-foreground-muted truncate max-w-md mt-1'>
+                {url}
+              </p>
+              {completedAt && (
+                <p className='text-xs text-foreground-subtle mt-1'>
+                  Scanned {formatDate(completedAt)}
+                </p>
+              )}
+              <p className='text-xs text-foreground-subtle mt-0.5'>
+                {deviceMode === 'desktop'
+                  ? 'Tested on Desktop (Broadband)'
+                  : 'Tested on Mobile (4G)'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </PageContainer>
+    </Section>
+  );
+}

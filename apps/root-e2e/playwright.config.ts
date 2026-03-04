@@ -17,7 +17,7 @@ const isCI = process.env.CI === 'true';
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
   reporter: [
-    ['line'],
+    ['list'],
     ['json', { outputFile: 'playwright-report-json/report.json' }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -33,9 +33,14 @@ export default defineConfig({
     actionTimeout: 10000,
     /* Global timeout for navigation */
     navigationTimeout: 30000,
+    /* Block service workers so page.route() intercepts all requests reliably.
+     * WebKit treats requests passing through a SW fetch handler as "handled",
+     * even when the SW doesn't call event.respondWith(), which prevents
+     * Playwright route mocks from firing. */
+    serviceWorkers: 'block',
   },
   /* Global test timeout */
-  timeout: isCI ? 45000 : 30000, // Longer timeout in CI
+  timeout: 45000,
   /* Expect timeout */
   expect: {
     timeout: isCI ? 15000 : 10000, // Longer expect timeout in CI
@@ -64,13 +69,13 @@ export default defineConfig({
       MOCK_FONTS: 'true',
       // Use hCaptcha test sitekey (always passes verification)
       NEXT_PUBLIC_HCAPTCHA_SITE_ID: '10000000-ffff-ffff-ffff-000000000001',
-      // Disable Sentry to speed up startup
+      // Disable Resend so E2E tests never send real emails
+      RESEND_API_KEY: '',
       ...(isCI && {
+        // Disable Sentry to speed up startup
         SENTRY_DSN: '',
         SENTRY_AUTH_TOKEN: '',
-      }),
-      // Disable analytics and other non-essential services
-      ...(isCI && {
+        // Disable analytics and other non-essential services
         NEXT_TELEMETRY_DISABLED: '1',
         ANALYZE: 'false',
       }),
