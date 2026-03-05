@@ -31,7 +31,9 @@
   "browserslist": [
     "last 2 versions",
     ">= 5% in US",
-    "not dead"
+    "not dead",
+    "not op_mini all",
+    "not kaios > 0"
   ],
   "dependencies": {
     "@axe-core/puppeteer": "^4.11.1",
