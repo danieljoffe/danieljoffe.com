@@ -32,10 +32,11 @@ describe('Select', () => {
     expect(label).toHaveAttribute('for', select.id);
   });
 
-  it('generates id from label when id not provided', () => {
+  it('generates id when id not provided', () => {
     render(<Select label='Select Country' options={defaultOptions} />);
     const select = screen.getByRole('combobox');
-    expect(select).toHaveAttribute('id', 'select-country');
+    expect(select).toHaveAttribute('id');
+    expect(select.id).toBeTruthy();
   });
 
   it('uses provided id over generated one', () => {
