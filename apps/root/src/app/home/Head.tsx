@@ -10,6 +10,8 @@ export default async function Head() {
         Blocking script to apply dark mode class before paint.
         Prevents flash of wrong theme while React hydrates with server defaults.
         Must run before any rendering occurs.
+        Requires nonce for CSP — headers() forces dynamic rendering,
+        which is necessary for nonce-based CSP to work.
       */}
       <script
         suppressHydrationWarning
