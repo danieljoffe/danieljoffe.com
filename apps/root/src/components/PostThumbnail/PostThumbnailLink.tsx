@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode } from 'react';
-import { Link } from 'next-transition-router';
+import Link from 'next/link';
 import { analytics } from '@/lib/analytics';
 
 export default function PostThumbnailLink({

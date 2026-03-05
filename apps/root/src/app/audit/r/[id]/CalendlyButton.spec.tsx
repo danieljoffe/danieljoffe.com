@@ -5,8 +5,9 @@ jest.mock('@/lib/analytics', () => ({
   analytics: { auditCalendlyClicked: jest.fn() },
 }));
 
-jest.mock('next-transition-router', () => ({
-  Link: ({
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({
     children,
     ...props
   }: React.PropsWithChildren<

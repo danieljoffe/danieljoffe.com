@@ -6,10 +6,10 @@ import ErrorBoundary from './ErrorBoundary';
 // Extend Jest matchers
 expect.extend(toHaveNoViolations);
 
-// Mock next-transition-router
+// Mock next/navigation
 const mockRefresh = jest.fn();
-jest.mock('next-transition-router', () => ({
-  useTransitionRouter: () => ({
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
     refresh: mockRefresh,
   }),
 }));

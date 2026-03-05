@@ -41,7 +41,6 @@ const config = {
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^next-transition-router$': '<rootDir>/__mocks__/next-transition-router.js',
     '^gsap/MorphSVGPlugin$': '<rootDir>/__mocks__/gsap.morphSVGPlugin.js',
     '^gsap/CustomEase$': '<rootDir>/__mocks__/gsap.customEase.js',
     '^gsap/CustomWiggle$': '<rootDir>/__mocks__/gsap.customWiggle.js',

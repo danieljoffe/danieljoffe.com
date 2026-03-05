@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Button from '@/components/Button';
-import { useTransitionRouter } from 'next-transition-router';
+import { useRouter } from 'next/navigation';
 import { A11Y } from '@/utils/constants';
 import { devLog, isProduction } from '@/utils/helpers';
 import { captureRenderError, addBreadcrumb } from '@/lib/errorTracking';
@@ -28,7 +28,7 @@ const ErrorComponent = ({
   resetError: () => void;
   error: Error | null;
 }) => {
-  const router = useTransitionRouter();
+  const router = useRouter();
 
   return (
     <div

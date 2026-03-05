@@ -9,7 +9,7 @@ describe('CTASection', () => {
         heading='Ready to start?'
         description='Get in touch today.'
       >
-        <a href='/about'>Contact</a>
+        <span>Contact</span>
       </CTASection>
     );
     expect(
@@ -25,16 +25,12 @@ describe('CTASection', () => {
         heading='Ready to start?'
         description='Get in touch today.'
       >
-        <a href='/about'>Contact me</a>
-        <a href='/projects'>View projects</a>
+        <span>Contact me</span>
+        <span>View projects</span>
       </CTASection>
     );
-    expect(
-      screen.getByRole('link', { name: 'Contact me' })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: 'View projects' })
-    ).toBeInTheDocument();
+    expect(screen.getByText('Contact me')).toBeInTheDocument();
+    expect(screen.getByText('View projects')).toBeInTheDocument();
   });
 
   it('sets the heading id for aria-labelledby', () => {
@@ -44,7 +40,7 @@ describe('CTASection', () => {
         heading='Ready to start?'
         description='Get in touch today.'
       >
-        <a href='/about'>Contact</a>
+        <span>Contact</span>
       </CTASection>
     );
     const heading = screen.getByRole('heading', { name: 'Ready to start?' });

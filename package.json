@@ -63,7 +63,6 @@
     "lighthouse": "^13.0.3",
     "lucide-react": "0.577.0",
     "next": "16.1.6",
-    "next-transition-router": "^0.2.11",
     "puppeteer": "24.38.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
