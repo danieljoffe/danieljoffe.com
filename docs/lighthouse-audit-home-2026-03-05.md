@@ -402,3 +402,365 @@ Same `unsplash.com` cookie issue as home page.
 2. **Identify legacy polyfill source** -- Same `vendors-9ce36136` chunk as home page. Run bundle analyzer to identify which dependency ships the polyfills.
 
 3. **Monitor with CrUX** -- Track real-user LCP/INP for the about page alongside home page metrics.
+
+---
+
+## Services Page (`/services`)
+
+### Scores
+
+| Category       | Score   |
+| -------------- | ------- |
+| Performance    | **79**  |
+| Accessibility  | **100** |
+| Best Practices | **96**  |
+| SEO            | **100** |
+
+### Key Metrics
+
+| Metric                   | Value | Status   |
+| ------------------------ | ----- | -------- |
+| First Contentful Paint   | 0.9s  | Pass     |
+| Largest Contentful Paint | 5.1s  | **Fail** |
+| Total Blocking Time      | 160ms | Pass     |
+| Cumulative Layout Shift  | 0     | Pass     |
+| Speed Index              | 1.9s  | Pass     |
+| Time to Interactive      | 7.5s  | **Fail** |
+
+### Diagnostics
+
+| Metric            | Value   |
+| ----------------- | ------- |
+| Total Byte Weight | 866 KiB |
+| Main Thread Work  | 1.5s    |
+
+**Script Boot-up Time** (top offenders):
+
+| Script           | Total | Scripting |
+| ---------------- | ----- | --------- |
+| Sentry SDK chunk | 349ms | 172ms     |
+| vendors-2d429e2a | 165ms | 153ms     |
+| vendor-27161c75  | 147ms | 125ms     |
+| Google Tag Mgr   | 136ms | 95ms      |
+
+---
+
+### Changes Applied
+
+#### Converted Hero to Server Component
+
+Removed `'use client'` from `apps/root/src/app/services/Hero.tsx` and extracted the CTA button (which uses `analytics.ctaClick`) into a new client component `apps/root/src/app/services/HeroCTA.tsx`. This follows the same pattern applied to the about page Hero.
+
+The static heading, subheading, and availability badge no longer require hydration. Only the CTA button ships client-side JavaScript for analytics tracking.
+
+Also removed the redundant `aria-label` from the CTA button and the "See what I offer" anchor link -- the visible text already provides sufficient accessible names.
+
+**Files changed**: `Hero.tsx` (server component), `HeroCTA.tsx` (new client component), `Hero.spec.tsx`, `HeroCTA.spec.tsx` (new test).
+
+---
+
+### Issues & Recommendations
+
+#### 1. Largest Contentful Paint (5.1s) -- HIGH
+
+**Root cause**: Same as home and about pages -- LCP is bottlenecked by React hydration. The services Hero `<h1>` is now a server component, but LCP timing on localhost is dominated by CPU contention.
+
+**Status**: Deferred to production measurement.
+
+---
+
+#### 2. Time to Interactive (7.5s) -- HIGH
+
+**Root cause**: Same shared vendor bundle costs as other pages. Sentry (349ms), vendor chunks (312ms combined), and GTM (136ms) dominate script evaluation.
+
+**Status**: Deferred to production measurement. Same investigation needed as home/about pages.
+
+---
+
+#### 3. Unused JavaScript (127 KiB) -- MEDIUM
+
+Same pattern as home/about: GTM (third-party), Sentry Replay (deferred), HeadlessUI (deferred).
+
+**Status**: No further action -- already deferred/code-split.
+
+---
+
+#### 4. Legacy JavaScript (36 KiB) -- MEDIUM
+
+Same `vendors-9ce36136` polyfill chunk. Dependency-bundled, unaffected by browserslist changes.
+
+**Status**: Same as other pages -- identify source via bundle analyzer.
+
+---
+
+#### 5. Third-Party Cookie (Unsplash) -- LOW
+
+Same third-party cookie issue from Unsplash. Outside our control.
+
+**Status**: No action needed.
+
+---
+
+### Services Page Priority Matrix
+
+| #   | Issue                    | Impact | Effort | Priority | Status                             |
+| --- | ------------------------ | ------ | ------ | -------- | ---------------------------------- |
+| 1   | Hero server component    | Low    | Low    | **P2**   | **Resolved**                       |
+| 2   | LCP (hydration)          | High   | High   | **P1**   | Deferred to production measurement |
+| 3   | TTI (shared vendor cost) | High   | High   | **P1**   | Deferred to production measurement |
+| 4   | Unused JS                | Medium | None   | Skip     | No further action                  |
+| 5   | Legacy JS polyfills      | Medium | Low    | **P3**   | Same as other pages                |
+| 6   | Third-party cookie       | Low    | None   | Skip     | No action needed                   |
+
+---
+
+## Experience Page (`/experience`)
+
+### Scores
+
+| Category       | Before  | After   | Change |
+| -------------- | ------- | ------- | ------ |
+| Performance    | **73**  | **77**  | +4\*   |
+| Accessibility  | **100** | **100** | --     |
+| Best Practices | **96**  | **96**  | --     |
+| SEO            | **100** | **100** | --     |
+
+\* Performance score variance is expected on localhost (+/- 5 points between runs). The improvement is likely measurement noise rather than a direct result of the aria-label fix.
+
+### Key Metrics
+
+| Metric                   | Before | After  | Change | Status   |
+| ------------------------ | ------ | ------ | ------ | -------- |
+| First Contentful Paint   | 0.9s   | 0.9s   | --     | Pass     |
+| Largest Contentful Paint | 6.3s   | 6.2s   | -0.1s  | **Fail** |
+| Total Blocking Time      | 240ms  | 80ms\* | -160ms | Pass     |
+| Cumulative Layout Shift  | 0      | 0      | --     | Pass     |
+| Speed Index              | 0.9s   | 0.9s   | --     | Pass     |
+| Time to Interactive      | 7.5s   | 7.5s   | --     | **Fail** |
+
+\* TBT variance is expected on localhost due to CPU contention.
+
+### Diagnostics
+
+| Metric            | Value   |
+| ----------------- | ------- |
+| Total Byte Weight | 935 KiB |
+| Main Thread Work  | 1.2s    |
+
+---
+
+### Changes Applied
+
+#### Fixed: Accessible Name Mismatch (5 elements -> 0)
+
+All five WCAG 2.5.3 "Label in Name" violations have been resolved by removing `aria-label` from the `PostThumbnail` component's `<Link>` element.
+
+Each experience card had `aria-label={title}` (e.g., "Winc"), but the visible text inside the link included the title, role, duration, and description. Lighthouse flagged these because the accessible name (aria-label) didn't include all visible text.
+
+**Fix**: Removed `aria-label` from `PostThumbnail/index.tsx`. The visible text content now serves as the accessible name, which naturally includes all displayed information.
+
+| Element                       | Before                                                  | After                        |
+| ----------------------------- | ------------------------------------------------------- | ---------------------------- |
+| Winc card                     | `aria-label="Winc"`                                     | No aria-label (visible text) |
+| Internet Brands card          | `aria-label="Internet Brands"`                          | No aria-label (visible text) |
+| The Library Corporation card  | `aria-label="The Library Corporation"`                  | No aria-label (visible text) |
+| FightCamp card                | `aria-label="FightCamp"`                                | No aria-label (visible text) |
+| Professional Development card | `aria-label="Professional Development & Contract Work"` | No aria-label (visible text) |
+
+**Files changed**: `apps/root/src/components/PostThumbnail/index.tsx`, `apps/root/src/components/PostThumbnail/__tests__/index.spec.tsx`
+
+**Note**: This fix also resolves the same issue on the `/projects` page (8 elements), since both pages use the same `PostThumbnail` component.
+
+---
+
+### Issues & Recommendations
+
+#### 1. Largest Contentful Paint (6.2s) -- HIGH
+
+**Root cause**: Same hydration bottleneck as other pages. The experience listing page renders 5 PostThumbnail cards with images. The first two images use `priority` loading, but LCP is still dominated by hydration time.
+
+**Status**: Deferred to production measurement.
+
+---
+
+#### 2. Time to Interactive (7.5s) -- HIGH
+
+**Root cause**: Same shared vendor bundle costs. Sentry (322ms), vendor chunks (247ms combined), and GTM (125ms).
+
+**Status**: Deferred to production measurement.
+
+---
+
+#### 3. Unused JavaScript (127 KiB) -- MEDIUM
+
+Same pattern as other pages.
+
+**Status**: No further action.
+
+---
+
+#### 4. Legacy JavaScript (36 KiB) -- MEDIUM
+
+Same `vendors-9ce36136` polyfill chunk.
+
+**Status**: Same as other pages.
+
+---
+
+#### 5. Render-Blocking CSS (153ms) -- LOW
+
+Main Tailwind CSS bundle blocks initial render. `experimental.optimizeCss` (critters) already enabled.
+
+**Status**: No action needed.
+
+---
+
+### Experience Page Priority Matrix
+
+| #   | Issue                    | Impact | Effort | Priority | Status                             |
+| --- | ------------------------ | ------ | ------ | -------- | ---------------------------------- |
+| 1   | A11y name mismatches (5) | Medium | Low    | **P1**   | **Resolved**                       |
+| 2   | LCP (hydration)          | High   | High   | **P1**   | Deferred to production measurement |
+| 3   | TTI (shared vendor cost) | High   | High   | **P1**   | Deferred to production measurement |
+| 4   | Unused JS                | Medium | None   | Skip     | No further action                  |
+| 5   | Legacy JS polyfills      | Medium | Low    | **P3**   | Same as other pages                |
+| 6   | Render-blocking CSS      | Low    | High   | Skip     | No action needed                   |
+
+---
+
+## Projects Page (`/projects`)
+
+### Scores
+
+| Category       | Before  | After   | Change |
+| -------------- | ------- | ------- | ------ |
+| Performance    | **78**  | **77**  | -1\*   |
+| Accessibility  | **100** | **100** | --     |
+| Best Practices | **96**  | **96**  | --     |
+| SEO            | **100** | **100** | --     |
+
+\* Performance score variance is expected on localhost.
+
+### Key Metrics
+
+| Metric                   | Before | After | Change | Status   |
+| ------------------------ | ------ | ----- | ------ | -------- |
+| First Contentful Paint   | 0.9s   | 0.9s  | --     | Pass     |
+| Largest Contentful Paint | 6.2s   | 6.2s  | --     | **Fail** |
+| Total Blocking Time      | 80ms   | 80ms  | --     | Pass     |
+| Cumulative Layout Shift  | 0      | 0     | --     | Pass     |
+| Speed Index              | 0.9s   | 0.9s  | --     | Pass     |
+| Time to Interactive      | 7.5s   | 7.4s  | -0.1s  | **Fail** |
+
+### Diagnostics
+
+| Metric            | Value   |
+| ----------------- | ------- |
+| Total Byte Weight | 905 KiB |
+| Main Thread Work  | 1.2s    |
+
+---
+
+### Changes Applied
+
+#### Fixed: Accessible Name Mismatch (8 elements -> 0)
+
+All eight WCAG 2.5.3 "Label in Name" violations have been resolved. These used the same `PostThumbnail` component fixed in the experience page section above.
+
+| Element                             | Before                                             | After                        |
+| ----------------------------------- | -------------------------------------------------- | ---------------------------- |
+| Performance Optimization Case Study | `aria-label="Performance Optimization Case Study"` | No aria-label (visible text) |
+| Component Library Case Study        | `aria-label="Component Library Case Study"`        | No aria-label (visible text) |
+| CMS Tooling Case Study              | `aria-label="CMS Tooling Case Study"`              | No aria-label (visible text) |
+| Modern Practice Case Study          | `aria-label="Modern Practice Case Study"`          | No aria-label (visible text) |
+| Accessibility Case Study (Serials)  | `aria-label="Accessibility Case Study (Serials)"`  | No aria-label (visible text) |
+| Logistics Dashboard Case Study      | `aria-label="Logistics Dashboard Case Study"`      | No aria-label (visible text) |
+| UI Components V1                    | `aria-label="UI Components V1"`                    | No aria-label (visible text) |
+| UI Components V2                    | `aria-label="UI Components V2"`                    | No aria-label (visible text) |
+
+**Files changed**: Same `PostThumbnail/index.tsx` fix as experience page.
+
+---
+
+### Issues & Recommendations
+
+#### 1. Largest Contentful Paint (6.2s) -- HIGH
+
+**Root cause**: Same hydration bottleneck. The projects page renders 8 PostThumbnail cards. LCP is dominated by hydration time on localhost.
+
+**Status**: Deferred to production measurement.
+
+---
+
+#### 2. Time to Interactive (7.4s) -- HIGH
+
+**Root cause**: Same shared vendor bundle costs. Sentry (311ms), vendor chunks (262ms combined), and GTM (115ms).
+
+**Status**: Deferred to production measurement.
+
+---
+
+#### 3. Unused JavaScript (126 KiB) -- MEDIUM
+
+Same pattern as other pages.
+
+**Status**: No further action.
+
+---
+
+#### 4. Legacy JavaScript (36 KiB) -- MEDIUM
+
+Same `vendors-9ce36136` polyfill chunk.
+
+**Status**: Same as other pages.
+
+---
+
+#### 5. Render-Blocking CSS (153ms) -- LOW
+
+Same Tailwind CSS bundle. `experimental.optimizeCss` already enabled.
+
+**Status**: No action needed.
+
+---
+
+### Projects Page Priority Matrix
+
+| #   | Issue                    | Impact | Effort | Priority | Status                             |
+| --- | ------------------------ | ------ | ------ | -------- | ---------------------------------- |
+| 1   | A11y name mismatches (8) | Medium | Low    | **P1**   | **Resolved**                       |
+| 2   | LCP (hydration)          | High   | High   | **P1**   | Deferred to production measurement |
+| 3   | TTI (shared vendor cost) | High   | High   | **P1**   | Deferred to production measurement |
+| 4   | Unused JS                | Medium | None   | Skip     | No further action                  |
+| 5   | Legacy JS polyfills      | Medium | Low    | **P3**   | Same as other pages                |
+| 6   | Render-blocking CSS      | Low    | High   | Skip     | No action needed                   |
+
+---
+
+## Cross-Page Summary
+
+### All Pages Audited
+
+| Page       | Perf | A11y | BP  | SEO | A11y Fixes |
+| ---------- | ---- | ---- | --- | --- | ---------- |
+| Home (`/`) | 79   | 100  | 96  | 100 | 4 resolved |
+| About      | 78   | 100  | 96  | 100 | 5 resolved |
+| Services   | 79   | 100  | 96  | 100 | 0 (none)   |
+| Experience | 77   | 100  | 96  | 100 | 5 resolved |
+| Projects   | 77   | 100  | 96  | 100 | 8 resolved |
+
+### Shared Remaining Issues
+
+All pages share the same performance bottlenecks:
+
+1. **LCP (5.0-6.3s)** -- React hydration delay on localhost. Expected to improve significantly in production (CDN, edge rendering).
+2. **TTI (7.4-7.7s)** -- Sentry SDK (~300-450ms), vendor chunks (~250-310ms combined), GTM (~115-136ms). Measure in production before further optimization.
+3. **Unused JS (~127 KiB)** -- GTM (third-party), Sentry Replay (deferred), HeadlessUI (deferred). Already optimized.
+4. **Legacy JS (36 KiB)** -- Dependency-bundled polyfills. Investigate source via bundle analyzer.
+5. **Render-blocking CSS (40-153ms)** -- Tailwind bundle with critters optimization. No further action.
+
+### Recommended Next Steps
+
+1. **Deploy and measure in production** -- All LCP/TTI issues are inflated by localhost measurement. Deploy and run PageSpeed Insights against `danieljoffe.com`.
+2. **Identify legacy polyfill source** -- Run `ANALYZE=true npx nx build root` to find which dependency ships `vendors-9ce36136`.
+3. **Monitor with CrUX** -- Set up Web Vitals dashboard for real-user metrics across all pages.
