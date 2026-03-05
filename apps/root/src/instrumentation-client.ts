@@ -23,11 +23,8 @@ Sentry.init({
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
-  // Capture unhandled promise rejections
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    // Replay integration is deferred below to avoid blocking LCP paint
-  ],
+  // All heavy integrations are deferred below to avoid blocking LCP paint
+  integrations: [],
 
   // Session Replay sampling
   replaysSessionSampleRate: isProduction() ? 0.1 : 0,
@@ -65,11 +62,12 @@ Sentry.init({
   debug: false,
 });
 
-// Defer Sentry Replay to avoid blocking initial paint.
-// Sample rates (replaysSessionSampleRate, replaysOnErrorSampleRate) are read
-// when the integration is added, not at init time.
+// Defer heavy Sentry integrations to avoid blocking LCP and TTI.
+// browserTracingIntegration and replayIntegration are added after the page
+// becomes interactive, keeping the initial JS evaluation cost low.
 if (typeof window !== 'undefined') {
-  const loadReplay = () => {
+  const loadDeferredIntegrations = () => {
+    Sentry.addIntegration(Sentry.browserTracingIntegration());
     Sentry.addIntegration(
       Sentry.replayIntegration({
         maskAllText: false,
@@ -79,9 +77,9 @@ if (typeof window !== 'undefined') {
   };
 
   if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(loadReplay);
+    window.requestIdleCallback(loadDeferredIntegrations);
   } else {
-    setTimeout(loadReplay, 0);
+    setTimeout(loadDeferredIntegrations, 0);
   }
 }
 
