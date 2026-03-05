@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Spinner } from '@danieljoffe.com/shared-ui';
-import { useGlobal } from '@/state/Global/Context';
+import { useModal } from '@/state/Modal/Provider';
 import NavLinks from './Links';
 import MobileNav from './MobileNav';
 
@@ -17,7 +17,7 @@ const TabletUpNav = dynamic(() => import('./TabletUpNav'), {
 
 export default function Nav() {
   const pathname = usePathname();
-  const { isModalOpen, setModalContent } = useGlobal();
+  const { isModalOpen, setModalContent } = useModal();
 
   const handleMenuOpen = () => {
     setModalContent(

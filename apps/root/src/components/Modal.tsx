@@ -1,4 +1,4 @@
-import { useGlobal } from '@/state/Global/Context';
+import { useModal } from '@/state/Modal/Provider';
 import Button from '@/components/Button';
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -25,7 +25,7 @@ const DialogPanel = dynamic(
 );
 
 export default function Modal() {
-  const { isModalOpen, toggleModal, modalContent } = useGlobal();
+  const { isModalOpen, toggleModal, modalContent } = useModal();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const focusTrapRef = useFocusTrap(isModalOpen);

@@ -32,11 +32,3 @@ export type ProjectStructuredData = Blog & {
 
 export type AllowedExperienceSlugs = (typeof experiencePageSlugs)[number];
 export type AllowedProjectSlugs = (typeof projectPageSlugs)[number];
-
-export interface WindowSize {
-  windowWidth: number;
-  windowHeight: number;
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
-}
