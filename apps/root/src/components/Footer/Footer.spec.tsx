@@ -20,19 +20,6 @@ jest.mock('next/link', () => {
   return MockLink;
 });
 
-jest.mock('@/lib/analytics', () => ({
-  analytics: {
-    navClick: jest.fn(),
-    ctaClick: jest.fn(),
-  },
-}));
-
-jest.mock('@/utils/helpers', () => ({
-  downloadResume: jest.fn(),
-  devLog: jest.fn(),
-  isProduction: () => false,
-}));
-
 describe('Footer', () => {
   it('renders with contentinfo role', () => {
     render(<Footer />);
@@ -44,11 +31,19 @@ describe('Footer', () => {
     expect(screen.getByText('Daniel Joffe')).toBeInTheDocument();
   });
 
-  it('renders footer navigation', () => {
+  it('renders footer navigation with links', () => {
     render(<Footer />);
-    expect(
-      screen.getByRole('navigation', { name: 'Footer navigation' })
-    ).toBeInTheDocument();
+    const nav = screen.getByRole('navigation', { name: 'Footer navigation' });
+    expect(nav).toBeInTheDocument();
+    expect(nav.querySelectorAll('a').length).toBeGreaterThan(0);
+  });
+
+  it('renders social links', () => {
+    render(<Footer />);
+    expect(screen.getByLabelText('Send Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Visit LinkedIn Profile')).toBeInTheDocument();
+    expect(screen.getByLabelText('Visit GitHub Profile')).toBeInTheDocument();
+    expect(screen.getByLabelText('Download Resume (PDF)')).toBeInTheDocument();
   });
 
   it('renders the copyright notice with current year', () => {
