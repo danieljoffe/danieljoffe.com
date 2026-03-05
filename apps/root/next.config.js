@@ -1,6 +1,7 @@
 //@ts-check
 
 const { composePlugins, withNx } = require('@nx/next');
+const { withBotId } = require('botid/next/config');
 const createMDX = require('@next/mdx');
 const bundleAnalyzer = require('@next/bundle-analyzer');
 
@@ -404,4 +405,4 @@ const finalConfig =
         },
       });
 
-module.exports = finalConfig;
+module.exports = withBotId(finalConfig);

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { checkBotId } from 'botid/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createResendClient, EMAIL_FROM } from '@/lib/email/resend';
 import { buildUnsubscribeUrl } from '@/lib/email/tokens';
@@ -10,6 +11,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   try {
+    if (process.env['VERCEL']) {
+      const botCheck = await checkBotId();
+      if (botCheck.isBot) {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+      }
+    }
+
     const body = await request.json();
     const { email, name, company, scan_id, source } = body as {
       email?: string;
