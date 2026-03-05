@@ -14,7 +14,6 @@ export default async function Head() {
       <script
         suppressHydrationWarning
         nonce={nonce}
-        type='application/ld+json'
         dangerouslySetInnerHTML={{
           __html: `(function(){try{var t=localStorage.getItem('theme-mode');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})()`,
         }}
