@@ -1,4 +1,3 @@
-'use client';
 import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import { FULL_NAME } from '@/utils/constants';
 import Image from 'next/image';

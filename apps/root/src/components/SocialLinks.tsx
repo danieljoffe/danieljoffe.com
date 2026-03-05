@@ -1,3 +1,5 @@
+'use client';
+
 import { Stack } from '@danieljoffe.com/shared-ui';
 import Button from './Button';
 import { profileData } from '@/data/profileData';

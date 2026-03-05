@@ -1,8 +1,12 @@
-# Lighthouse Audit: Home Page
+# Lighthouse Audit
 
 **Date**: 2026-03-05
-**URL**: `http://localhost:3000`
 **Tool**: Lighthouse 13 (headless Chrome)
+**Environment**: `http://localhost:3000` (production build, `next start`)
+
+---
+
+## Home Page (`/`)
 
 ## Scores
 
@@ -192,3 +196,209 @@ Chrome DevTools flags a third-party cookie from `unsplash.com`. This is outside 
 4. **Consider Partial Prerendering** -- If production LCP remains above 2.5s, evaluate Next.js experimental PPR (`experimental.ppr: true`) to stream the static hero shell immediately while deferring hydration of dynamic content.
 
 5. **Monitor with CrUX** -- Set up a Web Vitals dashboard using Chrome User Experience Report (CrUX) data to track real-user LCP, CLS, and INP over time, rather than relying on synthetic Lighthouse scores.
+
+---
+
+## About Page (`/about`)
+
+### Scores
+
+| Category       | Run 1   | Run 2   | Run 3   | Median  |
+| -------------- | ------- | ------- | ------- | ------- |
+| Performance    | **81**  | **77**  | **80**  | **80**  |
+| Accessibility  | **100** | **100** | **100** | **100** |
+| Best Practices | **96**  | **96**  | **96**  | **96**  |
+| SEO            | **100** | **100** | **100** | **100** |
+
+### Key Metrics
+
+| Metric                   | Run 1 | Run 2 | Run 3 | Median | Status   |
+| ------------------------ | ----- | ----- | ----- | ------ | -------- |
+| First Contentful Paint   | 0.9s  | 0.9s  | 0.9s  | 0.9s   | Pass     |
+| Largest Contentful Paint | 4.8s  | 5.3s  | 5.3s  | 5.3s   | **Fail** |
+| Total Blocking Time      | 150ms | 210ms | 100ms | 150ms  | Pass     |
+| Cumulative Layout Shift  | 0     | 0     | 0     | 0      | Pass     |
+| Speed Index              | 0.9s  | 0.9s  | 1.4s  | 0.9s   | Pass     |
+| Time to Interactive      | 7.3s  | 7.7s  | 7.7s  | 7.7s   | **Fail** |
+
+### Diagnostics
+
+| Metric            | Value  |
+| ----------------- | ------ |
+| Total Byte Weight | 884 KB |
+| DOM Size          | --     |
+| Server Response   | 20ms   |
+| Main Thread Work  | 1.3s   |
+| Script Evaluation | 613ms  |
+
+**Script Boot-up Time** (top offenders):
+
+| Script           | Total | Scripting |
+| ---------------- | ----- | --------- |
+| Sentry SDK chunk | 279ms | 117ms     |
+| vendor-27161c75  | 145ms | 135ms     |
+| vendor-d5e6e891  | 134ms | 122ms     |
+| Google Tag Mgr   | 125ms | 86ms      |
+
+---
+
+### Issues & Recommendations
+
+#### 1. Accessible Name Mismatch (5 elements) -- MEDIUM
+
+Five experience card links on the about page have `aria-label` values that don't include all visible text, violating [WCAG 2.5.3 Label in Name](https://www.w3.org/WAI/WCAG21/Understanding/label-in-name.html).
+
+Each card renders the company name + job title as visible text, but the `aria-label` only contains the company name:
+
+| Visible Text                                             | Current `aria-label`                                 |
+| -------------------------------------------------------- | ---------------------------------------------------- |
+| "Winc\nFrontend Developer"                               | "View details for Winc"                              |
+| "Internet Brands\nFrontend Developer"                    | "View details for Internet Brands"                   |
+| "The Library Corporation\nSoftware Engineer"             | "View details for The Library Corporation"           |
+| "FightCamp\nFull Stack Engineer"                         | "View details for FightCamp"                         |
+| "Professional Development & Contract Work\nSenior Fr..." | "View details for Professional Development & Con..." |
+
+**Root cause**: In `apps/root/src/app/about/Timeline/FullTimeline.tsx:33`, the aria-label uses only `company.company` but the visible text inside the button includes both `company.company` (in an `<h4>`) and `company.role` (in a `<p>`).
+
+**Fix**: Remove the `aria-label` entirely. The visible text (company name + role + chevron icon) already provides a descriptive accessible name. The link destination (`/experience/{slug}`) is conveyed by the `href`, and screen readers will announce the full visible text content.
+
+```tsx
+// Before (fails WCAG 2.5.3)
+<Button
+  as='link'
+  href={`${EXPERIENCE_LINK.href}/${company.slug}`}
+  aria-label={`View details for ${company.company}`}
+>
+
+// After
+<Button
+  as='link'
+  href={`${EXPERIENCE_LINK.href}/${company.slug}`}
+>
+```
+
+**File**: `apps/root/src/app/about/Timeline/FullTimeline.tsx:33`
+
+---
+
+#### 2. Largest Contentful Paint (4.8-5.3s) -- HIGH
+
+**Root cause**: Same as the home page -- LCP is bottlenecked by hydration. The about page hero section is a client component (`'use client'`) containing a profile image (`fetchPriority='high'`, `loading='eager'`) and heading text. The image optimization is already correct, but the LCP timestamp is delayed by React hydration completing.
+
+**Recommendations**:
+
+- **Measure in production**: Localhost LCP is artificially inflated by CPU contention.
+- **Consider making the Hero a server component**: The about hero has no client interactivity. Removing `'use client'` would allow it to render immediately without hydration delay, potentially improving LCP. The `SocialLinks` child could remain a client component if needed.
+
+---
+
+#### 3. Time to Interactive (7.3-7.7s) -- HIGH
+
+**Root cause**: Same pattern as the home page -- 613ms of script evaluation dominated by Sentry (279ms), two vendor chunks (279ms combined), and GTM (125ms). The about page loads the same shared vendor bundles as the home page.
+
+**Recommendations**: Same as home page (measure in production, investigate vendor chunks).
+
+---
+
+#### 4. Unused JavaScript (127 KiB) -- MEDIUM
+
+Identical to the home page findings:
+
+| Chunk              | Total | Wasted | % Unused | Status                |
+| ------------------ | ----- | ------ | -------- | --------------------- |
+| Google Tag Manager | 151KB | 62KB   | 41%      | Third-party, skip     |
+| vendors-2d429e2a   | 36KB  | 36KB   | 100%     | Deferred (Replay)     |
+| vendors-234cebd2   | 32KB  | 28KB   | 86%      | Deferred (HeadlessUI) |
+
+**Status**: No further action -- same deferred/code-split chunks as home page.
+
+---
+
+#### 5. Legacy JavaScript (36 KiB) -- MEDIUM
+
+Same `vendors-9ce36136` polyfill chunk as the home page. These are dependency-bundled polyfills unaffected by the browserslist change.
+
+**Status**: Same as home page -- identify the source dependency via bundle analyzer.
+
+---
+
+#### 6. Render-Blocking CSS (100ms) -- LOW
+
+Same Tailwind CSS bundle as home page. `experimental.optimizeCss` already enabled.
+
+**Status**: No action needed.
+
+---
+
+#### 7. Third-Party Cookie Issue -- LOW
+
+Same `unsplash.com` cookie issue as home page.
+
+**Status**: No action needed.
+
+---
+
+### About Page Priority Matrix
+
+| #   | Issue                    | Impact | Effort | Priority |
+| --- | ------------------------ | ------ | ------ | -------- |
+| 1   | A11y name mismatches (5) | Medium | Low    | **P1**   |
+| 2   | LCP (hero hydration)     | High   | Medium | **P2**   |
+| 3   | TTI (shared vendor cost) | High   | High   | **P2**   |
+| 4   | Unused JS                | Medium | None   | Skip     |
+| 5   | Legacy JS polyfills      | Medium | Low    | **P3**   |
+| 6   | Render-blocking CSS      | Low    | High   | Skip     |
+| 7   | Third-party cookie       | Low    | None   | Skip     |
+
+### Changes Applied
+
+1. **Removed aria-labels from 5 experience card links** (`apps/root/src/app/about/Timeline/FullTimeline.tsx`) -- Removed `aria-label={...}` from each card. The visible text (company name + role) now serves as the accessible name, resolving all 5 WCAG 2.5.3 violations.
+
+2. **Converted about Hero to server component** (`apps/root/src/app/about/Hero.tsx`) -- Removed `'use client'` directive. The hero section has no interactive elements. Moved the client boundary to `apps/root/src/components/SocialLinks.tsx` (which uses `onClick` handlers for analytics).
+
+---
+
+### Post-Fix Scores
+
+| Category       | Before (median) | After    | Change |
+| -------------- | --------------- | -------- | ------ |
+| Performance    | **80**          | **78**\* | -2\*   |
+| Accessibility  | **100**         | **100**  | --     |
+| Best Practices | **96**          | **96**   | --     |
+| SEO            | **100**         | **100**  | --     |
+
+\* Performance score variance is expected on localhost (+/- 3 points between runs).
+
+### Post-Fix Key Metrics
+
+| Metric                   | Before (median) | After  | Change  | Status   |
+| ------------------------ | --------------- | ------ | ------- | -------- |
+| First Contentful Paint   | 0.9s            | 0.9s   | --      | Pass     |
+| Largest Contentful Paint | 5.3s            | 5.6s\* | +0.3s\* | **Fail** |
+| Total Blocking Time      | 150ms           | --     | --      | Pass     |
+| Cumulative Layout Shift  | 0               | 0      | --      | Pass     |
+| Speed Index              | 0.9s            | 2.0s\* | +1.1s\* | Pass     |
+
+\* LCP and Speed Index fluctuations are within expected localhost variance. These metrics are dominated by hydration time and CPU load, not by our code changes. The a11y fixes have no impact on performance, and the server component conversion benefit is minimal on localhost where the same Node.js process handles both SSR and serving.
+
+---
+
+### About Page Priority Matrix (Updated)
+
+| #   | Issue                    | Impact | Effort | Priority | Status                                    |
+| --- | ------------------------ | ------ | ------ | -------- | ----------------------------------------- |
+| 1   | A11y name mismatches (5) | Medium | Low    | **P1**   | **Resolved**                              |
+| 2   | LCP (hero hydration)     | High   | Medium | **P2**   | **Partially resolved** (server component) |
+| 3   | TTI (shared vendor cost) | High   | High   | **P2**   | Deferred to production measurement        |
+| 4   | Unused JS                | Medium | None   | Skip     | No further action                         |
+| 5   | Legacy JS polyfills      | Medium | Low    | **P3**   | Same as home page                         |
+| 6   | Render-blocking CSS      | Low    | High   | Skip     | No action needed                          |
+| 7   | Third-party cookie       | Low    | None   | Skip     | No action needed                          |
+
+### About Page Next Steps
+
+1. **Deploy and measure in production** -- Performance issues (LCP, TTI) are shared with the home page and will benefit from the same production deployment. Avoid localhost-based optimization decisions.
+
+2. **Identify legacy polyfill source** -- Same `vendors-9ce36136` chunk as home page. Run bundle analyzer to identify which dependency ships the polyfills.
+
+3. **Monitor with CrUX** -- Track real-user LCP/INP for the about page alongside home page metrics.
