@@ -12,6 +12,7 @@
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s",
+      "!{projectRoot}/**/*.md",
       "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
       "!{projectRoot}/.storybook/**/*",
       "!{projectRoot}/tsconfig.storybook.json"
@@ -75,20 +76,10 @@
       }
     },
     {
-      "plugin": "@nx/react/router-plugin",
-      "options": {
-        "buildTargetName": "build",
-        "devTargetName": "dev",
-        "startTargetName": "start",
-        "watchDepsTargetName": "watch-deps",
-        "buildDepsTargetName": "build-deps",
-        "typecheckTargetName": "typecheck"
-      }
-    },
-    {
       "plugin": "@nx/vite/plugin",
       "options": {
         "buildTargetName": "build",
+        "testTargetName": "test-storybook",
         "serveTargetName": "serve",
         "devTargetName": "dev",
         "previewTargetName": "preview",
@@ -96,12 +87,6 @@
         "typecheckTargetName": "typecheck",
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
-      }
-    },
-    {
-      "plugin": "@nx/vitest",
-      "options": {
-        "testTargetName": "test"
       }
     },
     {
@@ -117,9 +102,6 @@
     }
   ],
   "targetDefaults": {
-    "test": {
-      "dependsOn": ["^build"]
-    },
     "@nx/esbuild:esbuild": {
       "cache": true,
       "dependsOn": ["^build"],

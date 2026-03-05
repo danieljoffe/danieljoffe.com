@@ -48,8 +48,8 @@ test.describe('services page', () => {
   test('only one FAQ item is open at a time', async ({ page }) => {
     const faqSection = page.locator('section[aria-labelledby="faq-heading"]');
     const questions = faqSection.locator('button[aria-expanded]');
-    const count = await questions.count();
-    expect(count).toBe(5);
+    const count = questions;
+    await expect(count).toHaveCount(5);
 
     // Open first
     await questions.nth(0).click();

@@ -1,7 +1,3 @@
-# audit
+# @danieljoffe.com/shared-audit
 
-This library was generated with [Nx](https://nx.dev).
-
-## Running unit tests
-
-Run `nx test audit` to execute the unit tests via [Jest](https://jestjs.io).
+Shared TypeScript types and utilities for the audit feature, consumed by both `apps/root` and `apps/audit-scan-service`.

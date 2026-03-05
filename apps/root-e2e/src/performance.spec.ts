@@ -256,9 +256,9 @@ test.describe('performance', () => {
 
       // Ensure SW is active
       await page.evaluate(async () => {
-        let reg = await navigator.serviceWorker.getRegistration();
+        const reg = await navigator.serviceWorker.getRegistration();
         if (!reg) {
-          reg = await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.register('/sw.js');
         }
         await navigator.serviceWorker.ready;
       });

@@ -103,10 +103,10 @@
   },
   "dependencies": {
     "@axe-core/puppeteer": "^4.11.1",
-    "@supabase/supabase-js": "^2.95.3",
+    "@supabase/supabase-js": "^2.98.0",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
+    "express": "^5.2.1",
     "lighthouse": "^13.0.3",
-    "puppeteer": "^24.37.2"
+    "puppeteer": "^24.38.0"
   }
 }

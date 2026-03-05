@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
+import { initBotId } from 'botid/client/core';
 import { publicEnv } from '@/lib/public.env';
 import { isProduction } from '@/utils/helpers';
 
@@ -85,3 +86,11 @@ if (typeof window !== 'undefined') {
 }
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+
+initBotId({
+  protect: [
+    { path: '/api/email/contact', method: 'POST' },
+    { path: '/api/leads/capture', method: 'POST' },
+    { path: '/api/audit/scan', method: 'POST' },
+  ],
+});

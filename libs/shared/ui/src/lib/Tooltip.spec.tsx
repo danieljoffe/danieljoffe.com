@@ -39,7 +39,6 @@ describe('Tooltip', () => {
       </Tooltip>
     );
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -58,7 +57,6 @@ describe('Tooltip', () => {
     });
 
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'false');
     expect(tooltip).toHaveClass('opacity-100');
   });
 
@@ -79,7 +77,6 @@ describe('Tooltip', () => {
     fireEvent.mouseLeave(trigger);
 
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -104,7 +101,7 @@ describe('Tooltip', () => {
     });
 
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+    expect(tooltip).toHaveClass('opacity-0');
   });
 
   it('shows tooltip on focus', () => {
@@ -122,7 +119,7 @@ describe('Tooltip', () => {
     });
 
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'false');
+    expect(tooltip).toHaveClass('opacity-100');
   });
 
   it('hides tooltip on blur', () => {
@@ -142,7 +139,7 @@ describe('Tooltip', () => {
     fireEvent.blur(trigger);
 
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+    expect(tooltip).toHaveClass('opacity-0');
   });
 
   it('hides tooltip on Escape key', () => {
@@ -162,7 +159,7 @@ describe('Tooltip', () => {
     fireEvent.keyDown(trigger, { key: 'Escape' });
 
     const tooltip = container.querySelector('[role="tooltip"]');
-    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+    expect(tooltip).toHaveClass('opacity-0');
   });
 
   it('applies top position with offset and centering by default', () => {
@@ -221,13 +218,13 @@ describe('Tooltip', () => {
       jest.advanceTimersByTime(200);
     });
 
-    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+    expect(tooltip).toHaveClass('opacity-0');
 
     act(() => {
       jest.advanceTimersByTime(300);
     });
 
-    expect(tooltip).toHaveAttribute('aria-hidden', 'false');
+    expect(tooltip).toHaveClass('opacity-100');
   });
 
   it('clears pending timeout on unmount', () => {

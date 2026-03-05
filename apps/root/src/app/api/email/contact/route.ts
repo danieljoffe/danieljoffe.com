@@ -8,6 +8,7 @@ import {
 } from './helpers';
 import { ABOUT_LINK } from '@/utils/constants';
 import { captureApiError } from '@/lib/errorTracking';
+import { checkBotId } from 'botid/server';
 
 /**
  * Contact Form API Endpoint
@@ -26,6 +27,17 @@ export async function POST(
   const data = await request.json();
 
   try {
+    if (process.env['VERCEL']) {
+      const botCheck = await checkBotId();
+      if (botCheck.isBot) {
+        const botError: ErrorResponse = {
+          error: { path: 'root.forbidden', message: 'Access denied' },
+          statusCode: 403,
+        };
+        return NextResponse.json(botError, { status: 403 });
+      }
+    }
+
     await rateLimit(request);
     await requestFromSource(request, ABOUT_LINK.href);
     await validateFormData(data, formSchema);

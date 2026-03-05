@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkBotId } from 'botid/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { captureApiError } from '@/lib/errorTracking';
 import {
@@ -56,6 +57,13 @@ function fireScan(
 
 export async function POST(request: NextRequest) {
   try {
+    if (process.env['VERCEL']) {
+      const botCheck = await checkBotId();
+      if (botCheck.isBot) {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+      }
+    }
+
     const body = await request.json();
     const {
       url,
