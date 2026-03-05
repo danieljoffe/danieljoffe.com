@@ -52,15 +52,21 @@ npx nx storybook @danieljoffe.com/shared-ui  # Start Storybook for UI library
 
 - **apps/root**: Main Next.js 16 application (App Router)
 - **apps/root-e2e**: Playwright E2E tests
+- **apps/audit-scan-service**: Express service for Lighthouse/axe audits (Puppeteer)
 - **libs/shared/ui**: Shared React component library (@danieljoffe.com/shared-ui)
+- **libs/shared/audit**: Shared audit types and utilities
 
 ### App Structure (apps/root/src/)
 
 ```
 app/                    # Next.js App Router pages
-├── api/email/          # Contact form API endpoint
+├── api/
+│   ├── audit/          # Audit scan, report, status, admin endpoints
+│   ├── email/          # Contact form & email sequence endpoints
+│   └── leads/          # Lead capture endpoint
 ├── home/               # Homepage components (Hero, Achievements, etc.)
 ├── about/              # About page
+├── audit/              # Audit tool page
 ├── experience/         # Experience pages with dynamic [slug] routes
 ├── projects/           # Projects pages with dynamic [slug] routes
 ├── services/           # Services page
@@ -74,7 +80,7 @@ utils/                  # Helper functions and constants
 
 ### UI Library (libs/shared/ui/src/lib/)
 
-Shared components: Alert, Badge, Button, Card, Checkbox, Container, Divider, Grid, Input, Loading, Modal, PageContainer, ProgressBar, Select, Spacer, Spinner, Stack, Switch, Tabs, Textarea, Tooltip
+Shared components: Alert, AspectRatio, Badge, Button, Card, Checkbox, Container, Divider, Grid, Input, Loading, Modal, PageContainer, ProgressBar, Section, Select, Spacer, Spinner, Stack, Switch, Tabs, Textarea, Tooltip
 
 ### Key Technologies
 
@@ -89,18 +95,6 @@ Shared components: Alert, Badge, Button, Card, Checkbox, Container, Divider, Gri
 ### Path Aliases
 
 - `@/` maps to `apps/root/src/` in the root app
-
-## Audits
-
-### Visual
-
-When running visual audits these are the instructions
-
-- Run a stylistic review of the requested page
-- the host should be at `http://localhost:3000`
-- run a hard refresh on the browser to avoid cache
-- provide actionable feedback on style/ux/ui implementation
-- bring up any questions if you have any
 
 ## Nx Plugins
 
