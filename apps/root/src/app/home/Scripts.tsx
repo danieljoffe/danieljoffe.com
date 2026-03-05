@@ -3,13 +3,9 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { rootStructuredData } from '@/data/structuredData/root';
 import Script from 'next/script';
-import { headers } from 'next/headers';
 import { isProduction } from '@/utils/helpers';
 
-export default async function Scripts() {
-  const headersStore = await headers();
-  const nonce = headersStore.get('x-nonce') ?? undefined;
-
+export default function Scripts() {
   return (
     <>
       <script
@@ -20,31 +16,29 @@ export default async function Scripts() {
       />
       {/*
         Suppress known third-party console errors in production.
-        These are benign errors from browser APIs and chunk loading that
-        don't affect functionality but clutter console output.
+        Uses afterInteractive so it doesn't block initial render / LCP.
+        Covered by 'strict-dynamic' CSP (injected by Next.js runtime).
       */}
-      <script
-        suppressHydrationWarning
-        nonce={nonce}
+      <Script
+        id='suppressConsoleErrors'
+        strategy='afterInteractive'
         dangerouslySetInnerHTML={{
           __html: `
-              if (typeof window !== 'undefined') {
-                var originalError = console.error;
-                var suppressedPatterns = [
-                  'Non-Error promise rejection',
-                  'ResizeObserver loop limit exceeded',
-                  'ChunkLoadError',
-                  'Loading chunk',
-                  'Loading CSS chunk'
-                ];
-                console.error = function() {
-                  var message = Array.prototype.join.call(arguments, ' ');
-                  for (var i = 0; i < suppressedPatterns.length; i++) {
-                    if (message.indexOf(suppressedPatterns[i]) !== -1) return;
-                  }
-                  originalError.apply(console, arguments);
-                };
-              }
+              var originalError = console.error;
+              var suppressedPatterns = [
+                'Non-Error promise rejection',
+                'ResizeObserver loop limit exceeded',
+                'ChunkLoadError',
+                'Loading chunk',
+                'Loading CSS chunk'
+              ];
+              console.error = function() {
+                var message = Array.prototype.join.call(arguments, ' ');
+                for (var i = 0; i < suppressedPatterns.length; i++) {
+                  if (message.indexOf(suppressedPatterns[i]) !== -1) return;
+                }
+                originalError.apply(console, arguments);
+              };
             `,
         }}
       />
@@ -74,7 +68,6 @@ export default async function Scripts() {
               });
             })();`,
         }}
-        nonce={nonce}
       />
       <Script
         id='serviceWorker'
@@ -88,7 +81,6 @@ export default async function Scripts() {
               }
             `,
         }}
-        nonce={nonce}
       />
       {/* Only render on Vercel — these fetch /_vercel/ scripts that 404 locally */}
       {process.env.VERCEL && <SpeedInsights debug={!isProduction()} />}
@@ -108,7 +100,6 @@ export default async function Scripts() {
       <Script
         id='_next-ga-init'
         strategy='lazyOnload'
-        {...(nonce ? { nonce } : {})}
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -122,7 +113,6 @@ export default async function Scripts() {
         id='_next-ga'
         strategy='lazyOnload'
         src={`https://www.googletagmanager.com/gtag/js?id=${publicEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
-        {...(nonce ? { nonce } : {})}
       />
     </>
   );
