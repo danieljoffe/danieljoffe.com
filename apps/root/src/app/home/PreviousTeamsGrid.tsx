@@ -1,11 +1,8 @@
-'use client';
-
 import Image from 'next/image';
-import Button from '@/components/Button';
 import { experienceFull } from '@/data/experience';
-import { analytics } from '@/lib/analytics';
 import { EXPERIENCE_LINK } from '@/utils/constants';
 import { Stack, Grid } from '@danieljoffe.com/shared-ui';
+import CompanyLink from './CompanyLink';
 
 const companies = Object.values(experienceFull);
 
@@ -21,14 +18,10 @@ export default function PreviousTeamsGrid() {
           className='flex flex-1 justify-center opacity-70 hover:opacity-100 transition-opacity'
           key={company.slug}
         >
-          <Button
-            as='link'
-            variant='bare'
-            size='lg'
+          <CompanyLink
             href={`${EXPERIENCE_LINK.href}/${company.slug}`}
-            aria-label={company.company}
-            title={company.company}
-            onClick={() => analytics.experienceClick(company.slug)}
+            slug={company.slug}
+            company={company.company}
           >
             <Stack
               direction='horizontal'
@@ -51,7 +44,7 @@ export default function PreviousTeamsGrid() {
                 decoding='async'
               />
             </Stack>
-          </Button>
+          </CompanyLink>
         </li>
       ))}
     </Grid>
