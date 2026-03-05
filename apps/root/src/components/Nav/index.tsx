@@ -19,17 +19,24 @@ export default function Nav() {
   const pathname = usePathname();
   const { isModalOpen, setModalContent } = useModal();
 
-  const handleMenuOpen = () => {
-    setModalContent(
-      <NavLinks pathname={pathname} handleClick={() => setModalContent(null)} />
-    );
+  const handleMenuToggle = () => {
+    if (isModalOpen) {
+      setModalContent(null);
+    } else {
+      setModalContent(
+        <NavLinks
+          pathname={pathname}
+          handleClick={() => setModalContent(null)}
+        />
+      );
+    }
   };
 
   return (
     <section className='h-16 w-full sticky top-0 bg-background shadow-md z-30'>
       <nav className='w-full ' role='navigation' aria-label='Main navigation'>
         <TabletUpNav pathname={pathname} />
-        <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuOpen} />
+        <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuToggle} />
       </nav>
     </section>
   );
