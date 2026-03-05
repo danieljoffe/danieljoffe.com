@@ -29,7 +29,7 @@ export default function CTA() {
         {
           label: 'View my work',
           href: PROJECTS_LINK.href,
-          ariaLabel: `View ${FULL_NAME}'s work portfolio`,
+          ariaLabel: 'View my work',
           onClick: () => analytics.ctaClick('view_my_work', '/projects'),
         },
       ]}

@@ -36,7 +36,6 @@ export default function Footer() {
             size='sm'
             target='_blank'
             rel='noopener noreferrer'
-            aria-label='View UI component library'
             className='hover:text-accent'
           >
             <span className='text-foreground-muted'>

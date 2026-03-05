@@ -71,7 +71,7 @@ describe('Footer', () => {
   it('renders the Storybook design system link', () => {
     render(<Footer />);
     const link = screen.getByRole('link', {
-      name: /view ui component library/i,
+      name: /browse the design system.*ui\.danieljoffe\.com/i,
     });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', 'https://ui.danieljoffe.com');
