@@ -4,6 +4,7 @@ import { WithChildren } from '@/types/base';
 import { fontVariables } from '@/styles/fonts';
 import '@/styles/global.scss';
 import AppContext from './home/AppContext';
+import Footer from '@/components/Footer';
 import Scripts from './home/Scripts';
 import Head from './home/Head';
 import TestingOnly from './home/TestingOnly';
@@ -47,6 +48,7 @@ export default async function RootLayout({ children }: WithChildren) {
           Skip to main content
         </a>
         <AppContext>{children}</AppContext>
+        <Footer />
         <Scripts />
         <TestingOnly />
       </body>
