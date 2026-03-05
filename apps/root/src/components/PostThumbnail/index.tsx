@@ -29,7 +29,6 @@ export default function PostThumbnail({
       <Link
         href={link.href}
         onClick={handleClick}
-        aria-label={`View ${link.label} project details`}
         className={[
           'flex flex-col h-full overflow-hidden rounded-md border border-border bg-card',
           'transition-[scale] duration-300 ease-in-out hover:outline-accent',
