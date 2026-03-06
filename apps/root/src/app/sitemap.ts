@@ -12,7 +12,7 @@ import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';
 
 // Stable build-time date so sitemap doesn't change on every deployment
-const BUILD_DATE = new Date('2026-01-15');
+const BUILD_DATE = new Date('2026-03-05');
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static routes
