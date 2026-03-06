@@ -30,7 +30,7 @@ const nextConfig = {
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
-    cssChunking: 'strict',
+    cssChunking: true,
     // Enable critical CSS inlining with critters
     optimizeCss: true,
     optimizePackageImports: [
@@ -102,7 +102,6 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     deviceSizes: [640, 768, 1024, 1280],
     imageSizes: [16, 32, 48, 64, 256, 400],
-    qualities: [80, 90],
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
@@ -241,13 +240,8 @@ const nextConfig = {
     ];
   },
 
-  /**
-   * @param {import('webpack').Configuration} config
-   * @param {{ dev: boolean, isServer: boolean }} options
-   */
-  webpack: (config, options) => {
-    const { dev, isServer } = options;
-
+  /** @param {import('webpack').Configuration} config */
+  webpack: config => {
     // Add custom condition for workspace packages to resolve to source
     config.resolve = config.resolve || {};
     config.resolve.conditionNames = [
@@ -268,76 +262,6 @@ const nextConfig = {
           require.resolve('./src/styles/fonts.mock.ts')
         )
       );
-    }
-
-    // Optimize bundle size and code splitting
-    if (!dev && !isServer) {
-      config.optimization = config.optimization || {};
-      config.optimization.splitChunks = {
-        ...(config.optimization.splitChunks || {}),
-        chunks: 'all',
-        minSize: 20000,
-        maxSize: 244000,
-        cacheGroups: {
-          default: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-          },
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: -10,
-            reuseExistingChunk: true,
-          },
-          gsap: {
-            test: /[\\/]node_modules[\\/](gsap|@gsap)[\\/]/,
-            name: 'gsap',
-            chunks: 'all',
-            priority: 10,
-          },
-          react: {
-            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-            name: 'react',
-            chunks: 'all',
-            priority: 10,
-          },
-          ui: {
-            test: /[\\/]node_modules[\\/](lucide-react)[\\/]/,
-            name: 'ui',
-            chunks: 'all',
-            priority: 5,
-          },
-          sentry: {
-            test: /[\\/]node_modules[\\/]@sentry[\\/]/,
-            name: 'sentry',
-            chunks: 'all',
-            priority: 15,
-          },
-          validation: {
-            test: /[\\/]node_modules[\\/](yup|schema-dts)[\\/]/,
-            name: 'validation',
-            chunks: 'all',
-            priority: 5,
-          },
-          // CSS optimization
-          styles: {
-            name: 'styles',
-            test: /\.(css|scss)$/,
-            chunks: 'all',
-            enforce: true,
-            priority: 20,
-          },
-          criticalStyles: {
-            name: 'critical-styles',
-            test: /critical\.(css|scss)$/,
-            chunks: 'all',
-            enforce: true,
-            priority: 30,
-          },
-        },
-      };
     }
 
     return config;

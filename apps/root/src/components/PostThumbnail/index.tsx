@@ -1,8 +1,5 @@
-'use client';
-
-import { Link } from 'next-transition-router';
 import { PostThumbnail as PostThumbnailType } from '@/types/postTypes';
-import { analytics } from '@/lib/analytics';
+import PostThumbnailLink from './PostThumbnailLink';
 import PostThumbnailDescription from './PostThumbnailDescription';
 import UnsplashDecorativeAttribution from '../UnsplashImage/UnsplashDecorativeAttribution';
 import { UnsplashFigure, UnsplashImg } from '../UnsplashImage';
@@ -16,28 +13,9 @@ export default function PostThumbnail({
   role,
   index,
 }: PostThumbnailType & { index: number }) {
-  const handleClick = () => {
-    if (link.href.includes('/projects/')) {
-      analytics.projectClick(slug);
-    } else if (link.href.includes('/experience/')) {
-      analytics.experienceClick(slug);
-    }
-  };
-
   return (
     <article className='group flex flex-col h-full'>
-      <Link
-        href={link.href}
-        onClick={handleClick}
-        aria-label={`View ${link.label} project details`}
-        className={[
-          'flex flex-col h-full overflow-hidden rounded-md border border-border bg-card',
-          'transition-[scale] duration-300 ease-in-out hover:outline-accent',
-          'hover:scale-[1.025] hover:outline hover:outline-2 hover:outline-offset-2 hover:shadow-lg/12.5',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          'focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-        ].join(' ')}
-      >
+      <PostThumbnailLink href={link.href} slug={slug}>
         <div className='relative overflow-hidden'>
           <UnsplashFigure width={160} height={173}>
             <UnsplashImg
@@ -58,7 +36,7 @@ export default function PostThumbnail({
           duration={duration as string}
           role={role as string}
         />
-      </Link>
+      </PostThumbnailLink>
     </article>
   );
 }

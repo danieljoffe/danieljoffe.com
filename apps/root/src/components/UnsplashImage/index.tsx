@@ -1,5 +1,3 @@
-'use client';
-
 import { UnsplashImageMeta } from '@/types/postTypes';
 import UnsplashFigure from './UnsplashFigure';
 import UnsplashImg from './UnsplashImg';

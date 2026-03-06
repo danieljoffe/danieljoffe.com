@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import Hero from './Hero';
-import { FULL_NAME, JOB_TITLE } from '@/utils/constants';
+import { JOB_TITLE } from '@/utils/constants';
 
 jest.mock('@/lib/analytics', () => ({
   analytics: {
@@ -70,12 +70,8 @@ describe('Home Hero', () => {
 
   it('has accessible labels on CTA buttons', () => {
     render(<Hero />);
-    expect(
-      screen.getByLabelText(`View ${FULL_NAME}'s case studies`)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText(`Download ${FULL_NAME}'s resume`)
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('View case studies')).toBeInTheDocument();
+    expect(screen.getByLabelText('Download resume')).toBeInTheDocument();
   });
 
   it('triggers analytics when "View case studies" is clicked', async () => {

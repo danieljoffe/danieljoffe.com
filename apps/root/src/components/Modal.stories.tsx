@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect } from 'storybook/test';
 
 import Button from '@/components/Button';
-import GlobalProvider from '@/state/Global/Provider';
-import { useGlobal } from '@/state/Global/Context';
+import ThemeProvider from '@/state/Theme/Provider';
+import ModalProvider, { useModal } from '@/state/Modal/Provider';
 import Modal from './Modal';
 
 const meta = {
@@ -13,7 +13,7 @@ const meta = {
   decorators: [
     Story => {
       const ButtonTrigger = () => {
-        const { isModalOpen, setModalContent } = useGlobal();
+        const { isModalOpen, setModalContent } = useModal();
         return (
           <Button onClick={() => setModalContent(<div>Modal Content</div>)}>
             {isModalOpen ? 'Hide Modal' : 'Show Modal'}
@@ -22,11 +22,13 @@ const meta = {
       };
 
       return (
-        <GlobalProvider>
-          <Modal />
-          <ButtonTrigger />
-          <Story />
-        </GlobalProvider>
+        <ThemeProvider>
+          <ModalProvider>
+            <Modal />
+            <ButtonTrigger />
+            <Story />
+          </ModalProvider>
+        </ThemeProvider>
       );
     },
   ],

@@ -6,8 +6,8 @@ const mockToggleDarkMode = jest.fn();
 const mockThemeToggle = jest.fn();
 let mockIsDarkMode = false;
 
-jest.mock('@/state/Global/Context', () => ({
-  useGlobal: () => ({
+jest.mock('@/state/Theme/Provider', () => ({
+  useTheme: () => ({
     isDarkMode: mockIsDarkMode,
     toggleDarkMode: mockToggleDarkMode,
   }),

@@ -16,8 +16,8 @@ expect.extend(toHaveNoViolations);
 const mockToggleModal = jest.fn();
 const mockUseGlobal = jest.fn();
 
-jest.mock('@/state/Global/Context', () => ({
-  useGlobal: () => mockUseGlobal(),
+jest.mock('@/state/Modal/Provider', () => ({
+  useModal: () => mockUseGlobal(),
 }));
 
 // Mock useFocusTrap hook

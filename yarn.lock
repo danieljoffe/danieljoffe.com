@@ -9156,6 +9156,19 @@ create-require@^1.1.0:
   resolved "https://registry.yarnpkg.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
 
+critters@^0.0.25:
+  version "0.0.25"
+  resolved "https://registry.yarnpkg.com/critters/-/critters-0.0.25.tgz#8568e6add4a8f68d0b1dbe0c4839286947b37888"
+  integrity sha512-ROF/tjJyyRdM8/6W0VqoN5Ql05xAGnkf5b7f3sTEl1bI5jTQQf8O918RD/V9tEb9pRY/TKcvJekDbJtniHyPtQ==
+  dependencies:
+    chalk "^4.1.0"
+    css-select "^5.1.0"
+    dom-serializer "^2.0.0"
+    domhandler "^5.0.2"
+    htmlparser2 "^8.0.2"
+    postcss "^8.4.23"
+    postcss-media-query-parser "^0.2.3"
+
 cron-parser@^4.2.0:
   version "4.9.0"
   resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-4.9.0.tgz#0340694af3e46a0894978c6f52a6dbb5c0f11ad5"
@@ -9544,13 +9557,6 @@ delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
   integrity sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==
-
-delegate-it@^6.1.0:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/delegate-it/-/delegate-it-6.2.1.tgz#a264a7406bc369140135cb0fcc1f8e6c3cde3e7a"
-  integrity sha512-3/P/rwj+zal/99EEml7y1+bXjBY+Wok/WSg0EngWAtdvHK6iKTPbABQE84RyyRfR0Fmejs93BrkZQWlgyeWuFQ==
-  dependencies:
-    typed-query-selector "^2.11.2"
 
 delegates@^1.0.0:
   version "1.0.0"
@@ -14819,13 +14825,6 @@ netmask@^2.0.2:
   resolved "https://registry.yarnpkg.com/netmask/-/netmask-2.0.2.tgz#8b01a07644065d536383835823bc52004ebac5e7"
   integrity sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==
 
-next-transition-router@^0.2.11:
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/next-transition-router/-/next-transition-router-0.2.11.tgz#8c03658d8bc5a35d4e0662f8688f1e346fbbf4d6"
-  integrity sha512-jQwogg1CwfUHKRT9fCNEtsQ6Nl8Vpm0ipXcwkn50GM2WfFzkP1MT6tDuHbLq2HLqUabPQe+crvb6yVm8iJz3ng==
-  dependencies:
-    delegate-it "^6.1.0"
-
 next@16.1.6:
   version "16.1.6"
   resolved "https://registry.yarnpkg.com/next/-/next-16.1.6.tgz#24a861371cbe211be7760d9a89ddf2415e3824de"
@@ -15660,6 +15659,11 @@ postcss-loader@^6.1.1:
     klona "^2.0.5"
     semver "^7.3.5"
 
+postcss-media-query-parser@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/postcss-media-query-parser/-/postcss-media-query-parser-0.2.3.tgz#27b39c6f4d94f81b1a73b8f76351c609e5cef244"
+  integrity sha512-3sOlxmbKcSHMjlUXQZKQ06jOswE7oVkXPxmZdoB1r5l0q6gTFTQSHxNxOrCccElbW7dxNytifNEo8qidX2Vsig==
+
 postcss-merge-longhand@^6.0.5:
   version "6.0.5"
   resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-6.0.5.tgz#ba8a8d473617c34a36abbea8dda2b215750a065a"
@@ -15890,7 +15894,7 @@ postcss@8.4.31:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
-postcss@8.5.8:
+postcss@8.5.8, postcss@^8.4.23:
   version "8.5.8"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.8.tgz#6230ecc8fb02e7a0f6982e53990937857e13f399"
   integrity sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==
@@ -18516,7 +18520,7 @@ typed-assert@^1.0.8:
   resolved "https://registry.yarnpkg.com/typed-assert/-/typed-assert-1.0.9.tgz#8af9d4f93432c4970ec717e3006f33f135b06213"
   integrity sha512-KNNZtayBCtmnNmbo5mG47p1XsCyrx6iVqomjcZnec/1Y5GGARaxPs6r49RnSPeUP3YjNYiU9sQHAtY4BBvnZwg==
 
-typed-query-selector@^2.11.2, typed-query-selector@^2.12.0:
+typed-query-selector@^2.12.0:
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/typed-query-selector/-/typed-query-selector-2.12.0.tgz#92b65dbc0a42655fccf4aeb1a08b1dddce8af5f2"
   integrity sha512-SbklCd1F0EiZOyPiW192rrHZzZ5sBijB6xM+cpmrwDqObvdtunOHHIk9fCGsoK5JVIYXoyEp4iEdE3upFH3PAg==

@@ -62,13 +62,12 @@ describe('PostThumbnail', () => {
     expect(screen.getByRole('article')).toBeInTheDocument();
   });
 
-  test('renders link with correct aria-label', () => {
+  test('renders link without aria-label (visible text provides accessible name)', () => {
     render(<PostThumbnail {...baseProps} />);
-    const link = screen.getByRole('link', {
-      name: /view test project project details/i,
-    });
+    const link = screen.getByRole('link');
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/projects/test-project');
+    expect(link).not.toHaveAttribute('aria-label');
   });
 
   test('renders UnsplashImg, attribution, and description', () => {

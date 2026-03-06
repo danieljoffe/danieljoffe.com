@@ -1,10 +1,6 @@
-'use client';
-
-import { ArrowUpRight, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
-import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
-import { analytics } from '@/lib/analytics';
-import Button from '@/components/Button';
+import HeroCTA from './HeroCTA';
 
 export default function Hero() {
   return (
@@ -27,22 +23,10 @@ export default function Hero() {
               stop depending on engineering for everything.
             </p>
           </div>
-          <Button
-            as='link'
-            href={CALENDLY_URL}
-            target='_blank'
-            aria-label={`Book a discovery call with ${FULL_NAME}`}
-            onClick={() =>
-              analytics.ctaClick('services_hero_cta', CALENDLY_URL)
-            }
-          >
-            <span>Book a Discovery Call</span>
-            <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
-          </Button>
+          <HeroCTA />
           <a
             href='#services-grid-heading'
             className='text-sm text-foreground-muted hover:text-accent transition-colors flex items-center gap-1'
-            aria-label='Scroll to services'
           >
             See what I offer
             <ChevronDown className='size-4' />

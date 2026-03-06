@@ -31,7 +31,9 @@
   "browserslist": [
     "last 2 versions",
     ">= 5% in US",
-    "not dead"
+    "not dead",
+    "not op_mini all",
+    "not kaios > 0"
   ],
   "dependencies": {
     "@axe-core/puppeteer": "^4.11.1",
@@ -61,7 +63,6 @@
     "lighthouse": "^13.0.3",
     "lucide-react": "0.577.0",
     "next": "16.1.6",
-    "next-transition-router": "^0.2.11",
     "puppeteer": "24.38.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -128,6 +129,7 @@
     "@vitest/coverage-v8": "4.0.18",
     "@vitest/ui": "4.0.18",
     "babel-jest": "30.2.0",
+    "critters": "^0.0.25",
     "esbuild": "^0.19.2",
     "eslint": "10.0.2",
     "eslint-config-next": "16.1.6",
