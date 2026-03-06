@@ -98,6 +98,11 @@ export default function Scripts() {
         a browser console warning. Using lazyOnload avoids the preload hint.
       */}
       <Script
+        id='_next-ga'
+        strategy='lazyOnload'
+        src={`https://www.googletagmanager.com/gtag/js?id=${publicEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+      />
+      <Script
         id='_next-ga-init'
         strategy='lazyOnload'
         dangerouslySetInnerHTML={{
@@ -108,11 +113,6 @@ export default function Scripts() {
             gtag('config', '${publicEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}');
           `,
         }}
-      />
-      <Script
-        id='_next-ga'
-        strategy='lazyOnload'
-        src={`https://www.googletagmanager.com/gtag/js?id=${publicEnv.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
       />
     </>
   );
