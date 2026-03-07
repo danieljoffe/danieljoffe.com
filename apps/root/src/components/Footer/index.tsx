@@ -1,11 +1,21 @@
-import { Stack, PageContainer } from '@danieljoffe.com/shared-ui';
-import Button from '@/components/Button';
+import Link from 'next/link';
+import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 import { profileData } from '@/data/profileData';
-import { FULL_NAME, STORYBOOK_URL } from '@/utils/constants';
-import NavLinks from '@/components/Nav/Links';
-import SocialLinks from '../SocialLinks';
+import {
+  FULL_NAME,
+  NAV_LINKS,
+  AUDIT_LINK,
+  STORYBOOK_URL,
+  RESUME_URL,
+} from '@/utils/constants';
+import { AtSign, Download, Github, Linkedin } from 'lucide-react';
 
 const currentYear = new Date().getFullYear();
+
+const linkClasses =
+  'text-sm lowercase font-semibold hover:text-accent transition-colors';
+const iconLinkClasses =
+  'p-2 hover:text-accent transition-colors inline-flex items-center justify-center';
 
 export default function Footer() {
   return (
@@ -25,26 +35,72 @@ export default function Footer() {
           </Stack>
 
           <nav aria-label='Footer navigation'>
-            <NavLinks />
+            <ul className='flex flex-col gap-4 items-center md:flex-row lowercase'>
+              {[...NAV_LINKS, AUDIT_LINK].map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className={linkClasses}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </nav>
-          <SocialLinks />
 
-          <Button
-            as='link'
+          <div className='flex gap-1'>
+            <a
+              href={`mailto:${profileData.social.email}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='Send Email'
+              title='Email'
+              className={iconLinkClasses}
+            >
+              <AtSign className='size-5' />
+            </a>
+            <a
+              href={profileData.social.linkedin}
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='Visit LinkedIn Profile'
+              title='LinkedIn'
+              className={iconLinkClasses}
+            >
+              <Linkedin className='size-5' />
+            </a>
+            <a
+              href={profileData.social.github}
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='Visit GitHub Profile'
+              title='GitHub'
+              className={iconLinkClasses}
+            >
+              <Github className='size-5' />
+            </a>
+            <a
+              href={RESUME_URL}
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='Download Resume (PDF)'
+              title='Download Resume'
+              className={iconLinkClasses}
+            >
+              <Download className='size-5' />
+            </a>
+          </div>
+
+          <a
             href={STORYBOOK_URL}
-            variant='bare'
-            size='sm'
             target='_blank'
             rel='noopener noreferrer'
-            aria-label='View UI component library'
-            className='hover:text-accent'
+            className='text-sm hover:text-accent transition-colors inline-flex items-center gap-1'
           >
             <span className='text-foreground-muted'>
               Browse the design system
             </span>
             <span>&rarr;</span>
             <span className='text-accent'>ui.danieljoffe.com</span>
-          </Button>
+          </a>
 
           <p className='text-xs text-foreground-muted text-center'>
             &copy; {currentYear} {FULL_NAME}. All rights reserved.

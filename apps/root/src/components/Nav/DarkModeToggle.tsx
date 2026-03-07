@@ -2,11 +2,11 @@
 
 import { Moon, Sun } from 'lucide-react';
 import Button from '@/components/Button';
-import { useGlobal } from '@/state/Global/Context';
+import { useTheme } from '@/state/Theme/Provider';
 import { analytics } from '@/lib/analytics';
 
 export default function DarkModeToggle() {
-  const { isDarkMode, toggleDarkMode } = useGlobal();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const handleToggle = () => {
     analytics.themeToggle(isDarkMode ? 'light' : 'dark');

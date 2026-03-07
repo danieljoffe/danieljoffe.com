@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/nextjs-vite';
 
 const config: StorybookConfig = {
@@ -12,17 +12,6 @@ const config: StorybookConfig = {
   staticDirs: ['../public'],
   docs: {
     defaultName: 'autodocs',
-  },
-  viteFinal(config) {
-    // Provide a browser-compatible shim for Node's `url` module.
-    // next-transition-router imports `format` from `url` which Vite
-    // externalizes, causing the build to fail.
-    config.resolve ??= {};
-    config.resolve.alias ??= {};
-    (config.resolve.alias as Record<string, string>)['url'] = fileURLToPath(
-      new URL('url-shim.ts', import.meta.url)
-    );
-    return config;
   },
 };
 

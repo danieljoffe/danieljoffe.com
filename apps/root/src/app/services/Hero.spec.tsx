@@ -1,12 +1,14 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import Hero from './Hero';
 
-// Mock analytics
-jest.mock('@/lib/analytics', () => ({
-  analytics: {
-    ctaClick: jest.fn(),
-  },
+jest.mock('./HeroCTA', () => ({
+  __esModule: true,
+  default: () => (
+    <a href='https://calendly.com/hello-danieljoffe/30min'>
+      Book a Discovery Call
+    </a>
+  ),
 }));
 
 describe('Services Hero', () => {
@@ -49,16 +51,13 @@ describe('Services Hero', () => {
     expect(heading).toHaveAttribute('id', 'services-hero-heading');
   });
 
-  it('triggers analytics when CTA is clicked', async () => {
-    const { analytics } = await import('@/lib/analytics');
+  it('renders the anchor link to services grid', () => {
     render(<Hero />);
-    const ctaLink = screen.getByRole('link', {
-      name: /book a discovery call/i,
-    });
-    fireEvent.click(ctaLink);
-    expect(analytics.ctaClick).toHaveBeenCalledWith(
-      'services_hero_cta',
-      'https://calendly.com/hello-danieljoffe/30min'
+    const anchor = screen.getByText(/see what i offer/i);
+    expect(anchor).toBeInTheDocument();
+    expect(anchor.closest('a')).toHaveAttribute(
+      'href',
+      '#services-grid-heading'
     );
   });
 });

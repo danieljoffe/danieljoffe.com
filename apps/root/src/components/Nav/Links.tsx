@@ -21,10 +21,8 @@ export default function NavLinks({
   ) => {
     analytics.navClick(label);
     if (handleClick) {
-      // Mobile modal context: navigate programmatically because the
-      // HeadlessUI Dialog renders in a portal outside the TransitionRouter's
-      // DOM subtree, preventing next-transition-router from intercepting
-      // the Link click. router.push() triggers the transition via auto mode.
+      // Mobile modal context: close the modal first, then navigate
+      // programmatically because HeadlessUI Dialog renders in a portal.
       e.preventDefault();
       handleClick();
       router.push(href);

@@ -3,5 +3,10 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/shared/ui/src",
   "projectType": "library",
-  "tags": ["scope:shared", "type:ui"]
+  "tags": ["scope:shared", "type:ui"],
+  "targets": {
+    "build": {
+      "outputs": ["{projectRoot}/dist"]
+    }
+  }
 }

@@ -142,7 +142,7 @@ test.describe('accessibility tests', () => {
       console.log(`Color contrast violations:\n${summary}`);
     }
 
-    expect(failingViolations.length).toBe(0);
+    expect(failingViolations).toHaveLength(0);
   });
 
   test('images have proper alt text', async ({ page }) => {

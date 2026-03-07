@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import Nav from './index';
-import GlobalProvider from '@/state/Global/Provider';
+import ThemeProvider from '@/state/Theme/Provider';
+import ModalProvider from '@/state/Modal/Provider';
 import Modal from '../Modal';
 
 const meta = {
@@ -10,10 +11,12 @@ const meta = {
   tags: ['autodocs'],
   decorators: [
     Story => (
-      <GlobalProvider>
-        <Modal />
-        <Story />
-      </GlobalProvider>
+      <ThemeProvider>
+        <ModalProvider>
+          <Modal />
+          <Story />
+        </ModalProvider>
+      </ThemeProvider>
     ),
   ],
 } satisfies Meta<typeof Nav>;

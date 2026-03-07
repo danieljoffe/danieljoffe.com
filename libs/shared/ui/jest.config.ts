@@ -1,3 +1,7 @@
+// Ensure NODE_ENV=test so react-dom/test-utils loads the development build
+// (the production build removed React.act in React 19).
+process.env.NODE_ENV = 'test';
+
 const isCI = process.env.CI === 'true';
 
 export default {
@@ -10,6 +14,9 @@ export default {
     '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nx/react/babel'] }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  moduleNameMapper: {
+    '^focus-trap-react$': '<rootDir>/src/__mocks__/focus-trap-react.tsx',
+  },
   coverageDirectory: 'test-output/jest/coverage',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
 };

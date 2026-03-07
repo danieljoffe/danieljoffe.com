@@ -3,15 +3,6 @@
   "framework": "nextjs",
   "headers": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-DNS-Prefetch-Control",
-          "value": "on"
-        }
-      ]
-    },
-    {
       "source": "/_next/static/css/(.*)",
       "headers": [
         {

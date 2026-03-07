@@ -1,5 +1,5 @@
 import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
-import Form from './Form';
+import LazyForm from './LazyForm';
 
 export default function Contact() {
   return (
@@ -20,7 +20,7 @@ export default function Contact() {
           <strong className='font-bold'>Response time:</strong> Usually within
           24 hours
         </p>
-        <Form />
+        <LazyForm />
       </PageContainer>
     </Section>
   );

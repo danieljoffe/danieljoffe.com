@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, Download } from 'lucide-react';
 import { Stack } from '@danieljoffe.com/shared-ui';
-import { FULL_NAME, HOME_LINK, PROJECTS_LINK } from '@/utils/constants';
+import { HOME_LINK, PROJECTS_LINK } from '@/utils/constants';
 import { downloadResume } from '@/utils/helpers';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
@@ -14,7 +14,7 @@ export default function HeroActions() {
         as='link'
         className='max-w-max'
         href={PROJECTS_LINK.href}
-        aria-label={`View ${FULL_NAME}'s case studies`}
+        aria-label='View case studies'
         onClick={() =>
           analytics.ctaClick('view_case_studies', PROJECTS_LINK.href)
         }
@@ -25,7 +25,7 @@ export default function HeroActions() {
       <Button
         as='button'
         className='max-w-max'
-        aria-label={`Download ${FULL_NAME}'s resume`}
+        aria-label='Download resume'
         onClick={() => {
           analytics.ctaClick('download_resume', HOME_LINK.href);
           downloadResume();

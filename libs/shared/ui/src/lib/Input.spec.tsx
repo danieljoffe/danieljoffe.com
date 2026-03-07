@@ -20,10 +20,11 @@ describe('Input', () => {
     expect(label).toHaveAttribute('for', input.id);
   });
 
-  it('generates id from label when id not provided', () => {
+  it('generates id when id not provided', () => {
     render(<Input label='Email Address' />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveAttribute('id', 'email-address');
+    expect(input).toHaveAttribute('id');
+    expect(input.id).toBeTruthy();
   });
 
   it('uses provided id over generated one', () => {

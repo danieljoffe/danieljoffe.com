@@ -31,6 +31,10 @@ export async function runScan(
       '--disable-extensions',
       '--disable-background-networking',
       '--disable-crash-reporter',
+      '--disable-breakpad',
+      '--disable-software-rasterizer',
+      '--single-process',
+      '--no-zygote',
     ],
   });
 

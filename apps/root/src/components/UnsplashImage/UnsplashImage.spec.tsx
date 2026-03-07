@@ -82,13 +82,6 @@ jest.mock('next/image', () => {
   return MockImage;
 });
 
-// Mock hooks
-const mockUseGlobal = jest.fn();
-
-jest.mock('@/state/Global/Context', () => ({
-  useGlobal: () => mockUseGlobal(),
-}));
-
 // Mock Button component
 jest.mock('@/components/Button', () => {
   const React = require('react');
@@ -146,9 +139,6 @@ describe('UnsplashImage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseGlobal.mockReturnValue({
-      windowWidth: 800, // Set to 800 to match test expectations
-    });
   });
 
   afterEach(() => {
@@ -211,11 +201,6 @@ describe('UnsplashImage', () => {
     });
 
     it('should generate URL with different dimensions', () => {
-      // Mock smaller window width to match the expected width
-      mockUseGlobal.mockReturnValue({
-        windowWidth: 400,
-      });
-
       render(<UnsplashImage {...mockProps} width={400} height={225} />);
 
       const image = screen.getByRole('img');

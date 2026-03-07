@@ -73,14 +73,11 @@ Referer: https://danieljoffe.com/about (required)
 {
   "statusCode": 200,
   "success": true,
-  "body": {
-    "data": {},
-    "message": "Email sent successfully"
-  }
+  "message": "Email sent successfully"
 }
 ```
 
-**Error Response (400/403/500):**
+**Error Response (400/403/429/500):**
 
 ```json
 {
@@ -92,31 +89,48 @@ Referer: https://danieljoffe.com/about (required)
 }
 ```
 
+**Rate Limit Error (429):**
+
+```json
+{
+  "error": {
+    "path": "root.forbidden",
+    "message": "Too many requests. Please try again later."
+  },
+  "statusCode": 429,
+  "retryAfter": 812
+}
+```
+
+The `Retry-After` HTTP header is also set on 429 responses.
+
 #### Error Codes
 
-| Error Path                | Status | Description                           |
-| ------------------------- | ------ | ------------------------------------- |
-| `name`                    | 400    | Name validation failed                |
-| `email`                   | 400    | Email format validation failed        |
-| `message`                 | 400    | Message validation failed             |
-| `hcaptcha`                | 400    | CAPTCHA verification failed           |
-| `root.forbidden`          | 403    | Rate limit exceeded or invalid source |
-| `root.configurationError` | 500    | Server configuration issue            |
-| `root.serviceError`       | 500    | External service failure              |
+| Error Path                | Status | Description                    |
+| ------------------------- | ------ | ------------------------------ |
+| `name`                    | 400    | Name validation failed         |
+| `email`                   | 400    | Email format validation failed |
+| `message`                 | 400    | Message validation failed      |
+| `hcaptcha`                | 400    | CAPTCHA verification failed    |
+| `root.forbidden`          | 403    | Invalid source or bot detected |
+| `root.forbidden`          | 429    | Rate limit exceeded            |
+| `root.configurationError` | 500    | Server configuration issue     |
+| `root.serviceError`       | 500    | External service failure       |
 
 #### Rate Limiting
 
 - **Limit**: 5 requests per IP address
 - **Window**: 15 minutes (900 seconds)
-- **Response**: 403 Forbidden when exceeded
+- **Response**: 429 Too Many Requests with `Retry-After` header
 
 #### Security Features
 
-1. **Source Validation**: Must be called from `/about` page
-2. **Rate Limiting**: IP-based request throttling
-3. **Input Sanitization**: All inputs sanitized with DOMPurify
-4. **Anti-Spam**: URL detection and honeypot field
-5. **CAPTCHA**: hCaptcha verification required
+1. **Bot Detection**: Vercel botid integration (production only)
+2. **Source Validation**: Must be called from `/about` page
+3. **Rate Limiting**: IP-based request throttling (429 with Retry-After)
+4. **Input Sanitization**: All inputs sanitized with DOMPurify
+5. **Anti-Spam**: URL detection and honeypot field
+6. **CAPTCHA**: hCaptcha verification required
 
 #### Example Usage
 
@@ -253,4 +267,4 @@ For API-related questions or issues:
 
 ---
 
-_This documentation is automatically updated with each release. Last updated: December 2024_
+> _Last updated: March 2026_

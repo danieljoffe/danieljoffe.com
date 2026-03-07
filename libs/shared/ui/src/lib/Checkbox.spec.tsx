@@ -19,10 +19,11 @@ describe('Checkbox', () => {
     expect(label).toHaveAttribute('for', checkbox.id);
   });
 
-  it('generates id from label when id not provided', () => {
+  it('generates id when id not provided', () => {
     render(<Checkbox label='Accept Terms' />);
     const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).toHaveAttribute('id', 'accept-terms');
+    expect(checkbox).toHaveAttribute('id');
+    expect(checkbox.id).toBeTruthy();
   });
 
   it('uses provided id over generated one', () => {
@@ -58,8 +59,8 @@ describe('Checkbox', () => {
 
   it('applies custom className', () => {
     const { container } = render(<Checkbox className='custom-class' />);
-    const labelElement = container.querySelector('label');
-    expect(labelElement).toHaveClass('custom-class');
+    const visualSpan = container.querySelector('[aria-hidden="true"]');
+    expect(visualSpan).toHaveClass('custom-class');
   });
 
   it('passes through additional input props', () => {

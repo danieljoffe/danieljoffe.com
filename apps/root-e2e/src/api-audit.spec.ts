@@ -124,14 +124,14 @@ if (HAS_SUPABASE) {
       expect(statuses.every(s => s !== 429)).toBe(true);
     });
 
-    test('blocks 6th request with 429', async ({ request }) => {
+    test('blocks request exceeding limit with 429', async ({ request }) => {
       const uniqueIP = `rate-limit-scan-block-${Date.now()}`;
       const headers = {
         'Content-Type': 'application/json',
         'x-forwarded-for': uniqueIP,
       };
 
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 10; i++) {
         await request.post('/api/audit/scan', {
           headers,
           data: { url: `https://example-${Date.now()}-${i}.com` },
@@ -140,7 +140,7 @@ if (HAS_SUPABASE) {
 
       const response = await request.post('/api/audit/scan', {
         headers,
-        data: { url: `https://example-${Date.now()}-sixth.com` },
+        data: { url: `https://example-${Date.now()}-eleventh.com` },
       });
 
       expect(response.status()).toBe(429);

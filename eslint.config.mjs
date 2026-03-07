@@ -44,6 +44,11 @@ export default tseslint.config(
               sourceTag: 'type:ui',
               onlyDependOnLibsWithTags: ['type:ui', 'type:util'],
             },
+            // General libraries should only depend on other libraries or utilities
+            {
+              sourceTag: 'type:lib',
+              onlyDependOnLibsWithTags: ['type:lib', 'type:util'],
+            },
             // Utility libraries should only depend on other utilities
             {
               sourceTag: 'type:util',

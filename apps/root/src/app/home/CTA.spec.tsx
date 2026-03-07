@@ -35,7 +35,7 @@ describe('Home CTA', () => {
 
   it('renders "View my work" link with correct href', () => {
     render(<CTA />);
-    const link = screen.getByRole('link', { name: /view.*work portfolio/i });
+    const link = screen.getByRole('link', { name: /view my work/i });
     expect(link).toHaveAttribute('href', '/projects');
   });
 
@@ -44,9 +44,7 @@ describe('Home CTA', () => {
     expect(
       screen.getByLabelText(`Start a conversation with ${FULL_NAME}`)
     ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText(`View ${FULL_NAME}'s work portfolio`)
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('View my work')).toBeInTheDocument();
   });
 
   it('has aria-labelledby on the section', () => {
@@ -75,7 +73,7 @@ describe('Home CTA', () => {
   it('triggers analytics when "View my work" is clicked', async () => {
     const { analytics } = await import('@/lib/analytics');
     render(<CTA />);
-    const link = screen.getByRole('link', { name: /view.*work portfolio/i });
+    const link = screen.getByRole('link', { name: /view my work/i });
     fireEvent.click(link);
     expect(analytics.ctaClick).toHaveBeenCalledWith(
       'view_my_work',

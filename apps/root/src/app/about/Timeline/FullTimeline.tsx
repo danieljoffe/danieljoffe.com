@@ -30,7 +30,6 @@ export default function FullTimeline() {
                 size='lg'
                 className='w-full'
                 href={`${EXPERIENCE_LINK.href}/${company.slug}`}
-                aria-label={`View details for ${company.company}`}
                 outline
               >
                 <Stack direction='horizontal' className='flex-1'>

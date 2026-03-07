@@ -1,14 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useGlobal } from '@/state/Global/Context';
+import { useTheme } from '@/state/Theme/Provider';
 import { analytics } from '@/lib/analytics';
 import DarkModeToggle from '../DarkModeToggle';
 
 const mockToggleDarkMode = jest.fn();
 
-jest.mock('@/state/Global/Context', () => ({
-  useGlobal: jest.fn(() => ({
+jest.mock('@/state/Theme/Provider', () => ({
+  useTheme: jest.fn(() => ({
     isDarkMode: false,
     toggleDarkMode: mockToggleDarkMode,
   })),
@@ -18,7 +18,7 @@ jest.mock('@/lib/analytics', () => ({
   analytics: { themeToggle: jest.fn() },
 }));
 
-const mockUseGlobal = useGlobal as jest.Mock;
+const mockUseGlobal = useTheme as jest.Mock;
 
 describe('DarkModeToggle', () => {
   beforeEach(() => {
