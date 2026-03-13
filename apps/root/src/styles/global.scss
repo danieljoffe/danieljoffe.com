@@ -1,6 +1,6 @@
 @use 'tailwindcss';
-@use '@danieljoffe.com/shared-ui/styles/deep-teal.scss';
-@use '@danieljoffe.com/shared-ui/styles/deep-teal-dark.scss';
+@use '@danieljoffe.com/shared-ui/styles/warm-gold.scss';
+@use '@danieljoffe.com/shared-ui/styles/warm-gold-dark.scss';
 @use '@danieljoffe.com/shared-ui/styles/ui/index.scss';
 
 // Content sources for Tailwind v4 class detection
@@ -19,5 +19,16 @@
     --stop-color-six: var(--background, transparent);
     --stop-color-seven: var(--background, transparent);
     --stop-color-eight: var(--background, transparent);
+  }
+
+  /* Reduced motion — collapse all durations */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

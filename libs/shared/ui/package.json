@@ -18,6 +18,8 @@
     "./styles/muted-violet.scss": "./src/styles/muted-violet/default.scss",
     "./styles/muted-violet-dark.scss": "./src/styles/muted-violet/dark.scss",
     "./styles/deep-teal.scss": "./src/styles/deep-teal/default.scss",
-    "./styles/deep-teal-dark.scss": "./src/styles/deep-teal/dark.scss"
+    "./styles/deep-teal-dark.scss": "./src/styles/deep-teal/dark.scss",
+    "./styles/warm-gold.scss": "./src/styles/warm-gold/default.scss",
+    "./styles/warm-gold-dark.scss": "./src/styles/warm-gold/dark.scss"
   }
 }
