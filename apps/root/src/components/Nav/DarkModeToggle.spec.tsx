@@ -1,16 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useTheme } from '@danieljoffe.com/shared-ui';
 import DarkModeToggle from './DarkModeToggle';
 
 const mockToggleDarkMode = jest.fn();
 const mockThemeToggle = jest.fn();
-let mockIsDarkMode = false;
 
-jest.mock('@/state/Theme/Provider', () => ({
-  useTheme: () => ({
-    isDarkMode: mockIsDarkMode,
+jest.mock('@danieljoffe.com/shared-ui', () => ({
+  ...jest.requireActual('@danieljoffe.com/shared-ui'),
+  useTheme: jest.fn(() => ({
+    isDarkMode: false,
     toggleDarkMode: mockToggleDarkMode,
-  }),
+  })),
 }));
 
 jest.mock('@/lib/analytics', () => ({
@@ -38,11 +39,16 @@ jest.mock('next/link', () => {
   return MockLink;
 });
 
+const mockUseTheme = useTheme as jest.Mock;
+
 describe('DarkModeToggle', () => {
   beforeEach(() => {
     mockToggleDarkMode.mockClear();
     mockThemeToggle.mockClear();
-    mockIsDarkMode = false;
+    mockUseTheme.mockReturnValue({
+      isDarkMode: false,
+      toggleDarkMode: mockToggleDarkMode,
+    });
   });
 
   it('renders with correct aria-label for light mode', () => {
@@ -51,7 +57,10 @@ describe('DarkModeToggle', () => {
   });
 
   it('renders with correct aria-label for dark mode', () => {
-    mockIsDarkMode = true;
+    mockUseTheme.mockReturnValue({
+      isDarkMode: true,
+      toggleDarkMode: mockToggleDarkMode,
+    });
     render(<DarkModeToggle />);
     expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument();
   });
@@ -65,7 +74,10 @@ describe('DarkModeToggle', () => {
   });
 
   it('tracks light mode when toggling from dark', async () => {
-    mockIsDarkMode = true;
+    mockUseTheme.mockReturnValue({
+      isDarkMode: true,
+      toggleDarkMode: mockToggleDarkMode,
+    });
     const user = userEvent.setup();
     render(<DarkModeToggle />);
     await user.click(screen.getByRole('button'));

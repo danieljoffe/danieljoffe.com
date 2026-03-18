@@ -33,7 +33,7 @@ describe('Switch', () => {
   it('applies checked styles when checked', () => {
     render(<Switch checked={true} onChange={() => {}} />);
     const switchEl = screen.getByRole('switch');
-    expect(switchEl).toHaveClass('bg-accent');
+    expect(switchEl).toHaveClass('bg-brand-500');
   });
 
   it('applies unchecked styles when not checked', () => {

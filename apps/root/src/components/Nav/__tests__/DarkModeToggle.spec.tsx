@@ -8,6 +8,7 @@ import DarkModeToggle from '../DarkModeToggle';
 const mockToggleDarkMode = jest.fn();
 
 jest.mock('@danieljoffe.com/shared-ui', () => ({
+  ...jest.requireActual('@danieljoffe.com/shared-ui'),
   useTheme: jest.fn(() => ({
     isDarkMode: false,
     toggleDarkMode: mockToggleDarkMode,

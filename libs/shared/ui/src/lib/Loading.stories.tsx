@@ -43,7 +43,7 @@ export const CustomLabel: Story = {
 
 export const WithCustomClass: Story = {
   args: {
-    className: 'bg-background-elevated rounded-lg',
+    className: 'bg-surface-elevated rounded-lg',
   },
   parameters: {
     docs: {

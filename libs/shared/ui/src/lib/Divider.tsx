@@ -36,7 +36,7 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
           {...props}
         >
           <div className='flex-1 h-px bg-border' aria-hidden='true' />
-          <span className='text-sm text-foreground-muted'>{label}</span>
+          <span className='text-sm text-text-secondary'>{label}</span>
           <div className='flex-1 h-px bg-border' aria-hidden='true' />
         </div>
       );

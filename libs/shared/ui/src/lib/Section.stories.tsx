@@ -55,7 +55,7 @@ export const Default: Story = {
     children: (
       <div className='text-center'>
         <h2 className='text-2xl font-bold mb-4'>Section Title</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This is a section with default settings (centered, full width, hidden
           overflow).
         </p>
@@ -70,7 +70,7 @@ export const SmallPadding: Story = {
     children: (
       <div className='text-center'>
         <h2 className='text-2xl font-bold mb-4'>Small Padding Section</h2>
-        <p className='text-foreground-muted'>This section has small padding.</p>
+        <p className='text-text-secondary'>This section has small padding.</p>
       </div>
     ),
   },
@@ -82,7 +82,7 @@ export const LargePadding: Story = {
     children: (
       <div className='text-center'>
         <h2 className='text-2xl font-bold mb-4'>Large Padding Section</h2>
-        <p className='text-foreground-muted'>This section has large padding.</p>
+        <p className='text-text-secondary'>This section has large padding.</p>
       </div>
     ),
   },
@@ -94,7 +94,7 @@ export const AltBackground: Story = {
     children: (
       <div className='text-center'>
         <h2 className='text-2xl font-bold mb-4'>Alt Background</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This section uses the alt background.
         </p>
       </div>
@@ -108,7 +108,7 @@ export const ElevatedBackground: Story = {
     children: (
       <div className='text-center'>
         <h2 className='text-2xl font-bold mb-4'>Elevated Background</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This section uses the elevated background.
         </p>
       </div>
@@ -123,7 +123,7 @@ export const NoPadding: Story = {
     children: (
       <div className='text-center p-4'>
         <h2 className='text-2xl font-bold mb-4'>No Section Padding</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This section has no padding (content adds its own).
         </p>
       </div>

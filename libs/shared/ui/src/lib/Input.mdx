@@ -9,18 +9,18 @@ import { Input } from './Input';
       max-width: 860px;
       margin: -1rem auto 0;
       padding: 2rem 2rem 4rem;
-      font-family: var(--font-body);
-      color: var(--foreground);
-      background: var(--background);
+      font-family: var(--font-sans);
+      color: var(--color-text-primary);
+      background: var(--color-surface);
       border-radius: var(--radius);
     }
 
     .doc-title {
-      font-family: var(--font-heading);
+      font-family: var(--font-sans);
       font-size: var(--font-size-h2);
       font-weight: 400;
       margin: 0 0 0.5rem !important;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       font-variation-settings: 'opsz' 72, 'WONK' 1;
       border: none !important;
       padding: 0 !important;
@@ -28,24 +28,24 @@ import { Input } from './Input';
 
     .doc-lead {
       font-size: 1.125rem;
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       margin: 0 0 2.5rem !important;
       line-height: 1.6;
     }
 
     .doc-section {
-      font-family: var(--font-heading);
+      font-family: var(--font-sans);
       font-size: var(--font-size-h3);
       font-weight: 400;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       margin: 2.5rem 0 1rem !important;
       padding-bottom: 0.5rem !important;
-      border-bottom: 1px solid var(--border) !important;
+      border-bottom: 1px solid var(--color-border) !important;
       font-variation-settings: 'opsz' 36, 'WONK' 0;
     }
 
     .doc-p {
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       line-height: 1.7;
       margin: 0 0 1rem;
       font-size: 0.9375rem;
@@ -54,8 +54,8 @@ import { Input } from './Input';
     .doc-p code {
       font-family: var(--font-mono);
       font-size: 0.8125rem;
-      color: var(--accent);
-      background: var(--background-alt);
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
       padding: 0.125rem 0.375rem;
       border-radius: var(--radius-sm);
     }
@@ -78,15 +78,15 @@ import { Input } from './Input';
     .doc-do, .doc-dont {
       padding: 1rem 1.25rem;
       border-radius: var(--radius);
-      border: 1px solid var(--border);
+      border: 1px solid var(--color-border);
     }
 
     .doc-do {
-      border-left: 3px solid var(--success);
+      border-left: 3px solid var(--color-success);
     }
 
     .doc-dont {
-      border-left: 3px solid var(--error);
+      border-left: 3px solid var(--color-error);
     }
 
     .doc-do-label, .doc-dont-label {
@@ -97,12 +97,12 @@ import { Input } from './Input';
       margin-bottom: 0.5rem;
     }
 
-    .doc-do-label { color: var(--success); }
-    .doc-dont-label { color: var(--error); }
+    .doc-do-label { color: var(--color-success); }
+    .doc-dont-label { color: var(--color-error); }
 
     .doc-do-body, .doc-dont-body {
       font-size: 0.875rem;
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       line-height: 1.6;
       margin: 0;
     }
@@ -110,8 +110,8 @@ import { Input } from './Input';
     .doc-do-body code, .doc-dont-body code {
       font-family: var(--font-mono);
       font-size: 0.8125rem;
-      color: var(--accent);
-      background: var(--background-alt);
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
       padding: 0.125rem 0.375rem;
       border-radius: var(--radius-sm);
     }

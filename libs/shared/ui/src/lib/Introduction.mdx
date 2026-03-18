@@ -6,12 +6,12 @@ import { Meta } from '@storybook/addon-docs/blocks';
   {`
 
     .intro-title {
-      font-family: var(--font-heading);
+      font-family: var(--font-sans);
       font-size: var(--font-size-h1);
       font-weight: 400;
       letter-spacing: -0.015em;
       margin: 0 0 0.5rem !important;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       font-variation-settings: 'opsz' 144, 'WONK' 1;
       border: none !important;
       padding: 0 !important;
@@ -19,27 +19,27 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
     .intro-tagline {
       font-size: 1.125rem;
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       margin: 0 0 3rem !important;
       line-height: 1.6;
     }
 
     .intro-section-heading {
-      font-family: var(--font-heading);
+      font-family: var(--font-sans);
       font-size: var(--font-size-h3);
       font-weight: 400;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       margin: 2.5rem 0 1rem !important;
       padding-bottom: 0.5rem !important;
-      border-bottom: 1px solid var(--border) !important;
+      border-bottom: 1px solid var(--color-border) !important;
       font-variation-settings: 'opsz' 36, 'WONK' 0;
     }
 
     .intro-sub-heading {
-      font-family: var(--font-heading);
+      font-family: var(--font-sans);
       font-size: var(--font-size-h4);
       font-weight: 400;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       margin: 1.5rem 0 0.75rem !important;
       border: none !important;
       padding: 0 !important;
@@ -56,7 +56,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     .swatch {
       border-radius: var(--radius);
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--color-border);
     }
 
     .swatch-color {
@@ -66,19 +66,19 @@ import { Meta } from '@storybook/addon-docs/blocks';
     .swatch-label {
       padding: 0.5rem 0.75rem;
       background: var(--background-elevated);
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--color-border);
     }
 
     .swatch-name {
       font-size: 0.75rem;
       font-weight: 500;
-      color: var(--foreground);
-      font-family: var(--font-body);
+      color: var(--color-text-primary);
+      font-family: var(--font-sans);
     }
 
     .swatch-value {
       font-size: 0.6875rem;
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       font-family: var(--font-mono);
       margin-top: 2px;
     }
@@ -87,7 +87,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
       display: flex;
       flex-direction: column;
       margin-bottom: 1.5rem;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--color-border);
     }
 
     .type-row {
@@ -96,13 +96,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
       align-items: start;
       gap: 1.5rem;
       padding: 1rem 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .type-meta {
       font-size: 0.6875rem;
       font-family: var(--font-mono);
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       text-align: right;
       padding-top: 0.2rem;
       line-height: 1.5;
@@ -118,13 +118,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
       margin: 0 !important;
       padding: 0 !important;
       border: none !important;
-      color: var(--foreground) !important;
+      color: var(--color-text-primary) !important;
     }
 
     .type-sample-p {
       margin: 0;
       padding: 0;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       line-height: 1.6;
     }
 
@@ -147,13 +147,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
       width: 64px;
       height: 64px;
       background: var(--accent-muted);
-      border: 2px solid var(--accent);
+      border: 2px solid var(--color-brand-500);
     }
 
     .radius-label {
       font-size: 0.6875rem;
       font-family: var(--font-mono);
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       text-align: center;
       line-height: 1.5;
     }
@@ -167,21 +167,21 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
     .font-item {
       padding: 1rem 1.25rem;
-      background: var(--background-alt);
+      background: var(--color-surface-secondary);
       border-radius: var(--radius);
-      border: 1px solid var(--border);
+      border: 1px solid var(--color-border);
     }
 
     .font-item-name {
       font-size: 0.6875rem;
       font-family: var(--font-mono);
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       margin-bottom: 0.375rem;
     }
 
     .font-item-sample {
       font-size: 1.25rem;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       margin: 0;
       line-height: 1.4;
     }
@@ -194,23 +194,23 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
     .principle {
       padding: 1rem 1.25rem;
-      background: var(--background-alt);
+      background: var(--color-surface-secondary);
       border-radius: var(--radius);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
+      border: 1px solid var(--color-border);
+      border-left: 3px solid var(--color-brand-500);
     }
 
     .principle-title {
       font-size: 0.8125rem;
       font-weight: 500;
-      color: var(--foreground);
+      color: var(--color-text-primary);
       margin-bottom: 0.25rem;
-      font-family: var(--font-body);
+      font-family: var(--font-sans);
     }
 
     .principle-body {
       font-size: 0.875rem;
-      color: var(--foreground-muted);
+      color: var(--color-text-secondary);
       margin: 0;
       line-height: 1.6;
     }
@@ -230,7 +230,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className='swatch-grid'>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--accent)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-500)' }}
+    />
     <div className='swatch-label'>
       <div className='swatch-name'>Accent</div>
       <div className='swatch-value'>--accent</div>
@@ -260,8 +263,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div
       className='swatch-color'
       style={{
-        background: 'var(--background)',
-        outline: '1px solid var(--border)',
+        background: 'var(--color-surface)',
+        outline: '1px solid var(--color-border)',
         outlineOffset: '-1px',
       }}
     />
@@ -273,7 +276,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--background-alt)' }}
+      style={{ background: 'var(--color-surface-secondary)' }}
     />
     <div className='swatch-label'>
       <div className='swatch-name'>Background Alt</div>
@@ -285,7 +288,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
       className='swatch-color'
       style={{
         background: 'var(--background-elevated)',
-        outline: '1px solid var(--border)',
+        outline: '1px solid var(--color-border)',
         outlineOffset: '-1px',
       }}
     />
@@ -295,7 +298,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
     </div>
   </div>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--foreground)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-text-primary)' }}
+    />
     <div className='swatch-label'>
       <div className='swatch-name'>Foreground</div>
       <div className='swatch-value'>--foreground</div>
@@ -304,7 +310,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--foreground-muted)' }}
+      style={{ background: 'var(--color-text-secondary)' }}
     />
     <div className='swatch-label'>
       <div className='swatch-name'>Foreground Muted</div>
@@ -317,7 +323,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className='swatch-grid'>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--success)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-success)' }}
+    />
     <div className='swatch-label'>
       <div className='swatch-name'>Success</div>
       <div className='swatch-value'>--success</div>
@@ -351,7 +360,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
     </div>
   </div>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--error)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-error)' }}
+    />
     <div className='swatch-label'>
       <div className='swatch-name'>Error</div>
       <div className='swatch-value'>--error</div>
@@ -389,11 +401,11 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className='font-stack'>
   <div className='font-item'>
-    <div className='font-item-name'>--font-heading · Fraunces</div>
+    <div className='font-item-name'>--font-sans · Fraunces</div>
     <p
       className='font-item-sample'
       style={{
-        fontFamily: 'var(--font-heading)',
+        fontFamily: 'var(--font-sans)',
         fontVariationSettings: "'opsz' 72, 'WONK' 1",
       }}
     >
@@ -401,8 +413,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
     </p>
   </div>
   <div className='font-item'>
-    <div className='font-item-name'>--font-body · Inter</div>
-    <p className='font-item-sample' style={{ fontFamily: 'var(--font-body)' }}>
+    <div className='font-item-name'>--font-sans · Inter</div>
+    <p className='font-item-sample' style={{ fontFamily: 'var(--font-sans)' }}>
       The quick brown fox jumps over the lazy dog
     </p>
   </div>
@@ -460,7 +472,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     </div>
     <p
       className='type-sample-p'
-      style={{ fontFamily: 'var(--font-body)', fontSize: '1rem' }}
+      style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem' }}
     >
       Body text — Inter 300. Used for paragraphs, descriptions, and general UI
       copy.
@@ -475,9 +487,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <p
       className='type-sample-p'
       style={{
-        fontFamily: 'var(--font-body)',
+        fontFamily: 'var(--font-sans)',
         fontSize: '0.875rem',
-        color: 'var(--foreground-muted)',
+        color: 'var(--color-text-secondary)',
       }}
     >
       Small / muted. Used for helper text, captions, metadata.
@@ -550,7 +562,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className='swatch-grid'>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--border)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-border)' }}
+    />
     <div className='swatch-label'>
       <div className='swatch-name'>Border</div>
       <div className='swatch-value'>--border</div>

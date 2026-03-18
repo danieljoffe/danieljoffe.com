@@ -17,10 +17,10 @@ const meta = {
   },
   decorators: [
     Story => (
-      <div className='bg-background-elevated p-4'>
-        <div className='bg-accent h-8 rounded' />
+      <div className='bg-surface-elevated p-4'>
+        <div className='bg-brand-500 h-8 rounded' />
         <Story />
-        <div className='bg-accent h-8 rounded' />
+        <div className='bg-brand-500 h-8 rounded' />
       </div>
     ),
   ],

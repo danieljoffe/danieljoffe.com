@@ -13,13 +13,13 @@ describe('Button', () => {
   describe('variants', () => {
     it('applies primary variant by default', () => {
       render(<Button>Primary</Button>);
-      expect(screen.getByRole('button')).toHaveClass('bg-accent');
+      expect(screen.getByRole('button')).toHaveClass('bg-brand-500');
     });
 
     it.each([
-      ['secondary', ['bg-background-elevated']],
-      ['ghost', ['hover:bg-background-elevated']],
-      ['outline', ['border-border-strong']],
+      ['secondary', ['bg-surface-elevated']],
+      ['ghost', ['hover:bg-surface-elevated']],
+      ['outline', ['border-border-secondary']],
       ['success', ['bg-success']],
       ['error', ['bg-error']],
       ['warning', ['bg-warning']],
@@ -35,9 +35,9 @@ describe('Button', () => {
     it('applies bare variant without background or border styles', () => {
       render(<Button variant='bare'>Bare</Button>);
       const button = screen.getByRole('button');
-      expect(button).not.toHaveClass('bg-accent');
-      expect(button).not.toHaveClass('bg-background-elevated');
-      expect(button).not.toHaveClass('border-border-strong');
+      expect(button).not.toHaveClass('bg-brand-500');
+      expect(button).not.toHaveClass('bg-surface-elevated');
+      expect(button).not.toHaveClass('border-border-secondary');
     });
   });
 
@@ -92,7 +92,7 @@ describe('Button', () => {
         </Button>
       );
       expect(screen.getByRole('button')).toHaveClass(
-        'bg-background-elevated',
+        'bg-surface-elevated',
         'px-6',
         'text-lg',
         'custom-class'
@@ -185,7 +185,7 @@ describe('Button', () => {
         </Button>
       );
       expect(screen.getByText('Styled Link')).toHaveClass(
-        'bg-background-elevated'
+        'bg-surface-elevated'
       );
     });
   });

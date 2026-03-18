@@ -41,26 +41,26 @@ describe('Section', () => {
   // Background tests
   it('applies no background by default', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).not.toHaveClass('bg-background');
+    expect(container.firstChild).not.toHaveClass('bg-surface');
   });
 
   it('applies default background', () => {
     const { container } = render(
       <Section background='default'>Content</Section>
     );
-    expect(container.firstChild).toHaveClass('bg-background');
+    expect(container.firstChild).toHaveClass('bg-surface');
   });
 
   it('applies alt background', () => {
     const { container } = render(<Section background='alt'>Content</Section>);
-    expect(container.firstChild).toHaveClass('bg-background-alt');
+    expect(container.firstChild).toHaveClass('bg-surface-secondary');
   });
 
   it('applies elevated background', () => {
     const { container } = render(
       <Section background='elevated'>Content</Section>
     );
-    expect(container.firstChild).toHaveClass('bg-background-elevated');
+    expect(container.firstChild).toHaveClass('bg-surface-elevated');
   });
 
   // Center tests
@@ -138,7 +138,7 @@ describe('Section', () => {
     );
     expect(container.firstChild).toHaveClass(
       'py-12',
-      'bg-background-elevated',
+      'bg-surface-elevated',
       'flex',
       'justify-center',
       'overflow-hidden',

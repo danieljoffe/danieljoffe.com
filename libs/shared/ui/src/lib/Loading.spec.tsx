@@ -52,9 +52,9 @@ describe('Loading', () => {
   it('renders dots with correct color variants', () => {
     const { container } = render(<Loading />);
     const dots = container.querySelectorAll('.rounded-full.size-2');
-    expect(dots[0]).toHaveClass('bg-accent');
-    expect(dots[1]).toHaveClass('bg-accent/60');
-    expect(dots[2]).toHaveClass('bg-accent');
-    expect(dots[3]).toHaveClass('bg-accent/60');
+    expect(dots[0]).toHaveClass('bg-brand-500');
+    expect(dots[1]).toHaveClass('bg-brand-500/60');
+    expect(dots[2]).toHaveClass('bg-brand-500');
+    expect(dots[3]).toHaveClass('bg-brand-500/60');
   });
 });

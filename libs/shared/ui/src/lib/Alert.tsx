@@ -21,19 +21,19 @@ const variantStyles: Record<
   { container: string; icon: typeof Info }
 > = {
   info: {
-    container: 'bg-info-muted border-info/30 text-info',
+    container: 'bg-info-light border-info/30 text-info',
     icon: Info,
   },
   success: {
-    container: 'bg-success-muted border-success/30 text-success',
+    container: 'bg-success-light border-success/30 text-success',
     icon: CheckCircle,
   },
   warning: {
-    container: 'bg-warning-muted border-warning/30 text-warning',
+    container: 'bg-warning-light border-warning/30 text-warning',
     icon: AlertTriangle,
   },
   error: {
-    container: 'bg-error-muted border-error/30 text-error',
+    container: 'bg-error-light border-error/30 text-error',
     icon: AlertCircle,
   },
 };
@@ -66,13 +66,13 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
           <Icon className='size-5 shrink-0 mt-0.5' aria-hidden='true' />
           <div className='flex-1'>
             {title && <h5 className='mb-1 mt-0'>{title}</h5>}
-            <div className='text-sm text-foreground-muted'>{children}</div>
+            <div className='text-sm text-text-secondary'>{children}</div>
           </div>
           {dismissible && (
             <button
               onClick={onDismiss}
               aria-label='Dismiss alert'
-              className='text-foreground-subtle hover:text-foreground transition-colors'
+              className='text-text-tertiary hover:text-text-primary transition-colors'
             >
               <X className='size-4' aria-hidden='true' />
             </button>
