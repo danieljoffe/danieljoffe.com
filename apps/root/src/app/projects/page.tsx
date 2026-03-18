@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostThumbnail from '@/components/PostThumbnail';
 import ContentGrid from '@/components/ContentGrid';
 import MainContent from '@/components/MainContent';
@@ -14,45 +13,38 @@ export const metadata: Metadata = projectRootMetadata;
 export default function Projects() {
   return (
     <MainContent>
-      <Section className='min-h-min max-h-max'>
-        <PageContainer>
-          <Stack direction='vertical' gap='md'>
-            <header className='text-center'>
-              <h1>Projects</h1>
-              <p>
-                Case studies and projects showcasing performance optimization,
-                component architecture, and full-stack development. Each project
-                includes the challenge, my approach, and measurable outcomes.
-              </p>
-            </header>
+      <section className='relative px-6 lg:px-0'>
+        <header className='text-center mb-8'>
+          <h1 className='text-3xl sm:text-4xl font-semibold tracking-tight text-text-primary'>
+            Projects
+          </h1>
+          <p className='mt-3 text-text-secondary max-w-xl mx-auto'>
+            Case studies and projects showcasing performance optimization,
+            component architecture, and full-stack development. Each project
+            includes the challenge, my approach, and measurable outcomes.
+          </p>
+        </header>
 
-            <OpenSourceCallout />
+        <OpenSourceCallout />
 
-            <section aria-labelledby='projects-heading'>
-              <h2 id='projects-heading' className='sr-only'>
-                Project Portfolio
-              </h2>
-              <ContentGrid>
-                {projectsList.map((data, index) => (
-                  <li key={data.slug}>
-                    <PostThumbnail {...data} index={index} />
-                  </li>
-                ))}
-              </ContentGrid>
-            </section>
-          </Stack>
-        </PageContainer>
+        <ContentGrid className='mt-8'>
+          {projectsList.map((data, index) => (
+            <li key={data.slug}>
+              <PostThumbnail {...data} index={index} />
+            </li>
+          ))}
+        </ContentGrid>
+      </section>
 
-        <script
-          type='application/ld+json'
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(projectsRootStructuredData).replace(
-              /</g,
-              '\\u003c'
-            ),
-          }}
-        />
-      </Section>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(projectsRootStructuredData).replace(
+            /</g,
+            '\\u003c'
+          ),
+        }}
+      />
     </MainContent>
   );
 }
