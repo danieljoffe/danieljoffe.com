@@ -31,6 +31,8 @@ export { Stack } from './Stack';
 export { Switch } from './Switch';
 export { Tabs } from './Tabs';
 export { Textarea } from './Textarea';
+export { ThemeProvider, useTheme } from './ThemeProvider';
+export { ToastProvider, useToast } from './Toast';
 export { Tooltip } from './Tooltip';
 
 // Utilities
@@ -64,4 +66,6 @@ export type { StackProps } from './Stack';
 export type { SwitchProps } from './Switch';
 export type { TabsProps, Tab } from './Tabs';
 export type { TextareaProps } from './Textarea';
+export type { Theme, ThemeContextType } from './ThemeProvider';
+export type { ToastVariant, ToastItem, ToastContextType } from './Toast';
 export type { TooltipProps } from './Tooltip';

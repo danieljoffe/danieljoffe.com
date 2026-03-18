@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from 'lucide-react';
 import Button from '@/components/Button';
-import { useTheme } from '@/state/Theme/Provider';
+import { useTheme } from '@danieljoffe.com/shared-ui';
 import { analytics } from '@/lib/analytics';
 
 export default function DarkModeToggle() {

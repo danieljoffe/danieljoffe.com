@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useTheme } from '@/state/Theme/Provider';
+import { useTheme } from '@danieljoffe.com/shared-ui';
 import { analytics } from '@/lib/analytics';
 import DarkModeToggle from '../DarkModeToggle';
 
 const mockToggleDarkMode = jest.fn();
 
-jest.mock('@/state/Theme/Provider', () => ({
+jest.mock('@danieljoffe.com/shared-ui', () => ({
   useTheme: jest.fn(() => ({
     isDarkMode: false,
     toggleDarkMode: mockToggleDarkMode,

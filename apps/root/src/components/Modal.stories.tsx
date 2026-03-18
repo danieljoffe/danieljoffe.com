@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect } from 'storybook/test';
 
 import Button from '@/components/Button';
-import ThemeProvider from '@/state/Theme/Provider';
+import { ThemeProvider } from '@danieljoffe.com/shared-ui';
 import ModalProvider, { useModal } from '@/state/Modal/Provider';
 import Modal from './Modal';
 

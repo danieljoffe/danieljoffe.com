@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import Nav from './index';
-import ThemeProvider from '@/state/Theme/Provider';
+import { ThemeProvider } from '@danieljoffe.com/shared-ui';
 import ModalProvider from '@/state/Modal/Provider';
 import Modal from '../Modal';
 
