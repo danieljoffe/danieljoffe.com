@@ -33,7 +33,7 @@ export default function FullTimeline() {
                 outline
               >
                 <Stack direction='horizontal' className='flex-1'>
-                  <div className='flex w-full max-w-[4.5rem] h-[4.5rem] p-2 md:p-[.75rem] bg-background-elevated rounded-[50%] justify-center items-center'>
+                  <div className='flex w-full max-w-[4.5rem] h-[4.5rem] p-2 md:p-[.75rem] bg-surface-elevated rounded-[50%] justify-center items-center'>
                     <Image
                       src={company.logo}
                       alt={company.company}

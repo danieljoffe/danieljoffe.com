@@ -1,7 +1,5 @@
 @use 'tailwindcss';
-@use '@danieljoffe.com/shared-ui/styles/warm-gold.scss';
-@use '@danieljoffe.com/shared-ui/styles/warm-gold-dark.scss';
-@use '@danieljoffe.com/shared-ui/styles/ui/index.scss';
+@import '@danieljoffe.com/shared-ui/styles/theme.css';
 
 // Content sources for Tailwind v4 class detection
 // Root app source files
@@ -11,24 +9,13 @@
 
 @layer base {
   :root {
-    --stop-color-one: var(--background, transparent);
-    --stop-color-two: var(--background, transparent);
-    --stop-color-three: var(--background, transparent);
-    --stop-color-four: var(--background, transparent);
-    --stop-color-five: var(--background, transparent);
-    --stop-color-six: var(--background, transparent);
-    --stop-color-seven: var(--background, transparent);
-    --stop-color-eight: var(--background, transparent);
-  }
-
-  /* Reduced motion — collapse all durations */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+    --stop-color-one: var(--color-surface, transparent);
+    --stop-color-two: var(--color-surface, transparent);
+    --stop-color-three: var(--color-surface, transparent);
+    --stop-color-four: var(--color-surface, transparent);
+    --stop-color-five: var(--color-surface, transparent);
+    --stop-color-six: var(--color-surface, transparent);
+    --stop-color-seven: var(--color-surface, transparent);
+    --stop-color-eight: var(--color-surface, transparent);
   }
 }

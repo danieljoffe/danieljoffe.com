@@ -19,7 +19,7 @@ export default function PostThumbnailDescription({
     <div
       className={[
         'flex flex-col flex-1',
-        'bg-card text-card-foreground',
+        'bg-surface-elevated text-text-primary',
         'px-4 pt-4 pb-6',
       ].join(' ')}
     >

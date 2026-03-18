@@ -49,7 +49,7 @@ export default function AdminDashboard() {
         <Stack direction='horizontal' justify='between' align='start'>
           <h1 className='text-2xl font-bold'>Audit Admin</h1>
           <button
-            className='text-sm text-foreground-muted hover:text-foreground'
+            className='text-sm text-text-secondary hover:text-text-primary'
             onClick={() => setPassword(null)}
           >
             Sign out
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className='h-24 rounded-lg bg-background-elevated animate-pulse'
+                className='h-24 rounded-lg bg-surface-elevated animate-pulse'
               />
             ))}
           </div>

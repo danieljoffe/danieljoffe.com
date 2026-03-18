@@ -50,7 +50,7 @@ export default function ServicesGrid() {
                         const Icon = iconMap[service.icon];
                         return Icon ? (
                           <Icon
-                            className='size-6 text-accent shrink-0'
+                            className='size-6 text-brand-500 shrink-0'
                             absoluteStrokeWidth={true}
                             aria-hidden='true'
                           />

@@ -21,7 +21,7 @@ export default function SocialLinks() {
           as='link'
           href={`mailto:${profileData.social.email}`}
           title='Email'
-          className='hover:text-accent'
+          className='hover:text-brand-500'
           onClick={() => {
             analytics.ctaClick('click_email_message', PROJECTS_LINK.href);
           }}
@@ -37,7 +37,7 @@ export default function SocialLinks() {
           as='link'
           href={profileData.social.linkedin}
           title='LinkedIn'
-          className='hover:text-accent'
+          className='hover:text-brand-500'
           onClick={() => {
             analytics.ctaClick('visit_linkedin_profile', PROJECTS_LINK.href);
           }}
@@ -53,7 +53,7 @@ export default function SocialLinks() {
           as='link'
           href={profileData.social.github}
           title='GitHub'
-          className='hover:text-accent'
+          className='hover:text-brand-500'
           onClick={() => {
             analytics.ctaClick('visit_github_profile', PROJECTS_LINK.href);
           }}
@@ -65,7 +65,7 @@ export default function SocialLinks() {
           variant='bare'
           aria-label='Download Resume (PDF)'
           title='Download Resume'
-          className='hover:text-accent'
+          className='hover:text-brand-500'
           name='download resume'
           onClick={() => {
             analytics.ctaClick('download_resume', PROJECTS_LINK.href);

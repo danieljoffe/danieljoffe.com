@@ -16,12 +16,10 @@ export default function StatsRow({ stats }: StatsRowProps) {
       {stats.map(stat => (
         <Card key={stat.label}>
           <CardContent>
-            <p className='text-sm text-foreground-muted'>{stat.label}</p>
+            <p className='text-sm text-text-secondary'>{stat.label}</p>
             <p className='text-3xl font-bold mt-1'>{stat.value}</p>
             {stat.subtitle && (
-              <p className='text-xs text-foreground-subtle mt-1'>
-                {stat.subtitle}
-              </p>
+              <p className='text-xs text-text-tertiary mt-1'>{stat.subtitle}</p>
             )}
           </CardContent>
         </Card>

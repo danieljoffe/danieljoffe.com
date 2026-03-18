@@ -25,7 +25,7 @@ export default function HowIWork() {
               <Card padding='none' className='flex w-full h-full py-3 px-4'>
                 <Stack direction='vertical' gap='xs' align='start'>
                   <h3 className='flex gap-4 items-center'>
-                    <span className='inline-flex items-center justify-center size-10 rounded-full bg-accent text-accent-foreground font-bold'>
+                    <span className='inline-flex items-center justify-center size-10 rounded-full bg-brand-500 text-text-inverse font-bold'>
                       {step.number}
                     </span>
                     <span>{step.title}</span>

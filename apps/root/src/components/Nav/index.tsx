@@ -33,7 +33,7 @@ export default function Nav() {
   };
 
   return (
-    <section className='h-16 w-full sticky top-0 bg-background shadow-md z-30'>
+    <section className='h-16 w-full sticky top-0 bg-surface shadow-md z-30'>
       <nav className='w-full ' role='navigation' aria-label='Main navigation'>
         <TabletUpNav pathname={pathname} />
         <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuToggle} />

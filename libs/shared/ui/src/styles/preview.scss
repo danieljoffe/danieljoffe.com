@@ -1,5 +1,3 @@
 @use 'tailwindcss';
-@use 'ui/index.scss';
-@use './warm-gold/default.scss';
-@use './warm-gold/dark.scss';
+@import './theme.css';
 @source "../**/*.{js,ts,jsx,tsx}";

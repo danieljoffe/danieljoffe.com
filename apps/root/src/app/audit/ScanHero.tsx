@@ -17,18 +17,18 @@ export default function ScanHero({ scanCount }: ScanHeroProps) {
           <div>
             <h1
               id='audit-hero-heading'
-              className='font-heading text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight'
+              className='font-sans text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight'
             >
               Free website performance audit
             </h1>
-            <p className='text-lg text-foreground-muted mt-4'>
+            <p className='text-lg text-text-secondary mt-4'>
               Paste your URL. <br />
               Get a detailed report in 30 seconds.
             </p>
           </div>
           <URLInputForm />
           {scanCount > 0 && (
-            <p className='text-sm text-foreground-subtle'>
+            <p className='text-sm text-text-tertiary'>
               {scanCount.toLocaleString()} sites audited
             </p>
           )}

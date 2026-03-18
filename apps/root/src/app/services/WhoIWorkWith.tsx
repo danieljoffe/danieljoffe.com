@@ -41,7 +41,7 @@ export default function WhoIWorkWith() {
                     const Icon = iconMap[audience.icon];
                     return Icon ? (
                       <Icon
-                        className='size-5 text-accent shrink-0 mt-0.5'
+                        className='size-5 text-brand-500 shrink-0 mt-0.5'
                         absoluteStrokeWidth={true}
                         aria-hidden='true'
                       />

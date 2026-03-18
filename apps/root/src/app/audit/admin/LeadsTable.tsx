@@ -90,15 +90,15 @@ export default function LeadsTable({ password }: LeadsTableProps) {
       <div className='overflow-x-auto'>
         <table className='w-full text-sm'>
           <thead>
-            <tr className='border-b border-border text-left text-foreground-muted'>
+            <tr className='border-b border-border text-left text-text-secondary'>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('created_at')}
               >
                 Date{sortIndicator('created_at')}
               </th>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('email')}
               >
                 Email{sortIndicator('email')}
@@ -107,13 +107,13 @@ export default function LeadsTable({ password }: LeadsTableProps) {
               <th className='py-3 px-3'>Company</th>
               <th className='py-3 px-3'>URL Scanned</th>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('source')}
               >
                 Source{sortIndicator('source')}
               </th>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('email_sequence_step')}
               >
                 Email Step{sortIndicator('email_sequence_step')}
@@ -125,7 +125,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
               <tr>
                 <td
                   colSpan={7}
-                  className='py-8 text-center text-foreground-muted'
+                  className='py-8 text-center text-text-secondary'
                 >
                   Loading...
                 </td>
@@ -134,7 +134,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
               <tr>
                 <td
                   colSpan={7}
-                  className='py-8 text-center text-foreground-muted'
+                  className='py-8 text-center text-text-secondary'
                 >
                   No leads yet
                 </td>
@@ -143,14 +143,14 @@ export default function LeadsTable({ password }: LeadsTableProps) {
               leads.map(lead => (
                 <tr
                   key={lead.id}
-                  className='border-b border-border/50 hover:bg-background-elevated'
+                  className='border-b border-border/50 hover:bg-surface-elevated'
                 >
                   <td className='py-3 px-3 whitespace-nowrap'>
                     {new Date(lead.created_at).toLocaleDateString()}
                   </td>
                   <td className='py-3 px-3'>
                     <button
-                      className='text-accent hover:underline cursor-pointer'
+                      className='text-brand-500 hover:underline cursor-pointer'
                       onClick={() => copyEmail(lead.id, lead.email)}
                       title='Click to copy'
                     >
@@ -158,18 +158,16 @@ export default function LeadsTable({ password }: LeadsTableProps) {
                     </button>
                   </td>
                   <td className='py-3 px-3'>
-                    {lead.name ?? (
-                      <span className='text-foreground-subtle'>-</span>
-                    )}
+                    {lead.name ?? <span className='text-text-tertiary'>-</span>}
                   </td>
                   <td className='py-3 px-3'>
                     {lead.company ?? (
-                      <span className='text-foreground-subtle'>-</span>
+                      <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3 max-w-[200px] truncate'>
                     {lead.url_scanned ?? (
-                      <span className='text-foreground-subtle'>-</span>
+                      <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3'>
@@ -200,7 +198,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
           >
             Previous
           </Button>
-          <span className='text-sm text-foreground-muted'>
+          <span className='text-sm text-text-secondary'>
             Page {page} of {totalPages}
           </span>
           <Button

@@ -42,11 +42,11 @@ export default function HowItWorks() {
             <GridItem key={step.number} as='li'>
               <Card padding='none' className='flex w-full h-full py-6 px-5'>
                 <Stack direction='vertical' gap='sm' align='start'>
-                  <span className='inline-flex items-center justify-center size-10 rounded-full bg-accent text-accent-foreground font-bold'>
+                  <span className='inline-flex items-center justify-center size-10 rounded-full bg-brand-500 text-text-inverse font-bold'>
                     {step.number}
                   </span>
                   <h3 className='text-lg font-semibold'>{step.title}</h3>
-                  <p className='text-sm text-foreground-muted'>
+                  <p className='text-sm text-text-secondary'>
                     {step.description}
                   </p>
                 </Stack>

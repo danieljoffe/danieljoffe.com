@@ -29,22 +29,22 @@ export default function ScanFailed({ url, errorMessage }: ScanFailedProps) {
           <div>
             <h1
               id='scan-failed-heading'
-              className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
+              className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
             >
               Scan failed
             </h1>
-            <p className='text-foreground-muted mt-2 truncate max-w-sm mx-auto'>
+            <p className='text-text-secondary mt-2 truncate max-w-sm mx-auto'>
               {url}
             </p>
           </div>
 
-          <p className='text-foreground-muted'>
+          <p className='text-text-secondary'>
             {friendlyErrorMessage(errorMessage)}
           </p>
 
           <Link
             href='/audit'
-            className='inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 text-accent-foreground hover:bg-accent-hover transition'
+            className='inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-text-inverse hover:bg-brand-600 transition'
           >
             Try again
           </Link>

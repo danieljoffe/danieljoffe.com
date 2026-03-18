@@ -13,14 +13,14 @@ import { AtSign, Download, Github, Linkedin } from 'lucide-react';
 const currentYear = new Date().getFullYear();
 
 const linkClasses =
-  'text-sm lowercase font-semibold hover:text-accent transition-colors';
+  'text-sm lowercase font-semibold hover:text-brand-500 transition-colors';
 const iconLinkClasses =
-  'p-2 hover:text-accent transition-colors inline-flex items-center justify-center';
+  'p-2 hover:text-brand-500 transition-colors inline-flex items-center justify-center';
 
 export default function Footer() {
   return (
     <footer
-      className='w-full bg-background-alt border-t border-border py-8 mt-auto'
+      className='w-full bg-surface-secondary border-t border-border py-8 mt-auto'
       role='contentinfo'
       aria-label='Site footer'
     >
@@ -28,8 +28,8 @@ export default function Footer() {
         <Stack direction='vertical' gap='lg' align='center'>
           <Stack direction='vertical' gap='sm' align='center'>
             <p className='text-lg font-medium'>{profileData.name}</p>
-            <p className='text-sm text-foreground-muted'>{profileData.title}</p>
-            <p className='text-sm text-foreground-muted italic'>
+            <p className='text-sm text-text-secondary'>{profileData.title}</p>
+            <p className='text-sm text-text-secondary italic'>
               {profileData.status}
             </p>
           </Stack>
@@ -93,16 +93,16 @@ export default function Footer() {
             href={STORYBOOK_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='text-sm hover:text-accent transition-colors inline-flex items-center gap-1'
+            className='text-sm hover:text-brand-500 transition-colors inline-flex items-center gap-1'
           >
-            <span className='text-foreground-muted'>
+            <span className='text-text-secondary'>
               Browse the design system
             </span>
             <span>&rarr;</span>
-            <span className='text-accent'>ui.danieljoffe.com</span>
+            <span className='text-brand-500'>ui.danieljoffe.com</span>
           </a>
 
-          <p className='text-xs text-foreground-muted text-center'>
+          <p className='text-xs text-text-secondary text-center'>
             &copy; {currentYear} {FULL_NAME}. All rights reserved.
           </p>
         </Stack>

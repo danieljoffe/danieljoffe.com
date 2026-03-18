@@ -133,7 +133,7 @@ export default function Form() {
         <legend className='sr-only'>Contact Information</legend>
         <Stack direction='vertical' gap='md'>
           <Input
-            className='text-foreground placeholder-foreground-muted'
+            className='text-text-primary placeholder-foreground-muted'
             placeholder='John Doe'
             type='text'
             autoComplete='name'
@@ -146,7 +146,7 @@ export default function Form() {
           />
 
           <Input
-            className='text-foreground placeholder-foreground-muted'
+            className='text-text-primary placeholder-foreground-muted'
             label='Email'
             placeholder='john.doe@example.com'
             type='email'
@@ -161,7 +161,7 @@ export default function Form() {
           />
 
           <Textarea
-            className='text-foreground placeholder-foreground-muted'
+            className='text-text-primary placeholder-foreground-muted'
             label='Message'
             placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
             autoComplete='off'
@@ -192,7 +192,7 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
-        <label className='text-sm text-foreground-muted block mb-1'>
+        <label className='text-sm text-text-secondary block mb-1'>
           Security verification
         </label>
         {shouldLoadCaptcha && (

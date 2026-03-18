@@ -19,9 +19,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const SampleCard = ({ title, color }: { title: string; color: string }) => (
-  <div
-    className={`${color} p-6 rounded-md text-accent-foreground min-h-[10rem]`}
-  >
+  <div className={`${color} p-6 rounded-md text-text-inverse min-h-[10rem]`}>
     <h3 className='text-lg font-medium'>{title}</h3>
     <p>Sample content card</p>
   </div>
@@ -31,7 +29,7 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <SampleCard title='Card 1' color='bg-accent' />
+        <SampleCard title='Card 1' color='bg-brand-500' />
         <SampleCard title='Card 2' color='bg-success' />
         <SampleCard title='Card 3' color='bg-info' />
         <SampleCard title='Card 4' color='bg-warning' />
@@ -44,7 +42,7 @@ export const TwoItems: Story = {
   args: {
     children: (
       <>
-        <SampleCard title='Card 1' color='bg-accent' />
+        <SampleCard title='Card 1' color='bg-brand-500' />
         <SampleCard title='Card 2' color='bg-success' />
       </>
     ),

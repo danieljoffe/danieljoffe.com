@@ -49,7 +49,7 @@ export default function NavLinks({
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}
               aria-label={`Navigate to ${link.label} page`}
-              className='font-semibold hover:text-accent'
+              className='font-semibold hover:text-brand-500'
             >
               {link.label}
             </Button>

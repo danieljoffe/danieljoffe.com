@@ -29,7 +29,7 @@ export default function IssueList({ issues, scanId }: IssueListProps) {
         <Stack direction='vertical' gap='md'>
           <div>
             <h2 id='issues-heading'>Issues Found</h2>
-            <p className='text-sm text-foreground-muted'>
+            <p className='text-sm text-text-secondary'>
               {summary.total} issues: {summary.critical} critical,{' '}
               {summary.warning} warnings, {summary.info} informational
             </p>

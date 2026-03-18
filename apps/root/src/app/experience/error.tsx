@@ -39,7 +39,7 @@ export default function Error({
           className='min-h-[60vh] text-center'
         >
           <h2>Something went wrong</h2>
-          <p className='text-foreground-muted max-w-md'>
+          <p className='text-text-secondary max-w-md'>
             There was an error loading the experience page. Please try again.
           </p>
           <Stack direction='horizontal' gap='sm'>

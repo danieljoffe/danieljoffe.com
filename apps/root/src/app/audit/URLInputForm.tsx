@@ -142,8 +142,8 @@ export default function URLInputForm() {
                   key={opt.value}
                   className={`flex items-center gap-2 cursor-pointer text-sm font-medium transition-colors ${
                     selected
-                      ? 'text-foreground'
-                      : 'text-foreground-muted hover:text-foreground'
+                      ? 'text-text-primary'
+                      : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   <input
@@ -155,10 +155,10 @@ export default function URLInputForm() {
                     className='sr-only peer'
                   />
                   <span
-                    className={`inline-flex items-center justify-center size-5 rounded-full border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 ${
+                    className={`inline-flex items-center justify-center size-5 rounded-full border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-border-focus peer-focus-visible:ring-offset-2 ${
                       selected
-                        ? 'border-accent bg-accent text-background'
-                        : 'border-border bg-background'
+                        ? 'border-brand-500 bg-brand-500 text-background'
+                        : 'border-border bg-surface'
                     }`}
                     aria-hidden='true'
                   >

@@ -63,7 +63,7 @@ export default function ScanProgress({
           return (
             <li key={step.label} className='flex items-center gap-3'>
               {isComplete ? (
-                <span className='inline-flex items-center justify-center size-5 rounded-full bg-success text-success-foreground'>
+                <span className='inline-flex items-center justify-center size-5 rounded-full bg-success text-text-inverse'>
                   <Check className='size-3' aria-hidden='true' />
                 </span>
               ) : isActive ? (
@@ -74,10 +74,10 @@ export default function ScanProgress({
               <span
                 className={
                   isComplete
-                    ? 'text-foreground'
+                    ? 'text-text-primary'
                     : isActive
-                      ? 'text-foreground'
-                      : 'text-foreground-subtle'
+                      ? 'text-text-primary'
+                      : 'text-text-tertiary'
                 }
               >
                 {step.label}
@@ -86,7 +86,7 @@ export default function ScanProgress({
           );
         })}
       </ul>
-      <p className='text-sm text-foreground-muted text-center truncate'>
+      <p className='text-sm text-text-secondary text-center truncate'>
         Scanning {url} ({deviceLabel})
       </p>
     </Stack>

@@ -10,7 +10,7 @@ export default function UnsplashAttribution({
 }: UnsplashAttributionProps) {
   return (
     <figcaption className='absolute bottom-2 right-2'>
-      <p className='bg-background/85 text-foreground text-xs rounded-md px-2 py-1 whitespace-nowrap'>
+      <p className='bg-surface/85 text-text-primary text-xs rounded-md px-2 py-1 whitespace-nowrap'>
         <Button
           as='link'
           variant='bare'

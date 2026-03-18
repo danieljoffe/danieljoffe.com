@@ -31,7 +31,7 @@ function LinkAsButton(props: AsLinkProps) {
     baseButtonStyles,
     variantButtonStyles[variant ?? 'primary'],
     sizeButtonStyles[size ?? 'md'],
-    highlighted && 'text-accent underline underline-offset-4',
+    highlighted && 'text-brand-500 underline underline-offset-4',
     disabled && 'pointer-events-none',
     outline && variantLinkOutline[variant ?? 'bare'],
     className

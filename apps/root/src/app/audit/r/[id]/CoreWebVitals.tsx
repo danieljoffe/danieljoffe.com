@@ -112,7 +112,7 @@ export default function CoreWebVitals({
     >
       <PageContainer>
         <h2 id='core-web-vitals-heading'>Core Web Vitals</h2>
-        <p className='text-xs text-foreground-muted mb-4'>
+        <p className='text-xs text-text-secondary mb-4'>
           {deviceMode === 'desktop'
             ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'
             : 'Measured under simulated mobile conditions (2x CPU slowdown, 4G network).'}

@@ -45,7 +45,7 @@ export default function ReportHeader({
         <div className='flex items-center justify-between'>
           <Link
             href='/audit'
-            className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
+            className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors'
           >
             <ArrowLeft className='size-4' aria-hidden='true' />
             New audit
@@ -87,19 +87,19 @@ export default function ReportHeader({
             <div className='min-w-0 flex-1'>
               <h1
                 id='report-header-heading'
-                className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
+                className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
               >
                 {pageTitle || url}
               </h1>
-              <p className='text-sm text-foreground-muted truncate max-w-md mt-1'>
+              <p className='text-sm text-text-secondary truncate max-w-md mt-1'>
                 {url}
               </p>
               {completedAt && (
-                <p className='text-xs text-foreground-subtle mt-1'>
+                <p className='text-xs text-text-tertiary mt-1'>
                   Scanned {formatDate(completedAt)}
                 </p>
               )}
-              <p className='text-xs text-foreground-subtle mt-0.5'>
+              <p className='text-xs text-text-tertiary mt-0.5'>
                 {deviceMode === 'desktop'
                   ? 'Tested on Desktop (Broadband)'
                   : 'Tested on Mobile (4G)'}

@@ -29,7 +29,7 @@ export default function Blob() {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden bg-background ${styles.blobContainer}`}
+      className={`relative w-full h-full overflow-hidden bg-surface ${styles.blobContainer}`}
       aria-hidden='true'
       role='img'
       aria-label='Decorative background animation'

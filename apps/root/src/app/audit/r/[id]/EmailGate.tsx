@@ -102,7 +102,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
       </div>
 
       {/* Overlay with email form */}
-      <div className='absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xs rounded-lg'>
+      <div className='absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-xs rounded-lg'>
         <Card className='w-full max-w-sm mx-4'>
           <Stack direction='vertical' gap='sm'>
             <div className='text-center'>
@@ -110,7 +110,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                 Unlock {gatedIssues.length} more{' '}
                 {gatedIssues.length === 1 ? 'fix' : 'fixes'}
               </p>
-              <p className='text-sm text-foreground-muted'>
+              <p className='text-sm text-text-secondary'>
                 Enter your email for the full report
               </p>
             </div>

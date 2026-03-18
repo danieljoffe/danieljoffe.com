@@ -94,7 +94,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
               <h2 className='text-xl font-semibold text-center'>
                 Admin Dashboard
               </h2>
-              <p className='text-foreground-muted text-center text-sm'>
+              <p className='text-text-secondary text-center text-sm'>
                 Enter the admin password to continue.
               </p>
               <Input

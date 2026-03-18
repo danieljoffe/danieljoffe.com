@@ -39,7 +39,7 @@ function FAQItem({
           isOpen ? 'max-h-96 pb-4' : 'max-h-0',
         ].join(' ')}
       >
-        <p className='text-foreground-muted'>{answer}</p>
+        <p className='text-text-secondary'>{answer}</p>
       </div>
     </div>
   );

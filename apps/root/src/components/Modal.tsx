@@ -85,7 +85,7 @@ export default function Modal() {
             ref={focusTrapRef}
             transition={true}
             className={[
-              'relative transform overflow-hidden bg-background text-left',
+              'relative transform overflow-hidden bg-surface text-left',
               'shadow-xl transition-all data-closed:translate-y-4',
               'data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out',
               'data-leave:duration-200 data-leave:ease-in h-full w-full',
@@ -102,10 +102,10 @@ export default function Modal() {
                 website.
               </p>
             </header>
-            <main className='bg-background flex-1 px-8 py-12 overflow-y-auto'>
+            <main className='bg-surface flex-1 px-8 py-12 overflow-y-auto'>
               {modalContent}
             </main>
-            <footer className='bg-background-alt px-8 py-4 flex justify-end'>
+            <footer className='bg-surface-secondary px-8 py-4 flex justify-end'>
               <Button
                 onClick={toggleModal}
                 variant='primary'

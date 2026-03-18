@@ -28,7 +28,7 @@ const meta = {
   },
   decorators: [
     Story => (
-      <div className='w-[400px] bg-card border border-border rounded-md'>
+      <div className='w-[400px] bg-surface-elevated border border-border rounded-md'>
         <Story />
       </div>
     ),

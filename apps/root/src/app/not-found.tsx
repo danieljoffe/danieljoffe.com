@@ -18,9 +18,9 @@ export default function NotFound() {
           className='min-h-[60vh] text-center'
         >
           <Stack direction='vertical' gap='sm'>
-            <h1 className='text-foreground-muted'>404</h1>
+            <h1 className='text-text-secondary'>404</h1>
             <h2>Page Not Found</h2>
-            <p className='text-foreground-muted mb-6 max-w-md'>
+            <p className='text-text-secondary mb-6 max-w-md'>
               The page you are looking for could not be found. Please check the
               URL or return to the home page.
             </p>

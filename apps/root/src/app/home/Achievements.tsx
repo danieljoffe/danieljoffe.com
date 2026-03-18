@@ -50,7 +50,7 @@ export default function Achievements() {
                       const Icon = iconMap[achievement.icon];
                       return Icon ? (
                         <Icon
-                          className='size-6 text-accent shrink-0 mt-1'
+                          className='size-6 text-brand-500 shrink-0 mt-1'
                           absoluteStrokeWidth={true}
                         />
                       ) : null;

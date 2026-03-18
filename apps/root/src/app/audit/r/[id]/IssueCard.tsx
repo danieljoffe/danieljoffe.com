@@ -40,11 +40,9 @@ export default function IssueCard({ issue }: IssueCardProps) {
           )}
         </Stack>
         <h3 className='text-base font-semibold'>{issue.title}</h3>
-        <p className='text-sm text-foreground-muted'>{issue.description}</p>
+        <p className='text-sm text-text-secondary'>{issue.description}</p>
         {issue.impact && (
-          <p className='text-sm text-foreground-subtle italic'>
-            {issue.impact}
-          </p>
+          <p className='text-sm text-text-tertiary italic'>{issue.impact}</p>
         )}
       </Stack>
     </Card>

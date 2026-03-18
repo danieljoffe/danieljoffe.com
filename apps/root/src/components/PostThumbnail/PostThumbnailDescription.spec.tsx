@@ -61,7 +61,7 @@ describe('PostThumbnailDescription', () => {
       <PostThumbnailDescription {...defaultProps} />
     );
     const outerDiv = container.firstChild as HTMLElement;
-    expect(outerDiv.className).toContain('bg-card');
+    expect(outerDiv.className).toContain('bg-surface-elevated');
     expect(outerDiv.className).toContain('px-4');
     expect(outerDiv.className).toContain('pt-4');
     expect(outerDiv.className).toContain('pb-6');

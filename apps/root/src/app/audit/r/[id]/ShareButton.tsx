@@ -30,7 +30,7 @@ export default function ShareButton({ scanId }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
+      className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors'
       aria-label={copied ? 'Link copied' : 'Copy report link'}
     >
       {copied ? (

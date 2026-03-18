@@ -26,7 +26,7 @@ export default function Mantra() {
           <li className='col-span-4 col-start-2 md:col-start-1'>
             <Stack direction='horizontal' gap='sm'>
               <Rocket
-                className='size-6 text-accent shrink-0 mt-1'
+                className='size-6 text-brand-500 shrink-0 mt-1'
                 absoluteStrokeWidth={true}
               />
               <div>
@@ -38,7 +38,7 @@ export default function Mantra() {
           <li className='col-span-4 col-start-2'>
             <Stack direction='horizontal' gap='sm'>
               <Handshake
-                className='size-6 text-accent shrink-0 mt-1'
+                className='size-6 text-brand-500 shrink-0 mt-1'
                 absoluteStrokeWidth={true}
               />
               <div>
@@ -50,7 +50,7 @@ export default function Mantra() {
           <li className='col-span-4 col-start-2 md:col-start-3'>
             <Stack direction='horizontal' gap='sm'>
               <BookOpen
-                className='size-6 text-accent shrink-0 mt-1'
+                className='size-6 text-brand-500 shrink-0 mt-1'
                 absoluteStrokeWidth={true}
               />
               <div>
@@ -62,7 +62,7 @@ export default function Mantra() {
           <li className='col-span-4 col-start-2 md:col-start-4'>
             <Stack direction='horizontal' gap='sm'>
               <Cog
-                className='size-6 text-accent shrink-0 mt-1'
+                className='size-6 text-brand-500 shrink-0 mt-1'
                 absoluteStrokeWidth={true}
               />
               <div>
@@ -74,7 +74,7 @@ export default function Mantra() {
           <li className='col-span-4 col-start-2 md:col-start-5'>
             <Stack direction='horizontal' gap='sm'>
               <TrendingUp
-                className='size-6 text-accent shrink-0 mt-1'
+                className='size-6 text-brand-500 shrink-0 mt-1'
                 absoluteStrokeWidth={true}
               />
               <div>

@@ -43,7 +43,7 @@ export default function Methodologies() {
                       const Icon = iconMap[methodology.icon];
                       return Icon ? (
                         <Icon
-                          className='size-6 text-accent shrink-0'
+                          className='size-6 text-brand-500 shrink-0'
                           absoluteStrokeWidth={true}
                         />
                       ) : null;

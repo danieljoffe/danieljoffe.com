@@ -13,15 +13,15 @@ export default function NotFound() {
           className='min-h-[60vh] text-center'
         >
           <Stack direction='vertical' gap='sm'>
-            <h1 className='text-foreground-muted'>404</h1>
+            <h1 className='text-text-secondary'>404</h1>
             <h2>Report Not Found</h2>
-            <p className='text-foreground-muted mb-6 max-w-md'>
+            <p className='text-text-secondary mb-6 max-w-md'>
               This scan may have expired or the URL is incorrect.
             </p>
           </Stack>
           <Link
             href='/audit'
-            className='inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 text-accent-foreground hover:bg-accent-hover transition'
+            className='inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-text-inverse hover:bg-brand-600 transition'
           >
             Run a new audit
           </Link>

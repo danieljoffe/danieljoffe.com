@@ -32,13 +32,13 @@ const ErrorComponent = ({
 
   return (
     <div
-      className='min-h-screen flex items-center justify-center bg-background'
+      className='min-h-screen flex items-center justify-center bg-surface'
       role='alert'
       aria-live='assertive'
     >
       <div className='max-w-md w-full mx-auto p-6'>
-        <div className='bg-card rounded-lg shadow-soft p-6 text-center'>
-          <div className='size-16 mx-auto mb-4 bg-error-muted rounded-full flex items-center justify-center'>
+        <div className='bg-surface-elevated rounded-lg shadow-soft p-6 text-center'>
+          <div className='size-16 mx-auto mb-4 bg-error-light rounded-full flex items-center justify-center'>
             <svg
               className='size-8 text-error'
               fill='none'
@@ -54,8 +54,8 @@ const ErrorComponent = ({
               />
             </svg>
           </div>
-          <h1 className='text-foreground'>Something went wrong</h1>
-          <p className='text-foreground-muted mb-6'>{A11Y.ERROR_TEXT}</p>
+          <h1 className='text-text-primary'>Something went wrong</h1>
+          <p className='text-text-secondary mb-6'>{A11Y.ERROR_TEXT}</p>
           <div className='space-y-3'>
             <Button
               name='try-again'
@@ -80,10 +80,10 @@ const ErrorComponent = ({
           </div>
           {!isProduction() && error && (
             <details className='mt-4 text-left'>
-              <summary className='cursor-pointer text-sm text-foreground-muted hover:text-foreground'>
+              <summary className='cursor-pointer text-sm text-text-secondary hover:text-text-primary'>
                 Error Details (Non-Production)
               </summary>
-              <pre className='mt-2 text-sm bg-background-alt p-3 rounded overflow-auto'>
+              <pre className='mt-2 text-sm bg-surface-secondary p-3 rounded overflow-auto'>
                 {error.stack}
               </pre>
             </details>

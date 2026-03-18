@@ -43,7 +43,7 @@ export default function DeviceTabs({
   return (
     <nav
       aria-label='Device view'
-      className='flex justify-center gap-1 py-2 bg-background-alt'
+      className='flex justify-center gap-1 py-2 bg-surface-secondary'
     >
       {tabs.map(tab => (
         <Link

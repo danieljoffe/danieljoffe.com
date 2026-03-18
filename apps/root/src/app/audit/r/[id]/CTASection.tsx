@@ -10,10 +10,10 @@ export default function CTASection() {
     >
       <PageContainer className='text-center py-16'>
         <Stack direction='vertical' gap='md' align='center'>
-          <h2 id='cta-heading' className='font-heading text-3xl font-semibold'>
+          <h2 id='cta-heading' className='font-sans text-3xl font-semibold'>
             Want these fixed?
           </h2>
-          <p className='text-foreground-muted max-w-md'>
+          <p className='text-text-secondary max-w-md'>
             I help teams ship faster, more accessible websites. Let&apos;s talk
             about what&apos;s slowing yours down.
           </p>

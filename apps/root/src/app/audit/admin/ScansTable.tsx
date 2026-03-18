@@ -101,27 +101,27 @@ export default function ScansTable({ password }: ScansTableProps) {
       <div className='overflow-x-auto'>
         <table className='w-full text-sm'>
           <thead>
-            <tr className='border-b border-border text-left text-foreground-muted'>
+            <tr className='border-b border-border text-left text-text-secondary'>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('created_at')}
               >
                 Date{sortIndicator('created_at')}
               </th>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('url')}
               >
                 URL{sortIndicator('url')}
               </th>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('grade_overall')}
               >
                 Grade{sortIndicator('grade_overall')}
               </th>
               <th
-                className='py-3 px-3 cursor-pointer hover:text-foreground'
+                className='py-3 px-3 cursor-pointer hover:text-text-primary'
                 onClick={() => handleSort('status')}
               >
                 Status{sortIndicator('status')}
@@ -134,7 +134,7 @@ export default function ScansTable({ password }: ScansTableProps) {
               <tr>
                 <td
                   colSpan={5}
-                  className='py-8 text-center text-foreground-muted'
+                  className='py-8 text-center text-text-secondary'
                 >
                   Loading...
                 </td>
@@ -143,7 +143,7 @@ export default function ScansTable({ password }: ScansTableProps) {
               <tr>
                 <td
                   colSpan={5}
-                  className='py-8 text-center text-foreground-muted'
+                  className='py-8 text-center text-text-secondary'
                 >
                   No scans yet
                 </td>
@@ -152,7 +152,7 @@ export default function ScansTable({ password }: ScansTableProps) {
               scans.map(scan => (
                 <tr
                   key={scan.id}
-                  className='border-b border-border/50 hover:bg-background-elevated cursor-pointer'
+                  className='border-b border-border/50 hover:bg-surface-elevated cursor-pointer'
                   onClick={() => window.open(`/audit/r/${scan.id}`, '_blank')}
                 >
                   <td className='py-3 px-3 whitespace-nowrap'>
@@ -167,7 +167,7 @@ export default function ScansTable({ password }: ScansTableProps) {
                         {scan.grade_overall}
                       </Badge>
                     ) : (
-                      <span className='text-foreground-subtle'>-</span>
+                      <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3'>
@@ -179,7 +179,7 @@ export default function ScansTable({ password }: ScansTableProps) {
                     {scan.has_lead ? (
                       <span className='text-success'>Yes</span>
                     ) : (
-                      <span className='text-foreground-subtle'>No</span>
+                      <span className='text-text-tertiary'>No</span>
                     )}
                   </td>
                 </tr>
@@ -204,7 +204,7 @@ export default function ScansTable({ password }: ScansTableProps) {
           >
             Previous
           </Button>
-          <span className='text-sm text-foreground-muted'>
+          <span className='text-sm text-text-secondary'>
             Page {page} of {totalPages}
           </span>
           <Button

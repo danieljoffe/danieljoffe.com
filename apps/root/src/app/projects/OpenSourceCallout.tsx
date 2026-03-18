@@ -5,9 +5,9 @@ import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
 
 export default function OpenSourceCallout() {
   return (
-    <div className='bg-background-alt border border-border rounded-lg p-4'>
+    <div className='bg-surface-secondary border border-border rounded-lg p-4'>
       <Stack direction='vertical' gap='sm'>
-        <p className='text-sm text-foreground'>
+        <p className='text-sm text-text-primary'>
           This portfolio is open source. Explore the code or browse the
           component library.
         </p>
