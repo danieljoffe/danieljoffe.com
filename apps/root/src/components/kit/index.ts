@@ -8,3 +8,4 @@ export { CoverImage } from './CoverImage';
 export { PostCard } from './PostCard';
 export { KitLinkButton } from './KitLinkButton';
 export { KitButton } from './KitButton';
+export { CompanyLogo } from './CompanyLogo';

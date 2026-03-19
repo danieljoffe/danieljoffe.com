@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowUpRight, Calendar } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import { PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
+import { CompanyLogo } from './CompanyLogo';
 
 export function PostCard({
   post,
@@ -40,15 +40,7 @@ export function PostCard({
         />
         {logo && (
           <div className='absolute bottom-3 left-3'>
-            <div className='h-8 w-8 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center p-1.5'>
-              <Image
-                src={logo}
-                alt=''
-                width={20}
-                height={20}
-                className='object-contain'
-              />
-            </div>
+            <CompanyLogo src={logo} alt='' size='sm' />
           </div>
         )}
       </div>

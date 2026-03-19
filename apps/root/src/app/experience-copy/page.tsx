@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { Briefcase, ArrowUpRight, Calendar, Layers } from 'lucide-react';
-import Image from 'next/image';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
@@ -11,6 +10,7 @@ import {
   PageLayout,
   PostCard,
   StructuredData,
+  CompanyLogo,
 } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
@@ -63,29 +63,18 @@ export default function ExperienceCopy() {
                     href={exp.link.href}
                     slug={exp.slug}
                   >
-                    {/* Timeline dot */}
-                    <div className='shrink-0'>
-                      <div
-                        className={[
-                          'h-10 w-10 rounded-lg flex items-center justify-center border overflow-hidden',
-                          i === experienceList.length - 1
-                            ? 'border-brand-500 bg-brand-50'
-                            : 'border-border bg-white dark:bg-surface-elevated',
-                        ].join(' ')}
-                      >
-                        {full?.logo ? (
-                          <Image
-                            src={full.logo}
-                            alt={`${exp.title} logo`}
-                            width={28}
-                            height={28}
-                            className='object-contain'
-                          />
-                        ) : (
-                          <Briefcase className='h-4 w-4 text-text-tertiary' />
-                        )}
+                    {/* Company logo */}
+                    {full?.logo ? (
+                      <CompanyLogo
+                        src={full.logo}
+                        alt={`${exp.title} logo`}
+                        highlight={i === experienceList.length - 1}
+                      />
+                    ) : (
+                      <div className='h-10 w-10 rounded-xl bg-white border border-border flex items-center justify-center shrink-0'>
+                        <Briefcase className='h-4 w-4 text-text-tertiary' />
                       </div>
-                    </div>
+                    )}
 
                     {/* Content */}
                     <div className='flex-1 min-w-0'>

@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import {
   MapPin,
   Briefcase,
@@ -33,6 +32,7 @@ import {
   CTACard,
   GridBg,
   KitLinkButton,
+  CompanyLogo,
 } from '@/components/kit';
 import HeroActions from './HeroActions';
 
@@ -109,19 +109,11 @@ export default function HomepageCopy() {
                 key={company.slug}
                 className='flex justify-center opacity-70 hover:opacity-100 transition-opacity'
               >
-                <a
-                  href={`${EXPERIENCE_LINK.href}/${company.slug}`}
-                  className='flex items-center justify-center w-20 h-20 rounded-xl bg-white border border-border overflow-hidden p-3'
-                >
-                  <Image
-                    className='w-full h-full object-contain'
+                <a href={`${EXPERIENCE_LINK.href}/${company.slug}`}>
+                  <CompanyLogo
                     src={company.logo}
                     alt={company.company}
-                    width={100}
-                    height={50}
-                    sizes='(max-width: 640px) 5rem, (max-width: 768px) 6rem, 7rem'
-                    unoptimized
-                    decoding='async'
+                    size='lg'
                   />
                 </a>
               </li>

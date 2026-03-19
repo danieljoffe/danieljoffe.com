@@ -17,7 +17,13 @@ import {
 import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
-import { Section, SectionLabel, PageLayout, CTACard } from '@/components/kit';
+import {
+  Section,
+  SectionLabel,
+  PageLayout,
+  CTACard,
+  CompanyLogo,
+} from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
 
@@ -217,19 +223,11 @@ export default function AboutCopy() {
                   href={`${EXPERIENCE_LINK.href}/${company.slug}`}
                   className='group flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-surface-secondary transition-colors'
                 >
-                  <div className='flex w-14 h-14 p-2 bg-white border border-border rounded-xl justify-center items-center shrink-0 overflow-hidden'>
-                    <Image
-                      src={company.logo}
-                      alt={company.company}
-                      width={40}
-                      height={40}
-                      sizes='2.5rem'
-                      unoptimized
-                      loading='lazy'
-                      decoding='async'
-                      className='max-h-full w-10 object-contain'
-                    />
-                  </div>
+                  <CompanyLogo
+                    src={company.logo}
+                    alt={company.company}
+                    size='lg'
+                  />
                   <div className='flex-1 min-w-0'>
                     <p className='text-sm font-semibold text-text-primary'>
                       {company.company}
