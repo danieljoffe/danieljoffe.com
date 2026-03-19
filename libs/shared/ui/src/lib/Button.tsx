@@ -48,7 +48,7 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${
     regularButton
-  } bg-brand-500 text-text-inverse hover:bg-brand-600 active:bg-brand-700`,
+  } bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700`,
   secondary: `${
     regularButton
   } bg-surface-elevated text-text-primary hover:bg-surface border border-border`,
@@ -58,7 +58,7 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   outline: `${
     regularButton
   } border border-border-secondary text-text-primary hover:bg-surface-elevated`,
-  success: `${regularButton} bg-success text-text-inverse hover:opacity-90`,
+  success: `${regularButton} bg-success text-white hover:opacity-90`,
   error: `${regularButton} bg-error text-text-inverse hover:opacity-90`,
   warning: `${regularButton} bg-warning text-text-inverse hover:opacity-90`,
   info: `${regularButton} bg-info text-text-inverse hover:opacity-90`,
