@@ -3,14 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { useTheme } from '@danieljoffe.com/shared-ui';
 import DarkModeToggle from './DarkModeToggle';
 
-const mockToggleDarkMode = jest.fn();
+const mockSetTheme = jest.fn();
 const mockThemeToggle = jest.fn();
 
 jest.mock('@danieljoffe.com/shared-ui', () => ({
   ...jest.requireActual('@danieljoffe.com/shared-ui'),
   useTheme: jest.fn(() => ({
-    isDarkMode: false,
-    toggleDarkMode: mockToggleDarkMode,
+    theme: 'system',
+    setTheme: mockSetTheme,
   })),
 }));
 
@@ -20,67 +20,71 @@ jest.mock('@/lib/analytics', () => ({
   },
 }));
 
-jest.mock('next/link', () => {
-  const React = require('react');
-  const MockLink = React.forwardRef(
-    (
-      props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string },
-      ref: React.ForwardedRef<HTMLAnchorElement>
-    ) => {
-      const { href, children, ...rest } = props;
-      return (
-        <a ref={ref} href={href} {...rest}>
-          {children}
-        </a>
-      );
-    }
-  );
-  MockLink.displayName = 'MockLink';
-  return MockLink;
-});
-
 const mockUseTheme = useTheme as jest.Mock;
 
 describe('DarkModeToggle', () => {
   beforeEach(() => {
-    mockToggleDarkMode.mockClear();
+    mockSetTheme.mockClear();
     mockThemeToggle.mockClear();
     mockUseTheme.mockReturnValue({
-      isDarkMode: false,
-      toggleDarkMode: mockToggleDarkMode,
+      theme: 'system',
+      setTheme: mockSetTheme,
     });
   });
 
-  it('renders with correct aria-label for light mode', () => {
-    render(<DarkModeToggle />);
-    expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument();
-  });
-
-  it('renders with correct aria-label for dark mode', () => {
-    mockUseTheme.mockReturnValue({
-      isDarkMode: true,
-      toggleDarkMode: mockToggleDarkMode,
-    });
+  it('renders three theme options', () => {
     render(<DarkModeToggle />);
     expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument();
+    expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument();
+    expect(screen.getByLabelText('Switch to system mode')).toBeInTheDocument();
   });
 
-  it('calls toggleDarkMode and analytics on click', async () => {
-    const user = userEvent.setup();
+  it('renders as a radiogroup with proper aria', () => {
     render(<DarkModeToggle />);
-    await user.click(screen.getByRole('button'));
-    expect(mockThemeToggle).toHaveBeenCalledWith('dark');
-    expect(mockToggleDarkMode).toHaveBeenCalled();
+    expect(
+      screen.getByRole('radiogroup', { name: 'Theme' })
+    ).toBeInTheDocument();
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(3);
   });
 
-  it('tracks light mode when toggling from dark', async () => {
-    mockUseTheme.mockReturnValue({
-      isDarkMode: true,
-      toggleDarkMode: mockToggleDarkMode,
-    });
+  it('marks the current theme as checked', () => {
+    render(<DarkModeToggle />);
+    expect(screen.getByLabelText('Switch to system mode')).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    expect(screen.getByLabelText('Switch to light mode')).toHaveAttribute(
+      'aria-checked',
+      'false'
+    );
+  });
+
+  it('calls setTheme and analytics when clicking light', async () => {
     const user = userEvent.setup();
     render(<DarkModeToggle />);
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByLabelText('Switch to light mode'));
+    expect(mockSetTheme).toHaveBeenCalledWith('light');
     expect(mockThemeToggle).toHaveBeenCalledWith('light');
+  });
+
+  it('calls setTheme and analytics when clicking dark', async () => {
+    const user = userEvent.setup();
+    render(<DarkModeToggle />);
+    await user.click(screen.getByLabelText('Switch to dark mode'));
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockThemeToggle).toHaveBeenCalledWith('dark');
+  });
+
+  it('highlights the active theme option', () => {
+    mockUseTheme.mockReturnValue({
+      theme: 'dark',
+      setTheme: mockSetTheme,
+    });
+    render(<DarkModeToggle />);
+    expect(screen.getByLabelText('Switch to dark mode')).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
   });
 });

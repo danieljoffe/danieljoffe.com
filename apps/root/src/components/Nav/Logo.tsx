@@ -1,4 +1,4 @@
-import Button from '@/components/Button';
+import Link from 'next/link';
 import { HOME_LINK } from '@/utils/constants';
 
 const LogoImage = () => (
@@ -30,14 +30,12 @@ const LogoImage = () => (
 
 export default function Logo() {
   return (
-    <Button
-      as='link'
-      variant='bare'
-      size='sm'
+    <Link
       href={HOME_LINK.href}
       aria-label={HOME_LINK.label}
+      className='flex items-center'
     >
       <LogoImage />
-    </Button>
+    </Link>
   );
 }

@@ -2,15 +2,14 @@
 
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Spinner } from '@danieljoffe.com/shared-ui';
 import { useModal } from '@/state/Modal/Provider';
 import NavLinks from './Links';
 import MobileNav from './MobileNav';
 
 const TabletUpNav = dynamic(() => import('./TabletUpNav'), {
   loading: () => (
-    <div className='hidden md:flex w-full justify-center items-center h-16 gap-4'>
-      <Spinner size='md' aria-label='Loading navigation' />
+    <div className='hidden md:flex w-full max-w-3xl mx-auto px-6 lg:px-0 h-14 items-center justify-center'>
+      <div className='h-4 w-4 animate-spin rounded-full border-2 border-border border-t-brand-500' />
     </div>
   ),
 });
@@ -33,11 +32,11 @@ export default function Nav() {
   };
 
   return (
-    <section className='h-16 w-full sticky top-0 bg-surface shadow-md z-30'>
-      <nav className='w-full ' role='navigation' aria-label='Main navigation'>
+    <header className='sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border/60'>
+      <nav role='navigation' aria-label='Main navigation'>
         <TabletUpNav pathname={pathname} />
         <MobileNav menuOpen={isModalOpen} setMenuOpen={handleMenuToggle} />
       </nav>
-    </section>
+    </header>
   );
 }
