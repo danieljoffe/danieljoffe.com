@@ -155,13 +155,10 @@ export default function HomepageCopy() {
               >
                 <a
                   href={`${EXPERIENCE_LINK.href}/${company.slug}`}
-                  className='flex items-center justify-center w-full h-full'
+                  className='flex items-center justify-center w-20 h-20 rounded-xl bg-white border border-border overflow-hidden p-3'
                 >
                   <Image
-                    className={[
-                      'w-full h-full max-w-[6.25rem] max-h-[3.25rem] object-contain',
-                      company.invert ? 'dark:invert dark:brightness-200' : '',
-                    ].join(' ')}
+                    className='w-full h-full object-contain'
                     src={company.logo}
                     alt={company.company}
                     width={100}

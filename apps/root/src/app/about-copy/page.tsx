@@ -252,7 +252,7 @@ export default function AboutCopy() {
                   href={`${EXPERIENCE_LINK.href}/${company.slug}`}
                   className='group flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-surface-secondary transition-colors'
                 >
-                  <div className='flex w-14 h-14 p-2 bg-surface-secondary rounded-full justify-center items-center shrink-0'>
+                  <div className='flex w-14 h-14 p-2 bg-white border border-border rounded-xl justify-center items-center shrink-0 overflow-hidden'>
                     <Image
                       src={company.logo}
                       alt={company.company}
@@ -262,10 +262,7 @@ export default function AboutCopy() {
                       unoptimized
                       loading='lazy'
                       decoding='async'
-                      className={[
-                        'max-h-full w-10 object-contain',
-                        company.invert ? 'dark:invert dark:brightness-200' : '',
-                      ].join(' ')}
+                      className='max-h-full w-10 object-contain'
                     />
                   </div>
                   <div className='flex-1 min-w-0'>

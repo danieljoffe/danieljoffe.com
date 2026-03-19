@@ -10,23 +10,17 @@ import { PostThumbnail } from '@/types/postTypes';
 export default function ExperienceGridCard({
   exp,
   logo,
-  isLast,
   priority,
 }: {
   exp: PostThumbnail;
   logo?: string | undefined;
-  isLast: boolean;
   priority: boolean;
 }) {
   return (
     <Link
       href={exp.link.href}
       onClick={() => analytics.experienceClick(exp.slug)}
-      className={[
-        'group relative overflow-hidden rounded-xl border border-border bg-surface-secondary',
-        'transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5',
-        isLast ? 'sm:col-span-2' : '',
-      ].join(' ')}
+      className='group relative overflow-hidden rounded-xl border border-border bg-surface-secondary transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5'
     >
       {/* Cover image */}
       <div className='relative h-36 overflow-hidden'>

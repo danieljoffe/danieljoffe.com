@@ -81,9 +81,6 @@ export default function ExperienceCopy() {
           label='Career Timeline'
         />
         <div className='relative'>
-          {/* Vertical line */}
-          <div className='absolute left-[19px] top-0 bottom-0 w-px bg-border' />
-
           <div className='space-y-4'>
             {experienceList
               .slice()
@@ -97,22 +94,22 @@ export default function ExperienceCopy() {
                     slug={exp.slug}
                   >
                     {/* Timeline dot */}
-                    <div className='relative z-10 shrink-0'>
+                    <div className='shrink-0'>
                       <div
                         className={[
-                          'h-10 w-10 rounded-full flex items-center justify-center border-2',
+                          'h-10 w-10 rounded-lg flex items-center justify-center border overflow-hidden',
                           i === experienceList.length - 1
                             ? 'border-brand-500 bg-brand-50'
-                            : 'border-border bg-surface-secondary',
+                            : 'border-border bg-white dark:bg-surface-elevated',
                         ].join(' ')}
                       >
                         {full?.logo ? (
                           <Image
                             src={full.logo}
                             alt={`${exp.title} logo`}
-                            width={20}
-                            height={20}
-                            className={`object-contain ${full.invert ? 'dark:invert' : ''}`}
+                            width={28}
+                            height={28}
+                            className='object-contain'
                           />
                         ) : (
                           <Briefcase className='h-4 w-4 text-text-tertiary' />
@@ -170,7 +167,6 @@ export default function ExperienceCopy() {
                 key={exp.slug}
                 exp={exp}
                 logo={full?.logo}
-                isLast={i === experienceList.length - 1}
                 priority={i < 2}
               />
             );
