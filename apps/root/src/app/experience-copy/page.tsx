@@ -1,12 +1,12 @@
 import { Metadata } from 'next';
 import { Briefcase, ArrowUpRight, Calendar, Layers } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
 import ExperienceCardLink from './ExperienceCardLink';
+import ExperienceGridCard from './ExperienceGridCard';
 
 const experienceList = Object.values(experienceRecords);
 const experienceFullList = Object.values(experienceFull);
@@ -166,67 +166,13 @@ export default function ExperienceCopy() {
           {experienceList.map((exp, i) => {
             const full = experienceFullList.find(f => f.slug === exp.slug);
             return (
-              <Link
+              <ExperienceGridCard
                 key={exp.slug}
-                href={exp.link.href}
-                className={[
-                  'group relative overflow-hidden rounded-xl border border-border bg-surface-secondary',
-                  'transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5',
-                  i === experienceList.length - 1 ? 'sm:col-span-2' : '',
-                ].join(' ')}
-              >
-                {/* Cover image */}
-                <div className='relative h-36 overflow-hidden'>
-                  <Image
-                    src={exp.cover.src}
-                    alt={exp.cover.alt}
-                    fill
-                    className='object-cover transition-transform duration-300 group-hover:scale-105'
-                    sizes='(max-width: 640px) 100vw, 50vw'
-                    priority={i < 2}
-                  />
-                  <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
-                  {full?.logo && (
-                    <div className='absolute bottom-3 left-3'>
-                      <div className='h-8 w-8 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center p-1.5'>
-                        <Image
-                          src={full.logo}
-                          alt=''
-                          width={20}
-                          height={20}
-                          className='object-contain'
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className='p-4 space-y-2'>
-                  <div className='flex items-start justify-between gap-2'>
-                    <p className='text-sm font-semibold text-text-primary'>
-                      {exp.title}
-                    </p>
-                    <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
-                  </div>
-                  {exp.role && (
-                    <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium'>
-                      {exp.role}
-                    </span>
-                  )}
-                  <p className='text-sm text-text-secondary leading-relaxed line-clamp-2'>
-                    {exp.description}
-                  </p>
-                  {exp.duration && (
-                    <div className='flex items-center gap-1.5'>
-                      <Calendar className='h-3 w-3 text-text-tertiary' />
-                      <span className='text-xs text-text-tertiary'>
-                        {exp.duration}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
+                exp={exp}
+                logo={full?.logo}
+                isLast={i === experienceList.length - 1}
+                priority={i < 2}
+              />
             );
           })}
         </div>
