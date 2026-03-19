@@ -243,15 +243,17 @@ export default function ServicesCopy() {
             </>
           }
         >
-          <KitLinkButton
-            href={CALENDLY_URL}
-            target='_blank'
-            rel='noopener noreferrer'
-            aria-label={`Book a discovery call with ${FULL_NAME}`}
-          >
-            Book a Discovery Call
-            <ArrowUpRight className='h-4 w-4' />
-          </KitLinkButton>
+          <div className='flex justify-center'>
+            <KitLinkButton
+              href={CALENDLY_URL}
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label={`Book a discovery call with ${FULL_NAME}`}
+            >
+              Book a Discovery Call
+              <ArrowUpRight className='h-4 w-4' />
+            </KitLinkButton>
+          </div>
         </CTACard>
       </Section>
 
