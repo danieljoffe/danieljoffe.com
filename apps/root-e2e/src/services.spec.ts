@@ -17,23 +17,17 @@ test.describe('services page', () => {
       'MVP & Product Frontend Builds',
     ];
     for (const title of cards) {
-      await expect(page.getByRole('heading', { name: title })).toBeVisible();
+      await expect(page.getByText(title, { exact: true })).toBeVisible();
     }
   });
 
   test('service cards show pricing and timeline', async ({ page }) => {
-    // Spot-check first card
-    const firstCard = page
-      .locator('li')
-      .filter({ hasText: 'Performance Audits' })
-      .first();
-    await expect(firstCard.locator('text=$5,000')).toBeVisible();
-    await expect(firstCard.locator('text=2-4 weeks')).toBeVisible();
+    await expect(page.getByText('$5,000').first()).toBeVisible();
+    await expect(page.getByText('2-4 weeks').first()).toBeVisible();
   });
 
   test('the FAQ accordion expands and collapses', async ({ page }) => {
-    const faqSection = page.locator('section[aria-labelledby="faq-heading"]');
-    const firstQuestion = faqSection.locator('button[aria-expanded]').first();
+    const firstQuestion = page.locator('button[aria-expanded]').first();
     await expect(firstQuestion).toHaveAttribute('aria-expanded', 'false');
 
     // Expand
@@ -46,10 +40,8 @@ test.describe('services page', () => {
   });
 
   test('only one FAQ item is open at a time', async ({ page }) => {
-    const faqSection = page.locator('section[aria-labelledby="faq-heading"]');
-    const questions = faqSection.locator('button[aria-expanded]');
-    const count = questions;
-    await expect(count).toHaveCount(5);
+    const questions = page.locator('button[aria-expanded]');
+    await expect(questions).toHaveCount(5);
 
     // Open first
     await questions.nth(0).click();

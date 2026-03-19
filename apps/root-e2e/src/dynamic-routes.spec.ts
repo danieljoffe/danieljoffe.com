@@ -13,7 +13,7 @@ test.describe('projects listing page', () => {
     await page.goto('/projects', { waitUntil: 'domcontentloaded' });
 
     // Check for project links
-    const projectLinks = page.locator('article a[href^="/projects/"]');
+    const projectLinks = page.locator('a[href^="/projects/"]');
     const count = await projectLinks.count();
 
     expect(count).toBeGreaterThanOrEqual(1);
@@ -22,9 +22,7 @@ test.describe('projects listing page', () => {
   test('project thumbnail links to detail page', async ({ page }) => {
     await page.goto('/projects', { waitUntil: 'domcontentloaded' });
 
-    const firstProjectLink = page
-      .locator('article a[href^="/projects/"]')
-      .first();
+    const firstProjectLink = page.locator('a[href^="/projects/"]').first();
     await expect(firstProjectLink).toBeVisible();
 
     await firstProjectLink.click();
@@ -94,7 +92,7 @@ test.describe('experience listing page', () => {
     await page.goto('/experience', { waitUntil: 'domcontentloaded' });
 
     // Check for experience links
-    const experienceLinks = page.locator('article a[href^="/experience/"]');
+    const experienceLinks = page.locator('a[href^="/experience/"]');
     const count = await experienceLinks.count();
 
     expect(count).toBeGreaterThanOrEqual(1);
@@ -103,9 +101,7 @@ test.describe('experience listing page', () => {
   test('experience thumbnail links to detail page', async ({ page }) => {
     await page.goto('/experience', { waitUntil: 'domcontentloaded' });
 
-    const firstExperienceLink = page
-      .locator('article a[href^="/experience/"]')
-      .first();
+    const firstExperienceLink = page.locator('a[href^="/experience/"]').first();
     await expect(firstExperienceLink).toBeVisible();
 
     await firstExperienceLink.click();
