@@ -1,70 +1,72 @@
 import { render, screen } from '@testing-library/react';
 import Page from './page';
 
-jest.mock('./home/Hero', () => ({
+jest.mock('next/image', () => {
+  return function MockImage({ alt }: { alt: string }) {
+    return <img alt={alt} />;
+  };
+});
+
+jest.mock('./home/HeroActions', () => ({
   __esModule: true,
-  default: function Hero() {
-    return <div data-testid='hero' />;
+  default: function HeroActions() {
+    return <div data-testid='hero-actions' />;
   },
 }));
 
-jest.mock('./home/PreviousTeams', () => ({
-  __esModule: true,
-  default: function PreviousTeams() {
-    return <div data-testid='previous-teams' />;
-  },
-}));
-
-jest.mock('./home/Achievements', () => ({
-  __esModule: true,
-  default: function Achievements() {
-    return <div data-testid='achievements' />;
-  },
-}));
-
-jest.mock('./home/Methodologies', () => ({
-  __esModule: true,
-  default: function Methodologies() {
-    return <div data-testid='methodologies' />;
-  },
-}));
-
-jest.mock('./home/CTA', () => ({
-  __esModule: true,
-  default: function CTA() {
-    return <div data-testid='cta' />;
+jest.mock('@/components/kit/CoverImage', () => ({
+  CoverImage: function MockCoverImage() {
+    return <div data-testid='cover-image' />;
   },
 }));
 
 describe('Homepage', () => {
-  it('renders inside MainContent wrapper', () => {
+  it('renders inside PageLayout wrapper', () => {
     render(<Page />);
     const main = screen.getByRole('main');
-    expect(main).toHaveAttribute('id', 'main-content');
+    expect(main).toBeInTheDocument();
   });
 
-  it('renders Hero section', () => {
+  it('renders hero heading with name', () => {
     render(<Page />);
-    expect(screen.getByTestId('hero')).toBeInTheDocument();
+    const heading = screen.getByRole('heading', { level: 1 });
+    expect(heading).toHaveTextContent(/daniel joffe/i);
   });
 
-  it('renders PreviousTeams section', () => {
+  it('renders hero descriptions', () => {
     render(<Page />);
-    expect(screen.getByTestId('previous-teams')).toBeInTheDocument();
+    expect(screen.getByText('I optimize applications.')).toBeInTheDocument();
+    expect(
+      screen.getByText('I build scalable design systems.')
+    ).toBeInTheDocument();
+  });
+
+  it('renders Previous Teams section', () => {
+    render(<Page />);
+    expect(screen.getByText(/teams i've worked with/i)).toBeInTheDocument();
   });
 
   it('renders Achievements section', () => {
     render(<Page />);
-    expect(screen.getByTestId('achievements')).toBeInTheDocument();
+    expect(screen.getByText(/achievements/i)).toBeInTheDocument();
   });
 
-  it('renders Methodologies section', () => {
+  it('renders How I Work section', () => {
     render(<Page />);
-    expect(screen.getByTestId('methodologies')).toBeInTheDocument();
+    expect(screen.getByText(/how i work/i)).toBeInTheDocument();
   });
 
   it('renders CTA section', () => {
     render(<Page />);
-    expect(screen.getByTestId('cta')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /let's build something great together/i,
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('renders HeroActions component', () => {
+    render(<Page />);
+    expect(screen.getByTestId('hero-actions')).toBeInTheDocument();
   });
 });
