@@ -1,5 +1,3 @@
-import { Card, PageContainer, Section } from '@danieljoffe.com/shared-ui';
-
 interface ScoreCardsProps {
   performance: number | null;
   accessibility: number | null;
@@ -26,12 +24,12 @@ function ScoreCardItem({ label, score }: ScoreCardItemProps) {
   const color = getScoreColor(score);
 
   return (
-    <Card className='text-center'>
+    <div className='rounded-lg border border-border bg-surface-elevated p-6 text-center'>
       <p className='text-sm text-text-secondary mb-2'>{label}</p>
       <p className='text-4xl font-bold' style={{ color }}>
         {score !== null ? score : 'N/A'}
       </p>
-    </Card>
+    </div>
   );
 }
 
@@ -43,8 +41,11 @@ export default function ScoreCards({
   deviceMode,
 }: ScoreCardsProps) {
   return (
-    <Section aria-labelledby='scores-heading' className='min-h-min max-h-max'>
-      <PageContainer>
+    <section
+      aria-labelledby='scores-heading'
+      className='w-full overflow-hidden flex flex-col justify-center'
+    >
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <h2 id='scores-heading' className='sr-only'>
           Scores
         </h2>
@@ -59,7 +60,7 @@ export default function ScoreCards({
             ? 'Scores reflect a desktop device on a broadband connection.'
             : 'Scores reflect a mobile device on a 4G connection. Results may differ on desktop or faster networks.'}
         </p>
-      </PageContainer>
-    </Section>
+      </div>
+    </section>
   );
 }

@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AlertTriangle } from 'lucide-react';
-import {
-  Alert,
-  PageContainer,
-  Section,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
+import { AlertCircle, AlertTriangle } from 'lucide-react';
 import ScanProgress from '../../ScanProgress';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
@@ -71,18 +65,12 @@ export default function ScanPending({
 
   if (error) {
     return (
-      <Section
-        className='min-h-min max-h-max'
+      <section
+        className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
         aria-labelledby='scan-failed-heading'
-        background='alt'
       >
-        <PageContainer className='py-20 md:py-32'>
-          <Stack
-            direction='vertical'
-            align='center'
-            gap='lg'
-            className='text-center max-w-md mx-auto'
-          >
+        <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-20 md:py-32'>
+          <div className='flex flex-col gap-6 items-center text-center max-w-md mx-auto'>
             <div className='inline-flex items-center justify-center size-14 rounded-full bg-error/10'>
               <AlertTriangle className='size-7 text-error' aria-hidden='true' />
             </div>
@@ -99,7 +87,17 @@ export default function ScanPending({
               </p>
             </div>
 
-            <Alert variant='error'>{error}</Alert>
+            <div
+              role='alert'
+              className='relative rounded-lg border p-4 bg-error-light border-error/30 text-error'
+            >
+              <div className='flex gap-3'>
+                <AlertCircle className='size-5 shrink-0 mt-0.5' />
+                <div className='flex-1 text-sm text-text-secondary'>
+                  {error}
+                </div>
+              </div>
+            </div>
 
             <Link
               href='/audit'
@@ -107,24 +105,19 @@ export default function ScanPending({
             >
               Try again
             </Link>
-          </Stack>
-        </PageContainer>
-      </Section>
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <Section className='min-h-min max-h-max' background='alt'>
-      <PageContainer className='py-20 md:py-32'>
-        <Stack
-          direction='vertical'
-          align='center'
-          gap='lg'
-          className='max-w-md mx-auto'
-        >
+    <section className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-20 md:py-32'>
+        <div className='flex flex-col gap-6 items-center max-w-md mx-auto'>
           <ScanProgress url={url} device={device} />
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

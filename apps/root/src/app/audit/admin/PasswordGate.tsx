@@ -1,13 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import {
-  Button,
-  Card,
-  CardContent,
-  Input,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
 
 interface PasswordGateProps {
   onAuthenticated: (password: string) => void;
@@ -81,23 +74,18 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
   }
 
   return (
-    <Stack
-      direction='vertical'
-      align='center'
-      justify='center'
-      className='min-h-[60vh]'
-    >
-      <Card className='w-full max-w-sm'>
-        <CardContent>
+    <div className='flex flex-col items-center justify-center min-h-[60vh]'>
+      <div className='rounded-lg border border-border bg-surface-elevated w-full max-w-sm'>
+        <div className='p-6'>
           <form onSubmit={handleSubmit}>
-            <Stack direction='vertical' gap='md'>
+            <div className='flex flex-col gap-4'>
               <h2 className='text-xl font-semibold text-center'>
                 Admin Dashboard
               </h2>
               <p className='text-text-secondary text-center text-sm'>
                 Enter the admin password to continue.
               </p>
-              <Input
+              <input
                 type='password'
                 placeholder='Password'
                 value={password}
@@ -105,6 +93,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                 aria-label='Admin password'
                 autoFocus
                 disabled={isLockedOut}
+                className='w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent transition-all'
               />
               {isLockedOut && (
                 <p className='text-error text-sm text-center' role='alert'>
@@ -117,17 +106,17 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                   {error}
                 </p>
               )}
-              <Button
+              <button
                 type='submit'
-                variant='primary'
                 disabled={loading || !password || isLockedOut}
+                className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-4 py-3'
               >
                 {loading ? 'Verifying...' : 'Sign in'}
-              </Button>
-            </Stack>
+              </button>
+            </div>
           </form>
-        </CardContent>
-      </Card>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 }

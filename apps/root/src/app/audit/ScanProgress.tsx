@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
-import { ProgressBar, Spinner, Stack } from '@danieljoffe.com/shared-ui';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
@@ -52,8 +51,22 @@ export default function ScanProgress({
         : 'mobile';
 
   return (
-    <Stack direction='vertical' gap='md' className='w-full max-w-md'>
-      <ProgressBar value={progress} size='md' aria-label='Scan progress' />
+    <div className='flex flex-col gap-4 w-full max-w-md'>
+      <div className='w-full'>
+        <div
+          role='progressbar'
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label='Scan progress'
+          className='w-full bg-surface-elevated rounded-full overflow-hidden h-2'
+        >
+          <div
+            className='h-full bg-brand-500 transition-all duration-300 ease-out'
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
       <ul className='space-y-3' aria-label='Scan steps'>
         {steps.map((step, i) => {
           const isComplete = elapsed >= step.completesAt;
@@ -67,7 +80,13 @@ export default function ScanProgress({
                   <Check className='size-3' aria-hidden='true' />
                 </span>
               ) : isActive ? (
-                <Spinner size='sm' aria-label={step.label} />
+                <span
+                  role='status'
+                  className='inline-block size-4 border-2 rounded-full animate-spin border-brand-500/30 border-t-accent'
+                  aria-label={step.label}
+                >
+                  <span className='sr-only'>Loading</span>
+                </span>
               ) : (
                 <span className='inline-block size-5 rounded-full border border-border' />
               )}
@@ -89,6 +108,6 @@ export default function ScanProgress({
       <p className='text-sm text-text-secondary text-center truncate'>
         Scanning {url} ({deviceLabel})
       </p>
-    </Stack>
+    </div>
   );
 }

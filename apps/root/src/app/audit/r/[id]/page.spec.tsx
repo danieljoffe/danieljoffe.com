@@ -137,7 +137,7 @@ describe('Report Page', () => {
     currentMockScan = mockScan;
   });
 
-  it('renders inside MainContent wrapper', async () => {
+  it('renders inside PageLayout wrapper', async () => {
     render(await ReportPage({ params }));
     const main = screen.getByRole('main');
     expect(main).toHaveAttribute('id', 'main-content');

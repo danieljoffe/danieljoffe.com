@@ -2,14 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Monitor, Smartphone } from 'lucide-react';
-import {
-  Alert,
-  Button,
-  Input,
-  Spinner,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
+import { AlertCircle, Check, Monitor, Smartphone } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
@@ -108,28 +101,37 @@ export default function URLInputForm() {
   };
 
   return (
-    <Stack direction='vertical' gap='sm' className='w-full max-w-md'>
+    <div className='flex flex-col gap-2 w-full max-w-md'>
       <form onSubmit={handleSubmit} noValidate>
-        <Stack direction='vertical' gap='sm'>
-          <Input
-            type='url'
-            value={url}
-            onChange={e => {
-              setUrl(e.target.value);
-              if (validationError) setValidationError('');
-            }}
-            onBlur={() => {
-              if (url.trim() && !isValidClientUrl(url.trim())) {
-                setValidationError(
-                  'Please enter a valid URL (e.g. example.com).'
-                );
-              }
-            }}
-            placeholder='https://example.com'
-            aria-label='Website URL'
-            error={validationError || undefined}
-            disabled={state.phase === 'submitting'}
-          />
+        <div className='flex flex-col gap-2'>
+          <div className='w-full'>
+            <input
+              type='url'
+              value={url}
+              onChange={e => {
+                setUrl(e.target.value);
+                if (validationError) setValidationError('');
+              }}
+              onBlur={() => {
+                if (url.trim() && !isValidClientUrl(url.trim())) {
+                  setValidationError(
+                    'Please enter a valid URL (e.g. example.com).'
+                  );
+                }
+              }}
+              placeholder='https://example.com'
+              aria-label='Website URL'
+              disabled={state.phase === 'submitting'}
+              className={`w-full px-4 py-2.5 bg-surface border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:border-transparent transition-all ${
+                validationError
+                  ? 'border-error focus-visible:ring-error'
+                  : 'border-border focus-visible:ring-brand-500'
+              }`}
+            />
+            {validationError && (
+              <p className='mt-1.5 text-sm text-error'>{validationError}</p>
+            )}
+          </div>
           <fieldset
             className='flex justify-around'
             aria-label='Device type'
@@ -182,35 +184,46 @@ export default function URLInputForm() {
               );
             })}
           </fieldset>
-          <Button
+          <button
             type='submit'
-            variant='primary'
-            size='lg'
             disabled={state.phase === 'submitting'}
-            className='w-full'
+            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-6 py-3 text-lg w-full'
           >
             {state.phase === 'submitting' ? (
               <>
-                <Spinner size='sm' variant='foreground' />
+                <span
+                  role='status'
+                  className='inline-block size-4 border-2 rounded-full animate-spin border-foreground-subtle/30 border-t-foreground'
+                >
+                  <span className='sr-only'>Loading...</span>
+                </span>
                 Starting scan...
               </>
             ) : (
               'Audit this site'
             )}
-          </Button>
-        </Stack>
+          </button>
+        </div>
       </form>
       {state.phase === 'error' && (
-        <Alert variant='error'>
-          {state.message}{' '}
-          <button
-            onClick={() => setState({ phase: 'idle' })}
-            className='inline-block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer'
-          >
-            Try again
-          </button>
-        </Alert>
+        <div
+          role='alert'
+          className='relative rounded-lg border p-4 bg-error-light border-error/30 text-error'
+        >
+          <div className='flex gap-3'>
+            <AlertCircle className='size-5 shrink-0 mt-0.5' />
+            <div className='flex-1 text-sm text-text-secondary'>
+              {state.message}{' '}
+              <button
+                onClick={() => setState({ phase: 'idle' })}
+                className='inline-block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer'
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

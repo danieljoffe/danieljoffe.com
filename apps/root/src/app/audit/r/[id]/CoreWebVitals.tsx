@@ -1,10 +1,4 @@
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
-import {
-  Card,
-  PageContainer,
-  Section,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
 
 interface CoreWebVitalsProps {
   fcpMs: number | null;
@@ -105,20 +99,19 @@ export default function CoreWebVitals({
   ];
 
   return (
-    <Section
+    <section
       aria-labelledby='core-web-vitals-heading'
-      className='min-h-min max-h-max'
-      background='alt'
+      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
     >
-      <PageContainer>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <h2 id='core-web-vitals-heading'>Core Web Vitals</h2>
         <p className='text-xs text-text-secondary mb-4'>
           {deviceMode === 'desktop'
             ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'
             : 'Measured under simulated mobile conditions (2x CPU slowdown, 4G network).'}
         </p>
-        <Card>
-          <Stack direction='vertical' gap='none'>
+        <div className='rounded-lg border border-border bg-surface-elevated p-6'>
+          <div className='flex flex-col'>
             {metrics.map((metric, i) => {
               const status =
                 metric.value !== null
@@ -133,20 +126,20 @@ export default function CoreWebVitals({
                   }`}
                 >
                   <span className='text-sm'>{metric.label}</span>
-                  <Stack direction='horizontal' gap='sm' align='center'>
+                  <div className='flex flex-row gap-2 items-center'>
                     <span className='text-sm font-medium tabular-nums'>
                       {metric.value !== null
                         ? metric.format(metric.value)
                         : 'N/A'}
                     </span>
                     {status && <StatusIcon status={status} />}
-                  </Stack>
+                  </div>
                 </div>
               );
             })}
-          </Stack>
-        </Card>
-      </PageContainer>
-    </Section>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';
@@ -36,12 +35,11 @@ export default function ReportHeader({
   const grade = gradeOverall ? GRADE_MAP[gradeOverall] : null;
 
   return (
-    <Section
-      className='min-h-min max-h-max'
+    <section
+      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
       aria-labelledby='report-header-heading'
-      background='alt'
     >
-      <PageContainer className='py-12 md:py-16'>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 md:py-16'>
         <div className='flex items-center justify-between'>
           <Link
             href='/audit'
@@ -107,7 +105,7 @@ export default function ReportHeader({
             </div>
           </div>
         </div>
-      </PageContainer>
-    </Section>
+      </div>
+    </section>
   );
 }

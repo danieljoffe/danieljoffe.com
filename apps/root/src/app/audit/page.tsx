@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import MainContent from '@/components/MainContent';
+import { PageLayout } from '@/components/kit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { auditFaqStructuredData } from '@/data/structuredData/audit';
 import ScanHero from './ScanHero';
@@ -34,7 +34,7 @@ export default async function AuditPage() {
   const scanCount = await getCompletedScanCount();
 
   return (
-    <MainContent>
+    <PageLayout>
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
@@ -46,6 +46,6 @@ export default async function AuditPage() {
       />
       <ScanHero scanCount={scanCount} />
       <HowItWorks />
-    </MainContent>
+    </PageLayout>
   );
 }

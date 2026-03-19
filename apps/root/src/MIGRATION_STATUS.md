@@ -90,14 +90,23 @@ The following still import from shared-ui directly:
 - `PostBody.tsx` → `Stack`
 - `PostContent.tsx` → `Container`
 - `BreadCrumbs.tsx` → `Stack`
-- `MainContent.tsx` → `cn` utility
-- Audit pages → `PageContainer`, `Section`
+- `MainContent.tsx` → `cn` utility (only used by non-audit legacy consumers)
 - `Contact/Form.tsx` → form components
+
+### Audit Pages — Fully Migrated
+
+All 24 audit files migrated from shared-ui to inline Tailwind:
+
+- **Page wrappers**: `audit/page.tsx`, `audit/r/[id]/page.tsx`, `audit/admin/page.tsx` → `PageLayout`
+- **Landing**: `ScanHero`, `HowItWorks`, `URLInputForm`, `ScanProgress` → inline Tailwind
+- **Report**: `ReportHeader`, `ScoreCards`, `CoreWebVitals`, `IssueList`, `IssueCard`, `CTASection`, `ScanPending`, `ScanFailed`, `EmailGate`, `DeviceTabs`, `ExpandableScreenshot` → inline Tailwind
+- **Admin**: `AdminDashboard`, `PasswordGate`, `StatsRow`, `ScansTable`, `LeadsTable` → inline Tailwind
+- **Error/not-found**: 3 error boundaries + not-found → inline Tailwind (removed `AppButton` dependency)
 
 ## Potential Future Work
 
-1. **Migrate audit pages** to kit layout patterns
-2. **Replace PostBody/BreadCrumbs** with kit equivalents
-3. **Consolidate shared-ui usage** — evaluate which shared-ui components are still needed
-4. **Add kit component tests** — the kit components currently have no unit tests
-5. **Regenerate VR baselines** in CI after merge
+1. **Replace PostBody/BreadCrumbs** with kit equivalents
+2. **Consolidate shared-ui usage** — evaluate which shared-ui components are still needed
+3. **Add kit component tests** — the kit components currently have no unit tests
+4. **Regenerate VR baselines** in CI after merge
+5. **Remove MainContent** once no consumers remain

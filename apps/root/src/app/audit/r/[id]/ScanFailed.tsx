@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
-import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 interface ScanFailedProps {
@@ -10,18 +9,12 @@ interface ScanFailedProps {
 
 export default function ScanFailed({ url, errorMessage }: ScanFailedProps) {
   return (
-    <Section
-      className='min-h-min max-h-max'
+    <section
+      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
       aria-labelledby='scan-failed-heading'
-      background='alt'
     >
-      <PageContainer className='py-20 md:py-32'>
-        <Stack
-          direction='vertical'
-          align='center'
-          gap='lg'
-          className='text-center max-w-md mx-auto'
-        >
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-20 md:py-32'>
+        <div className='flex flex-col gap-6 items-center text-center max-w-md mx-auto'>
           <div className='inline-flex items-center justify-center size-14 rounded-full bg-error/10'>
             <AlertTriangle className='size-7 text-error' aria-hidden='true' />
           </div>
@@ -48,8 +41,8 @@ export default function ScanFailed({ url, errorMessage }: ScanFailedProps) {
           >
             Try again
           </Link>
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

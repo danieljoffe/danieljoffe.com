@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import MainContent from '@/components/MainContent';
+import { PageLayout } from '@/components/kit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import {
   isValidUuid,
@@ -155,14 +155,14 @@ export default async function ReportPage({
       const deviceParam = sp.device === 'desktop' ? 'desktop' : 'mobile';
       const isPaired = sp.device === 'both';
       return (
-        <MainContent>
+        <PageLayout>
           <ScanPending
             scanId={id}
             url={urlParam}
             deviceMode={deviceParam as DeviceMode}
             isPaired={isPaired}
           />
-        </MainContent>
+        </PageLayout>
       );
     }
 
@@ -176,29 +176,29 @@ export default async function ReportPage({
   // Scan still in progress — show polling UI
   if (scan.status === 'pending' || scan.status === 'running') {
     return (
-      <MainContent>
+      <PageLayout>
         <ScanPending
           scanId={scan.id}
           url={scan.url}
           deviceMode={deviceMode}
           isPaired={scan.paired_scan_id !== null}
         />
-      </MainContent>
+      </PageLayout>
     );
   }
 
   // Scan failed — show friendly error
   if (scan.status === 'failed') {
     return (
-      <MainContent>
+      <PageLayout>
         <ScanFailed url={scan.url} errorMessage={scan.error_message} />
-      </MainContent>
+      </PageLayout>
     );
   }
 
   // Completed — render full report
   return (
-    <MainContent>
+    <PageLayout>
       <ReportHeader
         scanId={scan.id}
         url={scan.url}
@@ -233,6 +233,6 @@ export default async function ReportPage({
       {scan.grade_overall && (
         <ReportAnalytics scanId={scan.id} grade={scan.grade_overall} />
       )}
-    </MainContent>
+    </PageLayout>
   );
 }

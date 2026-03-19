@@ -1,4 +1,3 @@
-import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
 import URLInputForm from './URLInputForm';
 
 interface ScanHeroProps {
@@ -7,13 +6,12 @@ interface ScanHeroProps {
 
 export default function ScanHero({ scanCount }: ScanHeroProps) {
   return (
-    <Section
-      className='min-h-min max-h-max'
+    <section
+      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
       aria-labelledby='audit-hero-heading'
-      background='alt'
     >
-      <PageContainer className='text-center max-w-[40rem] py-20 md:py-32'>
-        <Stack direction='vertical' gap='lg' align='center'>
+      <div className='max-w-[40rem] mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
+        <div className='flex flex-col gap-6 items-center'>
           <div>
             <h1
               id='audit-hero-heading'
@@ -32,8 +30,8 @@ export default function ScanHero({ scanCount }: ScanHeroProps) {
               {scanCount.toLocaleString()} sites audited
             </p>
           )}
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1,13 +1,6 @@
 import Link from 'next/link';
 import { Monitor, Smartphone } from 'lucide-react';
 import type { DeviceMode } from '@danieljoffe.com/shared-audit';
-import {
-  baseButtonStyles,
-  sizeButtonStyles,
-  variantButtonStyles,
-  variantLinkOutline,
-  cn,
-} from '@danieljoffe.com/shared-ui';
 
 interface DeviceTabsProps {
   currentDevice: DeviceMode;
@@ -49,12 +42,11 @@ export default function DeviceTabs({
         <Link
           key={tab.label}
           href={tab.href}
-          className={cn(
-            baseButtonStyles,
-            sizeButtonStyles.md,
-            tab.active ? variantButtonStyles.primary : variantButtonStyles.bare,
-            variantLinkOutline.bare
-          )}
+          className={`inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface px-4 py-3 ${
+            tab.active
+              ? 'bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700'
+              : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+          }`}
           aria-current={tab.active ? 'page' : undefined}
         >
           {tab.icon}

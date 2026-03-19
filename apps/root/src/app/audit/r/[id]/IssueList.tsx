@@ -1,4 +1,3 @@
-import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import IssueCard from './IssueCard';
 import EmailGate from './EmailGate';
@@ -24,9 +23,12 @@ export default function IssueList({ issues, scanId }: IssueListProps) {
   };
 
   return (
-    <Section aria-labelledby='issues-heading' className='min-h-min max-h-max'>
-      <PageContainer>
-        <Stack direction='vertical' gap='md'>
+    <section
+      aria-labelledby='issues-heading'
+      className='w-full overflow-hidden flex flex-col justify-center'
+    >
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
+        <div className='flex flex-col gap-4'>
           <div>
             <h2 id='issues-heading'>Issues Found</h2>
             <p className='text-sm text-text-secondary'>
@@ -35,17 +37,17 @@ export default function IssueList({ issues, scanId }: IssueListProps) {
             </p>
           </div>
 
-          <Stack direction='vertical' gap='sm'>
+          <div className='flex flex-col gap-2'>
             {visibleIssues.map(issue => (
               <IssueCard key={issue.id} issue={issue} />
             ))}
-          </Stack>
+          </div>
 
           {gatedIssues.length > 0 && (
             <EmailGate gatedIssues={gatedIssues} scanId={scanId} />
           )}
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

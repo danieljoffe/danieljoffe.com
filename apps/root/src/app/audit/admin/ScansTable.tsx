@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Badge, Button, Stack } from '@danieljoffe.com/shared-ui';
 
 interface AdminScan {
   id: string;
@@ -26,6 +25,23 @@ type SortColumn =
   | 'status'
   | 'grade_overall'
   | 'score_performance';
+
+const badgeBase =
+  'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium';
+
+const statusStyles: Record<string, string> = {
+  completed: `${badgeBase} bg-success-light text-success border border-success/30`,
+  failed: `${badgeBase} bg-error-light text-error border border-error/30`,
+  running: `${badgeBase} bg-warning-light text-warning border border-warning/30`,
+  default: `${badgeBase} bg-surface-elevated text-text-secondary border border-border`,
+};
+
+const gradeStyles: Record<string, string> = {
+  success: `${badgeBase} bg-success-light text-success border border-success/30`,
+  warning: `${badgeBase} bg-warning-light text-warning border border-warning/30`,
+  error: `${badgeBase} bg-error-light text-error border border-error/30`,
+  default: `${badgeBase} bg-surface-elevated text-text-secondary border border-border`,
+};
 
 export default function ScansTable({ password }: ScansTableProps) {
   const [scans, setScans] = useState<AdminScan[]>([]);
@@ -76,24 +92,14 @@ export default function ScansTable({ password }: ScansTableProps) {
   const sortIndicator = (col: SortColumn) =>
     sort === col ? (order === 'asc' ? ' \u2191' : ' \u2193') : '';
 
-  const statusVariant = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'success' as const;
-      case 'failed':
-        return 'error' as const;
-      case 'running':
-        return 'warning' as const;
-      default:
-        return 'default' as const;
-    }
-  };
+  const getStatusStyle = (status: string) =>
+    statusStyles[status] || statusStyles.default;
 
-  const gradeVariant = (grade: string | null) => {
-    if (!grade) return 'default' as const;
-    if (grade === 'A' || grade === 'B') return 'success' as const;
-    if (grade === 'C') return 'warning' as const;
-    return 'error' as const;
+  const getGradeStyle = (grade: string | null) => {
+    if (!grade) return gradeStyles.default;
+    if (grade === 'A' || grade === 'B') return gradeStyles.success;
+    if (grade === 'C') return gradeStyles.warning;
+    return gradeStyles.error;
   };
 
   return (
@@ -163,17 +169,17 @@ export default function ScansTable({ password }: ScansTableProps) {
                   </td>
                   <td className='py-3 px-3'>
                     {scan.grade_overall ? (
-                      <Badge variant={gradeVariant(scan.grade_overall)}>
+                      <span className={getGradeStyle(scan.grade_overall)}>
                         {scan.grade_overall}
-                      </Badge>
+                      </span>
                     ) : (
                       <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <Badge variant={statusVariant(scan.status)}>
+                    <span className={getStatusStyle(scan.status)}>
                       {scan.status}
-                    </Badge>
+                    </span>
                   </td>
                   <td className='py-3 px-3'>
                     {scan.has_lead ? (
@@ -190,32 +196,25 @@ export default function ScansTable({ password }: ScansTableProps) {
       </div>
 
       {totalPages > 1 && (
-        <Stack
-          direction='horizontal'
-          justify='between'
-          align='center'
-          className='mt-4'
-        >
-          <Button
-            variant='outline'
-            size='sm'
+        <div className='flex flex-row justify-between items-center mt-4'>
+          <button
             disabled={page <= 1}
             onClick={() => setPage(p => p - 1)}
+            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer border border-border-secondary text-text-primary hover:bg-surface-elevated px-3 py-1.5 text-sm'
           >
             Previous
-          </Button>
+          </button>
           <span className='text-sm text-text-secondary'>
             Page {page} of {totalPages}
           </span>
-          <Button
-            variant='outline'
-            size='sm'
+          <button
             disabled={page >= totalPages}
             onClick={() => setPage(p => p + 1)}
+            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer border border-border-secondary text-text-primary hover:bg-surface-elevated px-3 py-1.5 text-sm'
           >
             Next
-          </Button>
-        </Stack>
+          </button>
+        </div>
       )}
     </div>
   );

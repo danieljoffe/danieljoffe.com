@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import MainContent from '@/components/MainContent';
+import { PageLayout } from '@/components/kit';
 import AdminDashboard from './AdminDashboard';
 
 export const metadata: Metadata = {
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function AdminPage() {
   return (
-    <MainContent>
+    <PageLayout>
       <AdminDashboard />
-    </MainContent>
+    </PageLayout>
   );
 }

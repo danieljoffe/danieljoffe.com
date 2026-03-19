@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Badge, Button, Stack } from '@danieljoffe.com/shared-ui';
 
 interface AdminLead {
   id: string;
@@ -19,6 +18,9 @@ interface LeadsTableProps {
 }
 
 type SortColumn = 'created_at' | 'email' | 'source' | 'email_sequence_step';
+
+const badgeBase =
+  'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium';
 
 export default function LeadsTable({ password }: LeadsTableProps) {
   const [leads, setLeads] = useState<AdminLead[]>([]);
@@ -171,7 +173,11 @@ export default function LeadsTable({ password }: LeadsTableProps) {
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <Badge variant='default'>{lead.source}</Badge>
+                    <span
+                      className={`${badgeBase} bg-surface-elevated text-text-secondary border border-border`}
+                    >
+                      {lead.source}
+                    </span>
                   </td>
                   <td className='py-3 px-3 text-center'>
                     {lead.email_sequence_step}
@@ -184,32 +190,25 @@ export default function LeadsTable({ password }: LeadsTableProps) {
       </div>
 
       {totalPages > 1 && (
-        <Stack
-          direction='horizontal'
-          justify='between'
-          align='center'
-          className='mt-4'
-        >
-          <Button
-            variant='outline'
-            size='sm'
+        <div className='flex flex-row justify-between items-center mt-4'>
+          <button
             disabled={page <= 1}
             onClick={() => setPage(p => p - 1)}
+            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer border border-border-secondary text-text-primary hover:bg-surface-elevated px-3 py-1.5 text-sm'
           >
             Previous
-          </Button>
+          </button>
           <span className='text-sm text-text-secondary'>
             Page {page} of {totalPages}
           </span>
-          <Button
-            variant='outline'
-            size='sm'
+          <button
             disabled={page >= totalPages}
             onClick={() => setPage(p => p + 1)}
+            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer border border-border-secondary text-text-primary hover:bg-surface-elevated px-3 py-1.5 text-sm'
           >
             Next
-          </Button>
-        </Stack>
+          </button>
+        </div>
       )}
     </div>
   );

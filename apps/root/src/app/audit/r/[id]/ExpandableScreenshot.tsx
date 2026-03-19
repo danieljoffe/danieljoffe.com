@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Globe } from 'lucide-react';
 import type { DeviceMode } from '@danieljoffe.com/shared-audit';
-import { cn } from '@danieljoffe.com/shared-ui';
 import Image from 'next/image';
 
 interface ExpandableScreenshotProps {
@@ -48,10 +47,7 @@ export default function ExpandableScreenshot({
       aria-label={expanded ? 'Collapse screenshot' : 'Expand screenshot'}
     >
       <div
-        className={cn(
-          'relative max-w-full rounded border border-border overflow-hidden transition-all duration-300 ease-in-out',
-          expanded ? size.expanded : size.collapsed
-        )}
+        className={`relative max-w-full rounded border border-border overflow-hidden transition-all duration-300 ease-in-out ${expanded ? size.expanded : size.collapsed}`}
       >
         <Image
           src={screenshotUrl}
