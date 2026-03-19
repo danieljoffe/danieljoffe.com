@@ -17,44 +17,9 @@ import {
 import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
+import { Section, SectionLabel, PageLayout, CTACard } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
-
-/* ─── Section wrapper ─── */
-function Section({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`relative px-6 lg:px-0 ${className}`}>
-      {children}
-    </section>
-  );
-}
-
-/* ─── Section header with icon + divider ─── */
-function SectionLabel({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <div className='flex items-center gap-2 mb-8'>
-      <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
-        {icon}
-      </div>
-      <span className='text-xs font-semibold uppercase tracking-wider text-text-tertiary'>
-        {label}
-      </span>
-      <div className='flex-1 h-px bg-border ml-2' />
-    </div>
-  );
-}
 
 /* ─── Mantra items ─── */
 const mantraItems: {
@@ -94,7 +59,7 @@ const mantraItems: {
    ════════════════════════════════════════════════ */
 export default function AboutCopy() {
   return (
-    <main className='max-w-3xl mx-auto py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
@@ -347,25 +312,23 @@ export default function AboutCopy() {
           icon={<MessageCircle className='h-3.5 w-3.5' />}
           label="Let's Connect"
         />
-        <div className='relative overflow-hidden rounded-2xl bg-surface-secondary border border-border p-8 sm:p-12'>
-          <div className='absolute inset-0 bg-brand-500/[0.02]' />
-          <div className='relative space-y-4'>
-            <h2 className='text-2xl font-bold text-text-primary tracking-tight text-center'>
-              Let&apos;s Connect
-            </h2>
-            <p className='text-sm text-text-secondary text-center max-w-md mx-auto'>
+        <CTACard
+          heading="Let's Connect"
+          description={
+            <>
               Available for contract work, consulting, and fractional
               engineering engagements. Have a project in mind? I&apos;d love to
               hear about it.
-            </p>
-            <p className='text-xs text-text-tertiary text-center'>
-              <span className='font-semibold'>Response time:</span> Usually
-              within 24 hours
-            </p>
-            <ContactForm />
-          </div>
-        </div>
+            </>
+          }
+        >
+          <p className='text-xs text-text-tertiary'>
+            <span className='font-semibold'>Response time:</span> Usually within
+            24 hours
+          </p>
+          <ContactForm />
+        </CTACard>
       </Section>
-    </main>
+    </PageLayout>
   );
 }

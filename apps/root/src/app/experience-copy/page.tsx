@@ -5,56 +5,26 @@ import { experienceRecords } from '@/data/experienceThumbnails';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
+import {
+  Section,
+  SectionLabel,
+  PageLayout,
+  PostCard,
+  StructuredData,
+} from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
-import ExperienceGridCard from './ExperienceGridCard';
 
 const experienceList = Object.values(experienceRecords);
 const experienceFullList = Object.values(experienceFull);
 
 export const metadata: Metadata = experienceRootMetadata;
 
-/* ─── Section wrapper ─── */
-function Section({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`relative px-6 lg:px-0 ${className}`}>
-      {children}
-    </section>
-  );
-}
-
-/* ─── Section header with icon + divider ─── */
-function SectionLabel({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <div className='flex items-center gap-2 mb-8'>
-      <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
-        {icon}
-      </div>
-      <span className='text-xs font-semibold uppercase tracking-wider text-text-tertiary'>
-        {label}
-      </span>
-      <div className='flex-1 h-px bg-border ml-2' />
-    </div>
-  );
-}
-
 /* ════════════════════════════════════════════════
    EXPERIENCE PAGE COPY
    ════════════════════════════════════════════════ */
 export default function ExperienceCopy() {
   return (
-    <main className='max-w-3xl mx-auto py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
@@ -163,26 +133,19 @@ export default function ExperienceCopy() {
           {experienceList.map((exp, i) => {
             const full = experienceFullList.find(f => f.slug === exp.slug);
             return (
-              <ExperienceGridCard
+              <PostCard
                 key={exp.slug}
-                exp={exp}
+                post={exp}
                 logo={full?.logo}
                 priority={i < 2}
+                analyticsType='experience'
               />
             );
           })}
         </div>
       </Section>
 
-      <script
-        type='application/ld+json'
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(experienceRootStructuredData).replace(
-            /</g,
-            '\\u003c'
-          ),
-        }}
-      />
-    </main>
+      <StructuredData data={experienceRootStructuredData} />
+    </PageLayout>
   );
 }

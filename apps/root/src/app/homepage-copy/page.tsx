@@ -26,59 +26,15 @@ import {
   CONTACT_FORM_ID,
   EXPERIENCE_LINK,
 } from '@/utils/constants';
+import {
+  Section,
+  SectionLabel,
+  PageLayout,
+  CTACard,
+  GridBg,
+  KitLinkButton,
+} from '@/components/kit';
 import HeroActions from './HeroActions';
-
-/* ─── Subtle animated grid background ─── */
-function GridBg() {
-  return (
-    <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-      <div
-        className='absolute inset-0 opacity-[0.03]'
-        style={{
-          backgroundImage: `linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)`,
-          backgroundSize: '64px 64px',
-        }}
-      />
-      <div className='absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-500/5 rounded-full blur-3xl' />
-    </div>
-  );
-}
-
-/* ─── Section wrapper ─── */
-function Section({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`relative px-6 lg:px-0 ${className}`}>
-      {children}
-    </section>
-  );
-}
-
-/* ─── Section header with icon + divider ─── */
-function SectionLabel({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <div className='flex items-center gap-2 mb-8'>
-      <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
-        {icon}
-      </div>
-      <span className='text-xs font-semibold uppercase tracking-wider text-text-tertiary'>
-        {label}
-      </span>
-      <div className='flex-1 h-px bg-border ml-2' />
-    </div>
-  );
-}
 
 /* ─── Icon maps ─── */
 const achievementIconMap: Record<string, LucideIcon> = {
@@ -99,7 +55,7 @@ const companies = Object.values(experienceFull);
    ════════════════════════════════════════════════ */
 export default function HomepageCopy() {
   return (
-    <main className='max-w-3xl mx-auto py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
@@ -243,35 +199,29 @@ export default function HomepageCopy() {
           CTA / CONTACT
           ══════════════════════════════════ */}
       <Section>
-        <div className='relative overflow-hidden rounded-2xl bg-surface-secondary border border-border p-8 sm:p-12 text-center'>
-          <div className='absolute inset-0 bg-brand-500/[0.02]' />
-          <div className='relative space-y-4'>
-            <h2 className='text-2xl font-bold text-text-primary tracking-tight'>
-              Let&apos;s Build Something Great Together
-            </h2>
-            <p className='text-sm text-text-secondary max-w-md mx-auto'>
+        <CTACard
+          heading="Let's Build Something Great Together"
+          description={
+            <>
               Available for contract projects and fractional engineering
               engagements. Let&apos;s talk about your project.
-            </p>
-            <div className='flex flex-wrap justify-center gap-3 pt-2'>
-              <a
-                href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
-                className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors'
-              >
-                <Mail className='h-4 w-4' />
-                Start a conversation
-              </a>
-              <a
-                href={PROJECTS_LINK.href}
-                className='inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium text-text-primary hover:bg-surface-tertiary transition-colors'
-              >
-                <ArrowUpRight className='h-4 w-4' />
-                View my work
-              </a>
-            </div>
+            </>
+          }
+        >
+          <div className='flex flex-wrap justify-center gap-3'>
+            <KitLinkButton
+              href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
+            >
+              <Mail className='h-4 w-4' />
+              Start a conversation
+            </KitLinkButton>
+            <KitLinkButton href={PROJECTS_LINK.href} variant='secondary'>
+              <ArrowUpRight className='h-4 w-4' />
+              View my work
+            </KitLinkButton>
           </div>
-        </div>
+        </CTACard>
       </Section>
-    </main>
+    </PageLayout>
   );
 }

@@ -17,44 +17,16 @@ import {
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
+import {
+  Section,
+  SectionLabel,
+  PageLayout,
+  CTACard,
+  KitLinkButton,
+  StructuredData,
+} from '@/components/kit';
 import HeroCTA from './HeroCTA';
 import FAQ from './FAQ';
-
-/* ─── Section wrapper ─── */
-function Section({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`relative px-6 lg:px-0 ${className}`}>
-      {children}
-    </section>
-  );
-}
-
-/* ─── Section header with icon + divider ─── */
-function SectionLabel({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <div className='flex items-center gap-2 mb-8'>
-      <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
-        {icon}
-      </div>
-      <span className='text-xs font-semibold uppercase tracking-wider text-text-tertiary'>
-        {label}
-      </span>
-      <div className='flex-1 h-px bg-border ml-2' />
-    </div>
-  );
-}
 
 /* ─── Icon maps ─── */
 const serviceIconMap: Record<string, LucideIcon> = {
@@ -76,7 +48,7 @@ const audienceIconMap: Record<string, LucideIcon> = {
    ════════════════════════════════════════════════ */
 export default function ServicesCopy() {
   return (
-    <main className='max-w-3xl mx-auto py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
@@ -261,42 +233,29 @@ export default function ServicesCopy() {
           CTA
           ══════════════════════════════════ */}
       <Section>
-        <div className='relative overflow-hidden rounded-2xl bg-surface-secondary border border-border p-8 sm:p-12 text-center'>
-          <div className='absolute inset-0 bg-brand-500/[0.02]' />
-          <div className='relative space-y-4'>
-            <h2 className='text-2xl font-bold text-text-primary tracking-tight'>
-              Let&apos;s figure out how I can help.
-            </h2>
-            <p className='text-sm text-text-secondary max-w-md mx-auto'>
+        <CTACard
+          heading="Let's figure out how I can help."
+          description={
+            <>
               Book a free 30-minute call. No contracts, no
               commitments&mdash;just a conversation about your frontend
               challenges.
-            </p>
-            <div className='pt-2'>
-              <a
-                href={CALENDLY_URL}
-                target='_blank'
-                rel='noopener noreferrer'
-                aria-label={`Book a discovery call with ${FULL_NAME}`}
-                className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors'
-              >
-                Book a Discovery Call
-                <ArrowUpRight className='h-4 w-4' />
-              </a>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        >
+          <KitLinkButton
+            href={CALENDLY_URL}
+            target='_blank'
+            rel='noopener noreferrer'
+            aria-label={`Book a discovery call with ${FULL_NAME}`}
+          >
+            Book a Discovery Call
+            <ArrowUpRight className='h-4 w-4' />
+          </KitLinkButton>
+        </CTACard>
       </Section>
 
-      <script
-        type='application/ld+json'
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(servicesPageStructuredData).replace(
-            /</g,
-            '\\u003c'
-          ),
-        }}
-      />
-    </main>
+      <StructuredData data={servicesPageStructuredData} />
+    </PageLayout>
   );
 }

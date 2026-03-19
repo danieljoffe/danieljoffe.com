@@ -4,53 +4,23 @@ import { projectsRecords } from '@/data/projectThumbnails';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import ProjectCard from './ProjectCard';
+import {
+  Section,
+  SectionLabel,
+  PageLayout,
+  PostCard,
+  StructuredData,
+} from '@/components/kit';
 
 const projectsList = Object.values(projectsRecords);
 export const metadata: Metadata = projectRootMetadata;
-
-/* ─── Section wrapper ─── */
-function Section({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`relative px-6 lg:px-0 ${className}`}>
-      {children}
-    </section>
-  );
-}
-
-/* ─── Section header with icon + divider ─── */
-function SectionLabel({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <div className='flex items-center gap-2 mb-8'>
-      <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
-        {icon}
-      </div>
-      <span className='text-xs font-semibold uppercase tracking-wider text-text-tertiary'>
-        {label}
-      </span>
-      <div className='flex-1 h-px bg-border ml-2' />
-    </div>
-  );
-}
 
 /* ════════════════════════════════════════════════
    PROJECTS PAGE COPY
    ════════════════════════════════════════════════ */
 export default function ProjectsCopy() {
   return (
-    <main className='max-w-3xl mx-auto py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
@@ -111,24 +81,12 @@ export default function ProjectsCopy() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {projectsList.map((project, i) => (
-            <ProjectCard
-              key={project.slug}
-              project={project}
-              priority={i < 2}
-            />
+            <PostCard key={project.slug} post={project} priority={i < 2} />
           ))}
         </div>
       </Section>
 
-      <script
-        type='application/ld+json'
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(projectsRootStructuredData).replace(
-            /</g,
-            '\\u003c'
-          ),
-        }}
-      />
-    </main>
+      <StructuredData data={projectsRootStructuredData} />
+    </PageLayout>
   );
 }
