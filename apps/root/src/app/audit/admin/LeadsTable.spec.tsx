@@ -135,8 +135,10 @@ describe('LeadsTable', () => {
         }),
     });
 
-    const mockExecCommand = jest.fn().mockReturnValue(true);
-    document.execCommand = mockExecCommand;
+    const mockWriteText = jest.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: { writeText: mockWriteText },
+    });
 
     render(<LeadsTable password='test' />);
 
@@ -146,8 +148,10 @@ describe('LeadsTable', () => {
 
     fireEvent.click(screen.getByText('cto@enterprise-corp.com'));
 
-    expect(mockExecCommand).toHaveBeenCalledWith('copy');
-    expect(screen.getByText('Copied!')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockWriteText).toHaveBeenCalledWith('cto@enterprise-corp.com');
+      expect(screen.getByText('Copied!')).toBeInTheDocument();
+    });
   });
 
   it('shows dashes for null fields', async () => {

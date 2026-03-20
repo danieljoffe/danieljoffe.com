@@ -75,6 +75,7 @@ export const Primary: Story = {
   args: {
     variant: 'primary',
     size: 'md',
+    name: 'primary-demo',
     onClick: fn(),
   },
   render: props => <Button {...props}>Primary</Button>,
@@ -84,6 +85,7 @@ export const Secondary: Story = {
   args: {
     variant: 'secondary',
     size: 'md',
+    name: 'secondary-demo',
     onClick: fn(),
   },
   render: props => <Button {...props}>Secondary</Button>,
@@ -93,6 +95,7 @@ export const Icon: Story = {
   args: {
     variant: 'bare',
     size: 'sm',
+    name: 'icon-demo',
     'aria-label': 'Close',
     onClick: fn(),
   },
@@ -124,6 +127,7 @@ export const Disabled: Story = {
   args: {
     variant: 'primary',
     size: 'md',
+    name: 'disabled-demo',
     disabled: true,
   },
   render: props => <Button {...props}>Disabled</Button>,
@@ -133,6 +137,7 @@ export const Small: Story = {
   args: {
     variant: 'primary',
     size: 'sm',
+    name: 'small-demo',
     onClick: fn(),
   },
   render: props => <Button {...props}>Small</Button>,
@@ -142,6 +147,7 @@ export const Large: Story = {
   args: {
     variant: 'primary',
     size: 'lg',
+    name: 'large-demo',
     onClick: fn(),
   },
   render: props => <Button {...props}>Large</Button>,

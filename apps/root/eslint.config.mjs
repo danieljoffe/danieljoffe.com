@@ -4,6 +4,7 @@ import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import reactPlugin from 'eslint-plugin-react';
 import { fixupPluginRules } from '@eslint/compat';
 import baseConfig from '../../eslint.config.mjs';
+import requireButtonName from './eslint-rules/require-button-name.js';
 
 // eslint-config-next bundles its own typescript-eslint instance (conflicts with the
 // Nx-managed version) and an eslint-plugin-react instance that uses deprecated
@@ -41,6 +42,20 @@ const config = [
     ],
   },
   ...storybook.configs['flat/recommended'],
+  {
+    files: ['**/*.tsx'],
+    ignores: ['**/*.stories.tsx'],
+    plugins: {
+      'custom-rules': {
+        rules: {
+          'require-button-name': requireButtonName,
+        },
+      },
+    },
+    rules: {
+      'custom-rules/require-button-name': 'warn',
+    },
+  },
 ];
 
 export default config;

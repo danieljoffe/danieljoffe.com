@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { analytics } from '@/lib/analytics';
+import { useToast } from '@/state/Toast/ToastProvider';
 import IssueCard from './IssueCard';
 
 interface EmailGateProps {
@@ -24,6 +25,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
   const [name, setName] = useState('');
   const [validationError, setValidationError] = useState('');
   const [state, setState] = useState<GateState>({ phase: 'locked' });
+  const { toast } = useToast();
 
   if (state.phase === 'unlocked') {
     return (
@@ -66,16 +68,27 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
           phase: 'error',
           message: data.error || 'Something went wrong. Please try again.',
         });
+        toast({
+          variant: 'error',
+          title: 'Something went wrong',
+          description: data.error || 'Please try again.',
+        });
         return;
       }
 
       // Both 'captured' and 'already_captured' unlock the gate
       analytics.auditEmailCaptured(scanId);
+      toast({ variant: 'success', title: 'Full report unlocked!' });
       setState({ phase: 'unlocked' });
     } catch {
       setState({
         phase: 'error',
         message: 'Network error. Please try again.',
+      });
+      toast({
+        variant: 'error',
+        title: 'Network error',
+        description: 'Please check your connection and try again.',
       });
     }
   };

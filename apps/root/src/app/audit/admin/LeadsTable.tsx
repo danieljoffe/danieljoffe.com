@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useToast } from '@/state/Toast/ToastProvider';
 
 interface AdminLead {
   id: string;
@@ -31,6 +32,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -68,19 +70,15 @@ export default function LeadsTable({ password }: LeadsTableProps) {
     setPage(1);
   }
 
-  function copyEmail(id: string, email: string) {
-    const textarea = document.createElement('textarea');
-    textarea.value = email;
-    textarea.setAttribute('readonly', '');
-    textarea.style.position = 'absolute';
-    textarea.style.left = '-9999px';
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  async function copyEmail(id: string, email: string) {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+      toast({ variant: 'success', title: 'Email copied to clipboard!' });
+    } catch {
+      toast({ variant: 'error', title: 'Failed to copy email' });
+    }
   }
 
   const totalPages = Math.ceil(total / pageSize);

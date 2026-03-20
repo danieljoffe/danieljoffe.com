@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { rootMetadata } from '@/data/metadata/root';
 import { WithChildren } from '@/types/base';
-import '@/styles/global.scss';
+import '@/styles/global.css';
 import AppContext from './home/AppContext';
 import Footer from '@/components/Footer';
 import Scripts from './home/Scripts';

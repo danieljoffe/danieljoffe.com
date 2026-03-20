@@ -12,6 +12,7 @@ import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
+import { useToast } from '@/state/Toast/ToastProvider';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -49,6 +50,7 @@ const inputErrorStyles =
 
 export default function Form() {
   const router = useRouter();
+  const { toast } = useToast();
   const [shouldLoadCaptcha, setShouldLoadCaptcha] = useState(false);
   const captchaContainerRef = useRef<HTMLDivElement>(null);
 
@@ -119,6 +121,11 @@ export default function Form() {
       addBreadcrumb('Contact form submitted successfully', 'form', {
         formId: CONTACT_FORM_ID,
       });
+      toast({
+        variant: 'success',
+        title: 'Message sent!',
+        description: 'Redirecting you now...',
+      });
       router.push('/thank-you/email');
     } catch (error) {
       analytics.formError('contact', 'Failed to send message');
@@ -132,6 +139,11 @@ export default function Form() {
       setError('root.unknownError', {
         type: 'manual',
         message: 'Failed to send message. Please try again.',
+      });
+      toast({
+        variant: 'error',
+        title: 'Failed to send message',
+        description: 'Please try again.',
       });
     }
   };

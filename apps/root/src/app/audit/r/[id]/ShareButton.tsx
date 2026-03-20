@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Share2, Check } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
+import { useToast } from '@/state/Toast/ToastProvider';
 
 interface ShareButtonProps {
   scanId: string;
@@ -10,15 +11,21 @@ interface ShareButtonProps {
 
 export default function ShareButton({ scanId }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       analytics.auditReportShared(scanId);
       setCopied(true);
+      toast({ variant: 'success', title: 'Link copied to clipboard!' });
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard API not available — ignore silently
+      toast({
+        variant: 'error',
+        title: 'Failed to copy link',
+        description: 'Please copy the URL manually.',
+      });
     }
   };
 

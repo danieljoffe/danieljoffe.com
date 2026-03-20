@@ -4,17 +4,8 @@ import {
   Briefcase,
   Mail,
   Heart,
-  Sparkles,
   ArrowUpRight,
-  Rocket,
-  BarChart3,
   Zap,
-  Accessibility,
-  Target,
-  LayoutTemplate,
-  Wrench,
-  UserCheck,
-  type LucideIcon,
 } from 'lucide-react';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
@@ -39,18 +30,6 @@ import Button from '@/components/Button';
 import HeroActions from './home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
-
-/* ─── Icon maps ─── */
-const achievementIconMap: Record<string, LucideIcon> = {
-  Rocket,
-  BarChart3,
-  Zap,
-  Accessibility,
-  Target,
-  LayoutTemplate,
-  Wrench,
-  UserCheck,
-};
 
 const companies = Object.values(experienceFull);
 
@@ -132,27 +111,22 @@ export default function Index() {
           label='Achievements'
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-          {offerings.achievements.map((achievement, i) => {
-            const Icon = achievementIconMap[achievement.icon];
-            return (
-              <div
-                key={i}
-                className='p-4 bg-surface-secondary rounded-xl border border-border flex items-start gap-3'
-              >
-                {Icon && (
-                  <Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
-                )}
-                <div>
-                  <p className='text-sm font-semibold text-text-primary'>
-                    {achievement.metric}
-                  </p>
-                  <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
-                    {achievement.text}
-                  </p>
-                </div>
+          {offerings.achievements.map((achievement, i) => (
+            <div
+              key={i}
+              className='p-4 bg-surface-secondary rounded-xl border border-border flex items-start gap-3'
+            >
+              <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
+              <div>
+                <p className='text-sm font-semibold text-text-primary'>
+                  {achievement.metric}
+                </p>
+                <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                  {achievement.text}
+                </p>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </Section>
 
@@ -165,26 +139,24 @@ export default function Index() {
           label='How I Work'
         />
         <div className='grid gap-4 sm:grid-cols-2'>
-          {offerings.methodology.map((methodology, i) => {
-            return (
-              <div
-                key={i}
-                className='p-4 bg-surface-secondary rounded-xl border border-border hover:border-border-secondary transition-colors'
-              >
-                <div className='space-y-2'>
-                  <div className='flex items-center gap-2'>
-                    <Sparkles className='h-4 w-4 text-brand-500' />
-                    <p className='text-sm font-semibold text-text-primary'>
-                      {methodology.title}
-                    </p>
-                  </div>
-                  <p className='text-sm text-text-secondary leading-relaxed'>
-                    {methodology.text}
+          {offerings.methodology.map((methodology, i) => (
+            <div
+              key={i}
+              className='p-4 bg-surface-secondary rounded-xl border border-border hover:border-border-secondary transition-colors'
+            >
+              <div className='space-y-2'>
+                <div className='flex items-center gap-2'>
+                  <methodology.Icon className='h-4 w-4 text-brand-500' />
+                  <p className='text-sm font-semibold text-text-primary'>
+                    {methodology.title}
                   </p>
                 </div>
+                <p className='text-sm text-text-secondary leading-relaxed'>
+                  {methodology.text}
+                </p>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </Section>
 

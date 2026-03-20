@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { Url } from 'next/dist/shared/lib/router/router';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
-import { devLog } from '@/utils/helpers';
 
 type ButtonVariant =
   | 'bare'
@@ -175,10 +174,6 @@ const Button = React.forwardRef<HTMLButtonElement, AppButtonProps>(
       className,
       ...buttonRest
     } = restButton;
-
-    if (buttonRest.name == null || buttonRest.name === '') {
-      devLog('Button component: name is required');
-    }
 
     return (
       <button

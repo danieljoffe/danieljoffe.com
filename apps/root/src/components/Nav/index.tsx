@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { useModal } from '@/state/Modal/Provider';
+import { useModal } from '@/state/Modal/ModalProvider';
 import NavLinks from './Links';
 import MobileNav from './MobileNav';
 

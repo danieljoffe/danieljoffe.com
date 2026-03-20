@@ -1,19 +1,11 @@
 import type { Metadata } from 'next';
 import {
   Check,
-  Rocket,
-  Wrench,
-  FileText,
-  Monitor,
   ChevronDown,
   ArrowUpRight,
   Layers,
   Users,
   HelpCircle,
-  TrendingUp,
-  Building2,
-  Target,
-  type LucideIcon,
 } from 'lucide-react';
 import { servicesMetadata } from '@/data/metadata/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
@@ -31,21 +23,6 @@ import HeroCTA from './HeroCTA';
 import FAQ from './FAQ';
 
 export const metadata: Metadata = servicesMetadata;
-
-/* ─── Icon maps ─── */
-const serviceIconMap: Record<string, LucideIcon> = {
-  Rocket,
-  Wrench,
-  FileText,
-  Monitor,
-};
-
-const audienceIconMap: Record<string, LucideIcon> = {
-  Rocket,
-  TrendingUp,
-  Building2,
-  Target,
-};
 
 export default function Services() {
   return (
@@ -89,72 +66,67 @@ export default function Services() {
           />
         </div>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          {services.map((service, i) => {
-            const Icon = serviceIconMap[service.icon];
-            return (
-              <div
-                key={i}
-                className='p-5 bg-surface-secondary rounded-xl border border-border flex flex-col'
-              >
-                <div className='space-y-4 flex-1'>
-                  <div className='flex items-center gap-2'>
-                    {Icon && (
-                      <Icon className='h-5 w-5 text-brand-500 shrink-0' />
-                    )}
-                    <p className='text-sm font-semibold text-text-primary'>
-                      {service.title}
-                    </p>
-                  </div>
-
-                  {service.highlighted && (
-                    <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium'>
-                      Most popular
-                    </span>
-                  )}
-
-                  <p className='text-sm text-text-secondary leading-relaxed'>
-                    {service.description}
-                  </p>
-
-                  <div>
-                    <p className='text-xs font-semibold text-text-primary mb-2'>
-                      What you get:
-                    </p>
-                    <ul className='space-y-1.5'>
-                      {service.deliverables.map((item, j) => (
-                        <li
-                          key={j}
-                          className='text-sm text-text-secondary flex items-start gap-2'
-                        >
-                          <Check className='h-3.5 w-3.5 text-success shrink-0 mt-0.5' />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <p className='text-xs text-text-tertiary italic border-l-2 border-brand-200 pl-3'>
-                    {service.proof}
+          {services.map((service, i) => (
+            <div
+              key={i}
+              className='p-5 bg-surface-secondary rounded-xl border border-border flex flex-col'
+            >
+              <div className='space-y-4 flex-1'>
+                <div className='flex items-center gap-2'>
+                  <service.Icon className='h-5 w-5 text-brand-500 shrink-0' />
+                  <p className='text-sm font-semibold text-text-primary'>
+                    {service.title}
                   </p>
                 </div>
 
-                <div className='flex items-center gap-4 pt-4 mt-4 border-t border-border text-xs text-text-tertiary'>
-                  <span>
-                    <span className='font-semibold text-text-secondary'>
-                      Timeline:
-                    </span>{' '}
-                    {service.timeline}
+                {service.highlighted && (
+                  <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium'>
+                    Most popular
                   </span>
-                  <span>
-                    <span className='font-semibold text-text-secondary'>
-                      From:
-                    </span>{' '}
-                    {service.price}
-                  </span>
+                )}
+
+                <p className='text-sm text-text-secondary leading-relaxed'>
+                  {service.description}
+                </p>
+
+                <div>
+                  <p className='text-xs font-semibold text-text-primary mb-2'>
+                    What you get:
+                  </p>
+                  <ul className='space-y-1.5'>
+                    {service.deliverables.map((item, j) => (
+                      <li
+                        key={j}
+                        className='text-sm text-text-secondary flex items-start gap-2'
+                      >
+                        <Check className='h-3.5 w-3.5 text-success shrink-0 mt-0.5' />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+
+                <p className='text-xs text-text-tertiary italic border-l-2 border-brand-200 pl-3'>
+                  {service.proof}
+                </p>
               </div>
-            );
-          })}
+
+              <div className='flex items-center gap-4 pt-4 mt-4 border-t border-border text-xs text-text-tertiary'>
+                <span>
+                  <span className='font-semibold text-text-secondary'>
+                    Timeline:
+                  </span>{' '}
+                  {service.timeline}
+                </span>
+                <span>
+                  <span className='font-semibold text-text-secondary'>
+                    From:
+                  </span>{' '}
+                  {service.price}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </Section>
 
@@ -197,25 +169,20 @@ export default function Services() {
           label='Who I Work Best With'
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-          {servicesAudience.map((audience, i) => {
-            const Icon = audienceIconMap[audience.icon];
-            return (
-              <div
-                key={i}
-                className='flex items-start gap-3 p-4 bg-surface-secondary rounded-xl border border-border'
-              >
-                {Icon && (
-                  <Icon className='h-4 w-4 text-brand-500 shrink-0 mt-0.5' />
-                )}
-                <p className='text-sm text-text-secondary'>
-                  <span className='font-semibold text-text-primary'>
-                    {audience.label}
-                  </span>{' '}
-                  {audience.description}
-                </p>
-              </div>
-            );
-          })}
+          {servicesAudience.map((audience, i) => (
+            <div
+              key={i}
+              className='flex items-start gap-3 p-4 bg-surface-secondary rounded-xl border border-border'
+            >
+              <audience.Icon className='h-4 w-4 text-brand-500 shrink-0 mt-0.5' />
+              <p className='text-sm text-text-secondary'>
+                <span className='font-semibold text-text-primary'>
+                  {audience.label}
+                </span>{' '}
+                {audience.description}
+              </p>
+            </div>
+          ))}
         </div>
       </Section>
 

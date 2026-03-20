@@ -1,4 +1,4 @@
-import { useModal } from '@/state/Modal/Provider';
+import { useModal } from '@/state/Modal/ModalProvider';
 import Button from '@/components/Button';
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
