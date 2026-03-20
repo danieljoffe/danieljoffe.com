@@ -27,7 +27,8 @@ test.describe('services page', () => {
   });
 
   test('the FAQ accordion expands and collapses', async ({ page }) => {
-    const firstQuestion = page.locator('button[aria-expanded]').first();
+    const faqSection = page.locator('main');
+    const firstQuestion = faqSection.locator('button[aria-expanded]').first();
     await expect(firstQuestion).toHaveAttribute('aria-expanded', 'false');
 
     // Expand
@@ -40,7 +41,8 @@ test.describe('services page', () => {
   });
 
   test('only one FAQ item is open at a time', async ({ page }) => {
-    const questions = page.locator('button[aria-expanded]');
+    const faqSection = page.locator('main');
+    const questions = faqSection.locator('button[aria-expanded]');
     await expect(questions).toHaveCount(5);
 
     // Open first

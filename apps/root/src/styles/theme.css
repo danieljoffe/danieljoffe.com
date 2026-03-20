@@ -54,7 +54,7 @@
   /* Semantic Colors - Text */
   --color-text-primary: #111827;
   --color-text-secondary: #6b7280;
-  --color-text-tertiary: #9ca3af;
+  --color-text-tertiary: #737373;
   --color-text-inverse: #ffffff;
   --color-text-brand: oklch(0.5 0.19 250);
 
@@ -82,7 +82,7 @@
 
   --color-text-primary: #f1f5f9;
   --color-text-secondary: #94a3b8;
-  --color-text-tertiary: #64748b;
+  --color-text-tertiary: #8494a7;
   --color-text-inverse: #0f1117;
 
   --color-success-light: #052e16;

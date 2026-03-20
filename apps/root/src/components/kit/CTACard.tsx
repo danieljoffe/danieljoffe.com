@@ -9,8 +9,7 @@ export function CTACard({
 }) {
   return (
     <div className='relative overflow-hidden rounded-2xl bg-surface-secondary border border-border p-8 sm:p-12'>
-      <div className='absolute inset-0 bg-brand-500/[0.02]' />
-      <div className='relative space-y-4'>
+      <div className='space-y-4'>
         <h2 className='text-2xl font-bold text-text-primary tracking-tight text-center'>
           {heading}
         </h2>

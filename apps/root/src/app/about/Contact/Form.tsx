@@ -159,15 +159,18 @@ export default function Form() {
         <legend className='sr-only'>Contact Information</legend>
         <div className='flex flex-col gap-4'>
           <div className='w-full'>
-            <label className='block text-text-primary mb-2'>
+            <label htmlFor='name' className='block text-text-primary mb-2'>
               Name
               <span className='text-error ml-1'>*</span>
             </label>
             <input
+              id='name'
               className={errors?.name ? inputErrorStyles : inputStyles}
               placeholder='John Doe'
               type='text'
               autoComplete='name'
+              required
+              aria-invalid={!!errors?.name}
               data-sentry-mask
               {...register('name')}
               aria-describedby={
@@ -182,15 +185,18 @@ export default function Form() {
           </div>
 
           <div className='w-full'>
-            <label className='block text-text-primary mb-2'>
+            <label htmlFor='email' className='block text-text-primary mb-2'>
               Email
               <span className='text-error ml-1'>*</span>
             </label>
             <input
+              id='email'
               className={errors?.email ? inputErrorStyles : inputStyles}
               placeholder='john.doe@example.com'
               type='email'
               autoComplete='email'
+              required
+              aria-invalid={!!errors?.email}
               data-sentry-mask
               {...register('email')}
               aria-describedby={
@@ -205,15 +211,18 @@ export default function Form() {
           </div>
 
           <div className='w-full'>
-            <label className='block text-text-primary mb-2'>
+            <label htmlFor='message' className='block text-text-primary mb-2'>
               Message
               <span className='text-error ml-1'>*</span>
             </label>
             <textarea
+              id='message'
               className={errors?.message ? inputErrorStyles : inputStyles}
               placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
               autoComplete='off'
               rows={5}
+              required
+              aria-invalid={!!errors?.message}
               data-sentry-mask
               {...register('message')}
               aria-describedby={
