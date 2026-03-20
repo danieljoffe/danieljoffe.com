@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AlertCircle, AlertTriangle } from 'lucide-react';
-import ScanProgress from '../../ScanProgress';
+import ScanProgress from '@/app/audit/ScanProgress';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 const POLL_INTERVAL_MS = 2000;

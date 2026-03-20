@@ -3,18 +3,19 @@
 import { ArrowUpRight } from 'lucide-react';
 import { CALENDLY_URL } from '@/utils/constants';
 import { analytics } from '@/lib/analytics';
-import { KitLinkButton } from '@/components/kit';
+import Button from '@/components/Button';
 
 export default function HeroCTA() {
   return (
-    <KitLinkButton
+    <Button
+      as='link'
       href={CALENDLY_URL}
       target='_blank'
-      rel='noopener noreferrer'
+      size='sm'
       onClick={() => analytics.ctaClick('services_hero_cta', CALENDLY_URL)}
     >
       Book a Discovery Call
       <ArrowUpRight className='h-4 w-4' />
-    </KitLinkButton>
+    </Button>
   );
 }

@@ -33,9 +33,9 @@ import {
   PageLayout,
   CTACard,
   GridBg,
-  KitLinkButton,
   CompanyLogo,
 } from '@/components/kit';
+import Button from '@/components/Button';
 import HeroActions from './home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
@@ -202,16 +202,23 @@ export default function Index() {
           }
         >
           <div className='flex flex-wrap justify-center gap-3'>
-            <KitLinkButton
+            <Button
+              as='link'
               href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
+              size='sm'
             >
               <Mail className='h-4 w-4' />
               Start a conversation
-            </KitLinkButton>
-            <KitLinkButton href={PROJECTS_LINK.href} variant='secondary'>
+            </Button>
+            <Button
+              as='link'
+              href={PROJECTS_LINK.href}
+              variant='secondary'
+              size='sm'
+            >
               <ArrowUpRight className='h-4 w-4' />
               View my work
-            </KitLinkButton>
+            </Button>
           </div>
         </CTACard>
       </Section>

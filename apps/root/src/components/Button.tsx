@@ -1,15 +1,57 @@
 'use client';
-import React, { useCallback, type ComponentProps } from 'react';
+import React, {
+  useCallback,
+  type ComponentProps,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from 'react';
 import Link from 'next/link';
 import { Url } from 'next/dist/shared/lib/router/router';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { devLog } from '@/utils/helpers';
-import {
-  AsButtonProps,
-  AsLinkProps,
-  AppButtonProps,
-} from '@/types/buttonTypes';
+
+type ButtonVariant =
+  | 'bare'
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'outline'
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'info';
+
+type ButtonSize = 'sm' | 'md' | 'lg';
+
+interface ButtonBase {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  children: ReactNode;
+}
+
+interface ButtonProps
+  extends
+    ButtonBase,
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  loading?: boolean;
+}
+
+interface AsButtonProps extends ButtonProps {
+  as?: 'button';
+}
+
+interface AsLinkProps
+  extends
+    React.AnchorHTMLAttributes<HTMLAnchorElement>,
+    Omit<ButtonBase, 'children'> {
+  as: 'link';
+  highlighted?: boolean;
+  outline?: boolean;
+  disabled?: boolean;
+}
+
+type AppButtonProps = AsButtonProps | AsLinkProps;
 
 const baseButtonStyles =
   'inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none';

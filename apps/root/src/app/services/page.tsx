@@ -24,9 +24,9 @@ import {
   SectionLabel,
   PageLayout,
   CTACard,
-  KitLinkButton,
   StructuredData,
 } from '@/components/kit';
+import Button from '@/components/Button';
 import HeroCTA from './HeroCTA';
 import FAQ from './FAQ';
 
@@ -245,15 +245,16 @@ export default function Services() {
           }
         >
           <div className='flex justify-center'>
-            <KitLinkButton
+            <Button
+              as='link'
               href={CALENDLY_URL}
               target='_blank'
-              rel='noopener noreferrer'
+              size='sm'
               aria-label={`Book a discovery call with ${FULL_NAME}`}
             >
               Book a Discovery Call
               <ArrowUpRight className='h-4 w-4' />
-            </KitLinkButton>
+            </Button>
           </div>
         </CTACard>
       </Section>

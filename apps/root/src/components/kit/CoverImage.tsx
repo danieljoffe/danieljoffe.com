@@ -1,5 +1,3 @@
-'use client';
-
 import { UnsplashImg } from '@/components/UnsplashImage';
 
 export function CoverImage({

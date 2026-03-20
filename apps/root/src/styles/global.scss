@@ -4,16 +4,3 @@
 // Content sources for Tailwind v4 class detection
 // Root app source files
 @source "../**/*.{ts,tsx,js,jsx}";
-
-@layer base {
-  :root {
-    --stop-color-one: var(--color-surface, transparent);
-    --stop-color-two: var(--color-surface, transparent);
-    --stop-color-three: var(--color-surface, transparent);
-    --stop-color-four: var(--color-surface, transparent);
-    --stop-color-five: var(--color-surface, transparent);
-    --stop-color-six: var(--color-surface, transparent);
-    --stop-color-seven: var(--color-surface, transparent);
-    --stop-color-eight: var(--color-surface, transparent);
-  }
-}
