@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
+import Button from '@/components/Button';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 interface ScanFailedProps {
@@ -35,12 +35,9 @@ export default function ScanFailed({ url, errorMessage }: ScanFailedProps) {
             {friendlyErrorMessage(errorMessage)}
           </p>
 
-          <Link
-            href='/audit'
-            className='inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-text-inverse hover:bg-brand-600 transition'
-          >
+          <Button as='link' href='/audit'>
             Try again
-          </Link>
+          </Button>
         </div>
       </div>
     </section>

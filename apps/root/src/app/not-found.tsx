@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/constants';
 import { notFoundMetadata } from '@/data/metadata/notFound';
+import Button from '@/components/Button';
 
 export const metadata: Metadata = notFoundMetadata;
 
@@ -18,13 +18,13 @@ export default function NotFound() {
               URL or return to the home page.
             </p>
           </div>
-          <Link
+          <Button
+            as='link'
             href={HOME_LINK.href}
             aria-label='Return to home page'
-            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-4 py-3'
           >
             Back to Home
-          </Link>
+          </Button>
         </div>
       </div>
     </main>

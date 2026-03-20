@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Button from '@/components/Button';
+import { Pagination } from '@/components/kit';
+import { badgeVariants } from '@/lib/badgeStyles';
+import { useTableSort } from '@/hooks/useTableSort';
 
 interface AdminScan {
   id: string;
@@ -27,21 +29,11 @@ type SortColumn =
   | 'grade_overall'
   | 'score_performance';
 
-const badgeBase =
-  'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium';
-
 const statusStyles: Record<string, string> = {
-  completed: `${badgeBase} bg-success-light text-success border border-success/30`,
-  failed: `${badgeBase} bg-error-light text-error border border-error/30`,
-  running: `${badgeBase} bg-warning-light text-warning border border-warning/30`,
-  default: `${badgeBase} bg-surface-elevated text-text-secondary border border-border`,
-};
-
-const gradeStyles: Record<string, string> = {
-  success: `${badgeBase} bg-success-light text-success border border-success/30`,
-  warning: `${badgeBase} bg-warning-light text-warning border border-warning/30`,
-  error: `${badgeBase} bg-error-light text-error border border-error/30`,
-  default: `${badgeBase} bg-surface-elevated text-text-secondary border border-border`,
+  completed: badgeVariants.success,
+  failed: badgeVariants.error,
+  running: badgeVariants.warning,
+  default: badgeVariants.default,
 };
 
 export default function ScansTable({ password }: ScansTableProps) {
@@ -49,8 +41,10 @@ export default function ScansTable({ password }: ScansTableProps) {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
-  const [sort, setSort] = useState<SortColumn>('created_at');
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const { sort, order, handleSort, sortIndicator } = useTableSort<SortColumn>(
+    'created_at',
+    () => setPage(1)
+  );
   const [loading, setLoading] = useState(true);
 
   const fetchScans = useCallback(async () => {
@@ -79,28 +73,16 @@ export default function ScansTable({ password }: ScansTableProps) {
     fetchScans();
   }, [fetchScans]);
 
-  function handleSort(column: SortColumn) {
-    if (sort === column) {
-      setOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSort(column);
-      setOrder('desc');
-    }
-    setPage(1);
-  }
-
   const totalPages = Math.ceil(total / pageSize);
-  const sortIndicator = (col: SortColumn) =>
-    sort === col ? (order === 'asc' ? ' \u2191' : ' \u2193') : '';
 
   const getStatusStyle = (status: string) =>
     statusStyles[status] || statusStyles.default;
 
   const getGradeStyle = (grade: string | null) => {
-    if (!grade) return gradeStyles.default;
-    if (grade === 'A' || grade === 'B') return gradeStyles.success;
-    if (grade === 'C') return gradeStyles.warning;
-    return gradeStyles.error;
+    if (!grade) return badgeVariants.default;
+    if (grade === 'A' || grade === 'B') return badgeVariants.success;
+    if (grade === 'C') return badgeVariants.warning;
+    return badgeVariants.error;
   };
 
   return (
@@ -196,31 +178,12 @@ export default function ScansTable({ password }: ScansTableProps) {
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className='flex flex-row justify-between items-center mt-4'>
-          <Button
-            variant='outline'
-            size='sm'
-            name='scans-previous-page'
-            disabled={page <= 1}
-            onClick={() => setPage(p => p - 1)}
-          >
-            Previous
-          </Button>
-          <span className='text-sm text-text-secondary'>
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant='outline'
-            size='sm'
-            name='scans-next-page'
-            disabled={page >= totalPages}
-            onClick={() => setPage(p => p + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        namePrefix='scans'
+      />
     </div>
   );
 }

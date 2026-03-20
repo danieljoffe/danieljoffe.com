@@ -1,9 +1,9 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 
 import type { Metadata } from 'next';
 import { ABOUT_LINK, HOME_LINK } from '@/utils/constants';
+import Button from '@/components/Button';
 
 export const metadata: Metadata = {
   title: 'Thank You - Message Received',
@@ -43,13 +43,13 @@ export default async function ThankYouEmail() {
             I&apos;ll get back to you as soon as possible.
           </p>
         </div>
-        <Link
+        <Button
+          as='link'
           href={HOME_LINK.href}
           aria-label='Return to home page'
-          className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-4 py-3'
         >
           Back to home
-        </Link>
+        </Button>
       </div>
     </div>
   );

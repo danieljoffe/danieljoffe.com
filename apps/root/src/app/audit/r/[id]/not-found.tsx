@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Button from '@/components/Button';
 
 export default function NotFound() {
   return (
@@ -12,12 +12,9 @@ export default function NotFound() {
               This scan may have expired or the URL is incorrect.
             </p>
           </div>
-          <Link
-            href='/audit'
-            className='inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-text-inverse hover:bg-brand-600 transition'
-          >
+          <Button as='link' href='/audit'>
             Run a new audit
-          </Link>
+          </Button>
         </div>
       </div>
     </main>

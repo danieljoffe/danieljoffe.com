@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Button from '@/components/Button';
+import { Pagination } from '@/components/kit';
+import { badgeVariants } from '@/lib/badgeStyles';
+import { useTableSort } from '@/hooks/useTableSort';
 import { useToast } from '@/state/Toast/ToastProvider';
 
 interface AdminLead {
@@ -21,16 +23,15 @@ interface LeadsTableProps {
 
 type SortColumn = 'created_at' | 'email' | 'source' | 'email_sequence_step';
 
-const badgeBase =
-  'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium';
-
 export default function LeadsTable({ password }: LeadsTableProps) {
   const [leads, setLeads] = useState<AdminLead[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
-  const [sort, setSort] = useState<SortColumn>('created_at');
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const { sort, order, handleSort, sortIndicator } = useTableSort<SortColumn>(
+    'created_at',
+    () => setPage(1)
+  );
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -61,16 +62,6 @@ export default function LeadsTable({ password }: LeadsTableProps) {
     fetchLeads();
   }, [fetchLeads]);
 
-  function handleSort(column: SortColumn) {
-    if (sort === column) {
-      setOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSort(column);
-      setOrder('desc');
-    }
-    setPage(1);
-  }
-
   async function copyEmail(id: string, email: string) {
     try {
       await navigator.clipboard.writeText(email);
@@ -83,8 +74,6 @@ export default function LeadsTable({ password }: LeadsTableProps) {
   }
 
   const totalPages = Math.ceil(total / pageSize);
-  const sortIndicator = (col: SortColumn) =>
-    sort === col ? (order === 'asc' ? ' \u2191' : ' \u2193') : '';
 
   return (
     <div>
@@ -172,11 +161,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <span
-                      className={`${badgeBase} bg-surface-elevated text-text-secondary border border-border`}
-                    >
-                      {lead.source}
-                    </span>
+                    <span className={badgeVariants.default}>{lead.source}</span>
                   </td>
                   <td className='py-3 px-3 text-center'>
                     {lead.email_sequence_step}
@@ -188,31 +173,12 @@ export default function LeadsTable({ password }: LeadsTableProps) {
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className='flex flex-row justify-between items-center mt-4'>
-          <Button
-            variant='outline'
-            size='sm'
-            name='leads-previous-page'
-            disabled={page <= 1}
-            onClick={() => setPage(p => p - 1)}
-          >
-            Previous
-          </Button>
-          <span className='text-sm text-text-secondary'>
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant='outline'
-            size='sm'
-            name='leads-next-page'
-            disabled={page >= totalPages}
-            onClick={() => setPage(p => p + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        namePrefix='leads'
+      />
     </div>
   );
 }

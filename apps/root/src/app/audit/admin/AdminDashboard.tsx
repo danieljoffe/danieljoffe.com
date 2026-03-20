@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import Button from '@/components/Button';
 import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';
@@ -53,12 +54,14 @@ export default function AdminDashboard() {
       <div className='flex flex-col gap-6 py-8'>
         <div className='flex flex-row justify-between items-start'>
           <h1 className='text-2xl font-bold'>Audit Admin</h1>
-          <button
+          <Button
+            variant='bare'
+            name='admin-sign-out'
             className='text-sm text-text-secondary hover:text-text-primary'
             onClick={() => setPassword(null)}
           >
             Sign out
-          </button>
+          </Button>
         </div>
 
         {statsError ? (
