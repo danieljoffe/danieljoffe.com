@@ -20,7 +20,7 @@ function loadFonts(): Promise<Buffer[]> {
 
 function loadProfileImage(): Promise<Buffer> {
   return readFile(
-    join(process.cwd(), 'public', 'images', 'daniel-joffe-profile.png')
+    join(process.cwd(), 'public', 'images', 'daniel-joffe-profile.webp')
   );
 }
 

@@ -37,7 +37,7 @@ export const aboutMetadata: Metadata = {
   icons: {
     other: [
       {
-        url: '/images/daniel-joffe-profile.png',
+        url: '/images/daniel-joffe-profile.webp',
         rel: 'preload',
         fetchPriority: 'high',
         media: '(max-width: 768px)',

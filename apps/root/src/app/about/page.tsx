@@ -79,7 +79,7 @@ export default function About() {
 
           <div className='flex flex-col sm:flex-row gap-6 sm:gap-8'>
             <Image
-              src='/images/daniel-joffe-profile.png'
+              src='/images/daniel-joffe-profile.webp'
               alt={FULL_NAME}
               title={FULL_NAME}
               width={200}
