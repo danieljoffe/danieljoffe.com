@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Button from '@/components/Button';
 
 interface AdminScan {
   id: string;
@@ -197,23 +198,27 @@ export default function ScansTable({ password }: ScansTableProps) {
 
       {totalPages > 1 && (
         <div className='flex flex-row justify-between items-center mt-4'>
-          <button
+          <Button
+            variant='outline'
+            size='sm'
+            name='scans-previous-page'
             disabled={page <= 1}
             onClick={() => setPage(p => p - 1)}
-            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer border border-border-secondary text-text-primary hover:bg-surface-elevated px-3 py-1.5 text-sm'
           >
             Previous
-          </button>
+          </Button>
           <span className='text-sm text-text-secondary'>
             Page {page} of {totalPages}
           </span>
-          <button
+          <Button
+            variant='outline'
+            size='sm'
+            name='scans-next-page'
             disabled={page >= totalPages}
             onClick={() => setPage(p => p + 1)}
-            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer border border-border-secondary text-text-primary hover:bg-surface-elevated px-3 py-1.5 text-sm'
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>

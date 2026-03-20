@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AlertCircle, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import ScanProgress from '@/app/audit/ScanProgress';
+import { ErrorAlert } from '@/components/kit';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 const POLL_INTERVAL_MS = 2000;
@@ -87,17 +88,7 @@ export default function ScanPending({
               </p>
             </div>
 
-            <div
-              role='alert'
-              className='relative rounded-lg border p-4 bg-error-light border-error/30 text-error'
-            >
-              <div className='flex gap-3'>
-                <AlertCircle className='size-5 shrink-0 mt-0.5' />
-                <div className='flex-1 text-sm text-text-secondary'>
-                  {error}
-                </div>
-              </div>
-            </div>
+            <ErrorAlert message={error} />
 
             <Link
               href='/audit'

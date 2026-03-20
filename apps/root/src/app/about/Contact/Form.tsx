@@ -13,6 +13,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -42,11 +43,6 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
 });
 
 type ContactFormData = InferType<typeof formSchema>;
-
-const inputStyles =
-  'w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent transition-all';
-const inputErrorStyles =
-  'w-full px-4 py-2.5 bg-surface border border-error rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:border-transparent transition-all';
 
 export default function Form() {
   const router = useRouter();

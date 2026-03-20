@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { analytics } from '@/lib/analytics';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { VALIDATION_PATTERNS } from '@/utils/constants';
+import Button from '@/components/Button';
+import { Spinner, ErrorAlert } from '@/components/kit';
+import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
 interface EmailGateProps {
@@ -17,8 +20,6 @@ type GateState =
   | { phase: 'submitting' }
   | { phase: 'unlocked' }
   | { phase: 'error'; message: string };
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
     setValidationError('');
 
     const trimmedEmail = email.trim();
-    if (!trimmedEmail || !EMAIL_RE.test(trimmedEmail)) {
+    if (!trimmedEmail || !VALIDATION_PATTERNS.EMAIL.test(trimmedEmail)) {
       setValidationError('Please enter a valid email address.');
       return;
     }
@@ -134,11 +135,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                     aria-label='Email address'
                     required
                     disabled={state.phase === 'submitting'}
-                    className={`w-full px-4 py-2.5 bg-surface border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:border-transparent transition-all ${
-                      validationError
-                        ? 'border-error focus-visible:ring-error'
-                        : 'border-border focus-visible:ring-brand-500'
-                    }`}
+                    className={validationError ? inputErrorStyles : inputStyles}
                   />
                   {validationError && (
                     <p className='mt-1.5 text-sm text-error'>
@@ -153,47 +150,30 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                   placeholder='Name (optional)'
                   aria-label='Name'
                   disabled={state.phase === 'submitting'}
-                  className='w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent transition-all'
+                  className={inputStyles}
                 />
-                <button
+                <Button
                   type='submit'
+                  name='email-gate-submit'
                   disabled={state.phase === 'submitting'}
-                  className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-4 py-3 w-full'
+                  className='w-full'
                 >
                   {state.phase === 'submitting' ? (
                     <>
-                      <span
-                        role='status'
-                        className='inline-block size-4 border-2 rounded-full animate-spin border-foreground-subtle/30 border-t-foreground'
-                      >
-                        <span className='sr-only'>Loading...</span>
-                      </span>
+                      <Spinner size='sm' label='Submitting' />
                       Submitting...
                     </>
                   ) : (
                     'Get full report'
                   )}
-                </button>
+                </Button>
               </div>
             </form>
             {state.phase === 'error' && (
-              <div
-                role='alert'
-                className='relative rounded-lg border p-4 bg-error-light border-error/30 text-error'
-              >
-                <div className='flex gap-3'>
-                  <AlertCircle className='size-5 shrink-0 mt-0.5' />
-                  <div className='flex-1 text-sm text-text-secondary'>
-                    {state.message}
-                    <button
-                      onClick={() => setState({ phase: 'locked' })}
-                      className='block mt-2 text-sm font-medium underline hover:no-underline'
-                    >
-                      Try again
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ErrorAlert
+                message={state.message}
+                onRetry={() => setState({ phase: 'locked' })}
+              />
             )}
           </div>
         </div>

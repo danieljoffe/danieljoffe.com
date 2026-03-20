@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import Button from '@/components/Button';
+import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {
   onAuthenticated: (password: string) => void;
@@ -93,7 +95,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                 aria-label='Admin password'
                 autoFocus
                 disabled={isLockedOut}
-                className='w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent transition-all'
+                className={inputStyles}
               />
               {isLockedOut && (
                 <p className='text-error text-sm text-center' role='alert'>
@@ -106,13 +108,13 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                   {error}
                 </p>
               )}
-              <button
+              <Button
                 type='submit'
+                name='admin-sign-in'
                 disabled={loading || !password || isLockedOut}
-                className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-4 py-3'
               >
                 {loading ? 'Verifying...' : 'Sign in'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

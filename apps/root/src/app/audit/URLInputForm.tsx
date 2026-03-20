@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Check, Monitor, Smartphone } from 'lucide-react';
+import { Check, Monitor, Smartphone } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
+import Button from '@/components/Button';
+import { Spinner, ErrorAlert } from '@/components/kit';
+import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
@@ -122,11 +125,7 @@ export default function URLInputForm() {
               placeholder='https://example.com'
               aria-label='Website URL'
               disabled={state.phase === 'submitting'}
-              className={`w-full px-4 py-2.5 bg-surface border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:border-transparent transition-all ${
-                validationError
-                  ? 'border-error focus-visible:ring-error'
-                  : 'border-border focus-visible:ring-brand-500'
-              }`}
+              className={validationError ? inputErrorStyles : inputStyles}
             />
             {validationError && (
               <p className='mt-1.5 text-sm text-error'>{validationError}</p>
@@ -184,45 +183,29 @@ export default function URLInputForm() {
               );
             })}
           </fieldset>
-          <button
+          <Button
             type='submit'
+            name='audit-submit'
+            size='lg'
             disabled={state.phase === 'submitting'}
-            className='inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 px-6 py-3 text-lg w-full'
+            className='w-full'
           >
             {state.phase === 'submitting' ? (
               <>
-                <span
-                  role='status'
-                  className='inline-block size-4 border-2 rounded-full animate-spin border-foreground-subtle/30 border-t-foreground'
-                >
-                  <span className='sr-only'>Loading...</span>
-                </span>
+                <Spinner size='sm' label='Starting scan' />
                 Starting scan...
               </>
             ) : (
               'Audit this site'
             )}
-          </button>
+          </Button>
         </div>
       </form>
       {state.phase === 'error' && (
-        <div
-          role='alert'
-          className='relative rounded-lg border p-4 bg-error-light border-error/30 text-error'
-        >
-          <div className='flex gap-3'>
-            <AlertCircle className='size-5 shrink-0 mt-0.5' />
-            <div className='flex-1 text-sm text-text-secondary'>
-              {state.message}{' '}
-              <button
-                onClick={() => setState({ phase: 'idle' })}
-                className='inline-block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer'
-              >
-                Try again
-              </button>
-            </div>
-          </div>
-        </div>
+        <ErrorAlert
+          message={state.message}
+          onRetry={() => setState({ phase: 'idle' })}
+        />
       )}
     </div>
   );

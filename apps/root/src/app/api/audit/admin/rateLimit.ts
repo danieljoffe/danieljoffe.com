@@ -1,5 +1,7 @@
-const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+import { FORM_LIMITS } from '@/utils/constants';
+
+const MAX_ATTEMPTS = FORM_LIMITS.RATE_LIMIT_REQUESTS;
+const WINDOW_MS = FORM_LIMITS.RATE_LIMIT_WINDOW_MS;
 
 interface AttemptEntry {
   count: number;

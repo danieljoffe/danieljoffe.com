@@ -7,3 +7,5 @@ export { StructuredData } from './StructuredData';
 export { CoverImage } from './CoverImage';
 export { PostCard } from './PostCard';
 export { CompanyLogo } from './CompanyLogo';
+export { Spinner } from './Spinner';
+export { ErrorAlert } from './ErrorAlert';
