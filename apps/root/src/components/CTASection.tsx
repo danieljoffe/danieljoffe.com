@@ -1,5 +1,4 @@
 import { type ReactNode } from 'react';
-import { Stack, PageContainer, Section } from '@danieljoffe.com/shared-ui';
 
 interface CTASectionProps {
   headingId: string;
@@ -15,19 +14,17 @@ export default function CTASection({
   children,
 }: CTASectionProps) {
   return (
-    <Section className='min-h-min max-h-max' aria-labelledby={headingId}>
-      <PageContainer className='text-center max-w-[31rem]'>
+    <section
+      className='w-full overflow-hidden flex flex-col justify-center'
+      aria-labelledby={headingId}
+    >
+      <div className='max-w-[31rem] mx-auto w-full px-4 sm:px-6 py-8 md:py-14 text-center'>
         <h2 id={headingId}>{heading}</h2>
-        <Stack
-          direction='vertical'
-          gap='md'
-          align='center'
-          className='self-center'
-        >
+        <div className='flex flex-col gap-4 items-center self-center'>
           <p>{description}</p>
           {children}
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useTheme } from '@danieljoffe.com/shared-ui';
+import { useTheme } from '@/state/Theme/ThemeProvider';
 import DarkModeToggle from './DarkModeToggle';
 
 const mockSetTheme = jest.fn();
 const mockThemeToggle = jest.fn();
 
-jest.mock('@danieljoffe.com/shared-ui', () => ({
-  ...jest.requireActual('@danieljoffe.com/shared-ui'),
+jest.mock('@/state/Theme/ThemeProvider', () => ({
+  ...jest.requireActual('@/state/Theme/ThemeProvider'),
   useTheme: jest.fn(() => ({
     theme: 'system',
     setTheme: mockSetTheme,

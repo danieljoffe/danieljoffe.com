@@ -1,4 +1,4 @@
-import { cn } from '@danieljoffe.com/shared-ui';
+import { cn } from '@/lib/cn';
 
 export default function MainContent({
   children,

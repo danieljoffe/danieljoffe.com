@@ -3,7 +3,6 @@ import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/Button';
 import { BreadCrumbsProps } from '@/types/base';
-import { Stack } from '@danieljoffe.com/shared-ui';
 
 export default function BreadCrumbs({ items }: BreadCrumbsProps) {
   const pathname = usePathname();
@@ -11,8 +10,8 @@ export default function BreadCrumbs({ items }: BreadCrumbsProps) {
   if (items == null) return null;
 
   return (
-    <Stack aria-label='Breadcrumb' as='nav'>
-      <Stack as='ol' gap='sm' direction='horizontal'>
+    <nav aria-label='Breadcrumb' className='flex'>
+      <ol className='flex flex-row gap-2'>
         {items.map(item => (
           <li key={item.href} className='flex items-center'>
             {pathname === item.href ? (
@@ -32,7 +31,7 @@ export default function BreadCrumbs({ items }: BreadCrumbsProps) {
             )}
           </li>
         ))}
-      </Stack>
-    </Stack>
+      </ol>
+    </nav>
   );
 }

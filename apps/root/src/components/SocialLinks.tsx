@@ -1,6 +1,5 @@
 'use client';
 
-import { Stack } from '@danieljoffe.com/shared-ui';
 import Button from './Button';
 import { profileData } from '@/data/profileData';
 import { analytics } from '@/lib/analytics';
@@ -10,8 +9,8 @@ import { downloadResume } from '@/utils/helpers';
 
 export default function SocialLinks() {
   return (
-    <Stack direction='vertical' align='center' className='md:items-start'>
-      <Stack direction='horizontal' gap='none'>
+    <div className='flex flex-col items-center md:items-start'>
+      <div className='flex flex-row'>
         <Button
           size='sm'
           variant='bare'
@@ -74,7 +73,7 @@ export default function SocialLinks() {
         >
           <Download className='size-5' absoluteStrokeWidth={true} />
         </Button>
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 }

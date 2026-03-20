@@ -10,16 +10,42 @@ import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Stack, Input, Textarea, Loading } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
-  loading: () => <Loading />,
+  loading: () => (
+    <div
+      className='flex items-center justify-center min-h-52'
+      role='status'
+      aria-live='polite'
+      aria-label='Loading content'
+    >
+      <div className='flex flex-col items-center gap-3'>
+        <div className='flex gap-1.5'>
+          {[0, 0.1, 0.2, 0.3].map((delay, i) => (
+            <span
+              key={i}
+              className={`size-2 rounded-full ${i % 2 === 0 ? 'bg-brand-500' : 'bg-brand-500/60'} animate-bounce`}
+              style={{ animationDelay: `${delay}s`, animationDuration: '0.6s' }}
+            />
+          ))}
+        </div>
+        <span className='text-sm text-text-secondary animate-pulse'>
+          Loading...
+        </span>
+      </div>
+    </div>
+  ),
 });
 
 type ContactFormData = InferType<typeof formSchema>;
+
+const inputStyles =
+  'w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent transition-all';
+const inputErrorStyles =
+  'w-full px-4 py-2.5 bg-surface border border-error rounded-md text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:border-transparent transition-all';
 
 export default function Form() {
   const router = useRouter();
@@ -131,57 +157,82 @@ export default function Form() {
 
       <fieldset>
         <legend className='sr-only'>Contact Information</legend>
-        <Stack direction='vertical' gap='md'>
-          <Input
-            className='text-text-primary placeholder-foreground-muted'
-            placeholder='John Doe'
-            type='text'
-            autoComplete='name'
-            label='Name'
-            required={true}
-            data-sentry-mask
-            {...register('name')}
-            error={errors?.name?.message}
-            aria-describedby={errors?.name?.message ? 'name-error' : undefined}
-          />
+        <div className='flex flex-col gap-4'>
+          <div className='w-full'>
+            <label className='block text-text-primary mb-2'>
+              Name
+              <span className='text-error ml-1'>*</span>
+            </label>
+            <input
+              className={errors?.name ? inputErrorStyles : inputStyles}
+              placeholder='John Doe'
+              type='text'
+              autoComplete='name'
+              data-sentry-mask
+              {...register('name')}
+              aria-describedby={
+                errors?.name?.message ? 'name-error' : undefined
+              }
+            />
+            {errors?.name?.message && (
+              <p id='name-error' className='mt-1.5 text-sm text-error'>
+                {errors.name.message}
+              </p>
+            )}
+          </div>
 
-          <Input
-            className='text-text-primary placeholder-foreground-muted'
-            label='Email'
-            placeholder='john.doe@example.com'
-            type='email'
-            autoComplete='email'
-            required={true}
-            data-sentry-mask
-            {...register('email')}
-            error={errors?.email?.message}
-            aria-describedby={
-              errors?.email?.message ? 'email-error' : undefined
-            }
-          />
+          <div className='w-full'>
+            <label className='block text-text-primary mb-2'>
+              Email
+              <span className='text-error ml-1'>*</span>
+            </label>
+            <input
+              className={errors?.email ? inputErrorStyles : inputStyles}
+              placeholder='john.doe@example.com'
+              type='email'
+              autoComplete='email'
+              data-sentry-mask
+              {...register('email')}
+              aria-describedby={
+                errors?.email?.message ? 'email-error' : undefined
+              }
+            />
+            {errors?.email?.message && (
+              <p id='email-error' className='mt-1.5 text-sm text-error'>
+                {errors.email.message}
+              </p>
+            )}
+          </div>
 
-          <Textarea
-            className='text-text-primary placeholder-foreground-muted'
-            label='Message'
-            placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
-            autoComplete='off'
-            required={true}
-            rows={5}
-            data-sentry-mask
-            {...register('message')}
-            error={errors?.message?.message}
-            aria-describedby={
-              errors?.message?.message ? 'message-error' : undefined
-            }
-          />
-        </Stack>
+          <div className='w-full'>
+            <label className='block text-text-primary mb-2'>
+              Message
+              <span className='text-error ml-1'>*</span>
+            </label>
+            <textarea
+              className={errors?.message ? inputErrorStyles : inputStyles}
+              placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
+              autoComplete='off'
+              rows={5}
+              data-sentry-mask
+              {...register('message')}
+              aria-describedby={
+                errors?.message?.message ? 'message-error' : undefined
+              }
+            />
+            {errors?.message?.message && (
+              <p id='message-error' className='mt-1.5 text-sm text-error'>
+                {errors.message.message}
+              </p>
+            )}
+          </div>
+        </div>
       </fieldset>
 
       {/* Honeypot field for spam protection */}
       <div className='absolute top-0 left-0 size-0 pointer-events-none -z-1 hidden'>
-        <Input
+        <input
           name='address'
-          label='Address'
           placeholder='1234 Main St, Anytown, USA'
           type='text'
           autoComplete='off'

@@ -1,11 +1,9 @@
 @use 'tailwindcss';
-@import '@danieljoffe.com/shared-ui/styles/theme.css';
+@import './theme.css';
 
 // Content sources for Tailwind v4 class detection
 // Root app source files
 @source "../**/*.{ts,tsx,js,jsx}";
-// UI library components (relative path from this file to libs/shared/ui/src)
-@source "../../../../libs/shared/ui/src/**/*.{ts,tsx,js,jsx}";
 
 @layer base {
   :root {

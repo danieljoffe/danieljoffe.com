@@ -1,11 +1,34 @@
 import type React from 'react';
-import type {
-  ButtonBase,
-  ButtonProps as UIButtonProps,
-} from '@danieljoffe.com/shared-ui';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
+
+export type ButtonVariant =
+  | 'bare'
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'outline'
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'info';
+
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface ButtonBase {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  children: ReactNode;
+}
+
+export interface ButtonProps
+  extends
+    ButtonBase,
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  loading?: boolean;
+}
 
 // Props when rendering as a native <button>
-export interface AsButtonProps extends UIButtonProps {
+export interface AsButtonProps extends ButtonProps {
   as?: 'button';
 }
 
@@ -21,4 +44,4 @@ export interface AsLinkProps
 }
 
 // Discriminated union
-export type ButtonProps = AsButtonProps | AsLinkProps;
+export type AppButtonProps = AsButtonProps | AsLinkProps;

@@ -1,7 +1,7 @@
 'use client';
 
 import { Moon, Sun, Monitor } from 'lucide-react';
-import { useTheme } from '@danieljoffe.com/shared-ui';
+import { useTheme } from '@/state/Theme/ThemeProvider';
 import { analytics } from '@/lib/analytics';
 
 const options = [

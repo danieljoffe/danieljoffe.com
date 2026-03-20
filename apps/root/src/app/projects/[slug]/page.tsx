@@ -6,7 +6,6 @@ import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
 import { projectMdxComponents } from '@/data/content/projects';
-import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
 import PostBody from '@/components/PostBody';
 
 export async function generateMetadata({ params }: SlugPageProps) {
@@ -42,21 +41,21 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
   ];
 
   return (
-    <Section className='min-h-min max-h-max'>
-      <PageContainer>
+    <section className='w-full overflow-hidden flex flex-col justify-center'>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
             <Post />
           </article>
         </PostBody>
-      </PageContainer>
+      </div>
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
         }}
       />
-    </Section>
+    </section>
   );
 }
 

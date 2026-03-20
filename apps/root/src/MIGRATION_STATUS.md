@@ -2,7 +2,7 @@
 
 ## What Changed
 
-All 5 main pages migrated from modular component composition to saas-ui-kit layout patterns using inline sections with kit primitives.
+All 5 main pages migrated from modular component composition to saas-ui-kit layout patterns using inline sections with kit primitives. All `@danieljoffe.com/shared-ui` imports have been removed from `apps/root/src/`.
 
 ### Pages Migrated
 
@@ -46,6 +46,32 @@ All 5 main pages migrated from modular component composition to saas-ui-kit layo
 | `HeroCTA`            | `services/HeroCTA.tsx`              | Calendly booking link with analytics                   |
 | `ExperienceCardLink` | `experience/ExperienceCardLink.tsx` | Link card with analytics tracking                      |
 
+## Shared-UI Migration (Complete)
+
+All shared-ui imports replaced with local equivalents:
+
+| Shared-UI Export | Replacement                                    |
+| ---------------- | ---------------------------------------------- |
+| `ThemeProvider`  | `@/state/Theme/ThemeProvider`                  |
+| `useTheme`       | `@/state/Theme/ThemeProvider`                  |
+| `ToastProvider`  | `@/state/Toast/ToastProvider`                  |
+| `cn`             | `@/lib/cn` (clsx + tailwind-merge)             |
+| `Button` types   | `@/types/buttonTypes` (local ButtonBase, etc.) |
+| `Stack`          | `<div className='flex flex-col gap-N'>`        |
+| `Section`        | `<section>` with inline Tailwind               |
+| `PageContainer`  | `<div className='max-w-3xl mx-auto ...'>`      |
+| `Container`      | `<div className='mx-auto w-full px-4 ...'>`    |
+| `Card`           | `<div className='rounded-lg border ...'>`      |
+| `Badge`          | `<span className='inline-flex ...'>`           |
+| `Input`          | `<input>` with inline Tailwind styles          |
+| `Textarea`       | `<textarea>` with inline Tailwind styles       |
+| `Loading`        | Inline bouncing dots spinner                   |
+| `Spinner`        | Inline `animate-spin` div                      |
+| `Alert`          | Inline styled div                              |
+| `ProgressBar`    | Inline `<progress>` + styled div               |
+| `Tabs`           | Inline tab implementation                      |
+| `theme.css`      | `@/styles/theme.css` (local copy)              |
+
 ## What Was Removed
 
 ### -Copy Directories (5)
@@ -66,14 +92,6 @@ All migration staging directories deleted after content merged into real routes.
 
 All spec files testing the removed components were deleted.
 
-### What Was Kept
-
-- `MainContent` — still used by audit pages (`/audit`, `/audit/r/[id]`, `/audit/admin`)
-- `ScrollToElement` — used for `?scrollTo=` URL parameter handling
-- `Contact/Form` — about page contact form (imported by `ContactForm.tsx`)
-- `PostBody`, `PostContent`, `BreadCrumbs` — used by MDX slug pages
-- `Button` — used by `BreadCrumbs` and potentially other components
-
 ## Test Status
 
 - **Unit tests**: 68 suites, 658 tests — all passing
@@ -82,31 +100,9 @@ All spec files testing the removed components were deleted.
   - Dynamic routes: PostCard links are `<a>` not wrapped in `<article>`
   - Visual regression baselines will need regeneration in CI
 
-## Still Using `@danieljoffe.com/shared-ui`
-
-The following still import from shared-ui directly:
-
-- `layout.tsx` → `ThemeProvider`, `ToastProvider` (via `AppContext`)
-- `PostBody.tsx` → `Stack`
-- `PostContent.tsx` → `Container`
-- `BreadCrumbs.tsx` → `Stack`
-- `MainContent.tsx` → `cn` utility (only used by non-audit legacy consumers)
-- `Contact/Form.tsx` → form components
-
-### Audit Pages — Fully Migrated
-
-All 24 audit files migrated from shared-ui to inline Tailwind:
-
-- **Page wrappers**: `audit/page.tsx`, `audit/r/[id]/page.tsx`, `audit/admin/page.tsx` → `PageLayout`
-- **Landing**: `ScanHero`, `HowItWorks`, `URLInputForm`, `ScanProgress` → inline Tailwind
-- **Report**: `ReportHeader`, `ScoreCards`, `CoreWebVitals`, `IssueList`, `IssueCard`, `CTASection`, `ScanPending`, `ScanFailed`, `EmailGate`, `DeviceTabs`, `ExpandableScreenshot` → inline Tailwind
-- **Admin**: `AdminDashboard`, `PasswordGate`, `StatsRow`, `ScansTable`, `LeadsTable` → inline Tailwind
-- **Error/not-found**: 3 error boundaries + not-found → inline Tailwind (removed `AppButton` dependency)
-
 ## Potential Future Work
 
-1. **Replace PostBody/BreadCrumbs** with kit equivalents
-2. **Consolidate shared-ui usage** — evaluate which shared-ui components are still needed
-3. **Add kit component tests** — the kit components currently have no unit tests
-4. **Regenerate VR baselines** in CI after merge
-5. **Remove MainContent** once no consumers remain
+1. **Add kit component tests** — the kit components currently have no unit tests
+2. **Regenerate VR baselines** in CI after merge
+3. **Remove `MainContent` component** if no longer used
+4. **Evaluate removing `libs/shared/ui`** from the workspace entirely

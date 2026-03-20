@@ -3,16 +3,42 @@ import React, { useCallback, type ComponentProps } from 'react';
 import Link from 'next/link';
 import { Url } from 'next/dist/shared/lib/router/router';
 import { useRouter } from 'next/navigation';
-import {
-  baseButtonStyles,
-  sizeButtonStyles,
-  variantButtonStyles,
-  variantLinkOutline,
-  Button as UIButton,
-  cn,
-} from '@danieljoffe.com/shared-ui';
+import { cn } from '@/lib/cn';
 import { devLog } from '@/utils/helpers';
-import { AsButtonProps, AsLinkProps, ButtonProps } from '@/types/buttonTypes';
+import {
+  AsButtonProps,
+  AsLinkProps,
+  AppButtonProps,
+} from '@/types/buttonTypes';
+
+const baseButtonStyles =
+  'inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none';
+
+const variantButtonStyles: Record<string, string> = {
+  primary:
+    'hover:shadow-lg/12.5 bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700',
+  secondary:
+    'hover:shadow-lg/12.5 bg-surface-elevated text-text-primary hover:bg-surface border border-border',
+  ghost:
+    'hover:shadow-lg/12.5 text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
+  outline:
+    'hover:shadow-lg/12.5 border border-border-secondary text-text-primary hover:bg-surface-elevated',
+  success: 'hover:shadow-lg/12.5 bg-success text-white hover:opacity-90',
+  error: 'hover:shadow-lg/12.5 bg-error text-text-inverse hover:opacity-90',
+  warning: 'hover:shadow-lg/12.5 bg-warning text-text-inverse hover:opacity-90',
+  info: 'hover:shadow-lg/12.5 bg-info text-text-inverse hover:opacity-90',
+  bare: '',
+};
+
+const sizeButtonStyles: Record<string, string> = {
+  sm: 'px-3 py-1.5 text-sm hover:scale-[1.1]',
+  md: 'px-4 py-3 hover:scale-[1.05]',
+  lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
+};
+
+const variantLinkOutline: Record<string, string> = {
+  bare: 'focus-visible:ring-offset-0',
+};
 
 function LinkAsButton(props: AsLinkProps) {
   const router = useRouter();
@@ -80,7 +106,7 @@ function LinkAsButton(props: AsLinkProps) {
   );
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = React.forwardRef<HTMLButtonElement, AppButtonProps>(
   (props, ref) => {
     const { as, ...rest } = props;
 
@@ -99,23 +125,36 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       }
     };
 
-    const { type = 'button', children, ...buttonRest } = restButton;
+    const {
+      type = 'button',
+      children,
+      variant,
+      size,
+      className,
+      ...buttonRest
+    } = restButton;
 
     if (buttonRest.name == null || buttonRest.name === '') {
       devLog('Button component: name is required');
     }
 
     return (
-      <UIButton
+      <button
         {...buttonRest}
         ref={ref}
         disabled={restButton.disabled}
         type={type}
         onClick={restButton.disabled ? undefined : onClick}
         onKeyDown={onKeyDown}
+        className={cn(
+          baseButtonStyles,
+          variantButtonStyles[variant ?? 'primary'],
+          sizeButtonStyles[size ?? 'md'],
+          className
+        )}
       >
         {children}
-      </UIButton>
+      </button>
     );
   }
 );

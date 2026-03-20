@@ -3,7 +3,8 @@
 import { ComponentType, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { WithChildren } from '@/types/base';
-import { ThemeProvider, ToastProvider } from '@danieljoffe.com/shared-ui';
+import { ThemeProvider } from '@/state/Theme/ThemeProvider';
+import { ToastProvider } from '@/state/Toast/ToastProvider';
 import ModalProvider from '@/state/Modal/Provider';
 import Nav from '@/components/Nav';
 import ErrorBoundary from '@/components/ErrorBoundary';
