@@ -5,8 +5,8 @@ import { projectSlugs } from '@/data/project';
 import { projectsRecords } from '../projectThumbnails';
 
 export const projectRootMetadata: Metadata = {
-  title: 'Projects | Daniel Joffe - Frontend Engineer',
-  description: 'Projects | Daniel Joffe - Frontend Engineer',
+  title: 'Projects | Daniel Joffe - Full-Stack Engineer',
+  description: 'Projects | Daniel Joffe - Full-Stack Engineer',
   keywords: [
     'Daniel Joffe',
     'Portfolio',

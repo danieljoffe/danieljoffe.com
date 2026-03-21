@@ -1,7 +1,6 @@
 'use client';
 import Logo from './Logo';
 import DarkModeToggle from './DarkModeToggle';
-import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
 import dynamic from 'next/dynamic';
 
@@ -39,20 +38,19 @@ export default function MobileNav({
   };
 
   return (
-    <div className='md:hidden flex items-center justify-between w-full h-16 shadow'>
+    <div className='md:hidden flex items-center justify-between w-full h-14 px-6'>
       <Logo />
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-1'>
         <DarkModeToggle />
-        <Button
+        <button
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
           aria-controls='mobile-menu'
           onClick={handleToggle}
-          variant='bare'
-          name='toggle menu'
+          className='p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors cursor-pointer'
         >
           <MenuIcon isOpen={menuOpen} />
-        </Button>
+        </button>
       </div>
     </div>
   );

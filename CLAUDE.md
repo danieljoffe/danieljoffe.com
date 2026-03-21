@@ -72,7 +72,9 @@ app/                    # Next.js App Router pages
 ├── services/           # Services page
 └── thank-you/          # Thank you pages
 components/             # App-specific React components
-lib/                    # Utility libraries and configurations
+├── kit/                # Shared UI primitives (Spinner, ErrorAlert, Pagination, etc.)
+hooks/                  # Custom React hooks (useTableSort, useFocusTrap)
+lib/                    # Utility libraries and configurations (cn, formStyles, badgeStyles)
 state/                  # Global state management
 types/                  # TypeScript type definitions
 utils/                  # Helper functions and constants
@@ -80,7 +82,7 @@ utils/                  # Helper functions and constants
 
 ### UI Library (libs/shared/ui/src/lib/)
 
-Shared components: Alert, AspectRatio, Badge, Button, Card, Checkbox, Container, Divider, Grid, Input, Loading, Modal, PageContainer, ProgressBar, Section, Select, Spacer, Spinner, Stack, Switch, Tabs, Textarea, Tooltip
+Shared components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Container, Divider, Dropdown, Grid, Input, Loading, Modal, PageContainer, Pagination, ProgressBar, Section, Select, Sidebar, Skeleton, Spacer, Spinner, Stack, StatsCard, Switch, Table, Tabs, Textarea, ThemeProvider, ThemeToggle, Toast, Tooltip
 
 ### Key Technologies
 
@@ -152,6 +154,46 @@ Use `import * as Sentry from "@sentry/nextjs"` for all Sentry functionality. Key
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+## Coding Conventions
+
+### Rule of Three
+
+When the same pattern appears 3+ times across files, extract it:
+
+| Pattern             | Extract to                        | Example                                                 |
+| ------------------- | --------------------------------- | ------------------------------------------------------- |
+| UI element          | Kit component (`components/kit/`) | `Spinner`, `ErrorAlert`, `FormFieldError`, `Pagination` |
+| className string    | Shared styles (`lib/`)            | `formStyles.ts`, `badgeStyles.ts`                       |
+| Stateful logic      | Custom hook (`hooks/`)            | `useTableSort`                                          |
+| Magic number/string | `utils/constants.ts`              | `FORM_LIMITS`, `VALIDATION_PATTERNS`                    |
+
+Test abstractions that contain logic. Pure style extractions don't need tests.
+
+### Component Patterns
+
+- **Button**: Always use `@/components/Button` for buttons and button-styled links. The `name` prop is required by lint (except in `.stories.tsx`). Use `as='link'` with `href` for navigation that looks like a button.
+- **Shared UI library**: Before creating a new component, check `libs/shared/ui/src/lib/` for an existing one. Prefer `@danieljoffe.com/shared-ui` components over building app-specific equivalents. If a shared-ui component is close but not quite right, extend it in the library rather than duplicating locally. Only promote an app-specific pattern to shared-ui when the Rule of Three applies (3+ usages across apps/libs). **Important**: `shared-ui` must only depend on React and Tailwind CSS — no Next.js APIs (`Link`, `useRouter`, `next/image`, etc.).
+- **Kit components (Next.js-specific)**: Components that depend on Next.js APIs (`Link`, `useRouter`, `next/image`, `usePathname`, etc.) live in `components/kit/` or `components/` within the app. Import kit components from `@/components/kit` barrel export, not individual files. New kit components must be added to `kit/index.ts`.
+- **Toast notifications**: Use `useToast()` from `@/state/Toast/ToastProvider` for user feedback on async actions (success, error, network).
+- **`global-error.tsx`**: Uses inline styles intentionally (renders outside the app tree where Tailwind isn't available). Don't convert to Tailwind.
+
+### Styling
+
+- Use `cn()` from `@/lib/cn` for conditional class merging (never `.join(' ')` with ternaries).
+- Static multi-line class arrays using `.join(' ')` for readability are acceptable when there are no conditionals.
+- Tailwind CSS 4 uses `@theme` directive and oklch color space — reference `styles/theme.css` for design tokens.
+
+### Accessibility & Privacy
+
+- Form inputs with validation errors must have `aria-describedby` pointing to the error element's `id`.
+- Use `<FormFieldError message={error} id='field-error' />` for consistent error display.
+- Add `data-sentry-mask` to all form inputs that collect PII (email, name, password).
+
+### TypeScript
+
+- `exactOptionalPropertyTypes` is enabled. When a prop can receive `undefined` from an expression (e.g., `errors?.name?.message`), declare it as `prop: string | undefined`, not `prop?: string`.
+- Pre-commit hooks run lint-staged (ESLint + Prettier) then full typecheck. Both must pass.
 
 ## General Guidelings for working with NextJS
 

@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 
 export const rootMetadata: Metadata = {
   title: {
-    default: 'Daniel Joffe | Senior Frontend Engineer',
-    template: '%s | Daniel Joffe - Senior Frontend Engineer',
+    default: 'Daniel Joffe | Full-Stack Engineer',
+    template: '%s | Daniel Joffe - Full-Stack Engineer',
   },
   description:
-    'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps. Seeking remote or LA-based roles.',
+    'Full-stack engineer with 10+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps. Seeking remote or LA-based roles.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
@@ -40,16 +40,16 @@ export const rootMetadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://danieljoffe.com',
-    title: 'Daniel Joffe | Senior Frontend Engineer',
+    title: 'Daniel Joffe | Full-Stack Engineer',
     description:
-      'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps.',
+      'Full-stack engineer with 10+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps.',
     siteName: 'Daniel Joffe',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Daniel Joffe | Senior Frontend Engineer',
+    title: 'Daniel Joffe | Full-Stack Engineer',
     description:
-      'Frontend engineer with 8+ years experience. Reduced load times by 80% at FightCamp. Seeking remote or LA-based roles.',
+      'Full-stack engineer with 10+ years experience. Reduced load times by 80% at FightCamp. Seeking remote or LA-based roles.',
     creator: '@danieljoffe',
   },
   robots: {

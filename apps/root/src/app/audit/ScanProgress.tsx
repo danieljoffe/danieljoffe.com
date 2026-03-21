@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
-import { ProgressBar, Spinner, Stack } from '@danieljoffe.com/shared-ui';
+import { Spinner } from '@/components/kit';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
@@ -52,8 +52,22 @@ export default function ScanProgress({
         : 'mobile';
 
   return (
-    <Stack direction='vertical' gap='md' className='w-full max-w-md'>
-      <ProgressBar value={progress} size='md' aria-label='Scan progress' />
+    <div className='flex flex-col gap-4 w-full max-w-md'>
+      <div className='w-full'>
+        <div
+          role='progressbar'
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label='Scan progress'
+          className='w-full bg-surface-elevated rounded-full overflow-hidden h-2'
+        >
+          <div
+            className='h-full bg-brand-500 transition-all duration-300 ease-out'
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
       <ul className='space-y-3' aria-label='Scan steps'>
         {steps.map((step, i) => {
           const isComplete = elapsed >= step.completesAt;
@@ -63,21 +77,21 @@ export default function ScanProgress({
           return (
             <li key={step.label} className='flex items-center gap-3'>
               {isComplete ? (
-                <span className='inline-flex items-center justify-center size-5 rounded-full bg-success text-success-foreground'>
+                <span className='inline-flex items-center justify-center size-5 rounded-full bg-success text-text-inverse'>
                   <Check className='size-3' aria-hidden='true' />
                 </span>
               ) : isActive ? (
-                <Spinner size='sm' aria-label={step.label} />
+                <Spinner size='sm' label='In progress' />
               ) : (
                 <span className='inline-block size-5 rounded-full border border-border' />
               )}
               <span
                 className={
                   isComplete
-                    ? 'text-foreground'
+                    ? 'text-text-primary'
                     : isActive
-                      ? 'text-foreground'
-                      : 'text-foreground-subtle'
+                      ? 'text-text-primary'
+                      : 'text-text-tertiary'
                 }
               >
                 {step.label}
@@ -86,9 +100,9 @@ export default function ScanProgress({
           );
         })}
       </ul>
-      <p className='text-sm text-foreground-muted text-center truncate'>
+      <p className='text-sm text-text-secondary text-center truncate'>
         Scanning {url} ({deviceLabel})
       </p>
-    </Stack>
+    </div>
   );
 }

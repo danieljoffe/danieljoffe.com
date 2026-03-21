@@ -1,14 +1,10 @@
-import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import { sectionContainer } from '@/lib/layoutStyles';
 import LazyForm from './LazyForm';
 
 export default function Contact() {
   return (
-    <Section
-      aria-labelledby='contact-heading'
-      className='min-h-min max-h-max'
-      background='alt'
-    >
-      <PageContainer>
+    <section aria-labelledby='contact-heading' className={sectionContainer}>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <h2 id='contact-heading' className='text-center'>
           Let&apos;s Connect
         </h2>
@@ -21,7 +17,7 @@ export default function Contact() {
           24 hours
         </p>
         <LazyForm />
-      </PageContainer>
-    </Section>
+      </div>
+    </section>
   );
 }

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getOgFonts, getProfileImageBase64 } from '@/lib/og';
 
-export const alt = 'Daniel Joffe - Senior Frontend Engineer';
+export const alt = 'Daniel Joffe - Full-Stack Engineer';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -66,7 +66,7 @@ export default async function OgImage() {
             marginTop: '12px',
           }}
         >
-          Senior Frontend Engineer
+          Full-Stack Engineer
         </span>
       </div>
 

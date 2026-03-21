@@ -14,22 +14,22 @@ describe('Alert', () => {
 
   it('applies default info variant', () => {
     const { container } = render(<Alert>Content</Alert>);
-    expect(container.firstChild).toHaveClass('bg-info-muted');
+    expect(container.firstChild).toHaveClass('bg-info-light');
   });
 
   it('applies success variant styles', () => {
     const { container } = render(<Alert variant='success'>Content</Alert>);
-    expect(container.firstChild).toHaveClass('bg-success-muted');
+    expect(container.firstChild).toHaveClass('bg-success-light');
   });
 
   it('applies warning variant styles', () => {
     const { container } = render(<Alert variant='warning'>Content</Alert>);
-    expect(container.firstChild).toHaveClass('bg-warning-muted');
+    expect(container.firstChild).toHaveClass('bg-warning-light');
   });
 
   it('applies error variant styles', () => {
     const { container } = render(<Alert variant='error'>Content</Alert>);
-    expect(container.firstChild).toHaveClass('bg-error-muted');
+    expect(container.firstChild).toHaveClass('bg-error-light');
   });
 
   it('does not show dismiss button by default', () => {

@@ -81,8 +81,8 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
           id={tooltipId}
           role='tooltip'
           className={cn(
-            'absolute z-50 px-3 py-1.5 bg-background-elevated border',
-            'border-border-strong rounded-md text-sm text-foreground',
+            'absolute z-50 px-3 py-1.5 bg-surface-elevated border',
+            'border-border-secondary rounded-md text-sm text-text-primary',
             'whitespace-nowrap pointer-events-none transition-opacity duration-150',
             positionStyles[position],
             isVisible ? 'opacity-100' : 'opacity-0'

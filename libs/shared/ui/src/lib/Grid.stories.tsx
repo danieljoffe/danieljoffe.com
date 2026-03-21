@@ -38,7 +38,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const Box = ({ children }: { children: React.ReactNode }) => (
-  <div className='bg-accent text-accent-foreground p-4 rounded text-center'>
+  <div className='bg-brand-500 text-text-inverse p-4 rounded text-center'>
     {children}
   </div>
 );
@@ -219,19 +219,19 @@ export const CardGrid: Story = {
     children: (
       <>
         <GridItem as='li'>
-          <article className='bg-background-elevated p-4 rounded border border-border'>
+          <article className='bg-surface-elevated p-4 rounded border border-border'>
             <h3 className='mt-0'>Card Title 1</h3>
             <p>Card description goes here.</p>
           </article>
         </GridItem>
         <GridItem as='li'>
-          <article className='bg-background-elevated p-4 rounded border border-border'>
+          <article className='bg-surface-elevated p-4 rounded border border-border'>
             <h3 className='mt-0'>Card Title 2</h3>
             <p>Card description goes here.</p>
           </article>
         </GridItem>
         <GridItem as='li'>
-          <article className='bg-background-elevated p-4 rounded border border-border'>
+          <article className='bg-surface-elevated p-4 rounded border border-border'>
             <h3 className='mt-0'>Card Title 3</h3>
             <p>Card description goes here.</p>
           </article>

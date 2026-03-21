@@ -59,9 +59,6 @@
       "path": "../../libs/shared/audit"
     },
     {
-      "path": "../../libs/shared/ui"
-    },
-    {
       "path": "./tsconfig.storybook.json"
     }
   ]

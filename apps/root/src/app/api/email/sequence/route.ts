@@ -159,13 +159,10 @@ async function processLead(
 
     return { status: 'sent' };
   } catch (error) {
-    captureApiError(
-      error instanceof Error ? error : new Error('Sequence send failed'),
-      '/api/email/sequence',
-      'GET',
-      500,
-      { leadId: lead.id, step }
-    );
+    captureApiError(error, '/api/email/sequence', 'GET', 500, {
+      leadId: lead.id,
+      step,
+    });
     return { status: 'error' };
   }
 }

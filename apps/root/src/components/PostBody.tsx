@@ -2,7 +2,6 @@ import { PostBodyProps } from '@/types/postTypes';
 import UnsplashImage from './UnsplashImage';
 import PostContent from './PostContent';
 import BreadCrumbs from './BreadCrumbs';
-import { Stack } from '@danieljoffe.com/shared-ui';
 
 export default function PostBody({
   children,
@@ -10,7 +9,7 @@ export default function PostBody({
   breadcrumbs,
 }: PostBodyProps) {
   return (
-    <Stack>
+    <div className='flex flex-col gap-4'>
       <BreadCrumbs items={breadcrumbs} />
       <UnsplashImage
         src={cover.src}
@@ -24,6 +23,6 @@ export default function PostBody({
         sizes='(max-width: 640px) calc(100vw - 2rem), (max-width: 720px) calc(100vw - 3rem), 720px'
       />
       <PostContent>{children}</PostContent>
-    </Stack>
+    </div>
   );
 }

@@ -1,16 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Alert,
-  Button,
-  Card,
-  Input,
-  Spinner,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { analytics } from '@/lib/analytics';
+import { useToast } from '@/state/Toast/ToastProvider';
+import { VALIDATION_PATTERNS } from '@/utils/constants';
+import Button from '@/components/Button';
+import { Spinner, ErrorAlert, FormFieldError } from '@/components/kit';
+import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
 interface EmailGateProps {
@@ -24,21 +21,20 @@ type GateState =
   | { phase: 'unlocked' }
   | { phase: 'error'; message: string };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [validationError, setValidationError] = useState('');
   const [state, setState] = useState<GateState>({ phase: 'locked' });
+  const { toast } = useToast();
 
   if (state.phase === 'unlocked') {
     return (
-      <Stack direction='vertical' gap='sm'>
+      <div className='flex flex-col gap-2'>
         {gatedIssues.map(issue => (
           <IssueCard key={issue.id} issue={issue} />
         ))}
-      </Stack>
+      </div>
     );
   }
 
@@ -47,7 +43,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
     setValidationError('');
 
     const trimmedEmail = email.trim();
-    if (!trimmedEmail || !EMAIL_RE.test(trimmedEmail)) {
+    if (!trimmedEmail || !VALIDATION_PATTERNS.EMAIL.test(trimmedEmail)) {
       setValidationError('Please enter a valid email address.');
       return;
     }
@@ -73,16 +69,27 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
           phase: 'error',
           message: data.error || 'Something went wrong. Please try again.',
         });
+        toast({
+          variant: 'error',
+          title: 'Something went wrong',
+          description: data.error || 'Please try again.',
+        });
         return;
       }
 
       // Both 'captured' and 'already_captured' unlock the gate
       analytics.auditEmailCaptured(scanId);
+      toast({ variant: 'success', title: 'Full report unlocked!' });
       setState({ phase: 'unlocked' });
     } catch {
       setState({
         phase: 'error',
         message: 'Network error. Please try again.',
+      });
+      toast({
+        variant: 'error',
+        title: 'Network error',
+        description: 'Please check your connection and try again.',
       });
     }
   };
@@ -94,79 +101,83 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
         className='select-none blur-sm pointer-events-none'
         aria-hidden='true'
       >
-        <Stack direction='vertical' gap='sm'>
+        <div className='flex flex-col gap-2'>
           {gatedIssues.slice(0, 2).map(issue => (
             <IssueCard key={issue.id} issue={issue} />
           ))}
-        </Stack>
+        </div>
       </div>
 
       {/* Overlay with email form */}
-      <div className='absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xs rounded-lg'>
-        <Card className='w-full max-w-sm mx-4'>
-          <Stack direction='vertical' gap='sm'>
+      <div className='absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-xs rounded-lg'>
+        <div className='rounded-lg border border-border bg-surface-elevated p-6 w-full max-w-sm mx-4'>
+          <div className='flex flex-col gap-2'>
             <div className='text-center'>
               <p className='font-semibold'>
                 Unlock {gatedIssues.length} more{' '}
                 {gatedIssues.length === 1 ? 'fix' : 'fixes'}
               </p>
-              <p className='text-sm text-foreground-muted'>
+              <p className='text-sm text-text-secondary'>
                 Enter your email for the full report
               </p>
             </div>
             <form onSubmit={handleSubmit} noValidate>
-              <Stack direction='vertical' gap='sm'>
-                <Input
-                  type='email'
-                  value={email}
-                  onChange={e => {
-                    setEmail(e.target.value);
-                    if (validationError) setValidationError('');
-                  }}
-                  placeholder='you@company.com'
-                  aria-label='Email address'
-                  error={validationError || undefined}
-                  required
-                  disabled={state.phase === 'submitting'}
-                />
-                <Input
+              <div className='flex flex-col gap-2'>
+                <div className='w-full'>
+                  <input
+                    type='email'
+                    value={email}
+                    onChange={e => {
+                      setEmail(e.target.value);
+                      if (validationError) setValidationError('');
+                    }}
+                    placeholder='you@company.com'
+                    aria-label='Email address'
+                    aria-describedby={
+                      validationError ? 'email-error' : undefined
+                    }
+                    required
+                    disabled={state.phase === 'submitting'}
+                    data-sentry-mask
+                    className={validationError ? inputErrorStyles : inputStyles}
+                  />
+                  <FormFieldError message={validationError} id='email-error' />
+                </div>
+                <input
                   type='text'
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder='Name (optional)'
                   aria-label='Name'
                   disabled={state.phase === 'submitting'}
+                  data-sentry-mask
+                  className={inputStyles}
                 />
                 <Button
                   type='submit'
-                  variant='primary'
-                  className='w-full'
+                  name='email-gate-submit'
                   disabled={state.phase === 'submitting'}
+                  className='w-full'
                 >
                   {state.phase === 'submitting' ? (
                     <>
-                      <Spinner size='sm' variant='foreground' />
+                      <Spinner size='sm' label='Submitting' />
                       Submitting...
                     </>
                   ) : (
                     'Get full report'
                   )}
                 </Button>
-              </Stack>
+              </div>
             </form>
             {state.phase === 'error' && (
-              <Alert variant='error'>
-                {state.message}
-                <button
-                  onClick={() => setState({ phase: 'locked' })}
-                  className='block mt-2 text-sm font-medium underline hover:no-underline'
-                >
-                  Try again
-                </button>
-              </Alert>
+              <ErrorAlert
+                message={state.message}
+                onRetry={() => setState({ phase: 'locked' })}
+              />
             )}
-          </Stack>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

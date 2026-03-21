@@ -48,7 +48,7 @@ describe('Divider', () => {
   it('renders label with correct styling', () => {
     render(<Divider label='Separator' />);
     const label = screen.getByText('Separator');
-    expect(label).toHaveClass('text-sm', 'text-foreground-muted');
+    expect(label).toHaveClass('text-sm', 'text-text-secondary');
   });
 
   it('ignores label when orientation is vertical', () => {

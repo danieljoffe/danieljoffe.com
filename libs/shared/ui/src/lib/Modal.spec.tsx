@@ -85,9 +85,7 @@ describe('Modal', () => {
 
   it('applies default variant styles', () => {
     const { container } = renderModal();
-    expect(
-      container.querySelector('.bg-background-elevated')
-    ).toBeInTheDocument();
+    expect(container.querySelector('.bg-surface-elevated')).toBeInTheDocument();
   });
 
   it('applies accent variant styles', () => {

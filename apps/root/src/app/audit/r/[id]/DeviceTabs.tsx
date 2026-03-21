@@ -1,13 +1,6 @@
-import Link from 'next/link';
 import { Monitor, Smartphone } from 'lucide-react';
+import Button from '@/components/Button';
 import type { DeviceMode } from '@danieljoffe.com/shared-audit';
-import {
-  baseButtonStyles,
-  sizeButtonStyles,
-  variantButtonStyles,
-  variantLinkOutline,
-  cn,
-} from '@danieljoffe.com/shared-ui';
 
 interface DeviceTabsProps {
   currentDevice: DeviceMode;
@@ -43,23 +36,19 @@ export default function DeviceTabs({
   return (
     <nav
       aria-label='Device view'
-      className='flex justify-center gap-1 py-2 bg-background-alt'
+      className='flex justify-center gap-1 py-2 bg-surface-secondary'
     >
       {tabs.map(tab => (
-        <Link
+        <Button
           key={tab.label}
+          as='link'
           href={tab.href}
-          className={cn(
-            baseButtonStyles,
-            sizeButtonStyles.md,
-            tab.active ? variantButtonStyles.primary : variantButtonStyles.bare,
-            variantLinkOutline.bare
-          )}
+          variant={tab.active ? 'primary' : 'ghost'}
           aria-current={tab.active ? 'page' : undefined}
         >
           {tab.icon}
           {tab.label}
-        </Link>
+        </Button>
       ))}
     </nav>
   );

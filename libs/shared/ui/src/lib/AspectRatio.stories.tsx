@@ -28,7 +28,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const PlaceholderImage = ({ label }: { label: string }) => (
-  <div className='absolute inset-0 bg-accent flex items-center justify-center text-accent-foreground font-medium'>
+  <div className='absolute inset-0 bg-brand-500 flex items-center justify-center text-text-inverse font-medium'>
     {label}
   </div>
 );

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import Nav from './index';
-import ThemeProvider from '@/state/Theme/Provider';
-import ModalProvider from '@/state/Modal/Provider';
+import { ThemeProvider } from '@/state/Theme/ThemeProvider';
+import ModalProvider from '@/state/Modal/ModalProvider';
 import Modal from '../Modal';
 
 const meta = {

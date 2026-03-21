@@ -2,15 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
-import {
-  Alert,
-  PageContainer,
-  Section,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
-import ScanProgress from '../../ScanProgress';
+import ScanProgress from '@/app/audit/ScanProgress';
+import Button from '@/components/Button';
+import { ErrorAlert } from '@/components/kit';
+import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 const POLL_INTERVAL_MS = 2000;
@@ -71,18 +67,12 @@ export default function ScanPending({
 
   if (error) {
     return (
-      <Section
-        className='min-h-min max-h-max'
+      <section
+        className={sectionContainer}
         aria-labelledby='scan-failed-heading'
-        background='alt'
       >
-        <PageContainer className='py-20 md:py-32'>
-          <Stack
-            direction='vertical'
-            align='center'
-            gap='lg'
-            className='text-center max-w-md mx-auto'
-          >
+        <div className={sectionInner}>
+          <div className='flex flex-col gap-6 items-center text-center max-w-md mx-auto'>
             <div className='inline-flex items-center justify-center size-14 rounded-full bg-error/10'>
               <AlertTriangle className='size-7 text-error' aria-hidden='true' />
             </div>
@@ -90,41 +80,33 @@ export default function ScanPending({
             <div>
               <h1
                 id='scan-failed-heading'
-                className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
+                className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
               >
                 Scan failed
               </h1>
-              <p className='text-foreground-muted mt-2 truncate max-w-sm mx-auto'>
+              <p className='text-text-secondary mt-2 truncate max-w-sm mx-auto'>
                 {url}
               </p>
             </div>
 
-            <Alert variant='error'>{error}</Alert>
+            <ErrorAlert message={error} />
 
-            <Link
-              href='/audit'
-              className='inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 text-accent-foreground hover:bg-accent-hover transition'
-            >
+            <Button as='link' href='/audit'>
               Try again
-            </Link>
-          </Stack>
-        </PageContainer>
-      </Section>
+            </Button>
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <Section className='min-h-min max-h-max' background='alt'>
-      <PageContainer className='py-20 md:py-32'>
-        <Stack
-          direction='vertical'
-          align='center'
-          gap='lg'
-          className='max-w-md mx-auto'
-        >
+    <section className={sectionContainer}>
+      <div className={sectionInner}>
+        <div className='flex flex-col gap-6 items-center max-w-md mx-auto'>
           <ScanProgress url={url} device={device} />
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

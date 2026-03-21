@@ -4,38 +4,36 @@ import { ProgressBar } from './ProgressBar';
 describe('ProgressBar', () => {
   it('renders progress bar element', () => {
     const { container } = render(<ProgressBar value={50} />);
-    expect(
-      container.querySelector('.bg-background-elevated')
-    ).toBeInTheDocument();
+    expect(container.querySelector('.bg-surface-elevated')).toBeInTheDocument();
   });
 
   it('renders with correct percentage width', () => {
     const { container } = render(<ProgressBar value={75} />);
-    const progressFill = container.querySelector('.bg-accent');
+    const progressFill = container.querySelector('.bg-brand-500');
     expect(progressFill).toHaveStyle({ width: '75%' });
   });
 
   it('calculates percentage based on max value', () => {
     const { container } = render(<ProgressBar value={50} max={200} />);
-    const progressFill = container.querySelector('.bg-accent');
+    const progressFill = container.querySelector('.bg-brand-500');
     expect(progressFill).toHaveStyle({ width: '25%' });
   });
 
   it('caps percentage at 100%', () => {
     const { container } = render(<ProgressBar value={150} max={100} />);
-    const progressFill = container.querySelector('.bg-accent');
+    const progressFill = container.querySelector('.bg-brand-500');
     expect(progressFill).toHaveStyle({ width: '100%' });
   });
 
   it('does not go below 0%', () => {
     const { container } = render(<ProgressBar value={-10} />);
-    const progressFill = container.querySelector('.bg-accent');
+    const progressFill = container.querySelector('.bg-brand-500');
     expect(progressFill).toHaveStyle({ width: '0%' });
   });
 
   it('applies accent variant by default', () => {
     const { container } = render(<ProgressBar value={50} />);
-    expect(container.querySelector('.bg-accent')).toBeInTheDocument();
+    expect(container.querySelector('.bg-brand-500')).toBeInTheDocument();
   });
 
   it('applies success variant styles', () => {

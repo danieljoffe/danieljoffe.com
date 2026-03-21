@@ -1,20 +1,32 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import { rootMetadata } from '@/data/metadata/root';
 import { WithChildren } from '@/types/base';
-import { fontVariables } from '@/styles/fonts';
-import '@/styles/global.scss';
+import '@/styles/global.css';
 import AppContext from './home/AppContext';
 import Footer from '@/components/Footer';
 import Scripts from './home/Scripts';
 import Head from './home/Head';
 import TestingOnly from './home/TestingOnly';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
 export const metadata: Metadata = rootMetadata;
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   userScalable: true,
-  themeColor: '#0056b3',
+  themeColor: '#4f46e5',
 };
 
 export default async function RootLayout({ children }: WithChildren) {
@@ -22,17 +34,15 @@ export default async function RootLayout({ children }: WithChildren) {
     <html
       lang='en'
       data-scroll-behavior='smooth'
-      className={[
-        'bg-background text-foreground text-[16px]',
-        fontVariables,
-      ].join(' ')}
+      suppressHydrationWarning
+      className={`${inter.variable} ${jetbrainsMono.variable} bg-surface text-text-primary text-[16px]`}
     >
       <Head />
       <body
         className={[
-          'bg-background text-foreground font-body',
-          'focus:outline-accent focus:outline-2 focus:outline-offset-2',
-          'focus-visible:outline-accent focus-visible:outline-2',
+          'bg-surface text-text-primary font-sans',
+          'focus:outline-brand-500 focus:outline-2 focus:outline-offset-2',
+          'focus-visible:outline-brand-500 focus-visible:outline-2',
           'focus-visible:outline-offset-2 relative',
         ].join(' ')}
       >
@@ -40,8 +50,8 @@ export default async function RootLayout({ children }: WithChildren) {
           href='#main-content'
           className={[
             'sr-only focus:not-sr-only focus:absolute focus:top-2',
-            'focus:left-2 focus:z-50 focus:p-2 focus:bg-background',
-            'focus:text-foreground focus:underline focus:rounded',
+            'focus:left-2 focus:z-50 focus:p-2 focus:bg-surface',
+            'focus:text-text-primary focus:underline focus:rounded',
           ].join(' ')}
           id='skipToMainContent'
         >

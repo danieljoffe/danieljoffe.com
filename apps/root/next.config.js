@@ -50,35 +50,35 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/about/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/experience/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/experience/[slug]/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/projects/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/projects/[slug]/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/services/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
     '/audit/r/[id]/opengraph-image': [
       './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.png',
+      './public/images/daniel-joffe-profile.webp',
     ],
   },
 

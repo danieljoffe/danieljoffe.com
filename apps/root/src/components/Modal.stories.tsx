@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect } from 'storybook/test';
 
 import Button from '@/components/Button';
-import ThemeProvider from '@/state/Theme/Provider';
-import ModalProvider, { useModal } from '@/state/Modal/Provider';
+import { ThemeProvider } from '@/state/Theme/ThemeProvider';
+import ModalProvider, { useModal } from '@/state/Modal/ModalProvider';
 import Modal from './Modal';
 
 const meta = {
@@ -15,7 +15,10 @@ const meta = {
       const ButtonTrigger = () => {
         const { isModalOpen, setModalContent } = useModal();
         return (
-          <Button onClick={() => setModalContent(<div>Modal Content</div>)}>
+          <Button
+            name='toggle-modal'
+            onClick={() => setModalContent(<div>Modal Content</div>)}
+          >
             {isModalOpen ? 'Hide Modal' : 'Show Modal'}
           </Button>
         );

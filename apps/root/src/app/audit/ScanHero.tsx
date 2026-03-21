@@ -1,4 +1,4 @@
-import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
+import { sectionContainer } from '@/lib/layoutStyles';
 import URLInputForm from './URLInputForm';
 
 interface ScanHeroProps {
@@ -7,33 +7,29 @@ interface ScanHeroProps {
 
 export default function ScanHero({ scanCount }: ScanHeroProps) {
   return (
-    <Section
-      className='min-h-min max-h-max'
-      aria-labelledby='audit-hero-heading'
-      background='alt'
-    >
-      <PageContainer className='text-center max-w-[40rem] py-20 md:py-32'>
-        <Stack direction='vertical' gap='lg' align='center'>
+    <section className={sectionContainer} aria-labelledby='audit-hero-heading'>
+      <div className='max-w-[40rem] mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
+        <div className='flex flex-col gap-6 items-center'>
           <div>
             <h1
               id='audit-hero-heading'
-              className='font-heading text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight'
+              className='font-sans text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight'
             >
               Free website performance audit
             </h1>
-            <p className='text-lg text-foreground-muted mt-4'>
+            <p className='text-lg text-text-secondary mt-4'>
               Paste your URL. <br />
               Get a detailed report in 30 seconds.
             </p>
           </div>
           <URLInputForm />
           {scanCount > 0 && (
-            <p className='text-sm text-foreground-subtle'>
+            <p className='text-sm text-text-tertiary'>
               {scanCount.toLocaleString()} sites audited
             </p>
           )}
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

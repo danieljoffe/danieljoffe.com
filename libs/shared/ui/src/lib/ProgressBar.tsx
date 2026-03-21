@@ -17,7 +17,7 @@ export interface ProgressBarProps extends Omit<
 }
 
 const variantStyles: Record<ProgressBarVariant, string> = {
-  accent: 'bg-accent',
+  accent: 'bg-brand-500',
   success: 'bg-success',
   warning: 'bg-warning',
   error: 'bg-error',
@@ -55,7 +55,7 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
           aria-valuemax={100}
           aria-label={ariaLabel}
           className={cn(
-            'w-full bg-background-elevated rounded-full overflow-hidden',
+            'w-full bg-surface-elevated rounded-full overflow-hidden',
             sizeStyles[size],
             className
           )}
@@ -70,7 +70,7 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
         </div>
         {showLabel && (
           <p
-            className='mt-1.5 text-sm text-foreground-muted text-right'
+            className='mt-1.5 text-sm text-text-secondary text-right'
             aria-hidden='true'
           >
             {Math.round(percentage)}%

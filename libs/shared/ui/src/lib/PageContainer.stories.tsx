@@ -34,7 +34,7 @@ const meta = {
   },
   decorators: [
     Story => (
-      <div className='bg-background-alt min-h-[400px]'>
+      <div className='bg-surface-secondary min-h-[400px]'>
         <Story />
       </div>
     ),
@@ -47,9 +47,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     children: (
-      <div className='bg-background-elevated p-8 rounded'>
+      <div className='bg-surface-elevated p-8 rounded'>
         <h2 className='text-2xl font-bold mb-4'>Default PageContainer</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This container is centered with vertical padding and a default
           max-width of sm (768px).
         </p>
@@ -62,9 +62,9 @@ export const Medium: Story = {
   args: {
     size: 'md',
     children: (
-      <div className='bg-background-elevated p-8 rounded'>
+      <div className='bg-surface-elevated p-8 rounded'>
         <h2 className='text-2xl font-bold mb-4'>Medium PageContainer</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This container has a max-width of md (1024px).
         </p>
       </div>
@@ -76,9 +76,9 @@ export const Large: Story = {
   args: {
     size: 'lg',
     children: (
-      <div className='bg-background-elevated p-8 rounded'>
+      <div className='bg-surface-elevated p-8 rounded'>
         <h2 className='text-2xl font-bold mb-4'>Large PageContainer</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This container has a max-width of lg (1280px).
         </p>
       </div>
@@ -88,11 +88,11 @@ export const Large: Story = {
 
 export const WithBackgroundWrapper: Story = {
   args: {
-    wrapperClassName: 'bg-accent',
+    wrapperClassName: 'bg-brand-500',
     children: (
-      <div className='bg-background-elevated p-8 rounded'>
+      <div className='bg-surface-elevated p-8 rounded'>
         <h2 className='text-2xl font-bold mb-4'>With Background Wrapper</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           The outer wrapper has a custom background color applied via
           wrapperClassName.
         </p>
@@ -106,15 +106,13 @@ export const WithCustomInnerClass: Story = {
     className: 'gap-8',
     children: (
       <>
-        <div className='bg-background-elevated p-8 rounded'>
+        <div className='bg-surface-elevated p-8 rounded'>
           <h2 className='text-2xl font-bold'>First Section</h2>
-          <p className='text-foreground-muted'>Content in the first section.</p>
+          <p className='text-text-secondary'>Content in the first section.</p>
         </div>
-        <div className='bg-background-elevated p-8 rounded'>
+        <div className='bg-surface-elevated p-8 rounded'>
           <h2 className='text-2xl font-bold'>Second Section</h2>
-          <p className='text-foreground-muted'>
-            Content in the second section.
-          </p>
+          <p className='text-text-secondary'>Content in the second section.</p>
         </div>
       </>
     ),
@@ -133,9 +131,9 @@ export const FullWidth: Story = {
   args: {
     size: 'full',
     children: (
-      <div className='bg-background-elevated p-8 rounded'>
+      <div className='bg-surface-elevated p-8 rounded'>
         <h2 className='text-2xl font-bold mb-4'>Full Width PageContainer</h2>
-        <p className='text-foreground-muted'>
+        <p className='text-text-secondary'>
           This container spans the full width with only padding constraints.
         </p>
       </div>

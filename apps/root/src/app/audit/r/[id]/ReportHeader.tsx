@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { PageContainer, Section } from '@danieljoffe.com/shared-ui';
+import { sectionContainer } from '@/lib/layoutStyles';
+import { formatDate } from '@/lib/dateFormatting';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';
@@ -15,15 +16,6 @@ interface ReportHeaderProps {
   deviceMode?: 'mobile' | 'desktop';
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
 export default function ReportHeader({
   scanId,
   url,
@@ -36,16 +28,15 @@ export default function ReportHeader({
   const grade = gradeOverall ? GRADE_MAP[gradeOverall] : null;
 
   return (
-    <Section
-      className='min-h-min max-h-max'
+    <section
+      className={sectionContainer}
       aria-labelledby='report-header-heading'
-      background='alt'
     >
-      <PageContainer className='py-12 md:py-16'>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 md:py-16'>
         <div className='flex items-center justify-between'>
           <Link
             href='/audit'
-            className='inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors'
+            className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors'
           >
             <ArrowLeft className='size-4' aria-hidden='true' />
             New audit
@@ -87,19 +78,19 @@ export default function ReportHeader({
             <div className='min-w-0 flex-1'>
               <h1
                 id='report-header-heading'
-                className='font-heading text-2xl md:text-3xl font-semibold tracking-tight'
+                className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
               >
                 {pageTitle || url}
               </h1>
-              <p className='text-sm text-foreground-muted truncate max-w-md mt-1'>
+              <p className='text-sm text-text-secondary truncate max-w-md mt-1'>
                 {url}
               </p>
               {completedAt && (
-                <p className='text-xs text-foreground-subtle mt-1'>
+                <p className='text-xs text-text-tertiary mt-1'>
                   Scanned {formatDate(completedAt)}
                 </p>
               )}
-              <p className='text-xs text-foreground-subtle mt-0.5'>
+              <p className='text-xs text-text-tertiary mt-0.5'>
                 {deviceMode === 'desktop'
                   ? 'Tested on Desktop (Broadband)'
                   : 'Tested on Mobile (4G)'}
@@ -107,7 +98,7 @@ export default function ReportHeader({
             </div>
           </div>
         </div>
-      </PageContainer>
-    </Section>
+      </div>
+    </section>
   );
 }
