@@ -3,13 +3,14 @@
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useModal } from '@/state/Modal/ModalProvider';
+import { Spinner } from '@/components/kit';
 import NavLinks from './Links';
 import MobileNav from './MobileNav';
 
 const TabletUpNav = dynamic(() => import('./TabletUpNav'), {
   loading: () => (
     <div className='hidden md:flex w-full max-w-3xl mx-auto px-6 lg:px-0 h-14 items-center justify-center'>
-      <div className='h-4 w-4 animate-spin rounded-full border-2 border-border border-t-brand-500' />
+      <Spinner size='sm' label='Loading navigation' />
     </div>
   ),
 });

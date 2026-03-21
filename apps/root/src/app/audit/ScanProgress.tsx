@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
+import { Spinner } from '@/components/kit';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
@@ -80,13 +81,7 @@ export default function ScanProgress({
                   <Check className='size-3' aria-hidden='true' />
                 </span>
               ) : isActive ? (
-                <span
-                  role='status'
-                  className='inline-block size-4 border-2 rounded-full animate-spin border-brand-500/30 border-t-accent'
-                  aria-label={step.label}
-                >
-                  <span className='sr-only'>Loading</span>
-                </span>
+                <Spinner size='sm' label='In progress' />
               ) : (
                 <span className='inline-block size-5 rounded-full border border-border' />
               )}

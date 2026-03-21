@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pagination, Spinner } from '@/components/kit';
 import { badgeVariants } from '@/lib/badgeStyles';
-import { useTableSort } from '@/hooks/useTableSort';
+import { formatDate } from '@/lib/dateFormatting';
+import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { useToast } from '@/state/Toast/ToastProvider';
 
 interface AdminLead {
@@ -24,43 +25,22 @@ interface LeadsTableProps {
 type SortColumn = 'created_at' | 'email' | 'source' | 'email_sequence_step';
 
 export default function LeadsTable({ password }: LeadsTableProps) {
-  const [leads, setLeads] = useState<AdminLead[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
-  const { sort, order, handleSort, sortIndicator } = useTableSort<SortColumn>(
-    'created_at',
-    () => setPage(1)
-  );
-  const [loading, setLoading] = useState(true);
+  const {
+    data: leads,
+    loading,
+    page,
+    setPage,
+    totalPages,
+    handleSort,
+    sortIndicator,
+  } = useAdminTableFetch<AdminLead, SortColumn>({
+    endpoint: '/api/audit/admin/leads',
+    password,
+    defaultSort: 'created_at',
+    dataKey: 'leads',
+  });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const fetchLeads = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-        sort,
-        order,
-      });
-      const res = await fetch(`/api/audit/admin/leads?${params}`, {
-        headers: { 'x-admin-password': password },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setLeads(data.leads);
-        setTotal(data.total);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [password, page, pageSize, sort, order]);
-
-  useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
 
   async function copyEmail(id: string, email: string) {
     try {
@@ -72,8 +52,6 @@ export default function LeadsTable({ password }: LeadsTableProps) {
       toast({ variant: 'error', title: 'Failed to copy email' });
     }
   }
-
-  const totalPages = Math.ceil(total / pageSize);
 
   return (
     <div>
@@ -133,7 +111,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
                   className='border-b border-border/50 hover:bg-surface-elevated'
                 >
                   <td className='py-3 px-3 whitespace-nowrap'>
-                    {new Date(lead.created_at).toLocaleDateString()}
+                    {formatDate(lead.created_at)}
                   </td>
                   <td className='py-3 px-3'>
                     <button

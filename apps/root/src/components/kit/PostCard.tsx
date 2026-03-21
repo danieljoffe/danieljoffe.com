@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowUpRight, Calendar } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
+import { badgeVariants } from '@/lib/badgeStyles';
 import { PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
@@ -52,11 +53,7 @@ export function PostCard({
           </p>
           <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
         </div>
-        {post.role && (
-          <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium'>
-            {post.role}
-          </span>
-        )}
+        {post.role && <span className={badgeVariants.brand}>{post.role}</span>}
         <p className='text-sm text-text-secondary leading-relaxed line-clamp-2'>
           {post.description}
         </p>

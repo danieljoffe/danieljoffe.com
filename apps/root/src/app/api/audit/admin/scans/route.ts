@@ -104,12 +104,7 @@ export async function GET(request: NextRequest) {
       pageSize,
     });
   } catch (error) {
-    captureApiError(
-      error instanceof Error ? error : new Error('Unknown error'),
-      '/api/audit/admin/scans',
-      'GET',
-      500
-    );
+    captureApiError(error, '/api/audit/admin/scans', 'GET', 500);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

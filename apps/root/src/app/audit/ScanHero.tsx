@@ -1,3 +1,4 @@
+import { sectionContainer } from '@/lib/layoutStyles';
 import URLInputForm from './URLInputForm';
 
 interface ScanHeroProps {
@@ -6,10 +7,7 @@ interface ScanHeroProps {
 
 export default function ScanHero({ scanCount }: ScanHeroProps) {
   return (
-    <section
-      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
-      aria-labelledby='audit-hero-heading'
-    >
+    <section className={sectionContainer} aria-labelledby='audit-hero-heading'>
       <div className='max-w-[40rem] mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
         <div className='flex flex-col gap-6 items-center'>
           <div>

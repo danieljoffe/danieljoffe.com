@@ -1,16 +1,17 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
+import { badgeVariants } from '@/lib/badgeStyles';
 
-const severityStyles = {
-  critical: 'bg-error-light text-error border border-error/30',
-  warning: 'bg-warning-light text-warning border border-warning/30',
-  info: 'bg-info-light text-info border border-info/30',
-} as const;
+const severityMap: Record<string, string> = {
+  critical: 'error',
+  warning: 'warning',
+  info: 'info',
+};
 
-const difficultyStyles = {
-  easy: 'bg-success-light text-success border border-success/30',
-  moderate: 'bg-warning-light text-warning border border-warning/30',
-  complex: 'bg-error-light text-error border border-error/30',
-} as const;
+const difficultyMap: Record<string, string> = {
+  easy: 'success',
+  moderate: 'warning',
+  complex: 'error',
+};
 
 const categoryLabels: Record<string, string> = {
   performance: 'Performance',
@@ -29,16 +30,18 @@ export default function IssueCard({ issue }: IssueCardProps) {
       <div className='flex flex-col gap-2'>
         <div className='flex flex-row gap-1 flex-wrap'>
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${severityStyles[issue.severity]}`}
+            className={badgeVariants[severityMap[issue.severity] ?? 'default']}
           >
             {issue.severity}
           </span>
-          <span className='inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-surface-elevated text-text-secondary border border-border'>
+          <span className={badgeVariants.default}>
             {categoryLabels[issue.category] || issue.category}
           </span>
           {issue.fix_difficulty && (
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${difficultyStyles[issue.fix_difficulty]}`}
+              className={
+                badgeVariants[difficultyMap[issue.fix_difficulty] ?? 'default']
+              }
             >
               {issue.fix_difficulty} fix
             </span>

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { sectionContainer } from '@/lib/layoutStyles';
+import { formatDate } from '@/lib/dateFormatting';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';
@@ -12,15 +14,6 @@ interface ReportHeaderProps {
   gradeOverall: string | null;
   completedAt: string | null;
   deviceMode?: 'mobile' | 'desktop';
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 export default function ReportHeader({
@@ -36,7 +29,7 @@ export default function ReportHeader({
 
   return (
     <section
-      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
+      className={sectionContainer}
       aria-labelledby='report-header-heading'
     >
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 md:py-16'>

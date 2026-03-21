@@ -11,6 +11,7 @@ import {
   PostCard,
   StructuredData,
 } from '@/components/kit';
+import { cardBase } from '@/lib/layoutStyles';
 
 const projectsList = Object.values(projectsRecords);
 export const metadata: Metadata = projectRootMetadata;
@@ -38,7 +39,7 @@ export default function Projects() {
           OPEN SOURCE CALLOUT
           ══════════════════════════════════ */}
       <Section>
-        <div className='p-5 bg-surface-secondary rounded-xl border border-border space-y-3'>
+        <div className={`${cardBase} p-5 space-y-3`}>
           <p className='text-sm text-text-primary'>
             This portfolio is open source. Explore the code or browse the
             component library.

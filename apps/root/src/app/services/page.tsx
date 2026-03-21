@@ -18,6 +18,9 @@ import {
   CTACard,
   StructuredData,
 } from '@/components/kit';
+import { badgeVariants } from '@/lib/badgeStyles';
+import { cardBase } from '@/lib/layoutStyles';
+import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
 import HeroCTA from './HeroCTA';
 import FAQ from './FAQ';
@@ -32,7 +35,7 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-6'>
-          <span className='inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-brand-600 text-white'>
+          <span className={badgeVariants['brand-solid']}>
             Currently available for new projects
           </span>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
@@ -67,10 +70,7 @@ export default function Services() {
         </div>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {services.map((service, i) => (
-            <div
-              key={i}
-              className='p-5 bg-surface-secondary rounded-xl border border-border flex flex-col'
-            >
+            <div key={i} className={cn(cardBase, 'p-5 flex flex-col')}>
               <div className='space-y-4 flex-1'>
                 <div className='flex items-center gap-2'>
                   <service.Icon className='h-5 w-5 text-brand-500 shrink-0' />
@@ -80,9 +80,7 @@ export default function Services() {
                 </div>
 
                 {service.highlighted && (
-                  <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium'>
-                    Most popular
-                  </span>
+                  <span className={badgeVariants.brand}>Most popular</span>
                 )}
 
                 <p className='text-sm text-text-secondary leading-relaxed'>
@@ -170,10 +168,7 @@ export default function Services() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
           {servicesAudience.map((audience, i) => (
-            <div
-              key={i}
-              className='flex items-start gap-3 p-4 bg-surface-secondary rounded-xl border border-border'
-            >
+            <div key={i} className={cn(cardBase, 'flex items-start gap-3 p-4')}>
               <audience.Icon className='h-4 w-4 text-brand-500 shrink-0 mt-0.5' />
               <p className='text-sm text-text-secondary'>
                 <span className='font-semibold text-text-primary'>

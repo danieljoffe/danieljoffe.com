@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import { Pagination, Spinner } from '@/components/kit';
 import { badgeVariants } from '@/lib/badgeStyles';
-import { useTableSort } from '@/hooks/useTableSort';
+import { formatDate } from '@/lib/dateFormatting';
+import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 
 interface AdminScan {
   id: string;
@@ -37,43 +37,20 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function ScansTable({ password }: ScansTableProps) {
-  const [scans, setScans] = useState<AdminScan[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
-  const { sort, order, handleSort, sortIndicator } = useTableSort<SortColumn>(
-    'created_at',
-    () => setPage(1)
-  );
-  const [loading, setLoading] = useState(true);
-
-  const fetchScans = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-        sort,
-        order,
-      });
-      const res = await fetch(`/api/audit/admin/scans?${params}`, {
-        headers: { 'x-admin-password': password },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setScans(data.scans);
-        setTotal(data.total);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [password, page, pageSize, sort, order]);
-
-  useEffect(() => {
-    fetchScans();
-  }, [fetchScans]);
-
-  const totalPages = Math.ceil(total / pageSize);
+  const {
+    data: scans,
+    loading,
+    page,
+    setPage,
+    totalPages,
+    handleSort,
+    sortIndicator,
+  } = useAdminTableFetch<AdminScan, SortColumn>({
+    endpoint: '/api/audit/admin/scans',
+    password,
+    defaultSort: 'created_at',
+    dataKey: 'scans',
+  });
 
   const getStatusStyle = (status: string) =>
     statusStyles[status] || statusStyles.default;
@@ -142,7 +119,7 @@ export default function ScansTable({ password }: ScansTableProps) {
                   onClick={() => window.open(`/audit/r/${scan.id}`, '_blank')}
                 >
                   <td className='py-3 px-3 whitespace-nowrap'>
-                    {new Date(scan.created_at).toLocaleDateString()}
+                    {formatDate(scan.created_at)}
                   </td>
                   <td className='py-3 px-3 max-w-[200px] truncate'>
                     {scan.url}

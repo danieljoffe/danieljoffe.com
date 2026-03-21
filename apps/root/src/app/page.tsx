@@ -26,6 +26,8 @@ import {
   GridBg,
   CompanyLogo,
 } from '@/components/kit';
+import { cardBase } from '@/lib/layoutStyles';
+import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
 import HeroActions from './home/HeroActions';
 
@@ -112,10 +114,7 @@ export default function Index() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
           {offerings.achievements.map((achievement, i) => (
-            <div
-              key={i}
-              className='p-4 bg-surface-secondary rounded-xl border border-border flex items-start gap-3'
-            >
+            <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
               <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
               <div>
                 <p className='text-sm font-semibold text-text-primary'>
@@ -142,7 +141,10 @@ export default function Index() {
           {offerings.methodology.map((methodology, i) => (
             <div
               key={i}
-              className='p-4 bg-surface-secondary rounded-xl border border-border hover:border-border-secondary transition-colors'
+              className={cn(
+                cardBase,
+                'p-4 hover:border-border-secondary transition-colors'
+              )}
             >
               <div className='space-y-2'>
                 <div className='flex items-center gap-2'>

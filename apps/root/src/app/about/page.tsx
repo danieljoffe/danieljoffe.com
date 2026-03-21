@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
+import { badgeVariants } from '@/lib/badgeStyles';
+import { cardBase } from '@/lib/layoutStyles';
 import {
   User,
   Code2,
@@ -127,19 +129,13 @@ export default function About() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {expertiseCategories.map(category => (
-            <div
-              key={category.label}
-              className='p-4 bg-surface-secondary rounded-xl border border-border'
-            >
+            <div key={category.label} className={cn(cardBase, 'p-4')}>
               <p className='text-sm font-semibold text-text-primary mb-3'>
                 {category.label}
               </p>
               <div className='flex flex-wrap gap-1.5'>
                 {category.skills.map(skill => (
-                  <span
-                    key={skill}
-                    className='inline-flex items-center px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 text-xs font-medium'
-                  >
+                  <span key={skill} className={badgeVariants.brand}>
                     {skill}
                   </span>
                 ))}

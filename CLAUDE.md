@@ -82,7 +82,7 @@ utils/                  # Helper functions and constants
 
 ### UI Library (libs/shared/ui/src/lib/)
 
-Shared components: Alert, AspectRatio, Badge, Button, Card, Checkbox, Container, Divider, Grid, Input, Loading, Modal, PageContainer, ProgressBar, Section, Select, Spacer, Spinner, Stack, Switch, Tabs, Textarea, Tooltip
+Shared components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Container, Divider, Dropdown, Grid, Input, Loading, Modal, PageContainer, Pagination, ProgressBar, Section, Select, Sidebar, Skeleton, Spacer, Spinner, Stack, StatsCard, Switch, Table, Tabs, Textarea, ThemeProvider, ThemeToggle, Toast, Tooltip
 
 ### Key Technologies
 
@@ -173,7 +173,8 @@ Test abstractions that contain logic. Pure style extractions don't need tests.
 ### Component Patterns
 
 - **Button**: Always use `@/components/Button` for buttons and button-styled links. The `name` prop is required by lint (except in `.stories.tsx`). Use `as='link'` with `href` for navigation that looks like a button.
-- **Kit components**: Import from `@/components/kit` barrel export, not individual files. New kit components must be added to `kit/index.ts`.
+- **Shared UI library**: Before creating a new component, check `libs/shared/ui/src/lib/` for an existing one. Prefer `@danieljoffe.com/shared-ui` components over building app-specific equivalents. If a shared-ui component is close but not quite right, extend it in the library rather than duplicating locally. Only promote an app-specific pattern to shared-ui when the Rule of Three applies (3+ usages across apps/libs). **Important**: `shared-ui` must only depend on React and Tailwind CSS — no Next.js APIs (`Link`, `useRouter`, `next/image`, etc.).
+- **Kit components (Next.js-specific)**: Components that depend on Next.js APIs (`Link`, `useRouter`, `next/image`, `usePathname`, etc.) live in `components/kit/` or `components/` within the app. Import kit components from `@/components/kit` barrel export, not individual files. New kit components must be added to `kit/index.ts`.
 - **Toast notifications**: Use `useToast()` from `@/state/Toast/ToastProvider` for user feedback on async actions (success, error, network).
 - **`global-error.tsx`**: Uses inline styles intentionally (renders outside the app tree where Tailwind isn't available). Don't convert to Tailwind.
 

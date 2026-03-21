@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 import Link from 'next/link';
 import { analytics } from '@/lib/analytics';
+import { cardBase } from '@/lib/layoutStyles';
 
 export default function ExperienceCardLink({
   href,
@@ -17,7 +18,7 @@ export default function ExperienceCardLink({
     <Link
       href={href}
       onClick={() => analytics.experienceClick(slug)}
-      className='group flex items-start gap-4 p-4 rounded-xl border border-border bg-surface-secondary transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5'
+      className={`group flex items-start gap-4 p-4 ${cardBase} transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5`}
     >
       {children}
     </Link>

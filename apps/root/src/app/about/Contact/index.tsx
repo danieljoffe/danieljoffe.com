@@ -1,11 +1,9 @@
+import { sectionContainer } from '@/lib/layoutStyles';
 import LazyForm from './LazyForm';
 
 export default function Contact() {
   return (
-    <section
-      aria-labelledby='contact-heading'
-      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
-    >
+    <section aria-labelledby='contact-heading' className={sectionContainer}>
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <h2 id='contact-heading' className='text-center'>
           Let&apos;s Connect

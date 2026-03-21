@@ -194,12 +194,7 @@ export async function POST(request: Request) {
       lead_id: newLead.id,
     });
   } catch (error) {
-    captureApiError(
-      error instanceof Error ? error : new Error('Unknown error'),
-      '/api/leads/capture',
-      'POST',
-      500
-    );
+    captureApiError(error, '/api/leads/capture', 'POST', 500);
 
     return NextResponse.json(
       { error: 'Internal server error' },

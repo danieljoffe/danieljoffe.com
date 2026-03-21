@@ -1,11 +1,9 @@
+import { sectionContainer } from '@/lib/layoutStyles';
 import CalendlyButton from './CalendlyButton';
 
 export default function CTASection() {
   return (
-    <section
-      aria-labelledby='cta-heading'
-      className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'
-    >
+    <section aria-labelledby='cta-heading' className={sectionContainer}>
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 text-center py-16'>
         <div className='flex flex-col gap-4 items-center'>
           <h2 id='cta-heading' className='font-sans text-3xl font-semibold'>

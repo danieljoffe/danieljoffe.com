@@ -262,12 +262,7 @@ export async function POST(request: NextRequest) {
       status: 'pending',
     });
   } catch (error) {
-    captureApiError(
-      error instanceof Error ? error : new Error('Unknown error'),
-      '/api/audit/scan',
-      'POST',
-      500
-    );
+    captureApiError(error, '/api/audit/scan', 'POST', 500);
 
     return NextResponse.json(
       { error: 'Internal server error' },
