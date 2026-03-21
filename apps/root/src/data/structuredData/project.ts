@@ -72,9 +72,9 @@ export const projectStructuredData: Record<
 export const projectsRootStructuredData: CollectionPageStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'Projects | Daniel Joffe - Frontend Engineer',
+  name: 'Projects | Daniel Joffe - Full-Stack Engineer',
   description:
-    'Case studies and projects showcasing performance optimization, component architecture, and full-stack development. Each project includes the challenge, my approach, and measurable outcomes.',
+    'Case studies and projects spanning full-stack development, backend architecture, and frontend systems. Each project includes the challenge, my approach, and measurable outcomes.',
   url: `${DOMAIN_URL}${PROJECTS_LINK.href}`,
   author,
   mainEntity: {

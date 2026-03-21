@@ -35,9 +35,11 @@ describe('Homepage', () => {
 
   it('renders hero descriptions', () => {
     render(<Page />);
-    expect(screen.getByText('I optimize applications.')).toBeInTheDocument();
     expect(
-      screen.getByText('I build scalable design systems.')
+      screen.getByText('I build full-stack products.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('I architect backend systems.')
     ).toBeInTheDocument();
   });
 

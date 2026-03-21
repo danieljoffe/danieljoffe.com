@@ -10,6 +10,7 @@ import {
   UserCheck,
   Search,
   Sprout,
+  Layers,
 } from 'lucide-react';
 
 interface Achievement {
@@ -85,6 +86,11 @@ export const offerings: {
       Icon: BarChart3,
       title: 'I Measure What Matters',
       text: 'Lighthouse scores, bounce rates, Core Web Vitals — I treat performance as a feature. At FightCamp, systematic optimization lifted Lighthouse from ~35 to ~80 and cut mobile bounce rates by 39%.',
+    },
+    {
+      Icon: Layers,
+      title: 'I Think in Systems, Not Just Components',
+      text: 'Building auth systems and rate limiters taught me to reason about tradeoffs — JWT vs sessions, in-memory vs distributed state, fail-open vs fail-closed. I bring that architectural thinking to every layer of the stack, not just the UI.',
     },
     {
       Icon: Sprout,

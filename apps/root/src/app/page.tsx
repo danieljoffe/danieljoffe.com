@@ -63,9 +63,9 @@ export default function Index() {
           </div>
 
           <div className='space-y-3 text-sm text-text-secondary'>
-            <p>I optimize applications.</p>
-            <p>I build scalable design systems.</p>
-            <p>And I love eliminating engineering bottlenecks.</p>
+            <p>I build full-stack products.</p>
+            <p>I architect backend systems.</p>
+            <p>And I eliminate engineering bottlenecks.</p>
           </div>
 
           <HeroActions />
@@ -170,8 +170,8 @@ export default function Index() {
           heading="Let's Build Something Great Together"
           description={
             <>
-              Available for contract projects and fractional engineering
-              engagements. Let&apos;s talk about your project.
+              Available for full-stack engineering roles &mdash; Q1 2026.
+              Let&apos;s talk about your project.
             </>
           }
         >

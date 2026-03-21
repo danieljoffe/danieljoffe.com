@@ -28,9 +28,9 @@ export default function Projects() {
             Projects
           </h1>
           <p className='text-lg text-text-secondary max-w-xl mx-auto'>
-            Case studies and projects showcasing performance optimization,
-            component architecture, and full-stack development. Each project
-            includes the challenge, my approach, and measurable outcomes.
+            Case studies and projects spanning full-stack development, backend
+            architecture, and frontend systems. Each project includes the
+            challenge, my approach, and measurable outcomes.
           </p>
         </div>
       </Section>

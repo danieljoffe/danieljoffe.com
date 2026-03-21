@@ -20,7 +20,7 @@ export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
 // PERSONAL INFORMATION
 // ============================================================================
 export const FULL_NAME = 'Daniel Joffe';
-export const JOB_TITLE = 'Senior Frontend Engineer';
+export const JOB_TITLE = 'Full-Stack Engineer';
 export const EMAIL_ADDRESS = 'hello@danieljoffe.com';
 export const LINKEDIN_PROFILE_URL = `${LINKEDIN_URL}/in/daniel-joffe-work`;
 export const GITHUB_PROFILE_URL = `${GITHUB_URL}/danieljoffe`;
