@@ -28,7 +28,7 @@ jobs:
     if: ${{ !inputs.update-snapshots }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           filter: tree:0
           fetch-depth: 0
@@ -43,7 +43,7 @@ jobs:
     if: ${{ inputs.update-snapshots }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           filter: tree:0
           fetch-depth: 0
@@ -63,7 +63,7 @@ jobs:
         run: npx playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium --project=firefox --project=webkit
 
       - name: Upload VR baselines
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: vr-baselines
           path: apps/root-e2e/src/visual-regression.spec.ts-snapshots/

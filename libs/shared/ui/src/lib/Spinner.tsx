@@ -26,7 +26,7 @@ const sizeStyles: Record<SpinnerSize, string> = {
 };
 
 const variantStyles: Record<SpinnerVariant, string> = {
-  accent: 'border-accent/30 border-t-accent',
+  accent: 'border-brand-500/30 border-t-accent',
   success: 'border-success/30 border-t-success',
   warning: 'border-warning/30 border-t-warning',
   error: 'border-error/30 border-t-error',

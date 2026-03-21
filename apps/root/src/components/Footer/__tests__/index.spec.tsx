@@ -49,7 +49,7 @@ describe('Footer', () => {
 
   it('displays profile title', () => {
     render(<Footer />);
-    expect(screen.getByText('Senior Frontend Engineer')).toBeInTheDocument();
+    expect(screen.getByText('Full-Stack Engineer')).toBeInTheDocument();
   });
 
   it('displays current year in copyright', () => {

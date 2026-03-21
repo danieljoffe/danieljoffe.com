@@ -7,17 +7,17 @@ describe('Card', () => {
     expect(screen.getByText('Card content')).toBeInTheDocument();
   });
 
-  it('applies default bg-card class', () => {
+  it('applies default bg-surface-elevated class', () => {
     const { container } = render(<Card>Content</Card>);
-    expect(container.firstChild).toHaveClass('bg-card');
+    expect(container.firstChild).toHaveClass('bg-surface-elevated');
   });
 
   it('applies elevated styles when elevated is true', () => {
     const { container } = render(<Card elevated>Content</Card>);
     expect(container.firstChild).toHaveClass(
-      'bg-background-elevated',
+      'bg-surface-elevated',
       'shadow-md',
-      'border-border-strong'
+      'border-border-secondary'
     );
   });
 

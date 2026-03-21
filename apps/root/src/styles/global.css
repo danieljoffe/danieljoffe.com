@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import './theme.css';
+
+/* Content sources for Tailwind v4 class detection */
+@source "../**/*.{ts,tsx,js,jsx}";

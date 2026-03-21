@@ -26,7 +26,7 @@ jest.mock('./HowItWorks', () => ({
 }));
 
 describe('Audit Page', () => {
-  it('renders inside MainContent wrapper', async () => {
+  it('renders inside PageLayout wrapper', async () => {
     render(await AuditPage());
     const main = screen.getByRole('main');
     expect(main).toHaveAttribute('id', 'main-content');

@@ -1,31 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import Page from './page';
 
-jest.mock('./Hero', () => ({
+jest.mock('./HeroCTA', () => ({
   __esModule: true,
-  default: function Hero() {
-    return <div data-testid='services-hero' />;
-  },
-}));
-
-jest.mock('./ServicesGrid', () => ({
-  __esModule: true,
-  default: function ServicesGrid() {
-    return <div data-testid='services-grid' />;
-  },
-}));
-
-jest.mock('./HowIWork', () => ({
-  __esModule: true,
-  default: function HowIWork() {
-    return <div data-testid='how-i-work' />;
-  },
-}));
-
-jest.mock('./WhoIWorkWith', () => ({
-  __esModule: true,
-  default: function WhoIWorkWith() {
-    return <div data-testid='who-i-work-with' />;
+  default: function HeroCTA() {
+    return <div data-testid='hero-cta' />;
   },
 }));
 
@@ -36,38 +15,38 @@ jest.mock('./FAQ', () => ({
   },
 }));
 
-jest.mock('./CTA', () => ({
-  __esModule: true,
-  default: function CTA() {
-    return <div data-testid='services-cta' />;
-  },
-}));
-
 describe('Services Page', () => {
-  it('renders inside MainContent wrapper', () => {
+  it('renders inside PageLayout wrapper', () => {
     render(<Page />);
     const main = screen.getByRole('main');
-    expect(main).toHaveAttribute('id', 'main-content');
+    expect(main).toBeInTheDocument();
   });
 
-  it('renders Hero section', () => {
+  it('renders Hero section with heading', () => {
     render(<Page />);
-    expect(screen.getByTestId('services-hero')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /your frontend is costing you users/i,
+      })
+    ).toBeInTheDocument();
   });
 
-  it('renders ServicesGrid section', () => {
+  it('renders services grid', () => {
     render(<Page />);
-    expect(screen.getByTestId('services-grid')).toBeInTheDocument();
+    expect(screen.getByText(/services/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Performance Audits & Optimization/i)
+    ).toBeInTheDocument();
   });
 
-  it('renders HowIWork section', () => {
+  it('renders How I Work section', () => {
     render(<Page />);
-    expect(screen.getByTestId('how-i-work')).toBeInTheDocument();
+    expect(screen.getByText(/how i work/i)).toBeInTheDocument();
   });
 
-  it('renders WhoIWorkWith section', () => {
+  it('renders Who I Work Best With section', () => {
     render(<Page />);
-    expect(screen.getByTestId('who-i-work-with')).toBeInTheDocument();
+    expect(screen.getByText(/who i work best with/i)).toBeInTheDocument();
   });
 
   it('renders FAQ section', () => {
@@ -77,7 +56,11 @@ describe('Services Page', () => {
 
   it('renders CTA section', () => {
     render(<Page />);
-    expect(screen.getByTestId('services-cta')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /let's figure out how i can help/i,
+      })
+    ).toBeInTheDocument();
   });
 
   it('renders structured data script', () => {

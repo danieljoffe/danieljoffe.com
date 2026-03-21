@@ -11,10 +11,11 @@ export default function HeroCTA() {
       as='link'
       href={CALENDLY_URL}
       target='_blank'
+      size='sm'
       onClick={() => analytics.ctaClick('services_hero_cta', CALENDLY_URL)}
     >
-      <span>Book a Discovery Call</span>
-      <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
+      Book a Discovery Call
+      <ArrowUpRight className='h-4 w-4' />
     </Button>
   );
 }

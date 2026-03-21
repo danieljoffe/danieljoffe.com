@@ -1,5 +1,4 @@
-import '@/styles/global.scss';
-import '@/styles/fonts';
+import '@/styles/global.css';
 import type { Preview } from '@storybook/react';
 import { INITIAL_VIEWPORTS, MINIMAL_VIEWPORTS } from 'storybook/viewport';
 

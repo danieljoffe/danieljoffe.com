@@ -15,7 +15,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version-file: .nvmrc
         cache: yarn
@@ -29,6 +29,8 @@ runs:
       run: yarn playwright install --with-deps
 
     - uses: nrwl/nx-set-shas@v4
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     - name: Run affected tasks
       shell: bash

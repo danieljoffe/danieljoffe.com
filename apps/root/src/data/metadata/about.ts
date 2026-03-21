@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const aboutMetadata: Metadata = {
-  title: 'About Daniel Joffe | Frontend Engineer & Technical Leader',
+  title: 'About Daniel Joffe | Full-Stack Engineer & Technical Leader',
   description:
     '8+ years building performant web applications. Specializing in React, Vue, TypeScript, and performance optimization. Currently completing CS degree at WGU.',
   keywords: [
@@ -37,7 +37,7 @@ export const aboutMetadata: Metadata = {
   icons: {
     other: [
       {
-        url: '/images/daniel-joffe-profile.png',
+        url: '/images/daniel-joffe-profile.webp',
         rel: 'preload',
         fetchPriority: 'high',
         media: '(max-width: 768px)',

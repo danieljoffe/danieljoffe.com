@@ -22,7 +22,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event.inputs.confirm == 'deploy'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
           filter: tree:0
@@ -40,7 +40,7 @@ jobs:
       name: production
       url: ${{ steps.deploy.outputs.url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
 

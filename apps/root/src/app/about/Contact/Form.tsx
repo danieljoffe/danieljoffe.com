@@ -10,19 +10,44 @@ import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Stack, Input, Textarea, Loading } from '@danieljoffe.com/shared-ui';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
+import { useToast } from '@/state/Toast/ToastProvider';
+import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
+import { FormFieldError } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
-  loading: () => <Loading />,
+  loading: () => (
+    <div
+      className='flex items-center justify-center min-h-52'
+      role='status'
+      aria-live='polite'
+      aria-label='Loading content'
+    >
+      <div className='flex flex-col items-center gap-3'>
+        <div className='flex gap-1.5'>
+          {[0, 0.1, 0.2, 0.3].map((delay, i) => (
+            <span
+              key={i}
+              className={`size-2 rounded-full ${i % 2 === 0 ? 'bg-brand-500' : 'bg-brand-500/60'} animate-bounce`}
+              style={{ animationDelay: `${delay}s`, animationDuration: '0.6s' }}
+            />
+          ))}
+        </div>
+        <span className='text-sm text-text-secondary animate-pulse'>
+          Loading...
+        </span>
+      </div>
+    </div>
+  ),
 });
 
 type ContactFormData = InferType<typeof formSchema>;
 
 export default function Form() {
   const router = useRouter();
+  const { toast } = useToast();
   const [shouldLoadCaptcha, setShouldLoadCaptcha] = useState(false);
   const captchaContainerRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +118,11 @@ export default function Form() {
       addBreadcrumb('Contact form submitted successfully', 'form', {
         formId: CONTACT_FORM_ID,
       });
+      toast({
+        variant: 'success',
+        title: 'Message sent!',
+        description: 'Redirecting you now...',
+      });
       router.push('/thank-you/email');
     } catch (error) {
       analytics.formError('contact', 'Failed to send message');
@@ -106,6 +136,11 @@ export default function Form() {
       setError('root.unknownError', {
         type: 'manual',
         message: 'Failed to send message. Please try again.',
+      });
+      toast({
+        variant: 'error',
+        title: 'Failed to send message',
+        description: 'Please try again.',
       });
     }
   };
@@ -131,57 +166,82 @@ export default function Form() {
 
       <fieldset>
         <legend className='sr-only'>Contact Information</legend>
-        <Stack direction='vertical' gap='md'>
-          <Input
-            className='text-foreground placeholder-foreground-muted'
-            placeholder='John Doe'
-            type='text'
-            autoComplete='name'
-            label='Name'
-            required={true}
-            data-sentry-mask
-            {...register('name')}
-            error={errors?.name?.message}
-            aria-describedby={errors?.name?.message ? 'name-error' : undefined}
-          />
+        <div className='flex flex-col gap-4'>
+          <div className='w-full'>
+            <label htmlFor='name' className='block text-text-primary mb-2'>
+              Name
+              <span className='text-error ml-1'>*</span>
+            </label>
+            <input
+              id='name'
+              className={errors?.name ? inputErrorStyles : inputStyles}
+              placeholder='John Doe'
+              type='text'
+              autoComplete='name'
+              required
+              aria-invalid={!!errors?.name}
+              data-sentry-mask
+              {...register('name')}
+              aria-describedby={
+                errors?.name?.message ? 'name-error' : undefined
+              }
+            />
+            <FormFieldError message={errors?.name?.message} id='name-error' />
+          </div>
 
-          <Input
-            className='text-foreground placeholder-foreground-muted'
-            label='Email'
-            placeholder='john.doe@example.com'
-            type='email'
-            autoComplete='email'
-            required={true}
-            data-sentry-mask
-            {...register('email')}
-            error={errors?.email?.message}
-            aria-describedby={
-              errors?.email?.message ? 'email-error' : undefined
-            }
-          />
+          <div className='w-full'>
+            <label htmlFor='email' className='block text-text-primary mb-2'>
+              Email
+              <span className='text-error ml-1'>*</span>
+            </label>
+            <input
+              id='email'
+              className={errors?.email ? inputErrorStyles : inputStyles}
+              placeholder='john.doe@example.com'
+              type='email'
+              autoComplete='email'
+              required
+              aria-invalid={!!errors?.email}
+              data-sentry-mask
+              {...register('email')}
+              aria-describedby={
+                errors?.email?.message ? 'email-error' : undefined
+              }
+            />
+            <FormFieldError message={errors?.email?.message} id='email-error' />
+          </div>
 
-          <Textarea
-            className='text-foreground placeholder-foreground-muted'
-            label='Message'
-            placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
-            autoComplete='off'
-            required={true}
-            rows={5}
-            data-sentry-mask
-            {...register('message')}
-            error={errors?.message?.message}
-            aria-describedby={
-              errors?.message?.message ? 'message-error' : undefined
-            }
-          />
-        </Stack>
+          <div className='w-full'>
+            <label htmlFor='message' className='block text-text-primary mb-2'>
+              Message
+              <span className='text-error ml-1'>*</span>
+            </label>
+            <textarea
+              id='message'
+              className={errors?.message ? inputErrorStyles : inputStyles}
+              placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
+              autoComplete='off'
+              rows={5}
+              required
+              aria-invalid={!!errors?.message}
+              data-sentry-mask
+              {...register('message')}
+              aria-describedby={
+                errors?.message?.message ? 'message-error' : undefined
+              }
+            />
+            <FormFieldError
+              message={errors?.message?.message}
+              id='message-error'
+            />
+          </div>
+        </div>
       </fieldset>
 
       {/* Honeypot field for spam protection */}
       <div className='absolute top-0 left-0 size-0 pointer-events-none -z-1 hidden'>
-        <Input
+        <input
           name='address'
-          label='Address'
           placeholder='1234 Main St, Anytown, USA'
           type='text'
           autoComplete='off'
@@ -192,7 +252,7 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
-        <label className='text-sm text-foreground-muted block mb-1'>
+        <label className='text-sm text-text-secondary block mb-1'>
           Security verification
         </label>
         {shouldLoadCaptcha && (

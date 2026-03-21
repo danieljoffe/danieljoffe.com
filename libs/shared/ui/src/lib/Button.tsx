@@ -38,8 +38,8 @@ export interface ButtonProps
 
 export const baseButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition',
-  'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
-  'focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed',
+  'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+  'focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed',
   'hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none',
 ].join(' ');
 
@@ -48,27 +48,27 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${
     regularButton
-  } bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-active`,
+  } bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700`,
   secondary: `${
     regularButton
-  } bg-background-elevated text-foreground hover:bg-background border border-border`,
+  } bg-surface-elevated text-text-primary hover:bg-surface border border-border`,
   ghost: `${
     regularButton
-  } text-foreground-muted hover:bg-background-elevated hover:text-foreground`,
+  } text-text-secondary hover:bg-surface-elevated hover:text-text-primary`,
   outline: `${
     regularButton
-  } border border-border-strong text-foreground hover:bg-background-elevated`,
-  success: `${regularButton} bg-success text-success-foreground hover:opacity-90`,
-  error: `${regularButton} bg-error text-error-foreground hover:opacity-90`,
-  warning: `${regularButton} bg-warning text-warning-foreground hover:opacity-90`,
-  info: `${regularButton} bg-info text-info-foreground hover:opacity-90`,
+  } border border-border-secondary text-text-primary hover:bg-surface-elevated`,
+  success: `${regularButton} bg-success text-white hover:opacity-90`,
+  error: `${regularButton} bg-error text-text-inverse hover:opacity-90`,
+  warning: `${regularButton} bg-warning text-text-inverse hover:opacity-90`,
+  info: `${regularButton} bg-info text-text-inverse hover:opacity-90`,
 };
 
 const baseOutline =
   'hover:outline hover:outline-2 hover:outline-offset-2 hover:shadow-lg/12.5';
 export const variantLinkOutline: Record<ButtonVariant, string> = {
   bare: '',
-  primary: `${baseOutline} hover:outline-accent`,
+  primary: `${baseOutline} hover:outline-brand-500`,
   secondary: `${baseOutline} hover:outline-border-strong`,
   ghost: `${baseOutline} hover:outline-foreground-muted`,
   outline: `${baseOutline} hover:outline-border-strong`,

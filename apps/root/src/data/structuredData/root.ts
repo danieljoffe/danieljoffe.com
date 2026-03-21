@@ -16,7 +16,7 @@ export const rootStructuredData = {
   url: DOMAIN_URL,
   email: EMAIL_ADDRESS,
   sameAs: [LINKEDIN_PROFILE_URL, GITHUB_PROFILE_URL],
-  description: `${FULL_NAME} is a Senior Frontend Engineer with 8+ years of experience specializing in performance optimization and component architecture`,
+  description: `${FULL_NAME} is a Full-Stack Engineer with 10+ years of experience specializing in performance optimization, backend architecture, and component systems`,
   knowsAbout: [
     'React',
     'TypeScript',
@@ -37,7 +37,7 @@ export const rootStructuredData = {
   hasOccupation: {
     '@type': 'Occupation',
     name: JOB_TITLE,
-    description: `${FULL_NAME} is a Senior Frontend Engineer with 8+ years of experience specializing in performance optimization, component architecture, and accessible web applications.`,
+    description: `${FULL_NAME} is a Full-Stack Engineer with 10+ years of experience specializing in performance optimization, backend architecture, and accessible web applications.`,
     occupationLocation: {
       '@type': 'Place',
       addressCountry: 'US',

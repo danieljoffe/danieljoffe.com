@@ -1,13 +1,13 @@
 export const fraunces = {
   className: '',
   style: { fontFamily: 'Georgia, Times New Roman, serif' },
-  variable: '--font-heading',
+  variable: '--font-sans',
 };
 
 export const inter = {
   className: '',
   style: { fontFamily: 'system-ui, -apple-system, sans-serif' },
-  variable: '--font-body',
+  variable: '--font-sans',
 };
 
 export const ibmPlexMono = {

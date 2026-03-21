@@ -58,8 +58,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           'rounded-lg border border-border',
           elevated
-            ? 'bg-background-elevated shadow-md shadow-black/10 border-border-strong'
-            : 'bg-card',
+            ? 'bg-surface-elevated shadow-md shadow-black/10 border-border-secondary'
+            : 'bg-surface-elevated',
           paddingStyles[padding],
           className
         )}
@@ -88,7 +88,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
     return (
       <h3
         ref={ref}
-        className={cn('text-lg font-semibold text-foreground', className)}
+        className={cn('text-lg font-semibold text-text-primary', className)}
         {...props}
       >
         {children}

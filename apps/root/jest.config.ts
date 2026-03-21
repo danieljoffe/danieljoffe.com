@@ -40,6 +40,8 @@ const config = {
   forceExit: true,
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   moduleNameMapper: {
+    '^@danieljoffe\\.com/shared-ui$':
+      '<rootDir>/../../libs/shared/ui/src/index.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^gsap/MorphSVGPlugin$': '<rootDir>/__mocks__/gsap.morphSVGPlugin.js',
     '^gsap/CustomEase$': '<rootDir>/__mocks__/gsap.customEase.js',

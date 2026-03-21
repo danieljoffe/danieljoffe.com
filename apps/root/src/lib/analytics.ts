@@ -32,7 +32,7 @@ export const analytics = {
     trackEvent('experience_click', { experience: experienceSlug }),
 
   // Theme events
-  themeToggle: (theme: 'light' | 'dark') =>
+  themeToggle: (theme: 'light' | 'dark' | 'system') =>
     trackEvent('theme_toggle', { theme }),
 
   // Audit events

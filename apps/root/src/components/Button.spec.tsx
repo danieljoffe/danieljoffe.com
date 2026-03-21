@@ -112,7 +112,7 @@ describe('Button component', () => {
       </Button>
     );
     const link = screen.getByRole('link', { name: /highlight/i });
-    expect(link.className).toContain('text-accent');
+    expect(link.className).toContain('text-brand-500');
     expect(link.className).toContain('underline');
   });
 

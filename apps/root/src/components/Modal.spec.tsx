@@ -16,7 +16,7 @@ expect.extend(toHaveNoViolations);
 const mockToggleModal = jest.fn();
 const mockUseGlobal = jest.fn();
 
-jest.mock('@/state/Modal/Provider', () => ({
+jest.mock('@/state/Modal/ModalProvider', () => ({
   useModal: () => mockUseGlobal(),
 }));
 

@@ -96,7 +96,7 @@ describe('og', () => {
       expect(result).toMatch(/^data:image\/png;base64,.+/);
       // Verify readFile was called for the profile image (3 fonts + 1 profile = 4 total)
       expect(mockReadFile).toHaveBeenCalledWith(
-        expect.stringContaining('daniel-joffe-profile.png')
+        expect.stringContaining('daniel-joffe-profile.webp')
       );
     });
   });

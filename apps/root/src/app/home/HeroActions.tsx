@@ -1,39 +1,39 @@
 'use client';
 
 import { ArrowUpRight, Download } from 'lucide-react';
-import { Stack } from '@danieljoffe.com/shared-ui';
-import { HOME_LINK, PROJECTS_LINK } from '@/utils/constants';
+import { PROJECTS_LINK, HOME_LINK } from '@/utils/constants';
 import { downloadResume } from '@/utils/helpers';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
 
 export default function HeroActions() {
   return (
-    <Stack direction='vertical' className='items-start'>
+    <div className='flex flex-wrap items-center gap-3 pt-2'>
       <Button
         as='link'
-        className='max-w-max'
         href={PROJECTS_LINK.href}
         aria-label='View case studies'
+        size='sm'
         onClick={() =>
           analytics.ctaClick('view_case_studies', PROJECTS_LINK.href)
         }
       >
-        <span>View case studies</span>
-        <ArrowUpRight absoluteStrokeWidth={true} className='size-4' />
+        View case studies
+        <ArrowUpRight className='h-4 w-4' />
       </Button>
       <Button
-        as='button'
-        className='max-w-max'
+        variant='secondary'
+        size='sm'
         aria-label='Download resume'
+        name='download-resume'
         onClick={() => {
           analytics.ctaClick('download_resume', HOME_LINK.href);
           downloadResume();
         }}
       >
-        <Download absoluteStrokeWidth={true} className='size-4' />
-        <span>Download resume</span>
+        <Download className='h-4 w-4' />
+        Download resume
       </Button>
-    </Stack>
+    </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Globe } from 'lucide-react';
 import type { DeviceMode } from '@danieljoffe.com/shared-audit';
-import { cn } from '@danieljoffe.com/shared-ui';
 import Image from 'next/image';
 
 interface ExpandableScreenshotProps {
@@ -33,8 +32,8 @@ export default function ExpandableScreenshot({
 
   if (!screenshotUrl) {
     return (
-      <span className='inline-flex items-center justify-center w-16 h-12 rounded border border-border bg-background-elevated shrink-0'>
-        <Globe className='size-6 text-foreground-subtle' aria-hidden='true' />
+      <span className='inline-flex items-center justify-center w-16 h-12 rounded border border-border bg-surface-elevated shrink-0'>
+        <Globe className='size-6 text-text-tertiary' aria-hidden='true' />
       </span>
     );
   }
@@ -43,15 +42,12 @@ export default function ExpandableScreenshot({
     <button
       type='button'
       onClick={() => setExpanded(prev => !prev)}
-      className='cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded shrink-0 transition-all duration-200'
+      className='cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 rounded shrink-0 transition-all duration-200'
       aria-expanded={expanded}
       aria-label={expanded ? 'Collapse screenshot' : 'Expand screenshot'}
     >
       <div
-        className={cn(
-          'relative max-w-full rounded border border-border overflow-hidden transition-all duration-300 ease-in-out',
-          expanded ? size.expanded : size.collapsed
-        )}
+        className={`relative max-w-full rounded border border-border overflow-hidden transition-all duration-300 ease-in-out ${expanded ? size.expanded : size.collapsed}`}
       >
         <Image
           src={screenshotUrl}

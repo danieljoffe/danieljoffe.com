@@ -1,31 +1,23 @@
-import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
-import Button from '@/components/Button';
 import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/constants';
 import { notFoundMetadata } from '@/data/metadata/notFound';
+import Button from '@/components/Button';
 
 export const metadata: Metadata = notFoundMetadata;
 
 export default function NotFound() {
   return (
     <main>
-      <PageContainer>
-        <Stack
-          direction='vertical'
-          align='center'
-          justify='center'
-          gap='lg'
-          className='min-h-[60vh] text-center'
-        >
-          <Stack direction='vertical' gap='sm'>
-            <h1 className='text-foreground-muted'>404</h1>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
+        <div className='flex flex-col items-center justify-center gap-6 min-h-[60vh] text-center'>
+          <div className='flex flex-col gap-2'>
+            <h1 className='text-text-secondary'>404</h1>
             <h2>Page Not Found</h2>
-            <p className='text-foreground-muted mb-6 max-w-md'>
+            <p className='text-text-secondary mb-6 max-w-md'>
               The page you are looking for could not be found. Please check the
               URL or return to the home page.
             </p>
-          </Stack>
-
+          </div>
           <Button
             as='link'
             href={HOME_LINK.href}
@@ -33,8 +25,8 @@ export default function NotFound() {
           >
             Back to Home
           </Button>
-        </Stack>
-      </PageContainer>
+        </div>
+      </div>
     </main>
   );
 }

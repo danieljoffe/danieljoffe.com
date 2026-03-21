@@ -1,6 +1,6 @@
 # Daniel Joffe - Portfolio Website
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.1-61DAFB?logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1.13-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
@@ -19,7 +19,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 ### Key Features
 
 - 📱 **Fully Responsive Design** - Optimized for all devices and screen sizes
-- ⚡ **Performance Optimized** - Built with Next.js 15 and advanced optimization techniques
+- ⚡ **Performance Optimized** - Built with Next.js 16 and advanced optimization techniques
 - ♿ **Accessibility First** - WCAG compliant with proper semantic markup
 - 🎨 **Modern UI/UX** - Beautiful, clean design with smooth animations using GSAP
 - 📊 **Analytics & Monitoring** - Integrated with Google Analytics, Vercel Analytics, and Sentry
@@ -33,7 +33,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 
 ### Frontend
 
-- **Framework**: Next.js 15.5.2 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **UI Library**: React 19.1.1
 - **Language**: TypeScript 5.9.2
 - **Styling**: Tailwind CSS 4.1.13
@@ -62,21 +62,23 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 ## 📁 Project Structure
 
 ```
-apps/root/src/
-├── app/                    # Next.js App Router pages
-│   ├── home/              # Homepage components (Hero, Achievements, etc.)
-│   ├── about/             # About page with professional timeline
-│   ├── projects/          # Project showcase pages
-│   ├── api/               # API routes (contact form, etc.)
-│   └── thank-you/         # Thank you pages
-├── components/
-│   ├── assembled/         # Complex, reusable components
-│   └── units/            # Basic UI components (Button, Input, etc.)
-├── content/              # MDX content files
-├── lib/                  # Utility libraries and configurations
-├── state/                # Global state management
-├── types/                # TypeScript type definitions
-└── utils/                # Helper functions and constants
+├── apps/
+│   ├── root/              # Main Next.js 16 application (App Router)
+│   │   └── src/
+│   │       ├── app/       # Pages, API routes, and page-level components
+│   │       ├── components/
+│   │       │   └── kit/   # Next.js-specific shared components (Spinner, Pagination, etc.)
+│   │       ├── hooks/     # Custom React hooks (useTableSort, useAdminTableFetch, etc.)
+│   │       ├── lib/       # Utilities (cn, formStyles, badgeStyles, layoutStyles, etc.)
+│   │       ├── state/     # Global state management (Toast, etc.)
+│   │       ├── types/     # TypeScript type definitions
+│   │       └── utils/     # Helper functions and constants
+│   ├── root-e2e/          # Playwright E2E tests
+│   └── audit-scan-service/ # Express Lighthouse/axe audit service
+├── libs/
+│   └── shared/
+│       ├── ui/            # Shared React component library (34 components)
+│       └── audit/         # Shared audit types and utilities
 ```
 
 ## 📚 Documentation
@@ -154,11 +156,11 @@ npx nx e2e root-e2e
 ### Development Tools
 
 ```bash
-# Start Storybook
+# Start Storybook (root app)
 npx nx storybook root
 
-# Run bundle analyzer
-yarn analyze
+# Start Storybook (shared UI library)
+npx nx storybook @danieljoffe.com/shared-ui
 
 # Generate project graph
 npx nx graph
@@ -176,8 +178,11 @@ The project includes comprehensive testing setup:
 - **Linting**: ESLint with custom rules for code quality
 
 ```bash
-# Run all tests
+# Run app unit tests
 npx nx test root
+
+# Run shared UI library tests
+npx nx test @danieljoffe.com/shared-ui
 
 # Run E2E tests
 npx nx e2e root-e2e

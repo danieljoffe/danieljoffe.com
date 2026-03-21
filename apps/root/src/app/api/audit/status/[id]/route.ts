@@ -55,12 +55,7 @@ export async function GET(
       paired_status,
     });
   } catch (error) {
-    captureApiError(
-      error instanceof Error ? error : new Error('Unknown error'),
-      '/api/audit/status/[id]',
-      'GET',
-      500
-    );
+    captureApiError(error, '/api/audit/status/[id]', 'GET', 500);
 
     return NextResponse.json(
       { error: 'Internal server error' },

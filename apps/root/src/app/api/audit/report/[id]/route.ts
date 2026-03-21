@@ -61,12 +61,7 @@ export async function GET(
       summary,
     });
   } catch (error) {
-    captureApiError(
-      error instanceof Error ? error : new Error('Unknown error'),
-      '/api/audit/report/[id]',
-      'GET',
-      500
-    );
+    captureApiError(error, '/api/audit/report/[id]', 'GET', 500);
 
     return NextResponse.json(
       { error: 'Internal server error' },

@@ -25,13 +25,6 @@ describe('FAQ', () => {
     });
   });
 
-  it('renders the section heading', () => {
-    render(<FAQ />);
-    expect(
-      screen.getByRole('heading', { name: /frequently asked questions/i })
-    ).toBeInTheDocument();
-  });
-
   it('renders all FAQ questions as buttons', () => {
     render(<FAQ />);
     expect(
@@ -98,14 +91,6 @@ describe('FAQ', () => {
     fireEvent.click(secondQuestion);
     expect(firstQuestion).toHaveAttribute('aria-expanded', 'false');
     expect(secondQuestion).toHaveAttribute('aria-expanded', 'true');
-  });
-
-  it('has proper accessibility attributes on heading', () => {
-    render(<FAQ />);
-    const heading = screen.getByRole('heading', {
-      name: /frequently asked questions/i,
-    });
-    expect(heading).toHaveAttribute('id', 'faq-heading');
   });
 
   it('renders chevron icons that rotate when expanded', () => {

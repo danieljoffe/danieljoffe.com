@@ -1,12 +1,11 @@
-import { Container } from '@danieljoffe.com/shared-ui';
 import DarkModeToggle from './DarkModeToggle';
 import NavLinks from './Links';
 
 export default function TabletUpNav({ pathname }: { pathname: string }) {
   return (
-    <Container size='sm' className='hidden md:flex h-16 gap-4'>
+    <div className='hidden md:flex max-w-3xl mx-auto px-6 lg:px-0 h-14 items-center gap-4'>
       <NavLinks pathname={pathname} />
       <DarkModeToggle />
-    </Container>
+    </div>
   );
 }

@@ -30,16 +30,16 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             onClick={() => document.getElementById(checkboxId)?.click()}
             className={cn(
               'flex items-center justify-center size-5 border-2',
-              'border-border-strong rounded bg-input cursor-pointer transition-all',
-              'peer-checked:bg-accent peer-checked:border-accent peer-focus-visible:ring-2',
-              'peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 ',
-              'peer-focus-visible:ring-offset-background',
+              'border-border-secondary rounded bg-surface cursor-pointer transition-all',
+              'peer-checked:bg-brand-500 peer-checked:border-brand-500 peer-focus-visible:ring-2',
+              'peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2 ',
+              'peer-focus-visible:ring-offset-surface',
               className
             )}
           >
             {checked && (
               <Check
-                className='size-3.5 text-accent-foreground'
+                className='size-3.5 text-text-inverse'
                 strokeWidth={3}
                 aria-hidden='true'
               />
@@ -49,7 +49,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         {label && (
           <label
             htmlFor={checkboxId}
-            className='text-foreground cursor-pointer select-none'
+            className='text-text-primary cursor-pointer select-none'
           >
             {label}
           </label>

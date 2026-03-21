@@ -1,25 +1,21 @@
-import { PageContainer, Section, Stack } from '@danieljoffe.com/shared-ui';
+import { sectionContainer } from '@/lib/layoutStyles';
 import CalendlyButton from './CalendlyButton';
 
 export default function CTASection() {
   return (
-    <Section
-      aria-labelledby='cta-heading'
-      className='min-h-min max-h-max'
-      background='alt'
-    >
-      <PageContainer className='text-center py-16'>
-        <Stack direction='vertical' gap='md' align='center'>
-          <h2 id='cta-heading' className='font-heading text-3xl font-semibold'>
+    <section aria-labelledby='cta-heading' className={sectionContainer}>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 text-center py-16'>
+        <div className='flex flex-col gap-4 items-center'>
+          <h2 id='cta-heading' className='font-sans text-3xl font-semibold'>
             Want these fixed?
           </h2>
-          <p className='text-foreground-muted max-w-md'>
+          <p className='text-text-secondary max-w-md'>
             I help teams ship faster, more accessible websites. Let&apos;s talk
             about what&apos;s slowing yours down.
           </p>
           <CalendlyButton />
-        </Stack>
-      </PageContainer>
-    </Section>
+        </div>
+      </div>
+    </section>
   );
 }

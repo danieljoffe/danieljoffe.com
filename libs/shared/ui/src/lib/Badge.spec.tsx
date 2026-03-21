@@ -10,37 +10,37 @@ describe('Badge', () => {
   it('applies default variant styles', () => {
     render(<Badge>Default</Badge>);
     const badge = screen.getByText('Default');
-    expect(badge).toHaveClass('bg-background-elevated');
+    expect(badge).toHaveClass('bg-surface-elevated');
   });
 
   it('applies accent variant styles', () => {
     render(<Badge variant='accent'>Accent</Badge>);
     const badge = screen.getByText('Accent');
-    expect(badge).toHaveClass('bg-accent-muted');
+    expect(badge).toHaveClass('bg-brand-50');
   });
 
   it('applies success variant styles', () => {
     render(<Badge variant='success'>Success</Badge>);
     const badge = screen.getByText('Success');
-    expect(badge).toHaveClass('bg-success-muted');
+    expect(badge).toHaveClass('bg-success-light');
   });
 
   it('applies warning variant styles', () => {
     render(<Badge variant='warning'>Warning</Badge>);
     const badge = screen.getByText('Warning');
-    expect(badge).toHaveClass('bg-warning-muted');
+    expect(badge).toHaveClass('bg-warning-light');
   });
 
   it('applies error variant styles', () => {
     render(<Badge variant='error'>Error</Badge>);
     const badge = screen.getByText('Error');
-    expect(badge).toHaveClass('bg-error-muted');
+    expect(badge).toHaveClass('bg-error-light');
   });
 
   it('applies info variant styles', () => {
     render(<Badge variant='info'>Info</Badge>);
     const badge = screen.getByText('Info');
-    expect(badge).toHaveClass('bg-info-muted');
+    expect(badge).toHaveClass('bg-info-light');
   });
 
   it('applies custom className', () => {

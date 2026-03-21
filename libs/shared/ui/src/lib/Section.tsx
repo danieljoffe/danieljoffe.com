@@ -26,9 +26,9 @@ const paddingClasses = {
 };
 
 const backgroundClasses = {
-  default: 'bg-background',
-  alt: 'bg-background-alt',
-  elevated: 'bg-background-elevated',
+  default: 'bg-surface',
+  alt: 'bg-surface-secondary',
+  elevated: 'bg-surface-elevated',
   none: '',
 };
 

@@ -1,6 +1,34 @@
-export const services = [
+import {
+  type LucideIcon,
+  Rocket,
+  Wrench,
+  FileText,
+  Monitor,
+  TrendingUp,
+  Building2,
+  Target,
+} from 'lucide-react';
+
+interface Service {
+  Icon: LucideIcon;
+  title: string;
+  highlighted: boolean;
+  description: string;
+  deliverables: string[];
+  proof: string;
+  timeline: string;
+  price: string;
+}
+
+interface Audience {
+  Icon: LucideIcon;
+  label: string;
+  description: string;
+}
+
+export const services: Service[] = [
   {
-    icon: 'Rocket',
+    Icon: Rocket,
     title: 'Performance Audits & Optimization',
     highlighted: true,
     description:
@@ -16,7 +44,7 @@ export const services = [
     price: '$5,000',
   },
   {
-    icon: 'Wrench',
+    Icon: Wrench,
     title: 'Component Libraries & Design Systems',
     highlighted: false,
     description:
@@ -32,7 +60,7 @@ export const services = [
     price: '$10,000',
   },
   {
-    icon: 'FileText',
+    Icon: FileText,
     title: 'CMS & Self-Serve Tooling',
     highlighted: false,
     description:
@@ -48,7 +76,7 @@ export const services = [
     price: '$8,000',
   },
   {
-    icon: 'Monitor',
+    Icon: Monitor,
     title: 'MVP & Product Frontend Builds',
     highlighted: false,
     description:
@@ -66,25 +94,25 @@ export const services = [
   },
 ];
 
-export const servicesAudience = [
+export const servicesAudience: Audience[] = [
   {
-    icon: 'Rocket',
+    Icon: Rocket,
     label: 'Founders',
     description: 'who need a senior frontend partner, not just a pair of hands',
   },
   {
-    icon: 'TrendingUp',
+    Icon: TrendingUp,
     label: 'Growing startups',
     description: 'whose engineering team is stretched thin',
   },
   {
-    icon: 'Building2',
+    Icon: Building2,
     label: 'Agencies',
     description:
       'that need overflow capacity from someone who can own a project end-to-end',
   },
   {
-    icon: 'Target',
+    Icon: Target,
     label: 'Non-technical teams',
     description: 'drowning in engineering dependency for basic updates',
   },

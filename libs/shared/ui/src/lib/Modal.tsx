@@ -40,16 +40,16 @@ const sizeStyles: Record<ModalSize, string> = {
 };
 
 const variantStyles: Record<ModalVariant, string> = {
-  default: 'bg-background-elevated border border-border-strong',
+  default: 'bg-surface-elevated border border-border-secondary',
   accent:
-    'bg-background-elevated border border-border-strong border-l-4 border-l-accent',
+    'bg-surface-elevated border border-border-secondary border-l-4 border-l-accent',
   success:
-    'bg-background-elevated border border-border-strong border-l-4 border-l-success',
+    'bg-surface-elevated border border-border-secondary border-l-4 border-l-success',
   warning:
-    'bg-background-elevated border border-border-strong border-l-4 border-l-warning',
+    'bg-surface-elevated border border-border-secondary border-l-4 border-l-warning',
   error:
-    'bg-background-elevated border border-border-strong border-l-4 border-l-error',
-  info: 'bg-background-elevated border border-border-strong border-l-4 border-l-info',
+    'bg-surface-elevated border border-border-secondary border-l-4 border-l-error',
+  info: 'bg-surface-elevated border border-border-secondary border-l-4 border-l-info',
 };
 
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(
@@ -110,7 +110,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
     return (
       <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
         <div
-          className='absolute inset-0 bg-background/80 backdrop-blur-sm'
+          className='absolute inset-0 bg-surface/80 backdrop-blur-sm'
           onClick={handleClose}
           aria-hidden='true'
         />
@@ -139,7 +139,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 <button
                   onClick={handleClose}
                   aria-label='Close dialog'
-                  className='text-foreground-subtle hover:text-foreground transition-colors'
+                  className='text-text-tertiary hover:text-text-primary transition-colors'
                 >
                   <X className='size-5' aria-hidden='true' />
                 </button>
@@ -149,7 +149,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
               <button
                 onClick={handleClose}
                 aria-label='Close dialog'
-                className='absolute top-4 right-4 text-foreground-subtle hover:text-foreground transition-colors'
+                className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
               >
                 <X className='size-5' aria-hidden='true' />
               </button>

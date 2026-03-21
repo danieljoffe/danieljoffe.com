@@ -1,13 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import {
-  Button,
-  Card,
-  CardContent,
-  Input,
-  Stack,
-} from '@danieljoffe.com/shared-ui';
+import Button from '@/components/Button';
+import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {
   onAuthenticated: (password: string) => void;
@@ -81,23 +76,18 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
   }
 
   return (
-    <Stack
-      direction='vertical'
-      align='center'
-      justify='center'
-      className='min-h-[60vh]'
-    >
-      <Card className='w-full max-w-sm'>
-        <CardContent>
+    <div className='flex flex-col items-center justify-center min-h-[60vh]'>
+      <div className='rounded-lg border border-border bg-surface-elevated w-full max-w-sm'>
+        <div className='p-6'>
           <form onSubmit={handleSubmit}>
-            <Stack direction='vertical' gap='md'>
+            <div className='flex flex-col gap-4'>
               <h2 className='text-xl font-semibold text-center'>
                 Admin Dashboard
               </h2>
-              <p className='text-foreground-muted text-center text-sm'>
+              <p className='text-text-secondary text-center text-sm'>
                 Enter the admin password to continue.
               </p>
-              <Input
+              <input
                 type='password'
                 placeholder='Password'
                 value={password}
@@ -105,6 +95,8 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                 aria-label='Admin password'
                 autoFocus
                 disabled={isLockedOut}
+                data-sentry-mask
+                className={inputStyles}
               />
               {isLockedOut && (
                 <p className='text-error text-sm text-center' role='alert'>
@@ -119,15 +111,15 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
               )}
               <Button
                 type='submit'
-                variant='primary'
+                name='admin-sign-in'
                 disabled={loading || !password || isLockedOut}
               >
                 {loading ? 'Verifying...' : 'Sign in'}
               </Button>
-            </Stack>
+            </div>
           </form>
-        </CardContent>
-      </Card>
-    </Stack>
+        </div>
+      </div>
+    </div>
   );
 }

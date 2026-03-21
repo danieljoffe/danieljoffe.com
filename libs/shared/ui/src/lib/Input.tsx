@@ -28,7 +28,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className='w-full'>
         {label && (
-          <label htmlFor={inputId} className='block text-foreground mb-2'>
+          <label htmlFor={inputId} className='block text-text-primary mb-2'>
             {label}
             {required && <span className='text-error ml-1'>*</span>}
           </label>
@@ -41,9 +41,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy}
           required={required}
           className={cn(
-            'w-full px-4 py-2.5 bg-input border border-input-border rounded-md',
-            'text-foreground placeholder:text-foreground-subtle focus-visible:outline-none',
-            'focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-transparent',
+            'w-full px-4 py-2.5 bg-surface border border-border rounded-md',
+            'text-text-primary placeholder:text-text-tertiary focus-visible:outline-none',
+            'focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent',
             'transition-all',
             getStateClasses(),
             className
@@ -56,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
         {helperText && !error && (
-          <p id={helperId} className='mt-1.5 text-sm text-foreground-subtle'>
+          <p id={helperId} className='mt-1.5 text-sm text-text-tertiary'>
             {helperText}
           </p>
         )}

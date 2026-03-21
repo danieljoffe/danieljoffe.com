@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { PageContainer, Stack } from '@danieljoffe.com/shared-ui';
 import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
@@ -8,105 +7,103 @@ import {
   STORYBOOK_URL,
   RESUME_URL,
 } from '@/utils/constants';
-import { AtSign, Download, Github, Linkedin } from 'lucide-react';
+import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
 
 const currentYear = new Date().getFullYear();
 
-const linkClasses =
-  'text-sm lowercase font-semibold hover:text-accent transition-colors';
-const iconLinkClasses =
-  'p-2 hover:text-accent transition-colors inline-flex items-center justify-center';
+const socialLinks = [
+  {
+    href: `mailto:${profileData.social.email}`,
+    label: 'Send Email',
+    icon: AtSign,
+  },
+  {
+    href: profileData.social.linkedin,
+    label: 'Visit LinkedIn Profile',
+    icon: Linkedin,
+  },
+  {
+    href: profileData.social.github,
+    label: 'Visit GitHub Profile',
+    icon: Github,
+  },
+  {
+    href: RESUME_URL,
+    label: 'Download Resume (PDF)',
+    icon: Download,
+  },
+];
 
 export default function Footer() {
   return (
     <footer
-      className='w-full bg-background-alt border-t border-border py-8 mt-auto'
+      className='px-6 lg:px-0 pt-8 pb-12 border-t border-border mt-auto'
       role='contentinfo'
       aria-label='Site footer'
     >
-      <PageContainer>
-        <Stack direction='vertical' gap='lg' align='center'>
-          <Stack direction='vertical' gap='sm' align='center'>
-            <p className='text-lg font-medium'>{profileData.name}</p>
-            <p className='text-sm text-foreground-muted'>{profileData.title}</p>
-            <p className='text-sm text-foreground-muted italic'>
-              {profileData.status}
+      <div className='max-w-3xl mx-auto space-y-8'>
+        {/* Top row: name + title, social icons */}
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+          <div className='text-center sm:text-left'>
+            <p className='text-sm font-medium text-text-primary'>
+              {profileData.name}
             </p>
-          </Stack>
-
-          <nav aria-label='Footer navigation'>
-            <ul className='flex flex-col gap-4 items-center md:flex-row lowercase'>
-              {[...NAV_LINKS, AUDIT_LINK].map(link => (
-                <li key={link.href}>
-                  <Link href={link.href} className={linkClasses}>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div className='flex gap-1'>
-            <a
-              href={`mailto:${profileData.social.email}`}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Send Email'
-              title='Email'
-              className={iconLinkClasses}
-            >
-              <AtSign className='size-5' />
-            </a>
-            <a
-              href={profileData.social.linkedin}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Visit LinkedIn Profile'
-              title='LinkedIn'
-              className={iconLinkClasses}
-            >
-              <Linkedin className='size-5' />
-            </a>
-            <a
-              href={profileData.social.github}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Visit GitHub Profile'
-              title='GitHub'
-              className={iconLinkClasses}
-            >
-              <Github className='size-5' />
-            </a>
-            <a
-              href={RESUME_URL}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Download Resume (PDF)'
-              title='Download Resume'
-              className={iconLinkClasses}
-            >
-              <Download className='size-5' />
-            </a>
+            <p className='text-xs text-text-secondary mt-0.5'>
+              {profileData.title}
+            </p>
           </div>
+          <div className='flex items-center gap-1'>
+            {socialLinks.map(({ href, label, icon: Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target='_blank'
+                rel='noopener noreferrer'
+                aria-label={label}
+                title={label.replace(/^(Send |Visit |Download )/, '')}
+                className='p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors'
+              >
+                <Icon className='h-4 w-4' />
+              </a>
+            ))}
+          </div>
+        </div>
 
+        {/* Navigation */}
+        <nav aria-label='Footer navigation'>
+          <ul className='flex flex-wrap justify-center sm:justify-start gap-x-6 gap-y-2'>
+            {[...NAV_LINKS, AUDIT_LINK].map(link => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className='text-sm text-text-secondary hover:text-text-primary transition-colors'
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Bottom row: copyright + design system link */}
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+          <p className='text-xs text-text-tertiary'>
+            &copy; {currentYear} {FULL_NAME}. All rights reserved.
+          </p>
           <a
             href={STORYBOOK_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='text-sm hover:text-accent transition-colors inline-flex items-center gap-1'
+            className='flex items-center gap-1 text-xs text-text-tertiary'
           >
-            <span className='text-foreground-muted'>
-              Browse the design system
+            <span>Browse the design system</span>
+            <span className='inline-flex items-center gap-1 text-text-brand hover:underline'>
+              ui.danieljoffe.com
+              <ChevronRight className='h-3 w-3' />
             </span>
-            <span>&rarr;</span>
-            <span className='text-accent'>ui.danieljoffe.com</span>
           </a>
-
-          <p className='text-xs text-foreground-muted text-center'>
-            &copy; {currentYear} {FULL_NAME}. All rights reserved.
-          </p>
-        </Stack>
-      </PageContainer>
+        </div>
+      </div>
     </footer>
   );
 }
