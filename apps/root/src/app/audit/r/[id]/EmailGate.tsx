@@ -6,7 +6,7 @@ import { analytics } from '@/lib/analytics';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { VALIDATION_PATTERNS } from '@/utils/constants';
 import Button from '@/components/Button';
-import { Spinner, ErrorAlert } from '@/components/kit';
+import { Spinner, ErrorAlert, FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
@@ -133,15 +133,15 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                     }}
                     placeholder='you@company.com'
                     aria-label='Email address'
+                    aria-describedby={
+                      validationError ? 'email-error' : undefined
+                    }
                     required
                     disabled={state.phase === 'submitting'}
+                    data-sentry-mask
                     className={validationError ? inputErrorStyles : inputStyles}
                   />
-                  {validationError && (
-                    <p className='mt-1.5 text-sm text-error'>
-                      {validationError}
-                    </p>
-                  )}
+                  <FormFieldError message={validationError} id='email-error' />
                 </div>
                 <input
                   type='text'
@@ -150,6 +150,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                   placeholder='Name (optional)'
                   aria-label='Name'
                   disabled={state.phase === 'submitting'}
+                  data-sentry-mask
                   className={inputStyles}
                 />
                 <Button

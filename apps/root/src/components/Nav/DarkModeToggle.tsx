@@ -1,6 +1,7 @@
 'use client';
 
 import { Moon, Sun, Monitor } from 'lucide-react';
+import { cn } from '@/lib/cn';
 import { useTheme } from '@/state/Theme/ThemeProvider';
 import { analytics } from '@/lib/analytics';
 
@@ -32,12 +33,12 @@ export default function DarkModeToggle() {
           aria-label={`Switch to ${label.toLowerCase()} mode`}
           aria-checked={theme === value}
           role='radio'
-          className={[
+          className={cn(
             'p-1.5 rounded-md transition-all duration-150 cursor-pointer',
             theme === value
               ? 'bg-surface text-text-primary shadow-xs'
-              : 'text-text-tertiary hover:text-text-secondary',
-          ].join(' ')}
+              : 'text-text-tertiary hover:text-text-secondary'
+          )}
         >
           <Icon className='h-4 w-4' aria-hidden='true' />
         </button>

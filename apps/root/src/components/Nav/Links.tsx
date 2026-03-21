@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import { AUDIT_LINK, NAV_LINKS } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
@@ -43,12 +44,12 @@ export default function NavLinks({
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}
               aria-label={`Navigate to ${link.label} page`}
-              className={[
+              className={cn(
                 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 pathname === link.href
                   ? 'text-text-primary bg-surface-tertiary'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary',
-              ].join(' ')}
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+              )}
             >
               {link.label}
             </Link>

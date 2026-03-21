@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { cn } from '@/lib/cn';
 import {
   User,
   Code2,
@@ -264,20 +265,20 @@ export default function About() {
                   <div className='absolute left-[11px] top-3 bottom-0 w-px bg-border' />
                 )}
                 <div
-                  className={[
+                  className={cn(
                     'absolute left-0 top-1.5 h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center',
                     i === mantraItems.length - 1
                       ? 'border-brand-500 bg-brand-50'
-                      : 'border-border bg-surface',
-                  ].join(' ')}
+                      : 'border-border bg-surface'
+                  )}
                 >
                   <div
-                    className={[
+                    className={cn(
                       'h-2 w-2 rounded-full',
                       i === mantraItems.length - 1
                         ? 'bg-brand-500'
-                        : 'bg-border-secondary',
-                    ].join(' ')}
+                        : 'bg-border-secondary'
+                    )}
                   />
                 </div>
                 <div>

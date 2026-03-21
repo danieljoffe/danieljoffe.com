@@ -14,6 +14,7 @@ import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
+import { FormFieldError } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -185,11 +186,7 @@ export default function Form() {
                 errors?.name?.message ? 'name-error' : undefined
               }
             />
-            {errors?.name?.message && (
-              <p id='name-error' className='mt-1.5 text-sm text-error'>
-                {errors.name.message}
-              </p>
-            )}
+            <FormFieldError message={errors?.name?.message} id='name-error' />
           </div>
 
           <div className='w-full'>
@@ -211,11 +208,7 @@ export default function Form() {
                 errors?.email?.message ? 'email-error' : undefined
               }
             />
-            {errors?.email?.message && (
-              <p id='email-error' className='mt-1.5 text-sm text-error'>
-                {errors.email.message}
-              </p>
-            )}
+            <FormFieldError message={errors?.email?.message} id='email-error' />
           </div>
 
           <div className='w-full'>
@@ -237,11 +230,10 @@ export default function Form() {
                 errors?.message?.message ? 'message-error' : undefined
               }
             />
-            {errors?.message?.message && (
-              <p id='message-error' className='mt-1.5 text-sm text-error'>
-                {errors.message.message}
-              </p>
-            )}
+            <FormFieldError
+              message={errors?.message?.message}
+              id='message-error'
+            />
           </div>
         </div>
       </fieldset>

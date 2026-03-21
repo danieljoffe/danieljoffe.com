@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, Monitor, Smartphone } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
-import { Spinner, ErrorAlert } from '@/components/kit';
+import { Spinner, ErrorAlert, FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
@@ -124,12 +124,11 @@ export default function URLInputForm() {
               }}
               placeholder='https://example.com'
               aria-label='Website URL'
+              aria-describedby={validationError ? 'url-error' : undefined}
               disabled={state.phase === 'submitting'}
               className={validationError ? inputErrorStyles : inputStyles}
             />
-            {validationError && (
-              <p className='mt-1.5 text-sm text-error'>{validationError}</p>
-            )}
+            <FormFieldError message={validationError} id='url-error' />
           </div>
           <fieldset
             className='flex justify-around'

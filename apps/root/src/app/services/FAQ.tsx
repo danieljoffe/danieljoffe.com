@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/cn';
 import { servicesFAQs } from '@/data/services';
 
 export default function FAQ() {
@@ -21,18 +22,18 @@ export default function FAQ() {
               {faq.question}
             </span>
             <ChevronDown
-              className={[
+              className={cn(
                 'h-4 w-4 text-text-tertiary transition-transform duration-200 shrink-0 ml-2',
-                openIndex === index ? 'rotate-180' : '',
-              ].join(' ')}
+                openIndex === index && 'rotate-180'
+              )}
               aria-hidden='true'
             />
           </button>
           <div
-            className={[
+            className={cn(
               'overflow-hidden transition-all duration-200',
-              openIndex === index ? 'max-h-96 pb-4' : 'max-h-0',
-            ].join(' ')}
+              openIndex === index ? 'max-h-96 pb-4' : 'max-h-0'
+            )}
           >
             <p className='text-sm text-text-secondary leading-relaxed'>
               {faq.answer}

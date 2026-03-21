@@ -10,3 +10,4 @@ export { CompanyLogo } from './CompanyLogo';
 export { Spinner } from './Spinner';
 export { ErrorAlert } from './ErrorAlert';
 export { Pagination } from './Pagination';
+export { FormFieldError } from './FormFieldError';

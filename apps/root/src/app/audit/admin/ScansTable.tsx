@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Pagination } from '@/components/kit';
+import { Pagination, Spinner } from '@/components/kit';
 import { badgeVariants } from '@/lib/badgeStyles';
 import { useTableSort } from '@/hooks/useTableSort';
 
@@ -121,11 +121,8 @@ export default function ScansTable({ password }: ScansTableProps) {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan={5}
-                  className='py-8 text-center text-text-secondary'
-                >
-                  Loading...
+                <td colSpan={5} className='py-8 text-center'>
+                  <Spinner label='Loading scans' />
                 </td>
               </tr>
             ) : scans.length === 0 ? (

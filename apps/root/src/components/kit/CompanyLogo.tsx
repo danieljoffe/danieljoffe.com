@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { cn } from '@/lib/cn';
 
 type CompanyLogoSize = 'sm' | 'md' | 'lg';
 
@@ -23,11 +24,11 @@ export function CompanyLogo({
   const { container, img } = sizeStyles[size];
   return (
     <div
-      className={[
+      className={cn(
         'flex items-center justify-center rounded-xl bg-white border overflow-hidden shrink-0',
         container,
-        highlight ? 'border-brand-500' : 'border-border',
-      ].join(' ')}
+        highlight ? 'border-brand-500' : 'border-border'
+      )}
     >
       <Image
         src={src}

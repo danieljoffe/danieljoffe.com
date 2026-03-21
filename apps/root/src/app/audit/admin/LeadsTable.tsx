@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Pagination } from '@/components/kit';
+import { Pagination, Spinner } from '@/components/kit';
 import { badgeVariants } from '@/lib/badgeStyles';
 import { useTableSort } from '@/hooks/useTableSort';
 import { useToast } from '@/state/Toast/ToastProvider';
@@ -113,11 +113,8 @@ export default function LeadsTable({ password }: LeadsTableProps) {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan={7}
-                  className='py-8 text-center text-text-secondary'
-                >
-                  Loading...
+                <td colSpan={7} className='py-8 text-center'>
+                  <Spinner label='Loading leads' />
                 </td>
               </tr>
             ) : leads.length === 0 ? (

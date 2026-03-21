@@ -95,6 +95,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                 aria-label='Admin password'
                 autoFocus
                 disabled={isLockedOut}
+                data-sentry-mask
                 className={inputStyles}
               />
               {isLockedOut && (
