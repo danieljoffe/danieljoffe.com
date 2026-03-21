@@ -56,6 +56,7 @@ export const Collapsed: Story = {
 };
 
 export const Interactive: Story = {
+  args: { items: sampleItems, activeId: 'dashboard' },
   render: () => {
     const [activeId, setActiveId] = useState('dashboard');
     return (

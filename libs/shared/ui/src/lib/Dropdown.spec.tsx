@@ -57,8 +57,6 @@ describe('Dropdown', () => {
       />
     );
     fireEvent.click(screen.getByText('Menu'));
-    const { container } = render(<div />);
-    // Divider renders as border-t element
     expect(screen.getByText('Edit')).toBeInTheDocument();
     expect(screen.getByText('Delete')).toBeInTheDocument();
   });
