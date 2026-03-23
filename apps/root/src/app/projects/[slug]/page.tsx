@@ -6,7 +6,9 @@ import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
 import { projectMdxComponents } from '@/data/content/projects';
+import { getProjectPagination } from '@/data/contentOrder';
 import PostBody from '@/components/PostBody';
+import { PostPagination } from '@/components/kit';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
@@ -31,6 +33,7 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
   if (!record || !Post) return redirect(PROJECTS_LINK.href);
 
   const structuredData = projectStructuredData[slug as AllowedProjectSlugs];
+  const pagination = getProjectPagination(slug as AllowedProjectSlugs);
 
   const breadcrumbs: NavLink[] = [
     PROJECTS_LINK,
@@ -47,6 +50,7 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
             <Post />
           </article>
+          <PostPagination pagination={pagination} />
         </PostBody>
       </div>
       <script

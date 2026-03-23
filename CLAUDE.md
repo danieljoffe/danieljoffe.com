@@ -155,6 +155,50 @@ Use `import * as Sentry from "@sentry/nextjs"` for all Sentry functionality. Key
 
 <!-- nx configuration end-->
 
+## Content Posts
+
+### MDX File Structure
+
+All content lives in `apps/root/src/data/content/`. Every MDX file **must** include YAML frontmatter as its source-of-truth metadata:
+
+```yaml
+---
+title: "Catchy, descriptive title"
+date: YYYY-MM-DD          # Projects: git creation date. Experience: employment start date.
+excerpt: "One-sentence summary for previews and SEO"
+author: "Daniel Joffe"
+category: "Category Name"  # e.g. "Design Systems", "Performance Engineering", "Career Experience"
+tags: ["Tag1", "Tag2"]
+slug: "url-slug"
+type: "project" | "experience"
+# Optional context fields (include when applicable):
+company: "Company Name"
+role: "Job Title"
+duration: "Month YYYY - Month YYYY"
+industry: "Industry / Sector"
+---
+```
+
+- **Projects** (`data/content/projects/`): `date` is the git creation date of the file. Query with `git log --diff-filter=A --follow --format="%ai" -- <file> | tail -1`.
+- **Experience** (`data/content/experience/`): `date` is the employment start date (e.g. `2021-11-01` for "November 2021").
+
+### Content Ordering & Pagination
+
+Chronological ordering and prev/next pagination are managed in `data/contentOrder.ts`:
+
+- **`projectHistory`**: Ordered by git creation date; entries sharing the same date are sub-sorted by the chronology of the work they describe. New projects must be inserted in the correct position.
+- **`experienceHistory`**: Ordered by employment start date (earliest first). New entries must be inserted chronologically.
+- **`getProjectPagination(slug)`** / **`getExperiencePagination(slug)`**: Return `{ prev, next }` links for a given slug.
+
+When adding a new post:
+
+1. Create the `.mdx` file with full frontmatter.
+2. Add the slug constant to `data/project.ts` or `data/experience.ts`.
+3. Add the thumbnail record to `projectThumbnails.ts` or `experienceThumbnails.ts`.
+4. Import the MDX component in the corresponding `data/content/*/index.ts`.
+5. Insert the slug into the correct position in `contentOrder.ts`.
+6. Add page metadata in `data/metadata/` and structured data in `data/structuredData/`.
+
 ## Coding Conventions
 
 ### Rule of Three

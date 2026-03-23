@@ -6,7 +6,9 @@ import { experienceMdxComponents } from '@/data/content/experience';
 import { experiencePageSlugs } from '@/data/experience';
 import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
+import { getExperiencePagination } from '@/data/contentOrder';
 import PostBody from '@/components/PostBody';
+import { PostPagination } from '@/components/kit';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
@@ -32,6 +34,7 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
 
   const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
+  const pagination = getExperiencePagination(slug as AllowedExperienceSlugs);
 
   const breadcrumbs: NavLink[] = [
     EXPERIENCE_LINK,
@@ -48,6 +51,7 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
             <Post />
           </article>
+          <PostPagination pagination={pagination} />
         </PostBody>
       </div>
       <script

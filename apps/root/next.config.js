@@ -16,7 +16,11 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: isAnalyze,
 });
 
-const withMDX = createMDX({});
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [require('remark-frontmatter').default],
+  },
+});
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
