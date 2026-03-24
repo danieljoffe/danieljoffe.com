@@ -44,8 +44,6 @@
     "dist",
     "node_modules",
     "jest.config.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.ts",
     ".next",
     "eslint.config.js",
     "eslint.config.cjs",

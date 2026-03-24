@@ -1,27 +1,30 @@
 import { redirect } from 'next/navigation';
 import { AllowedProjectSlugs, NavLink, SlugPageProps } from '@/types/base';
 import { PROJECTS_LINK } from '@/utils/constants';
-import { projectPagesMetadata } from '@/data/metadata/project';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { projectPageSlugs } from '@/data/project';
-import { projectMdxComponents } from '@/data/content/projects';
+import {
+  projectMdxComponents,
+  projectMdxMetadata,
+} from '@/data/content/projects';
 import { getProjectPagination } from '@/data/contentOrder';
+import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import PostBody from '@/components/PostBody';
 import { PostPagination } from '@/components/kit';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
-  const record = projectPagesMetadata[slug as AllowedProjectSlugs];
+  const meta = projectMdxMetadata[slug as AllowedProjectSlugs];
 
-  if (!record) {
+  if (!meta) {
     return {
       title: 'Project Not Found',
       description: 'The requested project page could not be found.',
     };
   }
 
-  return record;
+  return buildPostMetadata(meta);
 }
 
 export default async function SlugProjectPage({ params }: SlugPageProps) {

@@ -1,14 +1,8 @@
 declare module '*.mdx' {
   import type { ComponentProps, ComponentType } from 'react';
+  import type { PostMetadata } from '@/types/postTypes';
 
-  export interface MDXMetadata {
-    title: string;
-    description: string;
-    tags: string[];
-    author: string;
-    created: string;
-    updated: string;
-  }
+  export const metadata: PostMetadata;
 
   const MDXComponent: ComponentType<ComponentProps<'div'>>;
   export default MDXComponent;
