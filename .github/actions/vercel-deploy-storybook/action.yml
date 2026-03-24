@@ -42,18 +42,15 @@ runs:
       shell: bash
       run: npm i -g vercel@50.15.1
 
-    - name: Pull Vercel Config
-      shell: bash
-      run: vercel pull --yes ${{ inputs.production == 'true' && '--environment=production' || '' }} --token=${{ inputs.vercel-token }} --cwd libs/shared/ui
-      env:
-        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
-        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id }}
-
     - name: Deploy
       id: deploy
       shell: bash
       run: |
-        url=$(vercel deploy ./libs/shared/ui/storybook-static --prebuilt=false ${{ inputs.production == 'true' && '--prod' || '' }} --token=${{ inputs.vercel-token }})
+        PROD_FLAG=""
+        if [ "${{ inputs.production }}" = "true" ]; then
+          PROD_FLAG="--prod"
+        fi
+        url=$(vercel deploy ./libs/shared/ui/storybook-static $PROD_FLAG --token=${{ inputs.vercel-token }})
         echo "url=$url" >> "$GITHUB_OUTPUT"
       env:
         VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
