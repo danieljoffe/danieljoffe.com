@@ -72,7 +72,14 @@ app/                    # Next.js App Router pages
 ├── services/           # Services page
 └── thank-you/          # Thank you pages
 components/             # App-specific React components
-├── kit/                # Shared UI primitives (Spinner, ErrorAlert, Pagination, etc.)
+├── kit/                # Shared UI primitives (Spinner, ErrorAlert, PostPagination, etc.)
+data/                   # Content data and metadata
+├── content/            # MDX content files (projects/, experience/)
+├── contentOrder.ts     # Chronological ordering and prev/next pagination
+├── metadata/           # Page metadata (SEO, OpenGraph)
+├── structuredData/     # JSON-LD structured data
+├── *Thumbnails.ts      # Thumbnail/cover records for content pages
+└── *.ts                # Slug constants, profile data, services, etc.
 hooks/                  # Custom React hooks (useTableSort, useFocusTrap)
 lib/                    # Utility libraries and configurations (cn, formStyles, badgeStyles)
 state/                  # Global state management
@@ -154,6 +161,52 @@ Use `import * as Sentry from "@sentry/nextjs"` for all Sentry functionality. Key
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+## Content Posts
+
+### MDX File Structure
+
+All content lives in `apps/root/src/data/content/`. Every MDX file **must** include an `export const metadata` block as its source-of-truth metadata. This is valid JS that works in both Turbopack (dev) and webpack (build) without rendering visible content:
+
+```mdx
+export const metadata = {
+  title: 'Catchy, descriptive title',
+  date: 'YYYY-MM-DD', // Projects: git creation date. Experience: employment start date.
+  excerpt: 'One-sentence summary for previews and SEO',
+  author: 'Daniel Joffe',
+  category: 'Category Name', // e.g. 'Design Systems', 'Performance Engineering', 'Career Experience'
+  tags: ['Tag1', 'Tag2'],
+  slug: 'url-slug',
+  type: 'project', // 'project' | 'experience'
+  // Optional context fields (include when applicable):
+  company: 'Company Name',
+  role: 'Job Title',
+  duration: 'Month YYYY - Month YYYY',
+  industry: 'Industry / Sector',
+};
+```
+
+Page-level SEO metadata is derived automatically from the MDX `metadata` export via `buildPostMetadata()` in `lib/buildPostMetadata.ts` — no separate metadata file needed for individual posts.
+
+- **Projects** (`data/content/projects/`): `date` is the git creation date of the file. Query with `git log --diff-filter=A --follow --format="%ai" -- <file> | tail -1`.
+- **Experience** (`data/content/experience/`): `date` is the employment start date (e.g. `2021-11-01` for "November 2021").
+
+### Content Ordering & Pagination
+
+Chronological ordering and prev/next pagination are managed in `data/contentOrder.ts`:
+
+- **`projectHistory`**: Ordered by git creation date; entries sharing the same date are sub-sorted by the chronology of the work they describe. New projects must be inserted in the correct position.
+- **`experienceHistory`**: Ordered by employment start date (earliest first). New entries must be inserted chronologically.
+- **`getProjectPagination(slug)`** / **`getExperiencePagination(slug)`**: Return `{ prev, next }` links for a given slug.
+
+When adding a new post:
+
+1. Create the `.mdx` file with an `export const metadata` block (see format above).
+2. Add the slug constant to `data/project.ts` or `data/experience.ts`.
+3. Add the thumbnail record to `projectThumbnails.ts` or `experienceThumbnails.ts`.
+4. Import the MDX component **and metadata** in the corresponding `data/content/*/index.ts`.
+5. Insert the slug into the correct position in `contentOrder.ts`.
+6. Add structured data in `data/structuredData/`. (Page metadata is auto-generated from the MDX `metadata` export.)
 
 ## Coding Conventions
 

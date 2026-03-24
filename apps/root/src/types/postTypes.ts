@@ -27,3 +27,19 @@ export interface PostBodyProps extends WithChildren {
   breadcrumbs: NavLink[];
   cover: UnsplashImageMeta;
 }
+
+/** Source-of-truth metadata exported from each MDX content file. */
+export interface PostMetadata {
+  title: string;
+  date: string;
+  excerpt: string;
+  author: string;
+  category: string;
+  tags: string[];
+  slug: string;
+  type: 'project' | 'experience' | (string & {});
+  company?: string;
+  role?: string;
+  duration?: string;
+  industry?: string;
+}

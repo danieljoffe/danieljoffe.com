@@ -30,7 +30,6 @@ const nextConfig = {
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
-    cssChunking: true,
     // Enable critical CSS inlining with critters
     optimizeCss: true,
     optimizePackageImports: [
@@ -39,7 +38,6 @@ const nextConfig = {
       '@sentry/nextjs',
       'yup',
       'schema-dts',
-      '@danieljoffe.com/shared-ui',
     ],
     // Disable in CI/test
     webpackBuildWorker: !isTest && !isCI,

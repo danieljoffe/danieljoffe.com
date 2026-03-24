@@ -21,7 +21,6 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@danieljoffe.com/shared-ui": ["../../libs/shared/ui/src/index.ts"],
       "@danieljoffe.com/shared-audit": ["../../libs/shared/audit/src/index.ts"]
     },
     "types": ["jest", "node"],
@@ -45,8 +44,6 @@
     "dist",
     "node_modules",
     "jest.config.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.ts",
     ".next",
     "eslint.config.js",
     "eslint.config.cjs",

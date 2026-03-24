@@ -2,24 +2,29 @@ import { redirect } from 'next/navigation';
 import { AllowedExperienceSlugs, NavLink, SlugPageProps } from '@/types/base';
 import { EXPERIENCE_LINK } from '@/utils/constants';
 import { experienceRecords } from '@/data/experienceThumbnails';
-import { experienceMdxComponents } from '@/data/content/experience';
+import {
+  experienceMdxComponents,
+  experienceMdxMetadata,
+} from '@/data/content/experience';
 import { experiencePageSlugs } from '@/data/experience';
-import { experiencePagesMetadata } from '@/data/metadata/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
+import { getExperiencePagination } from '@/data/contentOrder';
+import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import PostBody from '@/components/PostBody';
+import { PostPagination } from '@/components/kit';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
-  const record = experiencePagesMetadata[slug as AllowedExperienceSlugs];
+  const meta = experienceMdxMetadata[slug as AllowedExperienceSlugs];
 
-  if (!record) {
+  if (!meta) {
     return {
       title: 'Work Experience Not Found',
       description: 'The requested work experience could not be found.',
     };
   }
 
-  return record;
+  return buildPostMetadata(meta);
 }
 
 export default async function SlugExperiencePage({ params }: SlugPageProps) {
@@ -32,6 +37,7 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
 
   const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
+  const pagination = getExperiencePagination(slug as AllowedExperienceSlugs);
 
   const breadcrumbs: NavLink[] = [
     EXPERIENCE_LINK,
@@ -48,6 +54,7 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
             <Post />
           </article>
+          <PostPagination pagination={pagination} />
         </PostBody>
       </div>
       <script
