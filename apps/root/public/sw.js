@@ -76,7 +76,11 @@ function getCacheStrategy(request) {
     url.pathname.startsWith('/_next/image') ||
     url.pathname.match(/\.(jpg|jpeg|png|gif|webp|avif|svg|ico)$/i)
   ) {
-    return { cache: IMAGE_CACHE, strategy: 'cache-first', limit: IMAGE_CACHE_LIMIT };
+    return {
+      cache: IMAGE_CACHE,
+      strategy: 'cache-first',
+      limit: IMAGE_CACHE_LIMIT,
+    };
   }
 
   // Static assets (JS, CSS) - skip SW caching
@@ -96,11 +100,19 @@ function getCacheStrategy(request) {
     request.mode === 'navigate' ||
     request.headers.get('accept')?.includes('text/html')
   ) {
-    return { cache: DYNAMIC_CACHE, strategy: 'stale-while-revalidate', limit: DYNAMIC_CACHE_LIMIT };
+    return {
+      cache: DYNAMIC_CACHE,
+      strategy: 'stale-while-revalidate',
+      limit: DYNAMIC_CACHE_LIMIT,
+    };
   }
 
   // Default - network first
-  return { cache: DYNAMIC_CACHE, strategy: 'network-first', limit: DYNAMIC_CACHE_LIMIT };
+  return {
+    cache: DYNAMIC_CACHE,
+    strategy: 'network-first',
+    limit: DYNAMIC_CACHE_LIMIT,
+  };
 }
 
 // Fetch event - apply caching strategies
@@ -119,17 +131,19 @@ self.addEventListener('fetch', event => {
         caches.match(event.request).then(cached => {
           if (cached) return cached;
 
-          return fetch(event.request).then(response => {
-            if (!response || response.status !== 200) return response;
+          return fetch(event.request)
+            .then(response => {
+              if (!response || response.status !== 200) return response;
 
-            const responseClone = response.clone();
-            caches.open(cache).then(c => {
-              c.put(event.request, responseClone);
-              if (limit) limitCacheSize(cache, limit);
-            });
+              const responseClone = response.clone();
+              caches.open(cache).then(c => {
+                c.put(event.request, responseClone);
+                if (limit) limitCacheSize(cache, limit);
+              });
 
-            return response;
-          }).catch(() => caches.match(event.request));
+              return response;
+            })
+            .catch(() => caches.match(event.request));
         })
       );
       break;

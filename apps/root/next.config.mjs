@@ -1,9 +1,12 @@
 //@ts-check
 
-const { composePlugins, withNx } = require('@nx/next');
-const { withBotId } = require('botid/next/config');
-const createMDX = require('@next/mdx');
-const bundleAnalyzer = require('@next/bundle-analyzer');
+import { composePlugins, withNx } from '@nx/next';
+import { withBotId } from 'botid/next/config';
+import createMDX from '@next/mdx';
+import bundleAnalyzer from '@next/bundle-analyzer';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 const isDev = process.env.NODE_ENV === 'development';
 const isTest = process.env.NODE_ENV === 'test';
@@ -16,7 +19,22 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: isAnalyze,
 });
 
-const withMDX = createMDX({});
+/** @type {import('rehype-pretty-code').Options} */
+const prettyCodeOptions = {
+  theme: {
+    dark: 'github-dark-dimmed',
+    light: 'github-light',
+  },
+  keepBackground: false,
+};
+
+// Pass rehype-pretty-code as a string so @next/mdx resolves it at load time.
+// This keeps loader options JSON-serializable for both webpack and Turbopack.
+const withMDX = createMDX({
+  options: {
+    rehypePlugins: [['rehype-pretty-code', prettyCodeOptions]],
+  },
+});
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
@@ -285,7 +303,7 @@ const plugins = [
 ];
 
 // Injected content via Sentry wizard below
-const { withSentryConfig } = require('@sentry/nextjs');
+const { withSentryConfig } = await import('@sentry/nextjs');
 
 const nextConfigWithPlugins = composePlugins(...plugins)(nextConfig);
 
@@ -327,4 +345,4 @@ const finalConfig =
         },
       });
 
-module.exports = withBotId(finalConfig);
+export default withBotId(finalConfig);

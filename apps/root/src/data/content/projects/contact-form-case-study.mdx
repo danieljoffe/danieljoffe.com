@@ -54,7 +54,7 @@ A contact form on a public portfolio site is an open invitation for abuse. Bots 
 
 The form uses `react-hook-form` with a `yupResolver` for instant feedback. The same Yup schema validates on both client and server — one source of truth.
 
-```typescript
+```typescript title="schema.ts" {21-23}
 // schema.ts — shared between client and server
 export const formSchema = yup
   .object()
@@ -90,7 +90,7 @@ The anti-spam URL check in the message field catches a surprising amount of auto
 
 Every form input includes proper ARIA attributes for accessibility:
 
-```tsx
+```tsx title="ContactForm.tsx" /aria-invalid/ /aria-describedby/ /data-sentry-mask/
 <input
   id='name'
   aria-invalid={!!errors?.name}
@@ -107,7 +107,7 @@ The `data-sentry-mask` attribute ensures PII never reaches error tracking.
 
 A hidden `address` field that real users never see. Bots filling out every field trigger an immediate 403:
 
-```tsx
+```tsx title="ContactForm.tsx" {4}
 {
   /* Client: invisible to humans, irresistible to bots */
 }
@@ -123,7 +123,7 @@ A hidden `address` field that real users never see. Bots filling out every field
 </div>;
 ```
 
-```typescript
+```typescript title="validateFormData.ts" /address/ {3}
 // Server: checked before any other validation
 if (data?.address && data.address.length > 0) {
   throw {
@@ -139,7 +139,7 @@ The honeypot check runs outside the `try/catch` block intentionally — a filled
 
 hCaptcha is loaded dynamically and only when the form scrolls into view, keeping it off the critical path:
 
-```tsx
+```tsx title="ContactForm.tsx" {1-3} /rootMargin/
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
   loading: () => <LoadingDots />,
@@ -167,7 +167,7 @@ The `rootMargin: '200px'` starts loading the captcha before the user actually sc
 
 IP-based throttling with an in-memory store. Five requests per IP within a 15-minute window:
 
-```typescript
+```typescript title="rateLimit.ts" {13-20}
 const globalStore = globalThis as typeof globalThis & {
   __apiRateLimitStore?: Map<string, RateLimitEntry>;
   __apiRateLimitLastCleanup?: number;
@@ -197,7 +197,7 @@ Expired entries are purged every 5 minutes to prevent unbounded memory growth. T
 
 Every text field runs through DOMPurify before schema validation:
 
-```typescript
+```typescript title="validateFormData.ts" /DOMPurify.sanitize/ /stripUnknown: true/
 const sanitized: RawFormData = {
   name: DOMPurify.sanitize(data.name),
   email: DOMPurify.sanitize(data.email),
@@ -215,7 +215,7 @@ await schema.validate(sanitized, { stripUnknown: true });
 
 The API route verifies the request originated from the contact page via the referer header:
 
-```typescript
+```typescript title="requestFromSource.ts" /referer/
 export const requestFromSource = async (req: NextRequest, source: string) => {
   const referer = req.headers.get('referer');
   if (!referer) throw errorResponse;
@@ -229,7 +229,7 @@ export const requestFromSource = async (req: NextRequest, source: string) => {
 
 Each security layer is a composable middleware. The route handler reads like a checklist:
 
-```typescript
+```typescript title="route.ts" {5-8}
 export async function POST(request: NextRequest) {
   const data = await request.json();
 
