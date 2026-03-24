@@ -44,15 +44,16 @@ runs:
 
     - name: Prepare Vercel prebuilt output
       shell: bash
+      working-directory: libs/shared/ui
       run: |
         ENV_FLAG=""
         if [ "${{ inputs.production }}" = "true" ]; then
           ENV_FLAG="--environment=production"
         fi
-        vercel pull --yes $ENV_FLAG --token=${{ inputs.vercel-token }} --cwd=libs/shared/ui
-        mkdir -p libs/shared/ui/.vercel/output/static
-        cp -r libs/shared/ui/storybook-static/* libs/shared/ui/.vercel/output/static/
-        echo '{"version":3}' > libs/shared/ui/.vercel/output/config.json
+        vercel pull --yes $ENV_FLAG --token=${{ inputs.vercel-token }}
+        mkdir -p .vercel/output/static
+        cp -r storybook-static/* .vercel/output/static/
+        echo '{"version":3}' > .vercel/output/config.json
       env:
         VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
         VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id }}
@@ -60,12 +61,13 @@ runs:
     - name: Deploy
       id: deploy
       shell: bash
+      working-directory: libs/shared/ui
       run: |
         PROD_FLAG=""
         if [ "${{ inputs.production }}" = "true" ]; then
           PROD_FLAG="--prod"
         fi
-        url=$(vercel deploy --prebuilt $PROD_FLAG --token=${{ inputs.vercel-token }} --cwd=libs/shared/ui)
+        url=$(vercel deploy --prebuilt $PROD_FLAG --token=${{ inputs.vercel-token }})
         echo "url=$url" >> "$GITHUB_OUTPUT"
       env:
         VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
