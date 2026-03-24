@@ -3,11 +3,10 @@ import { aboutMetadata } from '../metadata/about';
 import { homeMetadata } from '../metadata/home';
 import { servicesMetadata } from '../metadata/services';
 import { notFoundMetadata } from '../metadata/notFound';
-import { projectRootMetadata, projectPagesMetadata } from '../metadata/project';
-import {
-  experienceRootMetadata,
-  experiencePagesMetadata,
-} from '../metadata/experience';
+import { projectRootMetadata } from '../metadata/project';
+import { experienceRootMetadata } from '../metadata/experience';
+import { buildPostMetadata } from '@/lib/buildPostMetadata';
+import { PostMetadata } from '@/types/postTypes';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -179,19 +178,6 @@ describe('metadata/project', () => {
       expect(typeof projectRootMetadata.twitter).toBe('object');
     });
   });
-
-  describe('projectPagesMetadata', () => {
-    const entries = Object.entries(projectPagesMetadata);
-
-    it('has at least one entry', () => {
-      expect(entries.length).toBeGreaterThan(0);
-    });
-
-    it.each(entries)('slug "%s" has title and description', (_slug, meta) => {
-      expect(titleToString(meta.title)).toEqual(expect.any(String));
-      expect(typeof meta.description).toBe('string');
-    });
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -234,17 +220,82 @@ describe('metadata/experience', () => {
       expect(typeof experienceRootMetadata.twitter).toBe('object');
     });
   });
+});
 
-  describe('experiencePagesMetadata', () => {
-    const entries = Object.entries(experiencePagesMetadata);
+// ---------------------------------------------------------------------------
+// buildPostMetadata
+// ---------------------------------------------------------------------------
 
-    it('has at least one entry', () => {
-      expect(entries.length).toBeGreaterThan(0);
-    });
+describe('buildPostMetadata', () => {
+  const projectMeta: PostMetadata = {
+    title: 'Test Project',
+    date: '2025-01-01',
+    excerpt: 'A test project description',
+    author: 'Daniel Joffe',
+    category: 'Testing',
+    tags: ['React', 'TypeScript'],
+    slug: 'test-project',
+    type: 'project',
+  };
 
-    it.each(entries)('slug "%s" has title and description', (_slug, meta) => {
-      expect(titleToString(meta.title)).toEqual(expect.any(String));
-      expect(typeof meta.description).toBe('string');
-    });
+  const experienceMeta: PostMetadata = {
+    title: 'Test Company',
+    date: '2020-01-01',
+    excerpt: 'A test experience description',
+    author: 'Daniel Joffe',
+    category: 'Career Experience',
+    tags: ['React'],
+    slug: 'test-company',
+    type: 'experience',
+    company: 'Test Co',
+    role: 'Engineer',
+    duration: 'Jan 2020 - Dec 2021',
+    industry: 'Tech',
+  };
+
+  it('returns metadata with correct title for projects', () => {
+    const result = buildPostMetadata(projectMeta);
+    expect(result.title).toBe('Project | Test Project');
+  });
+
+  it('returns metadata with correct title for experience', () => {
+    const result = buildPostMetadata(experienceMeta);
+    expect(result.title).toBe('Experience | Test Company');
+  });
+
+  it('uses excerpt as description', () => {
+    const result = buildPostMetadata(projectMeta);
+    expect(result.description).toBe('A test project description');
+  });
+
+  it('uses tags as keywords', () => {
+    const result = buildPostMetadata(projectMeta);
+    expect(result.keywords).toEqual(['React', 'TypeScript']);
+  });
+
+  it('sets canonical URL for projects', () => {
+    const result = buildPostMetadata(projectMeta);
+    expect((result.alternates as { canonical: string }).canonical).toBe(
+      '/projects/test-project'
+    );
+  });
+
+  it('sets canonical URL for experience', () => {
+    const result = buildPostMetadata(experienceMeta);
+    expect((result.alternates as { canonical: string }).canonical).toBe(
+      '/experience/test-company'
+    );
+  });
+
+  it('has openGraph field', () => {
+    const result = buildPostMetadata(projectMeta);
+    expect(result.openGraph).toBeDefined();
+    expect(typeof result.openGraph).toBe('object');
+  });
+
+  it('has twitter field', () => {
+    const result = buildPostMetadata(projectMeta);
+    expect(result.twitter).toBeDefined();
+    expect(typeof result.twitter).toBe('object');
   });
 });

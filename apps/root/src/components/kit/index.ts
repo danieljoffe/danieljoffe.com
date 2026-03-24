@@ -10,4 +10,5 @@ export { CompanyLogo } from './CompanyLogo';
 export { Spinner } from './Spinner';
 export { ErrorAlert } from './ErrorAlert';
 export { Pagination } from './Pagination';
+export { PostPagination } from './PostPagination';
 export { FormFieldError } from './FormFieldError';
