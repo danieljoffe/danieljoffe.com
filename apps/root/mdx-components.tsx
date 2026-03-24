@@ -61,12 +61,22 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {...props}
       />
     ),
-    code: props => (
-      <code
-        className='px-1.5 py-0.5 rounded bg-surface-tertiary text-text-primary text-xs font-mono'
-        {...props}
-      />
-    ),
+    // Inline code only — rehype-pretty-code handles code blocks via
+    // [data-rehype-pretty-code-figure] styles in theme.css
+    code: ({ children, ...props }) => {
+      // rehype-pretty-code adds data-theme; skip custom styling for those
+      if ('data-theme' in props) return <code {...props}>{children}</code>;
+      return (
+        <code
+          className='px-1.5 py-0.5 rounded bg-surface-tertiary text-text-primary text-xs font-mono'
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    // rehype-pretty-code wraps code blocks in <figure data-rehype-pretty-code-figure>
+    // so bare <pre> only appears for non-highlighted blocks
     pre: props => (
       <pre
         className='p-4 bg-surface-secondary rounded-lg border border-border overflow-x-auto text-sm leading-relaxed mb-4 [&>code]:p-0 [&>code]:bg-transparent [&>code]:text-sm [&>code]:rounded-none'
