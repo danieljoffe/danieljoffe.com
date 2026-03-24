@@ -3,6 +3,7 @@ import {
   allowedImageOrigins,
   HCAPTCHA_URL,
   HCAPTCHA_ASSETS_URL,
+  STORYBOOK_URL,
 } from '@/utils/constants';
 import { NextRequest, NextResponse } from 'next/server';
 import { isProduction } from '@/utils/helpers';
@@ -19,7 +20,7 @@ export function proxy(request: NextRequest) {
     object-src 'none';
     base-uri 'self';
     form-action 'self';
-    frame-src ${HCAPTCHA_URL} ${HCAPTCHA_ASSETS_URL};
+    frame-src ${HCAPTCHA_URL} ${HCAPTCHA_ASSETS_URL} ${STORYBOOK_URL};
     frame-ancestors 'none';${
       request.nextUrl.protocol === 'https:'
         ? `\n    upgrade-insecure-requests;`
