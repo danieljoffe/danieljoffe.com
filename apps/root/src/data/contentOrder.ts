@@ -16,8 +16,8 @@ export interface PaginationLink {
 }
 
 export interface PostPaginationData {
-  prev: PaginationLink | undefined;
-  next: PaginationLink | undefined;
+  prev: PaginationLink;
+  next: PaginationLink;
 }
 
 /**
@@ -66,23 +66,21 @@ function buildPaginationData(
 ): PostPaginationData {
   const index = orderedSlugs.indexOf(slug);
 
-  const prev =
-    index > 0
-      ? {
-          slug: orderedSlugs[index - 1],
-          title: records[orderedSlugs[index - 1]].title,
-          href: `${basePath.href}/${orderedSlugs[index - 1]}`,
-        }
-      : undefined;
+  const len = orderedSlugs.length;
+  const prevIndex = (index - 1 + len) % len;
+  const nextIndex = (index + 1) % len;
 
-  const next =
-    index < orderedSlugs.length - 1
-      ? {
-          slug: orderedSlugs[index + 1],
-          title: records[orderedSlugs[index + 1]].title,
-          href: `${basePath.href}/${orderedSlugs[index + 1]}`,
-        }
-      : undefined;
+  const prev = {
+    slug: orderedSlugs[prevIndex],
+    title: records[orderedSlugs[prevIndex]].title,
+    href: `${basePath.href}/${orderedSlugs[prevIndex]}`,
+  };
+
+  const next = {
+    slug: orderedSlugs[nextIndex],
+    title: records[orderedSlugs[nextIndex]].title,
+    href: `${basePath.href}/${orderedSlugs[nextIndex]}`,
+  };
 
   return { prev, next };
 }
