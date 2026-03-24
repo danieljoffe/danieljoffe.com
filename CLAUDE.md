@@ -159,24 +159,24 @@ Use `import * as Sentry from "@sentry/nextjs"` for all Sentry functionality. Key
 
 ### MDX File Structure
 
-All content lives in `apps/root/src/data/content/`. Every MDX file **must** include YAML frontmatter as its source-of-truth metadata:
+All content lives in `apps/root/src/data/content/`. Every MDX file **must** include an `export const meta` block as its source-of-truth metadata. This is valid JS that works in both Turbopack (dev) and webpack (build) without rendering visible content:
 
-```yaml
----
-title: "Catchy, descriptive title"
-date: YYYY-MM-DD          # Projects: git creation date. Experience: employment start date.
-excerpt: "One-sentence summary for previews and SEO"
-author: "Daniel Joffe"
-category: "Category Name"  # e.g. "Design Systems", "Performance Engineering", "Career Experience"
-tags: ["Tag1", "Tag2"]
-slug: "url-slug"
-type: "project" | "experience"
-# Optional context fields (include when applicable):
-company: "Company Name"
-role: "Job Title"
-duration: "Month YYYY - Month YYYY"
-industry: "Industry / Sector"
----
+```mdx
+export const meta = {
+  title: 'Catchy, descriptive title',
+  date: 'YYYY-MM-DD', // Projects: git creation date. Experience: employment start date.
+  excerpt: 'One-sentence summary for previews and SEO',
+  author: 'Daniel Joffe',
+  category: 'Category Name', // e.g. 'Design Systems', 'Performance Engineering', 'Career Experience'
+  tags: ['Tag1', 'Tag2'],
+  slug: 'url-slug',
+  type: 'project', // 'project' | 'experience'
+  // Optional context fields (include when applicable):
+  company: 'Company Name',
+  role: 'Job Title',
+  duration: 'Month YYYY - Month YYYY',
+  industry: 'Industry / Sector',
+};
 ```
 
 - **Projects** (`data/content/projects/`): `date` is the git creation date of the file. Query with `git log --diff-filter=A --follow --format="%ai" -- <file> | tail -1`.
