@@ -1,0 +1,60 @@
+name: Deploy Storybook to Vercel
+description: Build Storybook and deploy static output to Vercel
+
+inputs:
+  vercel-token:
+    description: Vercel authentication token
+    required: true
+  vercel-org-id:
+    description: Vercel organization ID
+    required: true
+  vercel-project-id:
+    description: Vercel project ID for Storybook
+    required: true
+  production:
+    description: Whether this is a production deployment
+    default: 'false'
+
+outputs:
+  url:
+    description: Deployed URL
+    value: ${{ steps.deploy.outputs.url }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: .nvmrc
+        cache: yarn
+
+    - name: Install dependencies
+      shell: bash
+      run: yarn install --frozen-lockfile
+
+    - name: Build Storybook
+      shell: bash
+      run: yarn nx build-storybook @danieljoffe.com/shared-ui
+      env:
+        NX_NO_CLOUD: 'true'
+
+    - name: Install Vercel CLI
+      shell: bash
+      run: npm i -g vercel@50.15.1
+
+    - name: Pull Vercel Config
+      shell: bash
+      run: vercel pull --yes ${{ inputs.production == 'true' && '--environment=production' || '' }} --token=${{ inputs.vercel-token }} --cwd libs/shared/ui
+      env:
+        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
+        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id }}
+
+    - name: Deploy
+      id: deploy
+      shell: bash
+      run: |
+        url=$(vercel deploy ./libs/shared/ui/storybook-static --prebuilt=false ${{ inputs.production == 'true' && '--prod' || '' }} --token=${{ inputs.vercel-token }})
+        echo "url=$url" >> "$GITHUB_OUTPUT"
+      env:
+        VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}
+        VERCEL_PROJECT_ID: ${{ inputs.vercel-project-id }}
