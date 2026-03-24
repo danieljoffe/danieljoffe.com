@@ -131,6 +131,24 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       blurHash: 'L125+JD~D#-rn$WCkCj?D~xbxbNc',
     },
   },
+  [projectSlugs.csContactForm]: {
+    slug: projectSlugs.csContactForm,
+    title: 'Defense in Depth — Building a Secure Contact Form',
+    description:
+      'From zero to a production-hardened contact form in 48 hours: hCaptcha, rate limiting, honeypot fields, input sanitization, and layered server-side validation.',
+    backgroundColor: 'bg-[#1e1b4b]',
+    link: {
+      label: 'Contact Form Case Study',
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csContactForm}`,
+    },
+    cover: {
+      alt: 'A lock on a chain-link fence',
+      src: '/photo-1558618666-fcd25c85f82e',
+      origin: `${UNSPLASH_URL}/photos/a-lock-on-a-chain-link-fence-FnA5pAzqhMM`,
+      creator: '@jasonddority',
+      blurHash: 'L46*n~-;00~q?b%MRjWB00xu%MRj',
+    },
+  },
   [projectSlugs.uiV2]: {
     slug: projectSlugs.uiV2,
     title: 'Expanding the Design System: UI Components Part 2',

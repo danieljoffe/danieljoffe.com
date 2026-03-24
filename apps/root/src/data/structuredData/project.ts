@@ -67,6 +67,13 @@ export const projectStructuredData: Record<
     headline: projectsRecords[projectSlugs.csLogisticsDashboard].title,
     author,
   },
+  [projectSlugs.csContactForm]: {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    about: projectsRecords[projectSlugs.csContactForm].description,
+    headline: projectsRecords[projectSlugs.csContactForm].title,
+    author,
+  },
 };
 
 export const projectsRootStructuredData: CollectionPageStructuredData = {
