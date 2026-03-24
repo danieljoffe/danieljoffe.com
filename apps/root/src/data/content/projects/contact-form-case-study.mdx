@@ -1,0 +1,314 @@
+{/* git bracket: bfc7486 - e5b8b2c */}
+
+export const metadata = {
+  title: 'Defense in Depth — Building a Secure Contact Form',
+  date: '2025-08-21',
+  excerpt:
+    'From zero to a production-hardened contact form in 48 hours: hCaptcha, rate limiting, honeypot fields, input sanitization, and layered server-side validation.',
+  author: 'Daniel Joffe',
+  category: 'Full-Stack Development',
+  tags: [
+    'Next.js',
+    'React Hook Form',
+    'Yup',
+    'hCaptcha',
+    'Rate Limiting',
+    'Security',
+    'API Routes',
+    'Resend',
+  ],
+  slug: 'contact-form-case-study',
+  type: 'project',
+  role: 'Solo Developer',
+  duration: 'August 2025',
+};
+
+# Defense in Depth — Building a Secure Contact Form
+
+## Overview
+
+**Project:** Contact form for danieljoffe.com
+
+**Role:** Solo Developer
+
+**Duration:** August 19-24, 2025
+
+**Purpose:** Ship a production-ready contact form with layered security — not just "a form that sends email"
+
+## The Challenge
+
+A contact form on a public portfolio site is an open invitation for abuse. Bots scrape forms constantly, and a naive implementation would be drowning in spam within days. The goal was to build something that felt effortless for real visitors but hostile to automated submissions — and to do it properly from the start rather than patching holes later.
+
+### Requirements:
+
+- Client-side validation with accessible error states
+- Server-side validation that trusts nothing from the client
+- Bot mitigation without degrading UX
+- Rate limiting to prevent abuse
+- Input sanitization against XSS
+- Proper error handling with structured responses
+
+## My Approach
+
+### Layer 1: Client-Side Validation with React Hook Form + Yup
+
+The form uses `react-hook-form` with a `yupResolver` for instant feedback. The same Yup schema validates on both client and server — one source of truth.
+
+```typescript
+// schema.ts — shared between client and server
+export const formSchema = yup
+  .object()
+  .shape({
+    name: yup
+      .string()
+      .transform(value => (value ? value.trim() : value))
+      .matches(VALIDATION_PATTERNS.NAME, 'Name contains invalid characters')
+      .min(NAME_MIN_LENGTH, minLengthMessage('Name', NAME_MIN_LENGTH))
+      .max(NAME_MAX_LENGTH, maxLengthMessage('Name', NAME_MAX_LENGTH))
+      .required('Name is required'),
+    email: yup
+      .string()
+      .transform(value => (value ? value.trim() : value))
+      .email('Invalid email address')
+      .max(EMAIL_MAX_LENGTH, maxLengthMessage('Email', EMAIL_MAX_LENGTH))
+      .required('Email is required'),
+    message: yup
+      .string()
+      .transform(value => (value ? value.trim() : value))
+      .test('no-urls', 'Please remove links from your message', val =>
+        val ? !/https?:\/\//i.test(val) : true
+      )
+      .min(MESSAGE_MIN_LENGTH, minLengthMessage('Message', MESSAGE_MIN_LENGTH))
+      .max(MESSAGE_MAX_LENGTH, maxLengthMessage('Message', MESSAGE_MAX_LENGTH))
+      .required('Message is required'),
+    hcaptcha: yup.string().required('Please verify you are human'),
+  })
+  .required();
+```
+
+The anti-spam URL check in the message field catches a surprising amount of automated submissions — most spam bots inject links.
+
+Every form input includes proper ARIA attributes for accessibility:
+
+```tsx
+<input
+  id='name'
+  aria-invalid={!!errors?.name}
+  aria-describedby={errors?.name?.message ? 'name-error' : undefined}
+  data-sentry-mask
+  {...register('name')}
+/>
+<FormFieldError message={errors?.name?.message} id='name-error' />
+```
+
+The `data-sentry-mask` attribute ensures PII never reaches error tracking.
+
+### Layer 2: Honeypot Field
+
+A hidden `address` field that real users never see. Bots filling out every field trigger an immediate 403:
+
+```tsx
+{
+  /* Client: invisible to humans, irresistible to bots */
+}
+<div className='absolute top-0 left-0 size-0 pointer-events-none -z-1 hidden'>
+  <input
+    name='address'
+    placeholder='1234 Main St, Anytown, USA'
+    type='text'
+    autoComplete='off'
+    aria-hidden={true}
+    tabIndex={-1}
+  />
+</div>;
+```
+
+```typescript
+// Server: checked before any other validation
+if (data?.address && data.address.length > 0) {
+  throw {
+    error: { path: 'root.forbidden', message: 'Forbidden' },
+    statusCode: 403,
+  } as ErrorResponse;
+}
+```
+
+The honeypot check runs outside the `try/catch` block intentionally — a filled honeypot is a hard rejection, not a validation error.
+
+### Layer 3: hCaptcha with Lazy Loading
+
+hCaptcha is loaded dynamically and only when the form scrolls into view, keeping it off the critical path:
+
+```tsx
+const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
+  ssr: false,
+  loading: () => <LoadingDots />,
+});
+
+// Only load when form is visible (with 200px head start)
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        setShouldLoadCaptcha(true);
+        observer.disconnect();
+      }
+    },
+    { rootMargin: '200px' }
+  );
+  observer.observe(container);
+  return () => observer.disconnect();
+}, []);
+```
+
+The `rootMargin: '200px'` starts loading the captcha before the user actually scrolls to it — by the time they reach the form, it is ready.
+
+### Layer 4: Rate Limiting
+
+IP-based throttling with an in-memory store. Five requests per IP within a 15-minute window:
+
+```typescript
+const globalStore = globalThis as typeof globalThis & {
+  __apiRateLimitStore?: Map<string, RateLimitEntry>;
+  __apiRateLimitLastCleanup?: number;
+};
+
+export const rateLimit = async (req: NextRequest) => {
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip');
+
+  const entry = incrementRateLimit(ip);
+
+  if (entry.count > RATE_LIMIT_MAX) {
+    const retryAfterSeconds = Math.ceil((entry.reset - Date.now()) / 1000);
+    throw {
+      error: { path: 'root.forbidden', message: 'Too many requests.' },
+      statusCode: 429,
+      retryAfter: retryAfterSeconds,
+    } as ErrorResponse;
+  }
+};
+```
+
+Expired entries are purged every 5 minutes to prevent unbounded memory growth. The 429 response includes a `Retry-After` header.
+
+### Layer 5: Input Sanitization
+
+Every text field runs through DOMPurify before schema validation:
+
+```typescript
+const sanitized: RawFormData = {
+  name: DOMPurify.sanitize(data.name),
+  email: DOMPurify.sanitize(data.email),
+  message: DOMPurify.sanitize(data.message),
+  hcaptcha: data.hcaptcha,
+  address: data.address,
+};
+
+await schema.validate(sanitized, { stripUnknown: true });
+```
+
+`stripUnknown: true` drops any fields not in the schema — an extra safeguard against injection of unexpected data.
+
+### Layer 6: Source Validation
+
+The API route verifies the request originated from the contact page via the referer header:
+
+```typescript
+export const requestFromSource = async (req: NextRequest, source: string) => {
+  const referer = req.headers.get('referer');
+  if (!referer) throw errorResponse;
+
+  const url = new URL(referer);
+  if (!url.pathname.includes(source)) throw errorResponse;
+};
+```
+
+### The API Route: Bringing It All Together
+
+Each security layer is a composable middleware. The route handler reads like a checklist:
+
+```typescript
+export async function POST(request: NextRequest) {
+  const data = await request.json();
+
+  try {
+    await rateLimit(request); // Layer 4: throttle by IP
+    await requestFromSource(request, ABOUT_LINK.href); // Layer 6: referer check
+    await validateFormData(data, formSchema); // Layers 1, 2, 5: honeypot + sanitize + validate
+    await sendEmail(data); // Deliver via Resend
+
+    return NextResponse.json({ success: true, statusCode: 200 });
+  } catch (e: unknown) {
+    const error = e as ErrorResponse;
+    const headers: HeadersInit = {};
+    if (error.statusCode === 429 && error.retryAfter) {
+      headers['Retry-After'] = String(error.retryAfter);
+    }
+    return NextResponse.json(error, { status: error.statusCode, headers });
+  }
+}
+```
+
+Each function throws a typed `ErrorResponse` on failure, so the catch block handles all error cases uniformly — 400 for validation, 403 for bots, 429 for rate limits, 500 for service failures.
+
+## The Results
+
+<table>
+  <thead>
+    <tr>
+      <th scope='col'>Security Layer</th>
+      <th scope='col'>What It Catches</th>
+      <th scope='col'>Response</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Client validation</td>
+      <td>Typos, missing fields, invalid formats</td>
+      <td>Inline errors (no request sent)</td>
+    </tr>
+    <tr>
+      <td>Honeypot</td>
+      <td>Naive bots that fill every field</td>
+      <td>403 Forbidden</td>
+    </tr>
+    <tr>
+      <td>hCaptcha</td>
+      <td>Automated submissions without human interaction</td>
+      <td>400 (token required)</td>
+    </tr>
+    <tr>
+      <td>Rate limiting</td>
+      <td>Brute-force / spam floods from a single IP</td>
+      <td>429 + Retry-After header</td>
+    </tr>
+    <tr>
+      <td>DOMPurify</td>
+      <td>XSS payloads in form fields</td>
+      <td>Sanitized before processing</td>
+    </tr>
+    <tr>
+      <td>Source validation</td>
+      <td>Direct API calls from outside the site</td>
+      <td>403 Forbidden</td>
+    </tr>
+    <tr>
+      <td>Anti-URL regex</td>
+      <td>Spam messages containing links</td>
+      <td>400 (validation error)</td>
+    </tr>
+  </tbody>
+</table>
+
+## Key Takeaways
+
+- **Defense in depth works because each layer catches what others miss.** The honeypot stops dumb bots, hCaptcha stops smart ones, rate limiting stops persistent ones, and sanitization stops malicious ones.
+- **Shared validation schemas eliminate drift.** One Yup schema validates on both client and server — the client provides instant feedback, the server enforces the rules.
+- **Lazy loading security widgets preserves performance.** hCaptcha loads via IntersectionObserver only when the form is visible, keeping it off the critical rendering path.
+- **Composable middleware keeps the route handler readable.** Each security concern is a standalone async function that either passes or throws — the route reads like a pipeline.
+
+## Technologies Used
+
+Next.js App Router, React Hook Form, Yup, hCaptcha, DOMPurify, Resend, TypeScript, Sentry, Vercel Analytics

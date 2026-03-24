@@ -76,3 +76,48 @@ jobs:
                 body,
               });
             }
+
+  storybook-preview:
+    name: Storybook Preview
+    needs: check-source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/vercel-deploy-storybook
+        id: deploy-storybook
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_STORYBOOK_PROJECT_ID }}
+
+      - name: Comment Storybook Preview URL
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const marker = '<!-- storybook-preview-url -->';
+            const body = `${marker}\n**Storybook preview:** ${{ steps.deploy-storybook.outputs.url }}\n\n_Updated: ${new Date().toISOString()}_`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
