@@ -142,11 +142,11 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       href: `${PROJECTS_LINK.href}/${projectSlugs.csContactForm}`,
     },
     cover: {
-      alt: 'A lock on a chain-link fence',
-      src: '/photo-1558618666-fcd25c85f82e',
-      origin: `${UNSPLASH_URL}/photos/a-lock-on-a-chain-link-fence-FnA5pAzqhMM`,
-      creator: '@jasonddority',
-      blurHash: 'L46*n~-;00~q?b%MRjWB00xu%MRj',
+      alt: 'Black iPhone with lock icon on yellow textile',
+      src: '/photo-1603899122634-f086ca5f5ddd',
+      origin: `${UNSPLASH_URL}/photos/black-iphone-5-on-yellow-textile-DoWZMPZ-M9s`,
+      creator: '@franckinjapan',
+      blurHash: 'LKJ8G*~qxu-;?bIUWBRj00D%M{Rj',
     },
   },
   [projectSlugs.uiV2]: {
