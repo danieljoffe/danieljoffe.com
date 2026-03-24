@@ -22,6 +22,9 @@ import PortfolioModernPracticeStudyCase, {
 import LogisticsDashboardStudyCase, {
   metadata as logisticsMeta,
 } from './logistics-dashboard-study-case.mdx';
+import ContactFormCaseStudy, {
+  metadata as contactFormMeta,
+} from './contact-form-case-study.mdx';
 
 export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
   {
@@ -33,6 +36,7 @@ export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
     'accessibility-serials-study-case': AccessibilitySerialsStudyCase,
     'portfolio-modern-practice-study-case': PortfolioModernPracticeStudyCase,
     'logistics-dashboard-study-case': LogisticsDashboardStudyCase,
+    'contact-form-case-study': ContactFormCaseStudy,
   };
 
 export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
@@ -44,4 +48,5 @@ export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
   'accessibility-serials-study-case': a11yMeta,
   'portfolio-modern-practice-study-case': modernMeta,
   'logistics-dashboard-study-case': logisticsMeta,
+  'contact-form-case-study': contactFormMeta,
 };

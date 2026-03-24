@@ -32,6 +32,7 @@ export interface PostPaginationData {
  *   logistics-dashboard    — 2026-01-11 (Contract, May 2023)
  *   portfolio-modern       — 2026-01-11 (Portfolio, Jul 2025)
  *   ui-components-v2       — 2026-01-29
+ *   contact-form           — 2026-03-24 (Portfolio, Aug 2025)
  *
  * Entries sharing the same git date are sub-sorted by the chronology
  * of the work they describe.
@@ -45,6 +46,7 @@ export const projectHistory: AllowedProjectSlugs[] = [
   projectSlugs.csLogisticsDashboard, // 2026-01-11 — Contract (May 2023)
   projectSlugs.csModernPractice, // 2026-01-11 — Portfolio (Jul 2025)
   projectSlugs.uiV2, // 2026-01-29
+  projectSlugs.csContactForm, // 2026-03-24 — Portfolio (Aug 2025)
 ];
 
 /**

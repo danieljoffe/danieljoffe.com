@@ -13,7 +13,7 @@ import {
 } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 
-const projectsList = Object.values(projectsRecords);
+const projectsList = Object.values(projectsRecords).reverse();
 export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {

@@ -14,8 +14,8 @@ import {
 } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
-const experienceList = Object.values(experienceRecords);
-const experienceFullList = Object.values(experienceFull);
+const experienceList = Object.values(experienceRecords).reverse();
+const experienceFullList = Object.values(experienceFull).reverse();
 
 export const metadata: Metadata = experienceRootMetadata;
 
