@@ -72,7 +72,14 @@ app/                    # Next.js App Router pages
 ├── services/           # Services page
 └── thank-you/          # Thank you pages
 components/             # App-specific React components
-├── kit/                # Shared UI primitives (Spinner, ErrorAlert, Pagination, etc.)
+├── kit/                # Shared UI primitives (Spinner, ErrorAlert, PostPagination, etc.)
+data/                   # Content data and metadata
+├── content/            # MDX content files (projects/, experience/)
+├── contentOrder.ts     # Chronological ordering and prev/next pagination
+├── metadata/           # Page metadata (SEO, OpenGraph)
+├── structuredData/     # JSON-LD structured data
+├── *Thumbnails.ts      # Thumbnail/cover records for content pages
+└── *.ts                # Slug constants, profile data, services, etc.
 hooks/                  # Custom React hooks (useTableSort, useFocusTrap)
 lib/                    # Utility libraries and configurations (cn, formStyles, badgeStyles)
 state/                  # Global state management
@@ -192,7 +199,7 @@ Chronological ordering and prev/next pagination are managed in `data/contentOrde
 
 When adding a new post:
 
-1. Create the `.mdx` file with full frontmatter.
+1. Create the `.mdx` file with an `export const meta` block (see format above).
 2. Add the slug constant to `data/project.ts` or `data/experience.ts`.
 3. Add the thumbnail record to `projectThumbnails.ts` or `experienceThumbnails.ts`.
 4. Import the MDX component in the corresponding `data/content/*/index.ts`.
