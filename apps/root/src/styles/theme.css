@@ -242,7 +242,8 @@
     margin-bottom: 0;
   }
 
-  code {
+  /* Inline code only — code blocks are styled by rehype-pretty-code below */
+  code:not([data-theme]) {
     font-family: var(--font-mono);
     font-size: 0.875rem;
     line-height: 1.5;
@@ -290,6 +291,83 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary);
+}
+
+/* ─── rehype-pretty-code ─── */
+
+/* Code block figure wrapper */
+[data-rehype-pretty-code-figure] pre {
+  @apply p-4 rounded-lg border border-border overflow-x-auto text-sm leading-relaxed mb-4;
+}
+
+[data-rehype-pretty-code-figure] code {
+  @apply font-mono text-sm;
+  font-family: var(--font-mono);
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  counter-reset: line;
+}
+
+[data-rehype-pretty-code-figure] [data-line] {
+  @apply px-4 border-l-2 border-transparent;
+}
+
+/* Highlighted lines */
+[data-rehype-pretty-code-figure] [data-highlighted-line] {
+  @apply bg-brand-50/50 border-l-2 border-brand-400;
+}
+
+.dark [data-rehype-pretty-code-figure] [data-highlighted-line] {
+  @apply bg-brand-900/30 border-brand-500;
+}
+
+/* Highlighted words/chars */
+[data-highlighted-chars] {
+  @apply bg-brand-100 rounded px-1 py-0.5;
+}
+
+.dark [data-highlighted-chars] {
+  @apply bg-brand-800/50;
+}
+
+/* Dual-theme colors — Shiki CSS vars live on individual <span> elements.
+   Use &:is(.dark *) pattern matching @custom-variant dark to survive cssnano. */
+[data-rehype-pretty-code-figure] span:not(:is(.dark *)) {
+  color: var(--shiki-light);
+}
+
+[data-rehype-pretty-code-figure] span:is(.dark *) {
+  color: var(--shiki-dark);
+}
+
+/* Code block title (```ts title="filename.ts") */
+[data-rehype-pretty-code-title] {
+  @apply text-xs font-mono text-text-tertiary bg-surface-tertiary border border-b-0 border-border rounded-t-lg px-4 py-2;
+}
+
+[data-rehype-pretty-code-title] + pre {
+  @apply rounded-t-none;
+}
+
+/* Line numbers (opt-in via ```ts showLineNumbers) */
+code[data-line-numbers] > [data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+  @apply inline-block w-4 mr-6 text-right text-text-tertiary;
+}
+
+code[data-line-numbers-max-digits='2'] > [data-line]::before {
+  @apply w-8;
+}
+
+code[data-line-numbers-max-digits='3'] > [data-line]::before {
+  @apply w-12;
+}
+
+/* Inline code within prose (rehype-pretty-code wraps inline code too) */
+[data-rehype-pretty-code-figure] > code[data-theme] {
+  @apply text-xs rounded px-1.5 py-0.5;
 }
 
 /* Reduced motion */
