@@ -1,0 +1,72 @@
+name: Bug
+description: A bug report that Claude Code can pick up and fix autonomously.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What's broken, in one line.
+      placeholder: Contact form submits successfully but toast notification doesn't appear.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How to trigger the bug.
+      placeholder: |
+        1. Go to /about
+        2. Fill out the contact form
+        3. Click submit
+        4. Observe no toast appears
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Relevant files, components, or error messages.
+      placeholder: |
+        - `components/Contact/Form.tsx`
+        - Toast provider at `state/Toast/ToastProvider.tsx`
+        - Sentry shows "TypeError: showToast is not a function"
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How to verify the fix works.
+      placeholder: |
+        - [ ] Toast appears on successful form submission
+        - [ ] Existing unit tests still pass
+        - [ ] No TypeScript errors
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Complexity
+      options:
+        - S (hours)
+        - M (days)
+        - L (weeks)
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional screenshots, browser info, or constraints.
