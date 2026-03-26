@@ -1,0 +1,83 @@
+name: Feature
+description: A feature ticket that Claude Code can pick up and implement autonomously.
+labels: ["feature"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line description of the feature.
+      placeholder: Add a blog section with MDX support and RSS feed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: Concrete deliverables as a checklist. Be specific about what to build.
+      placeholder: |
+        - [ ] Create `/blog` index page with PostCard grid
+        - [ ] Create `/blog/[slug]` dynamic route for MDX posts
+        - [ ] Add RSS feed at `/feed.xml`
+        - [ ] Add blog link to navigation
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Relevant pages, components, data files, or patterns to follow. Reference existing code when possible.
+      placeholder: |
+        - Follow the same MDX pattern as `/projects/[slug]`
+        - Reuse PostCard from `components/kit/`
+        - Add entries to `contentOrder.ts`
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How to verify the feature is complete. Include tests, visual checks, or behavioral expectations.
+      placeholder: |
+        - [ ] Page renders at `/blog` with all posts
+        - [ ] RSS feed validates at `/feed.xml`
+        - [ ] Unit tests pass
+        - [ ] E2E navigation test updated
+        - [ ] No TypeScript errors (`yarn typecheck`)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Complexity
+      options:
+        - S (hours)
+        - M (days)
+        - L (weeks)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - content
+        - ux
+        - feature
+        - infra
+        - seo
+        - analytics
+        - a11y
+        - perf
+        - bugfix
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Optional design references, screenshots, links, or constraints.
