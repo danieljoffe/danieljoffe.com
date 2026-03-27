@@ -9,6 +9,7 @@ import {
   projectMdxMetadata,
 } from '@/data/content/projects';
 import { getProjectPagination } from '@/data/contentOrder';
+import { projectReadingTimes } from '@/data/readingTimes';
 import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import PostBody from '@/components/PostBody';
 import { PostPagination } from '@/components/kit';
@@ -37,6 +38,7 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
 
   const structuredData = projectStructuredData[slug as AllowedProjectSlugs];
   const pagination = getProjectPagination(slug as AllowedProjectSlugs);
+  const readingTime = projectReadingTimes[slug as AllowedProjectSlugs];
 
   const breadcrumbs: NavLink[] = [
     PROJECTS_LINK,
@@ -51,6 +53,9 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
+            <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
+              <span>{readingTime} min read</span>
+            </div>
             <Post />
           </article>
           <PostPagination pagination={pagination} />
