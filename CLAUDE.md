@@ -8,6 +8,12 @@ Personal portfolio website for Daniel Joffe built with Next.js 16 (App Router), 
 
 Live site: https://danieljoffe.com
 
+## Git Branching Strategy
+
+- **`develop`** is the default base branch for all PRs. Feature branches merge into `develop`.
+- **`main`** is the production branch. Only `develop` can be merged into `main`.
+- Never open a PR targeting `main` directly from a feature branch.
+
 ## Commands
 
 ### Development
