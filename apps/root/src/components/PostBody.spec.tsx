@@ -24,9 +24,25 @@ jest.mock('./UnsplashImage', () => {
   };
 });
 
-jest.mock('./PostContent', () => {
-  return function MockPostContent({ children }: { children: React.ReactNode }) {
-    return <div data-testid='post-content'>{children}</div>;
+jest.mock('@/components/kit', () => ({
+  TableOfContents: function MockTableOfContents() {
+    return <nav data-testid='table-of-contents' />;
+  },
+}));
+
+jest.mock('./Button', () => {
+  return function MockButton({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href?: string;
+  }) {
+    return (
+      <a href={href} data-testid='back-link'>
+        {children}
+      </a>
+    );
   };
 });
 
@@ -43,27 +59,47 @@ describe('PostBody', () => {
       { label: 'Home', href: '/' },
       { label: 'Projects', href: '/projects' },
     ],
+    title: 'Test Post Title',
+    date: '2024-04-02',
+    tags: ['React', 'TypeScript'],
+    readingTime: 5,
+    backLink: { label: 'Projects', href: '/projects' },
   };
 
-  it('renders breadcrumbs, image, and content', () => {
+  it('renders breadcrumbs, image, title, and content', () => {
     render(<PostBody {...defaultProps}>Article body</PostBody>);
 
     expect(screen.getByTestId('breadcrumbs')).toBeInTheDocument();
     expect(screen.getByTestId('unsplash-image')).toBeInTheDocument();
-    expect(screen.getByTestId('post-content')).toBeInTheDocument();
+    expect(screen.getByText('Test Post Title')).toBeInTheDocument();
     expect(screen.getByText('Article body')).toBeInTheDocument();
+  });
+
+  it('renders date, reading time, and tags', () => {
+    render(<PostBody {...defaultProps}>Content</PostBody>);
+
+    expect(screen.getByText('5 min read')).toBeInTheDocument();
+    expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.getByText('TypeScript')).toBeInTheDocument();
   });
 
   it('passes breadcrumb items correctly', () => {
     render(<PostBody {...defaultProps}>Content</PostBody>);
 
     expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Projects')).toBeInTheDocument();
+    const breadcrumbs = screen.getByTestId('breadcrumbs');
+    expect(breadcrumbs).toHaveTextContent('Projects');
   });
 
   it('passes alt text to UnsplashImage', () => {
     render(<PostBody {...defaultProps}>Content</PostBody>);
 
     expect(screen.getByAltText('Test image')).toBeInTheDocument();
+  });
+
+  it('renders table of contents', () => {
+    render(<PostBody {...defaultProps}>Content</PostBody>);
+
+    expect(screen.getByTestId('table-of-contents')).toBeInTheDocument();
   });
 });
