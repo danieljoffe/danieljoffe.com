@@ -14,6 +14,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       label: 'Performance Optimization Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csPerformance}`,
     },
+    featured: true,
     cover: {
       alt: 'A winding road through a lush green forest',
       src: '/photo-1506744038136-46273834b3fb',
@@ -32,6 +33,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       label: 'Component Library Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csCLibrary}`,
     },
+    featured: true,
     cover: {
       alt: 'A purple LED grid forming a pattern',
       src: '/photo-1464983953574-0892a716854b',
@@ -50,6 +52,7 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       label: 'CMS Tooling Case Study',
       href: `${PROJECTS_LINK.href}/${projectSlugs.csCMSTooling}`,
     },
+    featured: true,
     cover: {
       alt: 'An open book on a lit desk',
       src: '/photo-1515378791036-0648a3ef77b2',
