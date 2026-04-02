@@ -88,19 +88,19 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-      retries: 2, // Firefox can be flaky in headless mode
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-      retries: 2, // WebKit is flaky in headless mode
-    },
-    // Mobile viewports — local only (slowest, most flaky)
+    // Firefox, WebKit, and mobile viewports — local only
     ...(!isCI
       ? [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+            retries: 2, // Firefox can be flaky in headless mode
+          },
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+            retries: 2, // WebKit is flaky in headless mode
+          },
           {
             name: 'Mobile Chrome',
             use: { ...devices['Pixel 5'] },
