@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       update-snapshots:
-        description: 'Regenerate VR baselines and upload as artifact'
+        description: 'Regenerate VR baselines, commit to branch, and upload as artifact'
         type: boolean
         default: false
 
@@ -42,11 +42,15 @@ jobs:
   update-snapshots:
     if: ${{ inputs.update-snapshots }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
         with:
           filter: tree:0
           fetch-depth: 0
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ./.github/actions/ci
         with:
@@ -68,3 +72,11 @@ jobs:
           name: vr-baselines
           path: apps/root-e2e/src/visual-regression.spec.ts-snapshots/
           if-no-files-found: error
+
+      - name: Commit and push updated snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apps/root-e2e/src/visual-regression.spec.ts-snapshots/
+          git diff --cached --quiet || git commit -m "chore(e2e): update visual regression snapshots from CI"
+          git push
