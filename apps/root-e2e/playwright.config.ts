@@ -71,6 +71,11 @@ export default defineConfig({
       NEXT_PUBLIC_HCAPTCHA_SITE_ID: '10000000-ffff-ffff-ffff-000000000001',
       // Disable Resend so E2E tests never send real emails
       RESEND_API_KEY: '',
+      // Disable Supabase so E2E tests never write to the real database.
+      // Rate limiting and DB-dependent logic are covered by unit tests with
+      // mocked Supabase. See route.test.ts for coverage.
+      NEXT_PUBLIC_SUPABASE_URL: '',
+      SUPABASE_SERVICE_ROLE_KEY: '',
       ...(isCI && {
         // Disable Sentry to speed up startup
         SENTRY_DSN: '',
