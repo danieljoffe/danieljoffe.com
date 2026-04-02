@@ -1,6 +1,7 @@
 import { normalizeUrl, isValidUrl, hashIp, isValidUuid } from './validation.js';
 
 describe('normalizeUrl', () => {
+  // --- Existing behaviors ---
   it('adds https:// when no protocol is given', () => {
     expect(normalizeUrl('example.com')).toBe('https://example.com');
   });
@@ -38,6 +39,101 @@ describe('normalizeUrl', () => {
     expect(normalizeUrl('https://example.com/page')).toBe(
       'https://example.com/page'
     );
+  });
+
+  // --- New: query parameter ordering ---
+  it('sorts query parameters alphabetically', () => {
+    expect(normalizeUrl('https://example.com?b=2&a=1')).toBe(
+      'https://example.com?a=1&b=2'
+    );
+  });
+
+  it('preserves query parameters when already sorted', () => {
+    expect(normalizeUrl('https://example.com?a=1&b=2')).toBe(
+      'https://example.com?a=1&b=2'
+    );
+  });
+
+  it('handles single query parameter', () => {
+    expect(normalizeUrl('https://example.com?key=value')).toBe(
+      'https://example.com?key=value'
+    );
+  });
+
+  // --- New: fragment removal ---
+  it('removes fragments', () => {
+    expect(normalizeUrl('https://example.com#section')).toBe(
+      'https://example.com'
+    );
+  });
+
+  it('removes fragments with paths', () => {
+    expect(normalizeUrl('https://example.com/page#top')).toBe(
+      'https://example.com/page'
+    );
+  });
+
+  it('removes fragments but keeps query params', () => {
+    expect(normalizeUrl('https://example.com?a=1#section')).toBe(
+      'https://example.com?a=1'
+    );
+  });
+
+  // --- New: default port removal ---
+  it('removes default port 443 for https', () => {
+    expect(normalizeUrl('https://example.com:443')).toBe(
+      'https://example.com'
+    );
+  });
+
+  it('removes default port 80 for http', () => {
+    expect(normalizeUrl('http://example.com:80')).toBe('http://example.com');
+  });
+
+  it('preserves non-default ports', () => {
+    expect(normalizeUrl('https://example.com:8080')).toBe(
+      'https://example.com:8080'
+    );
+  });
+
+  // --- New: duplicate slash collapsing ---
+  it('collapses duplicate slashes in path', () => {
+    expect(normalizeUrl('https://example.com//page')).toBe(
+      'https://example.com/page'
+    );
+  });
+
+  it('collapses multiple duplicate slashes', () => {
+    expect(normalizeUrl('https://example.com///a///b')).toBe(
+      'https://example.com/a/b'
+    );
+  });
+
+  // --- New: removes trailing slashes from paths ---
+  it('removes trailing slash from paths', () => {
+    expect(normalizeUrl('https://example.com/page/')).toBe(
+      'https://example.com/page'
+    );
+  });
+
+  // --- Combined edge cases ---
+  it('normalizes all permutations together', () => {
+    const input = '  HTTPS://WWW.Example.COM:443//page///sub/?z=3&a=1#frag  ';
+    expect(normalizeUrl(input)).toBe('https://example.com/page/sub?a=1&z=3');
+  });
+
+  it('normalizes equivalent URLs to the same canonical form', () => {
+    const variants = [
+      'https://www.example.com/page',
+      'https://example.com/page/',
+      'HTTPS://EXAMPLE.COM/page#section',
+      'https://example.com:443/page',
+      'https://www.example.com:443/page/',
+      '  www.example.com/page  ',
+    ];
+    const normalized = variants.map(normalizeUrl);
+    expect(new Set(normalized).size).toBe(1);
+    expect(normalized[0]).toBe('https://example.com/page');
   });
 });
 
