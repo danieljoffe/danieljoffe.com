@@ -12,7 +12,7 @@ import { getProjectPagination } from '@/data/contentOrder';
 import { projectReadingTimes } from '@/data/readingTimes';
 import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import PostBody from '@/components/PostBody';
-import { PostPagination } from '@/components/kit';
+import { PostPagination, TableOfContents } from '@/components/kit';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
@@ -56,6 +56,7 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
             <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
               <span>{readingTime} min read</span>
             </div>
+            <TableOfContents />
             <Post />
           </article>
           <PostPagination pagination={pagination} />
