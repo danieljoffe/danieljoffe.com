@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight, Calendar } from 'lucide-react';
+import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import { badgeVariants } from '@/lib/badgeStyles';
 import { PostThumbnail } from '@/types/postTypes';
@@ -57,10 +57,24 @@ export function PostCard({
         <p className='text-sm text-text-secondary leading-relaxed line-clamp-2'>
           {post.description}
         </p>
-        {post.duration && (
-          <div className='flex items-center gap-1.5'>
-            <Calendar className='h-3 w-3 text-text-tertiary' />
-            <span className='text-xs text-text-tertiary'>{post.duration}</span>
+        {(post.duration || post.readingTime) && (
+          <div className='flex items-center gap-3'>
+            {post.duration && (
+              <div className='flex items-center gap-1.5'>
+                <Calendar className='h-3 w-3 text-text-tertiary' />
+                <span className='text-xs text-text-tertiary'>
+                  {post.duration}
+                </span>
+              </div>
+            )}
+            {post.readingTime && (
+              <div className='flex items-center gap-1.5'>
+                <Clock className='h-3 w-3 text-text-tertiary' />
+                <span className='text-xs text-text-tertiary'>
+                  {post.readingTime} min read
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

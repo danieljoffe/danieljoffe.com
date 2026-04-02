@@ -20,8 +20,8 @@ Live site: https://danieljoffe.com
 Before pushing any changes, **always** run the full unit test suite and typecheck:
 
 ```bash
-node_modules/.bin/tsc --noEmit         # Must have zero errors
-node_modules/.bin/nx test root         # All tests must pass
+yarn tsc --noEmit         # Must have zero errors
+yarn nx test root         # All tests must pass
 ```
 
 Do not push if either command fails. Fix the issue first.

@@ -8,6 +8,7 @@ import { ToastProvider } from '@/state/Toast/ToastProvider';
 import ModalProvider from '@/state/Modal/ModalProvider';
 import Nav from '@/components/Nav';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { ScrollToTop } from '@/components/kit';
 
 const Modal = dynamic(() => import('@/components/Modal'), { ssr: false });
 const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
@@ -37,6 +38,7 @@ export default function AppContext({ children }: WithChildren) {
       <Nav />
       <ErrorBoundary>{children}</ErrorBoundary>
       <Modal />
+      <ScrollToTop />
       <Suspense fallback={null}>
         <ScrollToElement />
       </Suspense>
