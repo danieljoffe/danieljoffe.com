@@ -9,6 +9,7 @@ import {
 import { experiencePageSlugs } from '@/data/experience';
 import { experienceStructuredData } from '@/data/structuredData/experience';
 import { getExperiencePagination } from '@/data/contentOrder';
+import { experienceReadingTimes } from '@/data/readingTimes';
 import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import PostBody from '@/components/PostBody';
 import { PostPagination } from '@/components/kit';
@@ -38,6 +39,7 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
   const structuredData =
     experienceStructuredData[slug as AllowedExperienceSlugs];
   const pagination = getExperiencePagination(slug as AllowedExperienceSlugs);
+  const readingTime = experienceReadingTimes[slug as AllowedExperienceSlugs];
 
   const breadcrumbs: NavLink[] = [
     EXPERIENCE_LINK,
@@ -52,6 +54,9 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
+            <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
+              <span>{readingTime} min read</span>
+            </div>
             <Post />
           </article>
           <PostPagination pagination={pagination} />
