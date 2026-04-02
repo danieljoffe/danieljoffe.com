@@ -59,7 +59,7 @@ export default function CalendlyEmbed() {
       {/* Loading spinner — shown until iframe loads */}
       {(!shouldLoad || !isLoaded) && (
         <div className='absolute inset-0 flex items-center justify-center'>
-          <Spinner size='lg' />
+          <Spinner size='md' />
         </div>
       )}
 
