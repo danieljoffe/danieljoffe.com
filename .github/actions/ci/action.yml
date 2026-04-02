@@ -24,10 +24,6 @@ runs:
       shell: bash
       run: yarn install --frozen-lockfile
 
-    - name: Install Playwright
-      shell: bash
-      run: yarn playwright install --with-deps
-
     - uses: nrwl/nx-set-shas@v4
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -38,10 +34,15 @@ runs:
       env:
         NX_NO_CLOUD: 'true'
 
+    - name: Install Playwright
+      if: ${{ inputs.run-e2e == 'true' }}
+      shell: bash
+      run: yarn playwright install --with-deps chromium
+
     - name: Run e2e tests
       if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
-      run: yarn nx e2e root-e2e
+      run: yarn nx affected -t e2e --nxBail
       env:
         NX_NO_CLOUD: 'true'
 
