@@ -47,26 +47,20 @@ export const servicesStructuredData = {
     '@type': 'OfferCatalog',
     name: 'Frontend Development Services',
     itemListElement: services.map((service, index) => ({
-      '@type': 'OfferCatalog',
-      name: service.name,
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'Service',
+        name: service.name,
+        description: service.description,
+        provider: personStructuredData,
+      },
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: service.price,
+        priceCurrency: 'USD',
+        unitText: 'project',
+      },
       position: index + 1,
-      itemListElement: [
-        {
-          '@type': 'Offer',
-          itemOffered: {
-            '@type': 'Service',
-            name: service.name,
-            description: service.description,
-            provider: personStructuredData,
-          },
-          priceSpecification: {
-            '@type': 'UnitPriceSpecification',
-            price: service.price,
-            priceCurrency: 'USD',
-            unitText: 'project',
-          },
-        },
-      ],
     })),
   },
   url: `${DOMAIN_URL}${SERVICES_LINK.href}`,
