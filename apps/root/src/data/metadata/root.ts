@@ -35,6 +35,9 @@ export const rootMetadata: Metadata = {
   metadataBase: new URL('https://danieljoffe.com'),
   alternates: {
     canonical: '/',
+    types: {
+      'application/rss+xml': '/feed.xml',
+    },
   },
   openGraph: {
     type: 'website',
