@@ -14,6 +14,12 @@ export const metadata: Metadata = {
     description:
       'Get a detailed performance, accessibility, and SEO report in 30 seconds.',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Free Website Performance Audit',
+    description:
+      'Get a detailed performance, accessibility, and SEO report in 30 seconds.',
+  },
 };
 
 async function getCompletedScanCount(): Promise<number> {
