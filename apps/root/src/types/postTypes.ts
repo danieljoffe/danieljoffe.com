@@ -22,6 +22,7 @@ export interface PostThumbnail extends PostBase {
   duration?: string;
   role?: string;
   readingTime?: number;
+  featured?: boolean;
 }
 
 export interface PostBodyProps extends WithChildren {

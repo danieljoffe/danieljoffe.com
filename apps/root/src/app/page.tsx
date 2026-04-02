@@ -6,10 +6,12 @@ import {
   Heart,
   ArrowUpRight,
   Zap,
+  Layers,
 } from 'lucide-react';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
 import { experienceFull } from '@/data/experience';
+import { projectsRecords } from '@/data/projectThumbnails';
 import {
   FULL_NAME,
   JOB_TITLE,
@@ -25,6 +27,7 @@ import {
   CTACard,
   GridBg,
   CompanyLogo,
+  PostCard,
 } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
@@ -34,6 +37,7 @@ import HeroActions from './home/HeroActions';
 export const metadata: Metadata = homeMetadata;
 
 const companies = Object.values(experienceFull);
+const featuredProjects = Object.values(projectsRecords).filter(p => p.featured);
 
 export default function Index() {
   return (
@@ -126,6 +130,27 @@ export default function Index() {
               </div>
             </div>
           ))}
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          FEATURED PROJECTS
+          ══════════════════════════════════ */}
+      <Section>
+        <SectionLabel
+          icon={<Layers className='h-3.5 w-3.5' />}
+          label='Featured Projects'
+        />
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {featuredProjects.map((project, i) => (
+            <PostCard key={project.slug} post={project} priority={i === 0} />
+          ))}
+        </div>
+        <div className='flex justify-center pt-4'>
+          <Button as='link' href={PROJECTS_LINK.href} variant='secondary' size='sm'>
+            View all projects
+            <ArrowUpRight className='h-4 w-4' />
+          </Button>
         </div>
       </Section>
 
