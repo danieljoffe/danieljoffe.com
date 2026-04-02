@@ -1,28 +1,19 @@
 import type { Metadata } from 'next';
-import {
-  Check,
-  ChevronDown,
-  ArrowUpRight,
-  Layers,
-  Users,
-  HelpCircle,
-} from 'lucide-react';
+import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
 import { servicesMetadata } from '@/data/metadata/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
-import { CALENDLY_URL, FULL_NAME } from '@/utils/constants';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import {
   Section,
   SectionLabel,
   PageLayout,
-  CTACard,
   StructuredData,
 } from '@/components/kit';
 import { badgeVariants } from '@/lib/badgeStyles';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
-import Button from '@/components/Button';
 import HeroCTA from './HeroCTA';
+import CalendlyEmbed from './CalendlyEmbed';
 import FAQ from './FAQ';
 
 export const metadata: Metadata = servicesMetadata;
@@ -193,32 +184,20 @@ export default function Services() {
       </Section>
 
       {/* ══════════════════════════════════
-          CTA
+          CTA — Inline Calendly Embed
           ══════════════════════════════════ */}
       <Section>
-        <CTACard
-          heading="Let's figure out how I can help."
-          description={
-            <>
-              Book a free 30-minute call. No contracts, no
-              commitments&mdash;just a conversation about your frontend
-              challenges.
-            </>
-          }
-        >
-          <div className='flex justify-center'>
-            <Button
-              as='link'
-              href={CALENDLY_URL}
-              target='_blank'
-              size='sm'
-              aria-label={`Book a discovery call with ${FULL_NAME}`}
-            >
-              Book a Discovery Call
-              <ArrowUpRight className='h-4 w-4' />
-            </Button>
-          </div>
-        </CTACard>
+        <div className='text-center space-y-2 mb-6'>
+          <h2 className='text-2xl sm:text-3xl font-bold text-text-primary'>
+            Let&apos;s figure out how I can help.
+          </h2>
+          <p className='text-text-secondary'>
+            Book a free 30-minute call. No contracts, no
+            commitments&mdash;just a conversation about your frontend
+            challenges.
+          </p>
+        </div>
+        <CalendlyEmbed />
       </Section>
 
       <StructuredData data={servicesPageStructuredData} />
