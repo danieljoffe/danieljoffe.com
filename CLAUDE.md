@@ -13,7 +13,7 @@ Live site: https://danieljoffe.com
 - **`develop`** is the default base branch for all PRs. Feature branches merge into `develop`.
 - **`main`** is the production branch. Only `develop` can be merged into `main`.
 - Never open a PR targeting `main` directly from a feature branch.
-- Create a new branch per issue: `feature/<feature-name>` from `main` or `develop`.
+- Create a new branch per issue: `feature/<feature-name>` from `main`.
 
 ## Pre-Push Checklist
 

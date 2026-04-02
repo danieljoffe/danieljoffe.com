@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Free Website Performance Audit | Daniel Joffe',
   description:
     'Paste your URL. Get a detailed performance, accessibility, and SEO report in 30 seconds. Free, no signup required.',
+  alternates: {
+    canonical: '/audit',
+  },
   openGraph: {
     title: 'Free Website Performance Audit',
     description:
