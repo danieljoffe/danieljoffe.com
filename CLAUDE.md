@@ -13,6 +13,18 @@ Live site: https://danieljoffe.com
 - **`develop`** is the default base branch for all PRs. Feature branches merge into `develop`.
 - **`main`** is the production branch. Only `develop` can be merged into `main`.
 - Never open a PR targeting `main` directly from a feature branch.
+- Create a new branch per issue: `feature/<feature-name>` from `main` or `develop`.
+
+## Pre-Push Checklist
+
+Before pushing any changes, **always** run the full unit test suite and typecheck:
+
+```bash
+yarn tsc --noEmit         # Must have zero errors
+yarn nx test root         # All tests must pass
+```
+
+Do not push if either command fails. Fix the issue first.
 
 ## Commands
 

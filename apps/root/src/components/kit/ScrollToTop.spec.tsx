@@ -6,9 +6,11 @@ describe('ScrollToTop', () => {
   let scrollHandler: EventListener;
 
   beforeEach(() => {
-    jest.spyOn(window, 'addEventListener').mockImplementation((event, handler) => {
-      if (event === 'scroll') scrollHandler = handler as EventListener;
-    });
+    jest
+      .spyOn(window, 'addEventListener')
+      .mockImplementation((event, handler) => {
+        if (event === 'scroll') scrollHandler = handler as EventListener;
+      });
     jest.spyOn(window, 'removeEventListener');
     window.scrollTo = jest.fn();
   });
@@ -19,7 +21,9 @@ describe('ScrollToTop', () => {
 
   test('renders a button with accessible label', () => {
     render(<ScrollToTop />);
-    expect(screen.getByRole('button', { name: 'Scroll to top' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Scroll to top' })
+    ).toBeInTheDocument();
   });
 
   test('is hidden by default (below threshold)', () => {
@@ -68,7 +72,10 @@ describe('ScrollToTop', () => {
     });
 
     fireEvent.click(button);
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 0,
+      behavior: 'smooth',
+    });
   });
 
   test('cleans up scroll listener on unmount', () => {
@@ -76,7 +83,7 @@ describe('ScrollToTop', () => {
     unmount();
     expect(window.removeEventListener).toHaveBeenCalledWith(
       'scroll',
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 });

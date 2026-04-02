@@ -14,7 +14,7 @@ function readMdxFile(type: 'projects' | 'experience', slug: string): string {
 
 function buildReadingTimeMap<T extends string>(
   slugs: readonly T[],
-  type: 'projects' | 'experience',
+  type: 'projects' | 'experience'
 ): Record<T, number> {
   const map = {} as Record<T, number>;
   for (const slug of slugs) {

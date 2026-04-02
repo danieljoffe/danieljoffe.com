@@ -72,7 +72,7 @@ This is the actual content.`;
   it('strips import and export statements', () => {
     const content = [
       "import { Component } from 'react';",
-      "export default function Page() {}",
+      'export default function Page() {}',
       '',
       'This is readable content with enough words to count.',
     ].join('\n');

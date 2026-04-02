@@ -33,7 +33,7 @@ export function ScrollToTop() {
         'transition-all duration-200 cursor-pointer',
         visible
           ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-2 pointer-events-none',
+          : 'opacity-0 translate-y-2 pointer-events-none'
       )}
     >
       <ArrowUp className='h-4 w-4' />
