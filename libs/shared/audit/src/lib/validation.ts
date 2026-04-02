@@ -1,13 +1,50 @@
 import { createHash } from 'node:crypto';
 
 export function normalizeUrl(url: string): string {
-  let normalized = url.trim().toLowerCase();
-  if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
-    normalized = `https://${normalized}`;
+  let raw = url.trim().toLowerCase();
+  if (!raw.startsWith('http://') && !raw.startsWith('https://')) {
+    raw = `https://${raw}`;
   }
-  normalized = normalized.replace(/\/+$/, '');
-  normalized = normalized.replace(/^(https?:\/\/)www\./, '$1');
-  return normalized;
+
+  const parsed = new URL(raw);
+
+  // Strip www. prefix
+  parsed.hostname = parsed.hostname.replace(/^www\./, '');
+
+  // Remove default ports (80 for http, 443 for https)
+  if (
+    (parsed.protocol === 'https:' && parsed.port === '443') ||
+    (parsed.protocol === 'http:' && parsed.port === '80')
+  ) {
+    parsed.port = '';
+  }
+
+  // Collapse duplicate slashes in pathname
+  parsed.pathname = parsed.pathname.replace(/\/{2,}/g, '/');
+
+  // Remove trailing slash from pathname (keep root "/" as empty)
+  if (parsed.pathname.length > 1) {
+    parsed.pathname = parsed.pathname.replace(/\/+$/, '');
+  }
+
+  // Sort query parameters for consistent ordering
+  if (parsed.search) {
+    const params = new URLSearchParams(parsed.searchParams);
+    const sorted = new URLSearchParams([...params.entries()].sort());
+    parsed.search = sorted.toString();
+  }
+
+  // Remove fragment
+  parsed.hash = '';
+
+  // Build result from parts to avoid URL.toString() always adding "/" to
+  // bare origins (e.g. "https://example.com/" instead of "https://example.com").
+  const port = parsed.port ? `:${parsed.port}` : '';
+  const pathname =
+    parsed.pathname === '/' ? '' : parsed.pathname;
+  const search = parsed.search;
+
+  return `${parsed.protocol}//${parsed.hostname}${port}${pathname}${search}`;
 }
 
 export function isValidUrl(url: string): boolean {
