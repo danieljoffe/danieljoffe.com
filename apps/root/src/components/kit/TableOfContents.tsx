@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/cn';
 
 interface TocItem {
@@ -20,9 +20,8 @@ export function TableOfContents({
   const [headings, setHeadings] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Extract headings from the DOM after mount
+  // Extract headings from the DOM and observe for active section highlighting
   useEffect(() => {
     const container = document.querySelector(contentSelector);
     if (!container) return;
@@ -40,34 +39,28 @@ export function TableOfContents({
       }
     });
 
-    setHeadings(items);
-  }, [contentSelector]);
+    if (items.length === 0) return;
 
-  // Observe headings for active section highlighting
-  useEffect(() => {
-    if (headings.length === 0) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries.find(e => e.isIntersecting);
+        if (visible?.target.id) {
+          setActiveId(visible.target.id);
+        }
+      },
+      { rootMargin: '-80px 0px -60% 0px' }
+    );
 
-    observerRef.current?.disconnect();
-
-    const callback: IntersectionObserverCallback = entries => {
-      // Find the first visible heading
-      const visible = entries.find(e => e.isIntersecting);
-      if (visible?.target.id) {
-        setActiveId(visible.target.id);
-      }
-    };
-
-    observerRef.current = new IntersectionObserver(callback, {
-      rootMargin: '-80px 0px -60% 0px',
-    });
-
-    headings.forEach(({ id }) => {
+    items.forEach(({ id }) => {
       const el = document.getElementById(id);
-      if (el) observerRef.current?.observe(el);
+      if (el) observer.observe(el);
     });
 
-    return () => observerRef.current?.disconnect();
-  }, [headings]);
+    // Set headings last via microtask to avoid synchronous setState in effect body
+    queueMicrotask(() => setHeadings(items));
+
+    return () => observer.disconnect();
+  }, [contentSelector]);
 
   if (headings.length === 0) return null;
 
