@@ -90,6 +90,8 @@ async function getScanData(id: string) {
   };
 }
 
+const noIndexRobots = { index: false, follow: true } as const;
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -97,7 +99,7 @@ export async function generateMetadata({
   const { id } = await params;
 
   if (!isValidUuid(id)) {
-    return { title: 'Report Not Found | Daniel Joffe' };
+    return { title: 'Report Not Found | Daniel Joffe', robots: noIndexRobots };
   }
 
   const data = await getScanData(id);
@@ -105,18 +107,19 @@ export async function generateMetadata({
   // Scan not in DB yet — freshly redirected from form
   if (!data) {
     const sp = await searchParams;
-    if (sp.url) return { title: 'Scanning... | Daniel Joffe' };
-    return { title: 'Report Not Found | Daniel Joffe' };
+    if (sp.url)
+      return { title: 'Scanning... | Daniel Joffe', robots: noIndexRobots };
+    return { title: 'Report Not Found | Daniel Joffe', robots: noIndexRobots };
   }
 
   const { scan } = data;
 
   if (scan.status === 'pending' || scan.status === 'running') {
-    return { title: 'Scanning... | Daniel Joffe' };
+    return { title: 'Scanning... | Daniel Joffe', robots: noIndexRobots };
   }
 
   if (scan.status === 'failed') {
-    return { title: 'Scan Failed | Daniel Joffe' };
+    return { title: 'Scan Failed | Daniel Joffe', robots: noIndexRobots };
   }
 
   const grade = scan.grade_overall as string;
@@ -126,6 +129,7 @@ export async function generateMetadata({
   return {
     title: `Audit: ${title} — Grade ${grade} | Daniel Joffe`,
     description: `This site scored a ${grade} (${gradeInfo?.label}). Performance: ${scan.score_performance}, Accessibility: ${scan.score_accessibility}, SEO: ${scan.score_seo}.`,
+    robots: noIndexRobots,
     openGraph: {
       title: `Performance Audit: Grade ${grade}`,
       description: `${title} scored a ${grade}. Get your free audit at danieljoffe.com/audit`,
