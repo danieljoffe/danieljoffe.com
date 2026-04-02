@@ -15,6 +15,7 @@ export const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
 export const SUPABASE_STORAGE_URL = 'https://grwmzluuqyczatkxorfa.supabase.co';
 export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
+export const CALENDLY_EMBED_URL = 'https://calendly.com';
 
 // ============================================================================
 // PERSONAL INFORMATION
