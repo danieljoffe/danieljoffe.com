@@ -12,3 +12,4 @@ export { ErrorAlert } from './ErrorAlert';
 export { Pagination } from './Pagination';
 export { PostPagination } from './PostPagination';
 export { FormFieldError } from './FormFieldError';
+export { ScrollToTop } from './ScrollToTop';
