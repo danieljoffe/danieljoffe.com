@@ -10,11 +10,6 @@ function headersWithUniqueIP() {
   };
 }
 
-// Tests that query Supabase (nonexistent UUID lookups, rate limiting) require
-// the database to be configured. Pure validation tests (invalid UUID format,
-// missing fields) return 400 before touching Supabase.
-const HAS_SUPABASE = !!process.env['NEXT_PUBLIC_SUPABASE_URL'];
-
 // ---------------------------------------------------------------------------
 // POST /api/audit/scan — validation
 // ---------------------------------------------------------------------------
@@ -99,56 +94,23 @@ test.describe('api audit scan - validation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/audit/scan — rate limiting (requires Supabase)
+// POST /api/audit/scan — Supabase unavailable
+// Supabase is disabled in E2E (env vars cleared in playwright.config.ts).
+// Rate limiting is covered by unit tests with mocked Supabase in route.test.ts.
 // ---------------------------------------------------------------------------
 
-if (HAS_SUPABASE) {
-  test.describe('api audit scan - rate limiting', () => {
-    test('allows 5 requests from same IP', async ({ request }) => {
-      const uniqueIP = `rate-limit-scan-${Date.now()}`;
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-forwarded-for': uniqueIP,
-      };
-
-      const statuses: number[] = [];
-      for (let i = 0; i < 5; i++) {
-        const response = await request.post('/api/audit/scan', {
-          headers,
-          data: { url: `https://example-${Date.now()}-${i}.com` },
-        });
-        statuses.push(response.status());
-      }
-
-      // None of the first 5 should be 429
-      expect(statuses.every(s => s !== 429)).toBe(true);
+test.describe('api audit scan - no database', () => {
+  test('returns 503 when Supabase is unavailable', async ({ request }) => {
+    const response = await request.post('/api/audit/scan', {
+      headers: headersWithUniqueIP(),
+      data: { url: 'https://example.com' },
     });
 
-    test('blocks request exceeding limit with 429', async ({ request }) => {
-      const uniqueIP = `rate-limit-scan-block-${Date.now()}`;
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-forwarded-for': uniqueIP,
-      };
-
-      for (let i = 0; i < 10; i++) {
-        await request.post('/api/audit/scan', {
-          headers,
-          data: { url: `https://example-${Date.now()}-${i}.com` },
-        });
-      }
-
-      const response = await request.post('/api/audit/scan', {
-        headers,
-        data: { url: `https://example-${Date.now()}-eleventh.com` },
-      });
-
-      expect(response.status()).toBe(429);
-      const body = await response.json();
-      expect(body.error).toContain('Rate limit');
-    });
+    expect(response.status()).toBe(503);
+    const body = await response.json();
+    expect(body.error).toBe('Service unavailable');
   });
-}
+});
 
 // ---------------------------------------------------------------------------
 // GET /api/audit/status/[id] — validation
@@ -162,21 +124,17 @@ test.describe('api audit status - validation', () => {
     const body = await response.json();
     expect(body.error).toBe('Invalid scan ID');
   });
-});
 
-if (HAS_SUPABASE) {
-  test.describe('api audit status - not found', () => {
-    test('returns 404 for nonexistent UUID', async ({ request }) => {
-      const response = await request.get(
-        '/api/audit/status/00000000-0000-0000-0000-000000000000'
-      );
+  test('returns 503 for valid UUID when Supabase is unavailable', async ({
+    request,
+  }) => {
+    const response = await request.get(
+      '/api/audit/status/00000000-0000-0000-0000-000000000000'
+    );
 
-      expect(response.status()).toBe(404);
-      const body = await response.json();
-      expect(body.error).toBe('Scan not found');
-    });
+    expect(response.status()).toBe(503);
   });
-}
+});
 
 // ---------------------------------------------------------------------------
 // GET /api/audit/report/[id] — validation
@@ -190,21 +148,17 @@ test.describe('api audit report - validation', () => {
     const body = await response.json();
     expect(body.error).toBe('Invalid scan ID');
   });
-});
 
-if (HAS_SUPABASE) {
-  test.describe('api audit report - not found', () => {
-    test('returns 404 for nonexistent UUID', async ({ request }) => {
-      const response = await request.get(
-        '/api/audit/report/00000000-0000-0000-0000-000000000000'
-      );
+  test('returns 503 for valid UUID when Supabase is unavailable', async ({
+    request,
+  }) => {
+    const response = await request.get(
+      '/api/audit/report/00000000-0000-0000-0000-000000000000'
+    );
 
-      expect(response.status()).toBe(404);
-      const body = await response.json();
-      expect(body.error).toBe('Report not found');
-    });
+    expect(response.status()).toBe(503);
   });
-}
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/leads/capture — validation
