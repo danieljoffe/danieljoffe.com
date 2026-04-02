@@ -134,6 +134,11 @@ export async function generateMetadata({
       title: `Performance Audit: Grade ${grade}`,
       description: `${title} scored a ${grade}. Get your free audit at danieljoffe.com/audit`,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Performance Audit: Grade ${grade}`,
+      description: `${title} scored a ${grade}. Get your free audit at danieljoffe.com/audit`,
+    },
   };
 }
 
