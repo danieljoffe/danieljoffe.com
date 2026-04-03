@@ -50,7 +50,7 @@ jobs:
           filter: tree:0
           fetch-depth: 0
           ref: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - uses: ./.github/actions/ci
         with:
