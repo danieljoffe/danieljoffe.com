@@ -89,9 +89,8 @@ export default function About() {
               height={200}
               className='rounded-full size-[10rem] object-cover border border-border self-center sm:self-start shrink-0'
               sizes='200px'
-              fetchPriority='high'
+              priority
               decoding='async'
-              loading='eager'
             />
             <div className='space-y-4 text-center sm:text-left'>
               <p className='text-sm font-semibold uppercase tracking-wider text-text-secondary'>
