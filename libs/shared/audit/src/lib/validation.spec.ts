@@ -81,9 +81,7 @@ describe('normalizeUrl', () => {
 
   // --- New: default port removal ---
   it('removes default port 443 for https', () => {
-    expect(normalizeUrl('https://example.com:443')).toBe(
-      'https://example.com'
-    );
+    expect(normalizeUrl('https://example.com:443')).toBe('https://example.com');
   });
 
   it('removes default port 80 for http', () => {

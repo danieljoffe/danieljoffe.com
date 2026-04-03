@@ -43,6 +43,20 @@ describe('Badge', () => {
     expect(badge).toHaveClass('bg-info-light');
   });
 
+  it('applies brand variant styles', () => {
+    render(<Badge variant='brand'>Brand</Badge>);
+    const badge = screen.getByText('Brand');
+    expect(badge).toHaveClass('bg-brand-50');
+    expect(badge).toHaveClass('text-brand-700');
+  });
+
+  it('applies brand-solid variant styles', () => {
+    render(<Badge variant='brand-solid'>Solid</Badge>);
+    const badge = screen.getByText('Solid');
+    expect(badge).toHaveClass('bg-brand-600');
+    expect(badge).toHaveClass('text-white');
+  });
+
   it('applies custom className', () => {
     render(<Badge className='custom-class'>Badge</Badge>);
     const badge = screen.getByText('Badge');

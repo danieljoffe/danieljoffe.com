@@ -8,9 +8,7 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-function headingId(
-  props: ComponentPropsWithoutRef<'h1'>
-): string | undefined {
+function headingId(props: ComponentPropsWithoutRef<'h1'>): string | undefined {
   if (props.id) return props.id;
   if (typeof props.children === 'string') return slugify(props.children);
   return undefined;

@@ -25,26 +25,26 @@ jest.mock('./UnsplashImage', () => {
 });
 
 jest.mock('@/components/kit', () => ({
-  TableOfContents: function MockTableOfContents() {
-    return <nav data-testid='table-of-contents' />;
-  },
-}));
-
-jest.mock('./Button', () => {
-  return function MockButton({
-    children,
-    href,
+  TableOfContents: function MockTableOfContents({
+    mobile,
+    desktop,
   }: {
-    children: React.ReactNode;
-    href?: string;
+    mobile?: boolean;
+    desktop?: boolean;
   }) {
     return (
-      <a href={href} data-testid='back-link'>
-        {children}
-      </a>
+      <nav
+        data-testid={
+          mobile
+            ? 'table-of-contents-mobile'
+            : desktop
+              ? 'table-of-contents-desktop'
+              : 'table-of-contents'
+        }
+      />
     );
-  };
-});
+  },
+}));
 
 describe('PostBody', () => {
   const defaultProps = {
@@ -63,7 +63,6 @@ describe('PostBody', () => {
     date: '2024-04-02',
     tags: ['React', 'TypeScript'],
     readingTime: 5,
-    backLink: { label: 'Projects', href: '/projects' },
   };
 
   it('renders breadcrumbs, image, title, and content', () => {
@@ -79,8 +78,17 @@ describe('PostBody', () => {
     render(<PostBody {...defaultProps}>Content</PostBody>);
 
     expect(screen.getByText('5 min read')).toBeInTheDocument();
-    expect(screen.getByText('React')).toBeInTheDocument();
-    expect(screen.getByText('TypeScript')).toBeInTheDocument();
+    expect(screen.getByText('React, TypeScript')).toBeInTheDocument();
+  });
+
+  it('does not render tag row when tags array is empty', () => {
+    render(
+      <PostBody {...defaultProps} tags={[]}>
+        Content
+      </PostBody>
+    );
+
+    expect(screen.queryByText('React, TypeScript')).not.toBeInTheDocument();
   });
 
   it('passes breadcrumb items correctly', () => {
@@ -97,9 +105,10 @@ describe('PostBody', () => {
     expect(screen.getByAltText('Test image')).toBeInTheDocument();
   });
 
-  it('renders table of contents', () => {
+  it('renders mobile and desktop table of contents', () => {
     render(<PostBody {...defaultProps}>Content</PostBody>);
 
-    expect(screen.getByTestId('table-of-contents')).toBeInTheDocument();
+    expect(screen.getByTestId('table-of-contents-mobile')).toBeInTheDocument();
+    expect(screen.getByTestId('table-of-contents-desktop')).toBeInTheDocument();
   });
 });

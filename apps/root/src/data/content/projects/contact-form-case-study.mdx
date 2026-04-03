@@ -255,52 +255,54 @@ Each function throws a typed `ErrorResponse` on failure, so the catch block hand
 
 ## The Results
 
-<table>
-  <thead>
-    <tr>
-      <th scope='col'>Security Layer</th>
-      <th scope='col'>What It Catches</th>
-      <th scope='col'>Response</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Client validation</td>
-      <td>Typos, missing fields, invalid formats</td>
-      <td>Inline errors (no request sent)</td>
-    </tr>
-    <tr>
-      <td>Honeypot</td>
-      <td>Naive bots that fill every field</td>
-      <td>403 Forbidden</td>
-    </tr>
-    <tr>
-      <td>hCaptcha</td>
-      <td>Automated submissions without human interaction</td>
-      <td>400 (token required)</td>
-    </tr>
-    <tr>
-      <td>Rate limiting</td>
-      <td>Brute-force / spam floods from a single IP</td>
-      <td>429 + Retry-After header</td>
-    </tr>
-    <tr>
-      <td>DOMPurify</td>
-      <td>XSS payloads in form fields</td>
-      <td>Sanitized before processing</td>
-    </tr>
-    <tr>
-      <td>Source validation</td>
-      <td>Direct API calls from outside the site</td>
-      <td>403 Forbidden</td>
-    </tr>
-    <tr>
-      <td>Anti-URL regex</td>
-      <td>Spam messages containing links</td>
-      <td>400 (validation error)</td>
-    </tr>
-  </tbody>
-</table>
+<div className='overflow-x-auto -mx-4 px-4'>
+  <table>
+    <thead>
+      <tr>
+        <th scope='col'>Security Layer</th>
+        <th scope='col'>What It Catches</th>
+        <th scope='col'>Response</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Client validation</td>
+        <td>Typos, missing fields, invalid formats</td>
+        <td>Inline errors (no request sent)</td>
+      </tr>
+      <tr>
+        <td>Honeypot</td>
+        <td>Naive bots that fill every field</td>
+        <td>403 Forbidden</td>
+      </tr>
+      <tr>
+        <td>hCaptcha</td>
+        <td>Automated submissions without human interaction</td>
+        <td>400 (token required)</td>
+      </tr>
+      <tr>
+        <td>Rate limiting</td>
+        <td>Brute-force / spam floods from a single IP</td>
+        <td>429 + Retry-After header</td>
+      </tr>
+      <tr>
+        <td>DOMPurify</td>
+        <td>XSS payloads in form fields</td>
+        <td>Sanitized before processing</td>
+      </tr>
+      <tr>
+        <td>Source validation</td>
+        <td>Direct API calls from outside the site</td>
+        <td>403 Forbidden</td>
+      </tr>
+      <tr>
+        <td>Anti-URL regex</td>
+        <td>Spam messages containing links</td>
+        <td>400 (validation error)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 ## Key Takeaways
 

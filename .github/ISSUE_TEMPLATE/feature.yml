@@ -1,6 +1,6 @@
 name: Feature
 description: A feature ticket that Claude Code can pick up and implement autonomously.
-labels: ["feature"]
+labels: ['feature']
 body:
   - type: textarea
     id: summary

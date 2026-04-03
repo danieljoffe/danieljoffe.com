@@ -51,7 +51,7 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
   ];
 
   return (
-    <section className='w-full overflow-hidden flex flex-col justify-center'>
+    <section className='w-full flex flex-col justify-center'>
       <div className='max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody
           cover={record.cover}
@@ -60,7 +60,6 @@ export default async function SlugExperiencePage({ params }: SlugPageProps) {
           date={meta.date}
           tags={meta.tags}
           readingTime={readingTime}
-          backLink={EXPERIENCE_LINK}
         >
           <article>
             <Post />

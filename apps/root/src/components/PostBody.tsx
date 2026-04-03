@@ -2,8 +2,7 @@ import { PostBodyProps } from '@/types/postTypes';
 import UnsplashImage from './UnsplashImage';
 import BreadCrumbs from './BreadCrumbs';
 import { TableOfContents } from '@/components/kit';
-import { ArrowLeft } from 'lucide-react';
-import Button from '@/components/Button';
+import { Calendar, Clock, Tag } from 'lucide-react';
 
 export default function PostBody({
   children,
@@ -13,7 +12,6 @@ export default function PostBody({
   date,
   tags,
   readingTime,
-  backLink,
 }: PostBodyProps) {
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -45,46 +43,38 @@ export default function PostBody({
         </div>
       </div>
 
+      {/* Mobile TOC (fixed FAB + bottom sheet — must be outside hidden container) */}
+      <TableOfContents mobile />
+
       {/* Two-column: TOC sidebar | content */}
       <div className='flex gap-10'>
-        {/* Left column: back link + sticky TOC (desktop only) */}
-        <div className='hidden lg:flex flex-col gap-6 w-48 shrink-0'>
-          <Button
-            as='link'
-            variant='bare'
-            size='sm'
-            href={backLink.href}
-            name={`back-to-${backLink.label.toLowerCase()}`}
-          >
-            <ArrowLeft className='size-3.5' aria-hidden='true' />
-            {backLink.label}
-          </Button>
-          {/* Renders desktop sticky sidebar + mobile FAB (position:fixed) */}
-          <TableOfContents />
+        {/* Left column: sticky TOC (desktop only) */}
+        <div className='hidden relative lg:flex flex-col gap-6 w-48 shrink-0'>
+          <TableOfContents desktop />
         </div>
 
         {/* Right column: metadata + article */}
         <div className='flex-1 min-w-0'>
           {/* Date, tags, reading time */}
-          <div className='flex flex-col gap-1 mb-8'>
-            <span className='text-sm text-text-secondary'>{formattedDate}</span>
-            <div className='flex items-center gap-3'>
-              <span className='text-xs text-text-tertiary'>
-                {readingTime} min read
-              </span>
-              {tags.length > 0 && (
-                <div className='flex items-center gap-2'>
-                  {tags.map(tag => (
-                    <span
-                      key={tag}
-                      className='text-xs text-text-tertiary italic'
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1.5 mb-8 text-sm'>
+            <Calendar
+              className='h-4 w-4 text-text-tertiary'
+              aria-hidden='true'
+            />
+            <span className='text-text-secondary'>{formattedDate}</span>
+            <Clock className='h-4 w-4 text-text-tertiary' aria-hidden='true' />
+            <span className='text-text-tertiary'>{readingTime} min read</span>
+            {tags.length > 0 && (
+              <>
+                <Tag
+                  className='h-4 w-4 text-text-tertiary'
+                  aria-hidden='true'
+                />
+                <span className='text-text-tertiary italic'>
+                  {tags.join(', ')}
+                </span>
+              </>
+            )}
           </div>
 
           {children}

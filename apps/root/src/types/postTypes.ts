@@ -32,7 +32,6 @@ export interface PostBodyProps extends WithChildren {
   date: string;
   tags: string[];
   readingTime: number;
-  backLink: NavLink;
 }
 
 /** Source-of-truth metadata exported from each MDX content file. */

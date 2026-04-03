@@ -40,8 +40,7 @@ export function normalizeUrl(url: string): string {
   // Build result from parts to avoid URL.toString() always adding "/" to
   // bare origins (e.g. "https://example.com/" instead of "https://example.com").
   const port = parsed.port ? `:${parsed.port}` : '';
-  const pathname =
-    parsed.pathname === '/' ? '' : parsed.pathname;
+  const pathname = parsed.pathname === '/' ? '' : parsed.pathname;
   const search = parsed.search;
 
   return `${parsed.protocol}//${parsed.hostname}${port}${pathname}${search}`;
