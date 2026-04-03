@@ -42,6 +42,10 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     cover: mockCover,
+    title: 'Sample Project',
+    date: '2024-06-15',
+    tags: ['React', 'TypeScript', 'Next.js'],
+    readingTime: 8,
     breadcrumbs: [
       { href: '/', label: 'Home' },
       { href: '/projects', label: 'Projects' },
@@ -75,6 +79,10 @@ export const Default: Story = {
 export const ExperiencePage: Story = {
   args: {
     cover: mockCover,
+    title: 'Software Engineer at Tech Company',
+    date: '2022-03-01',
+    tags: ['React', 'Node.js', 'Microservices'],
+    readingTime: 12,
     breadcrumbs: [
       { href: '/', label: 'Home' },
       { href: '/experience', label: 'Experience' },
@@ -106,6 +114,10 @@ export const ExperiencePage: Story = {
 export const ShortBreadcrumbs: Story = {
   args: {
     cover: mockCover,
+    title: 'Quick Project',
+    date: '2024-01-10',
+    tags: [],
+    readingTime: 3,
     breadcrumbs: [
       { href: '/projects', label: 'Projects' },
       { href: '/projects/quick-project', label: 'Quick Project' },

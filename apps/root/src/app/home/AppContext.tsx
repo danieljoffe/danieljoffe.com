@@ -9,6 +9,7 @@ import ModalProvider from '@/state/Modal/ModalProvider';
 import Nav from '@/components/Nav';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ScrollToTop } from '@/components/kit';
+import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 
 const Modal = dynamic(() => import('@/components/Modal'), { ssr: false });
 const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
@@ -39,6 +40,7 @@ export default function AppContext({ children }: WithChildren) {
       <ErrorBoundary>{children}</ErrorBoundary>
       <Modal />
       <ScrollToTop />
+      <KeyboardShortcuts />
       <Suspense fallback={null}>
         <ScrollToElement />
       </Suspense>

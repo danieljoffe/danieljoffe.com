@@ -15,7 +15,7 @@ export function CoverImage({
         src={src}
         alt={alt}
         fill
-        sizes='(max-width: 640px) 100vw, 50vw'
+        sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
         priority={priority}
       />
       <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
