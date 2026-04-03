@@ -5,6 +5,7 @@ import {
   getContentPagination,
   getContentReadingTime,
   getAllContent,
+  type ContentEntry,
 } from '@/data/contentRegistry';
 
 describe('contentRegistry', () => {
@@ -35,18 +36,20 @@ describe('contentRegistry', () => {
     it('returns the correct project entry', () => {
       const entry = getContentBySlug('project', 'ui-components-v1');
       expect(entry).toBeDefined();
-      expect(entry!.slug).toBe('ui-components-v1');
-      expect(entry!.type).toBe('project');
-      expect(entry!.thumbnail).toBeDefined();
-      expect(entry!.structuredData).toBeDefined();
-      expect(entry!.readingTime).toBeGreaterThan(0);
+      const project = entry as ContentEntry;
+      expect(project.slug).toBe('ui-components-v1');
+      expect(project.type).toBe('project');
+      expect(project.thumbnail).toBeDefined();
+      expect(project.structuredData).toBeDefined();
+      expect(project.readingTime).toBeGreaterThan(0);
     });
 
     it('returns the correct experience entry', () => {
       const entry = getContentBySlug('experience', 'winc');
       expect(entry).toBeDefined();
-      expect(entry!.slug).toBe('winc');
-      expect(entry!.type).toBe('experience');
+      const experience = entry as ContentEntry;
+      expect(experience.slug).toBe('winc');
+      expect(experience.type).toBe('experience');
     });
 
     it('returns undefined for non-existent slug', () => {

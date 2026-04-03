@@ -1,11 +1,8 @@
 import { ComponentType } from 'react';
 import {
-  AllowedProjectSlugs,
-  AllowedExperienceSlugs,
   ProjectStructuredData,
   ExperienceStructuredData,
   BlogStructuredData,
-  NavLink,
 } from '@/types/base';
 import { ContentType, PostMetadata, PostThumbnail } from '@/types/postTypes';
 import { contentTypeConfigs } from '@/data/contentTypeConfig';
@@ -158,10 +155,7 @@ export function getContentPagination(
 }
 
 /** Returns the reading time for a specific entry. */
-export function getContentReadingTime(
-  type: ContentType,
-  slug: string
-): number {
+export function getContentReadingTime(type: ContentType, slug: string): number {
   return getContentBySlug(type, slug)?.readingTime ?? 0;
 }
 

@@ -86,7 +86,7 @@ describe('ExpandableScreenshot', () => {
     );
 
     // Dimension classes are on the wrapper div, not the img
-    const wrapper = screen.getByAltText('Test').parentElement!;
+    const wrapper = screen.getByAltText('Test').parentElement as HTMLElement;
 
     // Collapsed: should have the small dimensions
     expect(wrapper.className).toContain('w-[9rem]');
@@ -104,7 +104,7 @@ describe('ExpandableScreenshot', () => {
         alt='Mobile'
       />
     );
-    const wrapper = screen.getByAltText('Mobile').parentElement!;
+    const wrapper = screen.getByAltText('Mobile').parentElement as HTMLElement;
     expect(wrapper.className).toContain('w-[9rem]');
     expect(wrapper.className).toContain('h-[16rem]');
   });
@@ -117,7 +117,7 @@ describe('ExpandableScreenshot', () => {
         deviceMode='desktop'
       />
     );
-    const wrapper = screen.getByAltText('Desktop').parentElement!;
+    const wrapper = screen.getByAltText('Desktop').parentElement as HTMLElement;
     expect(wrapper.className).toContain('w-[16rem]');
     expect(wrapper.className).toContain('h-[11rem]');
   });
@@ -134,7 +134,7 @@ describe('ExpandableScreenshot', () => {
 
     await user.click(screen.getByRole('button'));
 
-    const wrapper = screen.getByAltText('Desktop').parentElement!;
+    const wrapper = screen.getByAltText('Desktop').parentElement as HTMLElement;
     expect(wrapper.className).toContain('w-[24rem]');
     expect(wrapper.className).toContain('h-[16.5rem]');
   });
