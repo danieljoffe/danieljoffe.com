@@ -22,8 +22,9 @@ export interface ToastContextType {
   toast: (params: Omit<ToastItem, 'id'>) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const ToastContext = createContext<ToastContextType>({ toast: () => {} });
+const ToastContext = createContext<ToastContextType>({
+  toast: () => undefined,
+});
 
 export function useToast() {
   return useContext(ToastContext);
@@ -60,7 +61,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast: addToast }}>
       {children}
-      <div className='fixed bottom-20 right-4 z-[100] flex flex-col gap-2 max-w-sm'>
+      <div className='fixed bottom-20 right-4 z-100 flex flex-col gap-2 max-w-sm'>
         {toasts.map(t => {
           const Icon = icons[t.variant];
           return (

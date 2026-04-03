@@ -55,27 +55,7 @@ describe('email tokens', () => {
       expect(url).toContain('/api/email/unsubscribe?lead_id=');
       expect(url).toContain(`lead_id=${LEAD_ID}`);
       expect(url).toContain('&token=');
-      expect(url).toStartWith('https://danieljoffe.com');
+      expect(url.startsWith('https://danieljoffe.com')).toBe(true);
     });
   });
-});
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace jest {
-    interface Matchers<R> {
-      toStartWith(prefix: string): R;
-    }
-  }
-}
-
-expect.extend({
-  toStartWith(received: string, prefix: string) {
-    const pass = received.startsWith(prefix);
-    return {
-      pass,
-      message: () =>
-        `expected "${received}" ${pass ? 'not ' : ''}to start with "${prefix}"`,
-    };
-  },
 });

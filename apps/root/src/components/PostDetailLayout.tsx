@@ -17,7 +17,15 @@ export default function PostDetailLayout({
   return (
     <section className='w-full overflow-hidden flex flex-col justify-center'>
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <PostBody cover={entry.thumbnail.cover} breadcrumbs={breadcrumbs}>
+        <PostBody
+          // TODO: Replace with actual data when it's available
+          cover={entry.thumbnail.cover}
+          breadcrumbs={breadcrumbs}
+          date=''
+          readingTime={entry.readingTime}
+          tags={[]}
+          title=''
+        >
           <article className='max-w-3xl mx-auto py-10 lg:py-16'>
             <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
               <span>{entry.readingTime} min read</span>
