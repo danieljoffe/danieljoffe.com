@@ -119,8 +119,6 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.unifiedContentPipeline, // 2026-04-03
 ];
 
-export function getBlogPagination(
-  slug: AllowedBlogSlugs
-): PostPaginationData {
+export function getBlogPagination(slug: AllowedBlogSlugs): PostPaginationData {
   return buildPaginationData(slug, blogHistory, blogRecords, BLOG_LINK);
 }
