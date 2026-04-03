@@ -298,4 +298,37 @@ describe('buildPostMetadata', () => {
     expect(result.twitter).toBeDefined();
     expect(typeof result.twitter).toBe('object');
   });
+
+  it('returns metadata with correct title for blog', () => {
+    const blogMeta: PostMetadata = {
+      title: 'Test Blog Post',
+      date: '2026-04-01',
+      excerpt: 'A test blog description',
+      author: 'Daniel Joffe',
+      category: 'Frontend',
+      tags: ['React'],
+      slug: 'test-blog-post',
+      type: 'blog',
+      topic: 'Performance',
+    };
+    const result = buildPostMetadata(blogMeta);
+    expect(result.title).toBe('Blog | Test Blog Post');
+  });
+
+  it('sets canonical URL for blog', () => {
+    const blogMeta: PostMetadata = {
+      title: 'Test Blog Post',
+      date: '2026-04-01',
+      excerpt: 'A test blog description',
+      author: 'Daniel Joffe',
+      category: 'Frontend',
+      tags: ['React'],
+      slug: 'test-blog-post',
+      type: 'blog',
+    };
+    const result = buildPostMetadata(blogMeta);
+    expect((result.alternates as { canonical: string }).canonical).toBe(
+      '/blog/test-blog-post'
+    );
+  });
 });

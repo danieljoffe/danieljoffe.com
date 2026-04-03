@@ -71,6 +71,13 @@ describe('analytics', () => {
     });
   });
 
+  it('tracks blog click events', () => {
+    analytics.blogClick('my-blog-post');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'blog_click', {
+      blog: 'my-blog-post',
+    });
+  });
+
   it('tracks theme toggle events', () => {
     analytics.themeToggle('dark');
     expect(mockGtag).toHaveBeenCalledWith('event', 'theme_toggle', {

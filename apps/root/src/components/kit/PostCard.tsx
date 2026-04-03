@@ -4,9 +4,16 @@ import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import { badgeVariants } from '@/lib/badgeStyles';
+import { ContentType } from '@/types/postTypes';
 import { PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
+
+const analyticsHandlers: Record<ContentType, (slug: string) => void> = {
+  project: analytics.projectClick,
+  experience: analytics.experienceClick,
+  blog: analytics.blogClick,
+};
 
 export function PostCard({
   post,
@@ -17,14 +24,10 @@ export function PostCard({
   post: PostThumbnail;
   logo?: string | undefined;
   priority?: boolean;
-  analyticsType?: 'project' | 'experience';
+  analyticsType?: ContentType;
 }) {
   const handleClick = () => {
-    if (analyticsType === 'experience') {
-      analytics.experienceClick(post.slug);
-    } else {
-      analytics.projectClick(post.slug);
-    }
+    analyticsHandlers[analyticsType](post.slug);
   };
 
   return (
