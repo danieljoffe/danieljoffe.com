@@ -1,0 +1,42 @@
+import { AllowedBlogSlugs, BlogStructuredData } from '@/types/base';
+import {
+  personStructuredData as author,
+  CollectionPageStructuredData,
+} from './base';
+import { blogSlugs, blogPageSlugs } from '@/data/blog';
+import { blogRecords } from '@/data/blogThumbnails';
+import { DOMAIN_URL, BLOG_LINK, FULL_NAME } from '@/utils/constants';
+import { blogMdxMetadata } from '@/data/content/blog';
+
+export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
+  {
+    [blogSlugs.unifiedContentPipeline]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.unifiedContentPipeline].title,
+      description: blogRecords[blogSlugs.unifiedContentPipeline].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.unifiedContentPipeline]?.date ?? '',
+      author,
+    },
+  };
+
+export const blogRootStructuredData: CollectionPageStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `Blog | ${FULL_NAME} - Full-Stack Engineer`,
+  description:
+    'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned from a full-stack engineer.',
+  url: `${DOMAIN_URL}${BLOG_LINK.href}`,
+  author,
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: blogPageSlugs.map((slug, index) => ({
+      '@type': 'ListItem' as const,
+      position: index + 1,
+      name: blogRecords[slug].title,
+      url: `${DOMAIN_URL}${BLOG_LINK.href}/${slug}`,
+      description: blogRecords[slug].description as string,
+    })),
+  },
+};

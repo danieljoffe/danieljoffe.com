@@ -4,12 +4,14 @@ import {
   DOMAIN_URL,
   ABOUT_LINK,
   AUDIT_LINK,
+  BLOG_LINK,
   EXPERIENCE_LINK,
   PROJECTS_LINK,
   SERVICES_LINK,
 } from '@/utils/constants';
 import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';
+import { blogPageSlugs } from '@/data/blog';
 
 // Stable build-time date so sitemap doesn't change on every deployment
 const BUILD_DATE = new Date('2026-03-05');
@@ -48,6 +50,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${DOMAIN_URL}${BLOG_LINK.href}`,
+      lastModified: BUILD_DATE,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
       url: `${DOMAIN_URL}${AUDIT_LINK.href}`,
       lastModified: BUILD_DATE,
       changeFrequency: 'weekly' as const,
@@ -71,5 +79,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...experienceRoutes, ...projectRoutes];
+  // Dynamic blog routes
+  const blogRoutes = blogPageSlugs.map(slug => ({
+    url: `${DOMAIN_URL}${BLOG_LINK.href}/${slug}`,
+    lastModified: BUILD_DATE,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...experienceRoutes, ...projectRoutes, ...blogRoutes];
 }

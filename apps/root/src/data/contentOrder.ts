@@ -1,13 +1,16 @@
 import {
   AllowedProjectSlugs,
   AllowedExperienceSlugs,
+  AllowedBlogSlugs,
   NavLink,
 } from '@/types/base';
 import { projectSlugs } from '@/data/project';
 import { experienceSlugs } from '@/data/experience';
-import { PROJECTS_LINK, EXPERIENCE_LINK } from '@/utils/constants';
+import { blogSlugs } from '@/data/blog';
+import { PROJECTS_LINK, EXPERIENCE_LINK, BLOG_LINK } from '@/utils/constants';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { experienceRecords } from '@/data/experienceThumbnails';
+import { blogRecords } from '@/data/blogThumbnails';
 
 export interface PaginationLink {
   slug: string;
@@ -107,4 +110,17 @@ export function getExperiencePagination(
     experienceRecords,
     EXPERIENCE_LINK
   );
+}
+
+/**
+ * Blog history in chronological order (by publish date).
+ */
+export const blogHistory: AllowedBlogSlugs[] = [
+  blogSlugs.unifiedContentPipeline, // 2026-04-03
+];
+
+export function getBlogPagination(
+  slug: AllowedBlogSlugs
+): PostPaginationData {
+  return buildPaginationData(slug, blogHistory, blogRecords, BLOG_LINK);
 }

@@ -17,18 +17,23 @@ import {
   experienceMdxComponents,
   experienceMdxMetadata,
 } from '@/data/content/experience';
+import { blogMdxComponents, blogMdxMetadata } from '@/data/content/blog';
 import { projectsRecords } from '@/data/projectThumbnails';
 import { experienceRecords } from '@/data/experienceThumbnails';
+import { blogRecords } from '@/data/blogThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { experienceStructuredData } from '@/data/structuredData/experience';
+import { blogStructuredData } from '@/data/structuredData/blog';
 import {
   projectHistory,
   experienceHistory,
+  blogHistory,
   type PostPaginationData,
 } from '@/data/contentOrder';
 import {
   projectReadingTimes,
   experienceReadingTimes,
+  blogReadingTimes,
 } from '@/data/readingTimes';
 
 export type ContentStructuredData =
@@ -74,9 +79,22 @@ function buildExperienceEntries(): ContentEntry[] {
   }));
 }
 
+function buildBlogEntries(): ContentEntry[] {
+  return blogHistory.map(slug => ({
+    slug,
+    type: 'blog' as const,
+    thumbnail: blogRecords[slug],
+    component: blogMdxComponents[slug],
+    metadata: blogMdxMetadata[slug],
+    structuredData: blogStructuredData[slug],
+    readingTime: blogReadingTimes[slug],
+  }));
+}
+
 const entries: ContentEntry[] = [
   ...buildProjectEntries(),
   ...buildExperienceEntries(),
+  ...buildBlogEntries(),
 ];
 
 // Lookup maps for O(1) access

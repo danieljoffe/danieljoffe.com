@@ -23,9 +23,11 @@ describe('contentRegistry', () => {
       expect(experiences[0].slug).toBe('winc');
     });
 
-    it('returns empty array for blog (no entries yet)', () => {
+    it('returns all blog entries in order', () => {
       const blogs = getContentByType('blog');
-      expect(blogs).toEqual([]);
+      expect(blogs.length).toBe(1);
+      expect(blogs[0].type).toBe('blog');
+      expect(blogs[0].slug).toBe('unified-content-pipeline');
     });
   });
 
@@ -73,8 +75,10 @@ describe('contentRegistry', () => {
       expect(slugs.length).toBe(5);
     });
 
-    it('returns empty array for blog', () => {
-      expect(getContentSlugs('blog')).toEqual([]);
+    it('returns blog slugs', () => {
+      const slugs = getContentSlugs('blog');
+      expect(slugs).toContain('unified-content-pipeline');
+      expect(slugs.length).toBe(1);
     });
   });
 
@@ -122,14 +126,15 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(14); // 9 projects + 5 experiences
+      expect(all.length).toBe(15); // 9 projects + 5 experiences + 1 blog
     });
 
-    it('contains entries of both types', () => {
+    it('contains entries of all types', () => {
       const all = getAllContent();
       const types = new Set(all.map(e => e.type));
       expect(types.has('project')).toBe(true);
       expect(types.has('experience')).toBe(true);
+      expect(types.has('blog')).toBe(true);
     });
   });
 });
