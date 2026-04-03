@@ -15,21 +15,17 @@ export default function PostDetailLayout({
   const Post = entry.component;
 
   return (
-    <section className='w-full overflow-hidden flex flex-col justify-center'>
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
+    <section className='w-full flex flex-col justify-center'>
+      <div className='max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody
-          // TODO: Replace with actual data when it's available
           cover={entry.thumbnail.cover}
           breadcrumbs={breadcrumbs}
-          date=''
+          title={entry.metadata.title}
+          date={entry.metadata.date}
+          tags={entry.metadata.tags}
           readingTime={entry.readingTime}
-          tags={[]}
-          title=''
         >
-          <article className='max-w-3xl mx-auto py-10 lg:py-16'>
-            <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
-              <span>{entry.readingTime} min read</span>
-            </div>
+          <article>
             <Post />
           </article>
           <PostPagination pagination={pagination} />
