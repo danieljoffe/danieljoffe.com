@@ -102,7 +102,12 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     hr: () => <hr className='border-border my-8' />,
     table: props => (
-      <div className='overflow-x-auto mb-4'>
+      <div
+        className='overflow-x-auto mb-4'
+        tabIndex={0}
+        role='region'
+        aria-label='Scrollable table'
+      >
         <table
           className='w-full text-sm text-text-secondary border-collapse'
           {...props}
