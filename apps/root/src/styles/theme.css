@@ -370,6 +370,25 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
   @apply text-xs rounded px-1.5 py-0.5;
 }
 
+/* View Transitions — browser-native page transitions (zero JS cost) */
+::view-transition-old(root) {
+  animation: vt-fade-out 150ms ease-out;
+}
+
+::view-transition-new(root) {
+  animation: vt-fade-in 200ms ease-in;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -378,5 +397,10 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

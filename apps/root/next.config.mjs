@@ -46,6 +46,8 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   // Performance optimizations
   experimental: {
+    // Browser-native page transition animations (zero JS cost)
+    viewTransition: true,
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
     // Enable critical CSS inlining with critters
