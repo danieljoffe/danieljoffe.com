@@ -9,7 +9,7 @@ import {
   PageLayout,
   StructuredData,
 } from '@/components/kit';
-import { badgeVariants } from '@/lib/badgeStyles';
+import { Badge } from '@danieljoffe.com/shared-ui';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';
@@ -26,9 +26,9 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-6'>
-          <span className={badgeVariants['brand-solid']}>
+          <Badge variant='brand-solid'>
             Currently available for new projects
-          </span>
+          </Badge>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
             Your frontend is costing you users.
           </h1>
@@ -71,7 +71,7 @@ export default function Services() {
                 </div>
 
                 {service.highlighted && (
-                  <span className={badgeVariants.brand}>Most popular</span>
+                  <Badge variant='brand'>Most popular</Badge>
                 )}
 
                 <p className='text-sm text-text-secondary leading-relaxed'>
@@ -192,9 +192,8 @@ export default function Services() {
             Let&apos;s figure out how I can help.
           </h2>
           <p className='text-text-secondary'>
-            Book a free 30-minute call. No contracts, no
-            commitments&mdash;just a conversation about your frontend
-            challenges.
+            Book a free 30-minute call. No contracts, no commitments&mdash;just
+            a conversation about your frontend challenges.
           </p>
         </div>
         <CalendlyEmbed />

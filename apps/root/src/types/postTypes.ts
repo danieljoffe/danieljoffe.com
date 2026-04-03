@@ -28,6 +28,10 @@ export interface PostThumbnail extends PostBase {
 export interface PostBodyProps extends WithChildren {
   breadcrumbs: NavLink[];
   cover: UnsplashImageMeta;
+  title: string;
+  date: string;
+  tags: string[];
+  readingTime: number;
 }
 
 /** Supported content types in the content registry. */
