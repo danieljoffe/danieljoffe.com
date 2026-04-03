@@ -22,6 +22,7 @@ export interface ToastContextType {
   toast: (params: Omit<ToastItem, 'id'>) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const ToastContext = createContext<ToastContextType>({ toast: () => {} });
 
 export function useToast() {

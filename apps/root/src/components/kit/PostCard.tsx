@@ -3,10 +3,8 @@
 import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
-import { badgeVariants } from '@/lib/badgeStyles';
-import { ContentType } from '@/types/postTypes';
+import { ContentType, PostThumbnail } from '@/types/postTypes';
 import ClientBadge from '@/components/ClientBadge';
-import { PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
 
