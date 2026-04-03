@@ -143,7 +143,7 @@ export default function Index() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {featuredProjects.map((project, i) => (
-            <PostCard key={project.slug} post={project} priority={i === 0} />
+            <PostCard key={project.slug} post={project} priority={i < 3} />
           ))}
         </div>
         <div className='flex justify-center pt-4'>

@@ -14,3 +14,4 @@ export { PostPagination } from './PostPagination';
 export { FormFieldError } from './FormFieldError';
 export { ScrollToTop } from './ScrollToTop';
 export { TableOfContents } from './TableOfContents';
+export { Kbd } from './Kbd';

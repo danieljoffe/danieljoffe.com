@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
+import { Kbd } from './Kbd';
 
 const SCROLL_THRESHOLD = 300;
 
@@ -18,25 +20,29 @@ export function ScrollToTop() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
+
+  useKeyboardShortcut('t', scrollToTop);
 
   return (
     <button
       onClick={scrollToTop}
-      aria-label='Scroll to top'
+      aria-label='Scroll to top (T)'
       className={cn(
         'fixed bottom-6 right-6 z-50 p-2.5 rounded-full',
         'bg-surface-elevated border border-brand-500/20 shadow-lg',
         'text-text-primary hover:border-brand-500/40 hover:bg-brand-500/5',
         'transition-all duration-200 cursor-pointer',
+        'flex items-center gap-1.5',
         visible
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 translate-y-2 pointer-events-none'
       )}
     >
       <ArrowUp className='h-4 w-4' />
+      <Kbd>T</Kbd>
     </button>
   );
 }
