@@ -3,7 +3,11 @@ import Page from './page';
 
 jest.mock('next/image', () => {
   return function MockImage({ alt }: { alt: string }) {
-    return <img alt={alt} />;
+    return (
+      <picture>
+        <img alt={alt} />
+      </picture>
+    );
   };
 });
 

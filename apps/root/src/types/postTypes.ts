@@ -34,6 +34,17 @@ export interface PostBodyProps extends WithChildren {
   readingTime: number;
 }
 
+/** Supported content types in the content registry. */
+export type ContentType = 'project' | 'experience' | 'blog';
+
+/** Configuration for a content type (basePath, label, content directory). */
+export interface ContentTypeConfig {
+  type: ContentType;
+  basePath: string;
+  label: string;
+  contentDir: string;
+}
+
 /** Source-of-truth metadata exported from each MDX content file. */
 export interface PostMetadata {
   title: string;
@@ -43,9 +54,11 @@ export interface PostMetadata {
   category: string;
   tags: string[];
   slug: string;
-  type: 'project' | 'experience' | (string & {});
+  type: ContentType | (string & {});
   company?: string;
   role?: string;
   duration?: string;
   industry?: string;
+  topic?: string;
+  series?: string;
 }

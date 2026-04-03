@@ -14,11 +14,7 @@ const options = [
   { value: 'system' as const, icon: Monitor, label: 'System' },
 ];
 
-const cycleOrder: ('light' | 'dark' | 'system')[] = [
-  'light',
-  'dark',
-  'system',
-];
+const cycleOrder: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
 
 export default function DarkModeToggle() {
   const { theme, setTheme } = useTheme();

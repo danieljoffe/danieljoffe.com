@@ -122,8 +122,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     td: props => <td className='px-3 py-2 border-b border-border' {...props} />,
     img: props => (
-      // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-      <img className='rounded-lg border border-border my-4' {...props} />
+      <picture>
+        <img
+          className='rounded-lg border border-border my-4'
+          alt={props.alt}
+          {...props}
+        />
+      </picture>
     ),
     ...components,
   };

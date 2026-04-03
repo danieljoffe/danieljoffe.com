@@ -30,6 +30,7 @@ export const analytics = {
     trackEvent('project_click', { project: projectSlug }),
   experienceClick: (experienceSlug: string) =>
     trackEvent('experience_click', { experience: experienceSlug }),
+  blogClick: (blogSlug: string) => trackEvent('blog_click', { blog: blogSlug }),
 
   // Theme events
   themeToggle: (theme: 'light' | 'dark' | 'system') =>

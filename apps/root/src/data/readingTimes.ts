@@ -7,18 +7,18 @@ import { calculateReadingTime } from '@/utils/readingTime';
 
 const CONTENT_DIR = path.join(process.cwd(), 'src/data/content');
 
-function readMdxFile(type: 'projects' | 'experience', slug: string): string {
-  const filePath = path.join(CONTENT_DIR, type, `${slug}.mdx`);
+function readMdxFile(contentDir: string, slug: string): string {
+  const filePath = path.join(CONTENT_DIR, contentDir, `${slug}.mdx`);
   return fs.readFileSync(filePath, 'utf-8');
 }
 
 function buildReadingTimeMap<T extends string>(
   slugs: readonly T[],
-  type: 'projects' | 'experience'
+  contentDir: string
 ): Record<T, number> {
   const map = {} as Record<T, number>;
   for (const slug of slugs) {
-    map[slug] = calculateReadingTime(readMdxFile(type, slug));
+    map[slug] = calculateReadingTime(readMdxFile(contentDir, slug));
   }
   return map;
 }
