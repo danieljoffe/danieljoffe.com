@@ -1,22 +1,39 @@
 import type { MDXComponents } from 'mdx/types';
+import type { ComponentPropsWithoutRef } from 'react';
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function headingId(props: ComponentPropsWithoutRef<'h1'>): string | undefined {
+  if (props.id) return props.id;
+  if (typeof props.children === 'string') return slugify(props.children);
+  return undefined;
+}
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     h1: props => (
       <h1
+        id={headingId(props)}
         className='text-2xl font-bold text-text-primary tracking-tight mb-6'
         {...props}
       />
     ),
     h2: props => (
       <h2
+        id={headingId(props)}
         className='text-lg font-semibold text-text-primary mt-12 mb-4 scroll-mt-20'
         {...props}
       />
     ),
     h3: props => (
       <h3
-        className='text-sm font-semibold text-text-primary mt-8 mb-3'
+        id={headingId(props)}
+        className='text-sm font-semibold text-text-primary mt-8 mb-3 scroll-mt-20'
         {...props}
       />
     ),
@@ -85,7 +102,12 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     hr: () => <hr className='border-border my-8' />,
     table: props => (
-      <div className='overflow-x-auto mb-4'>
+      <div
+        className='overflow-x-auto mb-4'
+        tabIndex={0}
+        role='region'
+        aria-label='Scrollable table'
+      >
         <table
           className='w-full text-sm text-text-secondary border-collapse'
           {...props}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Pagination, Spinner } from '@/components/kit';
-import { badgeVariants } from '@/lib/badgeStyles';
+import ClientBadge from '@/components/ClientBadge';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { useToast } from '@/state/Toast/ToastProvider';
@@ -130,13 +130,13 @@ export default function LeadsTable({ password }: LeadsTableProps) {
                       <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
-                  <td className='py-3 px-3 max-w-[200px] truncate'>
+                  <td className='py-3 px-3 max-w-50 truncate'>
                     {lead.url_scanned ?? (
                       <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <span className={badgeVariants.default}>{lead.source}</span>
+                    <ClientBadge variant='default'>{lead.source}</ClientBadge>
                   </td>
                   <td className='py-3 px-3 text-center'>
                     {lead.email_sequence_step}

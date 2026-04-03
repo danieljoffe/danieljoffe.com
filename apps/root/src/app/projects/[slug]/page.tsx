@@ -33,8 +33,9 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
 
   const Post = projectMdxComponents[slug as AllowedProjectSlugs];
   const record = projectsRecords[slug as AllowedProjectSlugs];
+  const meta = projectMdxMetadata[slug as AllowedProjectSlugs];
 
-  if (!record || !Post) return redirect(PROJECTS_LINK.href);
+  if (!record || !Post || !meta) return redirect(PROJECTS_LINK.href);
 
   const structuredData = projectStructuredData[slug as AllowedProjectSlugs];
   const pagination = getProjectPagination(slug as AllowedProjectSlugs);
@@ -49,13 +50,17 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
   ];
 
   return (
-    <section className='w-full overflow-hidden flex flex-col justify-center'>
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
-          <article className='max-w-3xl mx-auto py-10 lg:py-16'>
-            <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
-              <span>{readingTime} min read</span>
-            </div>
+    <section className='w-full flex flex-col justify-center'>
+      <div className='max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
+        <PostBody
+          cover={record.cover}
+          breadcrumbs={breadcrumbs}
+          title={meta.title}
+          date={meta.date}
+          tags={meta.tags}
+          readingTime={readingTime}
+        >
+          <article>
             <Post />
           </article>
           <PostPagination pagination={pagination} />

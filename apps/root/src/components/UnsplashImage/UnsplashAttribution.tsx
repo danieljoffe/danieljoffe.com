@@ -20,7 +20,7 @@ export default function UnsplashAttribution({
           rel='noopener noreferrer'
           aria-label={`Photo by ${creator} on Unsplash`}
         >
-          {creator},
+          {creator}
         </Button>
       </p>
     </figcaption>

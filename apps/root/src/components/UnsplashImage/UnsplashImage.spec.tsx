@@ -262,7 +262,7 @@ describe('UnsplashImage', () => {
     it('should render figcaption with creator link', () => {
       render(<UnsplashImage {...mockProps} />);
 
-      const creatorLink = screen.getByText('@testuser,');
+      const creatorLink = screen.getByText('@testuser');
       expect(creatorLink).toBeInTheDocument();
     });
 

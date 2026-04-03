@@ -51,7 +51,7 @@ export { cn, validateProps, ErrorBoundary, ModalErrorBoundary } from './utils';
 export type { AlertProps } from './Alert';
 export type { AspectRatioProps } from './AspectRatio';
 export type { AvatarProps } from './Avatar';
-export type { BadgeProps } from './Badge';
+export type { BadgeProps, BadgeVariant } from './Badge';
 export type { BreadcrumbItem, BreadcrumbProps } from './Breadcrumb';
 export type {
   CardProps,

@@ -147,7 +147,12 @@ export default function Index() {
           ))}
         </div>
         <div className='flex justify-center pt-4'>
-          <Button as='link' href={PROJECTS_LINK.href} variant='secondary' size='sm'>
+          <Button
+            as='link'
+            href={PROJECTS_LINK.href}
+            variant='secondary'
+            size='sm'
+          >
             View all projects
             <ArrowUpRight className='h-4 w-4' />
           </Button>

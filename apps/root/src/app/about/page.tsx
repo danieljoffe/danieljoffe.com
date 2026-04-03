@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
-import { badgeVariants } from '@/lib/badgeStyles';
 import { cardBase } from '@/lib/layoutStyles';
 import {
   User,
@@ -31,6 +30,7 @@ import {
 } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
+import ClientBadge from '@/components/ClientBadge';
 
 export const metadata: Metadata = aboutMetadata;
 
@@ -134,9 +134,9 @@ export default function About() {
               </p>
               <div className='flex flex-wrap gap-1.5'>
                 {category.skills.map(skill => (
-                  <span key={skill} className={badgeVariants.brand}>
+                  <ClientBadge key={skill} variant='info'>
                     {skill}
-                  </span>
+                  </ClientBadge>
                 ))}
               </div>
             </div>
@@ -257,11 +257,11 @@ export default function About() {
             {mantraItems.map(({ company, description, icon: Icon }, i) => (
               <div key={company} className='group relative pl-8 pb-6 last:pb-0'>
                 {i < mantraItems.length - 1 && (
-                  <div className='absolute left-[11px] top-3 bottom-0 w-px bg-border' />
+                  <div className='absolute left-2.75 top-3 bottom-0 w-px bg-border' />
                 )}
                 <div
                   className={cn(
-                    'absolute left-0 top-1.5 h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center',
+                    'absolute left-0 top-1.5 h-5.5 w-5.5 rounded-full border-2 flex items-center justify-center',
                     i === mantraItems.length - 1
                       ? 'border-brand-500 bg-brand-50'
                       : 'border-border bg-surface'

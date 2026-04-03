@@ -9,19 +9,19 @@
 
 ### Public Pages
 
-| Route | Purpose | Key Features |
-|-------|---------|--------------|
-| `/` (Home) | Landing page | Hero with name/title/location, company logos carousel, achievement metrics, "How I Work" methodology cards, CTA section |
-| `/about` | Bio & contact | Profile image, technical expertise badges, career timeline (SVG), experience cards, mantra/evolution timeline, contact form, social links |
-| `/services` | Service offerings | Services grid with pricing/timelines, 5-step "How I Work" process, audience cards, FAQ accordion, Calendly CTA |
-| `/projects` | Project index | Grid of PostCards, open-source callout (GitHub + Storybook links), structured data |
-| `/projects/[slug]` | Project detail (x9) | MDX content, cover image, breadcrumbs, prev/next pagination, JSON-LD, OG image generation |
-| `/experience` | Experience index | Vertical career timeline with company logos, "At a Glance" PostCard grid, structured data |
-| `/experience/[slug]` | Experience detail (x5) | MDX content, cover image, breadcrumbs, prev/next pagination, JSON-LD, OG image generation |
-| `/audit` | Free audit tool | URL input form, "How It Works" explainer, completed scan counter (Supabase) |
-| `/audit/r/[id]` | Audit report | Pending/failed/completed states, device tabs (mobile/desktop), score cards, Core Web Vitals, issue list with severity, CTA, share functionality |
-| `/audit/admin` | Admin dashboard | Password-gated, scans table, leads table, stats row (totals, conversion rate), sortable/paginated |
-| `/thank-you/email` | Post-contact confirmation | Referer validation, redirect if accessed directly |
+| Route                | Purpose                   | Key Features                                                                                                                                    |
+| -------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` (Home)           | Landing page              | Hero with name/title/location, company logos carousel, achievement metrics, "How I Work" methodology cards, CTA section                         |
+| `/about`             | Bio & contact             | Profile image, technical expertise badges, career timeline (SVG), experience cards, mantra/evolution timeline, contact form, social links       |
+| `/services`          | Service offerings         | Services grid with pricing/timelines, 5-step "How I Work" process, audience cards, FAQ accordion, Calendly CTA                                  |
+| `/projects`          | Project index             | Grid of PostCards, open-source callout (GitHub + Storybook links), structured data                                                              |
+| `/projects/[slug]`   | Project detail (x9)       | MDX content, cover image, breadcrumbs, prev/next pagination, JSON-LD, OG image generation                                                       |
+| `/experience`        | Experience index          | Vertical career timeline with company logos, "At a Glance" PostCard grid, structured data                                                       |
+| `/experience/[slug]` | Experience detail (x5)    | MDX content, cover image, breadcrumbs, prev/next pagination, JSON-LD, OG image generation                                                       |
+| `/audit`             | Free audit tool           | URL input form, "How It Works" explainer, completed scan counter (Supabase)                                                                     |
+| `/audit/r/[id]`      | Audit report              | Pending/failed/completed states, device tabs (mobile/desktop), score cards, Core Web Vitals, issue list with severity, CTA, share functionality |
+| `/audit/admin`       | Admin dashboard           | Password-gated, scans table, leads table, stats row (totals, conversion rate), sortable/paginated                                               |
+| `/thank-you/email`   | Post-contact confirmation | Referer validation, redirect if accessed directly                                                                                               |
 
 ### Error & Loading States
 
@@ -34,11 +34,11 @@
 
 ## Content
 
-| Type | Count | Location | Ordering |
-|------|-------|----------|----------|
-| Projects (case studies) | 9 | `data/content/projects/*.mdx` | Git creation date in `contentOrder.ts` |
-| Experience entries | 5 | `data/content/experience/*.mdx` | Employment start date in `contentOrder.ts` |
-| Services | 4 | `data/services.ts` | Manual order |
+| Type                    | Count | Location                        | Ordering                                   |
+| ----------------------- | ----- | ------------------------------- | ------------------------------------------ |
+| Projects (case studies) | 9     | `data/content/projects/*.mdx`   | Git creation date in `contentOrder.ts`     |
+| Experience entries      | 5     | `data/content/experience/*.mdx` | Employment start date in `contentOrder.ts` |
+| Services                | 4     | `data/services.ts`              | Manual order                               |
 
 ### Services Offered
 
@@ -53,34 +53,34 @@
 
 ### Audit System
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/audit/scan` | POST | Create scan (URL validation, bot detection, rate limiting, caching, mobile/desktop/both) |
-| `/api/audit/status/[id]` | GET | Poll scan status (paired scan support) |
-| `/api/audit/report/[id]` | GET | Retrieve completed report with issues |
+| Endpoint                 | Method | Purpose                                                                                  |
+| ------------------------ | ------ | ---------------------------------------------------------------------------------------- |
+| `/api/audit/scan`        | POST   | Create scan (URL validation, bot detection, rate limiting, caching, mobile/desktop/both) |
+| `/api/audit/status/[id]` | GET    | Poll scan status (paired scan support)                                                   |
+| `/api/audit/report/[id]` | GET    | Retrieve completed report with issues                                                    |
 
 ### Admin (password-protected)
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/audit/admin/stats` | GET | Dashboard stats (total scans, today's, leads, conversion) |
-| `/api/audit/admin/scans` | GET | Paginated/sortable scans list |
-| `/api/audit/admin/leads` | GET | Paginated/sortable leads list |
-| `/api/audit/admin/verify` | POST | Password verification with rate limiting |
+| Endpoint                  | Method | Purpose                                                   |
+| ------------------------- | ------ | --------------------------------------------------------- |
+| `/api/audit/admin/stats`  | GET    | Dashboard stats (total scans, today's, leads, conversion) |
+| `/api/audit/admin/scans`  | GET    | Paginated/sortable scans list                             |
+| `/api/audit/admin/leads`  | GET    | Paginated/sortable leads list                             |
+| `/api/audit/admin/verify` | POST   | Password verification with rate limiting                  |
 
 ### Email System
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/email/contact` | POST | Contact form submission (validation, bot detection, rate limiting, Resend) |
-| `/api/email/sequence` | GET | Cron-triggered drip emails (QuickWin at 3 days, FollowUp at 7 days) |
-| `/api/email/unsubscribe` | GET | Token-validated unsubscribe (standalone HTML page) |
+| Endpoint                 | Method | Purpose                                                                    |
+| ------------------------ | ------ | -------------------------------------------------------------------------- |
+| `/api/email/contact`     | POST   | Contact form submission (validation, bot detection, rate limiting, Resend) |
+| `/api/email/sequence`    | GET    | Cron-triggered drip emails (QuickWin at 3 days, FollowUp at 7 days)        |
+| `/api/email/unsubscribe` | GET    | Token-validated unsubscribe (standalone HTML page)                         |
 
 ### Lead Capture
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/leads/capture` | POST | Capture lead after audit (deduplication, sends FullReport email) |
+| Endpoint             | Method | Purpose                                                          |
+| -------------------- | ------ | ---------------------------------------------------------------- |
+| `/api/leads/capture` | POST   | Capture lead after audit (deduplication, sends FullReport email) |
 
 ---
 
@@ -111,21 +111,21 @@ Section, SectionLabel, PageLayout, CTACard, GridBg, StructuredData, CoverImage, 
 
 ## State Management
 
-| Provider | Purpose | Key Details |
-|----------|---------|-------------|
-| Theme | Light/dark/system | localStorage persistence, system preference listener, resolvedTheme |
-| Toast | User notifications | 4 variants (info/success/warning/error), 4s auto-dismiss, bottom-right |
-| Modal | Mobile menu state | Auto-close at md breakpoint, body scroll lock |
+| Provider | Purpose            | Key Details                                                            |
+| -------- | ------------------ | ---------------------------------------------------------------------- |
+| Theme    | Light/dark/system  | localStorage persistence, system preference listener, resolvedTheme    |
+| Toast    | User notifications | 4 variants (info/success/warning/error), 4s auto-dismiss, bottom-right |
+| Modal    | Mobile menu state  | Auto-close at md breakpoint, body scroll lock                          |
 
 ---
 
 ## Custom Hooks
 
-| Hook | Purpose |
-|------|---------|
-| `useTableSort` | Column sorting state with direction toggle and indicator |
-| `useFocusTrap` | Modal accessibility (Tab/Shift+Tab trapping, Escape to close) |
-| `useAdminTableFetch` | Admin table data fetching with sort/pagination/auth |
+| Hook                 | Purpose                                                       |
+| -------------------- | ------------------------------------------------------------- |
+| `useTableSort`       | Column sorting state with direction toggle and indicator      |
+| `useFocusTrap`       | Modal accessibility (Tab/Shift+Tab trapping, Escape to close) |
+| `useAdminTableFetch` | Admin table data fetching with sort/pagination/auth           |
 
 ---
 
@@ -186,20 +186,20 @@ Section, SectionLabel, PageLayout, CTACard, GridBg, StructuredData, CoverImage, 
 
 ### E2E Tests (Playwright) - 12 Suites
 
-| Suite | Focus |
-|-------|-------|
-| accessibility | WCAG compliance (axe-core), skip links |
-| audit-scan | Scan initiation, polling, email capture, sharing |
-| audit-report | Report display, pagination, issue details |
-| api-audit | Audit API endpoints |
-| api-email | Email API endpoints |
-| contact-form | Submission, validation, captcha |
-| navigation | Links, responsive nav, mobile menu |
-| dynamic-routes | Project/experience detail pages |
-| error-handling | 404, 500, error boundaries |
-| services | Services page rendering |
-| visual-regression | Screenshot comparisons |
-| performance | Core Web Vitals, Lighthouse budgets |
+| Suite             | Focus                                            |
+| ----------------- | ------------------------------------------------ |
+| accessibility     | WCAG compliance (axe-core), skip links           |
+| audit-scan        | Scan initiation, polling, email capture, sharing |
+| audit-report      | Report display, pagination, issue details        |
+| api-audit         | Audit API endpoints                              |
+| api-email         | Email API endpoints                              |
+| contact-form      | Submission, validation, captcha                  |
+| navigation        | Links, responsive nav, mobile menu               |
+| dynamic-routes    | Project/experience detail pages                  |
+| error-handling    | 404, 500, error boundaries                       |
+| services          | Services page rendering                          |
+| visual-regression | Screenshot comparisons                           |
+| performance       | Core Web Vitals, Lighthouse budgets              |
 
 ---
 

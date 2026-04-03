@@ -63,7 +63,7 @@ function buildFeedItems(): FeedItem[] {
 function buildRssXml(items: FeedItem[]): string {
   const itemsXml = items
     .map(
-      (item) => `    <item>
+      item => `    <item>
       <title>${escapeXml(item.title)}</title>
       <link>${escapeXml(item.link)}</link>
       <description>${escapeXml(item.description)}</description>
