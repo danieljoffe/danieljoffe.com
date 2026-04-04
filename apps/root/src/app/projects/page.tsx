@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { FolderOpen, Github, BookOpen } from 'lucide-react';
-import { projectsRecords } from '@/data/projectThumbnails';
-import { projectReadingTimes } from '@/data/readingTimes';
+import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
@@ -14,13 +13,11 @@ import {
 } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 
-import { AllowedProjectSlugs } from '@/types/base';
-
-const projectsList = Object.values(projectsRecords)
+const projectsList = getContentByType('project')
   .reverse()
-  .map(project => ({
-    ...project,
-    readingTime: projectReadingTimes[project.slug as AllowedProjectSlugs],
+  .map(entry => ({
+    ...entry.thumbnail,
+    readingTime: entry.readingTime,
   }));
 export const metadata: Metadata = projectRootMetadata;
 
