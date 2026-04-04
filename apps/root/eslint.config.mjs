@@ -6,6 +6,7 @@ import importPlugin from 'eslint-plugin-import';
 import { fixupPluginRules } from '@eslint/compat';
 import baseConfig from '../../eslint.config.mjs';
 import requireButtonName from './eslint-rules/require-button-name.js';
+import noRawHeadings from './eslint-rules/no-raw-headings.js';
 
 // eslint-config-next bundles its own typescript-eslint, eslint-plugin-react, and
 // eslint-plugin-import instances. typescript-eslint conflicts with the Nx-managed
@@ -89,11 +90,27 @@ const config = [
       'custom-rules': {
         rules: {
           'require-button-name': requireButtonName,
+          'no-raw-headings': noRawHeadings,
         },
       },
     },
     rules: {
       'custom-rules/require-button-name': 'warn',
+      'custom-rules/no-raw-headings': 'warn',
+    },
+  },
+  // Raw headings are allowed in error boundaries (render outside app tree where
+  // kit may not be available) and in test fixtures that render mock MDX content.
+  {
+    files: [
+      '**/global-error.tsx',
+      '**/ErrorBoundary.tsx',
+      '**/RouteError.tsx',
+      '**/*.spec.tsx',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'custom-rules/no-raw-headings': 'off',
     },
   },
 ];
