@@ -49,7 +49,7 @@ export function Text({
   if (sharedVariants.has(variant)) {
     return (
       <SharedText
-        as={as}
+        {...(as != null && { as })}
         variant={variant as SharedTextVariant}
         className={className}
         id={id}
@@ -63,7 +63,11 @@ export function Text({
   const appVariant = variant as AppTextVariant;
   const Tag = as ?? appDefaultElement[appVariant];
   return (
-    <Tag id={id} role={role} className={cn(appVariantStyles[appVariant], className)}>
+    <Tag
+      id={id}
+      role={role}
+      className={cn(appVariantStyles[appVariant], className)}
+    >
       {children}
     </Tag>
   );

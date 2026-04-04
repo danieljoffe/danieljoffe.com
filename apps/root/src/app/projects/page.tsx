@@ -31,9 +31,7 @@ export default function Projects() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <Heading variant='hero'>
-            Projects
-          </Heading>
+          <Heading variant='hero'>Projects</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
             Case studies and projects spanning full-stack development, backend
             architecture, and frontend systems. Each project includes the

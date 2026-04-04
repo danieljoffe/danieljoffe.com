@@ -12,9 +12,7 @@ export function SectionLabel({
       <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
         {icon}
       </div>
-      <Text variant='label'>
-        {label}
-      </Text>
+      <Text variant='label'>{label}</Text>
       <div className='flex-1 h-px bg-border ml-2' />
     </div>
   );

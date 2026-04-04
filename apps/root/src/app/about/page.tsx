@@ -32,7 +32,7 @@ import {
 } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
-import ClientBadge from '@/components/ClientBadge';
+import { Badge } from '@danieljoffe.com/shared-ui';
 
 export const metadata: Metadata = aboutMetadata;
 
@@ -78,9 +78,7 @@ export default function About() {
       <Section>
         <SectionLabel icon={<User className='h-3.5 w-3.5' />} label='About' />
         <div className='space-y-6'>
-          <Heading variant='hero'>
-            Building Without Friction
-          </Heading>
+          <Heading variant='hero'>Building Without Friction</Heading>
 
           <div className='flex flex-col sm:flex-row gap-6 sm:gap-8'>
             <Image
@@ -136,9 +134,9 @@ export default function About() {
               </Heading>
               <div className='flex flex-wrap gap-1.5'>
                 {category.skills.map(skill => (
-                  <ClientBadge key={skill} variant='info'>
+                  <Badge key={skill} variant='info'>
                     {skill}
-                  </ClientBadge>
+                  </Badge>
                 ))}
               </div>
             </div>

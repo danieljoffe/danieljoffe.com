@@ -27,9 +27,7 @@ export default function Blog() {
     <PageLayout>
       <Section>
         <div className='text-center space-y-4'>
-          <Heading variant='hero'>
-            Blog
-          </Heading>
+          <Heading variant='hero'>Blog</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
             Technical deep-dives, opinions on frontend trends, tutorials, and
             lessons learned.

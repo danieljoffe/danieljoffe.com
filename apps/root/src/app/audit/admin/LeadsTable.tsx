@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Pagination, Spinner } from '@/components/kit';
-import ClientBadge from '@/components/ClientBadge';
+import { Badge } from '@danieljoffe.com/shared-ui';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { useToast } from '@/state/Toast/ToastProvider';
@@ -136,7 +136,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <ClientBadge variant='default'>{lead.source}</ClientBadge>
+                    <Badge variant='default'>{lead.source}</Badge>
                   </td>
                   <td className='py-3 px-3 text-center'>
                     {lead.email_sequence_step}

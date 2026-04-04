@@ -63,9 +63,7 @@ export default function Index() {
             </span>
           </div>
 
-          <Heading variant='hero'>
-            {FULL_NAME}
-          </Heading>
+          <Heading variant='hero'>{FULL_NAME}</Heading>
           <Text variant='subtitle' className='max-w-lg'>
             {JOB_TITLE} who builds products end-to-end &mdash; from backend
             systems to polished UIs. I ship fast, architect for scale, and
@@ -183,9 +181,7 @@ export default function Index() {
                     {methodology.title}
                   </Heading>
                 </div>
-                <Text variant='body'>
-                  {methodology.text}
-                </Text>
+                <Text variant='body'>{methodology.text}</Text>
               </div>
             </div>
           ))}

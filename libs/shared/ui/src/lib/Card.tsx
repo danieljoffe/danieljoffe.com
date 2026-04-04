@@ -1,6 +1,6 @@
-import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { cn } from './utils';
+import { type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import { Heading } from './Heading';
+import { cn } from './utils';
 
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
@@ -8,6 +8,7 @@ export interface CardProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'children'
 > {
+  ref?: Ref<HTMLDivElement> | undefined;
   children: ReactNode;
   elevated?: boolean;
   padding?: CardPadding;
@@ -17,6 +18,7 @@ export interface CardHeaderProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'children'
 > {
+  ref?: Ref<HTMLDivElement> | undefined;
   children: ReactNode;
 }
 
@@ -24,6 +26,7 @@ export interface CardTitleProps extends Omit<
   HTMLAttributes<HTMLHeadingElement>,
   'children'
 > {
+  ref?: Ref<HTMLHeadingElement> | undefined;
   children: ReactNode;
 }
 
@@ -31,6 +34,7 @@ export interface CardContentProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'children'
 > {
+  ref?: Ref<HTMLDivElement> | undefined;
   children: ReactNode;
 }
 
@@ -38,6 +42,7 @@ export interface CardFooterProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'children'
 > {
+  ref?: Ref<HTMLDivElement> | undefined;
   children: ReactNode;
 }
 
@@ -48,75 +53,84 @@ const paddingStyles: Record<CardPadding, string> = {
   lg: 'p-8',
 };
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(
-  (
-    { children, className, elevated = false, padding = 'md', ...props },
-    ref
-  ) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'rounded-lg border border-border',
-          elevated
-            ? 'bg-surface-elevated shadow-md shadow-black/10 border-border-secondary'
-            : 'bg-surface-elevated',
-          paddingStyles[padding],
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-Card.displayName = 'Card';
+export function Card({
+  children,
+  className,
+  elevated = false,
+  padding = 'md',
+  ref,
+  ...props
+}: CardProps) {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'rounded-lg border border-border',
+        elevated
+          ? 'bg-surface-elevated shadow-md shadow-black/10 border-border-secondary'
+          : 'bg-surface-elevated',
+        paddingStyles[padding],
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
-export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn('mb-4', className)} {...props}>
-        {children}
-      </div>
-    );
-  }
-);
-CardHeader.displayName = 'CardHeader';
+export function CardHeader({
+  children,
+  className,
+  ref,
+  ...props
+}: CardHeaderProps) {
+  return (
+    <div ref={ref} className={cn('mb-4', className)} {...props}>
+      {children}
+    </div>
+  );
+}
 
-export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <Heading ref={ref} variant='cardTitle' className={className} {...props}>
-        {children}
-      </Heading>
-    );
-  }
-);
-CardTitle.displayName = 'CardTitle';
+export function CardTitle({
+  children,
+  className,
+  ref,
+  ...props
+}: CardTitleProps) {
+  return (
+    <Heading ref={ref} variant='cardTitle' className={className} {...props}>
+      {children}
+    </Heading>
+  );
+}
 
-export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn(className)} {...props}>
-        {children}
-      </div>
-    );
-  }
-);
-CardContent.displayName = 'CardContent';
+export function CardContent({
+  children,
+  className,
+  ref,
+  ...props
+}: CardContentProps) {
+  return (
+    <div ref={ref} className={cn(className)} {...props}>
+      {children}
+    </div>
+  );
+}
 
-export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn('mt-4 flex items-center gap-2', className)}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-CardFooter.displayName = 'CardFooter';
+export function CardFooter({
+  children,
+  className,
+  ref,
+  ...props
+}: CardFooterProps) {
+  return (
+    <div
+      ref={ref}
+      className={cn('mt-4 flex items-center gap-2', className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}

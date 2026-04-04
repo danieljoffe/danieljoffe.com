@@ -11,7 +11,7 @@ import {
   Heading,
   Text,
 } from '@/components/kit';
-import ClientBadge from '@/components/ClientBadge';
+import { Badge } from '@danieljoffe.com/shared-ui';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';
@@ -28,12 +28,10 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-6'>
-          <ClientBadge variant='brand-solid'>
+          <Badge variant='brand-solid'>
             Currently available for new projects
-          </ClientBadge>
-          <Heading variant='hero'>
-            Your frontend is costing you users.
-          </Heading>
+          </Badge>
+          <Heading variant='hero'>Your frontend is costing you users.</Heading>
           <Text variant='subtitle' className='max-w-lg mx-auto'>
             I help startups and growing teams ship faster, load faster, and stop
             depending on engineering for everything.
@@ -73,12 +71,10 @@ export default function Services() {
                 </div>
 
                 {service.highlighted && (
-                  <ClientBadge variant='brand'>Most popular</ClientBadge>
+                  <Badge variant='brand'>Most popular</Badge>
                 )}
 
-                <Text variant='body'>
-                  {service.description}
-                </Text>
+                <Text variant='body'>{service.description}</Text>
 
                 <div>
                   <p className='text-xs font-semibold text-text-primary mb-2'>

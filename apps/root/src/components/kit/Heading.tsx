@@ -21,12 +21,12 @@ const appVariantStyles: Record<AppHeadingVariant, string> = {
   hero: 'text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]',
   detail:
     'text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight',
-  subtitle:
-    'text-2xl font-bold text-text-primary tracking-tight',
+  subtitle: 'text-2xl font-bold text-text-primary tracking-tight',
   mdxH1: 'text-2xl font-bold text-text-primary tracking-tight mb-6',
   mdxH2: 'text-lg font-semibold text-text-primary mt-12 mb-4 scroll-mt-20',
   mdxH3: 'text-sm font-semibold text-text-primary mt-8 mb-3 scroll-mt-20',
-  mdxH4: 'text-xs font-medium text-text-secondary mt-6 mb-2 uppercase tracking-wider',
+  mdxH4:
+    'text-xs font-medium text-text-secondary mt-6 mb-2 uppercase tracking-wider',
 };
 
 const appDefaultLevel: Record<AppHeadingVariant, HeadingLevel> = {
@@ -39,11 +39,7 @@ const appDefaultLevel: Record<AppHeadingVariant, HeadingLevel> = {
   mdxH4: 'h4',
 };
 
-const sharedVariants = new Set<string>([
-  'section',
-  'cardTitle',
-  'component',
-]);
+const sharedVariants = new Set<string>(['section', 'cardTitle', 'component']);
 
 type HeadingProps = {
   as?: HeadingLevel;
@@ -63,7 +59,7 @@ export function Heading({
   if (sharedVariants.has(variant)) {
     return (
       <SharedHeading
-        as={as}
+        {...(as != null && { as })}
         variant={variant as SharedHeadingVariant}
         className={className}
         id={id}

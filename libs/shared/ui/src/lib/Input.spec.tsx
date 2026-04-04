@@ -112,7 +112,7 @@ describe('Input', () => {
     expect(input).toHaveAttribute('aria-required', 'true');
   });
 
-  it('accepts ref via forwardRef', () => {
+  it('accepts ref prop', () => {
     const ref = React.createRef<HTMLInputElement>();
     render(<Input ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLInputElement);

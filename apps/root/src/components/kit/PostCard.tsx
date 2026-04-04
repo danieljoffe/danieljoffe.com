@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
-import ClientBadge from '@/components/ClientBadge';
+import { Badge } from '@danieljoffe.com/shared-ui';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
@@ -57,7 +57,7 @@ export function PostCard({
           </Heading>
           <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
         </div>
-        {post.role && <ClientBadge variant='brand'>{post.role}</ClientBadge>}
+        {post.role && <Badge variant='brand'>{post.role}</Badge>}
         <Text variant='cardDescription' className='line-clamp-2'>
           {post.description}
         </Text>

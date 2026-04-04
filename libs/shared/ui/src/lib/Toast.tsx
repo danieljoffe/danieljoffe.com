@@ -8,9 +8,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { cn } from './utils/cn';
 import { Heading } from './Heading';
 import { Text } from './Text';
+import { cn } from './utils/cn';
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
 

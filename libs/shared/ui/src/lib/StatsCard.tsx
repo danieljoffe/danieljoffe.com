@@ -2,8 +2,8 @@
 
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { cn } from './utils/cn';
 import { Text } from './Text';
+import { cn } from './utils/cn';
 
 export interface StatsCardProps {
   title: string;

@@ -32,9 +32,7 @@ export default function ExperiencePage() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <Heading variant='hero'>
-            Experience
-          </Heading>
+          <Heading variant='hero'>Experience</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
             An overview of my professional journey as a frontend
             engineer&mdash;covering key roles, impactful projects, and the

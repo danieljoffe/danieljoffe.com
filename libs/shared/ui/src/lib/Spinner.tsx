@@ -1,4 +1,4 @@
-import { forwardRef, type HTMLAttributes } from 'react';
+import { type HTMLAttributes, type Ref } from 'react';
 import { cn } from './utils';
 
 type SpinnerSize = 'sm' | 'md' | 'lg';
@@ -14,6 +14,7 @@ export interface SpinnerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'className' | 'role'
 > {
+  ref?: Ref<HTMLDivElement> | undefined;
   size?: SpinnerSize;
   variant?: SpinnerVariant;
   className?: string;
@@ -34,31 +35,26 @@ const variantStyles: Record<SpinnerVariant, string> = {
   foreground: 'border-foreground-subtle/30 border-t-foreground',
 };
 
-export const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
-  (
-    {
-      size = 'md',
-      variant = 'accent',
-      'aria-label': ariaLabel = 'Loading',
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <div
-        ref={ref}
-        role='status'
-        aria-label={ariaLabel}
-        className={cn(
-          'inline-block rounded-full animate-spin',
-          sizeStyles[size],
-          variantStyles[variant],
-          className
-        )}
-        {...props}
-      />
-    );
-  }
-);
-Spinner.displayName = 'Spinner';
+export function Spinner({
+  size = 'md',
+  variant = 'accent',
+  'aria-label': ariaLabel = 'Loading',
+  className,
+  ref,
+  ...props
+}: SpinnerProps) {
+  return (
+    <div
+      ref={ref}
+      role='status'
+      aria-label={ariaLabel}
+      className={cn(
+        'inline-block rounded-full animate-spin',
+        sizeStyles[size],
+        variantStyles[variant],
+        className
+      )}
+      {...props}
+    />
+  );
+}
