@@ -1,10 +1,10 @@
 'use client';
 
+import { AtSign, Download, Github, Linkedin } from 'lucide-react';
 import { profileData } from '@/data/profileData';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/constants';
 import { downloadResume } from '@/utils/helpers';
-import { AtSign, Download, Github, Linkedin } from 'lucide-react';
 
 const links = [
   {

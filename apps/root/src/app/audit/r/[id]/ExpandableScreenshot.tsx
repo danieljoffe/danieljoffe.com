@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Globe } from 'lucide-react';
-import type { DeviceMode } from '@danieljoffe.com/shared-audit';
 import Image from 'next/image';
+import type { DeviceMode } from '@danieljoffe.com/shared-audit';
 
 interface ExpandableScreenshotProps {
   screenshotUrl: string | null;

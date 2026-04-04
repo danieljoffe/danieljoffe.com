@@ -1,8 +1,5 @@
 import { AllowedExperienceSlugs, ExperienceStructuredData } from '@/types/base';
-import {
-  personStructuredData as member,
-  CollectionPageStructuredData,
-} from './base';
+import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 import {
   experienceNames,
   experienceRoles,
@@ -11,7 +8,10 @@ import {
   experiencePageSlugs,
 } from '../experience';
 import { experienceRecords } from '../experienceThumbnails';
-import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
+import {
+  personStructuredData as member,
+  CollectionPageStructuredData,
+} from './base';
 
 export const wincExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',

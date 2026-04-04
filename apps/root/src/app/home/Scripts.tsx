@@ -1,8 +1,8 @@
-import { publicEnv } from '@/lib/public.env';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { rootStructuredData } from '@/data/structuredData/root';
 import Script from 'next/script';
+import { rootStructuredData } from '@/data/structuredData/root';
+import { publicEnv } from '@/lib/public.env';
 import { isProduction } from '@/utils/helpers';
 
 export default function Scripts() {

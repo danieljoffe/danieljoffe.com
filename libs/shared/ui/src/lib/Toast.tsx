@@ -8,6 +8,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Heading } from './Heading';
+import { Text } from './Text';
 import { cn } from './utils/cn';
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
@@ -73,13 +75,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               <Icon className={cn('h-5 w-5 shrink-0', iconColors[t.variant])} />
               <div className='flex-1 min-w-0'>
-                <p className='text-sm font-medium text-text-primary'>
+                <Heading variant='cardTitle' as='p'>
                   {t.title}
-                </p>
+                </Heading>
                 {t.description && (
-                  <p className='text-xs text-text-secondary mt-0.5'>
+                  <Text variant='meta' className='mt-0.5'>
                     {t.description}
-                  </p>
+                  </Text>
                 )}
               </div>
               <button

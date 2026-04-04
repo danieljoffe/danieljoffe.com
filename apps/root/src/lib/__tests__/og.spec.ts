@@ -1,3 +1,11 @@
+import { readFile } from 'node:fs/promises';
+import {
+  getOgFonts,
+  getProfileImageBase64,
+  getUnsplashUrl,
+  getUnsplashImageBase64,
+} from '../og';
+
 jest.mock('@/utils/constants', () => ({
   UNSPLASH_PHOTOS_URL: 'https://images.unsplash.com/photo-',
 }));
@@ -5,8 +13,6 @@ jest.mock('@/utils/constants', () => ({
 jest.mock('node:fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('mock-font-data')),
 }));
-
-import { readFile } from 'node:fs/promises';
 
 const mockReadFile = readFile as jest.MockedFunction<typeof readFile>;
 
@@ -19,13 +25,6 @@ const mockFetch = jest.fn().mockImplementation(() =>
   })
 );
 global.fetch = mockFetch;
-
-import {
-  getOgFonts,
-  getProfileImageBase64,
-  getUnsplashUrl,
-  getUnsplashImageBase64,
-} from '../og';
 
 beforeEach(() => {
   mockFetch.mockClear();
