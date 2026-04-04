@@ -1,5 +1,3 @@
-'use client';
-
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Text } from './Text';
@@ -34,9 +32,13 @@ export function StatsCard({
       <div className='flex items-start justify-between'>
         <div>
           <Text variant='caption'>{title}</Text>
-          <p className='mt-1.5 text-2xl font-semibold text-text-primary tracking-tight'>
+          <Text
+            variant='bodyLg'
+            as='p'
+            className='mt-1.5 text-2xl font-semibold tracking-tight'
+          >
             {value}
-          </p>
+          </Text>
         </div>
         {icon && (
           <div className='p-2.5 bg-surface-tertiary rounded-lg text-text-secondary'>

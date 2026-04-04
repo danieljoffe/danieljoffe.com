@@ -1,4 +1,5 @@
 import { type HTMLAttributes, type Ref } from 'react';
+import { Text } from './Text';
 import { cn } from './utils';
 
 export interface LoadingProps extends Omit<
@@ -42,9 +43,12 @@ export function Loading({
         </div>
 
         {/* Loading text */}
-        <p className='text-sm animate-[pulseSlow_2s_ease-in-out_infinite]'>
+        <Text
+          variant='caption'
+          className='animate-[pulseSlow_2s_ease-in-out_infinite]'
+        >
           Loading...
-        </p>
+        </Text>
       </div>
     </div>
   );
