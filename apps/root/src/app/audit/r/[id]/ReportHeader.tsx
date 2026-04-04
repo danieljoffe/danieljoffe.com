@@ -78,7 +78,7 @@ export default function ReportHeader({
             <div className='min-w-0 flex-1'>
               <h1
                 id='report-header-heading'
-                className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
+                className='text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-[1.1]'
               >
                 {pageTitle || url}
               </h1>

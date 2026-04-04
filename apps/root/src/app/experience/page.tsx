@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { Briefcase, ArrowUpRight, Calendar, Layers } from 'lucide-react';
+import { Briefcase, ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
@@ -8,7 +8,6 @@ import {
   Section,
   SectionLabel,
   PageLayout,
-  PostCard,
   StructuredData,
   CompanyLogo,
 } from '@/components/kit';
@@ -19,7 +18,7 @@ const experienceList = experienceEntries.reverse().map(entry => ({
   ...entry.thumbnail,
   readingTime: entry.readingTime,
 }));
-const experienceFullList = Object.values(experienceFull).reverse();
+const experienceFullList = Object.values(experienceFull);
 
 export const metadata: Metadata = experienceRootMetadata;
 
@@ -95,43 +94,29 @@ export default function ExperiencePage() {
                       <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
                         {exp.description}
                       </p>
-                      {exp.duration && (
-                        <div className='flex items-center gap-1.5 mt-2'>
-                          <Calendar className='h-3 w-3 text-text-tertiary' />
-                          <span className='text-xs text-text-tertiary'>
-                            {exp.duration}
+                      <div className='flex items-center gap-3 mt-2'>
+                        {exp.duration && (
+                          <span className='flex items-center gap-1.5'>
+                            <Calendar className='h-3 w-3 text-text-tertiary' />
+                            <span className='text-xs text-text-tertiary'>
+                              {exp.duration}
+                            </span>
                           </span>
-                        </div>
-                      )}
+                        )}
+                        {exp.readingTime > 0 && (
+                          <span className='flex items-center gap-1.5'>
+                            <Clock className='h-3 w-3 text-text-tertiary' />
+                            <span className='text-xs text-text-tertiary'>
+                              {exp.readingTime} min read
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </ExperienceCardLink>
                 );
               })}
           </div>
-        </div>
-      </Section>
-
-      {/* ══════════════════════════════════
-          GRID VIEW
-          ══════════════════════════════════ */}
-      <Section>
-        <SectionLabel
-          icon={<Layers className='h-3.5 w-3.5' />}
-          label='At a Glance'
-        />
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          {experienceList.map((exp, i) => {
-            const full = experienceFullList.find(f => f.slug === exp.slug);
-            return (
-              <PostCard
-                key={exp.slug}
-                post={exp}
-                logo={full?.logo}
-                priority={i < 2}
-                analyticsType='experience'
-              />
-            );
-          })}
         </div>
       </Section>
 

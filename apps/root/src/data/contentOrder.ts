@@ -1,4 +1,8 @@
-import { AllowedProjectSlugs, AllowedExperienceSlugs, AllowedBlogSlugs } from '@/types/base';
+import {
+  AllowedProjectSlugs,
+  AllowedExperienceSlugs,
+  AllowedBlogSlugs,
+} from '@/types/base';
 import { projectSlugs } from '@/data/project';
 import { experienceSlugs } from '@/data/experience';
 import { blogSlugs } from '@/data/blog';

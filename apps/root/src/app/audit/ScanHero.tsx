@@ -8,12 +8,12 @@ interface ScanHeroProps {
 export default function ScanHero({ scanCount }: ScanHeroProps) {
   return (
     <section className={sectionContainer} aria-labelledby='audit-hero-heading'>
-      <div className='max-w-[40rem] mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
+      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
         <div className='flex flex-col gap-6 items-center'>
           <div>
             <h1
               id='audit-hero-heading'
-              className='font-sans text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight'
+              className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'
             >
               Free website performance audit
             </h1>

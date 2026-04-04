@@ -80,7 +80,7 @@ export default function ScanPending({
             <div>
               <h1
                 id='scan-failed-heading'
-                className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
+                className='text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-[1.1]'
               >
                 Scan failed
               </h1>

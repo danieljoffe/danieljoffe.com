@@ -1,4 +1,4 @@
-import { Skeleton } from '@danieljoffe.com/shared-ui';
+import ClientSkeleton from '@/components/ClientSkeleton';
 import { PageLayout } from '@/components/kit';
 
 export default function Loading() {
@@ -9,13 +9,13 @@ export default function Loading() {
           <div className='flex flex-col gap-6 items-center'>
             {/* Heading */}
             <div className='space-y-3 w-full'>
-              <Skeleton
+              <ClientSkeleton
                 variant='text'
                 width='70%'
                 height={36}
                 className='mx-auto'
               />
-              <Skeleton
+              <ClientSkeleton
                 variant='text'
                 width='50%'
                 height={36}
@@ -23,16 +23,20 @@ export default function Loading() {
               />
             </div>
             {/* Description */}
-            <Skeleton
+            <ClientSkeleton
               variant='text'
               lines={2}
               width='80%'
               className='mx-auto'
             />
             {/* URL input form */}
-            <Skeleton variant='rectangular' height={56} className='w-full' />
+            <ClientSkeleton
+              variant='rectangular'
+              height={56}
+              className='w-full'
+            />
             {/* Scan count */}
-            <Skeleton
+            <ClientSkeleton
               variant='text'
               width={180}
               height={14}

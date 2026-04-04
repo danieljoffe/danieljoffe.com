@@ -1,5 +1,6 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
-import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui';
+import type { BadgeVariant } from '@danieljoffe.com/shared-ui';
+import ClientBadge from '@/components/ClientBadge';
 
 const severityMap: Record<string, BadgeVariant> = {
   critical: 'error',
@@ -29,16 +30,18 @@ export default function IssueCard({ issue }: IssueCardProps) {
     <div className='rounded-lg border border-border bg-surface-elevated p-6 w-full'>
       <div className='flex flex-col gap-2'>
         <div className='flex flex-row gap-1 flex-wrap'>
-          <Badge variant={severityMap[issue.severity] ?? 'default'}>
+          <ClientBadge variant={severityMap[issue.severity] ?? 'default'}>
             {issue.severity}
-          </Badge>
-          <Badge variant='default'>
+          </ClientBadge>
+          <ClientBadge variant='default'>
             {categoryLabels[issue.category] || issue.category}
-          </Badge>
+          </ClientBadge>
           {issue.fix_difficulty && (
-            <Badge variant={difficultyMap[issue.fix_difficulty] ?? 'default'}>
+            <ClientBadge
+              variant={difficultyMap[issue.fix_difficulty] ?? 'default'}
+            >
               {issue.fix_difficulty} fix
-            </Badge>
+            </ClientBadge>
           )}
         </div>
         <h3 className='text-base font-semibold'>{issue.title}</h3>

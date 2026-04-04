@@ -50,13 +50,6 @@ export default function Index() {
       <Section>
         <GridBg />
         <div className='relative space-y-6'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            <span>Hello.</span>
-            <br className='hidden md:block' />
-            <span> I&apos;m {FULL_NAME}.</span>
-          </h1>
-          <p className='text-lg text-text-secondary max-w-lg'>{JOB_TITLE}</p>
-
           <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
             <span className='flex items-center gap-1.5'>
               <MapPin className='h-3.5 w-3.5' />
@@ -68,11 +61,14 @@ export default function Index() {
             </span>
           </div>
 
-          <div className='space-y-3 text-sm text-text-secondary'>
-            <p>I build full-stack products.</p>
-            <p>I architect backend systems.</p>
-            <p>And I eliminate engineering bottlenecks.</p>
-          </div>
+          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
+            {FULL_NAME}
+          </h1>
+          <p className='text-lg text-text-secondary max-w-lg leading-relaxed'>
+            {JOB_TITLE} who builds products end-to-end &mdash; from backend
+            systems to polished UIs. I ship fast, architect for scale, and
+            eliminate the bottlenecks that slow teams down.
+          </p>
 
           <HeroActions />
         </div>
