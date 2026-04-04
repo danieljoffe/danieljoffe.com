@@ -1,0 +1,214 @@
+export const metadata = {
+  title: 'Building an Auto-Generated Table of Contents with Scroll Spy',
+  date: '2026-04-04',
+  excerpt:
+    'How I built a responsive, accessible table of contents that extracts headings from rendered MDX, tracks reading position with IntersectionObserver, and adapts between a sticky sidebar and a mobile bottom sheet.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: [
+    'React',
+    'IntersectionObserver',
+    'Accessibility',
+    'Responsive Design',
+    'MDX',
+  ],
+  slug: 'auto-generated-toc-scroll-spy',
+  type: 'blog',
+  topic: 'Frontend Engineering',
+};
+
+## The Problem
+
+Long-form MDX posts on this portfolio — case studies running 1,500+ words with
+multiple sections — had no way for readers to see where they were or jump to a
+specific section. The browser's native scroll position was the only indicator of
+progress.
+
+I needed a table of contents that:
+
+1. **Self-generates** from the MDX content (no manual configuration per post)
+2. **Tracks reading position** in real time
+3. **Works on both desktop and mobile** with appropriate UI patterns
+4. **Respects accessibility** (focus management, reduced motion, keyboard nav)
+
+## Heading Extraction with useHeadings
+
+The first challenge was getting heading data from rendered MDX without requiring
+authors to maintain a separate outline. The solution: scan the DOM after render.
+
+```typescript
+function useHeadings() {
+  const [headings, setHeadings] = useState<Heading[]>([]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const els = document.querySelectorAll('article h2, article h3');
+      const items = Array.from(els)
+        .filter(el => el.id)
+        .map(el => ({
+          id: el.id,
+          text: el.textContent ?? '',
+          level: Number(el.tagName[1]),
+        }));
+      setHeadings(items);
+    });
+  }, []);
+
+  return headings;
+}
+```
+
+Key decisions here:
+
+- **h2 and h3 only** — h1 is the page title (already visible), and h4+ adds
+  noise to navigation
+- **`queueMicrotask`** — ensures the DOM scan happens after MDX components have
+  fully rendered, avoiding race conditions with hydration
+- **`el.id` filter** — MDX heading plugins auto-generate IDs; headings without
+  IDs are excluded since they can't be scroll targets
+
+## Scroll Spy with IntersectionObserver
+
+Instead of a scroll event listener polling `getBoundingClientRect()` on every
+frame, I used IntersectionObserver to let the browser tell me when headings enter
+or leave the viewport:
+
+```typescript
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          setActiveId(entry.target.id);
+        }
+      }
+    },
+    { rootMargin: '-80px 0px -60% 0px' }
+  );
+
+  headings.forEach(({ id }) => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  return () => observer.disconnect();
+}, [headings]);
+```
+
+The `rootMargin` is the secret sauce:
+
+- **`-80px` top** accounts for the sticky nav bar height
+- **`-60%` bottom** means only the top 40% of the viewport triggers activation,
+  so the "active" heading matches where the reader's eyes actually are — not
+  whatever heading happens to be at the bottom of the screen
+
+This is a zero-cost approach at runtime. No `requestAnimationFrame` loops, no
+throttled scroll handlers. The browser's compositor thread handles intersection
+calculations natively.
+
+## Responsive Design: Sidebar vs. Bottom Sheet
+
+Desktop and mobile need fundamentally different TOC patterns:
+
+**Desktop (lg+):** A sticky sidebar pinned to the left of the article content.
+It stays visible as you scroll, showing your position at all times.
+
+```tsx
+function DesktopToc({ headings, activeId }: TocProps) {
+  return (
+    <nav aria-label='Table of contents' className='sticky top-24'>
+      <TocList headings={headings} activeId={activeId} />
+    </nav>
+  );
+}
+```
+
+**Mobile:** A floating action button (FAB) in the bottom-left corner. Tapping it
+opens a bottom sheet that slides up to 60% of the viewport height.
+
+The mobile sheet required several accessibility considerations:
+
+- **Focus trap** — tabbing cycles within the sheet while it's open
+- **Body scroll lock** — `overflow: hidden` on the body prevents background scrolling
+- **Escape key** — closes the sheet
+- **Backdrop click** — closes the sheet
+- **Reduced motion** — transitions respect `prefers-reduced-motion`
+
+```tsx
+// Focus trap: cycle focus within the sheet
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    setOpen(false);
+    return;
+  }
+  if (e.key === 'Tab') {
+    // Cycle between focusable elements in the sheet
+    const focusable = sheetRef.current?.querySelectorAll(
+      'button, [href], [tabindex]:not([tabindex="-1"])'
+    );
+    // ...trap logic
+  }
+}
+```
+
+Both implementations share the same `TocList` component — the only difference is
+the container and trigger mechanism.
+
+## Smooth Scrolling with Accessibility
+
+When a user clicks a TOC link, the page scrolls to the target heading. But
+smooth scrolling can be disorienting for users with vestibular disorders:
+
+```typescript
+function scrollToHeading(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  el.scrollIntoView({
+    behavior: prefersReducedMotion ? 'instant' : 'smooth',
+    block: 'start',
+  });
+}
+```
+
+This single check respects the user's OS-level motion preference — no custom
+setting needed.
+
+## Integration with the Two-Column Layout
+
+The TOC lives inside `PostBody`, which uses a flex layout to position it:
+
+```tsx
+<div className='flex gap-10'>
+  {/* Left: sticky TOC (desktop only) */}
+  <div className='hidden lg:flex flex-col gap-6 w-48 shrink-0'>
+    <TableOfContents desktop />
+  </div>
+
+  {/* Right: metadata + article */}
+  <div className='flex-1 min-w-0'>
+    {/* Date, tags, reading time grid */}
+    {children}
+  </div>
+</div>
+
+{/* Mobile TOC must be OUTSIDE the hidden container */}
+<TableOfContents mobile />
+```
+
+A subtle but critical detail: the mobile TOC FAB is rendered _outside_ the
+`hidden lg:flex` container. An earlier version nested it inside, which meant the
+FAB was hidden on mobile — exactly when it was needed most.
+
+## Results
+
+- **149 lines** of component code (single file, highly modular)
+- **Zero runtime overhead** — native IntersectionObserver, no polling
+- **Fully accessible** — focus trap, keyboard nav, reduced motion support
+- **Self-maintaining** — authors write MDX with headings, TOC generates itself
+- Works across all content types (projects, experience, blog) automatically
+  through the shared `PostBody` component
