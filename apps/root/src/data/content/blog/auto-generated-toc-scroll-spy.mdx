@@ -194,10 +194,12 @@ The TOC lives inside `PostBody`, which uses a flex layout to position it:
     {/* Date, tags, reading time grid */}
     {children}
   </div>
-</div>
+</div>;
 
-{/* Mobile TOC must be OUTSIDE the hidden container */}
-<TableOfContents mobile />
+{
+  /* Mobile TOC must be OUTSIDE the hidden container */
+}
+<TableOfContents mobile />;
 ```
 
 A subtle but critical detail: the mobile TOC FAB is rendered _outside_ the

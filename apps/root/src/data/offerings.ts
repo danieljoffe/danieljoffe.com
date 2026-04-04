@@ -9,7 +9,6 @@ import {
   Wrench,
   UserCheck,
   Search,
-  Sprout,
   Layers,
 } from 'lucide-react';
 
@@ -80,7 +79,7 @@ export const offerings: {
     {
       Icon: Rocket,
       title: 'I Build for Autonomy',
-      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently — 200+ pages launched, 80% fewer engineering requests.",
+      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently — 200+ pages launched, 80% fewer engineering requests. I invest in people the same way: five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
     },
     {
       Icon: BarChart3,
@@ -91,11 +90,6 @@ export const offerings: {
       Icon: Layers,
       title: 'I Think in Systems, Not Just Components',
       text: 'Building auth systems and rate limiters taught me to reason about tradeoffs — JWT vs sessions, in-memory vs distributed state, fail-open vs fail-closed. I bring that architectural thinking to every layer of the stack, not just the UI.',
-    },
-    {
-      Icon: Sprout,
-      title: 'I Invest in People',
-      text: "Five developers I've mentored have gone on to promotions and dream jobs — including one now at JPL. I believe component architecture is learnable, but curiosity and drive aren't.",
     },
   ],
 };

@@ -157,7 +157,7 @@ export default function URLInputForm() {
                   <span
                     className={`inline-flex items-center justify-center size-5 rounded-full border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-border-focus peer-focus-visible:ring-offset-2 ${
                       selected
-                        ? 'border-brand-500 bg-brand-500 text-background'
+                        ? 'border-brand-500 bg-brand-500 text-text-inverse'
                         : 'border-border bg-surface'
                     }`}
                     aria-hidden='true'
