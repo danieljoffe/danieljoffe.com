@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect } from 'storybook/test';
-
 import Button from '@/components/Button';
 import { ThemeProvider } from '@/state/Theme/ThemeProvider';
 import ModalProvider, { useModal } from '@/state/Modal/ModalProvider';

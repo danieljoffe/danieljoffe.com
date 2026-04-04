@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui';
 import { servicesMetadata } from '@/data/metadata/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
@@ -11,7 +12,6 @@ import {
   Heading,
   Text,
 } from '@/components/kit';
-import { Badge } from '@danieljoffe.com/shared-ui';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';

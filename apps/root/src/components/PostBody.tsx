@@ -1,8 +1,8 @@
+import { Calendar, Clock, Tag } from 'lucide-react';
 import { PostBodyProps } from '@/types/postTypes';
+import { TableOfContents, Heading } from '@/components/kit';
 import UnsplashImage from './UnsplashImage';
 import BreadCrumbs from './BreadCrumbs';
-import { TableOfContents, Heading } from '@/components/kit';
-import { Calendar, Clock, Tag } from 'lucide-react';
 
 export default function PostBody({
   children,

@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import ReportPage from './page';
 
 const mockScan = {
   id: 'test-uuid-1234',
@@ -124,9 +125,6 @@ jest.mock('./ScanFailed', () => ({
     return <div data-testid='scan-failed' />;
   },
 }));
-
-// We need to test the page component by calling it as a function (async server component)
-import ReportPage from './page';
 
 describe('Report Page', () => {
   const params = Promise.resolve({

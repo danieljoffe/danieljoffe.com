@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { cn } from '@/lib/cn';
-import { cardBase } from '@/lib/layoutStyles';
 import {
   User,
   Code2,
@@ -17,6 +15,9 @@ import {
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui';
+import { cn } from '@/lib/cn';
+import { cardBase } from '@/lib/layoutStyles';
 import { aboutMetadata } from '@/data/metadata/about';
 import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
@@ -32,7 +33,6 @@ import {
 } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
-import { Badge } from '@danieljoffe.com/shared-ui';
 
 export const metadata: Metadata = aboutMetadata;
 

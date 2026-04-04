@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Pagination, Spinner } from '@/components/kit';
 import { Badge } from '@danieljoffe.com/shared-ui';
+import { Pagination, Spinner } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { useToast } from '@/state/Toast/ToastProvider';

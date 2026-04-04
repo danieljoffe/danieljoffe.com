@@ -1,11 +1,10 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { analytics } from '@/lib/analytics';
 import ShareButton from './ShareButton';
 
 jest.mock('@/lib/analytics', () => ({
   analytics: { auditReportShared: jest.fn() },
 }));
-
-import { analytics } from '@/lib/analytics';
 
 const mockedAnalytics = analytics as jest.Mocked<typeof analytics>;
 

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
 import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
@@ -7,7 +8,6 @@ import {
   STORYBOOK_URL,
   RESUME_URL,
 } from '@/utils/constants';
-import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
 
 const currentYear = new Date().getFullYear();
 

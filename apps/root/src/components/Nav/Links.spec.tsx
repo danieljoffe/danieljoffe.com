@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import NavLinks from './Links';
 import {
   ABOUT_LINK,
   EXPERIENCE_LINK,
@@ -9,6 +8,7 @@ import {
   NAV_LINKS,
   PROJECTS_LINK,
 } from '@/utils/constants';
+import NavLinks from './Links';
 
 const mockPush = jest.fn();
 
