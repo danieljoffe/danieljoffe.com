@@ -1,7 +1,7 @@
 import {
   Text as SharedText,
   type TextVariant as SharedTextVariant,
-} from '@danieljoffe.com/shared-ui';
+} from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
 
 type TextElement = 'p' | 'span' | 'div' | 'label';

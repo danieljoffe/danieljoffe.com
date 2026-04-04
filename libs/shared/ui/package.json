@@ -14,6 +14,26 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./Badge": {
+      "@danieljoffe.com/source": "./src/lib/Badge.tsx",
+      "types": "./dist/lib/Badge.d.ts",
+      "default": "./src/lib/Badge.tsx"
+    },
+    "./Heading": {
+      "@danieljoffe.com/source": "./src/lib/Heading.tsx",
+      "types": "./dist/lib/Heading.d.ts",
+      "default": "./src/lib/Heading.tsx"
+    },
+    "./Skeleton": {
+      "@danieljoffe.com/source": "./src/lib/Skeleton.tsx",
+      "types": "./dist/lib/Skeleton.d.ts",
+      "default": "./src/lib/Skeleton.tsx"
+    },
+    "./Text": {
+      "@danieljoffe.com/source": "./src/lib/Text.tsx",
+      "types": "./dist/lib/Text.d.ts",
+      "default": "./src/lib/Text.tsx"
+    },
     "./styles/theme.css": "./src/styles/theme.css"
   }
 }

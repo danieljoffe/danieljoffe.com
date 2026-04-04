@@ -1,5 +1,5 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
-import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui';
+import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading, Text } from '@/components/kit';
 
 const severityMap: Record<string, BadgeVariant> = {

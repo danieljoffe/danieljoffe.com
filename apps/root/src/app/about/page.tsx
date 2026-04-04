@@ -15,7 +15,7 @@ import {
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { cn } from '@/lib/cn';
 import { cardBase } from '@/lib/layoutStyles';
 import { aboutMetadata } from '@/data/metadata/about';
