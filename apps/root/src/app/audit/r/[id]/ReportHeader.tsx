@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';
@@ -80,19 +80,19 @@ export default function ReportHeader({
               <Heading variant='section' id='report-header-heading'>
                 {pageTitle || url}
               </Heading>
-              <p className='text-sm text-text-secondary truncate max-w-md mt-1'>
+              <Text variant='body' className='truncate max-w-md mt-1'>
                 {url}
-              </p>
+              </Text>
               {completedAt && (
-                <p className='text-xs text-text-tertiary mt-1'>
+                <Text variant='meta' as='p' className='mt-1'>
                   Scanned {formatDate(completedAt)}
-                </p>
+                </Text>
               )}
-              <p className='text-xs text-text-tertiary mt-0.5'>
+              <Text variant='meta' as='p' className='mt-0.5'>
                 {deviceMode === 'desktop'
                   ? 'Tested on Desktop (Broadband)'
                   : 'Tested on Mobile (4G)'}
-              </p>
+              </Text>
             </div>
           </div>
         </div>

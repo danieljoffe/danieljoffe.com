@@ -14,7 +14,7 @@ import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
-import { FormFieldError, Heading } from '@/components/kit';
+import { FormFieldError, Heading, Text } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -291,12 +291,12 @@ export default function Form() {
         errors.root?.unknownError ||
         errors.hcaptcha) && (
         <div id='form-error' role='alert' aria-live='assertive'>
-          <p className='text-error text-sm'>
+          <Text variant='error'>
             {errors.root?.serverError?.message ||
               errors.root?.configurationError?.message ||
               errors.root?.unknownError?.message ||
               errors.hcaptcha?.message}
-          </p>
+          </Text>
         </div>
       )}
     </form>

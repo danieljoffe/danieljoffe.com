@@ -1,4 +1,4 @@
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 
 interface ScoreCardsProps {
   performance: number | null;
@@ -27,7 +27,9 @@ function ScoreCardItem({ label, score }: ScoreCardItemProps) {
 
   return (
     <div className='rounded-lg border border-border bg-surface-elevated p-6 text-center'>
-      <p className='text-sm text-text-secondary mb-2'>{label}</p>
+      <Text variant='body' className='mb-2'>
+        {label}
+      </Text>
       <p className='text-4xl font-bold' style={{ color }}>
         {score !== null ? score : 'N/A'}
       </p>
@@ -62,11 +64,11 @@ export default function ScoreCards({
           <ScoreCardItem label='SEO' score={seo} />
           <ScoreCardItem label='Best Practices' score={bestPractices} />
         </div>
-        <p className='text-xs text-text-secondary text-center mt-3'>
+        <Text variant='detail' className='text-center mt-3'>
           {deviceMode === 'desktop'
             ? 'Scores reflect a desktop device on a broadband connection.'
             : 'Scores reflect a mobile device on a 4G connection. Results may differ on desktop or faster networks.'}
-        </p>
+        </Text>
       </div>
     </section>
   );

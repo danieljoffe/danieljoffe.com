@@ -1,5 +1,5 @@
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 import LazyForm from './LazyForm';
 
 export default function Contact() {
@@ -14,14 +14,14 @@ export default function Contact() {
         >
           Let&apos;s Connect
         </Heading>
-        <p className='text-center !mb-2'>
+        <Text variant='bodyLg' className='text-center !mb-2'>
           Available for contract work, consulting, and fractional engineering
           engagements. Have a project in mind? I&apos;d love to hear about it.
-        </p>
-        <p className='text-center text-sm font-medium'>
+        </Text>
+        <Text variant='body' as='p' className='text-center font-medium'>
           <strong className='font-bold'>Response time:</strong> Usually within
           24 hours
-        </p>
+        </Text>
         <LazyForm />
       </div>
     </section>

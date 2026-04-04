@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { HOME_LINK } from '@/utils/constants';
 import { notFoundMetadata } from '@/data/metadata/notFound';
 import Button from '@/components/Button';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 
 export const metadata: Metadata = notFoundMetadata;
 
@@ -18,10 +18,10 @@ export default function NotFound() {
             <Heading variant='section' as='h2'>
               Page Not Found
             </Heading>
-            <p className='text-text-secondary mb-6 max-w-md'>
+            <Text variant='bodyLg' className='mb-6 max-w-md'>
               The page you are looking for could not be found. Please check the
               URL or return to the home page.
-            </p>
+            </Text>
           </div>
           <Button
             as='link'

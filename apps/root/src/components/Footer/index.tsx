@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
 import { profileData } from '@/data/profileData';
+import { Text } from '@/components/kit';
 import {
   FULL_NAME,
   NAV_LINKS,
@@ -48,9 +49,9 @@ export default function Footer() {
             <p className='text-sm font-medium text-text-primary'>
               {profileData.name}
             </p>
-            <p className='text-xs text-text-secondary mt-0.5'>
+            <Text variant='detail' className='mt-0.5'>
               {profileData.title}
-            </p>
+            </Text>
           </div>
           <div className='flex items-center gap-1'>
             {socialLinks.map(({ href, label, icon: Icon }) => (
@@ -87,9 +88,9 @@ export default function Footer() {
 
         {/* Bottom row: copyright + design system link */}
         <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
-          <p className='text-xs text-text-tertiary'>
+          <Text variant='meta' as='p'>
             &copy; {currentYear} {FULL_NAME}. All rights reserved.
-          </p>
+          </Text>
           <a
             href={STORYBOOK_URL}
             target='_blank'

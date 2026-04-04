@@ -1,5 +1,5 @@
 import Button from '@/components/Button';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 
 export default function NotFound() {
   return (
@@ -13,9 +13,9 @@ export default function NotFound() {
             <Heading variant='section' as='h2'>
               Report Not Found
             </Heading>
-            <p className='text-text-secondary mb-6 max-w-md'>
+            <Text variant='bodyLg' className='mb-6 max-w-md'>
               This scan may have expired or the URL is incorrect.
-            </p>
+            </Text>
           </div>
           <Button as='link' href='/audit'>
             Run a new audit

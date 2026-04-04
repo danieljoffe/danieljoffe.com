@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Button from '@/components/Button';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {
@@ -85,9 +85,9 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
               <Heading variant='component' as='h2' className='text-center'>
                 Admin Dashboard
               </Heading>
-              <p className='text-text-secondary text-center text-sm'>
+              <Text variant='body' className='text-center'>
                 Enter the admin password to continue.
-              </p>
+              </Text>
               <input
                 type='password'
                 placeholder='Password'
@@ -100,15 +100,15 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                 className={inputStyles}
               />
               {isLockedOut && (
-                <p className='text-error text-sm text-center' role='alert'>
+                <Text variant='error' className='text-center' role='alert'>
                   Too many attempts. Try again in{' '}
                   {formatCountdown(lockoutSeconds)}.
-                </p>
+                </Text>
               )}
               {error && !isLockedOut && (
-                <p className='text-error text-sm text-center' role='alert'>
+                <Text variant='error' className='text-center' role='alert'>
                   {error}
-                </p>
+                </Text>
               )}
               <Button
                 type='submit'

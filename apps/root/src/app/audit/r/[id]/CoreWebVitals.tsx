@@ -1,6 +1,6 @@
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 
 interface CoreWebVitalsProps {
   fcpMs: number | null;
@@ -109,11 +109,11 @@ export default function CoreWebVitals({
         <Heading variant='section' as='h2' id='core-web-vitals-heading'>
           Core Web Vitals
         </Heading>
-        <p className='text-xs text-text-secondary mb-4'>
+        <Text variant='detail' className='mb-4'>
           {deviceMode === 'desktop'
             ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'
             : 'Measured under simulated mobile conditions (2x CPU slowdown, 4G network).'}
-        </p>
+        </Text>
         <div className='rounded-lg border border-border bg-surface-elevated p-6'>
           <div className='flex flex-col'>
             {metrics.map((metric, i) => {

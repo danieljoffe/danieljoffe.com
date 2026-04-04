@@ -229,9 +229,9 @@ export default function About() {
                     <Heading variant='cardTitle' as='p'>
                       {company.company}
                     </Heading>
-                    <p className='text-xs text-text-secondary mt-0.5'>
+                    <Text variant='detail' className='mt-0.5'>
                       {company.role}
-                    </p>
+                    </Text>
                   </div>
                   <ChevronRight className='h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors shrink-0' />
                 </Link>
@@ -317,10 +317,10 @@ export default function About() {
             </>
           }
         >
-          <p className='text-xs text-text-tertiary'>
+          <Text variant='meta' as='p'>
             <span className='font-semibold'>Response time:</span> Usually within
             24 hours
-          </p>
+          </Text>
           <ContactForm />
         </CTACard>
       </Section>

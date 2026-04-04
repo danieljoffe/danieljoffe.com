@@ -1,4 +1,4 @@
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 
 const steps = [
   {
@@ -48,9 +48,7 @@ export default function HowItWorks() {
                 <Heading variant='component' as='h3'>
                   {step.title}
                 </Heading>
-                <p className='text-sm text-text-secondary'>
-                  {step.description}
-                </p>
+                <Text variant='body'>{step.description}</Text>
               </div>
             </li>
           ))}

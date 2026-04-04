@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import Button from '@/components/Button';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         </div>
 
         {statsError ? (
-          <p className='text-error text-sm'>{statsError}</p>
+          <Text variant='error'>{statsError}</Text>
         ) : stats ? (
           <StatsRow
             stats={[
