@@ -163,17 +163,3 @@ export function getContentReadingTime(type: ContentType, slug: string): number {
 export function getAllContent(): ContentEntry[] {
   return entries;
 }
-
-/**
- * Registers additional content entries (used by blog and future types).
- * Entries are appended and indexed.
- */
-export function registerContent(newEntries: ContentEntry[]): void {
-  for (const entry of newEntries) {
-    entries.push(entry);
-    byTypeAndSlug.set(`${entry.type}:${entry.slug}`, entry);
-    const list = byType.get(entry.type) ?? [];
-    list.push(entry);
-    byType.set(entry.type, list);
-  }
-}

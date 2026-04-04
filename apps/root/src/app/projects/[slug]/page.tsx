@@ -1,24 +1,23 @@
 import { redirect } from 'next/navigation';
-import { AllowedProjectSlugs, SlugPageProps } from '@/types/base';
+import { SlugPageProps } from '@/types/base';
 import { PROJECTS_LINK } from '@/utils/constants';
-import { projectMdxMetadata } from '@/data/content/projects';
-import { projectPageSlugs } from '@/data/project';
+import { getContentBySlug, getContentSlugs } from '@/data/contentRegistry';
 import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import { getPostDetailProps } from '@/lib/getPostDetailProps';
 import PostDetailLayout from '@/components/PostDetailLayout';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
-  const meta = projectMdxMetadata[slug as AllowedProjectSlugs];
+  const entry = getContentBySlug('project', slug);
 
-  if (!meta) {
+  if (!entry) {
     return {
       title: 'Project Not Found',
       description: 'The requested project page could not be found.',
     };
   }
 
-  return buildPostMetadata(meta);
+  return buildPostMetadata(entry.metadata);
 }
 
 export default async function SlugProjectPage({ params }: SlugPageProps) {
@@ -31,7 +30,7 @@ export default async function SlugProjectPage({ params }: SlugPageProps) {
 }
 
 export function generateStaticParams() {
-  return projectPageSlugs.map(slug => ({ slug }));
+  return getContentSlugs('project').map(slug => ({ slug }));
 }
 
 export const dynamicParams = false;

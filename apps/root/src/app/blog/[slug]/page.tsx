@@ -1,24 +1,23 @@
 import { redirect } from 'next/navigation';
-import { AllowedBlogSlugs, SlugPageProps } from '@/types/base';
+import { SlugPageProps } from '@/types/base';
 import { BLOG_LINK } from '@/utils/constants';
-import { blogMdxMetadata } from '@/data/content/blog';
-import { blogPageSlugs } from '@/data/blog';
+import { getContentBySlug, getContentSlugs } from '@/data/contentRegistry';
 import { buildPostMetadata } from '@/lib/buildPostMetadata';
 import { getPostDetailProps } from '@/lib/getPostDetailProps';
 import PostDetailLayout from '@/components/PostDetailLayout';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
-  const meta = blogMdxMetadata[slug as AllowedBlogSlugs];
+  const entry = getContentBySlug('blog', slug);
 
-  if (!meta) {
+  if (!entry) {
     return {
       title: 'Blog Post Not Found',
       description: 'The requested blog post could not be found.',
     };
   }
 
-  return buildPostMetadata(meta);
+  return buildPostMetadata(entry.metadata);
 }
 
 export default async function SlugBlogPage({ params }: SlugPageProps) {
@@ -31,7 +30,7 @@ export default async function SlugBlogPage({ params }: SlugPageProps) {
 }
 
 export function generateStaticParams() {
-  return blogPageSlugs.map(slug => ({ slug }));
+  return getContentSlugs('blog').map(slug => ({ slug }));
 }
 
 export const dynamicParams = false;

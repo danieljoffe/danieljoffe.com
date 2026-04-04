@@ -85,6 +85,7 @@ app/                    # Next.js App Router pages
 ├── home/               # Homepage components (Hero, Achievements, etc.)
 ├── about/              # About page
 ├── audit/              # Audit tool page
+├── blog/               # Blog pages with dynamic [slug] routes
 ├── experience/         # Experience pages with dynamic [slug] routes
 ├── projects/           # Projects pages with dynamic [slug] routes
 ├── services/           # Services page
@@ -92,8 +93,10 @@ app/                    # Next.js App Router pages
 components/             # App-specific React components
 ├── kit/                # Shared UI primitives (Spinner, ErrorAlert, PostPagination, etc.)
 data/                   # Content data and metadata
-├── content/            # MDX content files (projects/, experience/)
-├── contentOrder.ts     # Chronological ordering and prev/next pagination
+├── content/            # MDX content files (projects/, experience/, blog/)
+├── contentRegistry.ts  # Unified content registry (single data access layer)
+├── contentTypeConfig.ts # Per-type config (basePath, label, contentDir)
+├── contentOrder.ts     # Chronological ordering arrays per content type
 ├── metadata/           # Page metadata (SEO, OpenGraph)
 ├── structuredData/     # JSON-LD structured data
 ├── *Thumbnails.ts      # Thumbnail/cover records for content pages
@@ -209,19 +212,39 @@ Page-level SEO metadata is derived automatically from the MDX `metadata` export 
 - **Projects** (`data/content/projects/`): `date` is the git creation date of the file. Query with `git log --diff-filter=A --follow --format="%ai" -- <file> | tail -1`.
 - **Experience** (`data/content/experience/`): `date` is the employment start date (e.g. `2021-11-01` for "November 2021").
 
-### Content Ordering & Pagination
+### Content Registry
 
-Chronological ordering and prev/next pagination are managed in `data/contentOrder.ts`:
+All content access goes through `data/contentRegistry.ts` — the single source of truth for querying content:
+
+```ts
+import { getContentByType, getContentBySlug, getContentSlugs, getContentPagination, getAllContent } from '@/data/contentRegistry';
+
+getContentByType('project')      // All project entries in display order
+getContentBySlug('blog', slug)   // Single entry by type + slug
+getContentSlugs('experience')    // All slugs (for generateStaticParams)
+getContentPagination('blog', s)  // { prev, next } pagination links
+getAllContent()                   // Every entry across all types
+```
+
+Each entry contains: `slug`, `type`, `thumbnail`, `component`, `metadata`, `structuredData`, `readingTime`.
+
+**Detail pages** use `getPostDetailProps(type, slug)` from `lib/getPostDetailProps.ts` + `PostDetailLayout` — a ~35-line pattern shared by all content types.
+
+**Listing pages** use `getContentByType(type)` and map entries to `PostCard` props.
+
+### Content Ordering
+
+Chronological ordering arrays live in `data/contentOrder.ts`:
 
 - **`projectHistory`**: Ordered by git creation date; entries sharing the same date are sub-sorted by the chronology of the work they describe. New projects must be inserted in the correct position.
 - **`experienceHistory`**: Ordered by employment start date (earliest first). New entries must be inserted chronologically.
-- **`getProjectPagination(slug)`** / **`getExperiencePagination(slug)`**: Return `{ prev, next }` links for a given slug.
+- **`blogHistory`**: Ordered by publish date (earliest first).
 
-When adding a new post:
+### Adding a New Post
 
 1. Create the `.mdx` file with an `export const metadata` block (see format above).
-2. Add the slug constant to `data/project.ts` or `data/experience.ts`.
-3. Add the thumbnail record to `projectThumbnails.ts` or `experienceThumbnails.ts`.
+2. Add the slug constant to `data/project.ts`, `data/experience.ts`, or `data/blog.ts`.
+3. Add the thumbnail record to `projectThumbnails.ts`, `experienceThumbnails.ts`, or `blogThumbnails.ts`.
 4. Import the MDX component **and metadata** in the corresponding `data/content/*/index.ts`.
 5. Insert the slug into the correct position in `contentOrder.ts`.
 6. Add structured data in `data/structuredData/`. (Page metadata is auto-generated from the MDX `metadata` export.)

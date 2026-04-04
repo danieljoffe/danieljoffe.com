@@ -1,12 +1,6 @@
 import { DOMAIN_URL, FULL_NAME } from '@/utils/constants';
-import { projectMdxMetadata } from '@/data/content/projects';
-import { experienceMdxMetadata } from '@/data/content/experience';
-import { blogMdxMetadata } from '@/data/content/blog';
-import {
-  projectHistory,
-  experienceHistory,
-  blogHistory,
-} from '@/data/contentOrder';
+import { getAllContent } from '@/data/contentRegistry';
+import { contentTypeConfigs } from '@/data/contentTypeConfig';
 
 function escapeXml(str: string): string {
   return str
@@ -27,56 +21,22 @@ interface FeedItem {
 }
 
 function buildFeedItems(): FeedItem[] {
-  const items: FeedItem[] = [];
-
-  // Projects — use contentOrder for chronological ordering
-  for (const slug of projectHistory) {
-    const meta = projectMdxMetadata[slug];
-    if (!meta) continue;
-    items.push({
-      title: meta.title,
-      link: `${DOMAIN_URL}/projects/${slug}`,
-      description: meta.excerpt,
-      pubDate: new Date(meta.date).toUTCString(),
-      author: meta.author,
-      category: meta.category,
-    });
-  }
-
-  // Experience
-  for (const slug of experienceHistory) {
-    const meta = experienceMdxMetadata[slug];
-    if (!meta) continue;
-    items.push({
-      title: meta.title,
-      link: `${DOMAIN_URL}/experience/${slug}`,
-      description: meta.excerpt,
-      pubDate: new Date(meta.date).toUTCString(),
-      author: meta.author,
-      category: meta.category,
-    });
-  }
-
-  // Blog
-  for (const slug of blogHistory) {
-    const meta = blogMdxMetadata[slug];
-    if (!meta) continue;
-    items.push({
-      title: meta.title,
-      link: `${DOMAIN_URL}/blog/${slug}`,
-      description: meta.excerpt,
-      pubDate: new Date(meta.date).toUTCString(),
-      author: meta.author,
-      category: meta.category,
-    });
-  }
-
-  // Sort newest first
-  items.sort(
-    (a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()
-  );
-
-  return items;
+  return getAllContent()
+    .map(entry => {
+      const config = contentTypeConfigs[entry.type];
+      const meta = entry.metadata;
+      return {
+        title: meta.title,
+        link: `${DOMAIN_URL}${config.basePath}/${entry.slug}`,
+        description: meta.excerpt,
+        pubDate: new Date(meta.date).toUTCString(),
+        author: meta.author,
+        category: meta.category,
+      };
+    })
+    .sort(
+      (a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()
+    );
 }
 
 function buildRssXml(items: FeedItem[]): string {

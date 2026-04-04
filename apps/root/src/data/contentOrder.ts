@@ -1,16 +1,7 @@
-import {
-  AllowedProjectSlugs,
-  AllowedExperienceSlugs,
-  AllowedBlogSlugs,
-  NavLink,
-} from '@/types/base';
+import { AllowedProjectSlugs, AllowedExperienceSlugs, AllowedBlogSlugs } from '@/types/base';
 import { projectSlugs } from '@/data/project';
 import { experienceSlugs } from '@/data/experience';
 import { blogSlugs } from '@/data/blog';
-import { PROJECTS_LINK, EXPERIENCE_LINK, BLOG_LINK } from '@/utils/constants';
-import { projectsRecords } from '@/data/projectThumbnails';
-import { experienceRecords } from '@/data/experienceThumbnails';
-import { blogRecords } from '@/data/blogThumbnails';
 
 export interface PaginationLink {
   slug: string;
@@ -63,62 +54,9 @@ export const experienceHistory: AllowedExperienceSlugs[] = [
   experienceSlugs.SD, // Jan 2023
 ];
 
-function buildPaginationData(
-  slug: string,
-  orderedSlugs: readonly string[],
-  records: Record<string, { title: string }>,
-  basePath: NavLink
-): PostPaginationData {
-  const index = orderedSlugs.indexOf(slug);
-
-  const len = orderedSlugs.length;
-  const prevIndex = (index - 1 + len) % len;
-  const nextIndex = (index + 1) % len;
-
-  const prev = {
-    slug: orderedSlugs[prevIndex],
-    title: records[orderedSlugs[prevIndex]].title,
-    href: `${basePath.href}/${orderedSlugs[prevIndex]}`,
-  };
-
-  const next = {
-    slug: orderedSlugs[nextIndex],
-    title: records[orderedSlugs[nextIndex]].title,
-    href: `${basePath.href}/${orderedSlugs[nextIndex]}`,
-  };
-
-  return { prev, next };
-}
-
-export function getProjectPagination(
-  slug: AllowedProjectSlugs
-): PostPaginationData {
-  return buildPaginationData(
-    slug,
-    projectHistory,
-    projectsRecords,
-    PROJECTS_LINK
-  );
-}
-
-export function getExperiencePagination(
-  slug: AllowedExperienceSlugs
-): PostPaginationData {
-  return buildPaginationData(
-    slug,
-    experienceHistory,
-    experienceRecords,
-    EXPERIENCE_LINK
-  );
-}
-
 /**
  * Blog history in chronological order (by publish date).
  */
 export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.unifiedContentPipeline, // 2026-04-03
 ];
-
-export function getBlogPagination(slug: AllowedBlogSlugs): PostPaginationData {
-  return buildPaginationData(slug, blogHistory, blogRecords, BLOG_LINK);
-}

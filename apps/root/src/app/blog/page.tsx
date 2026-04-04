@@ -1,10 +1,8 @@
 import { Metadata } from 'next';
 import { PenLine } from 'lucide-react';
-import { blogRecords } from '@/data/blogThumbnails';
-import { blogReadingTimes } from '@/data/readingTimes';
+import { getContentByType } from '@/data/contentRegistry';
 import { blogRootMetadata } from '@/data/metadata/blog';
 import { blogRootStructuredData } from '@/data/structuredData/blog';
-import { AllowedBlogSlugs } from '@/types/base';
 import {
   Section,
   SectionLabel,
@@ -13,11 +11,11 @@ import {
   StructuredData,
 } from '@/components/kit';
 
-const blogList = Object.values(blogRecords)
+const blogList = getContentByType('blog')
   .reverse()
-  .map(post => ({
-    ...post,
-    readingTime: blogReadingTimes[post.slug as AllowedBlogSlugs],
+  .map(entry => ({
+    ...entry.thumbnail,
+    readingTime: entry.readingTime,
   }));
 
 export const metadata: Metadata = blogRootMetadata;
