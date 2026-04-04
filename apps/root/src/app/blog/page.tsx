@@ -9,6 +9,8 @@ import {
   PageLayout,
   PostCard,
   StructuredData,
+  Heading,
+  Text,
 } from '@/components/kit';
 
 const blogList = getContentByType('blog')
@@ -25,13 +27,11 @@ export default function Blog() {
     <PageLayout>
       <Section>
         <div className='text-center space-y-4'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Blog
-          </h1>
-          <p className='text-lg text-text-secondary max-w-xl mx-auto'>
+          <Heading variant='hero'>Blog</Heading>
+          <Text variant='subtitle' className='max-w-xl mx-auto'>
             Technical deep-dives, opinions on frontend trends, tutorials, and
             lessons learned.
-          </p>
+          </Text>
         </div>
       </Section>
 

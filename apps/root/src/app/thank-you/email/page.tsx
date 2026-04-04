@@ -1,6 +1,5 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-
 import type { Metadata } from 'next';
 import { ABOUT_LINK, HOME_LINK } from '@/utils/constants';
 import Button from '@/components/Button';

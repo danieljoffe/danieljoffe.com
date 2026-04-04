@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidUuid } from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { verifyLeadToken } from '@/lib/email/tokens';
-import { isValidUuid } from '@danieljoffe.com/shared-audit';
 import { captureApiError } from '@/lib/errorTracking';
 
 export async function GET(request: NextRequest) {

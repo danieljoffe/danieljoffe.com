@@ -1,5 +1,4 @@
 import { MetadataRoute } from 'next';
-
 import {
   DOMAIN_URL,
   ABOUT_LINK,

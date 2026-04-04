@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { cn } from '@/lib/cn';
-import { cardBase } from '@/lib/layoutStyles';
 import {
   User,
   Code2,
@@ -17,6 +15,9 @@ import {
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui';
+import { cn } from '@/lib/cn';
+import { cardBase } from '@/lib/layoutStyles';
 import { aboutMetadata } from '@/data/metadata/about';
 import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
@@ -27,10 +28,11 @@ import {
   PageLayout,
   CTACard,
   CompanyLogo,
+  Heading,
+  Text,
 } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
-import ClientBadge from '@/components/ClientBadge';
 
 export const metadata: Metadata = aboutMetadata;
 
@@ -76,9 +78,7 @@ export default function About() {
       <Section>
         <SectionLabel icon={<User className='h-3.5 w-3.5' />} label='About' />
         <div className='space-y-6'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Building Without Friction
-          </h1>
+          <Heading variant='hero'>Building Without Friction</Heading>
 
           <div className='flex flex-col sm:flex-row gap-6 sm:gap-8'>
             <Image
@@ -98,20 +98,20 @@ export default function About() {
                 <br />
                 <span className='text-text-tertiary'>{JOB_TITLE}</span>
               </p>
-              <p className='text-base text-text-secondary leading-relaxed'>
+              <Text variant='bodyLg'>
                 I specialize in building fast, accessible interfaces and
                 scalable design systems that empower teams and delight users.
-              </p>
-              <p className='text-base text-text-secondary leading-relaxed'>
+              </Text>
+              <Text variant='bodyLg'>
                 For over 8 years, I&apos;ve focused on one thing: removing
                 friction. Simplifying complex systems, streamlining workflows,
                 and helping teams turn whiteboard ideas into real-world
                 solutions, faster, with less effort.
-              </p>
-              <p className='text-base text-text-secondary leading-relaxed'>
+              </Text>
+              <Text variant='bodyLg'>
                 Explore my journey below, and let&apos;s discuss how I can help
                 your team.
-              </p>
+              </Text>
               <SocialLinks />
             </div>
           </div>
@@ -129,14 +129,14 @@ export default function About() {
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {expertiseCategories.map(category => (
             <div key={category.label} className={cn(cardBase, 'p-4')}>
-              <p className='text-sm font-semibold text-text-primary mb-3'>
+              <Heading variant='cardTitle' as='p' className='mb-3'>
                 {category.label}
-              </p>
+              </Heading>
               <div className='flex flex-wrap gap-1.5'>
                 {category.skills.map(skill => (
-                  <ClientBadge key={skill} variant='info'>
+                  <Badge key={skill} variant='info'>
                     {skill}
-                  </ClientBadge>
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -153,11 +153,11 @@ export default function About() {
           label='Career Timeline'
         />
         <div className='space-y-6'>
-          <p className='text-base text-text-secondary leading-relaxed'>
+          <Text variant='bodyLg'>
             My journey began in frontend development, but I&apos;ve evolved into
             a technical leader who bridges the gap between engineering and
             business teams.
-          </p>
+          </Text>
 
           {/* Timeline images */}
           <div className='flex md:hidden w-full'>
@@ -226,9 +226,9 @@ export default function About() {
                     size='lg'
                   />
                   <div className='flex-1 min-w-0'>
-                    <p className='text-sm font-semibold text-text-primary'>
+                    <Heading variant='cardTitle' as='p'>
                       {company.company}
-                    </p>
+                    </Heading>
                     <p className='text-xs text-text-secondary mt-0.5'>
                       {company.role}
                     </p>
@@ -247,11 +247,11 @@ export default function About() {
       <Section>
         <SectionLabel icon={<Heart className='h-3.5 w-3.5' />} label='Mantra' />
         <div className='space-y-6'>
-          <p className='text-base text-text-secondary leading-relaxed'>
+          <Text variant='bodyLg'>
             I thrive at the intersection of technical and business teams —
             simplifying complex systems, removing friction, and investing in the
             people around me. When teams succeed, products succeed.
-          </p>
+          </Text>
 
           <div className='space-y-1'>
             {mantraItems.map(({ company, description, icon: Icon }, i) => (
@@ -279,23 +279,23 @@ export default function About() {
                 <div>
                   <div className='flex items-center gap-2'>
                     <Icon className='h-4 w-4 text-brand-500' />
-                    <p className='text-sm font-semibold text-text-primary'>
+                    <Heading variant='cardTitle' as='p'>
                       {company}
-                    </p>
+                    </Heading>
                   </div>
-                  <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                  <Text variant='body' className='mt-1'>
                     {description}
-                  </p>
+                  </Text>
                 </div>
               </div>
             ))}
           </div>
 
-          <p className='text-base text-text-secondary leading-relaxed'>
+          <Text variant='bodyLg'>
             What&apos;s remained constant is my focus on removing bottlenecks,
             empowering teams, and driving measurable business impact through
             thoughtful technical solutions.
-          </p>
+          </Text>
         </div>
       </Section>
 

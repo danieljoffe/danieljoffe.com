@@ -1,7 +1,7 @@
-import { useModal } from '@/state/Modal/ModalProvider';
-import Button from '@/components/Button';
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { useModal } from '@/state/Modal/ModalProvider';
+import Button from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Z_INDEX, ANIMATION_DURATION } from '@/utils/constants';
 

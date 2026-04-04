@@ -2,6 +2,12 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
+import {
+  validateFormData,
+  sendEmail,
+  requestFromSource,
+  rateLimit,
+} from './helpers';
 import { formSchema } from './schema';
 
 const mockSend = jest.fn();
@@ -25,13 +31,6 @@ jest.mock('@/utils/helpers', () => ({
 jest.mock('@/lib/public.env', () => ({
   publicEnv: { NEXT_PUBLIC_NODE_ENV: 'test' },
 }));
-
-import {
-  validateFormData,
-  sendEmail,
-  requestFromSource,
-  rateLimit,
-} from './helpers';
 
 describe('validateFormData', () => {
   const validData = {

@@ -10,6 +10,8 @@ import {
   PageLayout,
   PostCard,
   StructuredData,
+  Heading,
+  Text,
 } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 
@@ -29,14 +31,12 @@ export default function Projects() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Projects
-          </h1>
-          <p className='text-lg text-text-secondary max-w-xl mx-auto'>
+          <Heading variant='hero'>Projects</Heading>
+          <Text variant='subtitle' className='max-w-xl mx-auto'>
             Case studies and projects spanning full-stack development, backend
             architecture, and frontend systems. Each project includes the
             challenge, my approach, and measurable outcomes.
-          </p>
+          </Text>
         </div>
       </Section>
 

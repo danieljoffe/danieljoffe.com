@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
+import { POST } from './route';
 
 const mockRateLimit = jest.fn();
 const mockRequestFromSource = jest.fn();
@@ -26,8 +27,6 @@ jest.mock('@/utils/constants', () => ({
 jest.mock('@/lib/errorTracking', () => ({
   captureApiError: jest.fn(),
 }));
-
-import { POST } from './route';
 
 function makeRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest('https://danieljoffe.com/api/email/contact', {

@@ -1,3 +1,4 @@
+import { NextRequest, NextResponse } from 'next/server';
 import {
   allowedOrigins,
   allowedImageOrigins,
@@ -6,7 +7,6 @@ import {
   STORYBOOK_URL,
   CALENDLY_EMBED_URL,
 } from '@/utils/constants';
-import { NextRequest, NextResponse } from 'next/server';
 import { isProduction } from '@/utils/helpers';
 
 export function proxy(request: NextRequest) {

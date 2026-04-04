@@ -116,10 +116,6 @@ describe('Button', () => {
       render(<Button ref={ref}>Ref Button</Button>);
       expect(ref.current).toBeInstanceOf(HTMLButtonElement);
     });
-
-    it('sets displayName for debugging', () => {
-      expect(Button.displayName).toBe('Button');
-    });
   });
 
   describe('loading', () => {

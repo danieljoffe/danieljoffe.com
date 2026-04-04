@@ -19,6 +19,8 @@ export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 export { Checkbox } from './Checkbox';
 export { Container } from './Container';
 export { Divider } from './Divider';
+export { Heading } from './Heading';
+export { Text } from './Text';
 export { Dropdown } from './Dropdown';
 export { PageContainer } from './PageContainer';
 export { Grid, GridItem } from './Grid';
@@ -63,6 +65,8 @@ export type {
 export type { CheckboxProps } from './Checkbox';
 export type { ContainerProps } from './Container';
 export type { DividerProps } from './Divider';
+export type { HeadingProps, HeadingVariant } from './Heading';
+export type { TextProps, TextVariant } from './Text';
 export type { DropdownItem, DropdownProps } from './Dropdown';
 export type { PageContainerProps } from './PageContainer';
 export type { GridProps, GridItemProps } from './Grid';
