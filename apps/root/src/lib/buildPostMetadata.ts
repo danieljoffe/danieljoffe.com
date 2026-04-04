@@ -1,20 +1,16 @@
 import { Metadata } from 'next';
-import { PostMetadata } from '@/types/postTypes';
-import {
-  DOMAIN_URL,
-  FULL_NAME,
-  PROJECTS_LINK,
-  EXPERIENCE_LINK,
-} from '@/utils/constants';
+import { ContentType, PostMetadata } from '@/types/postTypes';
+import { contentTypeConfigs } from '@/data/contentTypeConfig';
+import { DOMAIN_URL, FULL_NAME, PROJECTS_LINK } from '@/utils/constants';
 
 /**
  * Builds a full Next.js Metadata object from an MDX post's metadata export.
  * Centralises the boilerplate so each page only needs a one-liner.
  */
 export function buildPostMetadata(meta: PostMetadata): Metadata {
-  const basePath =
-    meta.type === 'project' ? PROJECTS_LINK.href : EXPERIENCE_LINK.href;
-  const label = meta.type === 'project' ? 'Project' : 'Experience';
+  const config = contentTypeConfigs[meta.type as ContentType];
+  const basePath = config?.basePath ?? PROJECTS_LINK.href;
+  const label = config?.label ?? 'Post';
   const pageTitle = `${label} | ${meta.title}`;
   const url = `${DOMAIN_URL}${basePath}/${meta.slug}`;
 

@@ -11,7 +11,7 @@ import {
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
 import { experienceFull } from '@/data/experience';
-import { projectsRecords } from '@/data/projectThumbnails';
+import { getContentByType } from '@/data/contentRegistry';
 import {
   FULL_NAME,
   JOB_TITLE,
@@ -37,7 +37,9 @@ import HeroActions from './home/HeroActions';
 export const metadata: Metadata = homeMetadata;
 
 const companies = Object.values(experienceFull);
-const featuredProjects = Object.values(projectsRecords).filter(p => p.featured);
+const featuredProjects = getContentByType('project')
+  .filter(e => e.thumbnail.featured)
+  .map(e => e.thumbnail);
 
 export default function Index() {
   return (
@@ -143,11 +145,16 @@ export default function Index() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {featuredProjects.map((project, i) => (
-            <PostCard key={project.slug} post={project} priority={i === 0} />
+            <PostCard key={project.slug} post={project} priority={i < 3} />
           ))}
         </div>
         <div className='flex justify-center pt-4'>
-          <Button as='link' href={PROJECTS_LINK.href} variant='secondary' size='sm'>
+          <Button
+            as='link'
+            href={PROJECTS_LINK.href}
+            variant='secondary'
+            size='sm'
+          >
             View all projects
             <ArrowUpRight className='h-4 w-4' />
           </Button>

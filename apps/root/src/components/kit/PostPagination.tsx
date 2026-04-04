@@ -11,7 +11,7 @@ export function PostPagination({ pagination }: PostPaginationProps) {
   return (
     <nav
       aria-label='Post navigation'
-      className='flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mt-10 pt-8 border-t border-border'
+      className='flex justify-between items-stretch sm:items-center gap-4 mt-10 pt-8 border-t border-border'
     >
       <Button
         as='link'

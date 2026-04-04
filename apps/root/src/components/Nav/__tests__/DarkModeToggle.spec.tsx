@@ -41,7 +41,7 @@ describe('DarkModeToggle', () => {
   test('renders radiogroup with Theme label', () => {
     render(<DarkModeToggle />);
     expect(
-      screen.getByRole('radiogroup', { name: 'Theme' })
+      screen.getByRole('radiogroup', { name: /theme/i })
     ).toBeInTheDocument();
   });
 

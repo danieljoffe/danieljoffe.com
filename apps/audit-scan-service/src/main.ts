@@ -44,11 +44,11 @@ async function executeScan({ scan_id, url, device }: ScanJob) {
 
     const issues = parseIssues(results.lighthouse, results.axe);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const categories = (results.lighthouse as any)['categories'] as Record<
-      string,
-      { score?: number }
-    >;
+    const categories = (
+      results.lighthouse as unknown as {
+        categories: Record<string, { score?: number }>;
+      }
+    ).categories;
     const scores = {
       performance: Math.round((categories['performance']?.score ?? 0) * 100),
       accessibility: Math.round(
@@ -62,11 +62,11 @@ async function executeScan({ scan_id, url, device }: ScanJob) {
 
     const grade = calculateGrade(scores);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const audits = (results.lighthouse as any)['audits'] as Record<
-      string,
-      { numericValue?: number }
-    >;
+    const audits = (
+      results.lighthouse as unknown as {
+        audits: Record<string, { numericValue?: number }>;
+      }
+    ).audits;
     const fcp = audits['first-contentful-paint']?.numericValue ?? null;
     const lcp = audits['largest-contentful-paint']?.numericValue ?? null;
     const tbt = audits['total-blocking-time']?.numericValue ?? null;

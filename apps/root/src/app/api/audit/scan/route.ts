@@ -24,7 +24,6 @@ function fireScan(
   serviceUrl: string,
   apiKey: string,
   payload: { scan_id: string; url: string; device_mode: string },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any
 ) {
   fetch(`${serviceUrl}/run-scan`, {

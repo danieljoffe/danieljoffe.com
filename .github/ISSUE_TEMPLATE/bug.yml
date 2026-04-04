@@ -1,6 +1,6 @@
 name: Bug
 description: A bug report that Claude Code can pick up and fix autonomously.
-labels: ["bug"]
+labels: ['bug']
 body:
   - type: textarea
     id: summary

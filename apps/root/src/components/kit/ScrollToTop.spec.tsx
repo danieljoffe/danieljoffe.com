@@ -22,19 +22,19 @@ describe('ScrollToTop', () => {
   test('renders a button with accessible label', () => {
     render(<ScrollToTop />);
     expect(
-      screen.getByRole('button', { name: 'Scroll to top' })
+      screen.getByRole('button', { name: /scroll to top/i })
     ).toBeInTheDocument();
   });
 
   test('is hidden by default (below threshold)', () => {
     render(<ScrollToTop />);
-    const button = screen.getByRole('button', { name: 'Scroll to top' });
+    const button = screen.getByRole('button', { name: /scroll to top/i });
     expect(button).toHaveClass('opacity-0', 'pointer-events-none');
   });
 
   test('becomes visible after scrolling past threshold', () => {
     render(<ScrollToTop />);
-    const button = screen.getByRole('button', { name: 'Scroll to top' });
+    const button = screen.getByRole('button', { name: /scroll to top/i });
 
     act(() => {
       Object.defineProperty(window, 'scrollY', { value: 400, writable: true });
@@ -47,7 +47,7 @@ describe('ScrollToTop', () => {
 
   test('hides again when scrolling back above threshold', () => {
     render(<ScrollToTop />);
-    const button = screen.getByRole('button', { name: 'Scroll to top' });
+    const button = screen.getByRole('button', { name: /scroll to top/i });
 
     act(() => {
       Object.defineProperty(window, 'scrollY', { value: 400, writable: true });
@@ -64,7 +64,7 @@ describe('ScrollToTop', () => {
 
   test('calls window.scrollTo with smooth behavior on click', () => {
     render(<ScrollToTop />);
-    const button = screen.getByRole('button', { name: 'Scroll to top' });
+    const button = screen.getByRole('button', { name: /scroll to top/i });
 
     act(() => {
       Object.defineProperty(window, 'scrollY', { value: 400, writable: true });

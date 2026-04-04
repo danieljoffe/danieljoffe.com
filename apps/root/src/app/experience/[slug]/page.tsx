@@ -1,79 +1,36 @@
 import { redirect } from 'next/navigation';
-import { AllowedExperienceSlugs, NavLink, SlugPageProps } from '@/types/base';
+import { SlugPageProps } from '@/types/base';
 import { EXPERIENCE_LINK } from '@/utils/constants';
-import { experienceRecords } from '@/data/experienceThumbnails';
-import {
-  experienceMdxComponents,
-  experienceMdxMetadata,
-} from '@/data/content/experience';
-import { experiencePageSlugs } from '@/data/experience';
-import { experienceStructuredData } from '@/data/structuredData/experience';
-import { getExperiencePagination } from '@/data/contentOrder';
-import { experienceReadingTimes } from '@/data/readingTimes';
+import { getContentBySlug, getContentSlugs } from '@/data/contentRegistry';
 import { buildPostMetadata } from '@/lib/buildPostMetadata';
-import PostBody from '@/components/PostBody';
-import { PostPagination } from '@/components/kit';
+import { getPostDetailProps } from '@/lib/getPostDetailProps';
+import PostDetailLayout from '@/components/PostDetailLayout';
 
 export async function generateMetadata({ params }: SlugPageProps) {
   const { slug } = await params;
-  const meta = experienceMdxMetadata[slug as AllowedExperienceSlugs];
+  const entry = getContentBySlug('experience', slug);
 
-  if (!meta) {
+  if (!entry) {
     return {
       title: 'Work Experience Not Found',
       description: 'The requested work experience could not be found.',
     };
   }
 
-  return buildPostMetadata(meta);
+  return buildPostMetadata(entry.metadata);
 }
 
 export default async function SlugExperiencePage({ params }: SlugPageProps) {
   const { slug } = (await params) ?? {};
 
-  const Post = experienceMdxComponents[slug as AllowedExperienceSlugs];
-  const record = experienceRecords[slug as AllowedExperienceSlugs];
+  const props = getPostDetailProps('experience', slug);
+  if (!props) return redirect(EXPERIENCE_LINK.href);
 
-  if (!record || !Post) return redirect(EXPERIENCE_LINK.href);
-
-  const structuredData =
-    experienceStructuredData[slug as AllowedExperienceSlugs];
-  const pagination = getExperiencePagination(slug as AllowedExperienceSlugs);
-  const readingTime = experienceReadingTimes[slug as AllowedExperienceSlugs];
-
-  const breadcrumbs: NavLink[] = [
-    EXPERIENCE_LINK,
-    {
-      href: `${EXPERIENCE_LINK.href}/${slug}`,
-      label: record.title,
-    },
-  ];
-
-  return (
-    <section className='w-full overflow-hidden flex flex-col justify-center'>
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <PostBody cover={record.cover} breadcrumbs={breadcrumbs}>
-          <article className='max-w-3xl mx-auto py-10 lg:py-16'>
-            <div className='flex items-center gap-1.5 text-xs text-text-tertiary mb-6'>
-              <span>{readingTime} min read</span>
-            </div>
-            <Post />
-          </article>
-          <PostPagination pagination={pagination} />
-        </PostBody>
-      </div>
-      <script
-        type='application/ld+json'
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
-        }}
-      />
-    </section>
-  );
+  return <PostDetailLayout {...props} />;
 }
 
 export function generateStaticParams() {
-  return experiencePageSlugs.map(slug => ({ slug }));
+  return getContentSlugs('experience').map(slug => ({ slug }));
 }
 
 export const dynamicParams = false;

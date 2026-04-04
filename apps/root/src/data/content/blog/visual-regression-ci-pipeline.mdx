@@ -1,0 +1,174 @@
+export const metadata = {
+  title: 'Automating Visual Regression Testing in GitHub Actions',
+  date: '2026-04-04',
+  excerpt:
+    'How I built a CI pipeline that catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT — turning snapshot maintenance from a chore into a one-click operation.',
+  author: 'Daniel Joffe',
+  category: 'DevOps',
+  tags: [
+    'GitHub Actions',
+    'Playwright',
+    'Visual Regression',
+    'CI/CD',
+    'E2E Testing',
+  ],
+  slug: 'visual-regression-ci-pipeline',
+  type: 'blog',
+  topic: 'DevOps',
+};
+
+## The Problem
+
+Every UI change on this portfolio — a new section label, a font size tweak, a
+layout restructure — risks unintended visual side effects on other pages. Manual
+visual QA doesn't scale, especially when a single PR might touch shared
+components used across dozens of routes.
+
+I needed a pipeline that:
+
+1. **Catches visual regressions automatically** on every PR
+2. **Updates baselines with one click** when changes are intentional
+3. **Re-runs CI automatically** after baseline updates (no manual re-trigger)
+4. **Works with Nx affected** so only changed projects get tested
+
+## The Architecture
+
+The pipeline has two jobs in a single workflow file, toggled by a
+`workflow_dispatch` input:
+
+```yaml
+on:
+  pull_request:
+    branches-ignore: [main]
+  workflow_dispatch:
+    inputs:
+      update-snapshots:
+        description: 'Regenerate VR baselines'
+        type: boolean
+        default: false
+      snapshot-branch:
+        description: 'Branch to update snapshots on'
+        type: string
+```
+
+**Normal CI** (`update-snapshots: false`): Runs lint, typecheck, unit tests,
+build, and E2E tests including visual regression. If screenshots don't match
+baselines, Playwright fails the job.
+
+**Snapshot update** (`update-snapshots: true`): Skips normal CI entirely. Builds
+the app, regenerates all Playwright screenshots with `--update-snapshots`,
+commits them to the branch, and pushes.
+
+## The PAT Token Trick
+
+Here's the subtle part. GitHub Actions commits made with `GITHUB_TOKEN` don't
+trigger subsequent workflow runs — this is a security feature to prevent infinite
+loops. But it also means that after the snapshot job commits updated baselines,
+CI wouldn't re-run to verify them.
+
+The fix: check out the repo with a Personal Access Token (PAT) instead:
+
+```yaml
+update-snapshots:
+  permissions:
+    contents: write
+  steps:
+    - uses: actions/checkout@v5
+      with:
+        ref: ${{ inputs.snapshot-branch || github.ref }}
+        token: ${{ secrets.PAT_TOKEN }}
+```
+
+When the snapshot job pushes using the PAT, GitHub sees it as a "real" push (not
+a bot push) and triggers the CI workflow on the updated branch. The cycle
+completes:
+
+1. PR opened → CI runs → E2E fails (screenshot mismatch)
+2. Developer triggers `update-snapshots` workflow dispatch
+3. Snapshots regenerated → committed → pushed with PAT
+4. Push triggers CI → E2E passes → PR is green
+
+## Concurrency Control
+
+Without concurrency groups, the snapshot push in step 3 could trigger a _new_ CI
+run while the old (failed) one is still queued for retry. This leads to wasted
+runner minutes and confusing status checks.
+
+```yaml
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+```
+
+The concurrency key ensures only one CI run per PR is active. When the snapshot
+push triggers a new run, any in-progress run for the same PR is cancelled
+automatically.
+
+## Playwright Configuration
+
+Visual regression tests run only on Chromium in CI (all browsers + mobile
+locally). Screenshots are stored alongside the test file:
+
+```
+apps/root-e2e/src/
+├── visual-regression.spec.ts
+└── visual-regression.spec.ts-snapshots/
+    ├── about-chromium-linux.png
+    ├── experience-detail-chromium-linux.png
+    ├── project-detail-chromium-linux.png
+    └── projects-listing-chromium-linux.png
+```
+
+The snapshots are committed to the repo — not stored as artifacts — so
+developers can review visual diffs in the PR itself using GitHub's image
+comparison tools.
+
+## Nx Integration
+
+The CI pipeline uses `nx affected` to only test projects that changed:
+
+```yaml
+- name: Run affected tasks
+  run: yarn nx affected -t lint test build typecheck --nxBail
+
+- name: Run e2e tests
+  run: yarn nx affected -t e2e --nxBail
+```
+
+If a PR only touches the audit service, E2E tests for the root app are skipped
+entirely. But if shared UI components change, both the root app and its E2E suite
+are marked as affected, ensuring visual regression tests run when they matter.
+
+## The Commit-and-Push Step
+
+The snapshot update job is careful about empty commits:
+
+```bash
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
+git add apps/root-e2e/src/visual-regression.spec.ts-snapshots/
+
+if git diff --cached --quiet; then
+  echo "No snapshot changes to commit"
+else
+  git commit -m "chore(e2e): update visual regression snapshots from CI"
+  git push
+fi
+```
+
+If the snapshots haven't actually changed (maybe the test was flaky, or the
+developer already updated them locally), no commit is created. This prevents
+noise in the git history.
+
+## Results
+
+- **One-click baseline updates** — no local Playwright install needed
+- **Automatic CI re-verification** — PAT-based push triggers a fresh run
+- **Zero wasted runner time** — concurrency groups cancel stale jobs
+- **Git-tracked baselines** — visual diffs reviewable in PR
+- **Nx-aware** — E2E only runs when the app is actually affected
+
+The pipeline has caught several regressions already: a `max-w-3xl` that should
+have been `max-w-5xl`, an `overflow-hidden` clipping content, and a SectionLabel
+addition that shifted card layouts. Each was caught before merge, fixed in the
+same PR, and verified automatically.

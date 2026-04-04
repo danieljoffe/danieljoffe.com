@@ -1,6 +1,7 @@
 import { type experiencePageSlugs } from '@/data/experience';
 import { type projectPageSlugs } from '@/data/project';
-import { Blog, Corporation, Person, Role } from 'schema-dts';
+import { type blogPageSlugs } from '@/data/blog';
+import { Article, Blog, Corporation, Person, Role } from 'schema-dts';
 
 export type WithChildren = {
   children: React.ReactNode;
@@ -32,3 +33,9 @@ export type ProjectStructuredData = Blog & {
 
 export type AllowedExperienceSlugs = (typeof experiencePageSlugs)[number];
 export type AllowedProjectSlugs = (typeof projectPageSlugs)[number];
+export type AllowedBlogSlugs = (typeof blogPageSlugs)[number];
+
+export type BlogStructuredData = Article & {
+  '@context': 'https://schema.org';
+  author: Person;
+};

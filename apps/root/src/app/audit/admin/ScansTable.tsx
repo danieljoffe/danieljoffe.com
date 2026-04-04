@@ -1,7 +1,8 @@
 'use client';
 
 import { Pagination, Spinner } from '@/components/kit';
-import { badgeVariants } from '@/lib/badgeStyles';
+import ClientBadge from '@/components/ClientBadge';
+import type { BadgeVariant } from '@danieljoffe.com/shared-ui';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 
@@ -29,11 +30,11 @@ type SortColumn =
   | 'grade_overall'
   | 'score_performance';
 
-const statusStyles: Record<string, string> = {
-  completed: badgeVariants.success,
-  failed: badgeVariants.error,
-  running: badgeVariants.warning,
-  default: badgeVariants.default,
+const statusVariants: Record<string, BadgeVariant> = {
+  completed: 'success',
+  failed: 'error',
+  running: 'warning',
+  default: 'default',
 };
 
 export default function ScansTable({ password }: ScansTableProps) {
@@ -52,14 +53,14 @@ export default function ScansTable({ password }: ScansTableProps) {
     dataKey: 'scans',
   });
 
-  const getStatusStyle = (status: string) =>
-    statusStyles[status] || statusStyles.default;
+  const getStatusVariant = (status: string): BadgeVariant =>
+    statusVariants[status] || 'default';
 
-  const getGradeStyle = (grade: string | null) => {
-    if (!grade) return badgeVariants.default;
-    if (grade === 'A' || grade === 'B') return badgeVariants.success;
-    if (grade === 'C') return badgeVariants.warning;
-    return badgeVariants.error;
+  const getGradeVariant = (grade: string | null): BadgeVariant => {
+    if (!grade) return 'default';
+    if (grade === 'A' || grade === 'B') return 'success';
+    if (grade === 'C') return 'warning';
+    return 'error';
   };
 
   return (
@@ -121,22 +122,22 @@ export default function ScansTable({ password }: ScansTableProps) {
                   <td className='py-3 px-3 whitespace-nowrap'>
                     {formatDate(scan.created_at)}
                   </td>
-                  <td className='py-3 px-3 max-w-[200px] truncate'>
-                    {scan.url}
-                  </td>
+                  <td className='py-3 px-3 max-w-50 truncate'>{scan.url}</td>
                   <td className='py-3 px-3'>
                     {scan.grade_overall ? (
-                      <span className={getGradeStyle(scan.grade_overall)}>
+                      <ClientBadge
+                        variant={getGradeVariant(scan.grade_overall)}
+                      >
                         {scan.grade_overall}
-                      </span>
+                      </ClientBadge>
                     ) : (
                       <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <span className={getStatusStyle(scan.status)}>
+                    <ClientBadge variant={getStatusVariant(scan.status)}>
                       {scan.status}
-                    </span>
+                    </ClientBadge>
                   </td>
                   <td className='py-3 px-3'>
                     {scan.has_lead ? (

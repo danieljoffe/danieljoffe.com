@@ -3,10 +3,16 @@
 import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
-import { badgeVariants } from '@/lib/badgeStyles';
-import { PostThumbnail } from '@/types/postTypes';
+import ClientBadge from '@/components/ClientBadge';
+import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
+
+const analyticsHandlers: Record<ContentType, (slug: string) => void> = {
+  project: analytics.projectClick,
+  experience: analytics.experienceClick,
+  blog: analytics.blogClick,
+};
 
 export function PostCard({
   post,
@@ -17,14 +23,10 @@ export function PostCard({
   post: PostThumbnail;
   logo?: string | undefined;
   priority?: boolean;
-  analyticsType?: 'project' | 'experience';
+  analyticsType?: ContentType;
 }) {
   const handleClick = () => {
-    if (analyticsType === 'experience') {
-      analytics.experienceClick(post.slug);
-    } else {
-      analytics.projectClick(post.slug);
-    }
+    analyticsHandlers[analyticsType](post.slug);
   };
 
   return (
@@ -53,7 +55,7 @@ export function PostCard({
           </p>
           <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
         </div>
-        {post.role && <span className={badgeVariants.brand}>{post.role}</span>}
+        {post.role && <ClientBadge variant='brand'>{post.role}</ClientBadge>}
         <p className='text-sm text-text-secondary leading-relaxed line-clamp-2'>
           {post.description}
         </p>

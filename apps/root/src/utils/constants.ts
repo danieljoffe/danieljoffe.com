@@ -109,6 +109,7 @@ export const EXPERIENCE_LINK: NavLink = {
   href: '/experience',
   label: 'Experience',
 };
+export const BLOG_LINK: NavLink = { href: '/blog', label: 'Blog' };
 export const AUDIT_LINK: NavLink = { href: '/audit', label: 'Free Audit' };
 
 export const NAV_LINKS: NavLink[] = [
@@ -117,6 +118,7 @@ export const NAV_LINKS: NavLink[] = [
   SERVICES_LINK,
   EXPERIENCE_LINK,
   PROJECTS_LINK,
+  BLOG_LINK,
 ];
 
 // Form IDs
