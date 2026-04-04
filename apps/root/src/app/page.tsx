@@ -11,7 +11,7 @@ import {
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
 import { experienceFull } from '@/data/experience';
-import { projectsRecords } from '@/data/projectThumbnails';
+import { getContentByType } from '@/data/contentRegistry';
 import {
   FULL_NAME,
   JOB_TITLE,
@@ -37,7 +37,9 @@ import HeroActions from './home/HeroActions';
 export const metadata: Metadata = homeMetadata;
 
 const companies = Object.values(experienceFull);
-const featuredProjects = Object.values(projectsRecords).filter(p => p.featured);
+const featuredProjects = getContentByType('project')
+  .filter(e => e.thumbnail.featured)
+  .map(e => e.thumbnail);
 
 export default function Index() {
   return (
