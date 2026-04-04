@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ABOUT_LINK, HOME_LINK } from '@/utils/constants';
 import Button from '@/components/Button';
+import { Heading } from '@/components/kit';
 
 export const metadata: Metadata = {
   title: 'Thank You - Message Received',
@@ -35,7 +36,9 @@ export default async function ThankYouEmail() {
     <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
       <div className='flex flex-col items-center justify-center gap-4'>
         <div className='flex flex-col gap-2'>
-          <h1 className='text-center'>Thank you for reaching out!</h1>
+          <Heading variant='section' as='h1' className='text-center'>
+            Thank you for reaching out!
+          </Heading>
           <p className='text-lg text-center mb-2'>
             I appreciate you taking the time to reach out.
             <br />

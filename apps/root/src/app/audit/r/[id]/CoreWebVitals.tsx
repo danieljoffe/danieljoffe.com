@@ -1,5 +1,6 @@
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { sectionContainer } from '@/lib/layoutStyles';
+import { Heading } from '@/components/kit';
 
 interface CoreWebVitalsProps {
   fcpMs: number | null;
@@ -105,7 +106,9 @@ export default function CoreWebVitals({
       className={sectionContainer}
     >
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <h2 id='core-web-vitals-heading'>Core Web Vitals</h2>
+        <Heading variant='section' as='h2' id='core-web-vitals-heading'>
+          Core Web Vitals
+        </Heading>
         <p className='text-xs text-text-secondary mb-4'>
           {deviceMode === 'desktop'
             ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'

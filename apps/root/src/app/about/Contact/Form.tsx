@@ -14,7 +14,7 @@ import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
-import { FormFieldError } from '@/components/kit';
+import { FormFieldError, Heading } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -159,9 +159,14 @@ export default function Form() {
       noValidate
     >
       <header>
-        <h3 id='contact-form-heading' className='sr-only'>
+        <Heading
+          variant='component'
+          as='h3'
+          id='contact-form-heading'
+          className='sr-only'
+        >
           Contact Form
-        </h3>
+        </Heading>
       </header>
 
       <fieldset>

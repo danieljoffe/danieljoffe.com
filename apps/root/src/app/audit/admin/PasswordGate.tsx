@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Button from '@/components/Button';
+import { Heading } from '@/components/kit';
 import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {
@@ -81,9 +82,9 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
         <div className='p-6'>
           <form onSubmit={handleSubmit}>
             <div className='flex flex-col gap-4'>
-              <h2 className='text-xl font-semibold text-center'>
+              <Heading variant='component' as='h2' className='text-center'>
                 Admin Dashboard
-              </h2>
+              </Heading>
               <p className='text-text-secondary text-center text-sm'>
                 Enter the admin password to continue.
               </p>

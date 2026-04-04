@@ -1,3 +1,5 @@
+import { Heading } from '@/components/kit';
+
 interface ScoreCardsProps {
   performance: number | null;
   accessibility: number | null;
@@ -46,9 +48,14 @@ export default function ScoreCards({
       className='w-full overflow-hidden flex flex-col justify-center'
     >
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <h2 id='scores-heading' className='sr-only'>
+        <Heading
+          variant='section'
+          as='h2'
+          id='scores-heading'
+          className='sr-only'
+        >
           Scores
-        </h2>
+        </Heading>
         <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
           <ScoreCardItem label='Performance' score={performance} />
           <ScoreCardItem label='Accessibility' score={accessibility} />

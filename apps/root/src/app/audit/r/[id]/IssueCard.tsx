@@ -1,5 +1,6 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui';
+import { Heading } from '@/components/kit';
 
 const severityMap: Record<string, BadgeVariant> = {
   critical: 'error',
@@ -41,7 +42,9 @@ export default function IssueCard({ issue }: IssueCardProps) {
             </Badge>
           )}
         </div>
-        <h3 className='text-base font-semibold'>{issue.title}</h3>
+        <Heading variant='cardTitle' as='h3'>
+          {issue.title}
+        </Heading>
         <p className='text-sm text-text-secondary'>{issue.description}</p>
         {issue.impact && (
           <p className='text-sm text-text-tertiary italic'>{issue.impact}</p>

@@ -1,4 +1,5 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
+import { Heading } from '@/components/kit';
 import IssueCard from './IssueCard';
 import EmailGate from './EmailGate';
 
@@ -30,7 +31,9 @@ export default function IssueList({ issues, scanId }: IssueListProps) {
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <div className='flex flex-col gap-4'>
           <div>
-            <h2 id='issues-heading'>Issues Found</h2>
+            <Heading variant='section' as='h2' id='issues-heading'>
+              Issues Found
+            </Heading>
             <p className='text-sm text-text-secondary'>
               {summary.total} issues: {summary.critical} critical,{' '}
               {summary.warning} warnings, {summary.info} informational
