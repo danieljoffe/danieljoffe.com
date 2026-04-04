@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { sectionContainer } from '@/lib/layoutStyles';
+import { Heading } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import ExpandableScreenshot from './ExpandableScreenshot';
@@ -76,12 +77,9 @@ export default function ReportHeader({
             )}
 
             <div className='min-w-0 flex-1'>
-              <h1
-                id='report-header-heading'
-                className='text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-[1.1]'
-              >
+              <Heading variant='section' id='report-header-heading'>
                 {pageTitle || url}
-              </h1>
+              </Heading>
               <p className='text-sm text-text-secondary truncate max-w-md mt-1'>
                 {url}
               </p>

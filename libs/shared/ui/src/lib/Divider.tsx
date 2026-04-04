@@ -1,5 +1,6 @@
 import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from './utils';
+import { Text } from './Text';
 
 type DividerOrientation = 'horizontal' | 'vertical';
 
@@ -36,7 +37,7 @@ export const Divider = forwardRef<HTMLDivElement, DividerProps>(
           {...props}
         >
           <div className='flex-1 h-px bg-border' aria-hidden='true' />
-          <span className='text-sm text-text-secondary'>{label}</span>
+          <Text variant='caption' as='span'>{label}</Text>
           <div className='flex-1 h-px bg-border' aria-hidden='true' />
         </div>
       );

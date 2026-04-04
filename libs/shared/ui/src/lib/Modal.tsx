@@ -135,7 +135,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
           >
             {title && (
               <div className='flex items-center justify-between p-6 border-b border-border'>
-                <h3 id={titleId}>{title}</h3>
+                <h3 id={titleId} className='text-lg font-semibold text-text-primary'>{title}</h3>
                 <button
                   onClick={handleClose}
                   aria-label='Close dialog'

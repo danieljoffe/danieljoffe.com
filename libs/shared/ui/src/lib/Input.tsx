@@ -1,5 +1,6 @@
 import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { cn } from './utils';
+import { Text } from './Text';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string | undefined;
@@ -51,14 +52,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p id={errorId} className='mt-1.5 text-sm text-error' role='alert'>
+          <Text variant='error' id={errorId} className='mt-1.5' role='alert'>
             {error}
-          </p>
+          </Text>
         )}
         {helperText && !error && (
-          <p id={helperId} className='mt-1.5 text-sm text-text-tertiary'>
+          <Text variant='helper' id={helperId} className='mt-1.5'>
             {helperText}
-          </p>
+          </Text>
         )}
       </div>
     );

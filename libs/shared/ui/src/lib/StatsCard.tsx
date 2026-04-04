@@ -3,6 +3,7 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from './utils/cn';
+import { Text } from './Text';
 
 export interface StatsCardProps {
   title: string;
@@ -32,7 +33,7 @@ export function StatsCard({
     >
       <div className='flex items-start justify-between'>
         <div>
-          <p className='text-sm text-text-secondary'>{title}</p>
+          <Text variant='caption'>{title}</Text>
           <p className='mt-1.5 text-2xl font-semibold text-text-primary tracking-tight'>
             {value}
           </p>

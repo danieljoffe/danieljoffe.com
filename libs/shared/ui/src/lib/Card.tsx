@@ -1,5 +1,6 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
+import { Heading } from './Heading';
 
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
@@ -86,13 +87,9 @@ CardHeader.displayName = 'CardHeader';
 export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <h3
-        ref={ref}
-        className={cn('text-lg font-semibold text-text-primary', className)}
-        {...props}
-      >
+      <Heading ref={ref} variant='cardTitle' className={className} {...props}>
         {children}
-      </h3>
+      </Heading>
     );
   }
 );

@@ -8,6 +8,8 @@ import {
   SectionLabel,
   PageLayout,
   StructuredData,
+  Heading,
+  Text,
 } from '@/components/kit';
 import ClientBadge from '@/components/ClientBadge';
 import { cardBase } from '@/lib/layoutStyles';
@@ -29,13 +31,13 @@ export default function Services() {
           <ClientBadge variant='brand-solid'>
             Currently available for new projects
           </ClientBadge>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
+          <Heading variant='hero'>
             Your frontend is costing you users.
-          </h1>
-          <p className='text-lg text-text-secondary max-w-lg mx-auto'>
+          </Heading>
+          <Text variant='subtitle' className='max-w-lg mx-auto'>
             I help startups and growing teams ship faster, load faster, and stop
             depending on engineering for everything.
-          </p>
+          </Text>
           <div className='flex flex-col items-center gap-4 pt-2'>
             <HeroCTA />
             <a
@@ -65,18 +67,18 @@ export default function Services() {
               <div className='space-y-4 flex-1'>
                 <div className='flex items-center gap-2'>
                   <service.Icon className='h-5 w-5 text-brand-500 shrink-0' />
-                  <p className='text-sm font-semibold text-text-primary'>
+                  <Heading variant='cardTitle' as='p'>
                     {service.title}
-                  </p>
+                  </Heading>
                 </div>
 
                 {service.highlighted && (
                   <ClientBadge variant='brand'>Most popular</ClientBadge>
                 )}
 
-                <p className='text-sm text-text-secondary leading-relaxed'>
+                <Text variant='body'>
                   {service.description}
-                </p>
+                </Text>
 
                 <div>
                   <p className='text-xs font-semibold text-text-primary mb-2'>
@@ -137,12 +139,12 @@ export default function Services() {
                 {step.number}
               </span>
               <div>
-                <p className='text-sm font-semibold text-text-primary'>
+                <Heading variant='cardTitle' as='p'>
                   {step.title}
-                </p>
-                <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                </Heading>
+                <Text variant='body' className='mt-1'>
                   {step.description}
-                </p>
+                </Text>
               </div>
             </div>
           ))}
@@ -188,9 +190,9 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-2 mb-6'>
-          <h2 className='text-2xl sm:text-3xl font-bold text-text-primary'>
+          <Heading variant='section'>
             Let&apos;s figure out how I can help.
-          </h2>
+          </Heading>
           <p className='text-text-secondary'>
             Book a free 30-minute call. No contracts, no commitments&mdash;just
             a conversation about your frontend challenges.

@@ -1,3 +1,5 @@
+export { Heading } from './Heading';
+export { Text } from './Text';
 export { Section } from './Section';
 export { SectionLabel } from './SectionLabel';
 export { PageLayout } from './PageLayout';

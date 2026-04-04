@@ -65,7 +65,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         <div className='flex gap-3'>
           <Icon className='size-5 shrink-0 mt-0.5' aria-hidden='true' />
           <div className='flex-1'>
-            {title && <h5 className='mb-1 mt-0'>{title}</h5>}
+            {title && <h5 className='text-sm font-semibold mb-1 mt-0'>{title}</h5>}
             <div className='text-sm text-text-secondary'>{children}</div>
           </div>
           {dismissible && (

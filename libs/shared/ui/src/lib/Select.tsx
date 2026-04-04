@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import { forwardRef, useId, type SelectHTMLAttributes } from 'react';
 import { cn } from './utils';
+import { Text } from './Text';
 
 export interface SelectOption {
   value: string;
@@ -53,9 +54,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           />
         </div>
         {error && (
-          <p id={errorId} className='mt-1.5 text-sm text-error' role='alert'>
+          <Text variant='error' id={errorId} className='mt-1.5' role='alert'>
             {error}
-          </p>
+          </Text>
         )}
       </div>
     );
