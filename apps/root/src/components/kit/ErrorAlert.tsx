@@ -22,7 +22,7 @@ export function ErrorAlert({
             <button
               type='button'
               onClick={onRetry}
-              className='block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer'
+              className='block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-error-light'
             >
               {retryLabel}
             </button>

@@ -217,13 +217,19 @@ Page-level SEO metadata is derived automatically from the MDX `metadata` export 
 All content access goes through `data/contentRegistry.ts` — the single source of truth for querying content:
 
 ```ts
-import { getContentByType, getContentBySlug, getContentSlugs, getContentPagination, getAllContent } from '@/data/contentRegistry';
+import {
+  getContentByType,
+  getContentBySlug,
+  getContentSlugs,
+  getContentPagination,
+  getAllContent,
+} from '@/data/contentRegistry';
 
-getContentByType('project')      // All project entries in display order
-getContentBySlug('blog', slug)   // Single entry by type + slug
-getContentSlugs('experience')    // All slugs (for generateStaticParams)
-getContentPagination('blog', s)  // { prev, next } pagination links
-getAllContent()                   // Every entry across all types
+getContentByType('project'); // All project entries in display order
+getContentBySlug('blog', slug); // Single entry by type + slug
+getContentSlugs('experience'); // All slugs (for generateStaticParams)
+getContentPagination('blog', s); // { prev, next } pagination links
+getAllContent(); // Every entry across all types
 ```
 
 Each entry contains: `slug`, `type`, `thumbnail`, `component`, `metadata`, `structuredData`, `readingTime`.

@@ -40,7 +40,7 @@ export default function Services() {
             <HeroCTA />
             <a
               href='#services-grid'
-              className='inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors'
+              className='inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
             >
               See what I offer
               <ChevronDown className='h-4 w-4' />

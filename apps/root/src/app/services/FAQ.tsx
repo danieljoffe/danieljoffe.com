@@ -14,7 +14,7 @@ export default function FAQ() {
         <div key={index}>
           <button
             type='button'
-            className='w-full py-4 flex items-center justify-between text-left cursor-pointer'
+            className='w-full py-4 flex items-center justify-between text-left cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
             onClick={() => setOpenIndex(openIndex === index ? null : index)}
             aria-expanded={openIndex === index}
           >
