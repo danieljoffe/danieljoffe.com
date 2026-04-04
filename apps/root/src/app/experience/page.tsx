@@ -15,12 +15,10 @@ import {
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');
-const experienceList = experienceEntries
-  .reverse()
-  .map(entry => ({
-    ...entry.thumbnail,
-    readingTime: entry.readingTime,
-  }));
+const experienceList = experienceEntries.reverse().map(entry => ({
+  ...entry.thumbnail,
+  readingTime: entry.readingTime,
+}));
 const experienceFullList = Object.values(experienceFull).reverse();
 
 export const metadata: Metadata = experienceRootMetadata;
