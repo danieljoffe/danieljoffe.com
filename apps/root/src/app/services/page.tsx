@@ -9,7 +9,7 @@ import {
   PageLayout,
   StructuredData,
 } from '@/components/kit';
-import { Badge } from '@danieljoffe.com/shared-ui';
+import ClientBadge from '@/components/ClientBadge';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';
@@ -26,9 +26,9 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-6'>
-          <Badge variant='brand-solid'>
+          <ClientBadge variant='brand-solid'>
             Currently available for new projects
-          </Badge>
+          </ClientBadge>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
             Your frontend is costing you users.
           </h1>
@@ -71,7 +71,7 @@ export default function Services() {
                 </div>
 
                 {service.highlighted && (
-                  <Badge variant='brand'>Most popular</Badge>
+                  <ClientBadge variant='brand'>Most popular</ClientBadge>
                 )}
 
                 <p className='text-sm text-text-secondary leading-relaxed'>
