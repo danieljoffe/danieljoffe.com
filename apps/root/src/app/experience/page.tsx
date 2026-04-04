@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
 import { Briefcase, ArrowUpRight, Calendar, Layers } from 'lucide-react';
-import { AllowedExperienceSlugs } from '@/types/base';
-import { experienceRecords } from '@/data/experienceThumbnails';
-import { experienceReadingTimes } from '@/data/readingTimes';
+import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
@@ -16,12 +14,11 @@ import {
 } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
-const experienceList = Object.values(experienceRecords)
-  .reverse()
-  .map(exp => ({
-    ...exp,
-    readingTime: experienceReadingTimes[exp.slug as AllowedExperienceSlugs],
-  }));
+const experienceEntries = getContentByType('experience');
+const experienceList = experienceEntries.reverse().map(entry => ({
+  ...entry.thumbnail,
+  readingTime: entry.readingTime,
+}));
 const experienceFullList = Object.values(experienceFull).reverse();
 
 export const metadata: Metadata = experienceRootMetadata;
