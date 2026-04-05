@@ -55,4 +55,22 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'L37UxT-:00NG~qt7-:NG00xu9FRj',
     },
   },
+  [blogSlugs.sharedUiDesignSystem]: {
+    slug: blogSlugs.sharedUiDesignSystem,
+    title:
+      'From Wrapper Hell to a Single Source of Truth: Consolidating a Design System',
+    description:
+      'How I eliminated 2,000 lines of duplication by promoting kit wrappers into a shared-ui component library, enforcing typography variants, and establishing layout primitives with sensible defaults.',
+    link: {
+      label: 'Design System Consolidation',
+      href: `${BLOG_LINK.href}/${blogSlugs.sharedUiDesignSystem}`,
+    },
+    cover: {
+      alt: 'Neatly organized colorful building blocks arranged in a grid pattern',
+      src: '/photo-1581783898377-1c85bf937427',
+      origin: `${UNSPLASH_URL}/photos/assorted-color-brick-lot-HpMihL323k0`,
+      creator: '@marjan_blan',
+      blurHash: 'LKHe2RD%00%M_3WBt7Rj~qxuIUj[',
+    },
+  },
 };

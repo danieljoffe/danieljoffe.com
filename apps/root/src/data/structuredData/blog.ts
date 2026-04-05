@@ -38,6 +38,15 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.visualRegressionCiPipeline]?.date ?? '',
       author,
     },
+    [blogSlugs.sharedUiDesignSystem]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.sharedUiDesignSystem].title,
+      description: blogRecords[blogSlugs.sharedUiDesignSystem].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.sharedUiDesignSystem]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
