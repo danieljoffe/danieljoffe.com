@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Monitor, Smartphone } from 'lucide-react';
-import { analytics } from '@/lib/analytics';
-import Button from '@/components/Button';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { analytics } from '@/lib/analytics';
+import Button from '@/components/Button';
 import { FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 

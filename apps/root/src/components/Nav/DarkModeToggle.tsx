@@ -2,11 +2,11 @@
 
 import { useCallback } from 'react';
 import { Moon, Sun, Monitor } from 'lucide-react';
+import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
 import { cn } from '@/lib/cn';
 import { useTheme } from '@/state/Theme/ThemeProvider';
 import { analytics } from '@/lib/analytics';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
-import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
 
 const options = [
   { value: 'light' as const, icon: Sun, label: 'Light' },

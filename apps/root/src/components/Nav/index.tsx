@@ -2,8 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { useModal } from '@/state/Modal/ModalProvider';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { useModal } from '@/state/Modal/ModalProvider';
 import NavLinks from './Links';
 import MobileNav from './MobileNav';
 
