@@ -32,7 +32,7 @@ export default function ExperiencePage() {
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Experience</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
-            An overview of my professional journey as a frontend
+            An overview of my professional journey as a full-stack
             engineer&mdash;covering key roles, impactful projects, and the
             technical expertise I bring to building performant, user-focused web
             applications.
@@ -96,17 +96,17 @@ export default function ExperiencePage() {
                         {exp.duration && (
                           <span className='flex items-center gap-1.5'>
                             <Calendar className='h-3 w-3 text-text-tertiary' />
-                            <span className='text-xs text-text-tertiary'>
+                            <Text variant='meta' as='span'>
                               {exp.duration}
-                            </span>
+                            </Text>
                           </span>
                         )}
                         {exp.readingTime > 0 && (
                           <span className='flex items-center gap-1.5'>
                             <Clock className='h-3 w-3 text-text-tertiary' />
-                            <span className='text-xs text-text-tertiary'>
+                            <Text variant='meta' as='span'>
                               {exp.readingTime} min read
-                            </span>
+                            </Text>
                           </span>
                         )}
                       </div>

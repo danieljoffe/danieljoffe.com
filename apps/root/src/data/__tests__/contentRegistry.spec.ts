@@ -12,7 +12,7 @@ describe('contentRegistry', () => {
   describe('getContentByType', () => {
     it('returns all project entries in order', () => {
       const projects = getContentByType('project');
-      expect(projects.length).toBe(9);
+      expect(projects.length).toBe(10);
       expect(projects[0].type).toBe('project');
       expect(projects[0].slug).toBe('ui-components-v1');
     });
@@ -26,12 +26,13 @@ describe('contentRegistry', () => {
 
     it('returns all blog entries in order', () => {
       const blogs = getContentByType('blog');
-      expect(blogs.length).toBe(4);
+      expect(blogs.length).toBe(10);
       expect(blogs[0].type).toBe('blog');
       expect(blogs[0].slug).toBe('unified-content-pipeline');
       expect(blogs[1].slug).toBe('auto-generated-toc-scroll-spy');
       expect(blogs[2].slug).toBe('visual-regression-ci-pipeline');
       expect(blogs[3].slug).toBe('shared-ui-design-system');
+      expect(blogs[4].slug).toBe('compose-providers-react-context');
     });
   });
 
@@ -71,7 +72,7 @@ describe('contentRegistry', () => {
       const slugs = getContentSlugs('project');
       expect(slugs).toContain('ui-components-v1');
       expect(slugs).toContain('ui-components-v2');
-      expect(slugs.length).toBe(9);
+      expect(slugs.length).toBe(10);
     });
 
     it('returns experience slugs', () => {
@@ -87,21 +88,27 @@ describe('contentRegistry', () => {
       expect(slugs).toContain('auto-generated-toc-scroll-spy');
       expect(slugs).toContain('visual-regression-ci-pipeline');
       expect(slugs).toContain('shared-ui-design-system');
-      expect(slugs.length).toBe(4);
+      expect(slugs).toContain('compose-providers-react-context');
+      expect(slugs).toContain('typography-system-nextjs');
+      expect(slugs).toContain('removing-focus-trap-react');
+      expect(slugs).toContain('eslint-import-ordering-monorepo');
+      expect(slugs).toContain('rule-of-three-design-systems');
+      expect(slugs).toContain('documenting-design-tokens');
+      expect(slugs.length).toBe(10);
     });
   });
 
   describe('getContentPagination', () => {
     it('returns circular pagination for first project', () => {
       const pagination = getContentPagination('project', 'ui-components-v1');
-      expect(pagination.prev.slug).toBe('contact-form-case-study'); // wraps to last
+      expect(pagination.prev.slug).toBe('appcontext-simplification-case-study'); // wraps to last
       expect(pagination.next.slug).toBe('cms-tooling-case-study'); // second project
     });
 
     it('returns circular pagination for last project', () => {
       const pagination = getContentPagination(
         'project',
-        'contact-form-case-study'
+        'appcontext-simplification-case-study'
       );
       expect(pagination.next.slug).toBe('ui-components-v1'); // wraps to first
     });
@@ -135,7 +142,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(18); // 9 projects + 5 experiences + 4 blogs
+      expect(all.length).toBe(25); // 10 projects + 5 experiences + 10 blogs
     });
 
     it('contains entries of all types', () => {

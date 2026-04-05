@@ -47,6 +47,63 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.sharedUiDesignSystem]?.date ?? '',
       author,
     },
+    [blogSlugs.composeProvidersReactContext]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.composeProvidersReactContext].title,
+      description:
+        blogRecords[blogSlugs.composeProvidersReactContext].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.composeProvidersReactContext]?.date ?? '',
+      author,
+    },
+    [blogSlugs.typographySystemNextjs]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.typographySystemNextjs].title,
+      description: blogRecords[blogSlugs.typographySystemNextjs].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.typographySystemNextjs]?.date ?? '',
+      author,
+    },
+    [blogSlugs.removingFocusTrapReact]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.removingFocusTrapReact].title,
+      description: blogRecords[blogSlugs.removingFocusTrapReact].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.removingFocusTrapReact]?.date ?? '',
+      author,
+    },
+    [blogSlugs.eslintImportOrderingMonorepo]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.eslintImportOrderingMonorepo].title,
+      description:
+        blogRecords[blogSlugs.eslintImportOrderingMonorepo].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.eslintImportOrderingMonorepo]?.date ?? '',
+      author,
+    },
+    [blogSlugs.ruleOfThreeDesignSystems]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.ruleOfThreeDesignSystems].title,
+      description:
+        blogRecords[blogSlugs.ruleOfThreeDesignSystems].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.ruleOfThreeDesignSystems]?.date ?? '',
+      author,
+    },
+    [blogSlugs.documentingDesignTokens]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.documentingDesignTokens].title,
+      description: blogRecords[blogSlugs.documentingDesignTokens].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.documentingDesignTokens]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {

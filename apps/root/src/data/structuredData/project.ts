@@ -74,6 +74,13 @@ export const projectStructuredData: Record<
     headline: projectsRecords[projectSlugs.csContactForm].title,
     author,
   },
+  [projectSlugs.csAppContext]: {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    about: projectsRecords[projectSlugs.csAppContext].description,
+    headline: projectsRecords[projectSlugs.csAppContext].title,
+    author,
+  },
 };
 
 export const projectsRootStructuredData: CollectionPageStructuredData = {

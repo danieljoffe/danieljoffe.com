@@ -152,6 +152,24 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       blurHash: 'LKJ8G*~qxu-;?bIUWBRj00D%M{Rj',
     },
   },
+  [projectSlugs.csAppContext]: {
+    slug: projectSlugs.csAppContext,
+    title: 'From Monolith to Composition — Simplifying AppContext',
+    description:
+      'How splitting a monolithic GlobalProvider into focused, composable providers eliminated tree-wide re-renders and improved developer ergonomics.',
+    backgroundColor: 'bg-[#1a1a2e]',
+    link: {
+      label: 'AppContext Simplification Case Study',
+      href: `${PROJECTS_LINK.href}/${projectSlugs.csAppContext}`,
+    },
+    cover: {
+      alt: 'Abstract connected nodes forming a network',
+      src: '/photo-1558494949-ef010cbdcc31',
+      origin: `${UNSPLASH_URL}/photos/blue-and-red-light-illustration-FPNnKfjcbNU`,
+      creator: '@jjying',
+      blurHash: 'L25}pjM{9FWB~qWBRjt700ay-;j[',
+    },
+  },
   [projectSlugs.uiV2]: {
     slug: projectSlugs.uiV2,
     title: 'Expanding the Design System: UI Components Part 2',

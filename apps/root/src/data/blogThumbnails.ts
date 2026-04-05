@@ -73,4 +73,106 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'LKHe2RD%00%M_3WBt7Rj~qxuIUj[',
     },
   },
+  [blogSlugs.composeProvidersReactContext]: {
+    slug: blogSlugs.composeProvidersReactContext,
+    title: 'Composing React Providers Without the Nesting Nightmare',
+    description:
+      'A functional composition pattern that turns deeply nested provider trees into a flat, readable list — with automatic React DevTools display names.',
+    link: {
+      label: 'Composing React Providers',
+      href: `${BLOG_LINK.href}/${blogSlugs.composeProvidersReactContext}`,
+    },
+    cover: {
+      alt: 'Colorful interlocking puzzle pieces on a white surface',
+      src: '/photo-1494059980473-813e73ee784b',
+      origin: `${UNSPLASH_URL}/photos/multicolored-abstract-painting-bU6JyhSI6zo`,
+      creator: '@pawel_czerwinski',
+      blurHash: 'LGF~o]_N~q%M%MRjIUj[-;WBD%WB',
+    },
+  },
+  [blogSlugs.typographySystemNextjs]: {
+    slug: blogSlugs.typographySystemNextjs,
+    title: 'Building a Typography System for a Next.js Design System',
+    description:
+      'How I audited three competing heading systems, designed a variant-based Heading/Text API, and migrated 20+ files to a single typography source of truth.',
+    link: {
+      label: 'Typography System',
+      href: `${BLOG_LINK.href}/${blogSlugs.typographySystemNextjs}`,
+    },
+    cover: {
+      alt: 'Wooden letterpress type blocks arranged in rows',
+      src: '/photo-1455659817273-f96807779a8a',
+      origin: `${UNSPLASH_URL}/photos/assorted-type-letters-Y6tGu-OH8lA`,
+      creator: '@amadorloureiro',
+      blurHash: 'LBF~T5-;00IU~qt7-;RjD%WBM{of',
+    },
+  },
+  [blogSlugs.removingFocusTrapReact]: {
+    slug: blogSlugs.removingFocusTrapReact,
+    title: 'Removing focus-trap-react: Native Focus Management in Modals',
+    description:
+      'Why we removed a 15KB dependency from our shared-ui library and replaced it with native dialog behavior and manual focus management.',
+    link: {
+      label: 'Removing focus-trap-react',
+      href: `${BLOG_LINK.href}/${blogSlugs.removingFocusTrapReact}`,
+    },
+    cover: {
+      alt: 'A close-up of a keyboard with a glowing focus indicator',
+      src: '/photo-1587829741301-dc798b83add3',
+      origin: `${UNSPLASH_URL}/photos/black-computer-keyboard-7WfBMtB-RhE`,
+      creator: '@eylumandemin',
+      blurHash: 'L24o;G9F00D%~q%MRjRj00of-;WB',
+    },
+  },
+  [blogSlugs.eslintImportOrderingMonorepo]: {
+    slug: blogSlugs.eslintImportOrderingMonorepo,
+    title: 'ESLint Import Ordering for Monorepos: Taming 77 Violations',
+    description:
+      'Setting up import/order with custom path groups for monorepo aliases, fixing ESLint 10 compatibility, and auto-fixing 77 violations across the codebase.',
+    link: {
+      label: 'ESLint Import Ordering',
+      href: `${BLOG_LINK.href}/${blogSlugs.eslintImportOrderingMonorepo}`,
+    },
+    cover: {
+      alt: 'Neatly organized files in a filing cabinet',
+      src: '/photo-1544396821-4dd40b938ad3',
+      origin: `${UNSPLASH_URL}/photos/assorted-files-Q9y3LRuuxmg`,
+      creator: '@samuelzeller',
+      blurHash: 'LHH_]n~q00M{IU%MIUof~q%MWBRj',
+    },
+  },
+  [blogSlugs.ruleOfThreeDesignSystems]: {
+    slug: blogSlugs.ruleOfThreeDesignSystems,
+    title: 'The Rule of Three in Design Systems',
+    description:
+      'When to extract a repeated pattern into a shared abstraction — and when to leave it inline. A practical framework from auditing typography.',
+    link: {
+      label: 'Rule of Three',
+      href: `${BLOG_LINK.href}/${blogSlugs.ruleOfThreeDesignSystems}`,
+    },
+    cover: {
+      alt: 'Three identical geometric shapes casting different shadows',
+      src: '/photo-1509228468518-180dd4864904',
+      origin: `${UNSPLASH_URL}/photos/brown-wooden-blocks-on-white-surface-s9CC2SKySJM`,
+      creator: '@brett_jordan',
+      blurHash: 'LGJH6d~q00%M~qt7-;Rj00WBD%of',
+    },
+  },
+  [blogSlugs.documentingDesignTokens]: {
+    slug: blogSlugs.documentingDesignTokens,
+    title: 'Documenting Design Tokens for Developer Experience',
+    description:
+      'Why a comprehensive theme token reference is part of the design system — not an afterthought — and how we documented 100+ tokens.',
+    link: {
+      label: 'Documenting Design Tokens',
+      href: `${BLOG_LINK.href}/${blogSlugs.documentingDesignTokens}`,
+    },
+    cover: {
+      alt: 'An open style guide book with color swatches and typography samples',
+      src: '/photo-1507842217343-583bb7270b66',
+      origin: `${UNSPLASH_URL}/photos/library-photo-YLSwjSy7stw`,
+      creator: '@iamtm',
+      blurHash: 'L99ZoLxu4n%M~qWBt7RjD%M{M{Rj',
+    },
+  },
 };

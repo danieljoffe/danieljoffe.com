@@ -1,0 +1,159 @@
+export const metadata = {
+  title: 'ESLint Import Ordering for Monorepos: Taming 77 Violations',
+  date: '2026-04-05',
+  excerpt:
+    'Setting up import/order with custom path groups for monorepo aliases, fixing ESLint 10 compatibility, and auto-fixing 77 violations across the codebase.',
+  author: 'Daniel Joffe',
+  category: 'Developer Experience',
+  tags: ['ESLint', 'Monorepo', 'TypeScript', 'Developer Experience', 'Nx'],
+  slug: 'eslint-import-ordering-monorepo',
+  type: 'blog',
+  topic: 'Tooling',
+};
+
+## Why Import Order Matters
+
+In a monorepo with multiple path aliases (`@/` for app internals,
+`@danieljoffe.com/*` for library packages), imports can appear in any order.
+Over time this creates a subtle problem: you can't glance at the top of a file
+and immediately understand its dependency layers.
+
+Compare these two versions of the same imports:
+
+```tsx
+// Before: no ordering — mental effort to parse
+import { analytics } from '@/lib/analytics';
+import Button from '@/components/Button';
+import { useState } from 'react';
+import { Badge } from '@danieljoffe.com/shared-ui';
+import type { Metadata } from 'next';
+```
+
+```tsx
+// After: layered from external → internal → local
+import type { Metadata } from 'next';
+import { useState } from 'react';
+import { Badge } from '@danieljoffe.com/shared-ui';
+import { analytics } from '@/lib/analytics';
+import Button from '@/components/Button';
+```
+
+The second version tells a story: framework deps first, then library deps,
+then app internals. You know at a glance where each import comes from.
+
+## The Configuration
+
+We use `eslint-plugin-import`'s `import/order` rule with custom `pathGroups`
+to handle our monorepo aliases:
+
+```js
+'import/order': [
+  'error',
+  {
+    groups: [
+      'builtin',    // node:fs, path
+      'external',   // react, next, lucide-react
+      'internal',   // @/ aliases
+      'parent',     // ../
+      'sibling',    // ./
+      'index',      // .
+    ],
+    pathGroups: [
+      {
+        pattern: '@danieljoffe.com/**',
+        group: 'external',
+        position: 'after',
+      },
+      {
+        pattern: '@/**',
+        group: 'internal',
+        position: 'before',
+      },
+    ],
+    pathGroupsExcludedImportTypes: ['builtin'],
+    'newlines-between': 'never',
+  },
+],
+```
+
+The `pathGroups` configuration places `@danieljoffe.com/*` imports after
+other external packages but before `@/` app-internal imports. This creates
+a clear visual hierarchy: node → npm packages → monorepo libraries → app code
+→ local files.
+
+We intentionally omit `alphabetize` — forcing alphabetical order within groups
+adds friction without meaningful readability gains.
+
+## The ESLint 10 Compatibility Problem
+
+Running the rule immediately crashed:
+
+```
+TypeError: sourceCode.getTokenOrCommentBefore is not a function
+Rule: "import/order"
+```
+
+`eslint-plugin-import` 2.32.0 uses `getTokenOrCommentBefore`, an API removed
+in ESLint 10. The Next.js ESLint config registers the plugin without the
+compatibility shim, so it worked for some rules but crashed on `import/order`.
+
+The fix: strip the `import` plugin from Next.js's config and re-register it
+with `fixupPluginRules`, the same pattern already used for `eslint-plugin-react`:
+
+```js
+const nextConfigs = nextCoreWebVitals.map(cfg => {
+  if (!cfg.plugins) return cfg;
+  const { import: _import, react: _react, ...keep } = cfg.plugins;
+  return {
+    ...cfg,
+    plugins: {
+      ...keep,
+      react: fixupPluginRules(reactPlugin),
+      import: fixupPluginRules(importPlugin),
+    },
+  };
+});
+```
+
+## Fixing 77 Violations
+
+After the config was stable, the initial lint run found 77 errors. 66 were
+auto-fixable with `--fix` — the rule reorders import statements automatically.
+
+The remaining 11 were all in test files with a common pattern:
+
+```tsx
+import { render } from '@testing-library/react';
+// jest.mock sits here, creating a blank line
+jest.mock('@/lib/analytics');
+import CalendlyButton from './CalendlyButton';
+import { analytics } from '@/lib/analytics';
+```
+
+The fix was consistent: move all imports to the top (grouped together), then
+place `jest.mock()` calls after. Jest hoists mock calls regardless of
+position, so this is purely a readability improvement:
+
+```tsx
+import { render } from '@testing-library/react';
+import { analytics } from '@/lib/analytics';
+import CalendlyButton from './CalendlyButton';
+
+jest.mock('@/lib/analytics');
+```
+
+## Circular Dependency Prevention
+
+Alongside `import/order`, we added `import/no-cycle` as an error. This
+catches circular imports at lint time rather than at runtime (where they
+cause mysterious `undefined` values).
+
+The shared-ui library already had this rule. Extending it to the app ensures
+the entire monorepo is protected.
+
+## Results
+
+- **77 violations fixed** in a single commit (66 auto-fixed, 11 manual)
+- **Zero false positives** after stabilizing the ESLint 10 compat
+- Import order is now enforced on every commit via pre-commit hooks
+- Circular dependencies are caught at lint time across the full monorepo
