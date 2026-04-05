@@ -8,6 +8,11 @@ import {
   Zap,
   Layers,
 } from 'lucide-react';
+import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
+import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
 import { experienceFull } from '@/data/experience';
@@ -20,12 +25,7 @@ import {
   CONTACT_FORM_ID,
   EXPERIENCE_LINK,
 } from '@/utils/constants';
-import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
-import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
-import { CompanyLogo, PostCard } from '@/components/kit';
+import { CompanyLogo, Heading, PostCard, Text } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
@@ -58,14 +58,12 @@ export default function Index() {
             </span>
           </div>
 
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            {FULL_NAME}
-          </h1>
-          <p className='text-lg text-text-secondary max-w-lg leading-relaxed'>
+          <Heading variant='hero'>{FULL_NAME}</Heading>
+          <Text variant='subtitle' className='max-w-lg'>
             {JOB_TITLE} who builds products end-to-end &mdash; from backend
             systems to polished UIs. I ship fast, architect for scale, and
             eliminate the bottlenecks that slow teams down.
-          </p>
+          </Text>
 
           <HeroActions />
         </div>
@@ -80,10 +78,10 @@ export default function Index() {
           label="Teams I've worked with"
         />
         <div className='space-y-6'>
-          <p className='text-base text-text-secondary leading-relaxed'>
+          <Text variant='bodyLg'>
             I&apos;ve worked with these companies to build fast, beautiful, and
             inclusive digital experiences.
-          </p>
+          </Text>
           <ul className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6'>
             {companies.map(company => (
               <li
@@ -116,12 +114,12 @@ export default function Index() {
             <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
               <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
               <div>
-                <p className='text-sm font-semibold text-text-primary'>
+                <Heading variant='cardTitle' as='p'>
                   {achievement.metric}
-                </p>
-                <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                </Heading>
+                <Text variant='body' className='mt-1'>
                   {achievement.text}
-                </p>
+                </Text>
               </div>
             </div>
           ))}
@@ -174,13 +172,11 @@ export default function Index() {
               <div className='space-y-2'>
                 <div className='flex items-center gap-2'>
                   <methodology.Icon className='h-4 w-4 text-brand-500' />
-                  <p className='text-sm font-semibold text-text-primary'>
+                  <Heading variant='cardTitle' as='p'>
                     {methodology.title}
-                  </p>
+                  </Heading>
                 </div>
-                <p className='text-sm text-text-secondary leading-relaxed'>
-                  {methodology.text}
-                </p>
+                <Text variant='body'>{methodology.text}</Text>
               </div>
             </div>
           ))}

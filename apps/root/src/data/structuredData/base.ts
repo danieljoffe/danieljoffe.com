@@ -1,5 +1,5 @@
-import { DOMAIN_URL, FULL_NAME, JOB_TITLE } from '@/utils/constants';
 import { Person } from 'schema-dts';
+import { DOMAIN_URL, FULL_NAME, JOB_TITLE } from '@/utils/constants';
 
 export const personStructuredData: Person = Object.freeze({
   '@type': 'Person',

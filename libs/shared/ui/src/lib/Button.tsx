@@ -1,8 +1,8 @@
 import {
-  forwardRef,
   type ButtonHTMLAttributes,
   type ElementType,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { Spinner } from './Spinner';
 import { cn } from './utils';
@@ -29,6 +29,7 @@ export interface ButtonProps
   extends
     ButtonBase,
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  ref?: Ref<HTMLButtonElement> | undefined;
   loading?: boolean;
   as?: ElementType;
   href?: string;
@@ -90,47 +91,41 @@ const spinnerSizeStyles: Record<ButtonSize, string> = {
   lg: 'size-5',
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      variant = 'primary',
-      size = 'md',
-      loading = false,
-      as: Component = 'button',
-      children,
-      className,
-      disabled,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <Component
-        ref={ref}
-        className={cn(
-          baseButtonStyles,
-          variantButtonStyles[variant],
-          sizeButtonStyles[size],
-          className
-        )}
-        disabled={disabled || loading}
-        aria-busy={loading || undefined}
-        {...props}
-      >
-        {loading && (
-          <Spinner
-            size='sm'
-            className={cn(
-              'border-current/30 border-t-current',
-              spinnerSizeStyles[size]
-            )}
-            aria-hidden='true'
-          />
-        )}
-        {children}
-      </Component>
-    );
-  }
-);
-
-Button.displayName = 'Button';
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  as: Component = 'button',
+  children,
+  className,
+  disabled,
+  ref,
+  ...props
+}: ButtonProps) {
+  return (
+    <Component
+      ref={ref}
+      className={cn(
+        baseButtonStyles,
+        variantButtonStyles[variant],
+        sizeButtonStyles[size],
+        className
+      )}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading && (
+        <Spinner
+          size='sm'
+          className={cn(
+            'border-current/30 border-t-current',
+            spinnerSizeStyles[size]
+          )}
+          aria-hidden='true'
+        />
+      )}
+      {children}
+    </Component>
+  );
+}

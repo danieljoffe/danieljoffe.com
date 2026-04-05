@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import Button from '@/components/Button';
+import { Heading, Text } from '@/components/kit';
 import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';
@@ -53,7 +54,9 @@ export default function AdminDashboard() {
     <div className='max-w-3xl mx-auto w-full px-4 sm:px-6'>
       <div className='flex flex-col gap-6 py-8'>
         <div className='flex flex-row justify-between items-start'>
-          <h1 className='text-2xl font-bold'>Audit Admin</h1>
+          <Heading variant='section' as='h1'>
+            Audit Admin
+          </Heading>
           <Button
             variant='bare'
             name='admin-sign-out'
@@ -65,7 +68,7 @@ export default function AdminDashboard() {
         </div>
 
         {statsError ? (
-          <p className='text-error text-sm'>{statsError}</p>
+          <Text variant='error'>{statsError}</Text>
         ) : stats ? (
           <StatsRow
             stats={[

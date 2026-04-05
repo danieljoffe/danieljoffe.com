@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { analytics } from '@/lib/analytics';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { VALIDATION_PATTERNS } from '@/utils/constants';
 import Button from '@/components/Button';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
-import { FormFieldError } from '@/components/kit';
+import { FormFieldError, Text } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
@@ -119,9 +119,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                 Unlock {gatedIssues.length} more{' '}
                 {gatedIssues.length === 1 ? 'fix' : 'fixes'}
               </p>
-              <p className='text-sm text-text-secondary'>
-                Enter your email for the full report
-              </p>
+              <Text variant='body'>Enter your email for the full report</Text>
             </div>
             <form onSubmit={handleSubmit} noValidate>
               <div className='flex flex-col gap-2'>

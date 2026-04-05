@@ -1,11 +1,11 @@
 import { AllowedProjectSlugs, ProjectStructuredData } from '@/types/base';
 import { projectSlugs, projectPageSlugs } from '@/data/project';
 import { projectsRecords } from '@/data/projectThumbnails';
+import { DOMAIN_URL, PROJECTS_LINK } from '@/utils/constants';
 import {
   personStructuredData as author,
   CollectionPageStructuredData,
 } from './base';
-import { DOMAIN_URL, PROJECTS_LINK } from '@/utils/constants';
 
 export const projectStructuredData: Record<
   AllowedProjectSlugs,

@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { analytics } from '@/lib/analytics';
 import CalendlyButton from './CalendlyButton';
 
 jest.mock('@/lib/analytics', () => ({
@@ -14,8 +15,6 @@ jest.mock('next/link', () => ({
     React.AnchorHTMLAttributes<HTMLAnchorElement>
   >) => <a {...props}>{children}</a>,
 }));
-
-import { analytics } from '@/lib/analytics';
 
 const mockedAnalytics = analytics as jest.Mocked<typeof analytics>;
 

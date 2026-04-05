@@ -1,13 +1,13 @@
 import { Metadata } from 'next';
 import { PenLine } from 'lucide-react';
-import { getContentByType } from '@/data/contentRegistry';
-import { blogRootMetadata } from '@/data/metadata/blog';
-import { blogRootStructuredData } from '@/data/structuredData/blog';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
-import { PostCard } from '@/components/kit';
+import { blogRootStructuredData } from '@/data/structuredData/blog';
+import { blogRootMetadata } from '@/data/metadata/blog';
+import { getContentByType } from '@/data/contentRegistry';
+import { Heading, PostCard, Text } from '@/components/kit';
 
 const blogList = getContentByType('blog')
   .reverse()
@@ -23,13 +23,11 @@ export default function Blog() {
     <PageLayout>
       <Section>
         <div className='text-center space-y-4'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Blog
-          </h1>
-          <p className='text-lg text-text-secondary max-w-xl mx-auto'>
+          <Heading variant='hero'>Blog</Heading>
+          <Text variant='subtitle' className='max-w-xl mx-auto'>
             Technical deep-dives, opinions on frontend trends, tutorials, and
             lessons learned.
-          </p>
+          </Text>
         </div>
       </Section>
 

@@ -1,12 +1,12 @@
-import { type ReactNode, type HTMLAttributes } from 'react';
+import { type ReactNode, type HTMLAttributes, type Ref } from 'react';
 import { cn } from './utils';
 
 export interface SectionProps extends Omit<
   HTMLAttributes<HTMLElement>,
   'className'
 > {
+  ref?: Ref<HTMLElement> | undefined;
   children: ReactNode;
-  ref?: React.Ref<HTMLElement>;
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   background?: 'default' | 'alt' | 'elevated' | 'none';
   /** Center children horizontally using flexbox */

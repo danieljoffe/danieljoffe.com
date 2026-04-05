@@ -1,4 +1,6 @@
 import type { ReactNode, Ref } from 'react';
+import { Heading } from './Heading';
+import { Text } from './Text';
 import { cn } from './utils';
 
 export interface CTACardProps {
@@ -25,12 +27,12 @@ export function CTACard({
       )}
     >
       <div className='space-y-4'>
-        <h2 className='text-2xl font-bold text-text-primary tracking-tight text-center'>
+        <Heading variant='section' className='text-center'>
           {heading}
-        </h2>
-        <p className='text-sm text-text-secondary max-w-md mx-auto text-center'>
+        </Heading>
+        <Text variant='body' className='max-w-md mx-auto text-center'>
           {description}
-        </p>
+        </Text>
         <div className='pt-2'>{children}</div>
       </div>
     </div>

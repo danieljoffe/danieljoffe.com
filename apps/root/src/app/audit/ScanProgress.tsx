@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Text } from '@/components/kit';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
@@ -100,9 +101,9 @@ export default function ScanProgress({
           );
         })}
       </ul>
-      <p className='text-sm text-text-secondary text-center truncate'>
+      <Text variant='body' className='text-center truncate'>
         Scanning {url} ({deviceLabel})
-      </p>
+      </Text>
     </div>
   );
 }
