@@ -31,10 +31,21 @@ describe('PageLayout', () => {
     expect(inner).toHaveClass('max-w-5xl');
   });
 
-  it('applies custom className to inner container', () => {
+  it('applies default vertical spacing and section gap', () => {
+    render(<PageLayout>Content</PageLayout>);
+    const inner = screen.getByTestId('page-container-inner');
+    expect(inner).toHaveClass('py-16', 'lg:py-24', 'space-y-24');
+  });
+
+  it('merges custom className with defaults', () => {
     render(<PageLayout className='custom-class'>Content</PageLayout>);
     const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('custom-class');
+    expect(inner).toHaveClass(
+      'py-16',
+      'lg:py-24',
+      'space-y-24',
+      'custom-class'
+    );
   });
 
   it('passes through additional HTML attributes', () => {

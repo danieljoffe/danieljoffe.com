@@ -3,7 +3,7 @@ import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 
 export default function Loading() {
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       <section className='w-full bg-surface-secondary overflow-hidden flex flex-col justify-center'>
         <div className='max-w-[40rem] mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
           <div className='flex flex-col gap-6 items-center'>

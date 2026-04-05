@@ -22,7 +22,7 @@ export const metadata: Metadata = experienceRootMetadata;
 
 export default function ExperiencePage() {
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}

@@ -21,7 +21,7 @@ export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {
   return (
-    <PageLayout wide className='py-16 lg:py-24 space-y-24'>
+    <PageLayout wide>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}

@@ -164,7 +164,7 @@ export default async function ReportPage({
       const deviceParam = sp.device === 'desktop' ? 'desktop' : 'mobile';
       const isPaired = sp.device === 'both';
       return (
-        <PageLayout className='py-16 lg:py-24 space-y-24'>
+        <PageLayout>
           <ScanPending
             scanId={id}
             url={urlParam}
@@ -185,7 +185,7 @@ export default async function ReportPage({
   // Scan still in progress — show polling UI
   if (scan.status === 'pending' || scan.status === 'running') {
     return (
-      <PageLayout className='py-16 lg:py-24 space-y-24'>
+      <PageLayout>
         <ScanPending
           scanId={scan.id}
           url={scan.url}
@@ -199,7 +199,7 @@ export default async function ReportPage({
   // Scan failed — show friendly error
   if (scan.status === 'failed') {
     return (
-      <PageLayout className='py-16 lg:py-24 space-y-24'>
+      <PageLayout>
         <ScanFailed url={scan.url} errorMessage={scan.error_message} />
       </PageLayout>
     );
@@ -207,7 +207,7 @@ export default async function ReportPage({
 
   // Completed — render full report
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       <ReportHeader
         scanId={scan.id}
         url={scan.url}

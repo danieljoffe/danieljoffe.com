@@ -43,7 +43,7 @@ export default async function AuditPage() {
   const scanCount = await getCompletedScanCount();
 
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{

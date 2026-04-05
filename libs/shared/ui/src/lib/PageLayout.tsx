@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { PageContainer, type PageContainerProps } from './PageContainer';
+import { cn } from './utils';
 
 export interface PageLayoutProps extends Omit<
   PageContainerProps,
@@ -18,6 +19,7 @@ export interface PageLayoutProps extends Omit<
 export function PageLayout({
   children,
   wide = false,
+  className,
   ...rest
 }: PageLayoutProps) {
   return (
@@ -25,6 +27,7 @@ export function PageLayout({
       as='main'
       id='main-content'
       size={wide ? 'md' : 'sm'}
+      className={cn('py-16 lg:py-24 space-y-24', className)}
       {...rest}
     >
       {children}

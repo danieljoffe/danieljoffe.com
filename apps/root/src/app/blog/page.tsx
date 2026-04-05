@@ -20,7 +20,7 @@ export const metadata: Metadata = blogRootMetadata;
 
 export default function Blog() {
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       <Section>
         <div className='text-center space-y-4'>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>

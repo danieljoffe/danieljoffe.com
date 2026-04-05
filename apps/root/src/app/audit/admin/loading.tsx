@@ -3,7 +3,7 @@ import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 
 export default function Loading() {
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6'>
         <div className='flex flex-col gap-6 py-8'>
           {/* Title bar */}

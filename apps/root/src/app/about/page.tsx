@@ -67,7 +67,7 @@ const mantraItems: {
 
 export default function About() {
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}

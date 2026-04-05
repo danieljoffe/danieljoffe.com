@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminPage() {
   return (
-    <PageLayout className='py-16 lg:py-24 space-y-24'>
+    <PageLayout>
       <AdminDashboard />
     </PageLayout>
   );
