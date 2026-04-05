@@ -1,16 +1,16 @@
 import { Metadata } from 'next';
 import { Briefcase, ArrowUpRight, Calendar, Clock } from 'lucide-react';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  StructuredData,
-  CompanyLogo,
-} from '@/components/kit';
+import { CompanyLogo } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');
@@ -30,15 +30,13 @@ export default function ExperiencePage() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Experience
-          </h1>
-          <p className='text-lg text-text-secondary max-w-xl mx-auto'>
+          <Heading variant='hero'>Experience</Heading>
+          <Text variant='subtitle' className='max-w-xl mx-auto'>
             An overview of my professional journey as a frontend
             engineer&mdash;covering key roles, impactful projects, and the
             technical expertise I bring to building performant, user-focused web
             applications.
-          </p>
+          </Text>
         </div>
       </Section>
 
@@ -80,9 +78,9 @@ export default function ExperiencePage() {
                     <div className='flex-1 min-w-0'>
                       <div className='flex items-start justify-between gap-2'>
                         <div>
-                          <p className='text-sm font-semibold text-text-primary'>
+                          <Heading variant='cardTitle' as='p'>
                             {exp.title}
-                          </p>
+                          </Heading>
                           {exp.role && (
                             <p className='text-xs text-brand-500 font-medium mt-0.5'>
                               {exp.role}
@@ -91,9 +89,9 @@ export default function ExperiencePage() {
                         </div>
                         <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity' />
                       </div>
-                      <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                      <Text variant='body' className='mt-1'>
                         {exp.description}
-                      </p>
+                      </Text>
                       <div className='flex items-center gap-3 mt-2'>
                         {exp.duration && (
                           <span className='flex items-center gap-1.5'>

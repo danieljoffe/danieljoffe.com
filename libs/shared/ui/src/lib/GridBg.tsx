@@ -1,6 +1,20 @@
-export function GridBg() {
+import type { Ref } from 'react';
+import { cn } from './utils';
+
+export interface GridBgProps {
+  ref?: Ref<HTMLDivElement>;
+  className?: string;
+}
+
+export function GridBg({ ref, className }: GridBgProps) {
   return (
-    <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+    <div
+      ref={ref}
+      className={cn(
+        'absolute inset-0 overflow-hidden pointer-events-none',
+        className
+      )}
+    >
       <div
         className='absolute inset-0 opacity-[0.03]'
         style={{

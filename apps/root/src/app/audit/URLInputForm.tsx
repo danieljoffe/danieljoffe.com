@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Monitor, Smartphone } from 'lucide-react';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
-import { Spinner, ErrorAlert, FormFieldError } from '@/components/kit';
+import { FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
@@ -191,7 +193,7 @@ export default function URLInputForm() {
           >
             {state.phase === 'submitting' ? (
               <>
-                <Spinner size='sm' label='Starting scan' />
+                <Spinner size='sm' aria-label='Starting scan' />
                 Starting scan...
               </>
             ) : (
@@ -201,10 +203,19 @@ export default function URLInputForm() {
         </div>
       </form>
       {state.phase === 'error' && (
-        <ErrorAlert
-          message={state.message}
-          onRetry={() => setState({ phase: 'idle' })}
-        />
+        <Alert variant='error'>
+          {state.message}
+          <Button
+            type='button'
+            name='retry-scan'
+            variant='bare'
+            size='sm'
+            onClick={() => setState({ phase: 'idle' })}
+            className='block mt-2 text-sm font-medium underline hover:no-underline'
+          >
+            Try again
+          </Button>
+        </Alert>
       )}
     </div>
   );

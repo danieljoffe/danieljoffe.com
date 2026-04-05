@@ -1,7 +1,6 @@
+import { ComponentType } from 'react';
 import { AllowedProjectSlugs } from '@/types/base';
 import { PostMetadata } from '@/types/postTypes';
-import { ComponentType } from 'react';
-
 import UiComponentsV1, { metadata as uiV1Meta } from './ui-components-v1.mdx';
 import UiComponentsV2, { metadata as uiV2Meta } from './ui-components-v2.mdx';
 import PerformanceCaseStudy, {

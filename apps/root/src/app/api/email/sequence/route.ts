@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { ReactElement } from 'react';
+import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createResendClient, EMAIL_FROM } from '@/lib/email/resend';
 import { buildUnsubscribeUrl } from '@/lib/email/tokens';
 import { captureApiError } from '@/lib/errorTracking';
-import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import { CALENDLY_URL } from '@/utils/constants';
 import QuickWinEmail from '@/components/emails/QuickWin';
 import FollowUpEmail from '@/components/emails/FollowUp';
-import type { ReactElement } from 'react';
 
 const BATCH_LIMIT = 20;
 

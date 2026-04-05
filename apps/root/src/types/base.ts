@@ -1,7 +1,7 @@
+import { Article, Blog, Corporation, Person, Role } from 'schema-dts';
 import { type experiencePageSlugs } from '@/data/experience';
 import { type projectPageSlugs } from '@/data/project';
 import { type blogPageSlugs } from '@/data/blog';
-import { Article, Blog, Corporation, Person, Role } from 'schema-dts';
 
 export type WithChildren = {
   children: React.ReactNode;

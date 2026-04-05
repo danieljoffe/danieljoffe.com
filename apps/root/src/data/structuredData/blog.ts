@@ -1,12 +1,12 @@
 import { AllowedBlogSlugs, BlogStructuredData } from '@/types/base';
-import {
-  personStructuredData as author,
-  CollectionPageStructuredData,
-} from './base';
 import { blogSlugs, blogPageSlugs } from '@/data/blog';
 import { blogRecords } from '@/data/blogThumbnails';
 import { DOMAIN_URL, BLOG_LINK, FULL_NAME } from '@/utils/constants';
 import { blogMdxMetadata } from '@/data/content/blog';
+import {
+  personStructuredData as author,
+  CollectionPageStructuredData,
+} from './base';
 
 export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
   {

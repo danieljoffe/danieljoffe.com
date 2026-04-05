@@ -44,6 +44,25 @@ jest.mock('@/components/kit', () => ({
       />
     );
   },
+  Heading: function MockHeading({
+    as,
+    children,
+    className,
+    id,
+  }: {
+    as?: string;
+    variant: string;
+    children: React.ReactNode;
+    className?: string;
+    id?: string;
+  }) {
+    const Tag = (as || 'h1') as React.ElementType;
+    return (
+      <Tag className={className} id={id}>
+        {children}
+      </Tag>
+    );
+  },
 }));
 
 describe('PostBody', () => {

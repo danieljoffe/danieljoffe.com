@@ -1,8 +1,8 @@
 'use client';
+import dynamic from 'next/dynamic';
+import { analytics } from '@/lib/analytics';
 import Logo from './Logo';
 import DarkModeToggle from './DarkModeToggle';
-import { analytics } from '@/lib/analytics';
-import dynamic from 'next/dynamic';
 
 const MenuIcon = dynamic(() => import('./MenuIcon'), {
   ssr: false,

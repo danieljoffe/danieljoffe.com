@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
+import { isValidUuid, GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import { getOgFonts } from '@/lib/og';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { isValidUuid, GRADE_MAP } from '@danieljoffe.com/shared-audit';
 
 export const alt = 'Website Performance Audit Report';
 export const size = { width: 1200, height: 630 };

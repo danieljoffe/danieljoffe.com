@@ -1,16 +1,16 @@
 import { Metadata } from 'next';
 import { FolderOpen, Github, BookOpen, Code } from 'lucide-react';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  PostCard,
-  StructuredData,
-} from '@/components/kit';
+import { PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 
 const projectsList = getContentByType('project')
@@ -29,14 +29,12 @@ export default function Projects() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Projects
-          </h1>
-          <p className='text-lg text-text-secondary max-w-xl mx-auto'>
+          <Heading variant='hero'>Projects</Heading>
+          <Text variant='subtitle' className='max-w-xl mx-auto'>
             Case studies and projects spanning full-stack development, backend
             architecture, and frontend systems. Each project includes the
             challenge, my approach, and measurable outcomes.
-          </p>
+          </Text>
         </div>
       </Section>
 
@@ -49,9 +47,9 @@ export default function Projects() {
           label='Open Source'
         />
         <div className={`${cardBase} p-5 space-y-3`}>
-          <p className='text-sm text-text-secondary'>
+          <Text variant='body'>
             Explore the source code or browse the component library.
-          </p>
+          </Text>
           <div className='flex flex-wrap gap-2'>
             <a
               href={GITHUB_REPO_URL}

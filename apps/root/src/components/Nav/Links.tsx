@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import { AUDIT_LINK, NAV_LINKS } from '@/utils/constants';
-import { useRouter } from 'next/navigation';
 
 export default function NavLinks({
   pathname,

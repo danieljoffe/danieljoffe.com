@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import ScanProgress from '@/app/audit/ScanProgress';
 import Button from '@/components/Button';
-import { ErrorAlert } from '@/components/kit';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
@@ -78,18 +80,15 @@ export default function ScanPending({
             </div>
 
             <div>
-              <h1
-                id='scan-failed-heading'
-                className='text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-[1.1]'
-              >
+              <Heading variant='section' id='scan-failed-heading'>
                 Scan failed
-              </h1>
-              <p className='text-text-secondary mt-2 truncate max-w-sm mx-auto'>
+              </Heading>
+              <Text variant='bodyLg' className='mt-2 truncate max-w-sm mx-auto'>
                 {url}
-              </p>
+              </Text>
             </div>
 
-            <ErrorAlert message={error} />
+            <Alert variant='error'>{error}</Alert>
 
             <Button as='link' href='/audit'>
               Try again

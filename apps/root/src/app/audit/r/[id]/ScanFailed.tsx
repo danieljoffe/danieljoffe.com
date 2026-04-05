@@ -1,4 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
@@ -18,20 +20,15 @@ export default function ScanFailed({ url, errorMessage }: ScanFailedProps) {
           </div>
 
           <div>
-            <h1
-              id='scan-failed-heading'
-              className='text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-[1.1]'
-            >
+            <Heading variant='section' id='scan-failed-heading'>
               Scan failed
-            </h1>
-            <p className='text-text-secondary mt-2 truncate max-w-sm mx-auto'>
+            </Heading>
+            <Text variant='bodyLg' className='mt-2 truncate max-w-sm mx-auto'>
               {url}
-            </p>
+            </Text>
           </div>
 
-          <p className='text-text-secondary'>
-            {friendlyErrorMessage(errorMessage)}
-          </p>
+          <Text variant='bodyLg'>{friendlyErrorMessage(errorMessage)}</Text>
 
           <Button as='link' href='/audit'>
             Try again
