@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Pagination, Spinner } from '@/components/kit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Pagination } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { useToast } from '@/state/Toast/ToastProvider';
@@ -92,7 +93,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
             {loading ? (
               <tr>
                 <td colSpan={7} className='py-8 text-center'>
-                  <Spinner label='Loading leads' />
+                  <Spinner aria-label='Loading leads' />
                 </td>
               </tr>
             ) : leads.length === 0 ? (

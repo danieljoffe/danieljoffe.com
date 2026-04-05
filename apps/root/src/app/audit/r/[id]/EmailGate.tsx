@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { VALIDATION_PATTERNS } from '@/utils/constants';
 import Button from '@/components/Button';
-import { Spinner, ErrorAlert, FormFieldError, Text } from '@/components/kit';
+import { FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
@@ -159,7 +162,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                 >
                   {state.phase === 'submitting' ? (
                     <>
-                      <Spinner size='sm' label='Submitting' />
+                      <Spinner size='sm' aria-label='Submitting' />
                       Submitting...
                     </>
                   ) : (
@@ -169,10 +172,19 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
               </div>
             </form>
             {state.phase === 'error' && (
-              <ErrorAlert
-                message={state.message}
-                onRetry={() => setState({ phase: 'locked' })}
-              />
+              <Alert variant='error'>
+                {state.message}
+                <Button
+                  type='button'
+                  name='retry-email-gate'
+                  variant='bare'
+                  size='sm'
+                  onClick={() => setState({ phase: 'locked' })}
+                  className='block mt-2 text-sm font-medium underline hover:no-underline'
+                >
+                  Try again
+                </Button>
+              </Alert>
             )}
           </div>
         </div>

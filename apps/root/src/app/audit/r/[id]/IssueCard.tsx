@@ -1,6 +1,7 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
-import { Heading, Text } from '@/components/kit';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 const severityMap: Record<string, BadgeVariant> = {
   critical: 'error',

@@ -1,9 +1,10 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { ABOUT_LINK, HOME_LINK } from '@/utils/constants';
 import Button from '@/components/Button';
-import { Heading, Text } from '@/components/kit';
 
 export const metadata: Metadata = {
   title: 'Thank You - Message Received',

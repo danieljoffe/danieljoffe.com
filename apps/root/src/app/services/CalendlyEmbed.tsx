@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { analytics } from '@/lib/analytics';
 import { CALENDLY_URL } from '@/utils/constants';
-import { Spinner } from '@/components/kit';
 
 const EMBED_HEIGHT = 700;
 

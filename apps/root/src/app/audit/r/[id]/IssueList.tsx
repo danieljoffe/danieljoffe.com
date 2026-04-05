@@ -1,5 +1,6 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
-import { Heading, Text } from '@/components/kit';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import IssueCard from './IssueCard';
 import EmailGate from './EmailGate';
 

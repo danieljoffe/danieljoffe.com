@@ -1,7 +1,8 @@
 import { AlertTriangle } from 'lucide-react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
-import { Heading, Text } from '@/components/kit';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 interface ScanFailedProps {

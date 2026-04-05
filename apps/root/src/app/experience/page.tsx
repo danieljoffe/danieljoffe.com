@@ -1,18 +1,16 @@
 import { Metadata } from 'next';
 import { Briefcase, ArrowUpRight, Calendar, Clock } from 'lucide-react';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  StructuredData,
-  CompanyLogo,
-  Heading,
-  Text,
-} from '@/components/kit';
+import { CompanyLogo } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');

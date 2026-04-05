@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
-import { Heading, Text } from '@/components/kit';
 import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {

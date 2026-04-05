@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { profileData } from '@/data/profileData';
-import { Text } from '@/components/kit';
 import {
   FULL_NAME,
   NAV_LINKS,

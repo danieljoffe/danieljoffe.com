@@ -1,18 +1,16 @@
 import { Metadata } from 'next';
 import { FolderOpen, Github, BookOpen, Code } from 'lucide-react';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  PostCard,
-  StructuredData,
-  Heading,
-  Text,
-} from '@/components/kit';
+import { PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 
 const projectsList = getContentByType('project')

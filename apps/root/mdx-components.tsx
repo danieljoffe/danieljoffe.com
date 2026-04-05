@@ -1,6 +1,6 @@
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentPropsWithoutRef } from 'react';
-import { Heading } from '@/components/kit';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 
 function slugify(text: string): string {
   return text

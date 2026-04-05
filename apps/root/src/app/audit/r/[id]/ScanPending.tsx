@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import ScanProgress from '@/app/audit/ScanProgress';
 import Button from '@/components/Button';
-import { ErrorAlert, Heading, Text } from '@/components/kit';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
@@ -86,7 +88,7 @@ export default function ScanPending({
               </Text>
             </div>
 
-            <ErrorAlert message={error} />
+            <Alert variant='error'>{error}</Alert>
 
             <Button as='link' href='/audit'>
               Try again

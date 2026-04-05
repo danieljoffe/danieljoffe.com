@@ -1,7 +1,8 @@
 'use client';
 
 import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
-import { Pagination, Spinner } from '@/components/kit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Pagination } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 
@@ -99,7 +100,7 @@ export default function ScansTable({ password }: ScansTableProps) {
             {loading ? (
               <tr>
                 <td colSpan={5} className='py-8 text-center'>
-                  <Spinner label='Loading scans' />
+                  <Spinner aria-label='Loading scans' />
                 </td>
               </tr>
             ) : scans.length === 0 ? (

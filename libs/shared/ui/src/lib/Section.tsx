@@ -41,19 +41,20 @@ const overflowClasses = {
 
 export function Section({
   children,
+  ref,
   padding = 'none',
   background = 'none',
-  center = true,
-  overflow = 'hidden',
+  center = false,
+  overflow = 'visible',
   fullWidth = true,
   className,
-  ref,
   ...rest
 }: SectionProps) {
   return (
     <section
       ref={ref}
       className={cn(
+        'relative px-6 lg:px-0',
         paddingClasses[padding],
         backgroundClasses[background],
         overflowClasses[overflow],

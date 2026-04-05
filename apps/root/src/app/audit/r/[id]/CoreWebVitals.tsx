@@ -1,6 +1,7 @@
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading, Text } from '@/components/kit';
 
 interface CoreWebVitalsProps {
   fcpMs: number | null;

@@ -1,4 +1,4 @@
-import { Text } from '@/components/kit';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 interface Stat {
   label: string;

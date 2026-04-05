@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading, Text } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';

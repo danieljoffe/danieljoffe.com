@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
-import { Heading } from './Heading';
-import { Text } from './Text';
 
 const analyticsHandlers: Record<ContentType, (slug: string) => void> = {
   project: analytics.projectClick,

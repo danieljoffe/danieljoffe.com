@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { useModal } from '@/state/Modal/ModalProvider';
 import Button from '@/components/Button';
-import { Heading } from '@/components/kit';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Z_INDEX, ANIMATION_DURATION } from '@/utils/constants';
 

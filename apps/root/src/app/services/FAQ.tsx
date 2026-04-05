@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
-import { Text } from '@/components/kit';
 import { servicesFAQs } from '@/data/services';
 
 export default function FAQ() {

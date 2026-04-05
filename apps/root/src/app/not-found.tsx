@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { HOME_LINK } from '@/utils/constants';
 import { notFoundMetadata } from '@/data/metadata/notFound';
 import Button from '@/components/Button';
-import { Heading, Text } from '@/components/kit';
 
 export const metadata: Metadata = notFoundMetadata;
 

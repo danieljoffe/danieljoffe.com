@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import {
   isValidUuid,
   GRADE_MAP,
@@ -7,7 +8,6 @@ import {
   type ScanIssue,
   type DeviceMode,
 } from '@danieljoffe.com/shared-audit';
-import { PageLayout } from '@/components/kit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import ReportHeader from './ReportHeader';
 import ScoreCards from './ScoreCards';

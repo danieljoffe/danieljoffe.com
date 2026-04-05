@@ -1,4 +1,5 @@
-import { Heading, Text } from '@/components/kit';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 const steps = [
   {
