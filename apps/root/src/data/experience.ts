@@ -6,7 +6,7 @@ export const experienceRoles = {
   IB: 'Frontend Developer',
   TLC: 'Software Engineer',
   FC: 'Full Stack Engineer',
-  SD: 'Senior Frontend Developer',
+  SD: 'Full-Stack Engineer',
 } as const;
 
 export const experienceNames = {

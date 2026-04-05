@@ -62,7 +62,7 @@ export default async function OgImage() {
           textAlign: 'center',
         }}
       >
-        Frontend Development & Consulting
+        Full-Stack Development & Consulting
       </span>
 
       <span

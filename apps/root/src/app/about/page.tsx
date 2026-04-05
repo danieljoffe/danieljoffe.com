@@ -152,9 +152,9 @@ export default function About() {
         />
         <div className='space-y-6'>
           <Text variant='bodyLg'>
-            My journey began in frontend development, but I&apos;ve evolved into
-            a technical leader who bridges the gap between engineering and
-            business teams.
+            My journey began in frontend development, but I&apos;ve grown into a
+            full-stack engineer and technical leader who bridges the gap between
+            engineering and business teams.
           </Text>
 
           {/* Timeline images */}
