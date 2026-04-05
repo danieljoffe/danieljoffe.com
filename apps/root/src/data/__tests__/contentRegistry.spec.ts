@@ -26,7 +26,7 @@ describe('contentRegistry', () => {
 
     it('returns all blog entries in order', () => {
       const blogs = getContentByType('blog');
-      expect(blogs.length).toBe(5);
+      expect(blogs.length).toBe(10);
       expect(blogs[0].type).toBe('blog');
       expect(blogs[0].slug).toBe('unified-content-pipeline');
       expect(blogs[1].slug).toBe('auto-generated-toc-scroll-spy');
@@ -89,7 +89,12 @@ describe('contentRegistry', () => {
       expect(slugs).toContain('visual-regression-ci-pipeline');
       expect(slugs).toContain('shared-ui-design-system');
       expect(slugs).toContain('compose-providers-react-context');
-      expect(slugs.length).toBe(5);
+      expect(slugs).toContain('typography-system-nextjs');
+      expect(slugs).toContain('removing-focus-trap-react');
+      expect(slugs).toContain('eslint-import-ordering-monorepo');
+      expect(slugs).toContain('rule-of-three-design-systems');
+      expect(slugs).toContain('documenting-design-tokens');
+      expect(slugs.length).toBe(10);
     });
   });
 
@@ -137,7 +142,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(20); // 10 projects + 5 experiences + 5 blogs
+      expect(all.length).toBe(25); // 10 projects + 5 experiences + 10 blogs
     });
 
     it('contains entries of all types', () => {

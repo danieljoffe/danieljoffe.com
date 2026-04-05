@@ -1,0 +1,132 @@
+export const metadata = {
+  title: 'Documenting Design Tokens for Developer Experience',
+  date: '2026-04-05',
+  excerpt:
+    'Why a comprehensive theme token reference is part of the design system — not an afterthought — and how we documented 100+ tokens for a Tailwind CSS 4 component library.',
+  author: 'Daniel Joffe',
+  category: 'Design Systems',
+  tags: ['Design Systems', 'Documentation', 'Tailwind CSS', 'Developer Experience'],
+  slug: 'documenting-design-tokens',
+  type: 'blog',
+  topic: 'Developer Experience',
+};
+
+## The Documentation Gap
+
+Our shared-ui library had 37 components, a `cn()` utility, error boundaries,
+and a theme with 100+ design tokens defined in CSS custom properties. It also
+had a README that said:
+
+> Shared React component library.
+
+That's it. One line.
+
+Developers consuming the library had to read the source code to discover
+available tokens, understand component APIs, or learn the conventions.
+Every question — "What's the text-tertiary color?" "Is there a card variant
+for elevated surfaces?" — required grepping through `theme.css`.
+
+## Docs Are Part of the Design System
+
+A component library without documentation is a codebase, not a design system.
+The distinction matters because a design system encodes **decisions**, not just
+code. When you choose `text-text-secondary` for body text, that's a decision.
+When a developer guesses `text-gray-500` because they don't know the token
+exists, the decision is lost.
+
+Documentation captures three things code alone cannot:
+
+1. **Intent**: Why `text-text-secondary` exists and when to use it
+2. **Constraints**: What's available and what's off-limits
+3. **Patterns**: How tokens compose into common UI recipes
+
+## The Token Reference Structure
+
+We organized the theme documentation around usage categories, not
+implementation details. Developers think "I need a muted text color," not
+"I need an oklch value":
+
+### Color Tokens
+
+```
+Surface colors:
+  --color-surface          → Base background
+  --color-surface-secondary → Card/section backgrounds
+  --color-surface-elevated  → Elevated cards, modals
+  --color-surface-tertiary  → Subtle backgrounds (input fields, code blocks)
+
+Text colors:
+  --color-text-primary     → Headings, primary content
+  --color-text-secondary   → Body text, descriptions
+  --color-text-tertiary    → Metadata, timestamps, hints
+  --color-text-inverse     → Text on dark backgrounds
+
+Border colors:
+  --color-border           → Default borders
+  --color-border-secondary → Emphasized borders (hover states)
+```
+
+Each token includes light and dark mode values. Developers don't need to
+remember oklch values — they pick the semantic token that matches their intent.
+
+### Typography Tokens
+
+Rather than listing font sizes, we documented the **variant components**:
+
+| Use case | Component | Output |
+|----------|-----------|--------|
+| Page hero | `<Heading variant="hero">` | 36px → 48px responsive, bold |
+| Card title | `<Heading variant="cardTitle">` | 14px, semibold |
+| Body text | `<Text variant="body">` | 14px, secondary color |
+| Metadata | `<Text variant="meta">` | 12px, tertiary color |
+
+This bridges the gap between "I need small gray text" and "use
+`<Text variant='meta'>`."
+
+## Component Catalog
+
+Each component gets a consistent entry:
+
+```markdown
+### Alert
+Status messages with contextual styling.
+
+**Variants:** `info` | `success` | `warning` | `error`
+**Props:** `title?`, `dismissible?`, `onDismiss?`
+
+Usage:
+  <Alert variant="warning" title="Heads up">
+    Check your input values.
+  </Alert>
+```
+
+Key decisions are called out explicitly: "Alert title uses `text-sm
+font-semibold` with margin reset. The body uses `text-sm text-text-secondary`."
+
+## Contribution Guidelines
+
+The README includes rules for adding new components:
+
+1. **No Next.js dependencies** — shared-ui depends only on React + Tailwind
+2. **Use `Heading`/`Text` for all typography** — no raw `text-*` + `font-*`
+3. **Accept `ref` as a regular prop** (React 19 pattern, not `forwardRef`)
+4. **Accept `className` for style extensions** via `cn()` merging
+5. **Export types alongside components** from the barrel index
+
+These rules prevent the library from drifting back toward the inconsistent
+state we started in.
+
+## The Impact
+
+After shipping the comprehensive README:
+
+- **Onboarding friction dropped** — new components follow documented patterns
+  instead of cargo-culting from existing code
+- **Token adoption increased** — developers use `text-text-tertiary` instead
+  of guessing gray values
+- **PR reviews got faster** — reviewers point to the docs instead of
+  explaining conventions from memory
+
+Documentation isn't a nice-to-have. It's the interface between your design
+decisions and the developers who implement them. Without it, every decision
+lives in one person's head — and that doesn't scale.

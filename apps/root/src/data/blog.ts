@@ -4,6 +4,11 @@ export const blogSlugs = {
   visualRegressionCiPipeline: 'visual-regression-ci-pipeline',
   sharedUiDesignSystem: 'shared-ui-design-system',
   composeProvidersReactContext: 'compose-providers-react-context',
+  typographySystemNextjs: 'typography-system-nextjs',
+  removingFocusTrapReact: 'removing-focus-trap-react',
+  eslintImportOrderingMonorepo: 'eslint-import-ordering-monorepo',
+  ruleOfThreeDesignSystems: 'rule-of-three-design-systems',
+  documentingDesignTokens: 'documenting-design-tokens',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

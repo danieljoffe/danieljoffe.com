@@ -68,4 +68,9 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.visualRegressionCiPipeline, // 2026-04-04
   blogSlugs.sharedUiDesignSystem, // 2026-04-04
   blogSlugs.composeProvidersReactContext, // 2026-04-05
+  blogSlugs.typographySystemNextjs, // 2026-04-05
+  blogSlugs.removingFocusTrapReact, // 2026-04-05
+  blogSlugs.eslintImportOrderingMonorepo, // 2026-04-05
+  blogSlugs.ruleOfThreeDesignSystems, // 2026-04-05
+  blogSlugs.documentingDesignTokens, // 2026-04-05
 ];

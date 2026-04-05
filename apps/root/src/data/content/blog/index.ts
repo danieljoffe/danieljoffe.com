@@ -16,6 +16,21 @@ import SharedUiDesignSystem, {
 import ComposeProvidersReactContext, {
   metadata as composeProvidersMeta,
 } from './compose-providers-react-context.mdx';
+import TypographySystemNextjs, {
+  metadata as typographySystemMeta,
+} from './typography-system-nextjs.mdx';
+import RemovingFocusTrapReact, {
+  metadata as removingFocusTrapMeta,
+} from './removing-focus-trap-react.mdx';
+import EslintImportOrderingMonorepo, {
+  metadata as eslintImportOrderingMeta,
+} from './eslint-import-ordering-monorepo.mdx';
+import RuleOfThreeDesignSystems, {
+  metadata as ruleOfThreeMeta,
+} from './rule-of-three-design-systems.mdx';
+import DocumentingDesignTokens, {
+  metadata as documentingDesignTokensMeta,
+} from './documenting-design-tokens.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -23,6 +38,11 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'visual-regression-ci-pipeline': VisualRegressionCiPipeline,
   'shared-ui-design-system': SharedUiDesignSystem,
   'compose-providers-react-context': ComposeProvidersReactContext,
+  'typography-system-nextjs': TypographySystemNextjs,
+  'removing-focus-trap-react': RemovingFocusTrapReact,
+  'eslint-import-ordering-monorepo': EslintImportOrderingMonorepo,
+  'rule-of-three-design-systems': RuleOfThreeDesignSystems,
+  'documenting-design-tokens': DocumentingDesignTokens,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -31,4 +51,9 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'visual-regression-ci-pipeline': visualRegressionMeta,
   'shared-ui-design-system': sharedUiDesignSystemMeta,
   'compose-providers-react-context': composeProvidersMeta,
+  'typography-system-nextjs': typographySystemMeta,
+  'removing-focus-trap-react': removingFocusTrapMeta,
+  'eslint-import-ordering-monorepo': eslintImportOrderingMeta,
+  'rule-of-three-design-systems': ruleOfThreeMeta,
+  'documenting-design-tokens': documentingDesignTokensMeta,
 };
