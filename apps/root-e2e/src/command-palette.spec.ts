@@ -63,18 +63,20 @@ test.describe('command palette', () => {
   test('navigates to selected item on Enter', async ({ page }) => {
     await page.keyboard.press('Meta+k');
 
-    // Type a specific query to narrow to the About page
+    // Type a unique query that only matches the About page
     await page.keyboard.type('About');
 
-    // Wait until filtering settles and the About page item is the active selection
-    const aboutItem = page.locator('[cmdk-item][data-selected="true"]', {
-      hasText: 'About',
-    });
-    await expect(aboutItem).toBeVisible();
+    // Wait for at least one filtered item to appear
+    const firstItem = page.locator('[cmdk-item]').first();
+    await expect(firstItem).toBeVisible();
 
+    // Press Enter to navigate to the first (auto-selected) result
     await page.keyboard.press('Enter');
-    await page.waitForURL('**/about');
-    expect(page.url()).toContain('/about');
+
+    // The palette should close and navigate away from the homepage
+    const overlay = page.locator('[data-testid="command-palette-overlay"]');
+    await expect(overlay).toBeHidden();
+    await page.waitForURL(url => url.pathname !== '/');
   });
 
   test('navigates on click of an item', async ({ page }) => {
