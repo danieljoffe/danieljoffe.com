@@ -83,7 +83,7 @@ export const PDExperienceSD: ExperienceStructuredData = {
   roleName: experienceRoles.SD,
   startDate: '2023-01',
   description:
-    'Senior Frontend Developer combining formal computer science education with contract engineering work.',
+    'Full-Stack Engineer combining formal computer science education with contract engineering work.',
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.SD,
@@ -106,9 +106,9 @@ export const experienceStructuredData: Record<
 export const experienceRootStructuredData: CollectionPageStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: `Experience | ${FULL_NAME} - Frontend Engineer`,
+  name: `Experience | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'An overview of my professional journey as a frontend engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',
+    'An overview of my professional journey as a full-stack engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',
   url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}`,
   author: member,
   mainEntity: {

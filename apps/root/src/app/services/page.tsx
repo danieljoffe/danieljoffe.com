@@ -196,7 +196,7 @@ export default function Services() {
           </Heading>
           <Text variant='bodyLg'>
             Book a free 30-minute call. No contracts, no commitments&mdash;just
-            a conversation about your frontend challenges.
+            a conversation about your engineering challenges.
           </Text>
         </div>
         <CalendlyEmbed />
