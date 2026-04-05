@@ -45,6 +45,7 @@ export const projectHistory: AllowedProjectSlugs[] = [
   projectSlugs.csModernPractice, // 2026-01-11 — Portfolio (Jul 2025)
   projectSlugs.uiV2, // 2026-01-29
   projectSlugs.csContactForm, // 2026-03-24 — Portfolio (Aug 2025)
+  projectSlugs.csAppContext, // 2026-04-05 — Portfolio (Mar 2026)
 ];
 
 /**

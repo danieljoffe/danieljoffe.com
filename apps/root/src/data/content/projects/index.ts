@@ -24,6 +24,9 @@ import LogisticsDashboardStudyCase, {
 import ContactFormCaseStudy, {
   metadata as contactFormMeta,
 } from './contact-form-case-study.mdx';
+import AppContextCaseStudy, {
+  metadata as appContextMeta,
+} from './appcontext-simplification-case-study.mdx';
 
 export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
   {
@@ -36,6 +39,7 @@ export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
     'portfolio-modern-practice-study-case': PortfolioModernPracticeStudyCase,
     'logistics-dashboard-study-case': LogisticsDashboardStudyCase,
     'contact-form-case-study': ContactFormCaseStudy,
+    'appcontext-simplification-case-study': AppContextCaseStudy,
   };
 
 export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
@@ -48,4 +52,5 @@ export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
   'portfolio-modern-practice-study-case': modernMeta,
   'logistics-dashboard-study-case': logisticsMeta,
   'contact-form-case-study': contactFormMeta,
+  'appcontext-simplification-case-study': appContextMeta,
 };
