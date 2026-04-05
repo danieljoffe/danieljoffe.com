@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Text } from './Text';
 import { cn } from './utils/cn';
 
 export interface Column<T> {
@@ -82,11 +83,10 @@ export function Table<T extends Record<string, unknown>>({
           ))}
           {data.length === 0 && (
             <tr>
-              <td
-                colSpan={columns.length}
-                className='px-4 py-12 text-center text-text-tertiary'
-              >
-                No data available
+              <td colSpan={columns.length} className='px-4 py-12 text-center'>
+                <Text variant='caption' as='span'>
+                  No data available
+                </Text>
               </td>
             </tr>
           )}
