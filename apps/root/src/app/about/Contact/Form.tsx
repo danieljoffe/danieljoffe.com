@@ -8,6 +8,7 @@ import type { InferType } from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
 import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
@@ -16,7 +17,6 @@ import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
-import { FormFieldError } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
