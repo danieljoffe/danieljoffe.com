@@ -1,3 +1,4 @@
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { type PostPaginationData } from '@/data/contentOrder';
 
@@ -21,7 +22,9 @@ export function PostPagination({ pagination }: PostPaginationProps) {
         aria-label={`Previous: ${prev.title}`}
         className='flex flex-col items-start gap-0.5 min-w-0 max-w-[48%]'
       >
-        <span className='text-xs text-text-tertiary'>Previous</span>
+        <Text variant='meta' as='span'>
+          Previous
+        </Text>
         <span className='truncate w-full text-left'>{prev.title}</span>
       </Button>
       <Button
@@ -32,7 +35,9 @@ export function PostPagination({ pagination }: PostPaginationProps) {
         aria-label={`Next: ${next.title}`}
         className='flex flex-col items-end gap-0.5 min-w-0 max-w-[48%] sm:ml-auto'
       >
-        <span className='text-xs text-text-tertiary'>Next</span>
+        <Text variant='meta' as='span'>
+          Next
+        </Text>
         <span className='truncate w-full text-right'>{next.title}</span>
       </Button>
     </nav>

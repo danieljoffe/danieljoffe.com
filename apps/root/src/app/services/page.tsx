@@ -10,7 +10,7 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
-import { cardBase } from '@/lib/layoutStyles';
+import { cardBase, focusRing } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';
 import CalendlyEmbed from './CalendlyEmbed';
@@ -38,7 +38,7 @@ export default function Services() {
             <HeroCTA />
             <a
               href='#services-grid'
-              className='inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+              className={`inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm ${focusRing}`}
             >
               See what I offer
               <ChevronDown className='h-4 w-4' />
@@ -75,40 +75,47 @@ export default function Services() {
                 <Text variant='body'>{service.description}</Text>
 
                 <div>
-                  <p className='text-xs font-semibold text-text-primary mb-2'>
+                  <Text
+                    variant='label'
+                    as='p'
+                    className='mb-2 text-text-primary'
+                  >
                     What you get:
-                  </p>
+                  </Text>
                   <ul className='space-y-1.5'>
                     {service.deliverables.map((item, j) => (
-                      <li
-                        key={j}
-                        className='text-sm text-text-secondary flex items-start gap-2'
-                      >
+                      <li key={j} className='flex items-start gap-2'>
                         <Check className='h-3.5 w-3.5 text-success shrink-0 mt-0.5' />
-                        <span>{item}</span>
+                        <Text variant='body' as='span'>
+                          {item}
+                        </Text>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <p className='text-xs text-text-tertiary italic border-l-2 border-brand-200 pl-3'>
+                <Text
+                  variant='meta'
+                  as='p'
+                  className='italic border-l-2 border-brand-200 pl-3'
+                >
                   {service.proof}
-                </p>
+                </Text>
               </div>
 
-              <div className='flex items-center gap-4 pt-4 mt-4 border-t border-border text-xs text-text-tertiary'>
-                <span>
-                  <span className='font-semibold text-text-secondary'>
+              <div className='flex items-center gap-4 pt-4 mt-4 border-t border-border'>
+                <Text variant='meta' as='span'>
+                  <Text variant='detail' as='span' className='font-semibold'>
                     Timeline:
-                  </span>{' '}
+                  </Text>{' '}
                   {service.timeline}
-                </span>
-                <span>
-                  <span className='font-semibold text-text-secondary'>
+                </Text>
+                <Text variant='meta' as='span'>
+                  <Text variant='detail' as='span' className='font-semibold'>
                     From:
-                  </span>{' '}
+                  </Text>{' '}
                   {service.price}
-                </span>
+                </Text>
               </div>
             </div>
           ))}
@@ -157,12 +164,12 @@ export default function Services() {
           {servicesAudience.map((audience, i) => (
             <div key={i} className={cn(cardBase, 'flex items-start gap-3 p-4')}>
               <audience.Icon className='h-4 w-4 text-brand-500 shrink-0 mt-0.5' />
-              <p className='text-sm text-text-secondary'>
+              <Text variant='body'>
                 <span className='font-semibold text-text-primary'>
                   {audience.label}
                 </span>{' '}
                 {audience.description}
-              </p>
+              </Text>
             </div>
           ))}
         </div>

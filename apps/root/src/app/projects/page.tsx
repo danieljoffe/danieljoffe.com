@@ -12,6 +12,7 @@ import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
 import { PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
+import Button from '@/components/Button';
 
 const projectsList = getContentByType('project')
   .reverse()
@@ -51,26 +52,30 @@ export default function Projects() {
             Explore the source code or browse the component library.
           </Text>
           <div className='flex flex-wrap gap-2'>
-            <a
+            <Button
+              as='link'
               href={GITHUB_REPO_URL}
               target='_blank'
               rel='noopener noreferrer'
               aria-label='View source code on GitHub'
-              className='inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface-elevated text-sm text-text-primary hover:bg-surface-tertiary transition-colors'
+              variant='secondary'
+              size='sm'
             >
               <Github className='h-3.5 w-3.5' aria-hidden='true' />
               View Source
-            </a>
-            <a
+            </Button>
+            <Button
+              as='link'
               href={STORYBOOK_URL}
               target='_blank'
               rel='noopener noreferrer'
               aria-label='Browse UI component library on Storybook'
-              className='inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface-elevated text-sm text-text-primary hover:bg-surface-tertiary transition-colors'
+              variant='secondary'
+              size='sm'
             >
               <BookOpen className='h-3.5 w-3.5' aria-hidden='true' />
               Component Library
-            </a>
+            </Button>
           </div>
         </div>
       </Section>

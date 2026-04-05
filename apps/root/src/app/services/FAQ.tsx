@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
+import { focusRing } from '@/lib/layoutStyles';
 import { servicesFAQs } from '@/data/services';
 
 export default function FAQ() {
@@ -15,7 +16,7 @@ export default function FAQ() {
         <div key={index}>
           <button
             type='button'
-            className='w-full py-4 flex items-center justify-between text-left cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+            className={`w-full py-4 flex items-center justify-between text-left cursor-pointer rounded-sm ${focusRing}`}
             onClick={() => setOpenIndex(openIndex === index ? null : index)}
             aria-expanded={openIndex === index}
           >
