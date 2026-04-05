@@ -10,6 +10,7 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
+import { Heading } from './Heading';
 import { cn } from './utils';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -133,12 +134,9 @@ export function Modal({
         >
           {title && (
             <div className='flex items-center justify-between p-6 border-b border-border'>
-              <h3
-                id={titleId}
-                className='text-lg font-semibold text-text-primary'
-              >
+              <Heading variant='component' id={titleId}>
                 {title}
-              </h3>
+              </Heading>
               <button
                 onClick={handleClose}
                 aria-label='Close dialog'

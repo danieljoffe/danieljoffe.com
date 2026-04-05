@@ -1,3 +1,5 @@
+import { Text } from '@/components/kit';
+
 interface Stat {
   label: string;
   value: string | number;
@@ -16,10 +18,12 @@ export default function StatsRow({ stats }: StatsRowProps) {
           key={stat.label}
           className='rounded-lg border border-border bg-surface-elevated p-6'
         >
-          <p className='text-sm text-text-secondary'>{stat.label}</p>
+          <Text variant='body'>{stat.label}</Text>
           <p className='text-3xl font-bold mt-1'>{stat.value}</p>
           {stat.subtitle && (
-            <p className='text-xs text-text-tertiary mt-1'>{stat.subtitle}</p>
+            <Text variant='meta' as='p' className='mt-1'>
+              {stat.subtitle}
+            </Text>
           )}
         </div>
       ))}

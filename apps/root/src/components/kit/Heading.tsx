@@ -1,7 +1,7 @@
 import {
   Heading as SharedHeading,
   type HeadingVariant as SharedHeadingVariant,
-} from '@danieljoffe.com/shared-ui';
+} from '@danieljoffe.com/shared-ui/Heading';
 import { cn } from '@/lib/cn';
 
 type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p';

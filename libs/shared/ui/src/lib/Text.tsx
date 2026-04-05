@@ -7,6 +7,7 @@ export type TextVariant =
   | 'body'
   | 'bodyLg'
   | 'cardDescription'
+  | 'detail'
   | 'label'
   | 'meta'
   | 'caption'
@@ -27,6 +28,7 @@ const variantStyles: Record<TextVariant, string> = {
   body: 'text-sm text-text-secondary leading-relaxed',
   bodyLg: 'text-base text-text-secondary leading-relaxed',
   cardDescription: 'text-sm text-text-secondary leading-relaxed',
+  detail: 'text-xs text-text-secondary',
   label: 'text-xs font-semibold uppercase tracking-wider text-text-tertiary',
   meta: 'text-xs text-text-tertiary',
   caption: 'text-sm text-text-tertiary',
@@ -38,6 +40,7 @@ const defaultElement: Record<TextVariant, TextElement> = {
   body: 'p',
   bodyLg: 'p',
   cardDescription: 'p',
+  detail: 'p',
   label: 'span',
   meta: 'span',
   caption: 'p',

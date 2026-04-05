@@ -22,9 +22,9 @@ export default function ScanHero({ scanCount }: ScanHeroProps) {
           </div>
           <URLInputForm />
           {scanCount > 0 && (
-            <p className='text-sm text-text-tertiary'>
+            <Text variant='caption'>
               {scanCount.toLocaleString()} sites audited
-            </p>
+            </Text>
           )}
         </div>
       </div>

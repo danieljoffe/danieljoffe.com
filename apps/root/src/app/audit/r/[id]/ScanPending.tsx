@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import ScanProgress from '@/app/audit/ScanProgress';
 import Button from '@/components/Button';
-import { ErrorAlert, Heading } from '@/components/kit';
+import { ErrorAlert, Heading, Text } from '@/components/kit';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
@@ -81,9 +81,9 @@ export default function ScanPending({
               <Heading variant='section' id='scan-failed-heading'>
                 Scan failed
               </Heading>
-              <p className='text-text-secondary mt-2 truncate max-w-sm mx-auto'>
+              <Text variant='bodyLg' className='mt-2 truncate max-w-sm mx-auto'>
                 {url}
-              </p>
+              </Text>
             </div>
 
             <ErrorAlert message={error} />

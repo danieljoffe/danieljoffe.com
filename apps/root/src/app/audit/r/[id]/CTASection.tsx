@@ -1,5 +1,5 @@
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading } from '@/components/kit';
+import { Heading, Text } from '@/components/kit';
 import CalendlyButton from './CalendlyButton';
 
 export default function CTASection() {
@@ -10,10 +10,10 @@ export default function CTASection() {
           <Heading variant='section' id='cta-heading'>
             Want these fixed?
           </Heading>
-          <p className='text-text-secondary max-w-md'>
+          <Text variant='bodyLg' className='max-w-md'>
             I help teams ship faster, more accessible websites. Let&apos;s talk
             about what&apos;s slowing yours down.
-          </p>
+          </Text>
           <CalendlyButton />
         </div>
       </div>

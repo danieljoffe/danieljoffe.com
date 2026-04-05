@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { servicesMetadata } from '@/data/metadata/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
@@ -189,10 +189,10 @@ export default function Services() {
           <Heading variant='section'>
             Let&apos;s figure out how I can help.
           </Heading>
-          <p className='text-text-secondary'>
+          <Text variant='bodyLg'>
             Book a free 30-minute call. No contracts, no commitments&mdash;just
             a conversation about your frontend challenges.
-          </p>
+          </Text>
         </div>
         <CalendlyEmbed />
       </Section>

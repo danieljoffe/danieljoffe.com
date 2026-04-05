@@ -1,4 +1,5 @@
 import { type HTMLAttributes, type Ref } from 'react';
+import { Text } from './Text';
 import { cn } from './utils';
 
 type ProgressBarVariant = 'accent' | 'success' | 'warning' | 'error' | 'info';
@@ -67,12 +68,13 @@ export function ProgressBar({
         />
       </div>
       {showLabel && (
-        <p
-          className='mt-1.5 text-sm text-text-secondary text-right'
+        <Text
+          variant='caption'
+          className='mt-1.5 text-right'
           aria-hidden='true'
         >
           {Math.round(percentage)}%
-        </p>
+        </Text>
       )}
     </div>
   );

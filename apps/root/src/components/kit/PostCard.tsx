@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';

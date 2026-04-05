@@ -1,5 +1,6 @@
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import { type ReactNode, type HTMLAttributes, type Ref } from 'react';
+import { Heading } from './Heading';
 import { cn } from './utils';
 
 type AlertVariant = 'info' | 'success' | 'warning' | 'error';
@@ -64,7 +65,9 @@ export function Alert({
         <Icon className='size-5 shrink-0 mt-0.5' aria-hidden='true' />
         <div className='flex-1'>
           {title && (
-            <h5 className='text-sm font-semibold mb-1 mt-0'>{title}</h5>
+            <Heading variant='cardTitle' as='h5' className='mb-1 mt-0'>
+              {title}
+            </Heading>
           )}
           <div className='text-sm text-text-secondary'>{children}</div>
         </div>

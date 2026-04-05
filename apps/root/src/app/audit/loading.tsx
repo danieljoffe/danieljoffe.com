@@ -1,4 +1,4 @@
-import { Skeleton } from '@danieljoffe.com/shared-ui';
+import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { PageLayout } from '@/components/kit';
 
 export default function Loading() {

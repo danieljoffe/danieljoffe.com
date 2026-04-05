@@ -1,7 +1,7 @@
 import {
   Text as SharedText,
   type TextVariant as SharedTextVariant,
-} from '@danieljoffe.com/shared-ui';
+} from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
 
 type TextElement = 'p' | 'span' | 'div' | 'label';
@@ -22,6 +22,7 @@ const sharedVariants = new Set<string>([
   'body',
   'bodyLg',
   'cardDescription',
+  'detail',
   'label',
   'meta',
   'caption',
@@ -35,6 +36,8 @@ type TextProps = {
   className?: string | undefined;
   id?: string | undefined;
   role?: string | undefined;
+  'aria-hidden'?: boolean | 'true' | 'false' | undefined;
+  'aria-live'?: 'off' | 'assertive' | 'polite' | undefined;
   children: React.ReactNode;
 };
 
@@ -45,6 +48,7 @@ export function Text({
   id,
   role,
   children,
+  ...ariaProps
 }: TextProps) {
   if (sharedVariants.has(variant)) {
     return (
@@ -54,6 +58,7 @@ export function Text({
         className={className}
         id={id}
         role={role}
+        {...ariaProps}
       >
         {children}
       </SharedText>
@@ -67,6 +72,7 @@ export function Text({
       id={id}
       role={role}
       className={cn(appVariantStyles[appVariant], className)}
+      {...ariaProps}
     >
       {children}
     </Tag>

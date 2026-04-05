@@ -49,9 +49,9 @@ export default function Projects() {
           label='Open Source'
         />
         <div className={`${cardBase} p-5 space-y-3`}>
-          <p className='text-sm text-text-secondary'>
+          <Text variant='body'>
             Explore the source code or browse the component library.
-          </p>
+          </Text>
           <div className='flex flex-wrap gap-2'>
             <a
               href={GITHUB_REPO_URL}
