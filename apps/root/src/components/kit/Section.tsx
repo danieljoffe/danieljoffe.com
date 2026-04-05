@@ -1,3 +1,5 @@
+import { Section as SharedSection } from '@danieljoffe.com/shared-ui/Section';
+
 export function Section({
   children,
   className = '',
@@ -6,8 +8,13 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={`relative px-6 lg:px-0 ${className}`}>
+    <SharedSection
+      padding='none'
+      background='none'
+      overflow='visible'
+      className={`px-6 lg:px-0 ${className}`}
+    >
       {children}
-    </section>
+    </SharedSection>
   );
 }

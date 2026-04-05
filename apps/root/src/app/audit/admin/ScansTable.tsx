@@ -100,7 +100,7 @@ export default function ScansTable({ password }: ScansTableProps) {
             {loading ? (
               <tr>
                 <td colSpan={5} className='py-8 text-center'>
-                  <Spinner label='Loading scans' />
+                  <Spinner aria-label='Loading scans' />
                 </td>
               </tr>
             ) : scans.length === 0 ? (

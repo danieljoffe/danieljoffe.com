@@ -161,7 +161,7 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                 >
                   {state.phase === 'submitting' ? (
                     <>
-                      <Spinner size='sm' label='Submitting' />
+                      <Spinner size='sm' aria-label='Submitting' />
                       Submitting...
                     </>
                   ) : (

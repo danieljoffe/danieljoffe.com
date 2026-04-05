@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
-import { Kbd } from './Kbd';
+import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
 
 const SCROLL_THRESHOLD = 300;
 

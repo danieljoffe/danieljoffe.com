@@ -10,7 +10,7 @@ import MobileNav from './MobileNav';
 const TabletUpNav = dynamic(() => import('./TabletUpNav'), {
   loading: () => (
     <div className='hidden md:flex w-full max-w-3xl mx-auto px-6 lg:px-0 h-14 items-center justify-center'>
-      <Spinner size='sm' label='Loading navigation' />
+      <Spinner size='sm' aria-label='Loading navigation' />
     </div>
   ),
 });

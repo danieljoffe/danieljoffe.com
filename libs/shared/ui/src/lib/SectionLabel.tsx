@@ -1,12 +1,21 @@
+import type { ReactNode, Ref } from 'react';
+import { cn } from './utils';
+
+export interface SectionLabelProps {
+  icon: ReactNode;
+  label: string;
+  ref?: Ref<HTMLDivElement>;
+  className?: string;
+}
+
 export function SectionLabel({
   icon,
   label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
+  ref,
+  className,
+}: SectionLabelProps) {
   return (
-    <div className='flex items-center gap-2 mb-8'>
+    <div ref={ref} className={cn('flex items-center gap-2 mb-8', className)}>
       <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
         {icon}
       </div>

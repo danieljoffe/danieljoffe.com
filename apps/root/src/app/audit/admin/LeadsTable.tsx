@@ -92,7 +92,7 @@ export default function LeadsTable({ password }: LeadsTableProps) {
             {loading ? (
               <tr>
                 <td colSpan={7} className='py-8 text-center'>
-                  <Spinner label='Loading leads' />
+                  <Spinner aria-label='Loading leads' />
                 </td>
               </tr>
             ) : leads.length === 0 ? (

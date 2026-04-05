@@ -7,6 +7,8 @@ export interface PageContainerProps extends Omit<
   'className'
 > {
   children: ReactNode;
+  /** HTML element for the outer wrapper - defaults to 'div' */
+  as?: 'div' | 'main' | 'section';
   /** Container size - defaults to 'sm' for page content */
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   /** Additional classes for the outer wrapper */
@@ -22,22 +24,32 @@ export interface PageContainerProps extends Omit<
  * - Consistent page content width
  */
 export const PageContainer = forwardRef<HTMLDivElement, PageContainerProps>(
-  ({ children, size = 'sm', wrapperClassName, className, ...rest }, ref) => {
+  (
+    {
+      children,
+      as: Tag = 'div',
+      size = 'sm',
+      wrapperClassName,
+      className,
+      ...rest
+    },
+    ref
+  ) => {
     return (
-      <div
+      <Tag
         ref={ref}
         className={cn('flex justify-center', wrapperClassName)}
         data-testid='page-container-outer'
+        {...rest}
       >
         <Container
           size={size}
           className={cn('flex flex-col py-8 md:py-14', className)}
           data-testid='page-container-inner'
-          {...rest}
         >
           {children}
         </Container>
-      </div>
+      </Tag>
     );
   }
 );

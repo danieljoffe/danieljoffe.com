@@ -7,7 +7,7 @@ const Form = dynamic(() => import('@/app/about/Contact/Form'), {
   ssr: false,
   loading: () => (
     <div className='flex items-center justify-center py-12'>
-      <Spinner size='sm' label='Loading contact form' />
+      <Spinner size='sm' aria-label='Loading contact form' />
     </div>
   ),
 });

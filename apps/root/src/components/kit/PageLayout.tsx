@@ -1,4 +1,4 @@
-import { cn } from '@/lib/cn';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 
 export function PageLayout({
   children,
@@ -8,14 +8,13 @@ export function PageLayout({
   wide?: boolean;
 }) {
   return (
-    <main
+    <PageContainer
+      as='main'
       id='main-content'
-      className={cn(
-        'mx-auto py-16 lg:py-24 space-y-24',
-        wide ? 'max-w-5xl' : 'max-w-3xl'
-      )}
+      size={wide ? 'md' : 'sm'}
+      className='py-16 lg:py-24 space-y-24'
     >
       {children}
-    </main>
+    </PageContainer>
   );
 }

@@ -191,7 +191,7 @@ export default function URLInputForm() {
           >
             {state.phase === 'submitting' ? (
               <>
-                <Spinner size='sm' label='Starting scan' />
+                <Spinner size='sm' aria-label='Starting scan' />
                 Starting scan...
               </>
             ) : (
