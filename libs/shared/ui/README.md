@@ -12,16 +12,22 @@ npm install @danieljoffe.com/shared-ui
 
 ### Peer dependencies
 
-| Package             | Version    | Required                            |
-| ------------------- | ---------- | ----------------------------------- |
-| `react`             | `^19.0.0`  | Yes                                 |
-| `react-dom`         | `^19.0.0`  | Yes                                 |
-| `tailwindcss`       | `^4.0.0`   | Yes                                 |
-| `@headlessui/react` | `^2.0.0`   | Yes (Dropdown, Modal, Tabs, Select) |
-| `lucide-react`      | `^0.460.0` | Yes (icons in various components)   |
+| Package        | Version     | Required                          |
+| -------------- | ----------- | --------------------------------- |
+| `react`        | `^19.0.0`   | Yes                               |
+| `react-dom`    | `^19.0.0`   | Yes                               |
+| `tailwindcss`  | `^4.0.0`    | Yes                               |
+| `lucide-react` | `>=0.400.0` | Yes (icons in various components) |
+
+### Bundled dependencies
+
+These are included in the package and do not need to be installed separately:
+
+- `clsx` — conditional class construction
+- `tailwind-merge` — Tailwind class deduplication
 
 ```bash
-npm install react react-dom tailwindcss @headlessui/react lucide-react
+npm install react react-dom tailwindcss lucide-react
 ```
 
 ## Quick start
