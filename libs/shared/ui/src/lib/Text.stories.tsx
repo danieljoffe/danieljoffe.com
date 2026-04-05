@@ -82,7 +82,8 @@ export const Label: Story = {
   },
 };
 
-export const Meta: Story = {
+export const MetaText: Story = {
+  name: 'Meta',
   args: {
     variant: 'meta',
     children: 'Meta text for dates, authors, and metadata.',
