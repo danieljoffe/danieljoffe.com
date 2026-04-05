@@ -63,9 +63,14 @@ test.describe('command palette', () => {
   test('navigates to selected item on Enter', async ({ page }) => {
     await page.keyboard.press('Meta+k');
 
-    // Type to find the About page
+    // Type a specific query to narrow to the About page
     await page.keyboard.type('About');
-    await page.waitForTimeout(100); // let cmdk filter
+
+    // Wait until filtering settles and the About page item is the active selection
+    const aboutItem = page.locator('[cmdk-item][data-selected="true"]', {
+      hasText: 'About',
+    });
+    await expect(aboutItem).toBeVisible();
 
     await page.keyboard.press('Enter');
     await page.waitForURL('**/about');
