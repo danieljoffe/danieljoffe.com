@@ -175,13 +175,16 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
             {state.phase === 'error' && (
               <Alert variant='error'>
                 {state.message}
-                <button
+                <Button
                   type='button'
+                  name='retry-email-gate'
+                  variant='bare'
+                  size='sm'
                   onClick={() => setState({ phase: 'locked' })}
-                  className='block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-error-light'
+                  className='block mt-2 text-sm font-medium underline hover:no-underline'
                 >
                   Try again
-                </button>
+                </Button>
               </Alert>
             )}
           </div>

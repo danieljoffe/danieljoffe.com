@@ -4,7 +4,8 @@ import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
 import { PostCard } from '@/components/kit';
@@ -20,16 +21,11 @@ export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {
   return (
-    <PageContainer
-      as='main'
-      id='main-content'
-      size='md'
-      className='py-16 lg:py-24 space-y-24'
-    >
+    <PageLayout wide className='py-16 lg:py-24 space-y-24'>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <div className='text-center space-y-4'>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
             Projects
@@ -40,12 +36,12 @@ export default function Projects() {
             challenge, my approach, and measurable outcomes.
           </p>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           OPEN SOURCE CALLOUT
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Code className='h-3.5 w-3.5' />}
           label='Open Source'
@@ -77,12 +73,12 @@ export default function Projects() {
             </a>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           PROJECT GRID
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'
@@ -92,9 +88,9 @@ export default function Projects() {
             <PostCard key={project.slug} post={project} priority={i < 3} />
           ))}
         </div>
-      </section>
+      </Section>
 
       <StructuredData data={projectsRootStructuredData} />
-    </PageContainer>
+    </PageLayout>
   );
 }

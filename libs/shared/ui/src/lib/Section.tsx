@@ -1,4 +1,4 @@
-import { forwardRef, type ReactNode, type HTMLAttributes } from 'react';
+import { type ReactNode, type HTMLAttributes } from 'react';
 import { cn } from './utils';
 
 export interface SectionProps extends Omit<
@@ -6,6 +6,7 @@ export interface SectionProps extends Omit<
   'className'
 > {
   children: ReactNode;
+  ref?: React.Ref<HTMLElement>;
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   background?: 'default' | 'alt' | 'elevated' | 'none';
   /** Center children horizontally using flexbox */
@@ -38,36 +39,32 @@ const overflowClasses = {
   auto: 'overflow-auto',
 };
 
-export const Section = forwardRef<HTMLElement, SectionProps>(
-  (
-    {
-      children,
-      padding = 'none',
-      background = 'none',
-      center = true,
-      overflow = 'hidden',
-      fullWidth = true,
-      className,
-      ...rest
-    },
-    ref
-  ) => {
-    return (
-      <section
-        ref={ref}
-        className={cn(
-          paddingClasses[padding],
-          backgroundClasses[background],
-          overflowClasses[overflow],
-          center && 'flex flex-col justify-center',
-          fullWidth && 'w-full',
-          className
-        )}
-        {...rest}
-      >
-        {children}
-      </section>
-    );
-  }
-);
-Section.displayName = 'Section';
+export function Section({
+  children,
+  ref,
+  padding = 'none',
+  background = 'none',
+  center = false,
+  overflow = 'visible',
+  fullWidth = true,
+  className,
+  ...rest
+}: SectionProps) {
+  return (
+    <section
+      ref={ref}
+      className={cn(
+        'relative px-6 lg:px-0',
+        paddingClasses[padding],
+        backgroundClasses[background],
+        overflowClasses[overflow],
+        center && 'flex flex-col justify-center',
+        fullWidth && 'w-full',
+        className
+      )}
+      {...rest}
+    >
+      {children}
+    </section>
+  );
+}

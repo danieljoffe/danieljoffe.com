@@ -22,7 +22,8 @@ import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
-import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { CompanyLogo } from '@/components/kit';
 import SocialLinks from './SocialLinks';
@@ -66,15 +67,11 @@ const mantraItems: {
 
 export default function About() {
   return (
-    <PageContainer
-      as='main'
-      id='main-content'
-      className='py-16 lg:py-24 space-y-24'
-    >
+    <PageLayout className='py-16 lg:py-24 space-y-24'>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel icon={<User className='h-3.5 w-3.5' />} label='About' />
         <div className='space-y-6'>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
@@ -117,12 +114,12 @@ export default function About() {
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           TECHNICAL EXPERTISE
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Code2 className='h-3.5 w-3.5' />}
           label='Technical Expertise'
@@ -143,12 +140,12 @@ export default function About() {
             </div>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           CAREER TIMELINE
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Briefcase className='h-3.5 w-3.5' />}
           label='Career Timeline'
@@ -240,12 +237,12 @@ export default function About() {
             })}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           MANTRA / EVOLUTION
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel icon={<Heart className='h-3.5 w-3.5' />} label='Mantra' />
         <div className='space-y-6'>
           <p className='text-base text-text-secondary leading-relaxed'>
@@ -298,12 +295,12 @@ export default function About() {
             thoughtful technical solutions.
           </p>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           CONTACT
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<MessageCircle className='h-3.5 w-3.5' />}
           label="Let's Connect"
@@ -324,7 +321,7 @@ export default function About() {
           </p>
           <ContactForm />
         </CTACard>
-      </section>
-    </PageContainer>
+      </Section>
+    </PageLayout>
   );
 }

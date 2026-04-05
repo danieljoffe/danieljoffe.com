@@ -22,7 +22,8 @@ import {
 } from '@/utils/constants';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
 import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
-import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { CompanyLogo, PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
@@ -39,15 +40,11 @@ const featuredProjects = getContentByType('project')
 
 export default function Index() {
   return (
-    <PageContainer
-      as='main'
-      id='main-content'
-      className='py-16 lg:py-24 space-y-24'
-    >
+    <PageLayout className='py-16 lg:py-24 space-y-24'>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <GridBg />
         <div className='relative space-y-6'>
           <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
@@ -72,12 +69,12 @@ export default function Index() {
 
           <HeroActions />
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           PREVIOUS TEAMS
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Briefcase className='h-3.5 w-3.5' />}
           label="Teams I've worked with"
@@ -104,12 +101,12 @@ export default function Index() {
             ))}
           </ul>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           ACHIEVEMENTS
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Zap className='h-3.5 w-3.5' />}
           label='Achievements'
@@ -129,12 +126,12 @@ export default function Index() {
             </div>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           FEATURED PROJECTS
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Layers className='h-3.5 w-3.5' />}
           label='Featured Projects'
@@ -155,12 +152,12 @@ export default function Index() {
             <ArrowUpRight className='h-4 w-4' />
           </Button>
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           METHODOLOGY
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <SectionLabel
           icon={<Heart className='h-3.5 w-3.5' />}
           label='How I Work'
@@ -188,12 +185,12 @@ export default function Index() {
             </div>
           ))}
         </div>
-      </section>
+      </Section>
 
       {/* ══════════════════════════════════
           CTA / CONTACT
           ══════════════════════════════════ */}
-      <section className='relative px-6 lg:px-0'>
+      <Section>
         <CTACard
           heading="Let's Build Something Great Together"
           description={
@@ -223,7 +220,7 @@ export default function Index() {
             </Button>
           </div>
         </CTACard>
-      </section>
-    </PageContainer>
+      </Section>
+    </PageLayout>
   );
 }

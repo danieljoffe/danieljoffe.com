@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import {
   isValidUuid,
@@ -164,18 +164,14 @@ export default async function ReportPage({
       const deviceParam = sp.device === 'desktop' ? 'desktop' : 'mobile';
       const isPaired = sp.device === 'both';
       return (
-        <PageContainer
-          as='main'
-          id='main-content'
-          className='py-16 lg:py-24 space-y-24'
-        >
+        <PageLayout className='py-16 lg:py-24 space-y-24'>
           <ScanPending
             scanId={id}
             url={urlParam}
             deviceMode={deviceParam as DeviceMode}
             isPaired={isPaired}
           />
-        </PageContainer>
+        </PageLayout>
       );
     }
 
@@ -189,41 +185,29 @@ export default async function ReportPage({
   // Scan still in progress — show polling UI
   if (scan.status === 'pending' || scan.status === 'running') {
     return (
-      <PageContainer
-        as='main'
-        id='main-content'
-        className='py-16 lg:py-24 space-y-24'
-      >
+      <PageLayout className='py-16 lg:py-24 space-y-24'>
         <ScanPending
           scanId={scan.id}
           url={scan.url}
           deviceMode={deviceMode}
           isPaired={scan.paired_scan_id !== null}
         />
-      </PageContainer>
+      </PageLayout>
     );
   }
 
   // Scan failed — show friendly error
   if (scan.status === 'failed') {
     return (
-      <PageContainer
-        as='main'
-        id='main-content'
-        className='py-16 lg:py-24 space-y-24'
-      >
+      <PageLayout className='py-16 lg:py-24 space-y-24'>
         <ScanFailed url={scan.url} errorMessage={scan.error_message} />
-      </PageContainer>
+      </PageLayout>
     );
   }
 
   // Completed — render full report
   return (
-    <PageContainer
-      as='main'
-      id='main-content'
-      className='py-16 lg:py-24 space-y-24'
-    >
+    <PageLayout className='py-16 lg:py-24 space-y-24'>
       <ReportHeader
         scanId={scan.id}
         url={scan.url}
@@ -258,6 +242,6 @@ export default async function ReportPage({
       {scan.grade_overall && (
         <ReportAnalytics scanId={scan.id} grade={scan.grade_overall} />
       )}
-    </PageContainer>
+    </PageLayout>
   );
 }
