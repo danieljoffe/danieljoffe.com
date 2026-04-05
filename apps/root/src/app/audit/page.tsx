@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { PageLayout } from '@/components/kit';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { auditFaqStructuredData } from '@/data/structuredData/audit';
 import ScanHero from './ScanHero';
@@ -43,7 +43,11 @@ export default async function AuditPage() {
   const scanCount = await getCompletedScanCount();
 
   return (
-    <PageLayout>
+    <PageContainer
+      as='main'
+      id='main-content'
+      className='py-16 lg:py-24 space-y-24'
+    >
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{
@@ -55,6 +59,6 @@ export default async function AuditPage() {
       />
       <ScanHero scanCount={scanCount} />
       <HowItWorks />
-    </PageLayout>
+    </PageContainer>
   );
 }

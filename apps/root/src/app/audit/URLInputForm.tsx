@@ -6,7 +6,8 @@ import { Check, Monitor, Smartphone } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { ErrorAlert, FormFieldError } from '@/components/kit';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
@@ -202,10 +203,16 @@ export default function URLInputForm() {
         </div>
       </form>
       {state.phase === 'error' && (
-        <ErrorAlert
-          message={state.message}
-          onRetry={() => setState({ phase: 'idle' })}
-        />
+        <Alert variant='error'>
+          {state.message}
+          <button
+            type='button'
+            onClick={() => setState({ phase: 'idle' })}
+            className='block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-error-light'
+          >
+            Try again
+          </button>
+        </Alert>
       )}
     </div>
   );

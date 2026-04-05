@@ -7,7 +7,8 @@ import { useToast } from '@/state/Toast/ToastProvider';
 import { VALIDATION_PATTERNS } from '@/utils/constants';
 import Button from '@/components/Button';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { ErrorAlert, FormFieldError } from '@/components/kit';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
@@ -172,10 +173,16 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
               </div>
             </form>
             {state.phase === 'error' && (
-              <ErrorAlert
-                message={state.message}
-                onRetry={() => setState({ phase: 'locked' })}
-              />
+              <Alert variant='error'>
+                {state.message}
+                <button
+                  type='button'
+                  onClick={() => setState({ phase: 'locked' })}
+                  className='block mt-2 text-sm font-medium underline hover:no-underline hover:cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-error-light'
+                >
+                  Try again
+                </button>
+              </Alert>
             )}
           </div>
         </div>

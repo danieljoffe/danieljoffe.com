@@ -4,9 +4,10 @@ import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
-import { Section, PageLayout, CompanyLogo } from '@/components/kit';
+import { CompanyLogo } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');
@@ -20,11 +21,15 @@ export const metadata: Metadata = experienceRootMetadata;
 
 export default function ExperiencePage() {
   return (
-    <PageLayout>
+    <PageContainer
+      as='main'
+      id='main-content'
+      className='py-16 lg:py-24 space-y-24'
+    >
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <div className='text-center space-y-4'>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
             Experience
@@ -36,12 +41,12 @@ export default function ExperiencePage() {
             applications.
           </p>
         </div>
-      </Section>
+      </section>
 
       {/* ══════════════════════════════════
           TIMELINE
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <SectionLabel
           icon={<Briefcase className='h-3.5 w-3.5' />}
           label='Career Timeline'
@@ -114,9 +119,9 @@ export default function ExperiencePage() {
               })}
           </div>
         </div>
-      </Section>
+      </section>
 
       <StructuredData data={experienceRootStructuredData} />
-    </PageLayout>
+    </PageContainer>
   );
 }

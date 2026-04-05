@@ -3,9 +3,9 @@ import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
 import { servicesMetadata } from '@/data/metadata/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
-import { Section, PageLayout } from '@/components/kit';
 import ClientBadge from '@/components/ClientBadge';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
@@ -17,11 +17,15 @@ export const metadata: Metadata = servicesMetadata;
 
 export default function Services() {
   return (
-    <PageLayout>
+    <PageContainer
+      as='main'
+      id='main-content'
+      className='py-16 lg:py-24 space-y-24'
+    >
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <div className='text-center space-y-6'>
           <ClientBadge variant='brand-solid'>
             Currently available for new projects
@@ -44,12 +48,12 @@ export default function Services() {
             </a>
           </div>
         </div>
-      </Section>
+      </section>
 
       {/* ══════════════════════════════════
           SERVICES GRID
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <div id='services-grid'>
           <SectionLabel
             icon={<Layers className='h-3.5 w-3.5' />}
@@ -114,12 +118,12 @@ export default function Services() {
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
       {/* ══════════════════════════════════
           HOW I WORK
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <SectionLabel
           icon={<Layers className='h-3.5 w-3.5' />}
           label='How I Work'
@@ -144,12 +148,12 @@ export default function Services() {
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
       {/* ══════════════════════════════════
           WHO I WORK WITH
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <SectionLabel
           icon={<Users className='h-3.5 w-3.5' />}
           label='Who I Work Best With'
@@ -167,23 +171,23 @@ export default function Services() {
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
       {/* ══════════════════════════════════
           FAQ
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <SectionLabel
           icon={<HelpCircle className='h-3.5 w-3.5' />}
           label='FAQ'
         />
         <FAQ />
-      </Section>
+      </section>
 
       {/* ══════════════════════════════════
           CTA — Inline Calendly Embed
           ══════════════════════════════════ */}
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <div className='text-center space-y-2 mb-6'>
           <h2 className='text-2xl sm:text-3xl font-bold text-text-primary'>
             Let&apos;s figure out how I can help.
@@ -194,9 +198,9 @@ export default function Services() {
           </p>
         </div>
         <CalendlyEmbed />
-      </Section>
+      </section>
 
       <StructuredData data={servicesPageStructuredData} />
-    </PageLayout>
+    </PageContainer>
   );
 }

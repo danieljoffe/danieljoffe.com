@@ -1,8 +1,3 @@
-// Thin wrappers over shared-ui (add app-specific defaults)
-export { Section } from './Section';
-export { PageLayout } from './PageLayout';
-export { ErrorAlert } from './ErrorAlert';
-
 // App-specific components
 export { CoverImage } from './CoverImage';
 export { PostCard } from './PostCard';

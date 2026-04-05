@@ -3,9 +3,10 @@ import { PenLine } from 'lucide-react';
 import { getContentByType } from '@/data/contentRegistry';
 import { blogRootMetadata } from '@/data/metadata/blog';
 import { blogRootStructuredData } from '@/data/structuredData/blog';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
-import { Section, PageLayout, PostCard } from '@/components/kit';
+import { PostCard } from '@/components/kit';
 
 const blogList = getContentByType('blog')
   .reverse()
@@ -18,8 +19,12 @@ export const metadata: Metadata = blogRootMetadata;
 
 export default function Blog() {
   return (
-    <PageLayout>
-      <Section>
+    <PageContainer
+      as='main'
+      id='main-content'
+      className='py-16 lg:py-24 space-y-24'
+    >
+      <section className='relative px-6 lg:px-0'>
         <div className='text-center space-y-4'>
           <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
             Blog
@@ -29,9 +34,9 @@ export default function Blog() {
             lessons learned.
           </p>
         </div>
-      </Section>
+      </section>
 
-      <Section>
+      <section className='relative px-6 lg:px-0'>
         <SectionLabel
           icon={<PenLine className='h-3.5 w-3.5' />}
           label='Posts'
@@ -46,9 +51,9 @@ export default function Blog() {
             />
           ))}
         </div>
-      </Section>
+      </section>
 
       <StructuredData data={blogRootStructuredData} />
-    </PageLayout>
+    </PageContainer>
   );
 }

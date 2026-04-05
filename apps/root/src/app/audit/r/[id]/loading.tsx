@@ -1,9 +1,13 @@
 import ClientSkeleton from '@/components/ClientSkeleton';
-import { PageLayout } from '@/components/kit';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 
 export default function Loading() {
   return (
-    <PageLayout>
+    <PageContainer
+      as='main'
+      id='main-content'
+      className='py-16 lg:py-24 space-y-24'
+    >
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <div className='flex flex-col gap-8'>
           {/* Report header */}
@@ -69,6 +73,6 @@ export default function Loading() {
           </div>
         </div>
       </div>
-    </PageLayout>
+    </PageContainer>
   );
 }

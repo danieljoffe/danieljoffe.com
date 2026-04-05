@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import ScanProgress from '@/app/audit/ScanProgress';
 import Button from '@/components/Button';
-import { ErrorAlert } from '@/components/kit';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
@@ -89,7 +89,7 @@ export default function ScanPending({
               </p>
             </div>
 
-            <ErrorAlert message={error} />
+            <Alert variant='error'>{error}</Alert>
 
             <Button as='link' href='/audit'>
               Try again

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { PageLayout } from '@/components/kit';
+import { PageContainer } from '@danieljoffe.com/shared-ui/PageContainer';
 import AdminDashboard from './AdminDashboard';
 
 export const metadata: Metadata = {
@@ -9,8 +9,12 @@ export const metadata: Metadata = {
 
 export default function AdminPage() {
   return (
-    <PageLayout>
+    <PageContainer
+      as='main'
+      id='main-content'
+      className='py-16 lg:py-24 space-y-24'
+    >
       <AdminDashboard />
-    </PageLayout>
+    </PageContainer>
   );
 }
