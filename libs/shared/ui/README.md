@@ -48,22 +48,175 @@ export default function App() {
 
 ## Theme setup
 
-Import the theme CSS to get design tokens (colors, spacing, typography, shadows):
+Import the theme CSS to get design tokens (colors, spacing, typography, shadows, animations):
 
 ```css
 /* In your global CSS or Tailwind entry point */
 @import '@danieljoffe.com/shared-ui/styles/theme.css';
 ```
 
-The theme uses Tailwind CSS 4's `@theme` directive with oklch color space. Tokens include:
+The theme file is **self-contained** with no external imports. It uses Tailwind CSS 4's `@theme` directive so every token is available as both a CSS custom property and a Tailwind utility class (e.g., `bg-brand-500`, `text-text-secondary`, `shadow-md`).
 
-- **Colors**: `brand`, `surface`, `text`, `border`, `error`, `success`, `warning`, `info` scales
-- **Typography**: `font-sans` (Inter), `font-mono` (JetBrains Mono)
-- **Spacing/Radius**: `radius-sm` through `radius-full`
-- **Shadows**: `shadow-xs` through `shadow-xl`
-- **Animations**: `fade-in`, `slide-up`, `slide-down`, `scale-in`
+> **oklch color space** -- Brand colors use `oklch()` for perceptually uniform lightness across the scale. Semantic surface/text/status colors use hex or `rgba` for maximum browser compatibility.
 
-To customize tokens, override the CSS variables in your own `@theme` block after the import.
+### Consumer setup (Tailwind CSS 4)
+
+```css
+/* app/globals.css */
+@import 'tailwindcss';
+@import '@danieljoffe.com/shared-ui/styles/theme.css';
+```
+
+That single import gives you every token below. No `tailwind.config` changes are needed in Tailwind CSS 4 -- the `@theme` directive registers tokens automatically.
+
+### Integration paths
+
+| Approach               | When to use                        | How                                                                                                                                            |
+| ---------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Full adoption**      | New apps built on shared-ui        | Import `theme.css` as shown above. All tokens, base styles, dark mode, and keyframes are active.                                               |
+| **Selective adoption** | Existing apps with their own theme | Copy individual `@theme` token groups into your own CSS. Or import `theme.css` and override specific variables in a subsequent `@theme` block. |
+
+To override tokens selectively:
+
+```css
+@import '@danieljoffe.com/shared-ui/styles/theme.css';
+
+@theme {
+  --color-brand-500: oklch(0.6 0.2 280); /* shift brand toward purple */
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+```
+
+### Full token reference
+
+#### Radius
+
+| Token           | Value      | Tailwind class |
+| --------------- | ---------- | -------------- |
+| `--radius-sm`   | `0.375rem` | `rounded-sm`   |
+| `--radius-md`   | `0.5rem`   | `rounded-md`   |
+| `--radius-lg`   | `0.75rem`  | `rounded-lg`   |
+| `--radius-xl`   | `1rem`     | `rounded-xl`   |
+| `--radius-full` | `9999px`   | `rounded-full` |
+
+#### Typography
+
+| Token         | Value                                           | Tailwind class |
+| ------------- | ----------------------------------------------- | -------------- |
+| `--font-sans` | `'Inter', ui-sans-serif, system-ui, sans-serif` | `font-sans`    |
+| `--font-mono` | `'JetBrains Mono', ui-monospace, monospace`     | `font-mono`    |
+
+#### Shadows
+
+| Token         | Light mode                                                            | Dark mode                                                           | Tailwind class |
+| ------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- |
+| `--shadow-xs` | `0 1px 2px rgba(0,0,0,0.04)`                                          | `0 1px 2px rgba(0,0,0,0.2)`                                         | `shadow-xs`    |
+| `--shadow-sm` | `0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)`              | `0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2)`              | `shadow-sm`    |
+| `--shadow-md` | `0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05)`    | `0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2)`    | `shadow-md`    |
+| `--shadow-lg` | `0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04)`  | `0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -4px rgba(0,0,0,0.2)`  | `shadow-lg`    |
+| `--shadow-xl` | `0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04)` | `0 20px 25px -5px rgba(0,0,0,0.4), 0 8px 10px -6px rgba(0,0,0,0.2)` | `shadow-xl`    |
+
+#### Animations
+
+| Token                  | Value                       | Tailwind class       |
+| ---------------------- | --------------------------- | -------------------- |
+| `--animate-fade-in`    | `fade-in 0.2s ease-out`     | `animate-fade-in`    |
+| `--animate-slide-up`   | `slide-up 0.2s ease-out`    | `animate-slide-up`   |
+| `--animate-slide-down` | `slide-down 0.15s ease-out` | `animate-slide-down` |
+| `--animate-scale-in`   | `scale-in 0.15s ease-out`   | `animate-scale-in`   |
+
+Additional keyframes defined (usable in custom animations): `bounceSubtle`, `pulseSlow`.
+
+#### Colors -- Brand (blue-indigo, oklch hue 250)
+
+| Token               | Value                  | Tailwind class                       |
+| ------------------- | ---------------------- | ------------------------------------ |
+| `--color-brand-50`  | `oklch(0.97 0.01 250)` | `bg-brand-50`, `text-brand-50`, etc. |
+| `--color-brand-100` | `oklch(0.93 0.03 250)` | `bg-brand-100`                       |
+| `--color-brand-200` | `oklch(0.87 0.06 250)` | `bg-brand-200`                       |
+| `--color-brand-300` | `oklch(0.78 0.1 250)`  | `bg-brand-300`                       |
+| `--color-brand-400` | `oklch(0.68 0.15 250)` | `bg-brand-400`                       |
+| `--color-brand-500` | `oklch(0.54 0.19 250)` | `bg-brand-500`                       |
+| `--color-brand-600` | `oklch(0.5 0.19 250)`  | `bg-brand-600`                       |
+| `--color-brand-700` | `oklch(0.43 0.17 250)` | `bg-brand-700`                       |
+| `--color-brand-800` | `oklch(0.37 0.14 250)` | `bg-brand-800`                       |
+| `--color-brand-900` | `oklch(0.3 0.1 250)`   | `bg-brand-900`                       |
+| `--color-brand-950` | `oklch(0.22 0.08 250)` | `bg-brand-950`                       |
+
+#### Colors -- Semantic surface
+
+| Token                       | Light             | Dark              | Tailwind class         |
+| --------------------------- | ----------------- | ----------------- | ---------------------- |
+| `--color-surface`           | `#ffffff`         | `#0f1117`         | `bg-surface`           |
+| `--color-surface-secondary` | `#f9fafb`         | `#161922`         | `bg-surface-secondary` |
+| `--color-surface-tertiary`  | `#f3f4f6`         | `#1e2130`         | `bg-surface-tertiary`  |
+| `--color-surface-elevated`  | `#ffffff`         | `#1a1d2b`         | `bg-surface-elevated`  |
+| `--color-surface-overlay`   | `rgba(0,0,0,0.5)` | `rgba(0,0,0,0.7)` | `bg-surface-overlay`   |
+
+#### Colors -- Semantic border
+
+| Token                      | Light                  | Dark      | Tailwind class            |
+| -------------------------- | ---------------------- | --------- | ------------------------- |
+| `--color-border`           | `#e5e7eb`              | `#2a2d3a` | `border-border`           |
+| `--color-border-secondary` | `#d1d5db`              | `#3a3d4a` | `border-border-secondary` |
+| `--color-border-focus`     | `oklch(0.54 0.19 250)` | _(same)_  | `outline-border-focus`    |
+
+#### Colors -- Semantic text
+
+| Token                    | Light                 | Dark      | Tailwind class        |
+| ------------------------ | --------------------- | --------- | --------------------- |
+| `--color-text-primary`   | `#111827`             | `#f1f5f9` | `text-text-primary`   |
+| `--color-text-secondary` | `#6b7280`             | `#94a3b8` | `text-text-secondary` |
+| `--color-text-tertiary`  | `#9ca3af`             | `#64748b` | `text-text-tertiary`  |
+| `--color-text-inverse`   | `#ffffff`             | `#0f1117` | `text-text-inverse`   |
+| `--color-text-brand`     | `oklch(0.5 0.19 250)` | _(same)_  | `text-text-brand`     |
+
+#### Colors -- Status
+
+| Token                   | Light     | Dark      | Tailwind class               |
+| ----------------------- | --------- | --------- | ---------------------------- |
+| `--color-success`       | `#10b981` | _(same)_  | `text-success`, `bg-success` |
+| `--color-success-light` | `#ecfdf5` | `#052e16` | `bg-success-light`           |
+| `--color-warning`       | `#f59e0b` | _(same)_  | `text-warning`, `bg-warning` |
+| `--color-warning-light` | `#fffbeb` | `#451a03` | `bg-warning-light`           |
+| `--color-error`         | `#ef4444` | _(same)_  | `text-error`, `bg-error`     |
+| `--color-error-light`   | `#fef2f2` | `#450a0a` | `bg-error-light`             |
+| `--color-info`          | `#2563eb` | _(same)_  | `text-info`, `bg-info`       |
+| `--color-info-light`    | `#eff6ff` | `#172554` | `bg-info-light`              |
+
+### Dark mode
+
+Dark mode is handled via `.dark` class overrides in the same theme file. The `ThemeProvider` component toggles the `.dark` class on `<html>`. The theme file also registers a custom variant:
+
+```css
+@custom-variant dark (&:is(.dark *));
+```
+
+This means you can use `dark:` prefix in Tailwind classes (e.g., `dark:bg-surface-secondary`) and they will activate when `.dark` is present on an ancestor element.
+
+### Base styles
+
+The theme file includes an `@layer base` block that sets:
+
+- Default border and outline colors on all elements
+- Body background, text color, font-family, and line-height
+- Heading typography (h1-h6) with balanced text wrapping and tight letter-spacing
+- Code element styling using `font-mono` with brand-colored background
+- Table and list resets
+- Scrollbar styling (WebKit)
+- `prefers-reduced-motion` support (disables animations automatically)
+
+### Experimental color schemes
+
+The `styles/` directory also contains three SCSS-based color scheme variants. These are **experimental** and use a different variable convention from the main `theme.css` (e.g., `--accent`, `--background` instead of `--color-brand-*`, `--color-surface`). They are not currently exported in `package.json` and are not intended for consumer use:
+
+| Scheme       | Directory              | Accent color |
+| ------------ | ---------------------- | ------------ |
+| Deep Teal    | `styles/deep-teal/`    | `#0d7377`    |
+| Muted Violet | `styles/muted-violet/` | `#6b5b95`    |
+| Warm Gold    | `styles/warm-gold/`    | `#9a6c18`    |
+
+Each includes a `default.scss` (light) and `dark.scss` file.
 
 ## Component catalog
 
