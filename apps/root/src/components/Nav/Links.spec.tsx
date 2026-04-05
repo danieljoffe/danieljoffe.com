@@ -49,16 +49,16 @@ describe('NavLinks', () => {
   test('renders all navigation links', () => {
     render(<NavLinks pathname='/' />);
     expect(
-      screen.getByRole('menuitem', { name: /navigate to home page/i })
+      screen.getByRole('menuitem', { name: /^home$/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('menuitem', { name: /navigate to about page/i })
+      screen.getByRole('menuitem', { name: /^about$/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('menuitem', { name: /navigate to experience page/i })
+      screen.getByRole('menuitem', { name: /^experience$/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('menuitem', { name: /navigate to projects page/i })
+      screen.getByRole('menuitem', { name: /^projects$/i })
     ).toBeInTheDocument();
   });
 
@@ -76,7 +76,7 @@ describe('NavLinks', () => {
   test('highlights current page link with aria-current', () => {
     render(<NavLinks pathname='/' />);
     const homeLink = screen.getByRole('menuitem', {
-      name: /navigate to home page/i,
+      name: /^home$/i,
     });
     expect(homeLink).toHaveAttribute('aria-current', 'page');
   });
@@ -84,7 +84,7 @@ describe('NavLinks', () => {
   test('does not set aria-current on non-current pages', () => {
     render(<NavLinks pathname='/' />);
     const aboutLink = screen.getByRole('menuitem', {
-      name: /navigate to about page/i,
+      name: /^about$/i,
     });
     expect(aboutLink).not.toHaveAttribute('aria-current');
   });
@@ -92,7 +92,7 @@ describe('NavLinks', () => {
   test('correctly identifies About page as current', () => {
     render(<NavLinks pathname='/about' />);
     const aboutLink = screen.getByRole('menuitem', {
-      name: /navigate to about page/i,
+      name: /^about$/i,
     });
     expect(aboutLink).toHaveAttribute('aria-current', 'page');
   });
@@ -100,7 +100,7 @@ describe('NavLinks', () => {
   test('correctly identifies Projects page as current', () => {
     render(<NavLinks pathname='/projects' />);
     const projectsLink = screen.getByRole('menuitem', {
-      name: /navigate to projects page/i,
+      name: /^projects$/i,
     });
     expect(projectsLink).toHaveAttribute('aria-current', 'page');
   });
@@ -112,7 +112,7 @@ describe('NavLinks', () => {
 
     render(<NavLinks pathname='/' handleClick={handleClick} />);
     const aboutLink = screen.getByRole('menuitem', {
-      name: /navigate to about page/i,
+      name: /^about$/i,
     });
 
     await user.click(aboutLink);
@@ -123,17 +123,19 @@ describe('NavLinks', () => {
 
   test('renders links with correct href values', () => {
     render(<NavLinks pathname='/' />);
+    expect(screen.getByRole('menuitem', { name: /^home$/i })).toHaveAttribute(
+      'href',
+      HOME_LINK.href
+    );
+    expect(screen.getByRole('menuitem', { name: /^about$/i })).toHaveAttribute(
+      'href',
+      ABOUT_LINK.href
+    );
     expect(
-      screen.getByRole('menuitem', { name: /navigate to home page/i })
-    ).toHaveAttribute('href', HOME_LINK.href);
-    expect(
-      screen.getByRole('menuitem', { name: /navigate to about page/i })
-    ).toHaveAttribute('href', ABOUT_LINK.href);
-    expect(
-      screen.getByRole('menuitem', { name: /navigate to experience page/i })
+      screen.getByRole('menuitem', { name: /^experience$/i })
     ).toHaveAttribute('href', EXPERIENCE_LINK.href);
     expect(
-      screen.getByRole('menuitem', { name: /navigate to projects page/i })
+      screen.getByRole('menuitem', { name: /^projects$/i })
     ).toHaveAttribute('href', PROJECTS_LINK.href);
   });
 
