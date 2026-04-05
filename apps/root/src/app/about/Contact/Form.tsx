@@ -8,6 +8,7 @@ import type { InferType } from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
 import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
@@ -16,7 +17,6 @@ import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
-import { FormFieldError } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -37,9 +37,9 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
             />
           ))}
         </div>
-        <span className='text-sm text-text-secondary animate-pulse'>
+        <Text variant='body' as='span' className='animate-pulse'>
           Loading...
-        </span>
+        </Text>
       </div>
     </div>
   ),
@@ -259,9 +259,9 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
-        <label className='text-sm text-text-secondary block mb-1'>
+        <Text variant='body' as='label' className='block mb-1'>
           Security verification
-        </label>
+        </Text>
         {shouldLoadCaptcha && (
           <HCaptcha
             sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}

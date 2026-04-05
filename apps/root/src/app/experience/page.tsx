@@ -96,17 +96,17 @@ export default function ExperiencePage() {
                         {exp.duration && (
                           <span className='flex items-center gap-1.5'>
                             <Calendar className='h-3 w-3 text-text-tertiary' />
-                            <span className='text-xs text-text-tertiary'>
+                            <Text variant='meta' as='span'>
                               {exp.duration}
-                            </span>
+                            </Text>
                           </span>
                         )}
                         {exp.readingTime > 0 && (
                           <span className='flex items-center gap-1.5'>
                             <Clock className='h-3 w-3 text-text-tertiary' />
-                            <span className='text-xs text-text-tertiary'>
+                            <Text variant='meta' as='span'>
                               {exp.readingTime} min read
-                            </span>
+                            </Text>
                           </span>
                         )}
                       </div>
