@@ -1,7 +1,7 @@
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentPropsWithoutRef } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { MetricsDashboard } from '@/components/kit';
+import { InteractiveDemo, MetricsDashboard } from '@/components/kit';
 
 function slugify(text: string): string {
   return text
@@ -125,6 +125,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         />
       </picture>
     ),
+    InteractiveDemo,
     MetricsDashboard,
     ...components,
   };
