@@ -27,44 +27,40 @@ Building on the [foundational components](/projects/ui-components-v1), this seco
 
 A controlled checkbox with label support. Handles both click and keyboard interactions with proper ARIA attributes for screen reader compatibility.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-checkbox--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-checkbox--default'
+  title='Checkbox — Default'
+  height={100}
 />
 
 ### Select
 
 A native select wrapper with label, error state, and validation support. Uses `aria-invalid` and `aria-describedby` to connect error messages for assistive technologies.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-select--with-label'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-select--with-label'
+  title='Select — With Label'
+  height={170}
 />
 
 ### Switch
 
 A toggle switch component for binary choices. Uses the `switch` ARIA role with proper `aria-checked` state management. Supports both controlled and uncontrolled usage.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-switch--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-switch--default'
+  title='Switch — Default'
+  height={100}
 />
 
 ### Textarea
 
 A multi-line text input with validation states, character counting, and auto-resize capabilities. Shares the same validation patterns as the Input component.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-textarea--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-textarea--default'
+  title='Textarea — Default'
+  height={200}
 />
 
 ## Feedback Components
@@ -73,55 +69,50 @@ A multi-line text input with validation states, character counting, and auto-res
 
 A dismissible alert component with four variants: info, success, warning, and error. Uses `role="alert"` with `aria-live="assertive"` for urgent messages and `role="status"` with `aria-live="polite"` for informational content.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-alert--default'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-alert--default'
+  title='Alert — Default'
+  height={150}
 />
 
 ### Badge
 
 A simple label component for status indicators and tags. Supports multiple semantic variants: default, accent, success, warning, error, and info.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-badge--default'
-  width='400'
-  height='80'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-badge--default'
+  title='Badge — Default'
+  height={80}
 />
 
 ### Tooltip
 
 A hover-triggered tooltip with configurable position and delay. Uses `role="tooltip"` with `aria-hidden` state management to ensure screen readers announce content appropriately.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-tooltip--default'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='overlay-tooltip--default'
+  title='Tooltip — Default'
+  height={150}
 />
 
 ### ProgressBar
 
 A visual progress indicator for loading states and completion tracking. Includes proper ARIA attributes for accessibility.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-progressbar--default'
-  width='400'
-  height='80'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-progressbar--default'
+  title='ProgressBar — Default'
+  height={80}
 />
 
 ### Spinner
 
 A loading spinner for async operations. Complements the Loading component from Part 1 with a more compact visual indicator.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-spinner--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-spinner--default'
+  title='Spinner — Default'
+  height={100}
 />
 
 ## Layout Components
@@ -130,88 +121,80 @@ A loading spinner for async operations. Complements the Loading component from P
 
 A composable card component with sub-components: CardHeader, CardTitle, and CardContent. Supports elevation variants and configurable padding.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-card--full-card'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='data-display-card--full-card'
+  title='Card — Full Card'
+  height={200}
 />
 
 ### Stack
 
 A flexbox-based layout primitive for vertical or horizontal stacking with consistent spacing. Eliminates the need for manual gap utilities.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-stack--vertical'
-  width='400'
-  height='250'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-stack--vertical'
+  title='Stack — Vertical'
+  height={250}
 />
 
 ### Tabs
 
 An accessible tab interface with proper ARIA roles: `tablist`, `tab`, and `tabpanel`. Supports keyboard navigation and controlled/uncontrolled modes.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-tabs--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='data-display-tabs--default'
+  title='Tabs — Default'
+  height={200}
 />
 
 ### Section
 
 A semantic section wrapper for page content organization. Provides consistent vertical spacing and optional headings.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-section--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-section--default'
+  title='Section — Default'
+  height={200}
 />
 
 ### Divider
 
 A simple horizontal rule for visual separation between content sections.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-divider--default'
-  width='400'
-  height='80'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-divider--default'
+  title='Divider — Default'
+  height={80}
 />
 
 ### AspectRatio
 
 A container that maintains a specified aspect ratio for its content. Useful for responsive images and video embeds.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-aspectratio--default'
-  width='400'
-  height='300'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-aspectratio--default'
+  title='AspectRatio — Default'
+  height={300}
 />
 
 ### Spacer
 
 A utility component for adding consistent whitespace. Available in preset sizes for maintaining vertical rhythm.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-spacer--medium'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-spacer--default'
+  title='Spacer — Default'
+  height={150}
 />
 
 ### PageContainer
 
 A top-level page wrapper that combines Container with page-specific padding and max-width constraints.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-pagecontainer--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-pagecontainer--default'
+  title='PageContainer — Default'
+  height={200}
 />
 
 ## Component Count
