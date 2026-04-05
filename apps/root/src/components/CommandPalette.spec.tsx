@@ -82,6 +82,20 @@ describe('CommandPalette', () => {
     });
   });
 
+  it('closes when Escape is pressed', async () => {
+    render(<CommandPalette />);
+
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    await waitFor(() => {
+      expect(screen.getByTestId('command-palette-overlay')).toBeInTheDocument();
+    });
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => {
+      expect(screen.queryByTestId('command-palette-overlay')).toBeNull();
+    });
+  });
+
   it('closes when overlay is clicked', async () => {
     render(<CommandPalette />);
 
