@@ -8,6 +8,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { focusRing } from '@/lib/layoutStyles';
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
 
@@ -75,14 +77,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   {t.title}
                 </p>
                 {t.description && (
-                  <p className='text-xs text-text-secondary mt-0.5'>
+                  <Text variant='detail' className='mt-0.5'>
                     {t.description}
-                  </p>
+                  </Text>
                 )}
               </div>
               <button
                 onClick={() => dismiss(t.id)}
-                className='p-0.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
+                className={`p-0.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer rounded-sm ${focusRing}`}
               >
                 <X className='h-4 w-4' />
               </button>

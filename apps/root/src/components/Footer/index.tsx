@@ -9,6 +9,7 @@ import {
   STORYBOOK_URL,
   RESUME_URL,
 } from '@/utils/constants';
+import { focusRing } from '@/lib/layoutStyles';
 
 const currentYear = new Date().getFullYear();
 
@@ -62,7 +63,7 @@ export default function Footer() {
                 rel='noopener noreferrer'
                 aria-label={label}
                 title={label.replace(/^(Send |Visit |Download )/, '')}
-                className='p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+                className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${focusRing}`}
               >
                 <Icon className='h-4 w-4' />
               </a>
@@ -77,7 +78,7 @@ export default function Footer() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className='text-sm text-text-secondary hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded-sm'
+                  className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
                 >
                   {link.label}
                 </Link>
@@ -95,13 +96,19 @@ export default function Footer() {
             href={STORYBOOK_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='flex items-center gap-1 text-xs text-text-tertiary rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+            className={`flex items-center gap-1 rounded-sm ${focusRing}`}
           >
-            <span>Browse the design system</span>
-            <span className='inline-flex items-center gap-1 text-text-secondary hover:underline'>
+            <Text variant='meta' as='span'>
+              Browse the design system
+            </Text>
+            <Text
+              variant='meta'
+              as='span'
+              className='inline-flex items-center gap-1 text-text-secondary hover:underline'
+            >
               ui.danieljoffe.com
               <ChevronRight className='h-3 w-3' />
-            </span>
+            </Text>
           </a>
         </div>
       </div>

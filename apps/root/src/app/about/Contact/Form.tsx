@@ -37,9 +37,9 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
             />
           ))}
         </div>
-        <span className='text-sm text-text-secondary animate-pulse'>
+        <Text variant='body' as='span' className='animate-pulse'>
           Loading...
-        </span>
+        </Text>
       </div>
     </div>
   ),
@@ -259,9 +259,9 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
-        <label className='text-sm text-text-secondary block mb-1'>
+        <Text variant='body' as='label' className='block mb-1'>
           Security verification
-        </label>
+        </Text>
         {shouldLoadCaptcha && (
           <HCaptcha
             sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}

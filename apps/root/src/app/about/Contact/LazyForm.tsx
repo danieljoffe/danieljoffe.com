@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 const Form = dynamic(() => import('./Form'), {
   ssr: false,
@@ -21,9 +22,9 @@ const Form = dynamic(() => import('./Form'), {
             />
           ))}
         </div>
-        <span className='text-sm text-text-secondary animate-pulse'>
+        <Text variant='body' as='span' className='animate-pulse'>
           Loading...
-        </span>
+        </Text>
       </div>
     </div>
   ),

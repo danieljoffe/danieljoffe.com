@@ -66,17 +66,17 @@ export function PostCard({
             {post.duration && (
               <div className='flex items-center gap-1.5'>
                 <Calendar className='h-3 w-3 text-text-tertiary' />
-                <span className='text-xs text-text-tertiary'>
+                <Text variant='meta' as='span'>
                   {post.duration}
-                </span>
+                </Text>
               </div>
             )}
             {post.readingTime && (
               <div className='flex items-center gap-1.5'>
                 <Clock className='h-3 w-3 text-text-tertiary' />
-                <span className='text-xs text-text-tertiary'>
+                <Text variant='meta' as='span'>
                   {post.readingTime} min read
-                </span>
+                </Text>
               </div>
             )}
           </div>
