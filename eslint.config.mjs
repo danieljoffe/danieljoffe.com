@@ -129,7 +129,6 @@ export default tseslint.config(
       'no-var': 'error',
       'prefer-const': 'error',
       'no-unused-expressions': 'error',
-      'no-duplicate-imports': 'error',
       'no-useless-return': 'error',
       'no-useless-escape': 'error',
       'prefer-template': 'error',

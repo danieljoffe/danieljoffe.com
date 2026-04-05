@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
-import { GET } from './route';
 import { signLeadId } from '@/lib/email/tokens';
+import { GET } from './route';
 
 const LEAD_ID = '550e8400-e29b-41d4-a716-446655440000';
 

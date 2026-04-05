@@ -14,6 +14,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./*": {
+      "@danieljoffe.com/source": "./src/lib/*.tsx",
+      "types": "./dist/lib/*.d.ts",
+      "default": "./src/lib/*.tsx"
+    },
     "./styles/theme.css": "./src/styles/theme.css"
   }
 }

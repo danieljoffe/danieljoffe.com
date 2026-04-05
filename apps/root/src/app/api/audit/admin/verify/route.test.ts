@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
-import { POST } from './route';
 import { resetRateLimit } from '../rateLimit';
+import { POST } from './route';
 
 jest.mock('@/lib/errorTracking', () => ({
   captureApiError: jest.fn(),

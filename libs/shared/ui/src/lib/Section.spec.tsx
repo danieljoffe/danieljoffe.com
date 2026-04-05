@@ -63,9 +63,20 @@ describe('Section', () => {
     expect(container.firstChild).toHaveClass('bg-surface-elevated');
   });
 
-  // Center tests
-  it('applies centering by default', () => {
+  // Base styles tests
+  it('applies relative positioning and responsive horizontal padding by default', () => {
     const { container } = render(<Section>Content</Section>);
+    expect(container.firstChild).toHaveClass('relative', 'px-6', 'lg:px-0');
+  });
+
+  // Center tests
+  it('does not apply centering by default', () => {
+    const { container } = render(<Section>Content</Section>);
+    expect(container.firstChild).not.toHaveClass('justify-center');
+  });
+
+  it('applies centering when center=true', () => {
+    const { container } = render(<Section center>Content</Section>);
     expect(container.firstChild).toHaveClass(
       'flex',
       'flex-col',
@@ -73,20 +84,15 @@ describe('Section', () => {
     );
   });
 
-  it('removes centering when center=false', () => {
-    const { container } = render(<Section center={false}>Content</Section>);
-    expect(container.firstChild).not.toHaveClass('justify-center');
-  });
-
   // Overflow tests
-  it('applies hidden overflow by default', () => {
+  it('applies visible overflow by default', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).toHaveClass('overflow-hidden');
+    expect(container.firstChild).toHaveClass('overflow-visible');
   });
 
-  it('applies visible overflow', () => {
-    const { container } = render(<Section overflow='visible'>Content</Section>);
-    expect(container.firstChild).toHaveClass('overflow-visible');
+  it('applies hidden overflow', () => {
+    const { container } = render(<Section overflow='hidden'>Content</Section>);
+    expect(container.firstChild).toHaveClass('overflow-hidden');
   });
 
   it('applies auto overflow', () => {
@@ -137,6 +143,9 @@ describe('Section', () => {
       </Section>
     );
     expect(container.firstChild).toHaveClass(
+      'relative',
+      'px-6',
+      'lg:px-0',
       'py-12',
       'bg-surface-elevated',
       'flex',

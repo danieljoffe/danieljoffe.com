@@ -1,11 +1,10 @@
 import { render } from '@testing-library/react';
+import { analytics } from '@/lib/analytics';
 import ReportAnalytics from './ReportAnalytics';
 
 jest.mock('@/lib/analytics', () => ({
   analytics: { auditScanCompleted: jest.fn() },
 }));
-
-import { analytics } from '@/lib/analytics';
 
 const mockedAnalytics = analytics as jest.Mocked<typeof analytics>;
 

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { checkBotId } from 'botid/server';
+import { isValidUuid, GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createResendClient, EMAIL_FROM } from '@/lib/email/resend';
 import { buildUnsubscribeUrl } from '@/lib/email/tokens';
 import { captureApiError } from '@/lib/errorTracking';
-import { isValidUuid, GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import FullReportEmail from '@/components/emails/FullReport';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

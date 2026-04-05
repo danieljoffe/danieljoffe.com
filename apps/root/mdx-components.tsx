@@ -1,5 +1,6 @@
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentPropsWithoutRef } from 'react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 
 function slugify(text: string): string {
   return text
@@ -17,31 +18,24 @@ function headingId(props: ComponentPropsWithoutRef<'h1'>): string | undefined {
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     h1: props => (
-      <h1
-        id={headingId(props)}
-        className='text-2xl font-bold text-text-primary tracking-tight mb-6'
-        {...props}
-      />
+      <Heading variant='mdxH1' id={headingId(props)}>
+        {props.children}
+      </Heading>
     ),
     h2: props => (
-      <h2
-        id={headingId(props)}
-        className='text-lg font-semibold text-text-primary mt-12 mb-4 scroll-mt-20'
-        {...props}
-      />
+      <Heading variant='mdxH2' id={headingId(props)}>
+        {props.children}
+      </Heading>
     ),
     h3: props => (
-      <h3
-        id={headingId(props)}
-        className='text-sm font-semibold text-text-primary mt-8 mb-3 scroll-mt-20'
-        {...props}
-      />
+      <Heading variant='mdxH3' id={headingId(props)}>
+        {props.children}
+      </Heading>
     ),
     h4: props => (
-      <h4
-        className='text-sm font-semibold text-text-primary mt-6 mb-2'
-        {...props}
-      />
+      <Heading variant='mdxH4' id={headingId(props)}>
+        {props.children}
+      </Heading>
     ),
     p: props => (
       <p

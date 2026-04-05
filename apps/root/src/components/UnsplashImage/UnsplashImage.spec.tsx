@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import UnsplashImage, { UnsplashImageProps } from '.';
 import { UNSPLASH_URL } from '@/utils/constants';
+import UnsplashImage, { UnsplashImageProps } from '.';
 
 // Mock Next.js Image component
 jest.mock('next/image', () => {

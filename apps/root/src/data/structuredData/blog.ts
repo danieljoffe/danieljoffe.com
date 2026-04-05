@@ -1,12 +1,12 @@
 import { AllowedBlogSlugs, BlogStructuredData } from '@/types/base';
-import {
-  personStructuredData as author,
-  CollectionPageStructuredData,
-} from './base';
 import { blogSlugs, blogPageSlugs } from '@/data/blog';
 import { blogRecords } from '@/data/blogThumbnails';
 import { DOMAIN_URL, BLOG_LINK, FULL_NAME } from '@/utils/constants';
 import { blogMdxMetadata } from '@/data/content/blog';
+import {
+  personStructuredData as author,
+  CollectionPageStructuredData,
+} from './base';
 
 export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
   {
@@ -36,6 +36,15 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogRecords[blogSlugs.visualRegressionCiPipeline].description,
       datePublished:
         blogMdxMetadata[blogSlugs.visualRegressionCiPipeline]?.date ?? '',
+      author,
+    },
+    [blogSlugs.sharedUiDesignSystem]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.sharedUiDesignSystem].title,
+      description: blogRecords[blogSlugs.sharedUiDesignSystem].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.sharedUiDesignSystem]?.date ?? '',
       author,
     },
   };
