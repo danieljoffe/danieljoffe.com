@@ -51,7 +51,9 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   const handleClose = useCallback(() => {

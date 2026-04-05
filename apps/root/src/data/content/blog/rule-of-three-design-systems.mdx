@@ -34,23 +34,23 @@ The findings split cleanly into two categories:
 
 ### Patterns that repeated 3+ times (extract)
 
-| Pattern | Occurrences | Action |
-|---------|:-----------:|--------|
-| Page hero title | 7 pages | `<Heading variant="hero">` |
-| Card title | 5+ components | `<Heading variant="cardTitle">` |
-| Card description | 5+ components | `<Text variant="cardDescription">` |
-| Section label | 5 sections | `<Text variant="label">` |
-| Metadata/timestamp | 4+ components | `<Text variant="meta">` |
-| Body paragraph | 6+ pages | `<Text variant="body">` |
+| Pattern            |  Occurrences  | Action                             |
+| ------------------ | :-----------: | ---------------------------------- |
+| Page hero title    |    7 pages    | `<Heading variant="hero">`         |
+| Card title         | 5+ components | `<Heading variant="cardTitle">`    |
+| Card description   | 5+ components | `<Text variant="cardDescription">` |
+| Section label      |  5 sections   | `<Text variant="label">`           |
+| Metadata/timestamp | 4+ components | `<Text variant="meta">`            |
+| Body paragraph     |   6+ pages    | `<Text variant="body">`            |
 
 ### Patterns that appeared 1–2 times (leave inline)
 
-| Pattern | Occurrences | Decision |
-|---------|:-----------:|----------|
-| About page name/title styling | 1 | Leave inline |
-| FAQ question text | 1 component | Leave inline |
-| Experience role badge text | 1 component | Leave inline |
-| Breadcrumb current page | 1 component | Leave inline |
+| Pattern                       | Occurrences | Decision     |
+| ----------------------------- | :---------: | ------------ |
+| About page name/title styling |      1      | Leave inline |
+| FAQ question text             | 1 component | Leave inline |
+| Experience role badge text    | 1 component | Leave inline |
+| Breadcrumb current page       | 1 component | Leave inline |
 
 The one-off patterns are specific to their context. Extracting "FAQ question
 text" into a variant would create a variant used by exactly one file — overhead
@@ -76,12 +76,12 @@ There are cases where extracting before three occurrences makes sense:
 
 The rule works for any design system decision:
 
-| Abstraction | Extract when... |
-|-------------|-----------------|
-| **UI component** | 3+ files use the same element + class combo |
-| **Style constant** | 3+ components share the same className string |
-| **Custom hook** | 3+ components duplicate the same stateful logic |
-| **Utility function** | 3+ call sites with the same transformation |
+| Abstraction          | Extract when...                                 |
+| -------------------- | ----------------------------------------------- |
+| **UI component**     | 3+ files use the same element + class combo     |
+| **Style constant**   | 3+ components share the same className string   |
+| **Custom hook**      | 3+ components duplicate the same stateful logic |
+| **Utility function** | 3+ call sites with the same transformation      |
 
 The key insight: **three is the minimum where a pattern proves it's stable**.
 Two occurrences might converge by coincidence. Three occurrences prove there's
