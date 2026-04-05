@@ -20,14 +20,14 @@ test.describe('desktop navigation', () => {
     }
   });
 
-  test('nav links have correct aria-labels', async ({ page }) => {
+  test('nav links are accessible with visible text', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('domcontentloaded');
 
     for (const link of NAV_LINKS) {
       const navLink = page
         .locator('nav[aria-label="Main navigation"]')
-        .locator(`a[aria-label="Navigate to ${link.label} page"]`);
+        .locator(`a[role="menuitem"]`, { hasText: link.label });
       await expect(navLink).toBeAttached();
     }
   });

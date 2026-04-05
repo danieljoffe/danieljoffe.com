@@ -5,7 +5,12 @@ export const metadata = {
     'Why a comprehensive theme token reference is part of the design system — not an afterthought — and how we documented 100+ tokens for a Tailwind CSS 4 component library.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
-  tags: ['Design Systems', 'Documentation', 'Tailwind CSS', 'Developer Experience'],
+  tags: [
+    'Design Systems',
+    'Documentation',
+    'Tailwind CSS',
+    'Developer Experience',
+  ],
   slug: 'documenting-design-tokens',
   type: 'blog',
   topic: 'Developer Experience',
@@ -73,12 +78,12 @@ remember oklch values — they pick the semantic token that matches their intent
 
 Rather than listing font sizes, we documented the **variant components**:
 
-| Use case | Component | Output |
-|----------|-----------|--------|
-| Page hero | `<Heading variant="hero">` | 36px → 48px responsive, bold |
-| Card title | `<Heading variant="cardTitle">` | 14px, semibold |
-| Body text | `<Text variant="body">` | 14px, secondary color |
-| Metadata | `<Text variant="meta">` | 12px, tertiary color |
+| Use case   | Component                       | Output                       |
+| ---------- | ------------------------------- | ---------------------------- |
+| Page hero  | `<Heading variant="hero">`      | 36px → 48px responsive, bold |
+| Card title | `<Heading variant="cardTitle">` | 14px, semibold               |
+| Body text  | `<Text variant="body">`         | 14px, secondary color        |
+| Metadata   | `<Text variant="meta">`         | 12px, tertiary color         |
 
 This bridges the gap between "I need small gray text" and "use
 `<Text variant='meta'>`."
@@ -89,15 +94,16 @@ Each component gets a consistent entry:
 
 ```markdown
 ### Alert
+
 Status messages with contextual styling.
 
 **Variants:** `info` | `success` | `warning` | `error`
 **Props:** `title?`, `dismissible?`, `onDismiss?`
 
 Usage:
-  <Alert variant="warning" title="Heads up">
-    Check your input values.
-  </Alert>
+<Alert variant="warning" title="Heads up">
+Check your input values.
+</Alert>
 ```
 
 Key decisions are called out explicitly: "Alert title uses `text-sm
