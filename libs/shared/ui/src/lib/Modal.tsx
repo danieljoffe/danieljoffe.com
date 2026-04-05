@@ -9,6 +9,7 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
+import { Button } from './Button';
 import { Heading } from './Heading';
 import { cn } from './utils';
 
@@ -170,23 +171,27 @@ export function Modal({
             <Heading variant='component' id={titleId}>
               {title}
             </Heading>
-            <button
+            <Button
+              variant='bare'
+              size='sm'
               onClick={handleClose}
               aria-label='Close dialog'
               className='text-text-tertiary hover:text-text-primary transition-colors'
             >
               <X className='size-5' aria-hidden='true' />
-            </button>
+            </Button>
           </div>
         )}
         {!title && (
-          <button
+          <Button
+            variant='bare'
+            size='sm'
             onClick={handleClose}
             aria-label='Close dialog'
             className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
           >
             <X className='size-5' aria-hidden='true' />
-          </button>
+          </Button>
         )}
         <div className='p-6'>{children}</div>
         {footer && (
