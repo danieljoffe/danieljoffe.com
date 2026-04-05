@@ -1,25 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
 import { rootMetadata } from '@/data/metadata/root';
 import { WithChildren } from '@/types/base';
+import { inter, jetbrainsMono } from '@/styles/fonts';
 import '@/styles/global.css';
 import Footer from '@/components/Footer';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
 import Head from './home/Head';
 import TestingOnly from './home/TestingOnly';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  display: 'swap',
-});
 
 export const metadata: Metadata = rootMetadata;
 export const viewport: Viewport = {
