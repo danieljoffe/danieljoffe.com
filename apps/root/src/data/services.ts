@@ -98,7 +98,8 @@ export const servicesAudience: Audience[] = [
   {
     Icon: Rocket,
     label: 'Founders',
-    description: 'who need a senior frontend partner, not just a pair of hands',
+    description:
+      'who need a senior full-stack partner, not just a pair of hands',
   },
   {
     Icon: TrendingUp,
@@ -169,6 +170,6 @@ export const servicesFAQs = [
   {
     question: 'What about ongoing maintenance?',
     answer:
-      'I offer monthly retainer packages for teams that need continued frontend support after the initial build.',
+      'I offer monthly retainer packages for teams that need continued engineering support after the initial build.',
   },
 ];
