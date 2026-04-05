@@ -4,10 +4,12 @@ import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { blogRootStructuredData } from '@/data/structuredData/blog';
 import { blogRootMetadata } from '@/data/metadata/blog';
 import { getContentByType } from '@/data/contentRegistry';
-import { Heading, PostCard, Text } from '@/components/kit';
+import { PostCard } from '@/components/kit';
 
 const blogList = getContentByType('blog')
   .reverse()

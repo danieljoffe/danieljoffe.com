@@ -1,5 +1,6 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
-import { Heading, Text } from '@/components/kit';
 
 export default function NotFound() {
   return (

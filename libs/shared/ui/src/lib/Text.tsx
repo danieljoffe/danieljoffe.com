@@ -6,6 +6,7 @@ type TextElement = 'p' | 'span' | 'div' | 'label';
 export type TextVariant =
   | 'body'
   | 'bodyLg'
+  | 'subtitle'
   | 'cardDescription'
   | 'detail'
   | 'label'
@@ -27,6 +28,7 @@ export interface TextProps extends Omit<
 const variantStyles: Record<TextVariant, string> = {
   body: 'text-sm text-text-secondary leading-relaxed',
   bodyLg: 'text-base text-text-secondary leading-relaxed',
+  subtitle: 'text-lg text-text-secondary leading-relaxed',
   cardDescription: 'text-sm text-text-secondary leading-relaxed',
   detail: 'text-xs text-text-secondary',
   label: 'text-xs font-semibold uppercase tracking-wider text-text-tertiary',
@@ -39,6 +41,7 @@ const variantStyles: Record<TextVariant, string> = {
 const defaultElement: Record<TextVariant, TextElement> = {
   body: 'p',
   bodyLg: 'p',
+  subtitle: 'p',
   cardDescription: 'p',
   detail: 'p',
   label: 'span',

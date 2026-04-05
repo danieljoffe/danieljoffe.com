@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
-import { Heading, Text } from '@/components/kit';
 import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';

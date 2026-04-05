@@ -1,6 +1,7 @@
 import { Calendar, Clock, Tag } from 'lucide-react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PostBodyProps } from '@/types/postTypes';
-import { TableOfContents, Heading } from '@/components/kit';
+import { TableOfContents } from '@/components/kit';
 import UnsplashImage from './UnsplashImage';
 import BreadCrumbs from './BreadCrumbs';
 

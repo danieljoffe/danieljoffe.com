@@ -17,16 +17,18 @@ import {
 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
 import { cardBase } from '@/lib/layoutStyles';
 import { aboutMetadata } from '@/data/metadata/about';
 import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
-import { CompanyLogo, Heading, Text } from '@/components/kit';
+import { CompanyLogo } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
 

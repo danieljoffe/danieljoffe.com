@@ -1,5 +1,6 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
-import { Heading, Text } from '@/components/kit';
 import CalendlyButton from './CalendlyButton';
 
 export default function CTASection() {

@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { VALIDATION_PATTERNS } from '@/utils/constants';
 import Button from '@/components/Button';
-import { FormFieldError, Text } from '@/components/kit';
+import { FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 

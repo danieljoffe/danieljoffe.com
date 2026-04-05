@@ -13,6 +13,8 @@ import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
 import { experienceFull } from '@/data/experience';
@@ -25,7 +27,7 @@ import {
   CONTACT_FORM_ID,
   EXPERIENCE_LINK,
 } from '@/utils/constants';
-import { CompanyLogo, Heading, PostCard, Text } from '@/components/kit';
+import { CompanyLogo, PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
