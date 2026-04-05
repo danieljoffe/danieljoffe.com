@@ -89,8 +89,7 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: blogRecords[blogSlugs.ruleOfThreeDesignSystems].title,
-      description:
-        blogRecords[blogSlugs.ruleOfThreeDesignSystems].description,
+      description: blogRecords[blogSlugs.ruleOfThreeDesignSystems].description,
       datePublished:
         blogMdxMetadata[blogSlugs.ruleOfThreeDesignSystems]?.date ?? '',
       author,
