@@ -1,6 +1,5 @@
 'use client';
 
-import FocusTrap from 'focus-trap-react';
 import { X } from 'lucide-react';
 import {
   useCallback,
@@ -12,6 +11,9 @@ import {
 } from 'react';
 import { Heading } from './Heading';
 import { cn } from './utils';
+
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 type ModalVariant =
@@ -66,6 +68,7 @@ export function Modal({
   ref,
 }: ModalProps) {
   const triggerRef = useRef<Element | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -102,6 +105,35 @@ export function Modal({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, handleClose]);
 
+  // Focus trap: cycle Tab within the dialog
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return;
+
+    const container = dialogRef.current;
+    const focusables =
+      container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    const firstFocusable = focusables[0] as HTMLElement | undefined;
+    if (firstFocusable) firstFocusable.focus();
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const els = container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (els.length === 0) return;
+      const first = els[0] as HTMLElement;
+      const last = els[els.length - 1] as HTMLElement;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleTab);
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [isOpen]);
+
   const titleId = useId();
 
   if (!isOpen) return null;
@@ -113,56 +145,56 @@ export function Modal({
         onClick={handleClose}
         aria-hidden='true'
       />
-      <FocusTrap
-        focusTrapOptions={{
-          allowOutsideClick: true,
-          escapeDeactivates: false,
+      <div
+        ref={node => {
+          (dialogRef as React.MutableRefObject<HTMLDivElement | null>).current =
+            node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref)
+            (ref as React.MutableRefObject<HTMLDivElement | null>).current =
+              node;
         }}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : 'Dialog'}
+        className={cn(
+          'relative w-full rounded-lg shadow-2xl',
+          sizeStyles[size],
+          variantStyles[variant],
+          className
+        )}
       >
-        <div
-          ref={ref}
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby={title ? titleId : undefined}
-          aria-label={title ? undefined : 'Dialog'}
-          className={cn(
-            'relative w-full rounded-lg shadow-2xl',
-            sizeStyles[size],
-            variantStyles[variant],
-            className
-          )}
-        >
-          {title && (
-            <div className='flex items-center justify-between p-6 border-b border-border'>
-              <Heading variant='component' id={titleId}>
-                {title}
-              </Heading>
-              <button
-                onClick={handleClose}
-                aria-label='Close dialog'
-                className='text-text-tertiary hover:text-text-primary transition-colors'
-              >
-                <X className='size-5' aria-hidden='true' />
-              </button>
-            </div>
-          )}
-          {!title && (
+        {title && (
+          <div className='flex items-center justify-between p-6 border-b border-border'>
+            <Heading variant='component' id={titleId}>
+              {title}
+            </Heading>
             <button
               onClick={handleClose}
               aria-label='Close dialog'
-              className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
+              className='text-text-tertiary hover:text-text-primary transition-colors'
             >
               <X className='size-5' aria-hidden='true' />
             </button>
-          )}
-          <div className='p-6'>{children}</div>
-          {footer && (
-            <div className='flex items-center justify-end gap-3 p-6 border-t border-border'>
-              {footer}
-            </div>
-          )}
-        </div>
-      </FocusTrap>
+          </div>
+        )}
+        {!title && (
+          <button
+            onClick={handleClose}
+            aria-label='Close dialog'
+            className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
+          >
+            <X className='size-5' aria-hidden='true' />
+          </button>
+        )}
+        <div className='p-6'>{children}</div>
+        {footer && (
+          <div className='flex items-center justify-end gap-3 p-6 border-t border-border'>
+            {footer}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
