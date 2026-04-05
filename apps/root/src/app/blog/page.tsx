@@ -3,13 +3,9 @@ import { PenLine } from 'lucide-react';
 import { getContentByType } from '@/data/contentRegistry';
 import { blogRootMetadata } from '@/data/metadata/blog';
 import { blogRootStructuredData } from '@/data/structuredData/blog';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  PostCard,
-  StructuredData,
-} from '@/components/kit';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Section, PageLayout, PostCard } from '@/components/kit';
 
 const blogList = getContentByType('blog')
   .reverse()

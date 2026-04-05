@@ -3,12 +3,9 @@ import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
 import { servicesMetadata } from '@/data/metadata/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  StructuredData,
-} from '@/components/kit';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Section, PageLayout } from '@/components/kit';
 import ClientBadge from '@/components/ClientBadge';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';

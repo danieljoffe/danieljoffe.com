@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Pagination, Spinner } from '@/components/kit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Pagination } from '@/components/kit';
 import ClientBadge from '@/components/ClientBadge';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';

@@ -21,13 +21,9 @@ import { aboutMetadata } from '@/data/metadata/about';
 import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  CTACard,
-  CompanyLogo,
-} from '@/components/kit';
+import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { Section, PageLayout, CompanyLogo } from '@/components/kit';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
 import ClientBadge from '@/components/ClientBadge';

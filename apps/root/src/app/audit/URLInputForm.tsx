@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Check, Monitor, Smartphone } from 'lucide-react';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
-import { Spinner, ErrorAlert, FormFieldError } from '@/components/kit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { ErrorAlert, FormFieldError } from '@/components/kit';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';

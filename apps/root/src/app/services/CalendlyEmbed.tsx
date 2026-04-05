@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { analytics } from '@/lib/analytics';
 import { CALENDLY_URL } from '@/utils/constants';
-import { Spinner } from '@/components/kit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 
 const EMBED_HEIGHT = 700;
 

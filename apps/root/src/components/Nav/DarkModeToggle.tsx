@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn';
 import { useTheme } from '@/state/Theme/ThemeProvider';
 import { analytics } from '@/lib/analytics';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
-import { Kbd } from '@/components/kit';
+import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
 
 const options = [
   { value: 'light' as const, icon: Sun, label: 'Light' },

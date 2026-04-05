@@ -4,13 +4,9 @@ import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  StructuredData,
-  CompanyLogo,
-} from '@/components/kit';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Section, PageLayout, CompanyLogo } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');

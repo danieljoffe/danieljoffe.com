@@ -20,15 +20,10 @@ import {
   CONTACT_FORM_ID,
   EXPERIENCE_LINK,
 } from '@/utils/constants';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  CTACard,
-  GridBg,
-  CompanyLogo,
-  PostCard,
-} from '@/components/kit';
+import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
+import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { Section, PageLayout, CompanyLogo, PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';

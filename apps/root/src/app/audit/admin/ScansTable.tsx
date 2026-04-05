@@ -1,6 +1,7 @@
 'use client';
 
-import { Pagination, Spinner } from '@/components/kit';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Pagination } from '@/components/kit';
 import ClientBadge from '@/components/ClientBadge';
 import type { BadgeVariant } from '@danieljoffe.com/shared-ui';
 import { formatDate } from '@/lib/dateFormatting';

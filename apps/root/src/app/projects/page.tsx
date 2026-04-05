@@ -4,13 +4,9 @@ import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  PostCard,
-  StructuredData,
-} from '@/components/kit';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Section, PageLayout, PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 
 const projectsList = getContentByType('project')
