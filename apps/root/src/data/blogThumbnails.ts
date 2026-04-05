@@ -73,4 +73,21 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'LKHe2RD%00%M_3WBt7Rj~qxuIUj[',
     },
   },
+  [blogSlugs.composeProvidersReactContext]: {
+    slug: blogSlugs.composeProvidersReactContext,
+    title: 'Composing React Providers Without the Nesting Nightmare',
+    description:
+      'A functional composition pattern that turns deeply nested provider trees into a flat, readable list — with automatic React DevTools display names.',
+    link: {
+      label: 'Composing React Providers',
+      href: `${BLOG_LINK.href}/${blogSlugs.composeProvidersReactContext}`,
+    },
+    cover: {
+      alt: 'Colorful interlocking puzzle pieces on a white surface',
+      src: '/photo-1494059980473-813e73ee784b',
+      origin: `${UNSPLASH_URL}/photos/multicolored-abstract-painting-bU6JyhSI6zo`,
+      creator: '@pawel_czerwinski',
+      blurHash: 'LGF~o]_N~q%M%MRjIUj[-;WBD%WB',
+    },
+  },
 };
