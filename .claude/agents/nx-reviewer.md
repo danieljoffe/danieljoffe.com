@@ -18,6 +18,7 @@ Review changed files for Nx monorepo structure, module boundary, and configurati
 - This workspace uses Nx plugins for target inference — avoid redundant target definitions in `project.json`
 - Nx plugins: `@nx/next`, `@nx/jest`, `@nx/playwright`, `@nx/eslint`, `@nx/storybook`
 - Named inputs: `production` excludes test files and config — check new files are properly categorized
+- `neverConnectToCloud: true` — do not recommend Nx Cloud features
 - Yarn workspaces — `package.json` in libs must have correct `name` field matching Nx project name
 
 ## Common Issues
