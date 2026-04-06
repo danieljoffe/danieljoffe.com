@@ -151,6 +151,13 @@ The workspace uses Nx plugins for automatic target inference:
 - Tests: accessibility, navigation, contact-form, performance, dynamic-routes, error-handling
 - CI runs only Chromium; local runs all browsers + mobile
 
+### CI Pipelines
+
+- `ci.yml`: Runs on push to `develop` and PRs (except to `main`). Runs lint, typecheck, test, build, e2e (PR only), Chromatic, Lighthouse.
+- `ci-preview.yml`: Runs on PRs to `main` (release validation).
+- Both workflows use `paths-ignore` to skip CI when only non-code files change: `**.md`, `.claude/**`, `.mcp.json`, `.vscode/**`, `.github/ISSUE_TEMPLATE/**`, `.github/prompts/**`, `.github/skills/**`, `.github/agents/**`, `.husky/**`, `.prettierrc`, `.nvmrc`, `.sentryclirc`, `.editorconfig`, `LICENSE`.
+- Snapshot regeneration: `workflow_dispatch` with `update-snapshots: true` on `ci.yml`.
+
 ## Sentry Integration
 
 Use `import * as Sentry from "@sentry/nextjs"` for all Sentry functionality. Key patterns:
