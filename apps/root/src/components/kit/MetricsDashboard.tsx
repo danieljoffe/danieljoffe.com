@@ -15,17 +15,16 @@ interface MetricsDashboardProps {
 }
 
 function isPositive(improvement: string): boolean {
-  // Treat reductions, "faster", decreases as positive improvements
+  // Improvements are positive by default; only flag as negative when
+  // the label contains explicitly negative language.
   const lower = improvement.toLowerCase();
-  return (
-    lower.includes('faster') ||
-    lower.includes('reduction') ||
-    lower.includes('increase') ||
-    lower.includes('improvement') ||
-    lower.includes('+') ||
-    lower.includes('×') ||
-    lower.includes('x') ||
-    /\d+%/.test(lower)
+  return !(
+    lower.includes('slower') ||
+    lower.includes('worse') ||
+    lower.includes('regression') ||
+    lower.includes('decrease') ||
+    lower.includes('declined') ||
+    lower.includes('drop')
   );
 }
 

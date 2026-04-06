@@ -56,7 +56,7 @@ describe('MetricsDashboard', () => {
     expect(region).toBeInTheDocument();
   });
 
-  it('applies green styling for positive improvements', () => {
+  it('applies green styling for numeric positive improvements', () => {
     render(
       <MetricsDashboard
         metrics={[
@@ -72,6 +72,60 @@ describe('MetricsDashboard', () => {
 
     const badge = screen.getByText('80% faster');
     expect(badge.className).toContain('green');
+  });
+
+  it('applies green styling for qualitative positive improvements', () => {
+    render(
+      <MetricsDashboard
+        metrics={[
+          {
+            label: 'Component Library Adoption',
+            before: '0%',
+            after: '80%',
+            improvement: 'Unified UI patterns',
+          },
+          {
+            label: 'Engineering Time Saved',
+            before: '—',
+            after: '12+ hrs/week',
+            improvement: 'Freed for features',
+          },
+        ]}
+      />
+    );
+
+    const badge1 = screen.getByText('Unified UI patterns');
+    const badge2 = screen.getByText('Freed for features');
+    expect(badge1.className).toContain('green');
+    expect(badge2.className).toContain('green');
+  });
+
+  it('applies red styling for explicitly negative improvements', () => {
+    render(
+      <MetricsDashboard
+        metrics={[
+          {
+            label: 'Response Time',
+            before: '200ms',
+            after: '500ms',
+            improvement: '150% slower',
+          },
+          {
+            label: 'Conversion Rate',
+            before: '5%',
+            after: '3%',
+            improvement: '40% decrease',
+          },
+        ]}
+      />
+    );
+
+    const badge1 = screen.getByText('150% slower');
+    const badge2 = screen.getByText('40% decrease');
+    expect(badge1.className).toContain('red');
+    expect(badge1.className).not.toContain('green');
+    expect(badge2.className).toContain('red');
+    expect(badge2.className).not.toContain('green');
   });
 
   it('renders empty state gracefully', () => {
