@@ -6,7 +6,9 @@ import {
   useCallback,
   useEffect,
   useId,
-  type ReactNode,
+  isValidElement,
+  cloneElement,
+  type ReactElement,
   type KeyboardEvent,
   type Ref,
 } from 'react';
@@ -17,7 +19,7 @@ type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 export interface TooltipProps {
   ref?: Ref<HTMLDivElement> | undefined;
   content: string;
-  children: ReactNode;
+  children: ReactElement;
   position?: TooltipPosition;
   delay?: number;
   className?: string | undefined;
@@ -71,6 +73,12 @@ export function Tooltip({
     };
   }, []);
 
+  const child = isValidElement(children)
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        'aria-describedby': tooltipId,
+      })
+    : children;
+
   return (
     <div ref={ref} className={cn('relative inline-block', className)}>
       <div
@@ -80,13 +88,13 @@ export function Tooltip({
         onBlur={hideTooltip}
         onKeyDown={handleKeyDown}
         role='presentation'
-        aria-describedby={tooltipId}
       >
-        {children}
+        {child}
       </div>
       <div
         id={tooltipId}
         role='tooltip'
+        aria-hidden={!isVisible}
         className={cn(
           'absolute z-50 px-3 py-1.5 bg-surface-elevated border',
           'border-border-secondary rounded-md text-sm text-text-primary',
