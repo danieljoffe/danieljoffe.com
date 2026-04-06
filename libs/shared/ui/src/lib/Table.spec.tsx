@@ -85,4 +85,48 @@ describe('Table', () => {
     );
     expect(container.firstChild).toHaveClass('custom-class');
   });
+
+  // --- focus-visible styles on clickable rows ---
+
+  it('applies focus-visible outline class on clickable rows', () => {
+    render(<Table columns={columns} data={data} onRowClick={jest.fn()} />);
+    const rows = screen.getAllByRole('button');
+    rows.forEach(row => {
+      expect(row.className).toContain('focus-visible:outline-2');
+    });
+  });
+
+  it('does not apply focus-visible outline class on non-clickable rows', () => {
+    render(<Table columns={columns} data={data} />);
+    const rows = screen.getAllByRole('row');
+    const bodyRows = rows.slice(1);
+    bodyRows.forEach(row => {
+      expect(row.className).not.toContain('focus-visible:outline-2');
+    });
+  });
+
+  it('adds tabIndex and role to clickable rows', () => {
+    render(<Table columns={columns} data={data} onRowClick={jest.fn()} />);
+    const rows = screen.getAllByRole('button');
+    rows.forEach(row => {
+      expect(row).toHaveAttribute('tabindex', '0');
+      expect(row).toHaveAttribute('role', 'button');
+    });
+  });
+
+  it('handles keyboard Enter on clickable rows', () => {
+    const onRowClick = jest.fn();
+    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
+    const row = screen.getAllByRole('button')[0];
+    fireEvent.keyDown(row, { key: 'Enter' });
+    expect(onRowClick).toHaveBeenCalledWith(data[0]);
+  });
+
+  it('handles keyboard Space on clickable rows', () => {
+    const onRowClick = jest.fn();
+    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
+    const row = screen.getAllByRole('button')[0];
+    fireEvent.keyDown(row, { key: ' ' });
+    expect(onRowClick).toHaveBeenCalledWith(data[0]);
+  });
 });

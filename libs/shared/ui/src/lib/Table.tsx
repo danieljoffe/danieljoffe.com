@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { Text } from './Text';
 import { cn } from './utils/cn';
 
@@ -33,6 +33,13 @@ export function Table<T extends Record<string, unknown>>({
     right: 'text-right',
   };
 
+  const handleRowKeyDown = (e: KeyboardEvent<HTMLTableRowElement>, row: T) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onRowClick?.(row);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -61,10 +68,14 @@ export function Table<T extends Record<string, unknown>>({
           {data.map((row, i) => (
             <tr
               key={i}
-              onClick={() => onRowClick?.(row)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onKeyDown={onRowClick ? e => handleRowKeyDown(e, row) : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? 'button' : undefined}
               className={cn(
                 'border-b border-border last:border-b-0 transition-colors',
-                onRowClick && 'cursor-pointer hover:bg-surface-secondary',
+                onRowClick &&
+                  'cursor-pointer hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent',
                 striped && i % 2 === 1 && 'bg-surface-secondary'
               )}
             >

@@ -81,6 +81,27 @@ describe('Pagination', () => {
     }
   });
 
+  // --- focus-visible styles ---
+
+  it('applies focus-visible ring classes on page buttons', () => {
+    render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
+    );
+    const pageButton = screen.getByText('1');
+    expect(pageButton.className).toContain('focus-visible:ring-2');
+  });
+
+  it('applies focus-visible ring classes on prev/next buttons', () => {
+    render(
+      <Pagination currentPage={3} totalPages={5} onPageChange={jest.fn()} />
+    );
+    const buttons = screen.getAllByRole('button');
+    const prevButton = buttons[0];
+    const nextButton = buttons[buttons.length - 1];
+    expect(prevButton.className).toContain('focus-visible:ring-2');
+    expect(nextButton.className).toContain('focus-visible:ring-2');
+  });
+
   it('applies custom className', () => {
     render(
       <Pagination

@@ -70,6 +70,8 @@ export function Dropdown({
                 className={cn(
                   'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left',
                   'transition-colors duration-100 cursor-pointer',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+                  'focus-visible:ring-offset-surface',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   item.danger
                     ? 'text-error hover:bg-error-light'
