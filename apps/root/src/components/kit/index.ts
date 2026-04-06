@@ -1,4 +1,6 @@
 export { CoverImage } from './CoverImage';
+export { InteractiveDemo } from './InteractiveDemo';
+export { MetricsDashboard } from './MetricsDashboard';
 export { PostCard } from './PostCard';
 export { CompanyLogo } from './CompanyLogo';
 export { Pagination } from './Pagination';

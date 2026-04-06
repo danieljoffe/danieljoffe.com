@@ -16,11 +16,11 @@ export const metadata = {
 Every mature codebase accumulates typographic debt. Ours had three competing
 systems that didn't agree on what an `<h2>` should look like:
 
-| Layer | h1 | h2 | h3 |
-|-------|----|----|-----|
-| **theme.css** | 2.25rem / 600 | 1.75rem / 600 | 1.375rem / 600 |
-| **mdx-components.tsx** | `text-2xl bold` | `text-lg semibold` | `text-sm semibold` |
-| **Page components** | `text-4xl sm:text-5xl bold` | varies | varies |
+| Layer                  | h1                          | h2                 | h3                 |
+| ---------------------- | --------------------------- | ------------------ | ------------------ |
+| **theme.css**          | 2.25rem / 600               | 1.75rem / 600      | 1.375rem / 600     |
+| **mdx-components.tsx** | `text-2xl bold`             | `text-lg semibold` | `text-sm semibold` |
+| **Page components**    | `text-4xl sm:text-5xl bold` | varies             | varies             |
 
 The same "card title" pattern (`text-sm font-semibold text-text-primary`)
 appeared in 5+ files. Hero headings were copy-pasted across 6 pages with
@@ -50,10 +50,12 @@ The key architecture decision was **what belongs where**. The shared-ui library
 page layout or MDX rendering had to stay in the app.
 
 **Shared-ui variants** (framework-agnostic):
+
 - `Heading`: `section`, `cardTitle`, `component`
 - `Text`: `body`, `bodyLg`, `cardDescription`, `label`, `meta`, `caption`, `helper`, `error`
 
 **App-level extensions** (Next.js-specific):
+
 - `Heading`: `hero`, `detail`, `subtitle`, `mdxH1`–`mdxH4`
 - `Text`: `subtitle`
 
