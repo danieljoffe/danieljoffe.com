@@ -1,6 +1,8 @@
 #!/bin/bash
 # PostToolUse hook: runs related unit tests when a spec file is edited
 
+command -v jq >/dev/null || exit 0
+
 INPUT=$(cat /dev/stdin)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
@@ -8,9 +10,16 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 [ -z "$FILE_PATH" ] && exit 0
 echo "$FILE_PATH" | grep -qE '\.spec\.tsx?$' || exit 0
 
-PATTERN=$(basename "$FILE_PATH" | sed 's/\.spec\.tsx$//' | sed 's/\.spec\.ts$//')
-OUTPUT=$(npx nx test root -- --testPathPatterns="$PATTERN" --no-coverage 2>&1)
+# Use the spec filename (e.g. "page.spec.tsx") as the pattern for an exact match
+SPEC_FILE=$(basename "$FILE_PATH")
+OUTPUT=$(timeout 60 npx nx test root -- --testPathPatterns="$SPEC_FILE" --no-coverage 2>&1)
 RC=$?
+
+# timeout exits 124 when the command is killed
+if [ $RC -eq 124 ]; then
+  echo "TIMEOUT: tests exceeded 60s limit" >&2
+  exit 2
+fi
 
 SUMMARY=$(echo "$OUTPUT" | grep -E '(Tests:|Test Suites:)' | head -2)
 
