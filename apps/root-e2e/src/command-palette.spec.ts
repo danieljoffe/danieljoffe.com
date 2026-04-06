@@ -2,12 +2,25 @@ import { test, expect } from '@playwright/test';
 import { waitForHydration } from './fixtures/base.fixture';
 
 /**
+ * Wait for the dynamically-imported CommandPalette component to mount.
+ * The component renders a hidden sentinel `[data-testid="command-palette-ready"]`
+ * even when closed, so its presence proves the dynamic import has resolved
+ * and the event listeners are attached.
+ */
+async function waitForCommandPalette(page: import('@playwright/test').Page) {
+  await expect(
+    page.locator('[data-testid="command-palette-ready"]')
+  ).toBeAttached({ timeout: 15000 });
+}
+
+/**
  * Open the command palette via programmatic keyboard event dispatch.
  * Headless Chromium on Linux does not reliably deliver modifier key
  * combinations through `page.keyboard.press`, so we dispatch a
  * synthetic KeyboardEvent directly on the document.
  */
 async function openPaletteViaKeyboard(page: import('@playwright/test').Page) {
+  await waitForCommandPalette(page);
   await page.evaluate(() => {
     document.dispatchEvent(
       new KeyboardEvent('keydown', {
@@ -24,6 +37,7 @@ async function openPaletteViaKeyboard(page: import('@playwright/test').Page) {
 
 /** Open the command palette by clicking the visible search trigger in the nav. */
 async function openPaletteViaClick(page: import('@playwright/test').Page) {
+  await waitForCommandPalette(page);
   const trigger = page.locator('[data-testid="search-trigger"]').first();
   await trigger.click();
   const overlay = page.locator('[data-testid="command-palette-overlay"]');

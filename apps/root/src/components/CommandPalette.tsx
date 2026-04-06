@@ -85,7 +85,8 @@ export default function CommandPalette() {
     [router]
   );
 
-  if (!open) return null;
+  if (!open)
+    return <span data-testid='command-palette-ready' className='hidden' />;
 
   return (
     <div
