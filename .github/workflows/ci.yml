@@ -4,39 +4,9 @@ on:
   push:
     branches:
       - develop
-    paths-ignore:
-      - '**.md'
-      - '.claude/**'
-      - '.mcp.json'
-      - '.vscode/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/prompts/**'
-      - '.github/skills/**'
-      - '.github/agents/**'
-      - '.husky/**'
-      - '.prettierrc'
-      - '.nvmrc'
-      - '.sentryclirc'
-      - '.editorconfig'
-      - 'LICENSE'
   pull_request:
     branches-ignore:
       - main # PRs to main are handled by ci-preview.yml
-    paths-ignore:
-      - '**.md'
-      - '.claude/**'
-      - '.mcp.json'
-      - '.vscode/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/prompts/**'
-      - '.github/skills/**'
-      - '.github/agents/**'
-      - '.husky/**'
-      - '.prettierrc'
-      - '.nvmrc'
-      - '.sentryclirc'
-      - '.editorconfig'
-      - 'LICENSE'
   workflow_dispatch:
     inputs:
       update-snapshots:
@@ -58,8 +28,35 @@ permissions:
   statuses: write
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      needs-ci: ${{ steps.filter.outputs.needs-ci }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            needs-ci:
+              - '!**.md'
+              - '!.claude/**'
+              - '!.mcp.json'
+              - '!.vscode/**'
+              - '!.github/ISSUE_TEMPLATE/**'
+              - '!.github/prompts/**'
+              - '!.github/skills/**'
+              - '!.github/agents/**'
+              - '!.husky/**'
+              - '!.prettierrc'
+              - '!.nvmrc'
+              - '!.sentryclirc'
+              - '!.editorconfig'
+              - '!LICENSE'
+
   ci:
-    if: ${{ !inputs.update-snapshots }}
+    needs: changes
+    if: ${{ needs.changes.outputs.needs-ci == 'true' && !inputs.update-snapshots }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -72,6 +69,19 @@ jobs:
           run-e2e: ${{ github.event_name != 'push' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           chromatic-project-token: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+  ci-status:
+    if: always()
+    needs: [changes, ci]
+    runs-on: ubuntu-latest
+    steps:
+      - name: CI succeeded or was skipped
+        run: |
+          if [ "${{ needs.ci.result }}" = "failure" ] || [ "${{ needs.ci.result }}" = "cancelled" ]; then
+            echo "CI failed"
+            exit 1
+          fi
+          echo "CI passed or was skipped (docs-only change)"
 
   update-snapshots:
     if: ${{ inputs.update-snapshots }}

@@ -3,21 +3,6 @@ name: CI + Preview Deploy
 on:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - '**.md'
-      - '.claude/**'
-      - '.mcp.json'
-      - '.vscode/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/prompts/**'
-      - '.github/skills/**'
-      - '.github/agents/**'
-      - '.husky/**'
-      - '.prettierrc'
-      - '.nvmrc'
-      - '.sentryclirc'
-      - '.editorconfig'
-      - 'LICENSE'
 
 permissions:
   actions: read
