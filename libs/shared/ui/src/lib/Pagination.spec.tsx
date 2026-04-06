@@ -104,7 +104,7 @@ describe('Pagination', () => {
         currentPage={1}
         totalPages={5}
         onPageChange={jest.fn()}
-        className="custom-class"
+        className='custom-class'
       />
     );
     const nav = screen.getByRole('navigation');
@@ -126,7 +126,7 @@ describe('Pagination', () => {
           currentPage={1}
           totalPages={5}
           onPageChange={jest.fn()}
-          ariaLabel="Results pagination"
+          ariaLabel='Results pagination'
         />
       );
       const nav = screen.getByRole('navigation');

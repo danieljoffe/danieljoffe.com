@@ -32,83 +32,52 @@ describe('DarkModeToggle', () => {
     });
   });
 
-  test('renders three theme options as radio buttons', () => {
+  test('renders a single button', () => {
     render(<DarkModeToggle />);
-    const radios = screen.getAllByRole('radio');
-    expect(radios).toHaveLength(3);
+    expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  test('renders radiogroup with Theme label', () => {
-    render(<DarkModeToggle />);
-    expect(
-      screen.getByRole('radiogroup', { name: /theme/i })
-    ).toBeInTheDocument();
-  });
-
-  test('renders light, dark, and system options with aria-labels', () => {
+  test('shows correct aria-label for next theme when current is system', () => {
     render(<DarkModeToggle />);
     expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument();
+  });
+
+  test('shows correct aria-label for next theme when current is light', () => {
+    mockUseTheme.mockReturnValue({ theme: 'light', setTheme: mockSetTheme });
+    render(<DarkModeToggle />);
     expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument();
+  });
+
+  test('shows correct aria-label for next theme when current is dark', () => {
+    mockUseTheme.mockReturnValue({ theme: 'dark', setTheme: mockSetTheme });
+    render(<DarkModeToggle />);
     expect(screen.getByLabelText('Switch to system mode')).toBeInTheDocument();
   });
 
-  test('marks system as checked when theme is system', () => {
-    render(<DarkModeToggle />);
-    expect(screen.getByLabelText('Switch to system mode')).toHaveAttribute(
-      'aria-checked',
-      'true'
-    );
-    expect(screen.getByLabelText('Switch to light mode')).toHaveAttribute(
-      'aria-checked',
-      'false'
-    );
-    expect(screen.getByLabelText('Switch to dark mode')).toHaveAttribute(
-      'aria-checked',
-      'false'
-    );
-  });
-
-  test('marks dark as checked when theme is dark', () => {
-    mockUseTheme.mockReturnValue({ theme: 'dark', setTheme: mockSetTheme });
-    render(<DarkModeToggle />);
-    expect(screen.getByLabelText('Switch to dark mode')).toHaveAttribute(
-      'aria-checked',
-      'true'
-    );
-  });
-
-  test('marks light as checked when theme is light', () => {
-    mockUseTheme.mockReturnValue({ theme: 'light', setTheme: mockSetTheme });
-    render(<DarkModeToggle />);
-    expect(screen.getByLabelText('Switch to light mode')).toHaveAttribute(
-      'aria-checked',
-      'true'
-    );
-  });
-
-  test('clicking dark calls setTheme("dark") and analytics', async () => {
+  test('clicking cycles from system to light', async () => {
     const user = userEvent.setup();
     render(<DarkModeToggle />);
-    await user.click(screen.getByLabelText('Switch to dark mode'));
-    expect(mockSetTheme).toHaveBeenCalledWith('dark');
-    expect(mockThemeToggle).toHaveBeenCalledWith('dark');
-  });
-
-  test('clicking light calls setTheme("light") and analytics', async () => {
-    const user = userEvent.setup();
-    render(<DarkModeToggle />);
-    await user.click(screen.getByLabelText('Switch to light mode'));
-    expect(mockSetTheme).toHaveBeenCalledWith('light');
+    await user.click(screen.getByRole('button'));
     expect(mockThemeToggle).toHaveBeenCalledWith('light');
+    expect(mockSetTheme).toHaveBeenCalledWith('light');
   });
 
-  test('clicking system calls setTheme("system") and analytics', async () => {
+  test('clicking cycles from light to dark', async () => {
+    mockUseTheme.mockReturnValue({ theme: 'light', setTheme: mockSetTheme });
+    const user = userEvent.setup();
+    render(<DarkModeToggle />);
+    await user.click(screen.getByRole('button'));
+    expect(mockThemeToggle).toHaveBeenCalledWith('dark');
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+  });
+
+  test('clicking cycles from dark to system', async () => {
     mockUseTheme.mockReturnValue({ theme: 'dark', setTheme: mockSetTheme });
     const user = userEvent.setup();
     render(<DarkModeToggle />);
-    await user.click(screen.getByLabelText('Switch to system mode'));
-    expect(mockSetTheme).toHaveBeenCalledWith('system');
+    await user.click(screen.getByRole('button'));
     expect(mockThemeToggle).toHaveBeenCalledWith('system');
+    expect(mockSetTheme).toHaveBeenCalledWith('system');
   });
 
   test('analytics is called before setTheme on click', async () => {
@@ -118,23 +87,18 @@ describe('DarkModeToggle', () => {
 
     const user = userEvent.setup();
     render(<DarkModeToggle />);
-    await user.click(screen.getByLabelText('Switch to dark mode'));
+    await user.click(screen.getByRole('button'));
 
     expect(callOrder).toEqual(['analytics', 'setTheme']);
   });
 
-  test('each option has a title attribute', () => {
+  test('has a title showing current theme', () => {
     render(<DarkModeToggle />);
-    expect(screen.getByTitle('Light')).toBeInTheDocument();
-    expect(screen.getByTitle('Dark')).toBeInTheDocument();
-    expect(screen.getByTitle('System')).toBeInTheDocument();
+    expect(screen.getByTitle('Theme: system')).toBeInTheDocument();
   });
 
-  test('each option contains an SVG icon', () => {
+  test('contains an SVG icon', () => {
     render(<DarkModeToggle />);
-    const radios = screen.getAllByRole('radio');
-    radios.forEach(radio => {
-      expect(radio.querySelector('svg')).toBeInTheDocument();
-    });
+    expect(screen.getByRole('button').querySelector('svg')).toBeInTheDocument();
   });
 });

@@ -47,6 +47,7 @@ const nextConfig = {
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
+  devIndicators: false,
   // Performance optimizations
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
