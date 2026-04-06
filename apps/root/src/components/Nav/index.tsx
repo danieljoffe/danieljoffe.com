@@ -18,7 +18,7 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className='sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border/60'>
+    <header className='sticky bottom-0 md:top-0 md:bottom-auto z-50 bg-surface/80 backdrop-blur-md border-b border-border/60'>
       <nav role='navigation' aria-label='Main navigation'>
         <TabletUpNav pathname={pathname} />
         <MobileNav pathname={pathname} />

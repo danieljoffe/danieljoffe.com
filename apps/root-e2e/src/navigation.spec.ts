@@ -108,12 +108,15 @@ test.describe('mobile navigation', () => {
     await page.setViewportSize({ width: 375, height: 667 });
   });
 
-  test('shows bottom bar with primary links', async ({ page }) => {
+  test('shows bottom bar with Home and primary links', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
     const bottomNav = page.locator('nav[aria-label="Mobile navigation"]');
     await expect(bottomNav).toBeVisible();
+
+    // Home link
+    await expect(bottomNav.locator('a[href="/"]').first()).toBeVisible();
 
     for (const link of PRIMARY_NAV_LINKS) {
       const navLink = bottomNav.locator(`a[href="${link.href}"]`).first();
@@ -134,7 +137,7 @@ test.describe('mobile navigation', () => {
     await moreButton.click();
 
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
-    await expect(sheet).toBeVisible();
+    await expect(sheet).toHaveClass(/translate-y-0/);
   });
 
   test('closes More sheet on close button click', async ({ page }) => {
@@ -147,14 +150,15 @@ test.describe('mobile navigation', () => {
     // Open
     await bottomNav.getByLabel('Open more menu').click();
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
-    await expect(sheet).toBeVisible();
+    await expect(sheet).toHaveClass(/translate-y-0/);
 
     // Close via the backdrop overlay — use dispatchEvent because the fixed
     // bottom nav bar (z-50) sits above the overlay (z-40) and intercepts
     // normal Playwright clicks.
     const overlay = page.locator('.fixed.inset-0.bg-black\\/40');
     await overlay.dispatchEvent('click');
-    await expect(sheet).toBeHidden();
+    // The sheet uses translate-y transition, so check for the off-screen class
+    await expect(sheet).toHaveClass(/translate-y-full/);
   });
 
   test('navigates from More sheet', async ({ page }) => {
@@ -167,13 +171,10 @@ test.describe('mobile navigation', () => {
     // Open More sheet
     await bottomNav.getByLabel('Open more menu').click();
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
-    await expect(sheet).toBeVisible();
+    await expect(sheet).toHaveClass(/translate-y-0/);
 
-    // Click About
-    // The sheet is fixed-positioned and may be outside the Playwright
-    // viewport boundary; dispatch click programmatically.
+    // Click About — dispatch programmatically since the sheet is fixed-positioned
     const aboutButton = sheet.locator('button', { hasText: 'About' });
-    await expect(aboutButton).toBeVisible();
     await aboutButton.dispatchEvent('click');
 
     await expect(page).toHaveURL(/.*about/);
