@@ -99,7 +99,7 @@ export const A11Y = {
 // ============================================================================
 // NAVIGATION CONSTANTS
 // ============================================================================
-import { NavLink } from '@/types/base';
+import type { NavLink } from '@/types/base';
 
 export const HOME_LINK: NavLink = { href: '/', label: 'Home' };
 export const ABOUT_LINK: NavLink = { href: '/about', label: 'About' };
