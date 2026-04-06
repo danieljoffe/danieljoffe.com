@@ -31,6 +31,15 @@ import RuleOfThreeDesignSystems, {
 import DocumentingDesignTokens, {
   metadata as documentingDesignTokensMeta,
 } from './documenting-design-tokens.mdx';
+import AccessibleDropdownKeyboardNav, {
+  metadata as accessibleDropdownMeta,
+} from './accessible-dropdown-keyboard-nav.mdx';
+import ToastPauseOnHover, {
+  metadata as toastPauseOnHoverMeta,
+} from './toast-pause-on-hover.mdx';
+import KeyboardNavigableDataTables, {
+  metadata as keyboardNavigableTablesMeta,
+} from './keyboard-navigable-data-tables.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -43,6 +52,9 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'eslint-import-ordering-monorepo': EslintImportOrderingMonorepo,
   'rule-of-three-design-systems': RuleOfThreeDesignSystems,
   'documenting-design-tokens': DocumentingDesignTokens,
+  'accessible-dropdown-keyboard-nav': AccessibleDropdownKeyboardNav,
+  'toast-pause-on-hover': ToastPauseOnHover,
+  'keyboard-navigable-data-tables': KeyboardNavigableDataTables,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -56,4 +68,7 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'eslint-import-ordering-monorepo': eslintImportOrderingMeta,
   'rule-of-three-design-systems': ruleOfThreeMeta,
   'documenting-design-tokens': documentingDesignTokensMeta,
+  'accessible-dropdown-keyboard-nav': accessibleDropdownMeta,
+  'toast-pause-on-hover': toastPauseOnHoverMeta,
+  'keyboard-navigable-data-tables': keyboardNavigableTablesMeta,
 };

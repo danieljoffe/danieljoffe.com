@@ -118,12 +118,13 @@ To override tokens selectively:
 
 #### Animations
 
-| Token                  | Value                       | Tailwind class       |
-| ---------------------- | --------------------------- | -------------------- |
-| `--animate-fade-in`    | `fade-in 0.2s ease-out`     | `animate-fade-in`    |
-| `--animate-slide-up`   | `slide-up 0.2s ease-out`    | `animate-slide-up`   |
-| `--animate-slide-down` | `slide-down 0.15s ease-out` | `animate-slide-down` |
-| `--animate-scale-in`   | `scale-in 0.15s ease-out`   | `animate-scale-in`   |
+| Token                      | Value                                   | Tailwind class           |
+| -------------------------- | --------------------------------------- | ------------------------ |
+| `--animate-fade-in`        | `fade-in 0.2s ease-out`                 | `animate-fade-in`        |
+| `--animate-slide-up`       | `slide-up 0.2s ease-out`                | `animate-slide-up`       |
+| `--animate-slide-down`     | `slide-down 0.15s ease-out`             | `animate-slide-down`     |
+| `--animate-slide-out-down` | `slide-out-down 0.15s ease-in forwards` | `animate-slide-out-down` |
+| `--animate-scale-in`       | `scale-in 0.15s ease-out`               | `animate-scale-in`       |
 
 Additional keyframes defined (usable in custom animations): `bounceSubtle`, `pulseSlow`.
 

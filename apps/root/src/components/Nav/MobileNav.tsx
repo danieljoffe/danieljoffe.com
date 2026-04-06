@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { analytics } from '@/lib/analytics';
 import Logo from './Logo';
 import DarkModeToggle from './DarkModeToggle';
+import SearchTrigger from './SearchTrigger';
 
 const MenuIcon = dynamic(() => import('./MenuIcon'), {
   ssr: false,
@@ -41,6 +42,7 @@ export default function MobileNav({
     <div className='md:hidden flex items-center justify-between w-full h-14 px-6'>
       <Logo />
       <div className='flex items-center gap-1'>
+        <SearchTrigger />
         <DarkModeToggle />
         <button
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
