@@ -1,0 +1,159 @@
+export const metadata = {
+  title: 'Building an Accessible Dropdown Without a Library',
+  date: '2026-04-06',
+  excerpt:
+    'Full ARIA menu semantics and keyboard navigation in ~150 lines of React — no Radix, no Headless UI, just the spec.',
+  author: 'Daniel Joffe',
+  category: 'Accessibility',
+  tags: ['React', 'Accessibility', 'Design Systems', 'ARIA'],
+  slug: 'accessible-dropdown-keyboard-nav',
+  type: 'blog',
+  topic: 'Accessibility',
+};
+
+## The Default Move
+
+When a dropdown needs to be accessible, most teams reach for Radix or
+Headless UI. These are excellent libraries. But if your component library
+already has a custom Dropdown — one that works, is styled, and is used
+everywhere — pulling in a new dependency just for ARIA attributes feels
+backwards.
+
+We had that exact Dropdown. It opened on click, closed on outside click, and
+rendered items. No ARIA roles, no keyboard navigation, no focus management.
+Screen readers saw a `<button>` that spawned some `<div>`s.
+
+## What the Spec Actually Requires
+
+The [WAI-ARIA Menu Pattern](https://www.w3.org/WAI/ARIA/apd/patterns/menu/)
+defines a clear contract:
+
+- **Trigger**: `aria-haspopup="true"`, `aria-expanded`, `aria-controls`
+  pointing to the menu
+- **Menu**: `role="menu"`, `aria-labelledby` pointing back to the trigger
+- **Items**: `role="menuitem"` on each actionable item, `role="separator"`
+  on dividers
+- **Focus**: Roving `tabIndex` — the active item gets `0`, everything else
+  gets `-1`
+- **Keyboard**: Arrow keys to navigate, Enter/Space to activate, Escape to
+  close, Home/End to jump
+
+That's it. No mystery. The spec is prescriptive enough that the
+implementation almost writes itself.
+
+## Roving tabIndex
+
+The key pattern is roving `tabIndex`. Instead of moving DOM focus with
+`document.activeElement` tricks, each item declares whether it's the current
+focus target:
+
+```tsx
+<button
+  role='menuitem'
+  tabIndex={i === activeIndex ? 0 : -1}
+  ref={el => {
+    itemRefs.current[i] = el;
+  }}
+>
+  {item.label}
+</button>
+```
+
+When the active index changes, we call `.focus()` on the new target:
+
+```tsx
+const focusItem = useCallback((index: number) => {
+  setActiveIndex(index);
+  itemRefs.current[index]?.focus();
+}, []);
+```
+
+This gives screen readers a clear signal about which item is current, and
+Tab moves focus _out_ of the menu entirely — which is the correct behavior
+per spec.
+
+## Skipping Non-Actionable Items
+
+Dropdown items aren't always clickable. Dividers and disabled items should
+be skipped during keyboard navigation. We pre-compute the actionable
+indices once:
+
+```tsx
+const actionableItems = useMemo(
+  () =>
+    items.reduce<number[]>((acc, item, i) => {
+      if (!item.divider && !item.disabled) acc.push(i);
+      return acc;
+    }, []),
+  [items]
+);
+```
+
+Arrow key handlers index into this array, so pressing Down from the last
+actionable item wraps to the first — and disabled items in between are
+invisible to the keyboard.
+
+## The Full Keyboard Contract
+
+The `handleMenuKeyDown` switch covers every interaction the spec demands:
+
+```tsx
+case 'ArrowDown': {
+  const nextIdx = currentActionableIndex < actionableItems.length - 1
+    ? actionableItems[currentActionableIndex + 1]
+    : actionableItems[0]; // wrap
+  if (nextIdx != null) focusItem(nextIdx);
+  break;
+}
+case 'Escape': { closeMenu(); break; }
+case 'Enter':
+case ' ': {
+  // Activate the focused item
+  item.onClick?.();
+  closeMenu();
+  break;
+}
+case 'Tab': { closeMenu(); break; }
+```
+
+Escape and Tab both close, but with a difference: Escape returns focus to
+the trigger (`triggerRef.current?.focus()`), while Tab lets the browser move
+focus naturally to the next element in the document.
+
+## ID Linkage with useId
+
+React 19's `useId()` generates stable, SSR-safe identifiers for the
+trigger-to-menu relationship:
+
+```tsx
+const uid = useId();
+const menuId = `dropdown-menu-${uid}`;
+const triggerId = `dropdown-trigger-${uid}`;
+```
+
+The trigger gets `aria-controls={menuId}`, and the menu gets
+`aria-labelledby={triggerId}`. No prop drilling, no collision risk across
+multiple Dropdowns on the same page.
+
+## Testing the Invisible
+
+Accessibility features are invisible to sighted users, which makes testing
+non-negotiable. We added 22 tests covering:
+
+- ARIA attributes render correctly on trigger, menu, and items
+- Arrow keys cycle through actionable items and wrap
+- Disabled and divider items are skipped
+- Enter and Space activate the focused item
+- Escape closes and returns focus to trigger
+- Focus moves to the first actionable item on open
+
+The test count went from 10 to 32. The component gained ~120 lines of code.
+No new dependencies.
+
+## The Takeaway
+
+The ARIA menu spec is specific enough to follow mechanically. The
+implementation is `useId` for linkage, `useMemo` for actionable indices,
+`useCallback` for focus management, and a `switch` statement for keyboard
+events. If your design system already owns the Dropdown, you already own
+the accessibility story too — you just need to write it.

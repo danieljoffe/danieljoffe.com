@@ -175,4 +175,55 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'L99ZoLxu4n%M~qWBt7RjD%M{M{Rj',
     },
   },
+  [blogSlugs.accessibleDropdownKeyboardNav]: {
+    slug: blogSlugs.accessibleDropdownKeyboardNav,
+    title: 'Building an Accessible Dropdown Without a Library',
+    description:
+      'Full ARIA menu semantics and keyboard navigation in ~150 lines of React — no Radix, no Headless UI, just the spec.',
+    link: {
+      label: 'Accessible Dropdown',
+      href: `${BLOG_LINK.href}/${blogSlugs.accessibleDropdownKeyboardNav}`,
+    },
+    cover: {
+      alt: 'A keyboard with illuminated keys in a dark environment',
+      src: '/photo-1541140532154-b024d6e1841f',
+      origin: `${UNSPLASH_URL}/photos/black-computer-keyboard-in-close-up-photography-mP7aPSUm7aE`,
+      creator: '@nubelson',
+      blurHash: 'L15E{J-;00Rj~q%M-;WB00WBD%of',
+    },
+  },
+  [blogSlugs.toastPauseOnHover]: {
+    slug: blogSlugs.toastPauseOnHover,
+    title: 'Pause-on-Hover: Making Toast Notifications Respect the User',
+    description:
+      'Adding aria-live regions and pause-on-hover to a Toast system — where screen readers and sighted users have conflicting timing needs.',
+    link: {
+      label: 'Toast Pause-on-Hover',
+      href: `${BLOG_LINK.href}/${blogSlugs.toastPauseOnHover}`,
+    },
+    cover: {
+      alt: 'A notification bell icon on a blurred background',
+      src: '/photo-1514464750060-00e6e34c8b8c',
+      origin: `${UNSPLASH_URL}/photos/white-and-brown-round-frame-dMeEJRE18VI`,
+      creator: '@joshcala',
+      blurHash: 'LGKd$M~q00%M~qof-;Rj00WBD%of',
+    },
+  },
+  [blogSlugs.keyboardNavigableDataTables]: {
+    slug: blogSlugs.keyboardNavigableDataTables,
+    title: 'Making Data Tables Keyboard-Navigable',
+    description:
+      'Adding scope, caption, clickable row keyboard support, and focus-visible to a Table component — the accessibility basics HTML tables need but rarely get.',
+    link: {
+      label: 'Keyboard-Navigable Tables',
+      href: `${BLOG_LINK.href}/${blogSlugs.keyboardNavigableDataTables}`,
+    },
+    cover: {
+      alt: 'A spreadsheet displayed on a monitor screen',
+      src: '/photo-1460925895917-afdab827c52f',
+      origin: `${UNSPLASH_URL}/photos/laptop-computer-on-glass-top-table-hpjSkU2UYSU`,
+      creator: '@carlheyerdahl',
+      blurHash: 'L26*n%~q00xu-;j[ofWB00of%Mxu',
+    },
+  },
 };

@@ -1,0 +1,136 @@
+export const metadata = {
+  title: 'Pause-on-Hover: Making Toast Notifications Respect the User',
+  date: '2026-04-06',
+  excerpt:
+    'Adding aria-live regions and pause-on-hover to a Toast system — where screen readers and sighted users have conflicting timing needs.',
+  author: 'Daniel Joffe',
+  category: 'Accessibility',
+  tags: ['React', 'Accessibility', 'UX', 'Design Systems'],
+  slug: 'toast-pause-on-hover',
+  type: 'blog',
+  topic: 'Accessibility',
+};
+
+## The Timing Conflict
+
+A toast notification has two jobs that fight each other. For sighted users,
+it should disappear after a few seconds so it doesn't block the UI. For
+screen reader users, `aria-live="polite"` means the announcement waits
+until the user finishes their current task — but if the toast has already
+been removed from the DOM by then, there's nothing left to announce.
+
+Our Toast component had neither. No ARIA roles, no auto-dismiss strategy,
+and a close button with no accessible label. It was a styled `<div>` that
+appeared and vanished.
+
+## role="alert" vs role="status"
+
+Not all toasts deserve the same urgency. The ARIA spec gives us two options:
+
+- **`role="status"`** with `aria-live="polite"` — for success and info
+  toasts. The screen reader waits for a natural pause before announcing.
+- **`role="alert"`** with implicit `aria-live="assertive"` — for error and
+  warning toasts. The screen reader interrupts whatever it's doing.
+
+The distinction matters. An "email sent" confirmation can wait. A "payment
+failed" error should not.
+
+```tsx
+const isUrgent = t.variant === 'error' || t.variant === 'warning';
+
+<div
+  role={isUrgent ? 'alert' : 'status'}
+  aria-atomic='true'
+>
+```
+
+`aria-atomic="true"` ensures the screen reader reads the entire toast
+content when it changes, not just the diff.
+
+## The Pause-on-Hover Pattern
+
+Auto-dismiss solves the sighted user's problem: toasts go away on their
+own. But a 4-second timer is hostile if the user is still reading. The fix:
+pause the timer when the user is engaged.
+
+We extracted a `ToastCard` component that manages its own lifecycle with
+three refs:
+
+```tsx
+const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const remainingRef = useRef(AUTO_DISMISS_MS);
+const startRef = useRef(Date.now());
+
+const startTimer = useCallback(() => {
+  startRef.current = Date.now();
+  timerRef.current = setTimeout(() => {
+    onDismiss(t.id);
+  }, remainingRef.current);
+}, [onDismiss, t.id]);
+
+const pauseTimer = useCallback(() => {
+  if (timerRef.current) {
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+    remainingRef.current -= Date.now() - startRef.current;
+  }
+}, []);
+```
+
+The key insight: `remainingRef` tracks how much time is left, not how much
+has elapsed. When the user hovers away, the timer resumes with the correct
+remaining duration — not a fresh 4 seconds.
+
+Both mouse and keyboard users benefit:
+
+```tsx
+<div
+  onMouseEnter={pauseTimer}
+  onMouseLeave={startTimer}
+  onFocus={pauseTimer}
+  onBlur={startTimer}
+>
+```
+
+The `onFocus`/`onBlur` pair handles keyboard users who Tab into the toast
+to reach the close button.
+
+## Labeling the Close Button
+
+A bare `<button>` with an `×` icon is a screen reader dead end. It
+announces "button" with no indication of what it does or what it dismisses.
+
+```tsx
+<button aria-label='Dismiss notification' onClick={() => onDismiss(t.id)}>
+  <X className='h-4 w-4' />
+</button>
+```
+
+Small detail, high impact. A screen reader user now hears "Dismiss
+notification, button" and knows exactly what the control does.
+
+## Testing Async Behavior
+
+Auto-dismiss and pause-on-hover are time-dependent, which makes tests
+inherently flaky if done wrong. We used `jest.useFakeTimers()` and
+`act()` to control the clock:
+
+- Verify the toast exists at `t=0`
+- Advance timers past `AUTO_DISMISS_MS`
+- Verify the toast is removed
+
+For pause-on-hover, we fire `mouseEnter` mid-timer, advance past the
+original deadline, verify the toast survives, then fire `mouseLeave` and
+advance through the remaining time.
+
+Nine new tests cover the full matrix: role by variant, aria attributes,
+close button labeling, and the pause/resume lifecycle.
+
+## The Takeaway
+
+Toast notifications sit at the intersection of visual design, timing, and
+assistive technology. The three-ref timer pattern (`timerRef`, `remainingRef`,
+`startRef`) is a clean, reusable approach to any UI element that needs
+interruptible auto-dismiss. And the `role="alert"` vs `role="status"`
+distinction is one of those small ARIA decisions that separates a component
+library from an accessible one.

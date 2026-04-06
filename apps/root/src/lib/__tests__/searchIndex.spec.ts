@@ -25,7 +25,7 @@ describe('buildSearchIndex', () => {
 
   it('includes blog entries', () => {
     const blogs = index.filter(e => e.type === 'blog');
-    expect(blogs.length).toBe(10);
+    expect(blogs.length).toBe(13);
     expect(blogs[0].url).toMatch(/^\/blog\//);
   });
 
@@ -56,7 +56,7 @@ describe('buildSearchIndex', () => {
   });
 
   it('total count matches sum of all types', () => {
-    // 10 projects + 5 experiences + 10 blogs + 4 services + 4 pages = 33
-    expect(index.length).toBe(33);
+    // 10 projects + 5 experiences + 13 blogs + 4 services + 4 pages = 36
+    expect(index.length).toBe(36);
   });
 });
