@@ -3,7 +3,8 @@
 import { composePlugins, withNx } from '@nx/next';
 import { withBotId } from 'botid/next/config';
 import createMDX from '@next/mdx';
-import remarkGfm from 'remark-gfm';
+// remark-gfm is referenced by string below to keep MDX loader options
+// JSON-serializable for Turbopack (same approach as rehype-pretty-code).
 import bundleAnalyzer from '@next/bundle-analyzer';
 import { createRequire } from 'node:module';
 
@@ -33,7 +34,7 @@ const prettyCodeOptions = {
 // This keeps loader options JSON-serializable for both webpack and Turbopack.
 const withMDX = createMDX({
   options: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: ['remark-gfm'],
     rehypePlugins: [['rehype-pretty-code', prettyCodeOptions]],
   },
 });
