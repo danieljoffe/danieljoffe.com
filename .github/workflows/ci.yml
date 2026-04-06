@@ -35,6 +35,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         id: filter
         with:
           filters: |
