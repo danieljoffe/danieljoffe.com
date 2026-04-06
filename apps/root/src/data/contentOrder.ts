@@ -73,4 +73,7 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.eslintImportOrderingMonorepo, // 2026-04-05
   blogSlugs.ruleOfThreeDesignSystems, // 2026-04-05
   blogSlugs.documentingDesignTokens, // 2026-04-05
+  blogSlugs.accessibleDropdownKeyboardNav, // 2026-04-06
+  blogSlugs.toastPauseOnHover, // 2026-04-06
+  blogSlugs.keyboardNavigableDataTables, // 2026-04-06
 ];

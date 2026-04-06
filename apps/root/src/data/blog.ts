@@ -9,6 +9,9 @@ export const blogSlugs = {
   eslintImportOrderingMonorepo: 'eslint-import-ordering-monorepo',
   ruleOfThreeDesignSystems: 'rule-of-three-design-systems',
   documentingDesignTokens: 'documenting-design-tokens',
+  accessibleDropdownKeyboardNav: 'accessible-dropdown-keyboard-nav',
+  toastPauseOnHover: 'toast-pause-on-hover',
+  keyboardNavigableDataTables: 'keyboard-navigable-data-tables',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
