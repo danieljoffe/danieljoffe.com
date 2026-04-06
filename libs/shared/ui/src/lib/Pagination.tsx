@@ -8,6 +8,7 @@ export interface PaginationProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   className?: string;
+  ariaLabel?: string;
 }
 
 export function Pagination({
@@ -15,6 +16,7 @@ export function Pagination({
   totalPages,
   onPageChange,
   className,
+  ariaLabel = 'Pagination',
 }: PaginationProps) {
   const getPages = (): (number | '...')[] => {
     if (totalPages <= 7)
@@ -33,24 +35,39 @@ export function Pagination({
     return pages;
   };
 
+  const isPrevDisabled = currentPage <= 1;
+  const isNextDisabled = currentPage >= totalPages;
+
   return (
-    <nav className={cn('flex items-center gap-1', className)}>
+    <nav
+      aria-label={ariaLabel}
+      className={cn('flex items-center gap-1', className)}
+    >
       <button
         onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage <= 1}
-        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+        disabled={isPrevDisabled}
+        aria-label="Previous page"
+        aria-disabled={isPrevDisabled ? 'true' : undefined}
+        className="p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
-        <ChevronLeft className='h-4 w-4' />
+        <ChevronLeft className="h-4 w-4" />
       </button>
       {getPages().map((page, i) =>
         page === '...' ? (
-          <span key={`dots-${i}`} className='px-1 text-text-tertiary text-sm'>
+          <span
+            key={`dots-${i}`}
+            className="px-1 text-text-tertiary text-sm"
+          >
             ...
           </span>
         ) : (
           <button
             key={page}
             onClick={() => onPageChange(page)}
+            aria-label={
+              page === currentPage ? `Page ${page}` : `Go to page ${page}`
+            }
+            aria-current={page === currentPage ? 'page' : undefined}
             className={cn(
               'h-8 min-w-8 px-2 text-sm rounded-md transition-colors cursor-pointer',
               page === currentPage
@@ -64,10 +81,12 @@ export function Pagination({
       )}
       <button
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage >= totalPages}
-        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+        disabled={isNextDisabled}
+        aria-label="Next page"
+        aria-disabled={isNextDisabled ? 'true' : undefined}
+        className="p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
-        <ChevronRight className='h-4 w-4' />
+        <ChevronRight className="h-4 w-4" />
       </button>
     </nav>
   );
