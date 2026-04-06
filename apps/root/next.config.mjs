@@ -51,8 +51,6 @@ const nextConfig = {
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
-    // Enable critical CSS inlining with critters
-    optimizeCss: true,
     optimizePackageImports: [
       '@gsap/react',
       'gsap',
@@ -114,7 +112,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'grwmzluuqyczatkxorfa.supabase.co',
       },
     ],
     formats: ['image/webp', 'image/avif'],
