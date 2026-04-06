@@ -118,7 +118,6 @@ export const NAV_LINKS: NavLink[] = [
   SERVICES_LINK,
   EXPERIENCE_LINK,
   PROJECTS_LINK,
-  BLOG_LINK,
 ];
 
 // Form IDs
