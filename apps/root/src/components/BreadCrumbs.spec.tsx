@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { NavLink } from '@/types/base';
+import type { NavLink } from '@/types/base';
 import BreadCrumbs from './BreadCrumbs';
 
 // Mock next/navigation

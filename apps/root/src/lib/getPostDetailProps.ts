@@ -1,4 +1,4 @@
-import { NavLink } from '@/types/base';
+import type { NavLink } from '@/types/base';
 import { ContentType } from '@/types/postTypes';
 import { contentTypeConfigs } from '@/data/contentTypeConfig';
 import {
