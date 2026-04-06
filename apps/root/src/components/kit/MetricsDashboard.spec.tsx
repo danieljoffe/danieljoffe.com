@@ -8,18 +8,21 @@ const sampleMetrics: Metric[] = [
     before: '8-12s',
     after: '1.8-2.5s',
     improvement: '~80% faster',
+    delta: 'positive',
   },
   {
     label: 'Bundle Size',
     before: '650-800KB',
     after: '250-300KB',
     improvement: '~62% reduction',
+    delta: 'positive',
   },
   {
     label: 'Lighthouse Score',
     before: '32-43',
     after: '~80',
     improvement: '+40 points',
+    delta: 'positive',
   },
 ];
 
@@ -56,21 +59,61 @@ describe('MetricsDashboard', () => {
     expect(region).toBeInTheDocument();
   });
 
-  it('applies green styling for positive improvements', () => {
+  it('applies green styling when delta is positive', () => {
     render(
       <MetricsDashboard
         metrics={[
           {
-            label: 'Speed',
-            before: '10s',
-            after: '2s',
-            improvement: '80% faster',
+            label: 'Component Library Adoption',
+            before: '0%',
+            after: '80%',
+            improvement: 'Unified UI patterns',
+            delta: 'positive',
           },
         ]}
       />
     );
 
-    const badge = screen.getByText('80% faster');
+    const badge = screen.getByText('Unified UI patterns');
+    expect(badge.className).toContain('green');
+  });
+
+  it('applies red styling when delta is negative', () => {
+    render(
+      <MetricsDashboard
+        metrics={[
+          {
+            label: 'Response Time',
+            before: '200ms',
+            after: '500ms',
+            improvement: '150% slower',
+            delta: 'negative',
+          },
+        ]}
+      />
+    );
+
+    const badge = screen.getByText('150% slower');
+    expect(badge.className).toContain('red');
+    expect(badge.className).not.toContain('green');
+  });
+
+  it('applies green styling when delta is neutral', () => {
+    render(
+      <MetricsDashboard
+        metrics={[
+          {
+            label: 'Team Size',
+            before: '3',
+            after: '7',
+            improvement: 'Team capability',
+            delta: 'neutral',
+          },
+        ]}
+      />
+    );
+
+    const badge = screen.getByText('Team capability');
     expect(badge.className).toContain('green');
   });
 
