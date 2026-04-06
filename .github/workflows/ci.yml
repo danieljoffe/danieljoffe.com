@@ -31,7 +31,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      needs-ci: ${{ steps.filter.outputs.needs-ci }}
+      docs-only: ${{ steps.filter.outputs.docs-only }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
@@ -41,25 +41,25 @@ jobs:
         with:
           predicate-quantifier: 'every'
           filters: |
-            needs-ci:
-              - '!**.md'
-              - '!.claude/**'
-              - '!.mcp.json'
-              - '!.vscode/**'
-              - '!.github/ISSUE_TEMPLATE/**'
-              - '!.github/prompts/**'
-              - '!.github/skills/**'
-              - '!.github/agents/**'
-              - '!.husky/**'
-              - '!.prettierrc'
-              - '!.nvmrc'
-              - '!.sentryclirc'
-              - '!.editorconfig'
-              - '!LICENSE'
+            docs-only:
+              - '**.md'
+              - '.claude/**'
+              - '.mcp.json'
+              - '.vscode/**'
+              - '.github/ISSUE_TEMPLATE/**'
+              - '.github/prompts/**'
+              - '.github/skills/**'
+              - '.github/agents/**'
+              - '.husky/**'
+              - '.prettierrc'
+              - '.nvmrc'
+              - '.sentryclirc'
+              - '.editorconfig'
+              - 'LICENSE'
 
   ci:
     needs: changes
-    if: ${{ needs.changes.outputs.needs-ci == 'true' && !inputs.update-snapshots }}
+    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
