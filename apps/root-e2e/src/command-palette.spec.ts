@@ -1,34 +1,80 @@
 import { test, expect } from '@playwright/test';
 import { waitForHydration } from './fixtures/base.fixture';
 
+/**
+ * Wait for the dynamically-imported CommandPalette component to mount.
+ * The component renders a hidden sentinel `[data-testid="command-palette-ready"]`
+ * even when closed, so its presence proves the dynamic import has resolved
+ * and the event listeners are attached.
+ */
+async function waitForCommandPalette(page: import('@playwright/test').Page) {
+  await expect(
+    page.locator('[data-testid="command-palette-ready"]')
+  ).toBeAttached({ timeout: 15000 });
+}
+
+/**
+ * Open the command palette via programmatic keyboard event dispatch.
+ * Headless Chromium on Linux does not reliably deliver modifier key
+ * combinations through `page.keyboard.press`, so we dispatch a
+ * synthetic KeyboardEvent directly on the document.
+ */
+async function openPaletteViaKeyboard(page: import('@playwright/test').Page) {
+  await waitForCommandPalette(page);
+  await page.evaluate(() => {
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'k',
+        ctrlKey: true,
+        bubbles: true,
+      })
+    );
+  });
+  const overlay = page.locator('[data-testid="command-palette-overlay"]');
+  await expect(overlay).toBeVisible();
+  return overlay;
+}
+
+/** Open the command palette by clicking the visible search trigger in the nav. */
+async function openPaletteViaClick(page: import('@playwright/test').Page) {
+  await waitForCommandPalette(page);
+  const trigger = page.locator('[data-testid="search-trigger"]').first();
+  await trigger.click();
+  const overlay = page.locator('[data-testid="command-palette-overlay"]');
+  await expect(overlay).toBeVisible();
+  return overlay;
+}
+
 test.describe('command palette', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
   });
 
-  test('opens with Cmd+K and displays search input', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
+  test('opens with Ctrl+K and displays search input', async ({ page }) => {
+    const overlay = await openPaletteViaKeyboard(page);
     await expect(overlay).toBeVisible();
     const input = page.locator('[cmdk-input]');
     await expect(input).toBeVisible();
     await expect(input).toBeFocused();
   });
 
-  test('closes with Escape key', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
+  test('opens via the search trigger button', async ({ page }) => {
+    const overlay = await openPaletteViaClick(page);
     await expect(overlay).toBeVisible();
+    const input = page.locator('[cmdk-input]');
+    await expect(input).toBeVisible();
+  });
+
+  test('closes with Escape key', async ({ page }) => {
+    const overlay = await openPaletteViaKeyboard(page);
 
     await page.keyboard.press('Escape');
     await expect(overlay).toBeHidden();
   });
 
   test('closes when clicking the overlay', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
-    await expect(overlay).toBeVisible();
+    const overlay = await openPaletteViaKeyboard(page);
 
     // Click the overlay (outside the dialog box)
     await overlay.click({ position: { x: 10, y: 10 } });
@@ -36,7 +82,7 @@ test.describe('command palette', () => {
   });
 
   test('displays grouped search results', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPaletteViaKeyboard(page);
 
     // Check that group headings are visible
     await expect(page.locator('[cmdk-group-heading]').first()).toBeVisible();
@@ -48,20 +94,25 @@ test.describe('command palette', () => {
   });
 
   test('filters results when typing', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPaletteViaKeyboard(page);
 
     const items = page.locator('[cmdk-item]');
+    // Wait for items to render before counting
+    await expect(items.first()).toBeVisible();
     const initialCount = await items.count();
 
     // Type a specific query that should filter down
     await page.keyboard.type('performance');
-    const filteredCount = await items.count();
-    expect(filteredCount).toBeLessThan(initialCount);
-    expect(filteredCount).toBeGreaterThan(0);
+    // Wait for the filtered list to settle
+    await expect(async () => {
+      const count = await items.count();
+      expect(count).toBeLessThan(initialCount);
+      expect(count).toBeGreaterThan(0);
+    }).toPass({ timeout: 5000 });
   });
 
   test('navigates to selected item on Enter', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPaletteViaKeyboard(page);
 
     // Type a unique query that only matches the About page
     await page.keyboard.type('About');
@@ -80,21 +131,28 @@ test.describe('command palette', () => {
   });
 
   test('navigates on click of an item', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPaletteViaClick(page);
 
-    // Click the About page entry directly
+    // Wait for items to render, then click the About entry
     const aboutItem = page.locator('[cmdk-item]', { hasText: 'About' });
+    await expect(aboutItem).toBeVisible();
     await aboutItem.click();
     await page.waitForURL('**/about');
     expect(page.url()).toContain('/about');
   });
 
-  test('toggles closed with Cmd+K when already open', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
-    await expect(overlay).toBeVisible();
+  test('toggles closed with Ctrl+K when already open', async ({ page }) => {
+    const overlay = await openPaletteViaKeyboard(page);
 
-    await page.keyboard.press('Meta+k');
+    await page.evaluate(() => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'k',
+          ctrlKey: true,
+          bubbles: true,
+        })
+      );
+    });
     await expect(overlay).toBeHidden();
   });
 });

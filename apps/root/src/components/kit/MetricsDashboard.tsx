@@ -3,34 +3,22 @@
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
+export type MetricDelta = 'positive' | 'negative' | 'neutral';
+
 export interface Metric {
   label: string;
   before: string;
   after: string;
   improvement: string;
+  delta: MetricDelta;
 }
 
 interface MetricsDashboardProps {
   metrics: Metric[];
 }
 
-function isPositive(improvement: string): boolean {
-  // Treat reductions, "faster", decreases as positive improvements
-  const lower = improvement.toLowerCase();
-  return (
-    lower.includes('faster') ||
-    lower.includes('reduction') ||
-    lower.includes('increase') ||
-    lower.includes('improvement') ||
-    lower.includes('+') ||
-    lower.includes('×') ||
-    lower.includes('x') ||
-    /\d+%/.test(lower)
-  );
-}
-
-function MetricCard({ label, before, after, improvement }: Metric) {
-  const positive = isPositive(improvement);
+function MetricCard({ label, before, after, improvement, delta }: Metric) {
+  const positive = delta !== 'negative';
 
   return (
     <div

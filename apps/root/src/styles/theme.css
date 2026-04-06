@@ -24,6 +24,7 @@
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-slide-up: slide-up 0.2s ease-out;
   --animate-slide-down: slide-down 0.15s ease-out;
+  --animate-slide-out-down: slide-out-down 0.15s ease-in forwards;
   --animate-scale-in: scale-in 0.15s ease-out;
 
   /* Colors - Brand (blue-indigo, oklch hue 250) */
@@ -129,6 +130,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 
