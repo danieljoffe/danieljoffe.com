@@ -32,6 +32,7 @@ Review changed files for Nx monorepo structure, module boundary, and configurati
 ## Output
 
 Report issues with file path, line number, rule violated, and fix recommendation. Categorize as:
+
 - **Error**: Will break build, tests, or module boundaries
 - **Warning**: Works now but creates maintenance debt
 - **Suggestion**: Could improve workspace organization

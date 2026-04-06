@@ -29,6 +29,7 @@ Review changed MDX content files for metadata completeness, ordering consistency
 ## Output
 
 Report issues with file path, field name, what's wrong, and how to fix it. Categorize as:
+
 - **Error**: Will break the build or content registry
 - **Warning**: Content will render but with quality/SEO issues
 - **Suggestion**: Improvement opportunities

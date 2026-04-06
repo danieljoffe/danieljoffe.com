@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Run all reviewer agents (a11y, perf, content) in parallel on changed files and summarize findings
+description: Run all reviewer agents (a11y, perf, content, nx, security) in parallel on changed files and summarize findings
 disable-model-invocation: true
 user-invocable: true
 ---
@@ -16,6 +16,7 @@ Run all reviewer agents in parallel on the current branch's changed files and pr
 ## Instructions
 
 1. **Identify changed files:**
+
    ```bash
    git diff --name-only origin/develop...HEAD
    ```
@@ -25,6 +26,7 @@ Run all reviewer agents in parallel on the current branch's changed files and pr
    - **perf-reviewer**: Any `.tsx`/`.ts` files touching components, hooks, API routes, or config
    - **content-reviewer**: Any `.mdx` files in `data/content/`
    - **nx-reviewer**: Any `project.json`, `tsconfig*.json`, `nx.json`, or workspace config files
+   - **security-reviewer**: Any `.ts`/`.tsx` files in `app/api/`, `lib/`, `proxy.ts`, `middleware.ts`, or files touching env vars, auth, Supabase, or Resend
 
 3. **Launch applicable reviewers in parallel** using the Agent tool:
    - Pass the list of relevant changed files to each agent
@@ -42,15 +44,19 @@ Run all reviewer agents in parallel on the current branch's changed files and pr
    **Reviewers run**: <list>
 
    ### Critical (must fix)
+
    - [ ] file:line — description (reviewer)
 
    ### Warnings (should fix)
+
    - [ ] file:line — description (reviewer)
 
    ### Suggestions (nice to have)
+
    - [ ] file:line — description (reviewer)
 
    ### Passed Checks
+
    - ✓ description (reviewer)
    ```
 
