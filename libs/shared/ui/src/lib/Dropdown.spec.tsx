@@ -107,6 +107,15 @@ describe('Dropdown', () => {
     expect(screen.queryByText('Edit')).not.toBeInTheDocument();
   });
 
+  // --- focus-visible styles on menu items ---
+
+  it('applies focus-visible ring classes on menu items', () => {
+    render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+    fireEvent.click(screen.getByText('Menu'));
+    const editButton = screen.getByText('Edit').closest('button')!;
+    expect(editButton.className).toContain('focus-visible:ring-2');
+  });
+
   it('applies right alignment when specified', () => {
     render(
       <Dropdown trigger={<span>Menu</span>} items={items} align='right' />

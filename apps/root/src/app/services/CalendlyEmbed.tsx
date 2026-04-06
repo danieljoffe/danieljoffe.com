@@ -1,16 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Calendar } from 'lucide-react';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
 import { CALENDLY_URL } from '@/utils/constants';
 
 const EMBED_HEIGHT = 700;
+const LOAD_TIMEOUT_MS = 8000;
 
 export default function CalendlyEmbed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
 
   // Intersection observer — start loading when container is near viewport
   useEffect(() => {
@@ -31,6 +35,14 @@ export default function CalendlyEmbed() {
     return () => observer.disconnect();
   }, []);
 
+  // Timeout — show fallback if iframe doesn't load in time
+  useEffect(() => {
+    if (!shouldLoad || isLoaded) return;
+
+    const timer = setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [shouldLoad, isLoaded]);
+
   // Listen for Calendly postMessage events
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
@@ -48,7 +60,36 @@ export default function CalendlyEmbed() {
 
   const onIframeLoad = useCallback(() => {
     setIsLoaded(true);
+    setTimedOut(false);
   }, []);
+
+  // Fallback — direct link to Calendly
+  if (timedOut && !isLoaded) {
+    return (
+      <div
+        className='flex flex-col items-center justify-center gap-4 rounded-xl border border-border bg-surface p-12 text-center'
+        data-testid='calendly-fallback'
+      >
+        <Calendar className='h-10 w-10 text-text-tertiary' />
+        <p className='text-text-secondary text-sm max-w-md'>
+          The scheduling widget couldn&apos;t load. Book directly on Calendly
+          instead.
+        </p>
+        <Button
+          name='calendly-fallback'
+          as='link'
+          href={CALENDLY_URL}
+          target='_blank'
+          rel='noopener noreferrer'
+          onClick={() =>
+            analytics.ctaClick('services_calendly_fallback', CALENDLY_URL)
+          }
+        >
+          Open Calendly
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div

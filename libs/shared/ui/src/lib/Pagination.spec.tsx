@@ -31,9 +31,7 @@ describe('Pagination', () => {
     render(
       <Pagination currentPage={2} totalPages={5} onPageChange={onPageChange} />
     );
-    const buttons = screen.getAllByRole('button');
-    const nextButton = buttons[buttons.length - 1];
-    fireEvent.click(nextButton);
+    fireEvent.click(screen.getByLabelText('Next page'));
     expect(onPageChange).toHaveBeenCalledWith(3);
   });
 
@@ -42,8 +40,7 @@ describe('Pagination', () => {
     render(
       <Pagination currentPage={3} totalPages={5} onPageChange={onPageChange} />
     );
-    const prevButton = screen.getAllByRole('button')[0];
-    fireEvent.click(prevButton);
+    fireEvent.click(screen.getByLabelText('Previous page'));
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
 
@@ -51,7 +48,7 @@ describe('Pagination', () => {
     render(
       <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
     );
-    const prevButton = screen.getAllByRole('button')[0];
+    const prevButton = screen.getByLabelText('Previous page');
     expect(prevButton).toBeDisabled();
   });
 
@@ -59,8 +56,7 @@ describe('Pagination', () => {
     render(
       <Pagination currentPage={5} totalPages={5} onPageChange={jest.fn()} />
     );
-    const buttons = screen.getAllByRole('button');
-    const nextButton = buttons[buttons.length - 1];
+    const nextButton = screen.getByLabelText('Next page');
     expect(nextButton).toBeDisabled();
   });
 
@@ -81,16 +77,119 @@ describe('Pagination', () => {
     }
   });
 
+  // --- focus-visible styles ---
+
+  it('applies focus-visible ring classes on page buttons', () => {
+    render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
+    );
+    const pageButton = screen.getByText('1');
+    expect(pageButton.className).toContain('focus-visible:ring-2');
+  });
+
+  it('applies focus-visible ring classes on prev/next buttons', () => {
+    render(
+      <Pagination currentPage={3} totalPages={5} onPageChange={jest.fn()} />
+    );
+    const buttons = screen.getAllByRole('button');
+    const prevButton = buttons[0];
+    const nextButton = buttons[buttons.length - 1];
+    expect(prevButton.className).toContain('focus-visible:ring-2');
+    expect(nextButton.className).toContain('focus-visible:ring-2');
+  });
+
   it('applies custom className', () => {
     render(
       <Pagination
         currentPage={1}
         totalPages={5}
         onPageChange={jest.fn()}
-        className='custom-class'
+        className="custom-class"
       />
     );
     const nav = screen.getByRole('navigation');
     expect(nav).toHaveClass('custom-class');
+  });
+
+  describe('aria attributes', () => {
+    it('adds aria-label to nav element', () => {
+      render(
+        <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveAttribute('aria-label', 'Pagination');
+    });
+
+    it('supports custom ariaLabel prop', () => {
+      render(
+        <Pagination
+          currentPage={1}
+          totalPages={5}
+          onPageChange={jest.fn()}
+          ariaLabel="Results pagination"
+        />
+      );
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveAttribute('aria-label', 'Results pagination');
+    });
+
+    it('adds aria-current="page" to the active page button', () => {
+      render(
+        <Pagination currentPage={3} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const activeButton = screen.getByLabelText('Page 3');
+      expect(activeButton).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('does not add aria-current to non-active page buttons', () => {
+      render(
+        <Pagination currentPage={3} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const otherButton = screen.getByLabelText('Go to page 1');
+      expect(otherButton).not.toHaveAttribute('aria-current');
+    });
+
+    it('adds descriptive aria-labels to page buttons', () => {
+      render(
+        <Pagination currentPage={2} totalPages={5} onPageChange={jest.fn()} />
+      );
+      expect(screen.getByLabelText('Page 2')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to page 1')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to page 3')).toBeInTheDocument();
+    });
+
+    it('adds aria-label to prev and next buttons', () => {
+      render(
+        <Pagination currentPage={3} totalPages={5} onPageChange={jest.fn()} />
+      );
+      expect(screen.getByLabelText('Previous page')).toBeInTheDocument();
+      expect(screen.getByLabelText('Next page')).toBeInTheDocument();
+    });
+
+    it('adds aria-disabled to prev button on first page', () => {
+      render(
+        <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const prevButton = screen.getByLabelText('Previous page');
+      expect(prevButton).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('adds aria-disabled to next button on last page', () => {
+      render(
+        <Pagination currentPage={5} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const nextButton = screen.getByLabelText('Next page');
+      expect(nextButton).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('does not add aria-disabled when buttons are enabled', () => {
+      render(
+        <Pagination currentPage={3} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const prevButton = screen.getByLabelText('Previous page');
+      const nextButton = screen.getByLabelText('Next page');
+      expect(prevButton).not.toHaveAttribute('aria-disabled');
+      expect(nextButton).not.toHaveAttribute('aria-disabled');
+    });
   });
 });
