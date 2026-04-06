@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Table } from './Table';
 
-type Row = { name: string; age: number; role: string };
+type Row = { id: number; name: string; age: number; role: string };
 
 const columns = [
   { key: 'name', header: 'Name' },
@@ -10,8 +10,8 @@ const columns = [
 ];
 
 const data: Row[] = [
-  { name: 'Alice', age: 30, role: 'Engineer' },
-  { name: 'Bob', age: 25, role: 'Designer' },
+  { id: 1, name: 'Alice', age: 30, role: 'Engineer' },
+  { id: 2, name: 'Bob', age: 25, role: 'Designer' },
 ];
 
 describe('Table', () => {
@@ -86,6 +86,146 @@ describe('Table', () => {
     expect(container.firstChild).toHaveClass('custom-class');
   });
 
+  // --- scope="col" on th elements ---
+
+  it('renders scope="col" on all header th elements', () => {
+    render(<Table columns={columns} data={data} />);
+    const headers = screen.getAllByRole('columnheader');
+    headers.forEach(th => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
+  // --- caption prop ---
+
+  it('renders a caption element when caption prop is provided', () => {
+    render(<Table columns={columns} data={data} caption='User list' />);
+    const caption = screen.getByText('User list');
+    expect(caption.tagName).toBe('CAPTION');
+  });
+
+  it('does not render a caption element when caption prop is omitted', () => {
+    const { container } = render(<Table columns={columns} data={data} />);
+    expect(container.querySelector('caption')).toBeNull();
+  });
+
+  // --- aria-label on table ---
+
+  it('renders aria-label on the table when ariaLabel is provided and no caption', () => {
+    render(<Table columns={columns} data={data} ariaLabel='User data' />);
+    const table = screen.getByRole('table');
+    expect(table).toHaveAttribute('aria-label', 'User data');
+  });
+
+  it('does not render aria-label when caption is provided', () => {
+    render(
+      <Table
+        columns={columns}
+        data={data}
+        caption='User list'
+        ariaLabel='User data'
+      />
+    );
+    const table = screen.getByRole('table');
+    expect(table).not.toHaveAttribute('aria-label');
+  });
+
+  // --- keyboard accessibility for clickable rows ---
+
+  it('adds tabIndex={0} and role="button" on rows when onRowClick is provided', () => {
+    render(<Table columns={columns} data={data} onRowClick={jest.fn()} />);
+    const rows = screen.getAllByRole('button');
+    expect(rows).toHaveLength(2);
+    rows.forEach(row => {
+      expect(row.tagName).toBe('TR');
+      expect(row).toHaveAttribute('tabindex', '0');
+    });
+  });
+
+  it('does not add tabIndex or role on rows when onRowClick is not provided', () => {
+    render(<Table columns={columns} data={data} />);
+    const rows = screen.getAllByRole('row');
+    // body rows should not have tabindex or role="button"
+    const bodyRows = rows.slice(1);
+    bodyRows.forEach(row => {
+      expect(row).not.toHaveAttribute('tabindex');
+      expect(row).not.toHaveAttribute('role', 'button');
+    });
+  });
+
+  it('triggers onRowClick on Enter keypress', () => {
+    const onRowClick = jest.fn();
+    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
+    const rows = screen.getAllByRole('button');
+    fireEvent.keyDown(rows[0], { key: 'Enter' });
+    expect(onRowClick).toHaveBeenCalledWith(data[0]);
+  });
+
+  it('triggers onRowClick on Space keypress', () => {
+    const onRowClick = jest.fn();
+    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
+    const rows = screen.getAllByRole('button');
+    fireEvent.keyDown(rows[0], { key: ' ' });
+    expect(onRowClick).toHaveBeenCalledWith(data[0]);
+  });
+
+  it('does not trigger onRowClick on other key presses', () => {
+    const onRowClick = jest.fn();
+    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
+    const rows = screen.getAllByRole('button');
+    fireEvent.keyDown(rows[0], { key: 'Tab' });
+    expect(onRowClick).not.toHaveBeenCalled();
+  });
+
+  it('prevents default on Enter/Space to avoid page scroll', () => {
+    const onRowClick = jest.fn();
+    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
+    const rows = screen.getAllByRole('button');
+    const event = new KeyboardEvent('keydown', {
+      key: ' ',
+      bubbles: true,
+    });
+    const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+    rows[0].dispatchEvent(event);
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  // --- aria-label on clickable rows ---
+
+  it('renders aria-label on clickable rows when getRowAriaLabel is provided', () => {
+    render(
+      <Table
+        columns={columns}
+        data={data}
+        onRowClick={jest.fn()}
+        getRowAriaLabel={row => `View ${row.name}`}
+      />
+    );
+    const rows = screen.getAllByRole('button');
+    expect(rows[0]).toHaveAttribute('aria-label', 'View Alice');
+    expect(rows[1]).toHaveAttribute('aria-label', 'View Bob');
+  });
+
+  it('does not render aria-label on rows when getRowAriaLabel is not provided', () => {
+    render(<Table columns={columns} data={data} onRowClick={jest.fn()} />);
+    const rows = screen.getAllByRole('button');
+    rows.forEach(row => {
+      expect(row).not.toHaveAttribute('aria-label');
+    });
+  });
+
+  // --- rowKey prop ---
+
+  it('uses rowKey for unique keys when provided', () => {
+    const { container } = render(
+      <Table columns={columns} data={data} rowKey={row => row.id as number} />
+    );
+    // Verify rows render correctly (key usage is internal to React,
+    // but we can verify no warnings and correct rendering)
+    const rows = container.querySelectorAll('tbody tr');
+    expect(rows).toHaveLength(2);
+  });
+
   // --- focus-visible styles on clickable rows ---
 
   it('applies focus-visible outline class on clickable rows', () => {
@@ -103,30 +243,5 @@ describe('Table', () => {
     bodyRows.forEach(row => {
       expect(row.className).not.toContain('focus-visible:outline-2');
     });
-  });
-
-  it('adds tabIndex and role to clickable rows', () => {
-    render(<Table columns={columns} data={data} onRowClick={jest.fn()} />);
-    const rows = screen.getAllByRole('button');
-    rows.forEach(row => {
-      expect(row).toHaveAttribute('tabindex', '0');
-      expect(row).toHaveAttribute('role', 'button');
-    });
-  });
-
-  it('handles keyboard Enter on clickable rows', () => {
-    const onRowClick = jest.fn();
-    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
-    const row = screen.getAllByRole('button')[0];
-    fireEvent.keyDown(row, { key: 'Enter' });
-    expect(onRowClick).toHaveBeenCalledWith(data[0]);
-  });
-
-  it('handles keyboard Space on clickable rows', () => {
-    const onRowClick = jest.fn();
-    render(<Table columns={columns} data={data} onRowClick={onRowClick} />);
-    const row = screen.getAllByRole('button')[0];
-    fireEvent.keyDown(row, { key: ' ' });
-    expect(onRowClick).toHaveBeenCalledWith(data[0]);
   });
 });

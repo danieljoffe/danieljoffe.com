@@ -1,6 +1,20 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Dropdown } from './Dropdown';
 
+// Mock requestAnimationFrame to run callbacks synchronously in tests
+beforeEach(() => {
+  jest
+    .spyOn(window, 'requestAnimationFrame')
+    .mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 const items = [
   { label: 'Edit', onClick: jest.fn() },
   { label: 'Delete', onClick: jest.fn(), danger: true },
@@ -109,5 +123,229 @@ describe('Dropdown', () => {
     fireEvent.click(screen.getByText('Menu'));
     const dropdown = screen.getByText('Edit').closest('.right-0');
     expect(dropdown).toBeInTheDocument();
+  });
+
+  describe('ARIA attributes', () => {
+    it('has aria-haspopup on trigger', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+    });
+
+    it('has aria-expanded=false when closed', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('has aria-expanded=true when open', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('links trigger to menu via aria-controls', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      expect(trigger).not.toHaveAttribute('aria-controls');
+      fireEvent.click(trigger);
+      const menuId = trigger.getAttribute('aria-controls');
+      expect(menuId).toBeTruthy();
+      expect(screen.getByRole('menu')).toHaveAttribute('id', menuId);
+    });
+
+    it('has role="menu" on the dropdown container', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('has role="menuitem" on each item', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems).toHaveLength(2);
+    });
+
+    it('has role="separator" on divider items', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[
+            { label: 'Edit', onClick: jest.fn() },
+            { label: '', divider: true },
+            { label: 'Delete', onClick: jest.fn() },
+          ]}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      expect(screen.getByRole('separator')).toBeInTheDocument();
+    });
+
+    it('has aria-labelledby linking menu to trigger', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      const menu = screen.getByRole('menu');
+      expect(menu).toHaveAttribute('aria-labelledby', trigger.id);
+    });
+  });
+
+  describe('Keyboard navigation', () => {
+    it('opens menu on ArrowDown and focuses first item', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(screen.getAllByRole('menuitem')[0]).toHaveFocus();
+    });
+
+    it('opens menu on ArrowUp', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.keyDown(trigger, { key: 'ArrowUp' });
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('navigates down with ArrowDown', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems[0]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[1]).toHaveFocus();
+    });
+
+    it('wraps around when navigating past last item', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[1]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[0]).toHaveFocus();
+    });
+
+    it('navigates up with ArrowUp', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[1]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowUp' });
+      expect(menuItems[0]).toHaveFocus();
+    });
+
+    it('wraps around when navigating before first item', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowUp' });
+      expect(menuItems[1]).toHaveFocus();
+    });
+
+    it('closes menu on Escape and returns focus to trigger', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    });
+
+    it('selects item with Enter', () => {
+      const onClick = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Action', onClick }]}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Enter' });
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+
+    it('selects item with Space', () => {
+      const onClick = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Action', onClick }]}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      fireEvent.keyDown(screen.getByRole('menu'), { key: ' ' });
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+
+    it('jumps to first item with Home', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[1]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Home' });
+      expect(menuItems[0]).toHaveFocus();
+    });
+
+    it('jumps to last item with End', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems[0]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'End' });
+      expect(menuItems[1]).toHaveFocus();
+    });
+
+    it('skips disabled items during navigation', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[
+            { label: 'First', onClick: jest.fn() },
+            { label: 'Disabled', disabled: true },
+            { label: 'Last', onClick: jest.fn() },
+          ]}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems[0]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[2]).toHaveFocus();
+    });
+
+    it('skips divider items during navigation', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[
+            { label: 'First', onClick: jest.fn() },
+            { label: '', divider: true },
+            { label: 'Last', onClick: jest.fn() },
+          ]}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems[0]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[1]).toHaveFocus();
+    });
+
+    it('closes menu on Tab', () => {
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Tab' });
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    });
   });
 });

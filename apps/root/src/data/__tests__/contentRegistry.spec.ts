@@ -26,7 +26,7 @@ describe('contentRegistry', () => {
 
     it('returns all blog entries in order', () => {
       const blogs = getContentByType('blog');
-      expect(blogs.length).toBe(10);
+      expect(blogs.length).toBe(13);
       expect(blogs[0].type).toBe('blog');
       expect(blogs[0].slug).toBe('unified-content-pipeline');
       expect(blogs[1].slug).toBe('auto-generated-toc-scroll-spy');
@@ -94,7 +94,10 @@ describe('contentRegistry', () => {
       expect(slugs).toContain('eslint-import-ordering-monorepo');
       expect(slugs).toContain('rule-of-three-design-systems');
       expect(slugs).toContain('documenting-design-tokens');
-      expect(slugs.length).toBe(10);
+      expect(slugs).toContain('accessible-dropdown-keyboard-nav');
+      expect(slugs).toContain('toast-pause-on-hover');
+      expect(slugs).toContain('keyboard-navigable-data-tables');
+      expect(slugs.length).toBe(13);
     });
   });
 
@@ -142,7 +145,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(25); // 10 projects + 5 experiences + 10 blogs
+      expect(all.length).toBe(28); // 10 projects + 5 experiences + 13 blogs
     });
 
     it('contains entries of all types', () => {

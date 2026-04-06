@@ -80,6 +80,20 @@ describe('Sidebar', () => {
     expect(container.querySelector('.w-60')).toBeInTheDocument();
   });
 
+  it('applies motion-reduce:transition-none to sidebar container', () => {
+    const { container } = render(<Sidebar items={items} />);
+    const aside = container.querySelector('aside');
+    expect(aside).toHaveClass('motion-reduce:transition-none');
+  });
+
+  it('applies motion-reduce:transition-none to sidebar item buttons', () => {
+    render(<Sidebar items={items} />);
+    const buttons = screen.getAllByRole('button');
+    buttons.forEach(button => {
+      expect(button).toHaveClass('motion-reduce:transition-none');
+    });
+  });
+
   // --- focus-visible styles on sidebar buttons ---
 
   it('applies focus-visible ring classes on sidebar buttons', () => {

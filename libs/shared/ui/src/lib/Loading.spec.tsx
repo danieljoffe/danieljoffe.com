@@ -49,6 +49,20 @@ describe('Loading', () => {
     expect(dots.length).toBe(4);
   });
 
+  it('applies motion-reduce:animate-none to bouncing dots', () => {
+    const { container } = render(<Loading />);
+    const dots = container.querySelectorAll('.rounded-full.size-2');
+    dots.forEach(dot => {
+      expect(dot).toHaveClass('motion-reduce:animate-none');
+    });
+  });
+
+  it('applies motion-reduce:animate-none to loading text', () => {
+    render(<Loading />);
+    const text = screen.getByText('Loading...');
+    expect(text).toHaveClass('motion-reduce:animate-none');
+  });
+
   it('renders dots with correct color variants', () => {
     const { container } = render(<Loading />);
     const dots = container.querySelectorAll('.rounded-full.size-2');

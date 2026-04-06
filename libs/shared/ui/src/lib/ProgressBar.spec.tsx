@@ -93,6 +93,12 @@ describe('ProgressBar', () => {
     expect(container.querySelector('.custom-class')).toBeInTheDocument();
   });
 
+  it('applies motion-reduce:transition-none to progress fill', () => {
+    const { container } = render(<ProgressBar value={50} />);
+    const fill = container.querySelector('.bg-brand-500');
+    expect(fill).toHaveClass('motion-reduce:transition-none');
+  });
+
   describe('accessibility', () => {
     it('has role="progressbar"', () => {
       render(<ProgressBar value={50} />);

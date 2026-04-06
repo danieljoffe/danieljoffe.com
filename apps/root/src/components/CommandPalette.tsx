@@ -60,6 +60,13 @@ export default function CommandPalette() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
+  // Allow external triggers (e.g. nav search button) to open the palette
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    document.addEventListener('open-command-palette', handler);
+    return () => document.removeEventListener('open-command-palette', handler);
+  }, []);
+
   // Lock body scroll when open
   useEffect(() => {
     if (open) {
@@ -78,7 +85,8 @@ export default function CommandPalette() {
     [router]
   );
 
-  if (!open) return null;
+  if (!open)
+    return <span data-testid='command-palette-ready' className='hidden' />;
 
   return (
     <div

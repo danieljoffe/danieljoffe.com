@@ -103,6 +103,34 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.documentingDesignTokens]?.date ?? '',
       author,
     },
+    [blogSlugs.accessibleDropdownKeyboardNav]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.accessibleDropdownKeyboardNav].title,
+      description:
+        blogRecords[blogSlugs.accessibleDropdownKeyboardNav].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.accessibleDropdownKeyboardNav]?.date ?? '',
+      author,
+    },
+    [blogSlugs.toastPauseOnHover]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.toastPauseOnHover].title,
+      description: blogRecords[blogSlugs.toastPauseOnHover].description,
+      datePublished: blogMdxMetadata[blogSlugs.toastPauseOnHover]?.date ?? '',
+      author,
+    },
+    [blogSlugs.keyboardNavigableDataTables]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.keyboardNavigableDataTables].title,
+      description:
+        blogRecords[blogSlugs.keyboardNavigableDataTables].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.keyboardNavigableDataTables]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
