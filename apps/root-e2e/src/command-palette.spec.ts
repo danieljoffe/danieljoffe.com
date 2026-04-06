@@ -1,15 +1,27 @@
 import { test, expect } from '@playwright/test';
 import { waitForHydration } from './fixtures/base.fixture';
 
+// Use Ctrl+K instead of Meta+K — headless Chromium on Linux does not
+// reliably deliver the Meta (Super) key to the page, causing flaky failures
+// in CI.  The CommandPalette component accepts both metaKey and ctrlKey.
+const OPEN_SHORTCUT = 'Control+k';
+
+/** Press the shortcut and wait for the overlay to appear. */
+async function openPalette(page: import('@playwright/test').Page) {
+  await page.keyboard.press(OPEN_SHORTCUT);
+  const overlay = page.locator('[data-testid="command-palette-overlay"]');
+  await expect(overlay).toBeVisible();
+  return overlay;
+}
+
 test.describe('command palette', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
   });
 
-  test('opens with Cmd+K and displays search input', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
+  test('opens with Ctrl+K and displays search input', async ({ page }) => {
+    const overlay = await openPalette(page);
     await expect(overlay).toBeVisible();
     const input = page.locator('[cmdk-input]');
     await expect(input).toBeVisible();
@@ -17,18 +29,14 @@ test.describe('command palette', () => {
   });
 
   test('closes with Escape key', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
-    await expect(overlay).toBeVisible();
+    const overlay = await openPalette(page);
 
     await page.keyboard.press('Escape');
     await expect(overlay).toBeHidden();
   });
 
   test('closes when clicking the overlay', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
-    await expect(overlay).toBeVisible();
+    const overlay = await openPalette(page);
 
     // Click the overlay (outside the dialog box)
     await overlay.click({ position: { x: 10, y: 10 } });
@@ -36,7 +44,7 @@ test.describe('command palette', () => {
   });
 
   test('displays grouped search results', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPalette(page);
 
     // Check that group headings are visible
     await expect(page.locator('[cmdk-group-heading]').first()).toBeVisible();
@@ -48,20 +56,25 @@ test.describe('command palette', () => {
   });
 
   test('filters results when typing', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPalette(page);
 
     const items = page.locator('[cmdk-item]');
+    // Wait for items to render before counting
+    await expect(items.first()).toBeVisible();
     const initialCount = await items.count();
 
     // Type a specific query that should filter down
     await page.keyboard.type('performance');
-    const filteredCount = await items.count();
-    expect(filteredCount).toBeLessThan(initialCount);
-    expect(filteredCount).toBeGreaterThan(0);
+    // Wait for the filtered list to settle
+    await expect(async () => {
+      const count = await items.count();
+      expect(count).toBeLessThan(initialCount);
+      expect(count).toBeGreaterThan(0);
+    }).toPass({ timeout: 5000 });
   });
 
   test('navigates to selected item on Enter', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPalette(page);
 
     // Type a unique query that only matches the About page
     await page.keyboard.type('About');
@@ -80,21 +93,20 @@ test.describe('command palette', () => {
   });
 
   test('navigates on click of an item', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
+    await openPalette(page);
 
-    // Click the About page entry directly
+    // Wait for items to render, then click the About entry
     const aboutItem = page.locator('[cmdk-item]', { hasText: 'About' });
+    await expect(aboutItem).toBeVisible();
     await aboutItem.click();
     await page.waitForURL('**/about');
     expect(page.url()).toContain('/about');
   });
 
-  test('toggles closed with Cmd+K when already open', async ({ page }) => {
-    await page.keyboard.press('Meta+k');
-    const overlay = page.locator('[data-testid="command-palette-overlay"]');
-    await expect(overlay).toBeVisible();
+  test('toggles closed with Ctrl+K when already open', async ({ page }) => {
+    const overlay = await openPalette(page);
 
-    await page.keyboard.press('Meta+k');
+    await page.keyboard.press(OPEN_SHORTCUT);
     await expect(overlay).toBeHidden();
   });
 });
