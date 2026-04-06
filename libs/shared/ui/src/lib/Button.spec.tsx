@@ -199,6 +199,13 @@ describe('Button', () => {
       );
     });
 
+    it('includes motion-reduce:transition-none class', () => {
+      render(<Button>Reduced</Button>);
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('motion-reduce:transition-none');
+      expect(button).toHaveClass('motion-reduce:hover:transform-none');
+    });
+
     it('supports aria-label for icon-only buttons', () => {
       render(
         <Button aria-label='Close'>

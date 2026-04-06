@@ -95,6 +95,22 @@ describe('Switch', () => {
     expect(thumb).toHaveClass('translate-x-1');
   });
 
+  describe('reduced motion', () => {
+    it('applies motion-reduce:transition-none to switch track', () => {
+      render(<Switch checked={false} onChange={() => {}} />);
+      const switchEl = screen.getByRole('switch');
+      expect(switchEl).toHaveClass('motion-reduce:transition-none');
+    });
+
+    it('applies motion-reduce:transition-none to switch thumb', () => {
+      const { container } = render(
+        <Switch checked={false} onChange={() => {}} />
+      );
+      const thumb = container.querySelector('span');
+      expect(thumb).toHaveClass('motion-reduce:transition-none');
+    });
+  });
+
   describe('accessibility', () => {
     it('has focus-visible ring styles', () => {
       render(<Switch checked={false} onChange={() => {}} />);

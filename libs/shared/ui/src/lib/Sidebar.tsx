@@ -48,7 +48,7 @@ function SidebarItemComponent({
           onSelect?.(item.id);
         }}
         className={cn(
-          'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-all duration-150 cursor-pointer',
+          'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-all duration-150 cursor-pointer motion-reduce:transition-none',
           depth > 0 && 'ml-6 w-[calc(100%-1.5rem)]',
           isActive
             ? 'bg-brand-50 text-brand-700 font-medium'
@@ -67,7 +67,7 @@ function SidebarItemComponent({
             {hasChildren && (
               <ChevronDown
                 className={cn(
-                  'h-4 w-4 text-text-tertiary transition-transform duration-200',
+                  'h-4 w-4 text-text-tertiary transition-transform duration-200 motion-reduce:transition-none',
                   expanded && 'rotate-180'
                 )}
               />
@@ -106,7 +106,7 @@ export function Sidebar({
     <aside
       className={cn(
         'flex flex-col h-full bg-surface border-r border-border',
-        'transition-all duration-200',
+        'transition-all duration-200 motion-reduce:transition-none',
         collapsed ? 'w-16' : 'w-60',
         className
       )}
