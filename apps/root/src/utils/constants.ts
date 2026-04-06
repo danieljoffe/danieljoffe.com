@@ -112,14 +112,18 @@ export const EXPERIENCE_LINK: NavLink = {
 export const BLOG_LINK: NavLink = { href: '/blog', label: 'Blog' };
 export const AUDIT_LINK: NavLink = { href: '/audit', label: 'Free Audit' };
 
-export const NAV_LINKS: NavLink[] = [
-  HOME_LINK,
-  ABOUT_LINK,
+/** Primary nav links — always visible in desktop and mobile bottom bar */
+export const PRIMARY_NAV_LINKS: NavLink[] = [
   SERVICES_LINK,
-  EXPERIENCE_LINK,
   PROJECTS_LINK,
-  BLOG_LINK,
+  EXPERIENCE_LINK,
 ];
+
+/** Secondary nav links — shown in "More" dropdown on desktop, bottom sheet on mobile */
+export const MORE_NAV_LINKS: NavLink[] = [ABOUT_LINK, BLOG_LINK];
+
+/** All nav links for the footer and anywhere the full set is needed */
+export const NAV_LINKS: NavLink[] = [...PRIMARY_NAV_LINKS, ...MORE_NAV_LINKS];
 
 // Form IDs
 export const CONTACT_FORM_ID = 'contact-form';

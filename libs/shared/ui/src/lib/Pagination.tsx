@@ -46,18 +46,15 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={isPrevDisabled}
-        aria-label="Previous page"
+        aria-label='Previous page'
         aria-disabled={isPrevDisabled ? 'true' : undefined}
-        className="p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className='h-4 w-4' />
       </button>
       {getPages().map((page, i) =>
         page === '...' ? (
-          <span
-            key={`dots-${i}`}
-            className="px-1 text-text-tertiary text-sm"
-          >
+          <span key={`dots-${i}`} className='px-1 text-text-tertiary text-sm'>
             ...
           </span>
         ) : (
@@ -83,11 +80,11 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={isNextDisabled}
-        aria-label="Next page"
+        aria-label='Next page'
         aria-disabled={isNextDisabled ? 'true' : undefined}
-        className="p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className='h-4 w-4' />
       </button>
     </nav>
   );

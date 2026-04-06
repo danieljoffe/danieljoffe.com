@@ -1,13 +1,92 @@
-import DarkModeToggle from './DarkModeToggle';
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ChevronDown, User, BookOpen } from 'lucide-react';
+import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import { cn } from '@/lib/cn';
+import { analytics } from '@/lib/analytics';
+import {
+  PRIMARY_NAV_LINKS,
+  MORE_NAV_LINKS,
+  AUDIT_LINK,
+} from '@/utils/constants';
+import Logo from './Logo';
 import SearchTrigger from './SearchTrigger';
-import NavLinks from './Links';
+import DarkModeToggle from './DarkModeToggle';
+
+const moreIcons: Record<string, React.ReactNode> = {
+  '/about': <User className='h-4 w-4' />,
+  '/blog': <BookOpen className='h-4 w-4' />,
+};
 
 export default function TabletUpNav({ pathname }: { pathname: string }) {
+  const router = useRouter();
+
+  const moreItems = MORE_NAV_LINKS.map(link => ({
+    label: link.label,
+    icon: moreIcons[link.href],
+    onClick: () => {
+      analytics.navClick(link.label);
+      router.push(link.href);
+    },
+  }));
+
+  const isMoreActive = MORE_NAV_LINKS.some(link => pathname === link.href);
+
   return (
-    <div className='hidden md:flex max-w-3xl mx-auto px-6 lg:px-0 h-14 items-center gap-4'>
-      <NavLinks pathname={pathname} />
-      <SearchTrigger />
-      <DarkModeToggle />
+    <div className='hidden md:flex max-w-4xl mx-auto px-6 lg:px-0 h-14 items-center gap-1'>
+      <Logo />
+
+      <nav className='flex items-center gap-1 ml-6' aria-label='Primary'>
+        {PRIMARY_NAV_LINKS.map(link => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={() => analytics.navClick(link.label)}
+            aria-current={pathname === link.href ? 'page' : undefined}
+            className={cn(
+              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+              pathname === link.href
+                ? 'text-text-primary bg-surface-tertiary'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+            )}
+          >
+            {link.label}
+          </Link>
+        ))}
+
+        <Dropdown
+          trigger={
+            <span
+              className={cn(
+                'flex items-center gap-0.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                isMoreActive
+                  ? 'text-text-primary bg-surface-tertiary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+              )}
+            >
+              More
+              <ChevronDown className='h-3.5 w-3.5' aria-hidden='true' />
+            </span>
+          }
+          items={moreItems}
+          align='left'
+        />
+      </nav>
+
+      <div className='ml-auto flex items-center gap-1'>
+        <Link
+          href={AUDIT_LINK.href}
+          onClick={() => analytics.navClick(AUDIT_LINK.label)}
+          aria-current={pathname === AUDIT_LINK.href ? 'page' : undefined}
+          className='inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors'
+        >
+          {AUDIT_LINK.label}
+        </Link>
+        <SearchTrigger />
+        <DarkModeToggle />
+      </div>
     </div>
   );
 }

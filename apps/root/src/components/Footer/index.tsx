@@ -4,7 +4,8 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
-  NAV_LINKS,
+  PRIMARY_NAV_LINKS,
+  MORE_NAV_LINKS,
   AUDIT_LINK,
   STORYBOOK_URL,
   RESUME_URL,
@@ -73,18 +74,42 @@ export default function Footer() {
 
         {/* Navigation */}
         <nav aria-label='Footer navigation'>
-          <ul className='flex flex-wrap justify-center sm:justify-start gap-x-6 gap-y-2'>
-            {[...NAV_LINKS, AUDIT_LINK].map(link => (
-              <li key={link.href}>
+          <div className='flex flex-wrap justify-center sm:justify-start gap-x-8 gap-y-4'>
+            {/* Primary links */}
+            <ul className='flex flex-wrap gap-x-6 gap-y-2'>
+              {PRIMARY_NAV_LINKS.map(link => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {/* More links */}
+            <ul className='flex flex-wrap gap-x-6 gap-y-2'>
+              {MORE_NAV_LINKS.map(link => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
                 <Link
-                  href={link.href}
+                  href={AUDIT_LINK.href}
                   className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
                 >
-                  {link.label}
+                  {AUDIT_LINK.label}
                 </Link>
               </li>
-            ))}
-          </ul>
+            </ul>
+          </div>
         </nav>
 
         {/* Bottom row: copyright + design system link */}
