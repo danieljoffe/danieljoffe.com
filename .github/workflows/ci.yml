@@ -4,9 +4,39 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - '**.md'
+      - '.claude/**'
+      - '.mcp.json'
+      - '.vscode/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/prompts/**'
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.husky/**'
+      - '.prettierrc'
+      - '.nvmrc'
+      - '.sentryclirc'
+      - '.editorconfig'
+      - 'LICENSE'
   pull_request:
     branches-ignore:
       - main # PRs to main are handled by ci-preview.yml
+    paths-ignore:
+      - '**.md'
+      - '.claude/**'
+      - '.mcp.json'
+      - '.vscode/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/prompts/**'
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.husky/**'
+      - '.prettierrc'
+      - '.nvmrc'
+      - '.sentryclirc'
+      - '.editorconfig'
+      - 'LICENSE'
   workflow_dispatch:
     inputs:
       update-snapshots:
