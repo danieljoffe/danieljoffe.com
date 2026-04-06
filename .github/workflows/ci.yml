@@ -55,7 +55,7 @@ jobs:
               .claude/*) ;;
               .mcp.json) ;;
               .vscode/*) ;;
-              .github/ISSUE_TEMPLATE/*|.github/prompts/*|.github/skills/*|.github/agents/*) ;;
+              .github/ISSUE_TEMPLATE/*|.github/prompts/*|.github/skills/*|.github/agents/*|.github/workflows/*) ;;
               .husky/*) ;;
               .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE) ;;
               *) DOCS_ONLY=false; break ;;
