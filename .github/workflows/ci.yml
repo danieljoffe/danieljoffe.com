@@ -39,6 +39,7 @@ jobs:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         id: filter
         with:
+          predicate-quantifier: 'every'
           filters: |
             needs-ci:
               - '!**.md'
