@@ -226,4 +226,56 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'L26*n%~q00xu-;j[ofWB00of%Mxu',
     },
   },
+  [blogSlugs.importTypeCircularDependency]: {
+    slug: blogSlugs.importTypeCircularDependency,
+    title:
+      "When import type Isn't Optional: Fixing a Circular Dependency Crash",
+    description:
+      'A production crash caused by a subtle difference between import and import type in a Turbopack-bundled Next.js app.',
+    link: {
+      label: 'import type Circular Dependency',
+      href: `${BLOG_LINK.href}/${blogSlugs.importTypeCircularDependency}`,
+    },
+    cover: {
+      alt: 'Tangled cables forming a circular loop',
+      src: '/photo-1558618666-fcd25c85f82e',
+      origin: `${UNSPLASH_URL}/photos/close-up-photo-of-cables-plugged-into-the-server-bUWBWMH0kE0`,
+      creator: '@thomasjsn',
+      blurHash: 'L24o;G9F00D%~q%MRjRj00of-;WB',
+    },
+  },
+  [blogSlugs.mobileBottomNavZIndex]: {
+    slug: blogSlugs.mobileBottomNavZIndex,
+    title: 'Designing a Mobile Bottom Nav That Plays Nice with FABs and Sheets',
+    description:
+      'The z-index choreography behind adding a fixed bottom bar without breaking scroll-to-top, table-of-contents, and bottom sheet overlays.',
+    link: {
+      label: 'Mobile Bottom Nav z-index',
+      href: `${BLOG_LINK.href}/${blogSlugs.mobileBottomNavZIndex}`,
+    },
+    cover: {
+      alt: 'A layered architectural structure showing different levels',
+      src: '/photo-1486406146926-c627a92ad1ab',
+      origin: `${UNSPLASH_URL}/photos/low-angle-photography-of-gray-building-at-daytime-yEauzeZU6xo`,
+      creator: '@aronvisuals',
+      blurHash: 'L37UxT-:00NG~qt7-:NG00xu9FRj',
+    },
+  },
+  [blogSlugs.gracefulDegradationThirdPartyEmbeds]: {
+    slug: blogSlugs.gracefulDegradationThirdPartyEmbeds,
+    title: 'Graceful Degradation for Third-Party Embeds',
+    description:
+      'Adding a timeout-based fallback when a Calendly iframe gets blocked by ad blockers or network issues.',
+    link: {
+      label: 'Third-Party Embed Fallbacks',
+      href: `${BLOG_LINK.href}/${blogSlugs.gracefulDegradationThirdPartyEmbeds}`,
+    },
+    cover: {
+      alt: 'A safety net stretched beneath a high structure',
+      src: '/photo-1504639725590-34d0984388bd',
+      origin: `${UNSPLASH_URL}/photos/macbook-pro-on-brown-wooden-table-8qEB0fTe9Vw`,
+      creator: '@kevinku',
+      blurHash: 'LGF~o]_N~q%M%MRjIUj[-;WBD%WB',
+    },
+  },
 };

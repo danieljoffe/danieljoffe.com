@@ -40,6 +40,15 @@ import ToastPauseOnHover, {
 import KeyboardNavigableDataTables, {
   metadata as keyboardNavigableTablesMeta,
 } from './keyboard-navigable-data-tables.mdx';
+import ImportTypeCircularDependency, {
+  metadata as importTypeCircularDependencyMeta,
+} from './import-type-circular-dependency.mdx';
+import MobileBottomNavZIndex, {
+  metadata as mobileBottomNavZIndexMeta,
+} from './mobile-bottom-nav-z-index.mdx';
+import GracefulDegradationThirdPartyEmbeds, {
+  metadata as gracefulDegradationMeta,
+} from './graceful-degradation-third-party-embeds.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -55,6 +64,10 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'accessible-dropdown-keyboard-nav': AccessibleDropdownKeyboardNav,
   'toast-pause-on-hover': ToastPauseOnHover,
   'keyboard-navigable-data-tables': KeyboardNavigableDataTables,
+  'import-type-circular-dependency': ImportTypeCircularDependency,
+  'mobile-bottom-nav-z-index': MobileBottomNavZIndex,
+  'graceful-degradation-third-party-embeds':
+    GracefulDegradationThirdPartyEmbeds,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -71,4 +84,7 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'accessible-dropdown-keyboard-nav': accessibleDropdownMeta,
   'toast-pause-on-hover': toastPauseOnHoverMeta,
   'keyboard-navigable-data-tables': keyboardNavigableTablesMeta,
+  'import-type-circular-dependency': importTypeCircularDependencyMeta,
+  'mobile-bottom-nav-z-index': mobileBottomNavZIndexMeta,
+  'graceful-degradation-third-party-embeds': gracefulDegradationMeta,
 };

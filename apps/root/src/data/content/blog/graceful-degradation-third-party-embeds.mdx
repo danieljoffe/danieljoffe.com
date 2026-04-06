@@ -1,0 +1,127 @@
+export const metadata = {
+  title: 'Graceful Degradation for Third-Party Embeds',
+  date: '2026-04-06',
+  excerpt:
+    'Adding a timeout-based fallback when a Calendly iframe gets blocked by ad blockers or network issues.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['React', 'UX', 'Performance', 'Resilience'],
+  slug: 'graceful-degradation-third-party-embeds',
+  type: 'blog',
+  topic: 'Resilience',
+};
+
+## The Problem
+
+The services page embeds a Calendly scheduling widget in an iframe.
+When it works, users book a call without leaving the site. When it
+doesn't — ad blocker, corporate firewall, flaky CDN — users see a
+spinner that never stops.
+
+There's no error event. Iframes don't fire `onerror` when a third-party
+domain is blocked. The `onload` event simply never fires. The only signal
+is silence.
+
+## The Pattern
+
+The fix is a timeout. If the iframe hasn't loaded after a reasonable
+window, show a fallback that lets users complete the action through a
+different path:
+
+```tsx
+const LOAD_TIMEOUT_MS = 8000;
+
+const [isLoaded, setIsLoaded] = useState(false);
+const [timedOut, setTimedOut] = useState(false);
+
+// Start the timeout when the iframe begins loading
+useEffect(() => {
+  if (!shouldLoad || isLoaded) return;
+
+  const timer = setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
+  return () => clearTimeout(timer);
+}, [shouldLoad, isLoaded]);
+```
+
+The timeout only runs while `shouldLoad` is true (the container is in
+the viewport) and `isLoaded` is false. If the iframe loads before the
+timer fires, the cleanup function clears it. If the iframe loads after
+the timer fires (slow network, not a block), `onLoad` resets `timedOut`
+to false and shows the embed.
+
+## The Fallback
+
+When the timeout triggers, replace the spinner with a direct link:
+
+```tsx
+if (timedOut && !isLoaded) {
+  return (
+    <div className='flex flex-col items-center justify-center gap-4 ...'>
+      <Calendar className='h-10 w-10 text-text-tertiary' />
+      <p className='text-text-secondary text-sm max-w-md'>
+        The scheduling widget couldn&apos;t load. Book directly on Calendly
+        instead.
+      </p>
+      <Button
+        name='calendly-fallback'
+        as='link'
+        href={CALENDLY_URL}
+        target='_blank'
+        onClick={() =>
+          analytics.ctaClick('services_calendly_fallback', CALENDLY_URL)
+        }
+      >
+        Open Calendly
+      </Button>
+    </div>
+  );
+}
+```
+
+The fallback does three things right:
+
+1. **Explains what happened** — "couldn't load" is honest without being
+   technical
+2. **Provides an alternative** — the direct Calendly link always works
+3. **Tracks the event** — analytics tells you how often users hit the
+   fallback, which informs whether 8 seconds is the right timeout
+
+## Lazy Loading the Embed
+
+The iframe itself is lazy-loaded with an IntersectionObserver. No point
+fetching Calendly's JavaScript until the user scrolls near the booking
+section:
+
+```tsx
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        setShouldLoad(true);
+        observer.disconnect();
+      }
+    },
+    { rootMargin: '200px' }
+  );
+  observer.observe(el);
+  return () => observer.disconnect();
+}, []);
+```
+
+`rootMargin: '200px'` starts loading 200px before the container enters the
+viewport. Combined with the iframe's `loading="lazy"` attribute, the
+embed begins fetching right around when the user would naturally scroll
+to it.
+
+## When to Use This Pattern
+
+Any time you embed a third-party widget that could be blocked:
+
+- **Calendly, Cal.com** — scheduling
+- **Typeform, Tally** — forms
+- **YouTube, Vimeo** — video
+- **Intercom, Drift** — chat widgets
+
+The pattern is always the same: set a timeout, show a fallback with a
+direct link, track how often it fires. If the fallback rate is high,
+consider making the direct link the primary UI instead of the embed.

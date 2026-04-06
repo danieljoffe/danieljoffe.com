@@ -12,11 +12,17 @@ echo "$FILE_PATH" | grep -qE '\.spec\.tsx?$' || exit 0
 
 # Use the spec filename (e.g. "page.spec.tsx") as the pattern for an exact match
 SPEC_FILE=$(basename "$FILE_PATH")
-OUTPUT=$(timeout 60 npx nx test root -- --testPathPatterns="$SPEC_FILE" --no-coverage 2>&1)
-RC=$?
+# macOS doesn't have `timeout`; use perl one-liner as portable fallback
+if command -v timeout >/dev/null 2>&1; then
+  OUTPUT=$(timeout 60 npx nx test root -- --testPathPatterns="$SPEC_FILE" --no-coverage 2>&1)
+  RC=$?
+else
+  OUTPUT=$(perl -e 'alarm 60; exec @ARGV' npx nx test root -- --testPathPatterns="$SPEC_FILE" --no-coverage 2>&1)
+  RC=$?
+fi
 
-# timeout exits 124 when the command is killed
-if [ $RC -eq 124 ]; then
+# timeout exits 124, perl alarm sends SIGALRM (RC=142) when the command is killed
+if [ $RC -eq 124 ] || [ $RC -eq 142 ]; then
   echo "TIMEOUT: tests exceeded 60s limit" >&2
   exit 2
 fi
