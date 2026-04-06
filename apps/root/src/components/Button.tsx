@@ -27,6 +27,7 @@ interface ButtonBase {
   variant?: ButtonVariant;
   size?: ButtonSize;
   children: ReactNode;
+  name?: string;
 }
 
 interface ButtonProps
