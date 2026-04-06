@@ -229,7 +229,7 @@ function MobileToc({
         aria-label='Table of contents'
         aria-modal={isOpen}
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
+          'fixed bottom-0 left-0 right-0 z-51 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
           isOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
         )}
       >
