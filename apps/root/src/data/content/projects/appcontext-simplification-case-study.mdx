@@ -160,49 +160,14 @@ Adding or removing a provider is now a one-line change to an array — no JSX ne
 
 ## The Results
 
-<div className='overflow-x-auto -mx-4 px-4'>
-  <table>
-    <thead>
-      <tr>
-        <th scope='col'>Metric</th>
-        <th scope='col'>Before</th>
-        <th scope='col'>After</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Provider count</td>
-        <td>1 monolithic (153 lines)</td>
-        <td>3 focused (avg 91 lines each)</td>
-      </tr>
-      <tr>
-        <td>Context properties</td>
-        <td>15 in one context</td>
-        <td>3–5 per context</td>
-      </tr>
-      <tr>
-        <td>Resize listener</td>
-        <td>Every frame (useWindowResize)</td>
-        <td>Breakpoint only (matchMedia)</td>
-      </tr>
-      <tr>
-        <td>Re-render scope</td>
-        <td>Entire tree on any change</td>
-        <td>Only affected consumers</td>
-      </tr>
-      <tr>
-        <td>Adding a provider</td>
-        <td>Add properties to monolith + update memo deps</td>
-        <td>One line in the providers array</td>
-      </tr>
-      <tr>
-        <td>Shared across monorepo</td>
-        <td>No</td>
-        <td>Theme + Toast in shared-ui</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+| Metric                 | Before                                        | After                           |
+| ---------------------- | --------------------------------------------- | ------------------------------- |
+| Provider count         | 1 monolithic (153 lines)                      | 3 focused (avg 91 lines each)   |
+| Context properties     | 15 in one context                             | 3–5 per context                 |
+| Resize listener        | Every frame (useWindowResize)                 | Breakpoint only (matchMedia)    |
+| Re-render scope        | Entire tree on any change                     | Only affected consumers         |
+| Adding a provider      | Add properties to monolith + update memo deps | One line in the providers array |
+| Shared across monorepo | No                                            | Theme + Toast in shared-ui      |
 
 ## Key Takeaways
 
