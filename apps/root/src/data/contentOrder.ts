@@ -76,4 +76,7 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.accessibleDropdownKeyboardNav, // 2026-04-06
   blogSlugs.toastPauseOnHover, // 2026-04-06
   blogSlugs.keyboardNavigableDataTables, // 2026-04-06
+  blogSlugs.importTypeCircularDependency, // 2026-04-06
+  blogSlugs.mobileBottomNavZIndex, // 2026-04-06
+  blogSlugs.gracefulDegradationThirdPartyEmbeds, // 2026-04-06
 ];
