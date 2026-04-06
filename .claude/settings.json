@@ -9,5 +9,29 @@
   },
   "enabledPlugins": {
     "nx@nx-claude-plugins": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_FILE_PATH\" | grep -qE '-snapshots/' && echo 'BLOCK: Snapshot files should be updated via CI workflow_dispatch, not edited directly' && exit 1 || exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_FILE_PATH\" | grep -qE '\\.spec\\.tsx?$' && npx nx test root -- --testPathPattern=\"$(basename \"$CLAUDE_FILE_PATH\" | sed 's/\\.spec\\.tsx$//' | sed 's/\\.spec\\.ts$//')\" --no-coverage 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
   }
 }
