@@ -94,6 +94,21 @@ describe('Sidebar', () => {
     });
   });
 
+  // --- focus-visible styles on sidebar buttons ---
+
+  it('applies focus-visible ring classes on sidebar buttons', () => {
+    render(<Sidebar items={items} />);
+    const homeButton = screen.getByText('Home').closest('button')!;
+    expect(homeButton.className).toContain('focus-visible:ring-2');
+  });
+
+  it('applies focus-visible ring classes on child items', () => {
+    render(<Sidebar items={items} />);
+    fireEvent.click(screen.getByText('Projects'));
+    const childButton = screen.getByText('Project A').closest('button')!;
+    expect(childButton.className).toContain('focus-visible:ring-2');
+  });
+
   it('hides labels and children when collapsed', () => {
     render(<Sidebar items={items} collapsed />);
     expect(screen.queryByText('Home')).not.toBeInTheDocument();
