@@ -155,7 +155,7 @@ The workspace uses Nx plugins for automatic target inference:
 
 - `ci.yml`: Runs on push to `develop` and PRs (except to `main`). Runs lint, typecheck, test, build, e2e (PR only), Chromatic, Lighthouse.
 - `ci-preview.yml`: Runs on PRs to `main` (release validation). Requires source branch is `develop`.
-- `ci.yml` uses a `changes` job with a shell-based file check to detect docs-only PRs. When only non-code files change (`*.md`, `.claude/*`, `.mcp.json`, `.vscode/*`, `.github/ISSUE_TEMPLATE/*`, `.github/prompts/*`, `.github/skills/*`, `.github/agents/*`, `.husky/*`, `.prettierrc`, `.nvmrc`, `.sentryclirc`, `.editorconfig`, `LICENSE`), the `ci` job is skipped but the `ci-status` gate job still runs and passes. Push events to `develop` always run CI.
+- `ci.yml` uses a `changes` job with a shell-based file check to detect docs-only PRs. When only non-code files change (`*.md`, `.claude/*`, `.mcp.json`, `.vscode/*`, `.github/ISSUE_TEMPLATE/*`, `.github/prompts/*`, `.github/skills/*`, `.github/agents/*`, `.github/workflows/*`, `.husky/*`, `.prettierrc`, `.nvmrc`, `.sentryclirc`, `.editorconfig`, `.nxignore`, `LICENSE`), the `ci` job is skipped but the `ci-status` gate job still runs and passes. Push events to `develop` always run CI.
 - Branch protection rulesets require `ci-status` (not `ci`) so docs-only PRs can merge without running the full suite.
 - Snapshot regeneration: `workflow_dispatch` with `update-snapshots: true` on `ci.yml`.
 

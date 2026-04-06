@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"$CLAUDE_FILE_PATH\" | grep -qE '-snapshots/' && echo 'BLOCK: Snapshot files should be updated via CI workflow_dispatch, not edited directly' && exit 1 || exit 0"
+            "command": "bash .claude/hooks/block-snapshot-edits.sh"
           }
         ]
       }
@@ -28,7 +28,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"$CLAUDE_FILE_PATH\" | grep -qE '\\.spec\\.tsx?$' && npx nx test root -- --testPathPattern=\"$(basename \"$CLAUDE_FILE_PATH\" | sed 's/\\.spec\\.tsx$//' | sed 's/\\.spec\\.ts$//')\" --no-coverage 2>/dev/null || true"
+            "command": "bash .claude/hooks/run-spec-tests.sh",
+            "statusMessage": "Running related unit tests..."
           }
         ]
       }
