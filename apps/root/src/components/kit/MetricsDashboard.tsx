@@ -3,33 +3,22 @@
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
+export type MetricDelta = 'positive' | 'negative' | 'neutral';
+
 export interface Metric {
   label: string;
   before: string;
   after: string;
   improvement: string;
+  delta: MetricDelta;
 }
 
 interface MetricsDashboardProps {
   metrics: Metric[];
 }
 
-function isPositive(improvement: string): boolean {
-  // Improvements are positive by default; only flag as negative when
-  // the label contains explicitly negative language.
-  const lower = improvement.toLowerCase();
-  return !(
-    lower.includes('slower') ||
-    lower.includes('worse') ||
-    lower.includes('regression') ||
-    lower.includes('decrease') ||
-    lower.includes('declined') ||
-    lower.includes('drop')
-  );
-}
-
-function MetricCard({ label, before, after, improvement }: Metric) {
-  const positive = isPositive(improvement);
+function MetricCard({ label, before, after, improvement, delta }: Metric) {
+  const positive = delta !== 'negative';
 
   return (
     <div

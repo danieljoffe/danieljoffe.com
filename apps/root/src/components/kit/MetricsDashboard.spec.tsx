@@ -8,18 +8,21 @@ const sampleMetrics: Metric[] = [
     before: '8-12s',
     after: '1.8-2.5s',
     improvement: '~80% faster',
+    delta: 'positive',
   },
   {
     label: 'Bundle Size',
     before: '650-800KB',
     after: '250-300KB',
     improvement: '~62% reduction',
+    delta: 'positive',
   },
   {
     label: 'Lighthouse Score',
     before: '32-43',
     after: '~80',
     improvement: '+40 points',
+    delta: 'positive',
   },
 ];
 
@@ -56,25 +59,7 @@ describe('MetricsDashboard', () => {
     expect(region).toBeInTheDocument();
   });
 
-  it('applies green styling for numeric positive improvements', () => {
-    render(
-      <MetricsDashboard
-        metrics={[
-          {
-            label: 'Speed',
-            before: '10s',
-            after: '2s',
-            improvement: '80% faster',
-          },
-        ]}
-      />
-    );
-
-    const badge = screen.getByText('80% faster');
-    expect(badge.className).toContain('green');
-  });
-
-  it('applies green styling for qualitative positive improvements', () => {
+  it('applies green styling when delta is positive', () => {
     render(
       <MetricsDashboard
         metrics={[
@@ -83,24 +68,17 @@ describe('MetricsDashboard', () => {
             before: '0%',
             after: '80%',
             improvement: 'Unified UI patterns',
-          },
-          {
-            label: 'Engineering Time Saved',
-            before: '—',
-            after: '12+ hrs/week',
-            improvement: 'Freed for features',
+            delta: 'positive',
           },
         ]}
       />
     );
 
-    const badge1 = screen.getByText('Unified UI patterns');
-    const badge2 = screen.getByText('Freed for features');
-    expect(badge1.className).toContain('green');
-    expect(badge2.className).toContain('green');
+    const badge = screen.getByText('Unified UI patterns');
+    expect(badge.className).toContain('green');
   });
 
-  it('applies red styling for explicitly negative improvements', () => {
+  it('applies red styling when delta is negative', () => {
     render(
       <MetricsDashboard
         metrics={[
@@ -109,23 +87,34 @@ describe('MetricsDashboard', () => {
             before: '200ms',
             after: '500ms',
             improvement: '150% slower',
-          },
-          {
-            label: 'Conversion Rate',
-            before: '5%',
-            after: '3%',
-            improvement: '40% decrease',
+            delta: 'negative',
           },
         ]}
       />
     );
 
-    const badge1 = screen.getByText('150% slower');
-    const badge2 = screen.getByText('40% decrease');
-    expect(badge1.className).toContain('red');
-    expect(badge1.className).not.toContain('green');
-    expect(badge2.className).toContain('red');
-    expect(badge2.className).not.toContain('green');
+    const badge = screen.getByText('150% slower');
+    expect(badge.className).toContain('red');
+    expect(badge.className).not.toContain('green');
+  });
+
+  it('applies green styling when delta is neutral', () => {
+    render(
+      <MetricsDashboard
+        metrics={[
+          {
+            label: 'Team Size',
+            before: '3',
+            after: '7',
+            improvement: 'Team capability',
+            delta: 'neutral',
+          },
+        ]}
+      />
+    );
+
+    const badge = screen.getByText('Team capability');
+    expect(badge.className).toContain('green');
   });
 
   it('renders empty state gracefully', () => {
