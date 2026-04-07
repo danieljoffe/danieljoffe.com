@@ -1,0 +1,35 @@
+{
+  "name": "job-api",
+  "sourceRoot": "apps/job-api",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/job-api && poetry run uvicorn app.main:app --reload --port 8000",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/job-api && poetry run pytest -v",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/job-api && poetry run ruff check .",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/job-api && poetry run mypy app/",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}
