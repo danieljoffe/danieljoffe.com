@@ -38,7 +38,7 @@ export const experienceLogos = {
   IB: '/images/internet-brands-logo.svg',
   TLC: '/images/the-library-corporation-logo.svg',
   FC: '/images/fightcamp-logo.svg',
-  SD: '/images/brand-logo.svg',
+  SD: '/images/logo.svg',
 };
 
 export const experiencePageSlugs = [...Object.values(experienceSlugs)];
