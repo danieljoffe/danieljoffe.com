@@ -152,7 +152,7 @@ export function Modal({
         )}
       >
         {title && (
-          <div className='flex items-center justify-between p-6 border-b border-border'>
+          <div className='flex items-center justify-between p-4 sm:p-6 border-b border-border'>
             <Heading variant='component' id={titleId}>
               {title}
             </Heading>
@@ -178,9 +178,9 @@ export function Modal({
             <X className='size-5' aria-hidden='true' />
           </Button>
         )}
-        <div className='p-6'>{children}</div>
+        <div className='p-4 sm:p-6'>{children}</div>
         {footer && (
-          <div className='flex items-center justify-end gap-3 p-6 border-t border-border'>
+          <div className='flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-border'>
             {footer}
           </div>
         )}

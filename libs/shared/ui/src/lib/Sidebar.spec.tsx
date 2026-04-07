@@ -77,7 +77,8 @@ describe('Sidebar', () => {
 
   it('applies expanded width by default', () => {
     const { container } = render(<Sidebar items={items} />);
-    expect(container.querySelector('.w-60')).toBeInTheDocument();
+    const aside = container.querySelector('aside');
+    expect(aside).toHaveClass('w-48', 'md:w-60');
   });
 
   it('applies motion-reduce:transition-none to sidebar container', () => {

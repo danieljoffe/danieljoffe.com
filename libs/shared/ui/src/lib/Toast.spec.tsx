@@ -78,7 +78,7 @@ describe('Toast', () => {
     expect(screen.getByText('Saved!')).toBeInTheDocument();
 
     act(() => {
-      jest.advanceTimersByTime(4000);
+      jest.advanceTimersByTime(4150);
     });
 
     expect(screen.queryByText('Saved!')).not.toBeInTheDocument();
@@ -96,6 +96,10 @@ describe('Toast', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Dismiss notification' })
     );
+
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
 
     expect(screen.queryByText('Saved!')).not.toBeInTheDocument();
   });
@@ -242,9 +246,9 @@ describe('Toast', () => {
     // Mouse leave to resume
     fireEvent.mouseLeave(toast);
 
-    // Advance the remaining time (~2000ms)
+    // Advance the remaining time (~2000ms) plus 150ms dismiss animation
     act(() => {
-      jest.advanceTimersByTime(2000);
+      jest.advanceTimersByTime(2150);
     });
 
     expect(screen.queryByText('Heads up')).not.toBeInTheDocument();

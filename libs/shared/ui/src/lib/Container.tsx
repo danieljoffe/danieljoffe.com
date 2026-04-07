@@ -30,7 +30,7 @@ export function Container({
     <div
       ref={ref}
       className={cn(
-        'mx-auto w-full px-4 sm:px-6',
+        'mx-auto w-full px-4 sm:px-6 lg:px-8',
         sizeClasses[size],
         className
       )}

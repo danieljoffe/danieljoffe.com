@@ -15,7 +15,7 @@ export function Skeleton({
   height,
   lines = 1,
 }: SkeletonProps) {
-  const base = 'animate-pulse bg-surface-tertiary';
+  const base = 'animate-pulse motion-reduce:animate-none bg-surface-tertiary';
 
   if (variant === 'circular') {
     return (

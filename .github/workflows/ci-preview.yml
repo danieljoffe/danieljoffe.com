@@ -34,7 +34,7 @@ jobs:
     name: Vercel Preview
     needs: check-source
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     environment:
       name: preview
       url: ${{ steps.deploy.outputs.url }}
@@ -59,7 +59,7 @@ jobs:
     name: Storybook Preview
     needs: check-source
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
 

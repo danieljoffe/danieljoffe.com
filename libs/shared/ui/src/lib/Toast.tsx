@@ -21,6 +21,7 @@ export interface ToastItem {
   variant: ToastVariant;
   title: string;
   description?: string;
+  duration?: number;
 }
 
 export interface ToastContextType {
@@ -47,7 +48,8 @@ const iconColors: Record<ToastVariant, string> = {
   error: 'text-error',
 };
 
-const AUTO_DISMISS_MS = 4000;
+const DEFAULT_DISMISS_MS = 4000;
+let toastCounter = 0;
 
 function ToastCard({
   toast: t,
@@ -56,19 +58,26 @@ function ToastCard({
   toast: ToastItem;
   onDismiss: (id: string) => void;
 }) {
+  const duration = t.duration ?? DEFAULT_DISMISS_MS;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const remainingRef = useRef(AUTO_DISMISS_MS);
+  const remainingRef = useRef(duration);
   const startRef = useRef(Date.now());
+  const [dismissing, setDismissing] = useState(false);
 
   const isUrgent = t.variant === 'error' || t.variant === 'warning';
   const Icon = icons[t.variant];
 
+  const handleDismiss = useCallback(() => {
+    setDismissing(true);
+    setTimeout(() => onDismiss(t.id), 150);
+  }, [onDismiss, t.id]);
+
   const startTimer = useCallback(() => {
     startRef.current = Date.now();
     timerRef.current = setTimeout(() => {
-      onDismiss(t.id);
+      handleDismiss();
     }, remainingRef.current);
-  }, [onDismiss, t.id]);
+  }, [handleDismiss]);
 
   const pauseTimer = useCallback(() => {
     if (timerRef.current) {
@@ -96,7 +105,8 @@ function ToastCard({
       onBlur={startTimer}
       className={cn(
         'flex items-start gap-3 p-4 bg-surface-elevated border border-border',
-        'rounded-lg shadow-lg animate-slide-up'
+        'rounded-lg shadow-lg motion-reduce:animate-none',
+        dismissing ? 'animate-slide-out-down' : 'animate-slide-up'
       )}
     >
       <Icon className={cn('h-5 w-5 shrink-0', iconColors[t.variant])} />
@@ -111,7 +121,7 @@ function ToastCard({
         )}
       </div>
       <button
-        onClick={() => onDismiss(t.id)}
+        onClick={() => handleDismiss()}
         aria-label='Dismiss notification'
         className='p-0.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
       >
@@ -125,7 +135,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const addToast = useCallback((params: Omit<ToastItem, 'id'>) => {
-    const id = Math.random().toString(36).slice(2);
+    const id = `toast-${++toastCounter}`;
     setToasts(prev => [...prev, { ...params, id }]);
   }, []);
 

@@ -100,6 +100,33 @@ describe('InteractiveDemo', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('passes args as URL params to iframe', () => {
+    render(
+      <InteractiveDemo
+        story='forms-button--default'
+        title='Button Variants'
+        args={{ variant: 'secondary', size: 'lg' }}
+      />
+    );
+
+    triggerIntersection(true);
+
+    const iframe = screen.getByTitle('Button Variants');
+    expect(iframe).toHaveAttribute(
+      'src',
+      'https://ui.danieljoffe.com/iframe.html?id=forms-button--default&viewMode=story&args=variant:secondary;size:lg'
+    );
+  });
+
+  it('omits args param when no args provided', () => {
+    render(<InteractiveDemo story='button--primary' title='Button Demo' />);
+
+    triggerIntersection(true);
+
+    const iframe = screen.getByTitle('Button Demo');
+    expect(iframe.getAttribute('src')).not.toContain('&args=');
+  });
+
   it('has sandbox attribute on iframe', () => {
     render(<InteractiveDemo story='button--primary' title='Button Demo' />);
 
