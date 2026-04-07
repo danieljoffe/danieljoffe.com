@@ -45,7 +45,7 @@ export function Skeleton({
           key={i}
           className={cn(
             base,
-            'h-4 rounded',
+            'h-4 rounded-xs',
             i === lines - 1 && lines > 1 && 'w-3/4'
           )}
           style={{ height }}
