@@ -9,6 +9,7 @@ import {
   Award,
   Home,
   MoreHorizontal,
+  Search,
   User,
   BookOpen,
   X,
@@ -22,7 +23,6 @@ import {
   AUDIT_LINK,
 } from '@/utils/constants';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import SearchTrigger from './SearchTrigger';
 import DarkModeToggle from './DarkModeToggle';
 
 const primaryIcons: Record<string, typeof Briefcase> = {
@@ -93,16 +93,12 @@ export default function MobileNav({ pathname }: { pathname: string }) {
 
   const isHome = pathname === '/';
 
+  const handleSearchClick = useCallback(() => {
+    document.dispatchEvent(new CustomEvent('open-command-palette'));
+  }, []);
+
   return (
     <>
-      {/* Top header — search + theme */}
-      <div className='md:hidden flex items-center justify-end w-full h-12 px-6'>
-        <div className='flex items-center gap-1'>
-          <SearchTrigger />
-          <DarkModeToggle />
-        </div>
-      </div>
-
       {/* Fixed bottom bar */}
       <div
         className='md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-md border-t border-border/60'
@@ -151,6 +147,16 @@ export default function MobileNav({ pathname }: { pathname: string }) {
           })}
 
           <button
+            onClick={handleSearchClick}
+            aria-label='Search (⌘K)'
+            data-testid='search-trigger'
+            className='flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors cursor-pointer text-text-tertiary active:text-text-primary'
+          >
+            <Search className='h-5 w-5' aria-hidden='true' />
+            Search
+          </button>
+
+          <button
             ref={moreButtonRef}
             onClick={sheetOpen ? closeSheet : openSheet}
             aria-expanded={sheetOpen}
@@ -182,7 +188,9 @@ export default function MobileNav({ pathname }: { pathname: string }) {
         ref={sheetRef}
         role='dialog'
         aria-label='More navigation'
-        aria-modal={sheetOpen}
+        aria-modal='true'
+        aria-hidden={!sheetOpen}
+        inert={!sheetOpen ? true : undefined}
         className={cn(
           'md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
           sheetOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
@@ -197,13 +205,16 @@ export default function MobileNav({ pathname }: { pathname: string }) {
           <span className='text-xs font-semibold text-text-tertiary uppercase tracking-wider'>
             More
           </span>
-          <button
-            onClick={closeSheet}
-            aria-label='Close more menu'
-            className='p-1.5 rounded-lg text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
-          >
-            <X className='h-4 w-4' />
-          </button>
+          <div className='flex items-center gap-1'>
+            <DarkModeToggle />
+            <button
+              onClick={closeSheet}
+              aria-label='Close more menu'
+              className='p-1.5 rounded-lg text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
+            >
+              <X className='h-4 w-4' />
+            </button>
+          </div>
         </div>
         <nav aria-label='More links'>
           <ul className='space-y-1'>

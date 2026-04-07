@@ -18,11 +18,13 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className='fixed md:sticky bottom-0 md:top-0 md:bottom-auto w-full z-50 bg-surface/80 backdrop-blur-md border-b border-border/60'>
-      <nav role='navigation' aria-label='Main navigation'>
-        <TabletUpNav pathname={pathname} />
-        <MobileNav pathname={pathname} />
-      </nav>
-    </header>
+    <>
+      <header className='hidden md:block sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-border/60'>
+        <nav role='navigation' aria-label='Main navigation'>
+          <TabletUpNav pathname={pathname} />
+        </nav>
+      </header>
+      <MobileNav pathname={pathname} />
+    </>
   );
 }

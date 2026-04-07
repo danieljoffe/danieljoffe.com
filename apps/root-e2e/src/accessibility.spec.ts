@@ -220,8 +220,8 @@ test.describe('accessibility tests', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
-    // Look for mobile menu trigger (which opens a modal)
-    const modalTrigger = page.locator('[aria-label="Open menu"]');
+    // Look for mobile menu trigger (which opens a modal/sheet)
+    const modalTrigger = page.locator('[aria-label="Open more menu"]');
 
     if (await modalTrigger.isVisible({ timeout: 5000 })) {
       await modalTrigger.click();
@@ -244,7 +244,9 @@ test.describe('accessibility tests', () => {
         expect(focusableCount).toBeGreaterThan(0);
 
         // Close the modal to clean up
-        const closeButton = modal.getByRole('button', { name: 'Close' });
+        const closeButton = modal.getByRole('button', {
+          name: 'Close more menu',
+        });
         if (await closeButton.isVisible()) {
           await closeButton.click();
         }
