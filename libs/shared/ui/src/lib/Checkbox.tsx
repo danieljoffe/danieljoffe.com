@@ -37,7 +37,7 @@ export function Checkbox({
           onClick={() => document.getElementById(checkboxId)?.click()}
           className={cn(
             'flex items-center justify-center size-5 border-2',
-            'border-border-secondary rounded bg-surface cursor-pointer transition-all',
+            'border-border-secondary rounded-xs bg-surface cursor-pointer transition-all',
             'peer-checked:bg-brand-500 peer-checked:border-brand-500 peer-focus-visible:ring-2',
             'peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2 ',
             'peer-focus-visible:ring-offset-surface',
