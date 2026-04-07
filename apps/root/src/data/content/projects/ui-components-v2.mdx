@@ -208,6 +208,43 @@ The design system now includes **24 components** across four categories:
 | Layout     | AspectRatio, Card, Container, Divider, Grid, PageContainer, Section, Spacer, Stack |
 | Navigation | Tabs                                                                               |
 
+## Framework Adaptation Pattern
+
+The shared-ui library is framework-agnostic by design — it depends only on React and Tailwind CSS. No `next/link`, `next/image`, `useRouter`, or any Next.js API. This separation is intentional and creates a clear two-layer architecture:
+
+| Layer | Location | Dependencies | Examples |
+| --- | --- | --- | --- |
+| Framework-agnostic | `libs/shared/ui/` | React, Tailwind CSS | Button, Card, Modal, Badge |
+| Next.js-specific | `apps/root/src/components/` | Next.js, shared-ui | Nav (uses `Link`, `useRouter`), PostCard (uses shared-ui `Badge` + `Heading`), Button wrapper (adds `Link` routing) |
+
+### How it works in practice
+
+The app-level `Button` component (`components/Button.tsx`) wraps the shared-ui `Button` to add Next.js `Link` integration — when rendered as a link, it uses `next/link` for client-side navigation with prefetching. The shared-ui `Button` knows nothing about routing.
+
+Similarly, kit components like `PostCard` compose shared-ui primitives (`Badge`, `Heading`, `Text`) with Next.js-specific concerns like image optimization and route-aware links.
+
+### React 19 migration
+
+During the V1→V2 evolution, React 19 deprecated `forwardRef`. The shared-ui library now accepts `ref` as a regular prop in the component interface:
+
+```tsx
+// Before (React 18 — forwardRef)
+const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+  return <button ref={ref} {...props} />;
+});
+
+// After (React 19 — ref as prop)
+function Button({ ref, ...props }: ButtonProps) {
+  return <button ref={ref} {...props} />;
+}
+```
+
+This eliminated all `forwardRef` wrappers and the `Client*` wrapper pattern that was previously needed for ref compatibility at `'use client'` boundaries.
+
+### Why this matters
+
+This architecture means the shared-ui library can be consumed by _any_ React project — not just this Next.js app. A Vite app, a Remix app, or a React Native Web project could all use the same components. The framework-specific adaptation stays in the consuming app.
+
 ## What I Learned
 
 **Composition beats configuration.** The Card component started as a monolithic prop-based design. Breaking it into CardHeader, CardTitle, and CardContent made it far more flexible.
