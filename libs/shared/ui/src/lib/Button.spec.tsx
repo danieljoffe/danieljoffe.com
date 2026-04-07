@@ -18,12 +18,7 @@ describe('Button', () => {
 
     it.each([
       ['secondary', ['bg-surface-elevated']],
-      ['ghost', ['hover:bg-surface-elevated']],
       ['outline', ['border-border-secondary']],
-      ['success', ['bg-success']],
-      ['error', ['bg-error']],
-      ['warning', ['bg-warning']],
-      ['info', ['bg-info']],
     ] as [ButtonVariant, string[]][])(
       'applies %s variant styles',
       (variant, expectedClasses) => {

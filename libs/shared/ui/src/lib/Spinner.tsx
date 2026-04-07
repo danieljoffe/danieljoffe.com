@@ -1,26 +1,21 @@
 import { type HTMLAttributes, type Ref } from 'react';
 import { cn } from './utils';
 
-type SpinnerSize = 'sm' | 'md' | 'lg';
-type SpinnerVariant =
-  | 'accent'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'info'
-  | 'foreground';
+import type { ComponentSize } from './types';
+
+type SpinnerVariant = 'accent';
 
 export interface SpinnerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'className' | 'role'
 > {
   ref?: Ref<HTMLDivElement> | undefined;
-  size?: SpinnerSize;
+  size?: ComponentSize;
   variant?: SpinnerVariant;
   className?: string;
 }
 
-const sizeStyles: Record<SpinnerSize, string> = {
+const sizeStyles: Record<ComponentSize, string> = {
   sm: 'size-4 border-2',
   md: 'size-8 border-2',
   lg: 'size-12 border-3',
@@ -28,11 +23,6 @@ const sizeStyles: Record<SpinnerSize, string> = {
 
 const variantStyles: Record<SpinnerVariant, string> = {
   accent: 'border-brand-500/30 border-t-accent',
-  success: 'border-success/30 border-t-success',
-  warning: 'border-warning/30 border-t-warning',
-  error: 'border-error/30 border-t-error',
-  info: 'border-info/30 border-t-info',
-  foreground: 'border-foreground-subtle/30 border-t-foreground',
 };
 
 export function Spinner({

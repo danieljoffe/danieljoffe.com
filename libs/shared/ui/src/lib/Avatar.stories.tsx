@@ -40,11 +40,9 @@ export const WithStatus: Story = {
 export const AllSizes: Story = {
   render: () => (
     <div className='flex items-end gap-4'>
-      <Avatar initials='XS' size='xs' />
       <Avatar initials='SM' size='sm' />
       <Avatar initials='MD' size='md' />
       <Avatar initials='LG' size='lg' />
-      <Avatar initials='XL' size='xl' />
     </div>
   ),
 };

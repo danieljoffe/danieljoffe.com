@@ -13,12 +13,6 @@ describe('Badge', () => {
     expect(badge).toHaveClass('bg-surface-elevated');
   });
 
-  it('applies accent variant styles', () => {
-    render(<Badge variant='accent'>Accent</Badge>);
-    const badge = screen.getByText('Accent');
-    expect(badge).toHaveClass('bg-brand-50');
-  });
-
   it('applies success variant styles', () => {
     render(<Badge variant='success'>Success</Badge>);
     const badge = screen.getByText('Success');

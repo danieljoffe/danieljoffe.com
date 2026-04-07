@@ -27,31 +27,6 @@ describe('Spinner', () => {
     expect(container.firstChild).toHaveClass('border-t-accent');
   });
 
-  it('applies success variant styles', () => {
-    const { container } = render(<Spinner variant='success' />);
-    expect(container.firstChild).toHaveClass('border-t-success');
-  });
-
-  it('applies warning variant styles', () => {
-    const { container } = render(<Spinner variant='warning' />);
-    expect(container.firstChild).toHaveClass('border-t-warning');
-  });
-
-  it('applies error variant styles', () => {
-    const { container } = render(<Spinner variant='error' />);
-    expect(container.firstChild).toHaveClass('border-t-error');
-  });
-
-  it('applies info variant styles', () => {
-    const { container } = render(<Spinner variant='info' />);
-    expect(container.firstChild).toHaveClass('border-t-info');
-  });
-
-  it('applies foreground variant styles', () => {
-    const { container } = render(<Spinner variant='foreground' />);
-    expect(container.firstChild).toHaveClass('border-t-foreground');
-  });
-
   it('renders as inline-block element', () => {
     const { container } = render(<Spinner />);
     expect(container.firstChild).toHaveClass('inline-block');

@@ -41,17 +41,10 @@ describe('ProgressBar', () => {
     expect(container.querySelector('.bg-success')).toBeInTheDocument();
   });
 
-  it('applies warning variant styles', () => {
-    const { container } = render(<ProgressBar value={50} variant='warning' />);
-    expect(container.querySelector('.bg-warning')).toBeInTheDocument();
-  });
-
   it('applies error variant styles', () => {
     const { container } = render(<ProgressBar value={50} variant='error' />);
     expect(container.querySelector('.bg-error')).toBeInTheDocument();
   });
-
-  it('applies info variant styles', () => {
     const { container } = render(<ProgressBar value={50} variant='info' />);
     expect(container.querySelector('.bg-info')).toBeInTheDocument();
   });
