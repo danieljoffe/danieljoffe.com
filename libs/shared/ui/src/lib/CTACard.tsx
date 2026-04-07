@@ -22,7 +22,7 @@ export function CTACard({
     <div
       ref={ref}
       className={cn(
-        'relative overflow-hidden rounded-2xl bg-surface-secondary border border-border p-8 sm:p-12',
+        'relative overflow-hidden rounded-xl bg-surface-secondary border border-border p-8 sm:p-12',
         className
       )}
     >
