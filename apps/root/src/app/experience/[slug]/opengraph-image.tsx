@@ -92,7 +92,7 @@ export default async function OgImage({
 
         <span
           style={{
-            fontFamily: 'Fraunces',
+            fontFamily: 'Inter',
             fontSize: '48px',
             fontWeight: 700,
             color: '#ffffff',

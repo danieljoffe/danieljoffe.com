@@ -53,7 +53,7 @@ describe('og', () => {
       expect(paths.some((p: string) => p.includes('Inter-Medium.ttf'))).toBe(
         true
       );
-      expect(paths.some((p: string) => p.includes('Fraunces-Bold.ttf'))).toBe(
+      expect(paths.some((p: string) => p.includes('Inter-Bold.ttf'))).toBe(
         true
       );
 
@@ -80,7 +80,7 @@ describe('og', () => {
       expect(fonts[1].data).toBeInstanceOf(Buffer);
 
       expect(fonts[2]).toMatchObject({
-        name: 'Fraunces',
+        name: 'Inter',
         weight: 700,
         style: 'normal',
       });
