@@ -8,7 +8,7 @@ export type WithChildren = {
 };
 
 export interface NavLink {
-  label: string;
+  label?: string;
   href: `/${string}` | `https://${string}` | string;
 }
 

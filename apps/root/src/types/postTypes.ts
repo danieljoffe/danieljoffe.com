@@ -6,7 +6,6 @@ export interface UnsplashImageMeta {
   src: `/photo-${string}`;
   origin: `${typeof UNSPLASH_URL}/photos${string}`;
   creator: `@${string}`;
-  blurHash: string;
 }
 
 export interface PostBase {
@@ -18,7 +17,6 @@ export interface PostBase {
 }
 
 export interface PostThumbnail extends PostBase {
-  backgroundColor?: string;
   duration?: string;
   role?: string;
   readingTime?: number;
