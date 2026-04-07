@@ -5,6 +5,9 @@ inputs:
   run-e2e:
     description: Whether to run e2e tests
     default: 'true'
+  base-branch:
+    description: Base branch for nx affected comparison (defaults to main)
+    default: 'main'
   github-token:
     description: GitHub token for Lighthouse CI status checks
     default: ''
@@ -25,6 +28,8 @@ runs:
       run: yarn install --frozen-lockfile
 
     - uses: nrwl/nx-set-shas@v5
+      with:
+        main-branch-name: ${{ inputs.base-branch }}
 
     - name: Run affected tasks
       shell: bash
