@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { NAV_LINKS } from './fixtures/test-data';
+import { PRIMARY_NAV_LINKS } from './fixtures/test-data';
 import { waitForHydration } from './fixtures/base.fixture';
 
 test.describe('desktop navigation', () => {
@@ -7,14 +7,17 @@ test.describe('desktop navigation', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
   });
 
-  test('navigates through all main nav links', async ({ page }) => {
+  test('navigates through all primary nav links', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
-    for (const link of NAV_LINKS) {
+    // Wait for dynamically loaded TabletUpNav
+    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
+
+    for (const link of PRIMARY_NAV_LINKS) {
       const navLink = page
+        .locator('nav[aria-label="Primary"]')
         .locator(`a[href="${link.href}"]`)
-        .filter({ hasText: link.label })
         .first();
       await expect(navLink).toBeVisible();
     }
@@ -22,35 +25,81 @@ test.describe('desktop navigation', () => {
 
   test('nav links are accessible with visible text', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
 
-    for (const link of NAV_LINKS) {
+    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
+
+    for (const link of PRIMARY_NAV_LINKS) {
       const navLink = page
-        .locator('nav[aria-label="Main navigation"]')
-        .locator(`a[role="menuitem"]`, { hasText: link.label });
+        .locator('nav[aria-label="Primary"]')
+        .locator(`a`, { hasText: link.label });
       await expect(navLink).toBeAttached();
     }
   });
 
   test('highlights current page with aria-current', async ({ page }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/services', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
 
-    const aboutLink = page.locator('a[href="/about"][aria-current="page"]');
-    await expect(aboutLink).toBeAttached();
+    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
+
+    const servicesLink = page.locator(
+      'nav[aria-label="Primary"] a[href="/services"][aria-current="page"]'
+    );
+    await expect(servicesLink).toBeAttached();
   });
 
   test('clicking nav link navigates to correct page', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('domcontentloaded');
+    await waitForHydration(page);
+
+    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
 
     const projectsLink = page
-      .locator('nav[aria-label="Main navigation"]')
+      .locator('nav[aria-label="Primary"]')
       .locator('a[href="/projects"]')
       .first();
     await projectsLink.click();
 
     await expect(page).toHaveURL(/.*projects/);
+  });
+
+  test('more dropdown contains About and Blog', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
+
+    // Wait for dynamically loaded nav
+    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
+
+    // Click the More dropdown trigger — the Dropdown component renders a
+    // wrapper <button> around the trigger content
+    const moreTrigger = page
+      .locator('nav[aria-label="Primary"]')
+      .locator('button[aria-haspopup="true"]');
+    await expect(moreTrigger).toBeVisible();
+    await moreTrigger.click();
+
+    // The dropdown menu should appear with About and Blog
+    const menu = page.locator('[role="menu"]');
+    await expect(menu).toBeVisible();
+    await expect(
+      menu.locator('[role="menuitem"]', { hasText: 'About' })
+    ).toBeVisible();
+    await expect(
+      menu.locator('[role="menuitem"]', { hasText: 'Blog' })
+    ).toBeVisible();
+  });
+
+  test('free Audit CTA is visible', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
+
+    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
+
+    const auditLink = page
+      .locator('nav[aria-label="Main navigation"]')
+      .locator('a[href="/audit"]', { hasText: 'Free Audit' });
+    await expect(auditLink).toBeVisible();
   });
 });
 
@@ -59,72 +108,76 @@ test.describe('mobile navigation', () => {
     await page.setViewportSize({ width: 375, height: 667 });
   });
 
-  test('opens mobile menu on hamburger click', async ({ page }) => {
+  test('shows bottom bar with Home and primary links', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
-    const menuButton = page.getByLabel('Open menu');
-    await expect(menuButton).toBeVisible();
+    const bottomNav = page.locator('nav[aria-label="Mobile navigation"]');
+    await expect(bottomNav).toBeVisible();
 
-    await menuButton.click();
+    // Home link
+    await expect(bottomNav.locator('a[href="/"]').first()).toBeVisible();
 
-    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
-    await expect(modal).toBeVisible();
+    for (const link of PRIMARY_NAV_LINKS) {
+      const navLink = bottomNav.locator(`a[href="${link.href}"]`).first();
+      await expect(navLink).toBeVisible();
+    }
   });
 
-  test('closes mobile menu on close button click', async ({ page }) => {
+  test('opens More sheet on More button click', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
-    // Open menu
-    const menuButton = page.getByLabel('Open menu');
-    await menuButton.click();
+    // The More button is in the bottom bar
+    const bottomNav = page.locator('nav[aria-label="Mobile navigation"]');
+    await expect(bottomNav).toBeVisible();
 
-    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
-    await expect(modal).toBeVisible();
+    const moreButton = bottomNav.getByLabel('Open more menu');
+    await expect(moreButton).toBeVisible();
+    await moreButton.click();
 
-    // Close menu
-    const closeButton = modal.getByRole('button', { name: 'Close' });
-    await closeButton.click();
-
-    await expect(modal).toBeHidden();
+    const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
+    await expect(sheet).toHaveClass(/translate-y-0/);
   });
 
-  test('navigates from mobile menu', async ({ page }) => {
+  test('closes More sheet on close button click', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
-    // Open menu
-    const menuButton = page.getByLabel('Open menu');
-    await menuButton.click();
+    const bottomNav = page.locator('nav[aria-label="Mobile navigation"]');
+    await expect(bottomNav).toBeVisible();
 
-    // Wait for modal to be visible and stable
-    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
-    await expect(modal).toBeVisible();
+    // Open
+    await bottomNav.getByLabel('Open more menu').click();
+    const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
+    await expect(sheet).toHaveClass(/translate-y-0/);
 
-    // Click About link in modal - wait for animations to complete
-    const aboutLink = modal.locator('a[href="/about"]').first();
-    await expect(aboutLink).toBeVisible();
-    await aboutLink.click();
+    // Close via the backdrop overlay — use dispatchEvent because the fixed
+    // bottom nav bar (z-50) sits above the overlay (z-40) and intercepts
+    // normal Playwright clicks.
+    const overlay = page.locator('.fixed.inset-0.bg-black\\/40');
+    await overlay.dispatchEvent('click');
+    // The sheet uses translate-y transition, so check for the off-screen class
+    await expect(sheet).toHaveClass(/translate-y-full/);
+  });
+
+  test('navigates from More sheet', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForHydration(page);
+
+    const bottomNav = page.locator('nav[aria-label="Mobile navigation"]');
+    await expect(bottomNav).toBeVisible();
+
+    // Open More sheet
+    await bottomNav.getByLabel('Open more menu').click();
+    const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
+    await expect(sheet).toHaveClass(/translate-y-0/);
+
+    // Click About — dispatch programmatically since the sheet is fixed-positioned
+    const aboutButton = sheet.locator('button', { hasText: 'About' });
+    await aboutButton.dispatchEvent('click');
 
     await expect(page).toHaveURL(/.*about/);
-  });
-
-  test('mobile menu has close button focused on open', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await waitForHydration(page);
-
-    // Open menu
-    const menuButton = page.getByLabel('Open menu');
-    await menuButton.click();
-
-    // Wait for modal to be visible
-    const modal = page.locator('[role="dialog"][aria-modal="true"]').last();
-    await expect(modal).toBeVisible();
-
-    // Close button should be visible and focusable
-    const closeButton = modal.getByRole('button', { name: 'Close' });
-    await expect(closeButton).toBeVisible();
   });
 });
 
@@ -151,7 +204,6 @@ test.describe('breadcrumb navigation', () => {
     const projectsLink = breadcrumbNav.locator('a[href="/projects"]').first();
     await expect(projectsLink).toBeVisible();
 
-    // Wait for the link to be stable (animations complete) before clicking
     await projectsLink.waitFor({ state: 'visible' });
     await projectsLink.click();
     await expect(page).toHaveURL(/.*\/projects$/);

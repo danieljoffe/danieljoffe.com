@@ -131,6 +131,37 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.keyboardNavigableDataTables]?.date ?? '',
       author,
     },
+    [blogSlugs.importTypeCircularDependency]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.importTypeCircularDependency].title,
+      description:
+        blogRecords[blogSlugs.importTypeCircularDependency].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.importTypeCircularDependency]?.date ?? '',
+      author,
+    },
+    [blogSlugs.mobileBottomNavZIndex]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.mobileBottomNavZIndex].title,
+      description: blogRecords[blogSlugs.mobileBottomNavZIndex].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.mobileBottomNavZIndex]?.date ?? '',
+      author,
+    },
+    [blogSlugs.gracefulDegradationThirdPartyEmbeds]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline:
+        blogRecords[blogSlugs.gracefulDegradationThirdPartyEmbeds].title,
+      description:
+        blogRecords[blogSlugs.gracefulDegradationThirdPartyEmbeds].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.gracefulDegradationThirdPartyEmbeds]?.date ??
+        '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {

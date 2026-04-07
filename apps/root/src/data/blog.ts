@@ -12,6 +12,10 @@ export const blogSlugs = {
   accessibleDropdownKeyboardNav: 'accessible-dropdown-keyboard-nav',
   toastPauseOnHover: 'toast-pause-on-hover',
   keyboardNavigableDataTables: 'keyboard-navigable-data-tables',
+  importTypeCircularDependency: 'import-type-circular-dependency',
+  mobileBottomNavZIndex: 'mobile-bottom-nav-z-index',
+  gracefulDegradationThirdPartyEmbeds:
+    'graceful-degradation-third-party-embeds',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

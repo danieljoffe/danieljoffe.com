@@ -1,0 +1,108 @@
+export const metadata = {
+  title: 'Designing a Mobile Bottom Nav That Plays Nice with FABs and Sheets',
+  date: '2026-04-06',
+  excerpt:
+    'The z-index choreography behind adding a fixed bottom bar without breaking scroll-to-top, table-of-contents, and bottom sheet overlays.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['CSS', 'Mobile', 'Accessibility', 'React'],
+  slug: 'mobile-bottom-nav-z-index',
+  type: 'blog',
+  topic: 'CSS Architecture',
+};
+
+## The Layering Problem
+
+Adding a fixed bottom navigation bar to a mobile app sounds simple. But
+this site already had two fixed-position elements at the bottom of the
+screen: a scroll-to-top FAB on the right and a table-of-contents FAB on
+the left. Both sat at `bottom: 1.5rem` and `z-index: 50`.
+
+Drop a `h-14` fixed bottom bar at `z-index: 50` and both buttons
+disappear behind it. Tap where the scroll-to-top button should be and
+you're hitting the nav bar instead.
+
+## The Z-Index Stack
+
+The fix required defining a deliberate stacking order — not just "make it
+higher." We settled on three layers:
+
+| Layer      | z-index | Elements                          |
+| ---------- | ------- | --------------------------------- |
+| FABs       | 40      | ScrollToTop, ToC trigger          |
+| Navigation | 50      | Bottom bar, backdrop              |
+| Sheets     | 51      | ToC bottom sheet, More menu sheet |
+
+FABs sit below the nav bar. They're secondary actions — you can always
+scroll to find the content, but you always need the nav. Sheets that
+slide up from the bottom need to cover the nav bar, so they get `z-51`.
+
+```tsx
+// ScrollToTop — z-40, raised above nav on mobile
+'fixed bottom-20 md:bottom-6 right-6 z-40 ...';
+
+// Bottom nav bar — z-50
+'fixed bottom-0 left-0 right-0 z-50 bg-surface/95 ...';
+
+// ToC bottom sheet — z-51, covers nav when open
+'fixed bottom-0 left-0 right-0 z-51 bg-surface ...';
+```
+
+## The Responsive Escape Hatch
+
+The bottom nav only exists on mobile (`md:hidden`). Desktop has a
+traditional sticky top bar. So FABs need different positioning per
+breakpoint:
+
+```tsx
+className = 'fixed bottom-20 md:bottom-6 right-6 z-40 ...';
+```
+
+`bottom-20` (5rem) clears the `h-14` (3.5rem) nav bar plus breathing
+room on mobile. `md:bottom-6` restores the original position on desktop
+where there's no bottom bar. One utility class, no JavaScript.
+
+## Reusing the Sheet Pattern
+
+The site already had a bottom sheet for the table of contents — a
+`translate-y` transition that slides up from off-screen:
+
+```tsx
+<div
+  className={cn(
+    'fixed bottom-0 left-0 right-0 z-51 ...',
+    isOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
+  )}
+>
+```
+
+The "More" menu in the new bottom nav uses the exact same pattern:
+`translate-y-0` when open, `translate-y-full pointer-events-none` when
+closed. Same focus trap hook, same Escape key handler, same body scroll
+lock. Consistency in animation patterns means users build a mental model
+once and apply it everywhere.
+
+## Accessibility Considerations
+
+A fixed bottom bar introduces several a11y requirements:
+
+- **`aria-current="page"`** on the active nav link, not just a color change
+- **`aria-expanded`** on the More button to communicate sheet state
+- **`aria-modal="true"`** on the sheet dialog
+- **Focus trap** inside the sheet when open (via `useFocusTrap` hook)
+- **Escape key** closes the sheet and returns focus to the More button
+- **Body scroll lock** prevents background scrolling while the sheet is open
+
+The More button's label also changes dynamically:
+
+```tsx
+aria-label={sheetOpen ? 'Close more menu' : 'Open more menu'}
+```
+
+## The Takeaway
+
+Fixed-position elements are easy to add individually. The complexity is in
+how they interact. Defining a z-index stack as a deliberate system — not
+ad-hoc increments — prevents the "just make it higher" escalation that
+eventually leads to `z-index: 9999`. Three layers with clear ownership
+is all this site needs.

@@ -1,9 +1,5 @@
 {
   "mcpServers": {
-    "tailwindcss-server": {
-      "command": "npx",
-      "args": ["-y", "tailwindcss-mcp-server"]
-    },
     "playwright": {
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
@@ -15,6 +11,10 @@
     "lighthouse": {
       "command": "npx",
       "args": ["-y", "@danielsogl/lighthouse-mcp@latest"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
     }
   }
 }

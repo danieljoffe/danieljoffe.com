@@ -58,7 +58,10 @@ export default async function RootLayout({ children }: WithChildren) {
           Skip to main content
         </a>
         <AppContext>{children}</AppContext>
-        <Footer />
+        {/* pb-16 compensates for the fixed mobile bottom nav bar */}
+        <div className='pb-16 md:pb-0'>
+          <Footer />
+        </div>
         <Scripts />
         <TestingOnly />
       </body>

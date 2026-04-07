@@ -16,6 +16,7 @@ concurrency:
 jobs:
   check-source:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check source branch
         if: github.head_ref != 'develop'
@@ -33,6 +34,7 @@ jobs:
     name: Vercel Preview
     needs: check-source
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: preview
       url: ${{ steps.deploy.outputs.url }}
@@ -46,41 +48,18 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
 
-      - name: Comment Preview URL
-        uses: actions/github-script@v8
+      - uses: ./.github/actions/preview-comment
         with:
-          script: |
-            const marker = '<!-- vercel-preview-url -->';
-            const body = `${marker}\n**Preview deployed:** ${{ steps.deploy.outputs.url }}\n\n_Updated: ${new Date().toISOString()}_`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const existing = comments.find(c => c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+          label: Preview deployed
+          url: ${{ steps.deploy.outputs.url }}
+          marker: '<!-- vercel-preview-url -->'
+          github-token: ${{ github.token }}
 
   storybook-preview:
     name: Storybook Preview
     needs: check-source
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
 
@@ -91,33 +70,9 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_STORYBOOK_PROJECT_ID }}
 
-      - name: Comment Storybook Preview URL
-        uses: actions/github-script@v8
+      - uses: ./.github/actions/preview-comment
         with:
-          script: |
-            const marker = '<!-- storybook-preview-url -->';
-            const body = `${marker}\n**Storybook preview:** ${{ steps.deploy-storybook.outputs.url }}\n\n_Updated: ${new Date().toISOString()}_`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const existing = comments.find(c => c.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+          label: Storybook preview
+          url: ${{ steps.deploy-storybook.outputs.url }}
+          marker: '<!-- storybook-preview-url -->'
+          github-token: ${{ github.token }}

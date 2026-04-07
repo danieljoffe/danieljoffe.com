@@ -21,6 +21,7 @@ jobs:
     name: CI Checks
     if: github.ref == 'refs/heads/main' && github.event.inputs.confirm == 'deploy'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
@@ -36,6 +37,7 @@ jobs:
     name: Production Deploy
     needs: ci
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: production
       url: ${{ steps.deploy.outputs.url }}
@@ -63,6 +65,7 @@ jobs:
     name: Storybook Production Deploy
     needs: ci
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
