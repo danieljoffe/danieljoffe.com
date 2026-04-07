@@ -1,0 +1,110 @@
+export const metadata = {
+  title: 'A Favicon Pipeline from One SVG',
+  date: '2026-04-06',
+  excerpt:
+    'A 64-line bash script that generates 11 SEO-ready images from a single SVG — favicon.ico, apple-touch-icon, android-chrome, and mstile — using rsvg-convert and ImageMagick.',
+  author: 'Daniel Joffe',
+  category: 'Developer Tooling',
+  tags: ['Tooling', 'SEO', 'Bash', 'DevOps'],
+  slug: 'favicon-pipeline-one-svg',
+  type: 'blog',
+  topic: 'Developer Tooling',
+};
+
+## The Problem with Favicon Generators
+
+Every time we updated the site logo, regenerating favicons meant uploading
+an SVG to a web tool, downloading a zip, extracting it, and manually
+copying files into `public/`. The output was inconsistent — different tools
+produce different compression, different background handling, different
+size matrices. And none of them lived in version control.
+
+We needed a deterministic, local pipeline: one SVG in, all the meta images
+out.
+
+## What Browsers Actually Need
+
+The favicon landscape has consolidated. Here's what modern browsers and
+platforms actually request:
+
+| File                     | Size       | Used By                      |
+| ------------------------ | ---------- | ---------------------------- |
+| `favicon.svg`            | Vector     | Modern browsers (preferred)  |
+| `favicon.ico`            | 16+32+48px | Legacy browsers, bookmarks   |
+| `favicon-16x16.png`      | 16x16      | Browser tabs                 |
+| `favicon-32x32.png`      | 32x32      | Browser tabs (Retina)        |
+| `favicon-48x48.png`      | 48x48      | Windows shortcuts            |
+| `favicon-96x96.png`      | 96x96      | Google TV, high-DPI contexts |
+| `favicon.png`            | 512x512    | PWA fallback                 |
+| `apple-touch-icon.png`   | 180x180    | iOS home screen              |
+| `android-chrome-192x192` | 192x192    | Android home screen          |
+| `android-chrome-512x512` | 512x512    | Android splash screen        |
+| `mstile-150x150.png`     | 150x150    | Windows tiles                |
+
+That's 11 files from one source SVG. The `favicon.ico` is actually three
+PNGs bundled into one file — 16, 32, and 48px — so the browser can pick
+the best size for the context.
+
+## The Script
+
+The pipeline uses two tools: `rsvg-convert` for SVG-to-PNG rasterization
+(from the `librsvg` package) and ImageMagick's `magick` for combining
+PNGs into a multi-resolution `.ico`. Both are available via Homebrew.
+
+The core loop generates each PNG size:
+
+```bash
+SIZES=(16 32 48 96 150 180 192 512)
+
+for size in "${SIZES[@]}"; do
+  rsvg-convert -w "$size" -h "$size" \
+    --background-color=transparent \
+    "$SOURCE" -o "${TMPDIR}/${size}.png"
+done
+```
+
+Then we map the temporary files to their final names:
+
+```bash
+cp "${TMPDIR}/16.png"  "${OUTPUT}/favicon-16x16.png"
+cp "${TMPDIR}/32.png"  "${OUTPUT}/favicon-32x32.png"
+cp "${TMPDIR}/180.png" "${OUTPUT}/apple-touch-icon.png"
+cp "${TMPDIR}/192.png" "${OUTPUT}/android-chrome-192x192.png"
+# ...
+```
+
+The `.ico` combines three sizes into one file — this is what makes it
+display crisply across different contexts:
+
+```bash
+magick "${TMPDIR}/16.png" "${TMPDIR}/32.png" "${TMPDIR}/48.png" \
+  "${OUTPUT}/favicon.ico"
+```
+
+Finally, we copy the source SVG as `favicon.svg` for browsers that
+support it. Modern browsers prefer the SVG when both are available — it
+scales perfectly at any resolution and supports dark mode via
+`prefers-color-scheme` media queries in the SVG itself.
+
+## Making It Reusable
+
+The script takes two arguments — the source SVG and an optional output
+directory (defaulting to `apps/root/public/`):
+
+```bash
+./scripts/generate-favicons.sh ~/Downloads/logo.svg
+./scripts/generate-favicons.sh icon.svg ./other-app/public/
+```
+
+We also wired it up as a Claude Code skill, so regenerating favicons
+after a logo change is a one-command operation. The skill validates that
+`rsvg-convert` and `magick` are installed, runs the script, and reports
+which files were generated.
+
+## The Takeaway
+
+Favicon generation is a solved problem that doesn't need a web service.
+Two CLI tools, 64 lines of bash, and a clear mapping from sizes to
+filenames. The script lives in version control alongside the source SVG,
+so the pipeline is reproducible and the output is auditable. When the logo
+changes — and it will — we run one command instead of visiting a website.

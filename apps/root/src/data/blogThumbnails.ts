@@ -278,4 +278,55 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'LGF~o]_N~q%M%MRjIUj[-;WBD%WB',
     },
   },
+  [blogSlugs.hydrationMismatchUseSyncedState]: {
+    slug: blogSlugs.hydrationMismatchUseSyncedState,
+    title: 'Fixing Hydration Mismatches Without Suppressing Them',
+    description:
+      'A three-line useSyncExternalStore hook that defers client-only state so server and client renders agree — no suppressHydrationWarning needed.',
+    link: {
+      label: 'Hydration Mismatch Fix',
+      href: `${BLOG_LINK.href}/${blogSlugs.hydrationMismatchUseSyncedState}`,
+    },
+    cover: {
+      alt: 'Two puzzle pieces fitting together on a clean surface',
+      src: '/photo-1494412574643-ff11b0a5eb95',
+      origin: `${UNSPLASH_URL}/photos/two-white-and-red-dices-FO7bKvgETgQ`,
+      creator: '@brett_jordan',
+      blurHash: 'LGF~o]_N~q%M%MRjIUj[-;WBD%WB',
+    },
+  },
+  [blogSlugs.mobileNavA11yBottomSheet]: {
+    slug: blogSlugs.mobileNavA11yBottomSheet,
+    title: 'Mobile Nav Accessibility: The Bottom Sheet Dialog Pattern',
+    description:
+      'A nav redesign passed code review but failed 6 E2E tests on mobile — here is what axe caught and how aria-hidden, inert, and proper dialog semantics fixed it.',
+    link: {
+      label: 'Mobile Nav A11y',
+      href: `${BLOG_LINK.href}/${blogSlugs.mobileNavA11yBottomSheet}`,
+    },
+    cover: {
+      alt: 'A smartphone displaying a mobile application interface',
+      src: '/photo-1512941937669-90a1b58e7e9c',
+      origin: `${UNSPLASH_URL}/photos/person-holding-space-gray-iphone-6-B5PBTIg1wts`,
+      creator: '@freestocks',
+      blurHash: 'L15E{J-;00Rj~q%M-;WB00WBD%of',
+    },
+  },
+  [blogSlugs.faviconPipelineOneSvg]: {
+    slug: blogSlugs.faviconPipelineOneSvg,
+    title: 'A Favicon Pipeline from One SVG',
+    description:
+      'A 64-line bash script that generates 11 SEO-ready images from a single SVG — favicon.ico, apple-touch-icon, android-chrome, and mstile — using rsvg-convert and ImageMagick.',
+    link: {
+      label: 'Favicon Pipeline',
+      href: `${BLOG_LINK.href}/${blogSlugs.faviconPipelineOneSvg}`,
+    },
+    cover: {
+      alt: 'A terminal window showing command-line output',
+      src: '/photo-1629654297299-c8506221ca97',
+      origin: `${UNSPLASH_URL}/photos/a-computer-screen-with-a-bunch-of-text-on-it-m_HRfLhgABo`,
+      creator: '@garrettsears',
+      blurHash: 'L24o;G9F00D%~q%MRjRj00of-;WB',
+    },
+  },
 };

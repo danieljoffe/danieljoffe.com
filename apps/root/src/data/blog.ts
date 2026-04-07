@@ -16,6 +16,9 @@ export const blogSlugs = {
   mobileBottomNavZIndex: 'mobile-bottom-nav-z-index',
   gracefulDegradationThirdPartyEmbeds:
     'graceful-degradation-third-party-embeds',
+  hydrationMismatchUseSyncedState: 'hydration-mismatch-use-synced-state',
+  mobileNavA11yBottomSheet: 'mobile-nav-a11y-bottom-sheet',
+  faviconPipelineOneSvg: 'favicon-pipeline-one-svg',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

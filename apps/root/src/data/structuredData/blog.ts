@@ -162,6 +162,34 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         '',
       author,
     },
+    [blogSlugs.hydrationMismatchUseSyncedState]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.hydrationMismatchUseSyncedState].title,
+      description:
+        blogRecords[blogSlugs.hydrationMismatchUseSyncedState].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.hydrationMismatchUseSyncedState]?.date ?? '',
+      author,
+    },
+    [blogSlugs.mobileNavA11yBottomSheet]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.mobileNavA11yBottomSheet].title,
+      description: blogRecords[blogSlugs.mobileNavA11yBottomSheet].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.mobileNavA11yBottomSheet]?.date ?? '',
+      author,
+    },
+    [blogSlugs.faviconPipelineOneSvg]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.faviconPipelineOneSvg].title,
+      description: blogRecords[blogSlugs.faviconPipelineOneSvg].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.faviconPipelineOneSvg]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
