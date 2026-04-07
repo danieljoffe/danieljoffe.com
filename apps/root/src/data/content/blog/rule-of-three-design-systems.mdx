@@ -2,7 +2,7 @@ export const metadata = {
   title: 'The Rule of Three in Design Systems',
   date: '2026-04-05',
   excerpt:
-    'When to extract a repeated pattern into a shared abstraction — and when to leave it inline. A practical framework from auditing typography across a portfolio site.',
+    'When to extract a repeated pattern into a shared abstraction, and when to leave it inline. A practical framework from auditing typography across a portfolio site.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: ['Design Systems', 'Architecture', 'React', 'Refactoring'],
@@ -18,7 +18,7 @@ string, paste it into a second file, and your refactoring instinct fires.
 "This should be a component."
 
 But premature extraction creates a different kind of debt. A shared component
-with one or two consumers is harder to change than inline code — you have to
+with one or two consumers is harder to change than inline code. You have to
 reason about all the places it's used, maintain its props API, and write tests
 for it. If the two usages later diverge (and they often do), you're stuck
 maintaining an abstraction that serves neither well.
@@ -53,7 +53,7 @@ The findings split cleanly into two categories:
 | Breadcrumb current page       | 1 component | Leave inline |
 
 The one-off patterns are specific to their context. Extracting "FAQ question
-text" into a variant would create a variant used by exactly one file — overhead
+text" into a variant would create a variant used by exactly one file. That's overhead
 with no benefit.
 
 ## When the Rule Bends
@@ -61,7 +61,7 @@ with no benefit.
 There are cases where extracting before three occurrences makes sense:
 
 1. **Safety-critical patterns**: Form error messages (`text-sm text-error`)
-   appeared twice but serve a clear a11y contract — consistent error display
+   appeared twice but serve a clear a11y contract. Consistent error display
    matters. We extracted `<Text variant="error">`.
 
 2. **Cross-boundary patterns**: A pattern used once in the app and once in

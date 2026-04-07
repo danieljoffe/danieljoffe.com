@@ -81,7 +81,7 @@ other external packages but before `@/` app-internal imports. This creates
 a clear visual hierarchy: node → npm packages → monorepo libraries → app code
 → local files.
 
-We intentionally omit `alphabetize` — forcing alphabetical order within groups
+We intentionally omit `alphabetize`. Forcing alphabetical order within groups
 adds friction without meaningful readability gains.
 
 ## The ESLint 10 Compatibility Problem
@@ -118,7 +118,7 @@ const nextConfigs = nextCoreWebVitals.map(cfg => {
 ## Fixing 77 Violations
 
 After the config was stable, the initial lint run found 77 errors. 66 were
-auto-fixable with `--fix` — the rule reorders import statements automatically.
+auto-fixable with `--fix`. The rule reorders import statements automatically.
 
 The remaining 11 were all in test files with a common pattern:
 

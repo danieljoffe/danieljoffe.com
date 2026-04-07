@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Pause-on-Hover: Making Toast Notifications Respect the User',
   date: '2026-04-06',
   excerpt:
-    'Adding aria-live regions and pause-on-hover to a Toast system — where screen readers and sighted users have conflicting timing needs.',
+    'Adding aria-live regions and pause-on-hover to a Toast system. Screen readers and sighted users have conflicting timing needs.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
   tags: ['React', 'Accessibility', 'UX', 'Design Systems'],
@@ -16,7 +16,7 @@ export const metadata = {
 A toast notification has two jobs that fight each other. For sighted users,
 it should disappear after a few seconds so it doesn't block the UI. For
 screen reader users, `aria-live="polite"` means the announcement waits
-until the user finishes their current task — but if the toast has already
+until the user finishes their current task, but if the toast has already
 been removed from the DOM by then, there's nothing left to announce.
 
 Our Toast component had neither. No ARIA roles, no auto-dismiss strategy,
@@ -27,9 +27,9 @@ appeared and vanished.
 
 Not all toasts deserve the same urgency. The ARIA spec gives us two options:
 
-- **`role="status"`** with `aria-live="polite"` — for success and info
+- **`role="status"`** with `aria-live="polite"`: for success and info
   toasts. The screen reader waits for a natural pause before announcing.
-- **`role="alert"`** with implicit `aria-live="assertive"` — for error and
+- **`role="alert"`** with implicit `aria-live="assertive"`: for error and
   warning toasts. The screen reader interrupts whatever it's doing.
 
 The distinction matters. An "email sent" confirmation can wait. A "payment

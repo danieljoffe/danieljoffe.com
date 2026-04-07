@@ -3,7 +3,7 @@ export const metadata = {
     'From Wrapper Hell to a Single Source of Truth: Consolidating a Design System',
   date: '2026-04-04',
   excerpt:
-    'How I eliminated 2,000 lines of duplication by promoting kit wrappers into a shared-ui component library, enforcing typography variants, and establishing layout primitives with sensible defaults.',
+    'How promoting kit wrappers into a shared-ui component library, enforcing typography variants, and establishing layout primitives with sensible defaults eliminates 2,000 lines of duplication.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: ['React', 'Design Systems', 'TypeScript', 'Tailwind CSS', 'Monorepo'],
@@ -21,7 +21,7 @@ additions. The result was a layered mess:
 
 - **Typography wrappers**: `kit/Heading.tsx` imported `shared-ui/Heading`, added
   7 app variants (`hero`, `subtitle`, `mdxH1`–`mdxH4`), and duplicated the entire
-  rendering logic — polymorphic tag selection, `cn()` class merging, variant-to-style
+  rendering logic: polymorphic tag selection, `cn()` class merging, variant-to-style
   mapping. `kit/Text.tsx` did the same for a single variant (`subtitle`).
 - **Layout wrappers**: `kit/PageLayout.tsx` wrapped `shared-ui/PageContainer` to
   add `as='main'` and spacing. `kit/Section.tsx` wrapped `shared-ui/Section` to
@@ -38,14 +38,14 @@ had to know which layer owned which variant. Pages mixed `@/components/kit` and
 
 Before writing any code, I established three rules:
 
-1. **shared-ui is the single source of truth** for all reusable UI primitives —
+1. **shared-ui is the single source of truth** for all reusable UI primitives:
    typography, layout, and generic components. It depends only on React and
    Tailwind CSS. No Next.js APIs.
 2. **No wrappers that only add variants**. If a component needs more variants,
    add them to shared-ui directly. Kit exists only for components that compose
    shared-ui with Next.js-specific APIs (`Link`, `useRouter`, `next/image`).
 3. **Defaults should match the dominant usage pattern**. If 15 out of 15 pages
-   use the same spacing, bake it in as the default — don't make every consumer
+   use the same spacing, bake it in as the default. Don't make every consumer
    repeat the same props.
 
 ## The Typography System
@@ -172,11 +172,11 @@ components fell into two categories:
 
 ### Moved to shared-ui (no Next.js deps)
 
-- **Kbd** — keyboard shortcut badge
-- **GridBg** — decorative CSS grid background
-- **StructuredData** — JSON-LD script injector
-- **SectionLabel** — icon + label + decorative rule
-- **CTACard** — card with heading, description, and action slot
+- **Kbd**: keyboard shortcut badge
+- **GridBg**: decorative CSS grid background
+- **StructuredData**: JSON-LD script injector
+- **SectionLabel**: icon + label + decorative rule
+- **CTACard**: card with heading, description, and action slot
 
 Each was a pure React + Tailwind component that had been in kit only by
 convention. Moving them to shared-ui made them available to any app in
@@ -184,20 +184,20 @@ the monorepo.
 
 ### Kept in kit (Next.js dependent)
 
-- **PostCard** — uses `next/link` for client-side navigation
-- **CoverImage** — uses `next/image` for optimization
-- **CompanyLogo** — uses `next/image`
+- **PostCard**: uses `next/link` for client-side navigation
+- **CoverImage**: uses `next/image` for optimization
+- **CompanyLogo**: uses `next/image`
 
 These genuinely compose Next.js APIs with shared-ui primitives. That's
 what kit is for.
 
 ### Deleted entirely
 
-- **kit/Heading.tsx**, **kit/Text.tsx** — replaced by shared-ui variants
-- **kit/PageLayout.tsx**, **kit/Section.tsx** — replaced by shared-ui with better defaults
-- **kit/ErrorAlert.tsx** — replaced by `<Alert variant='error'>` + inline retry button
-- **kit/Spinner.tsx** — direct shared-ui import (`label` → `aria-label`)
-- **ClientBadge**, **ClientSkeleton** — React 19 ref prop pattern eliminated the
+- **kit/Heading.tsx**, **kit/Text.tsx**: replaced by shared-ui variants
+- **kit/PageLayout.tsx**, **kit/Section.tsx**: replaced by shared-ui with better defaults
+- **kit/ErrorAlert.tsx**: replaced by `<Alert variant='error'>` + inline retry button
+- **kit/Spinner.tsx**: direct shared-ui import (`label` → `aria-label`)
+- **ClientBadge**, **ClientSkeleton**: React 19 ref prop pattern eliminated the
   need for client wrappers around server-compatible components
 
 ## Enforcement
@@ -209,10 +209,10 @@ at lint time, not in code review.
 
 ## Results
 
-- **176 files changed**, -4,282 / +2,273 lines — a net reduction of ~2,000 lines
+- **176 files changed**, -4,282 / +2,273 lines. A net reduction of ~2,000 lines
 - **31 consumer files** updated to import directly from shared-ui
 - **11 kit wrapper files** deleted
-- **Zero new dependencies** — shared-ui still only requires React + Tailwind
+- **Zero new dependencies**: shared-ui still only requires React + Tailwind
 - All 1,266 unit tests pass. All 695 E2E tests pass. Zero hydration errors.
 
 ## Takeaways

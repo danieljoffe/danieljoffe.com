@@ -24,7 +24,7 @@ you're hitting the nav bar instead.
 
 ## The Z-Index Stack
 
-The fix required defining a deliberate stacking order — not just "make it
+The fix required defining a deliberate stacking order, not just "make it
 higher." We settled on three layers:
 
 | Layer      | z-index | Elements                          |
@@ -33,7 +33,7 @@ higher." We settled on three layers:
 | Navigation | 50      | Bottom bar, backdrop              |
 | Sheets     | 51      | ToC bottom sheet, More menu sheet |
 
-FABs sit below the nav bar. They're secondary actions — you can always
+FABs sit below the nav bar. They're secondary actions: you can always
 scroll to find the content, but you always need the nav. Sheets that
 slide up from the bottom need to cover the nav bar, so they get `z-51`.
 
@@ -64,7 +64,7 @@ where there's no bottom bar. One utility class, no JavaScript.
 
 ## Reusing the Sheet Pattern
 
-The site already had a bottom sheet for the table of contents — a
+The site already had a bottom sheet for the table of contents, a
 `translate-y` transition that slides up from off-screen:
 
 ```tsx

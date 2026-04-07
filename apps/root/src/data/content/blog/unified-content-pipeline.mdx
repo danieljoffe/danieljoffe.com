@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Building a Unified Content Pipeline with Next.js and MDX',
   date: '2026-04-03',
   excerpt:
-    'How I refactored a portfolio site from duplicated per-type data files to a single content registry, cutting the cost of adding new content types from 6+ files to 3.',
+    'How a single content registry replaces duplicated per-type data files, cutting the cost of adding new content types from 6+ files to 3.',
   author: 'Daniel Joffe',
   category: 'Architecture',
   tags: ['Next.js', 'MDX', 'TypeScript', 'Content Architecture'],
@@ -24,13 +24,13 @@ the duplication.
 Instead of maintaining parallel data pipelines, I created a **single content
 registry** that serves as the source of truth for all content queries:
 
-- `getContentByType('project')` — ordered array for listing pages
-- `getContentBySlug('blog', 'my-post')` — single entry for detail pages
-- `getContentSlugs('experience')` — for `generateStaticParams`
-- `getContentPagination('blog', slug)` — circular prev/next navigation
+- `getContentByType('project')`: ordered array for listing pages
+- `getContentBySlug('blog', 'my-post')`: single entry for detail pages
+- `getContentSlugs('experience')`: for `generateStaticParams`
+- `getContentPagination('blog', slug)`: circular prev/next navigation
 
 The registry is populated at module load time from the existing per-type data
-files, so the migration was zero-risk — existing pages continued to work
+files, so the migration was zero-risk. Existing pages continued to work
 identically while the new abstraction layer was built on top.
 
 ## Type-Safe Content Configs
@@ -58,4 +58,4 @@ simple config lookup, making the system extensible without code changes.
 - Adding a new blog post: **3 files** instead of 6+
 - Zero runtime changes to existing pages
 - 18 new registry tests covering all query paths
-- Type-safe throughout — `ContentType` union prevents typos
+- Type-safe throughout: `ContentType` union prevents typos
