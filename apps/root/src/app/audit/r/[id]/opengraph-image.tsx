@@ -74,7 +74,7 @@ export default async function OgImage({
       >
         <span
           style={{
-            fontFamily: 'Fraunces',
+            fontFamily: 'Inter',
             fontSize: '52px',
             fontWeight: 700,
             color: '#ffffff',
@@ -173,7 +173,7 @@ export default async function OgImage({
 
         <span
           style={{
-            fontFamily: 'Fraunces',
+            fontFamily: 'Inter',
             fontSize: '40px',
             fontWeight: 700,
             color: '#ffffff',
@@ -256,7 +256,7 @@ export default async function OgImage({
                 borderRadius: '20px',
                 backgroundColor: grade.color,
                 fontSize: '56px',
-                fontFamily: 'Fraunces',
+                fontFamily: 'Inter',
                 fontWeight: 700,
                 color: '#ffffff',
               }}
