@@ -21,6 +21,7 @@ export interface ToastItem {
   variant: ToastVariant;
   title: string;
   description?: string;
+  duration?: number;
 }
 
 export interface ToastContextType {
@@ -47,7 +48,8 @@ const iconColors: Record<ToastVariant, string> = {
   error: 'text-error',
 };
 
-const AUTO_DISMISS_MS = 4000;
+const DEFAULT_DISMISS_MS = 4000;
+let toastCounter = 0;
 
 function ToastCard({
   toast: t,
@@ -56,8 +58,9 @@ function ToastCard({
   toast: ToastItem;
   onDismiss: (id: string) => void;
 }) {
+  const duration = t.duration ?? DEFAULT_DISMISS_MS;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const remainingRef = useRef(AUTO_DISMISS_MS);
+  const remainingRef = useRef(duration);
   const startRef = useRef(Date.now());
   const [dismissing, setDismissing] = useState(false);
 
@@ -132,7 +135,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const addToast = useCallback((params: Omit<ToastItem, 'id'>) => {
-    const id = Math.random().toString(36).slice(2);
+    const id = `toast-${++toastCounter}`;
     setToasts(prev => [...prev, { ...params, id }]);
   }, []);
 
