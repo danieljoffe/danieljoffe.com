@@ -12,6 +12,8 @@ interface UseAdminTableFetchOptions<S extends string> {
   pageSize?: number;
   /** Key in the API response that holds the data array (e.g. 'scans', 'leads') */
   dataKey: string;
+  /** Additional query params to include (e.g. filters) */
+  extraParams?: Record<string, string>;
 }
 
 export function useAdminTableFetch<T, S extends string>({
@@ -20,6 +22,7 @@ export function useAdminTableFetch<T, S extends string>({
   defaultSort,
   pageSize = 20,
   dataKey,
+  extraParams,
 }: UseAdminTableFetchOptions<S>) {
   const [data, setData] = useState<T[]>([]);
   const [total, setTotal] = useState(0);
@@ -39,6 +42,7 @@ export function useAdminTableFetch<T, S extends string>({
         pageSize: String(pageSize),
         sort,
         order,
+        ...extraParams,
       });
       const res = await fetch(`${endpoint}?${params}`, {
         headers: { 'x-admin-password': password },
@@ -51,7 +55,7 @@ export function useAdminTableFetch<T, S extends string>({
     } finally {
       setLoading(false);
     }
-  }, [endpoint, password, page, pageSize, sort, order, dataKey]);
+  }, [endpoint, password, page, pageSize, sort, order, dataKey, extraParams]);
 
   useEffect(() => {
     fetchData();

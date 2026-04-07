@@ -24,7 +24,7 @@
         "cwd": "{workspaceRoot}"
       }
     },
-    "typecheck": {
+    "mypy": {
       "executor": "nx:run-commands",
       "options": {
         "command": "cd apps/job-api && poetry run mypy app/",

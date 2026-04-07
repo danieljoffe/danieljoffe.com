@@ -8,6 +8,10 @@ import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {
   onAuthenticated: (password: string) => void;
+  /** API endpoint to verify the password. Defaults to /api/audit/admin/verify */
+  verifyEndpoint?: string;
+  /** Heading shown in the gate form */
+  title?: string;
 }
 
 function formatCountdown(seconds: number): string {
@@ -16,7 +20,11 @@ function formatCountdown(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
+export default function PasswordGate({
+  onAuthenticated,
+  verifyEndpoint = '/api/audit/admin/verify',
+  title = 'Admin Dashboard',
+}: PasswordGateProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,7 +62,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/audit/admin/verify', {
+      const res = await fetch(verifyEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -84,7 +92,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
           <form onSubmit={handleSubmit}>
             <div className='flex flex-col gap-4'>
               <Heading variant='component' as='h2' className='text-center'>
-                Admin Dashboard
+                {title}
               </Heading>
               <Text variant='body' className='text-center'>
                 Enter the admin password to continue.
