@@ -80,10 +80,10 @@ if (timedOut && !isLoaded) {
 
 The fallback does three things right:
 
-1. **Explains what happened** — "couldn't load" is honest without being
+1. **Explains what happened**: "couldn't load" is honest without being
    technical
-2. **Provides an alternative** — the direct Calendly link always works
-3. **Tracks the event** — analytics tells you how often users hit the
+2. **Provides an alternative**: the direct Calendly link always works
+3. **Tracks the event**: analytics tells you how often users hit the
    fallback, which informs whether 8 seconds is the right timeout
 
 ## Lazy Loading the Embed
@@ -117,10 +117,10 @@ to it.
 
 Any time you embed a third-party widget that could be blocked:
 
-- **Calendly, Cal.com** — scheduling
-- **Typeform, Tally** — forms
-- **YouTube, Vimeo** — video
-- **Intercom, Drift** — chat widgets
+- **Calendly, Cal.com**: scheduling
+- **Typeform, Tally**: forms
+- **YouTube, Vimeo**: video
+- **Intercom, Drift**: chat widgets
 
 The pattern is always the same: set a timeout, show a fallback with a
 direct link, track how often it fires. If the fallback rate is high,

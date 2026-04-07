@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Documenting Design Tokens for Developer Experience',
   date: '2026-04-05',
   excerpt:
-    'Why a comprehensive theme token reference is part of the design system — not an afterthought — and how we documented 100+ tokens for a Tailwind CSS 4 component library.',
+    'A comprehensive theme token reference is part of the design system, not an afterthought. Here is how we document 100+ tokens for a Tailwind CSS 4 component library.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: [
@@ -72,7 +72,7 @@ Border colors:
 ```
 
 Each token includes light and dark mode values. Developers don't need to
-remember oklch values — they pick the semantic token that matches their intent.
+remember oklch values. They pick the semantic token that matches their intent.
 
 ### Typography Tokens
 
@@ -113,8 +113,8 @@ font-semibold` with margin reset. The body uses `text-sm text-text-secondary`."
 
 The README includes rules for adding new components:
 
-1. **No Next.js dependencies** — shared-ui depends only on React + Tailwind
-2. **Use `Heading`/`Text` for all typography** — no raw `text-*` + `font-*`
+1. **No Next.js dependencies**: shared-ui depends only on React + Tailwind
+2. **Use `Heading`/`Text` for all typography**: no raw `text-*` + `font-*`
 3. **Accept `ref` as a regular prop** (React 19 pattern, not `forwardRef`)
 4. **Accept `className` for style extensions** via `cn()` merging
 5. **Export types alongside components** from the barrel index
@@ -126,13 +126,13 @@ state we started in.
 
 After shipping the comprehensive README:
 
-- **Onboarding friction dropped** — new components follow documented patterns
+- **Onboarding friction dropped**: new components follow documented patterns
   instead of cargo-culting from existing code
-- **Token adoption increased** — developers use `text-text-tertiary` instead
+- **Token adoption increased**: developers use `text-text-tertiary` instead
   of guessing gray values
-- **PR reviews got faster** — reviewers point to the docs instead of
+- **PR reviews got faster**: reviewers point to the docs instead of
   explaining conventions from memory
 
 Documentation isn't a nice-to-have. It's the interface between your design
 decisions and the developers who implement them. Without it, every decision
-lives in one person's head — and that doesn't scale.
+lives in one person's head, and that doesn't scale.

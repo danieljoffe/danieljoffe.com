@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Building an Auto-Generated Table of Contents with Scroll Spy',
   date: '2026-04-04',
   excerpt:
-    'How I built a responsive, accessible table of contents that extracts headings from rendered MDX, tracks reading position with IntersectionObserver, and adapts between a sticky sidebar and a mobile bottom sheet.',
+    'How a responsive, accessible table of contents extracts headings from rendered MDX, tracks reading position with IntersectionObserver, and adapts between a sticky sidebar and a mobile bottom sheet.',
   author: 'Daniel Joffe',
   category: 'Frontend Engineering',
   tags: [
@@ -60,11 +60,11 @@ function useHeadings() {
 
 Key decisions here:
 
-- **h2 and h3 only** — h1 is the page title (already visible), and h4+ adds
+- **h2 and h3 only**: h1 is the page title (already visible), and h4+ adds
   noise to navigation
-- **`queueMicrotask`** — ensures the DOM scan happens after MDX components have
+- **`queueMicrotask`**: ensures the DOM scan happens after MDX components have
   fully rendered, avoiding race conditions with hydration
-- **`el.id` filter** — MDX heading plugins auto-generate IDs; headings without
+- **`el.id` filter**: MDX heading plugins auto-generate IDs; headings without
   IDs are excluded since they can't be scroll targets
 
 ## Scroll Spy with IntersectionObserver
@@ -99,7 +99,7 @@ The `rootMargin` is the secret sauce:
 
 - **`-80px` top** accounts for the sticky nav bar height
 - **`-60%` bottom** means only the top 40% of the viewport triggers activation,
-  so the "active" heading matches where the reader's eyes actually are — not
+  so the active heading matches where the reader's eyes actually are, not
   whatever heading happens to be at the bottom of the screen
 
 This is a zero-cost approach at runtime. No `requestAnimationFrame` loops, no
@@ -128,11 +128,11 @@ opens a bottom sheet that slides up to 60% of the viewport height.
 
 The mobile sheet required several accessibility considerations:
 
-- **Focus trap** — tabbing cycles within the sheet while it's open
-- **Body scroll lock** — `overflow: hidden` on the body prevents background scrolling
-- **Escape key** — closes the sheet
-- **Backdrop click** — closes the sheet
-- **Reduced motion** — transitions respect `prefers-reduced-motion`
+- **Focus trap**: tabbing cycles within the sheet while it's open
+- **Body scroll lock**: `overflow: hidden` on the body prevents background scrolling
+- **Escape key**: closes the sheet
+- **Backdrop click**: closes the sheet
+- **Reduced motion**: transitions respect `prefers-reduced-motion`
 
 ```tsx
 // Focus trap: cycle focus within the sheet
@@ -151,7 +151,7 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 ```
 
-Both implementations share the same `TocList` component — the only difference is
+Both implementations share the same `TocList` component. The only difference is
 the container and trigger mechanism.
 
 ## Smooth Scrolling with Accessibility
@@ -175,7 +175,7 @@ function scrollToHeading(id: string) {
 }
 ```
 
-This single check respects the user's OS-level motion preference — no custom
+This single check respects the user's OS-level motion preference. No custom
 setting needed.
 
 ## Integration with the Two-Column Layout
@@ -204,13 +204,13 @@ The TOC lives inside `PostBody`, which uses a flex layout to position it:
 
 A subtle but critical detail: the mobile TOC FAB is rendered _outside_ the
 `hidden lg:flex` container. An earlier version nested it inside, which meant the
-FAB was hidden on mobile — exactly when it was needed most.
+FAB was hidden on mobile, exactly when it was needed most.
 
 ## Results
 
 - **149 lines** of component code (single file, highly modular)
-- **Zero runtime overhead** — native IntersectionObserver, no polling
-- **Fully accessible** — focus trap, keyboard nav, reduced motion support
-- **Self-maintaining** — authors write MDX with headings, TOC generates itself
+- **Zero runtime overhead**: native IntersectionObserver, no polling
+- **Fully accessible**: focus trap, keyboard nav, reduced motion support
+- **Self-maintaining**: authors write MDX with headings, TOC generates itself
 - Works across all content types (projects, experience, blog) automatically
   through the shared `PostBody` component
