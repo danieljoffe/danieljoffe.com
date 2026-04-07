@@ -82,4 +82,9 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.hydrationMismatchUseSyncedState, // 2026-04-06
   blogSlugs.mobileNavA11yBottomSheet, // 2026-04-06
   blogSlugs.faviconPipelineOneSvg, // 2026-04-06
+  blogSlugs.standardizingComponentSizeScale, // 2026-04-07
+  blogSlugs.formApiAlignmentAria, // 2026-04-07
+  blogSlugs.tooltipAriaDescribedbyWrongElement, // 2026-04-07
+  blogSlugs.ciDocsOnlyShellDetection, // 2026-04-07
+  blogSlugs.calendlyEmbedTimeoutFallback, // 2026-04-07
 ];

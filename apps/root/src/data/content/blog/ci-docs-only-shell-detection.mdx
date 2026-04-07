@@ -1,0 +1,119 @@
+export const metadata = {
+  title: 'Replacing a GitHub Action with 15 Lines of Shell',
+  date: '2026-04-07',
+  excerpt:
+    'The dorny/paths-filter Github Action silently ignored our config so we replaced it with a shell case statement that actually works.',
+  author: 'Daniel Joffe',
+  category: 'CI/CD',
+  tags: ['GitHub Actions', 'CI/CD', 'Shell', 'DevOps'],
+  slug: 'ci-docs-only-shell-detection',
+  type: 'blog',
+  topic: 'CI/CD',
+};
+
+## The Silent Failure
+
+We wanted a simple optimization: skip CI when a pull request only
+touches documentation files (`.md`, `.claude/*`, `.vscode/*`, workflow
+files). The standard approach is `dorny/paths-filter`, a GitHub Action
+that checks changed files against glob patterns.
+
+We configured it, tested it, and it never worked. Docs-only PRs ran
+the full CI suite every time. No error, no warning, no indication that
+anything was wrong.
+
+The cause was two bugs compounding. First, `paths-filter` does not
+support the `predicate-quantifier` option we set. It silently ignores
+it. Second, its glob matching failed to match `.claude/**` files, so
+our Claude Code config changes were never classified as docs-only.
+
+We spent three commits trying to fix the configuration: adjusting globs,
+adding `predicate-quantifier`, inverting the pattern logic. None of it
+worked because the underlying Action was not behaving as documented.
+
+## The Shell Replacement
+
+The entire paths-filter dependency was doing one thing: classifying PR
+files as docs-only or not. A `case` statement does that in 15 lines:
+
+```yaml
+- name: Check for docs-only changes
+  id: check
+  env:
+    GH_TOKEN: ${{ github.token }}
+  run: |
+    if [ "${{ github.event_name }}" = "pull_request" ]; then
+      CHANGED=$(gh pr view ${{ github.event.pull_request.number }} \
+        --json files --jq '.files[].path')
+    else
+      echo "docs-only=false" >> "$GITHUB_OUTPUT"
+      exit 0
+    fi
+
+    DOCS_ONLY=true
+    while IFS= read -r file; do
+      [ -z "$file" ] && continue
+      case "$file" in
+        *.md) ;;
+        .claude/*) ;;
+        .mcp.json) ;;
+        .vscode/*) ;;
+        .github/ISSUE_TEMPLATE/*|.github/prompts/*) ;;
+        .github/skills/*|.github/agents/*|.github/workflows/*) ;;
+        .husky/*) ;;
+        .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE) ;;
+        *) DOCS_ONLY=false; break ;;
+      esac
+    done <<< "$CHANGED"
+
+    echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
+```
+
+Push events to `develop` always run CI (the early exit). For PRs, the
+`gh` CLI fetches the file list and the `case` statement classifies each
+one. The first non-docs file sets `DOCS_ONLY=false` and breaks.
+
+## The Gate Job
+
+The `ci-status` gate job makes this work with branch protection:
+
+```yaml
+ci-status:
+  if: always()
+  needs: [changes, ci]
+  runs-on: ubuntu-latest
+  steps:
+    - run: |
+        if [ "${{ needs.ci.result }}" = "failure" ] || \
+           [ "${{ needs.ci.result }}" = "cancelled" ]; then
+          echo "CI failed"
+          exit 1
+        fi
+        echo "CI passed or was skipped (docs-only change)"
+```
+
+Branch protection requires `ci-status`, not `ci`. When the `ci` job is
+skipped (docs-only PR), `ci-status` will run and pass. When `ci`
+fails, `ci-status` fails too. The gate job is always green or red,
+never skipped, so branch protection just works.
+
+## The nx affected Optimization
+
+A related change in the same PR cluster: `nx affected` was always
+diffing against `main`, even for feature branches targeting `develop`.
+This meant every feature branch CI run compared against `main` and
+rebuilt more than necessary.
+
+The fix passes `${{ github.base_ref || 'main' }}` as the `--base` flag.
+PRs into `develop` now diff against `develop`. Pushes to `develop`
+still diff against `main`. One line, fewer unnecessary rebuilds.
+
+## The Takeaway
+
+Third-party Actions are dependencies. They can silently break, silently
+ignore configuration, and silently change behavior between versions.
+For simple file classification logic, shell is more transparent, more
+debuggable, and has no upstream risk. Reserve Actions for when they
+genuinely reduce complexity — caching, deployment orchestration,
+multi-platform matrices. "Classify files against a list of patterns"
+is exactly what shell's `case` does natively.

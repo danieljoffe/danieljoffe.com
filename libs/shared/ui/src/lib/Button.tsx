@@ -7,11 +7,7 @@ import {
 import { Spinner } from './Spinner';
 import { cn } from './utils';
 
-export type ButtonVariant =
-  | 'bare'
-  | 'primary'
-  | 'secondary'
-  | 'outline';
+export type ButtonVariant = 'bare' | 'primary' | 'secondary' | 'outline';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export interface ButtonBase {

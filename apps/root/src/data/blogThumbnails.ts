@@ -329,4 +329,89 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       blurHash: 'L24o;G9F00D%~q%MRjRj00of-;WB',
     },
   },
+  [blogSlugs.standardizingComponentSizeScale]: {
+    slug: blogSlugs.standardizingComponentSizeScale,
+    title: 'Standardizing a Component Size Scale Across 20 Components',
+    description:
+      'A design system with five avatar sizes, no badge size, and three spinner sizes is a design system arguing with itself.',
+    link: {
+      label: 'Component Size Scale',
+      href: `${BLOG_LINK.href}/${blogSlugs.standardizingComponentSizeScale}`,
+    },
+    cover: {
+      alt: 'Measuring tools arranged neatly on a workbench',
+      src: '/photo-1581783898377-1c85bf937427',
+      origin: `${UNSPLASH_URL}/photos/assorted-color-brick-lot-HpMihL323k0`,
+      creator: '@marjan_blan',
+      blurHash: 'LKHe2RD%00%M_3WBt7Rj~qxuIUj[',
+    },
+  },
+  [blogSlugs.formApiAlignmentAria]: {
+    slug: blogSlugs.formApiAlignmentAria,
+    title: 'Aligning Five Form Components Around aria-describedby',
+    description:
+      'Five form components, five approaches to error display. We aligned them around a single accessibility pattern.',
+    link: {
+      label: 'Form API Alignment',
+      href: `${BLOG_LINK.href}/${blogSlugs.formApiAlignmentAria}`,
+    },
+    cover: {
+      alt: 'A web form interface with input fields and validation messages',
+      src: '/photo-1555066931-4365d14bab8c',
+      origin: `${UNSPLASH_URL}/photos/black-and-silver-laptop-computer-on-table-4hbJ-eymZ1o`,
+      creator: '@luca_bravo',
+      blurHash: 'L37UxT-:00NG~qt7-:NG00xu9FRj',
+    },
+  },
+  [blogSlugs.tooltipAriaDescribedbyWrongElement]: {
+    slug: blogSlugs.tooltipAriaDescribedbyWrongElement,
+    title: 'Tooltip aria-describedby Was on the Wrong Element',
+    description:
+      'Our Tooltip passed every test but put aria-describedby on a wrapper div instead of the trigger element. Screen readers never announced it.',
+    link: {
+      label: 'Tooltip ARIA Fix',
+      href: `${BLOG_LINK.href}/${blogSlugs.tooltipAriaDescribedbyWrongElement}`,
+    },
+    cover: {
+      alt: 'A tooltip popup appearing next to a UI element',
+      src: '/photo-1587829741301-dc798b83add3',
+      origin: `${UNSPLASH_URL}/photos/black-computer-keyboard-7WfBMtB-RhE`,
+      creator: '@eylumandemin',
+      blurHash: 'L24o;G9F00D%~q%MRjRj00of-;WB',
+    },
+  },
+  [blogSlugs.ciDocsOnlyShellDetection]: {
+    slug: blogSlugs.ciDocsOnlyShellDetection,
+    title: 'Replacing a GitHub Action with 15 Lines of Shell',
+    description:
+      'dorny/paths-filter silently ignored our config. We replaced it with a shell case statement that actually works.',
+    link: {
+      label: 'CI Docs-Only Detection',
+      href: `${BLOG_LINK.href}/${blogSlugs.ciDocsOnlyShellDetection}`,
+    },
+    cover: {
+      alt: 'A terminal window displaying shell script output',
+      src: '/photo-1629654297299-c8506221ca97',
+      origin: `${UNSPLASH_URL}/photos/a-computer-screen-with-a-bunch-of-text-on-it-m_HRfLhgABo`,
+      creator: '@garrettsears',
+      blurHash: 'L24o;G9F00D%~q%MRjRj00of-;WB',
+    },
+  },
+  [blogSlugs.calendlyEmbedTimeoutFallback]: {
+    slug: blogSlugs.calendlyEmbedTimeoutFallback,
+    title: 'An 8-Second Timeout for Third-Party Iframes',
+    description:
+      "An iframe that never loads looks like a broken page. We added a timeout with a direct booking link so users aren't left staring at a spinner.",
+    link: {
+      label: 'Calendly Embed Timeout',
+      href: `${BLOG_LINK.href}/${blogSlugs.calendlyEmbedTimeoutFallback}`,
+    },
+    cover: {
+      alt: 'A calendar application interface on a laptop screen',
+      src: '/photo-1504639725590-34d0984388bd',
+      origin: `${UNSPLASH_URL}/photos/macbook-pro-on-brown-wooden-table-8qEB0fTe9Vw`,
+      creator: '@kevinku',
+      blurHash: 'LGF~o]_N~q%M%MRjIUj[-;WBD%WB',
+    },
+  },
 };
