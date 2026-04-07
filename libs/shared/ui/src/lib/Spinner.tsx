@@ -49,7 +49,7 @@ export function Spinner({
       role='status'
       aria-label={ariaLabel}
       className={cn(
-        'inline-block rounded-full animate-spin',
+        'inline-block rounded-full animate-spin motion-reduce:animate-none',
         sizeStyles[size],
         variantStyles[variant],
         className

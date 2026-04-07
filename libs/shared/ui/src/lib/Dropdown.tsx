@@ -186,7 +186,7 @@ export function Dropdown({
           className={cn(
             'absolute z-50 mt-1 top-full min-w-[180px]',
             'bg-surface-elevated border border-border rounded-lg shadow-lg',
-            'py-1 animate-slide-down',
+            'py-1 animate-slide-down motion-reduce:animate-none',
             align === 'right' ? 'right-0' : 'left-0'
           )}
         >
