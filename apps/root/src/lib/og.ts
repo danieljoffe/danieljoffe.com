@@ -14,7 +14,7 @@ function loadFonts(): Promise<Buffer[]> {
   return Promise.all([
     readFile(join(dir, 'Inter-Regular.ttf')),
     readFile(join(dir, 'Inter-Medium.ttf')),
-    readFile(join(dir, 'Fraunces-Bold.ttf')),
+    readFile(join(dir, 'Inter-Bold.ttf')),
   ]);
 }
 
@@ -26,7 +26,7 @@ function loadProfileImage(): Promise<Buffer> {
 
 export async function getOgFonts() {
   if (!_fontsPromise) _fontsPromise = loadFonts();
-  const [interRegular, interMedium, frauncesRegular] = await _fontsPromise;
+  const [interRegular, interMedium, interBold] = await _fontsPromise;
 
   return [
     {
@@ -42,8 +42,8 @@ export async function getOgFonts() {
       style: 'normal' as const,
     },
     {
-      name: 'Fraunces',
-      data: frauncesRegular,
+      name: 'Inter',
+      data: interBold,
       weight: 700 as const,
       style: 'normal' as const,
     },
