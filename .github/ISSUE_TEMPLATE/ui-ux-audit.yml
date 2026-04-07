@@ -13,7 +13,7 @@ body:
     attributes:
       label: What triggered this audit?
       description: What recent work landed that warrants a review?
-      placeholder: "Merged 5 shared-ui PRs (#266–#270) covering spacing tokens, variant standardization, form APIs, motion, and responsive breakpoints."
+      placeholder: 'Merged 5 shared-ui PRs (#266–#270) covering spacing tokens, variant standardization, form APIs, motion, and responsive breakpoints.'
     validations:
       required: true
 
@@ -41,15 +41,15 @@ body:
       label: Review checklist
       description: Cross-cutting concerns to verify across all pages.
       options:
-        - label: "Spacing & alignment — consistent vertical rhythm, no orphaned padding"
-        - label: "Responsive — no overflow, no overlapping elements at any breakpoint"
-        - label: "Typography — hierarchy is clear, no mismatched font sizes"
-        - label: "Color & contrast — semantic colors used correctly, meets WCAG AA"
-        - label: "Interactive states — hover, focus, disabled, loading all look correct"
-        - label: "Dark mode — all pages look correct in both themes"
-        - label: "Navigation — active states correct, mobile nav works, command palette works"
-        - label: "Forms — validation states, error messages, disabled styling consistent"
-        - label: "Loading states — skeletons, spinners, and transitions feel smooth"
+        - label: 'Spacing & alignment — consistent vertical rhythm, no orphaned padding'
+        - label: 'Responsive — no overflow, no overlapping elements at any breakpoint'
+        - label: 'Typography — hierarchy is clear, no mismatched font sizes'
+        - label: 'Color & contrast — semantic colors used correctly, meets WCAG AA'
+        - label: 'Interactive states — hover, focus, disabled, loading all look correct'
+        - label: 'Dark mode — all pages look correct in both themes'
+        - label: 'Navigation — active states correct, mobile nav works, command palette works'
+        - label: 'Forms — validation states, error messages, disabled styling consistent'
+        - label: 'Loading states — skeletons, spinners, and transitions feel smooth'
 
   - type: textarea
     id: findings

@@ -19,6 +19,11 @@ export const blogSlugs = {
   hydrationMismatchUseSyncedState: 'hydration-mismatch-use-synced-state',
   mobileNavA11yBottomSheet: 'mobile-nav-a11y-bottom-sheet',
   faviconPipelineOneSvg: 'favicon-pipeline-one-svg',
+  standardizingComponentSizeScale: 'standardizing-component-size-scale',
+  formApiAlignmentAria: 'form-api-alignment-aria',
+  tooltipAriaDescribedbyWrongElement: 'tooltip-aria-describedby-wrong-element',
+  ciDocsOnlyShellDetection: 'ci-docs-only-shell-detection',
+  calendlyEmbedTimeoutFallback: 'calendly-embed-timeout-fallback',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
