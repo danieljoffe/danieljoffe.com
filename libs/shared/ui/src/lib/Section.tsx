@@ -21,9 +21,9 @@ export interface SectionProps extends Omit<
 const paddingClasses = {
   none: 'py-0',
   sm: 'py-4 sm:py-6',
-  md: 'py-8 sm:py-12',
-  lg: 'py-12 sm:py-16',
-  xl: 'py-16 sm:py-24',
+  md: 'py-6 sm:py-8 md:py-12',
+  lg: 'py-8 sm:py-12 md:py-16',
+  xl: 'py-12 sm:py-16 md:py-24',
 };
 
 const backgroundClasses = {
@@ -54,7 +54,7 @@ export function Section({
     <section
       ref={ref}
       className={cn(
-        'relative px-6 lg:px-0',
+        'relative px-4 sm:px-6 lg:px-0',
         paddingClasses[padding],
         backgroundClasses[background],
         overflowClasses[overflow],
