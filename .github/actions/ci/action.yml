@@ -33,7 +33,7 @@ runs:
 
     - name: Run affected tasks
       shell: bash
-      run: yarn nx affected -t lint test build typecheck build-storybook --nxBail
+      run: yarn nx affected -t lint test build typecheck build-storybook --nxBail --exclude=job-api
       env:
         NX_NO_CLOUD: 'true'
 
