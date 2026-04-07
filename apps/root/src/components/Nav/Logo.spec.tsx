@@ -53,8 +53,8 @@ describe('Logo', () => {
   test('SVG logo has proper dimensions', () => {
     const { container } = render(<Logo />);
     const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('width', '124');
-    expect(svg).toHaveAttribute('height', '24');
+    expect(svg).toHaveAttribute('width', '32');
+    expect(svg).toHaveAttribute('height', '32');
   });
 
   test('SVG logo has viewBox for scaling', () => {
