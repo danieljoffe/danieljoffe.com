@@ -1,5 +1,5 @@
-import { cn } from './utils/cn';
 import type { ComponentSize } from './types';
+import { cn } from './utils/cn';
 
 export interface AvatarProps {
   src?: string;

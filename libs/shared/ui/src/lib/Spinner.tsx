@@ -1,7 +1,6 @@
 import { type HTMLAttributes, type Ref } from 'react';
-import { cn } from './utils';
-
 import type { ComponentSize } from './types';
+import { cn } from './utils';
 
 type SpinnerVariant = 'accent';
 
