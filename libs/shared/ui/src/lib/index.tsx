@@ -57,6 +57,7 @@ export { Tooltip } from './Tooltip';
 export { cn, validateProps, ErrorBoundary, ModalErrorBoundary } from './utils';
 
 // Types
+export type { ComponentSize } from './types';
 export type { AlertProps } from './Alert';
 export type { AspectRatioProps } from './AspectRatio';
 export type { AvatarProps } from './Avatar';

@@ -29,14 +29,14 @@ describe('Avatar', () => {
     expect(container.querySelector('.h-10')).toBeInTheDocument();
   });
 
-  it('applies xs size styles', () => {
-    const { container } = render(<Avatar initials='A' size='xs' />);
-    expect(container.querySelector('.h-6')).toBeInTheDocument();
+  it('applies sm size styles', () => {
+    const { container } = render(<Avatar initials='A' size='sm' />);
+    expect(container.querySelector('.h-8')).toBeInTheDocument();
   });
 
-  it('applies xl size styles', () => {
-    const { container } = render(<Avatar initials='A' size='xl' />);
-    expect(container.querySelector('.h-16')).toBeInTheDocument();
+  it('applies lg size styles', () => {
+    const { container } = render(<Avatar initials='A' size='lg' />);
+    expect(container.querySelector('.h-12')).toBeInTheDocument();
   });
 
   it('renders status indicator when status is provided', () => {

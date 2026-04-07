@@ -13,18 +13,7 @@ const meta = {
     variant: {
       description: 'Visual style of the button',
       control: 'select',
-      options: [
-        undefined,
-        'bare',
-        'primary',
-        'secondary',
-        'ghost',
-        'outline',
-        'success',
-        'error',
-        'warning',
-        'info',
-      ],
+      options: [undefined, 'bare', 'primary', 'secondary', 'outline'],
       table: {
         defaultValue: { summary: 'primary' },
       },
@@ -74,13 +63,6 @@ export const Secondary: Story = {
   },
 };
 
-export const Ghost: Story = {
-  args: {
-    variant: 'ghost',
-    children: 'Ghost',
-  },
-};
-
 export const Outline: Story = {
   args: {
     variant: 'outline',
@@ -92,34 +74,6 @@ export const Bare: Story = {
   args: {
     variant: 'bare',
     children: 'Bare',
-  },
-};
-
-export const Success: Story = {
-  args: {
-    variant: 'success',
-    children: 'Success',
-  },
-};
-
-export const Error: Story = {
-  args: {
-    variant: 'error',
-    children: 'Error',
-  },
-};
-
-export const Warning: Story = {
-  args: {
-    variant: 'warning',
-    children: 'Warning',
-  },
-};
-
-export const Info: Story = {
-  args: {
-    variant: 'info',
-    children: 'Info',
   },
 };
 
