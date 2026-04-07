@@ -2,7 +2,7 @@ export const metadata = {
   title: "When import type Isn't Optional: Fixing a Circular Dependency Crash",
   date: '2026-04-06',
   excerpt:
-    'A production crash caused by a subtle difference between import and import type in a Turbopack-bundled Next.js app.',
+    'How a subtle difference between import and import type causes a circular dependency crash in a Turbopack-bundled Next.js app.',
   author: 'Daniel Joffe',
   category: 'Debugging',
   tags: ['TypeScript', 'Next.js', 'Turbopack', 'Debugging'],
@@ -13,7 +13,7 @@ export const metadata = {
 
 ## The Crash
 
-Every page except the homepage threw "Something went wrong!" — the root
+Every page except the homepage threw "Something went wrong!", the root
 error boundary. No build errors, no type errors, no lint warnings. The app
 compiled cleanly and the homepage rendered fine. Navigate anywhere else and
 the entire React tree unmounted.
@@ -22,7 +22,7 @@ The error: `Cannot read properties of undefined (reading 'href')`.
 
 ## Tracing the Cycle
 
-The undefined value was `BLOG_LINK` — a constant exported from
+The undefined value was `BLOG_LINK`, a constant exported from
 `utils/constants.ts`. It's used everywhere, and it's clearly defined. So
 why was it `undefined`?
 
@@ -41,12 +41,12 @@ import**:
 import { NavLink } from '@/types/base';
 ```
 
-`NavLink` is a TypeScript interface — it doesn't exist at runtime. But
+`NavLink` is a TypeScript interface. It doesn't exist at runtime. But
 Turbopack doesn't know that at module evaluation time. A value import tells
 the bundler "this module needs to be evaluated before mine." So Turbopack
 evaluates `types/base.ts`, which imports `blogPageSlugs` from `data/blog.ts`,
 which imports `blogThumbnails.ts`, which imports `BLOG_LINK` from
-`constants.ts` — the module that hasn't finished initializing yet.
+`constants.ts`, the module that hasn't finished initializing yet.
 
 Result: `BLOG_LINK` is `undefined` when `blogThumbnails.ts` reads it.
 
@@ -79,7 +79,7 @@ Three lines changed. Every page renders.
 
 ## Why This Wasn't Caught Earlier
 
-Webpack resolved the cycle differently — it happened to evaluate modules
+Webpack resolved the cycle differently. It happened to evaluate modules
 in an order that worked. Turbopack (used in Next.js dev mode) evaluates
 more eagerly, exposing cycles that webpack silently tolerated. The ESLint
 `import/no-cycle` rule we added later would have caught this, but it
@@ -88,7 +88,7 @@ wasn't enabled at the time.
 ## The Rule
 
 **Always use `import type` for type-only imports.** It's not a style
-preference — it's a correctness guarantee. Value imports create module
+preference. It's a correctness guarantee. Value imports create module
 evaluation dependencies. Type imports don't. In a codebase with enough
 modules, that distinction is the difference between "it works" and
 "every page crashes."

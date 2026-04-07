@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Building a Typography System for a Next.js Design System',
   date: '2026-04-05',
   excerpt:
-    'How I audited three competing heading systems, designed a variant-based Heading/Text API, and migrated 20+ files to a single typography source of truth.',
+    'How auditing three competing heading systems leads to a variant-based Heading/Text API that consolidates 20+ files into a single typography source of truth.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: ['React', 'Design Systems', 'TypeScript', 'Tailwind CSS', 'Monorepo'],
@@ -25,7 +25,7 @@ systems that didn't agree on what an `<h2>` should look like:
 The same "card title" pattern (`text-sm font-semibold text-text-primary`)
 appeared in 5+ files. Hero headings were copy-pasted across 6 pages with
 identical 94-character class strings. And MDX h3 and h4 were visually
-indistinguishable — both `text-sm font-semibold`.
+indistinguishable, both `text-sm font-semibold`.
 
 ## Designing the Variant API
 
@@ -40,7 +40,7 @@ named variant, with sensible defaults for the rendered HTML element:
 ```
 
 Each variant maps to a fixed set of Tailwind classes. The `as` prop overrides
-the default element when semantic context demands it (a card "title" that
+the default element when semantic context demands it (a card title that
 isn't a heading). And `className` allows one-off extensions via `cn()` merging.
 
 ## Shared-UI vs App-Specific
@@ -76,19 +76,19 @@ export function Heading({ variant, ...props }: HeadingProps) {
 The audit revealed that several shared-ui components had inadequate typography:
 
 - **Modal title**: A bare `<h3>` with zero styling classes
-- **Alert title**: Only `mb-1 mt-0` — no font size or weight
+- **Alert title**: Only `mb-1 mt-0`, no font size or weight
 - **CardTitle**: `text-lg` in shared-ui but `text-sm` everywhere in the app
 - **Toast**: Inline `text-sm font-medium` instead of using the system
 
 Each was updated to use the new typography components internally. `CardTitle`
-was the most impactful — changing from `text-lg` to `text-sm` via
+was the most impactful. Changing from `text-lg` to `text-sm` via
 `<Heading variant="cardTitle">` aligned the library with actual usage.
 
 ## The MDX Heading Fix
 
 One subtle win: MDX `h4` was visually identical to `h3` (both
 `text-sm font-semibold`). The new `mdxH4` variant uses
-`text-xs font-medium uppercase tracking-wider` — a distinct visual treatment
+`text-xs font-medium uppercase tracking-wider`. A distinct visual treatment
 that signals a different level in the content hierarchy.
 
 ```tsx

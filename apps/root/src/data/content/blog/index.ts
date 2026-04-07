@@ -49,6 +49,15 @@ import MobileBottomNavZIndex, {
 import GracefulDegradationThirdPartyEmbeds, {
   metadata as gracefulDegradationMeta,
 } from './graceful-degradation-third-party-embeds.mdx';
+import HydrationMismatchUseSyncedState, {
+  metadata as hydrationMismatchMeta,
+} from './hydration-mismatch-use-synced-state.mdx';
+import MobileNavA11yBottomSheet, {
+  metadata as mobileNavA11yMeta,
+} from './mobile-nav-a11y-bottom-sheet.mdx';
+import FaviconPipelineOneSvg, {
+  metadata as faviconPipelineMeta,
+} from './favicon-pipeline-one-svg.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -68,6 +77,9 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'mobile-bottom-nav-z-index': MobileBottomNavZIndex,
   'graceful-degradation-third-party-embeds':
     GracefulDegradationThirdPartyEmbeds,
+  'hydration-mismatch-use-synced-state': HydrationMismatchUseSyncedState,
+  'mobile-nav-a11y-bottom-sheet': MobileNavA11yBottomSheet,
+  'favicon-pipeline-one-svg': FaviconPipelineOneSvg,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -87,4 +99,7 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'import-type-circular-dependency': importTypeCircularDependencyMeta,
   'mobile-bottom-nav-z-index': mobileBottomNavZIndexMeta,
   'graceful-degradation-third-party-embeds': gracefulDegradationMeta,
+  'hydration-mismatch-use-synced-state': hydrationMismatchMeta,
+  'mobile-nav-a11y-bottom-sheet': mobileNavA11yMeta,
+  'favicon-pipeline-one-svg': faviconPipelineMeta,
 };

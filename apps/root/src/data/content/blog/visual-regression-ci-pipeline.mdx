@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Automating Visual Regression Testing in GitHub Actions',
   date: '2026-04-04',
   excerpt:
-    'How I built a CI pipeline that catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT — turning snapshot maintenance from a chore into a one-click operation.',
+    'How a CI pipeline catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT. Snapshot maintenance becomes a one-click operation.',
   author: 'Daniel Joffe',
   category: 'DevOps',
   tags: [
@@ -62,7 +62,7 @@ commits them to the branch, and pushes.
 ## The PAT Token Trick
 
 Here's the subtle part. GitHub Actions commits made with `GITHUB_TOKEN` don't
-trigger subsequent workflow runs — this is a security feature to prevent infinite
+trigger subsequent workflow runs. This is a security feature to prevent infinite
 loops. But it also means that after the snapshot job commits updated baselines,
 CI wouldn't re-run to verify them.
 
@@ -162,11 +162,11 @@ noise in the git history.
 
 ## Results
 
-- **One-click baseline updates** — no local Playwright install needed
-- **Automatic CI re-verification** — PAT-based push triggers a fresh run
-- **Zero wasted runner time** — concurrency groups cancel stale jobs
-- **Git-tracked baselines** — visual diffs reviewable in PR
-- **Nx-aware** — E2E only runs when the app is actually affected
+- **One-click baseline updates**: no local Playwright install needed
+- **Automatic CI re-verification**: PAT-based push triggers a fresh run
+- **Zero wasted runner time**: concurrency groups cancel stale jobs
+- **Git-tracked baselines**: visual diffs reviewable in PR
+- **Nx-aware**: E2E only runs when the app is actually affected
 
 The pipeline has caught several regressions already: a `max-w-3xl` that should
 have been `max-w-5xl`, an `overflow-hidden` clipping content, and a SectionLabel

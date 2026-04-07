@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Making Data Tables Keyboard-Navigable',
   date: '2026-04-06',
   excerpt:
-    'Adding scope, caption, clickable row keyboard support, and focus-visible to a Table component — the accessibility basics HTML tables need but rarely get.',
+    'Adding scope, caption, clickable row keyboard support, and focus-visible to a Table component. The accessibility basics HTML tables need but rarely get.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
   tags: ['React', 'Accessibility', 'Design Systems', 'HTML'],
@@ -41,9 +41,9 @@ ambiguity about the header-to-data relationship.
 
 A table should identify itself. HTML gives us two options:
 
-- **`<caption>`** — visible, rendered inside the table. Best when the label
+- **`<caption>`**: visible, rendered inside the table. Best when the label
   should be visible to all users.
-- **`aria-label`** — invisible, read only by screen readers. Best when the
+- **`aria-label`**: invisible, read only by screen readers. Best when the
   surrounding context already provides a visible heading.
 
 We support both, with `caption` taking precedence:
@@ -97,7 +97,7 @@ const handleRowKeyDown = (e: KeyboardEvent<HTMLTableRowElement>, row: T) => {
 };
 ```
 
-`e.preventDefault()` on Space is essential — without it, the page scrolls.
+`e.preventDefault()` on Space is essential. Without it, the page scrolls.
 
 ## The rowKey and getRowAriaLabel Props
 
@@ -126,7 +126,7 @@ the row represents. With it:
 ## The Takeaway
 
 Table accessibility is cumulative. No single attribute makes a table
-accessible — it's `scope` _and_ `caption` _and_ keyboard support _and_
+accessible. It's `scope` _and_ `caption` _and_ keyboard support _and_
 focus indicators working together. The total diff was ~60 lines of
 component code and 16 new tests. None of it was clever. All of it was
 necessary.

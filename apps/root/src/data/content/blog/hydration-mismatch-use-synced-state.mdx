@@ -1,0 +1,115 @@
+export const metadata = {
+  title: 'Fixing Hydration Mismatches Without Suppressing Them',
+  date: '2026-04-06',
+  excerpt:
+    'A three-line useSyncExternalStore hook helps server and client renders agree — no more suppressHydrationWarning.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['React', 'Next.js', 'SSR', 'Accessibility', 'Debug'],
+  slug: 'hydration-mismatch-use-synced-state',
+  type: 'blog',
+  topic: 'React Patterns',
+};
+
+## The Mismatch
+
+Our mobile navigation uses `aria-current="page"` to mark the active link.
+The value comes from `usePathname()`, which returns the current URL on the
+client, but during server-side rendering, every page's nav gets the same
+initial pathname. The result: the server marks "Home" as the active link, the client
+marks "Projects" as the active link, and React throws a hydration error.
+
+The error itself is harmless. React recovers by re-rendering on the client.
+But it's noisy in dev, breaks strict mode, and indicates a real disagreement
+between server and client output. Suppressing it with
+`suppressHydrationWarning` just hides the symptom.
+
+## The Wrong Fix
+
+The first instinct is to move the entire nav into a client-only component
+with `dynamic(() => import('./Nav'), { ssr: false })`. That works, but it
+means the navigation renders nothing on the server — bad for SEO, bad for
+first paint and performace, and it introduces a layout shift when the nav pops in after
+hydration.
+
+## The Right Fix
+
+The actual problem is narrow: we're rendering a _value_ that differs
+between server and client. We don't need to skip SSR entirely — we just
+need to render a neutral value during SSR and switch to the real one after
+hydration.
+
+`useSyncExternalStore` gives us exactly that. Its third argument,
+`getServerSnapshot`, runs only during SSR:
+
+```tsx
+const subscribe = () => () => {};
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
+
+function useHydrated() {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+```
+
+The hook returns `false` on the server and `true` on the client after
+hydration. No external store, no state, no effect — just React's built-in
+mechanism for declaring "this value differs between environments."
+
+## Applying It
+
+In the nav component, we defer the active link state until after hydration:
+
+```tsx
+export default function Nav() {
+  const pathname = usePathname();
+  const hydrated = useHydrated();
+  const activePathname = hydrated ? pathname : '';
+
+  return (
+    <>
+      <header className='hidden md:block sticky top-0 ...'>
+        <TabletUpNav pathname={activePathname} />
+      </header>
+      <MobileNav pathname={activePathname} />
+    </>
+  );
+}
+```
+
+During SSR, `activePathname` is `''`, so no link gets `aria-current="page"`.
+After hydration, it switches to the real pathname, and the correct link
+lights up. Server and client agree on the initial render. No mismatch.
+
+## The Bonus: Skeleton Loading
+
+Since the desktop nav uses `dynamic(() => import('./TabletUpNav'), { ssr: false })`
+for code splitting, it already has a loading state. We replaced the generic
+`Spinner` with a `NavSkeleton` that mirrors the actual nav layout: a logo
+placeholder, four link-shaped rectangles, and three right-side elements.
+
+```tsx
+function NavSkeleton() {
+  return (
+    <div className='hidden md:flex max-w-4xl mx-auto px-6 lg:px-0 h-14 items-center gap-1'>
+      <Skeleton variant='rectangular' width={32} height={32} />
+      <div className='flex items-center gap-1 ml-6'>
+        <Skeleton variant='rectangular' width={68} height={32} />
+        <Skeleton variant='rectangular' width={68} height={32} />
+        <Skeleton variant='rectangular' width={82} height={32} />
+        <Skeleton variant='rectangular' width={60} height={32} />
+      </div>
+    </div>
+  );
+}
+```
+
+The widths match the actual rendered links. No layout shift, no spinner
+that gives no spatial information about what's loading.
+
+## The Takeaway
+
+When server and client disagree on a value, the fix isn't to skip SSR or
+suppress the warning. We find the narrowest possible and acceptable neutral state
+that both environments can agree on. Then, we upgrade to the real value after
+hydration. React's `useSyncExternalStore` makes that an easy three-line hook.

@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Removing focus-trap-react: Native Focus Management in Modals',
   date: '2026-04-05',
   excerpt:
-    'Why we removed a 15KB dependency from our shared-ui library and replaced it with native dialog behavior and manual focus management.',
+    'Why removing a 15KB dependency from our shared-ui library and replacing it with native dialog behavior and manual focus management improves bundle size and maintainability.',
   author: 'Daniel Joffe',
   category: 'Performance Engineering',
   tags: ['React', 'Accessibility', 'Performance', 'Design Systems'],
@@ -14,7 +14,7 @@ export const metadata = {
 ## The Dependency Problem
 
 Our shared-ui library had a single external runtime dependency beyond React:
-`focus-trap-react`. It was used in exactly one component — the `Modal`. And
+`focus-trap-react`. It was used in exactly one component, the `Modal`. And
 it brought baggage:
 
 - **~15KB** added to the bundle (focus-trap + tabbable + focus-trap-react)
@@ -31,10 +31,10 @@ CSS," this was a violation hiding in plain sight.
 Modern browsers give us everything we need for focus trapping. The HTML
 `<dialog>` element, when opened with `showModal()`, provides:
 
-- **Built-in focus trapping** — Tab cycles within the dialog automatically
-- **Inert backdrop** — Content behind the dialog becomes non-interactive
-- **Escape key handling** — The `cancel` event fires on Escape
-- **Focus restoration** — Focus returns to the trigger element on close
+- **Built-in focus trapping**: Tab cycles within the dialog automatically
+- **Inert backdrop**: Content behind the dialog becomes non-interactive
+- **Escape key handling**: The `cancel` event fires on Escape
+- **Focus restoration**: Focus returns to the trigger element on close
 
 For our React component, the refactored Modal stores a ref to the triggering
 element, manages `document.body.style.overflow` for scroll lock, and uses
@@ -69,10 +69,10 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 ## What We Gained
 
 1. **Zero runtime dependencies** in shared-ui (beyond React peer dep)
-2. **Deleted** the mock file — one less testing workaround
-3. **Smaller bundle** — ~15KB saved for every page that imports from shared-ui
-4. **ESLint 10 compatibility** — no more `fixupPluginRules` shims for this dep
-5. **Simpler mental model** — the Modal manages its own focus lifecycle
+2. **Deleted** the mock file. One less testing workaround
+3. **Smaller bundle**: ~15KB saved for every page that imports from shared-ui
+4. **ESLint 10 compatibility**: no more `fixupPluginRules` shims for this dep
+5. **Simpler mental model**: the Modal manages its own focus lifecycle
 
 ## Accessibility Testing
 
@@ -87,7 +87,7 @@ We verified:
 - **`aria-labelledby`** connects the title to the dialog
 
 The existing Playwright E2E tests and Jest unit tests all pass without
-modification — the behavioral contract is identical.
+modification. The behavioral contract is identical.
 
 ## The Lesson
 

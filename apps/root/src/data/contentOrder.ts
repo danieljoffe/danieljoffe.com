@@ -79,4 +79,7 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.importTypeCircularDependency, // 2026-04-06
   blogSlugs.mobileBottomNavZIndex, // 2026-04-06
   blogSlugs.gracefulDegradationThirdPartyEmbeds, // 2026-04-06
+  blogSlugs.hydrationMismatchUseSyncedState, // 2026-04-06
+  blogSlugs.mobileNavA11yBottomSheet, // 2026-04-06
+  blogSlugs.faviconPipelineOneSvg, // 2026-04-06
 ];
