@@ -45,9 +45,6 @@ describe('ProgressBar', () => {
     const { container } = render(<ProgressBar value={50} variant='error' />);
     expect(container.querySelector('.bg-error')).toBeInTheDocument();
   });
-    const { container } = render(<ProgressBar value={50} variant='info' />);
-    expect(container.querySelector('.bg-info')).toBeInTheDocument();
-  });
 
   it('applies md size by default', () => {
     const { container } = render(<ProgressBar value={50} />);
