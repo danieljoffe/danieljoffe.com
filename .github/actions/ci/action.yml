@@ -56,6 +56,13 @@ runs:
       env:
         CHROMATIC_PROJECT_TOKEN: ${{ inputs.chromatic-project-token }}
 
+    - name: Build app for Lighthouse CI
+      if: ${{ inputs.run-e2e == 'true' }}
+      shell: bash
+      run: yarn nx build root
+      env:
+        NX_NO_CLOUD: 'true'
+
     - name: Run Lighthouse CI
       if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
