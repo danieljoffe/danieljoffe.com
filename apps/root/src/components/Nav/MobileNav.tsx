@@ -14,6 +14,7 @@ import {
   BookOpen,
   X,
 } from 'lucide-react';
+import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import {
@@ -146,23 +147,27 @@ export default function MobileNav({ pathname }: { pathname: string }) {
             );
           })}
 
-          <button
+          <Button
+            name='mobile-search'
+            variant='bare'
             onClick={handleSearchClick}
             aria-label='Search (⌘K)'
             data-testid='search-trigger'
-            className='flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors cursor-pointer text-text-tertiary active:text-text-primary'
+            className='flex flex-col items-center justify-center flex-1 gap-0.5 p-0 rounded-none hover:scale-100 text-[10px] font-medium transition-colors cursor-pointer text-text-tertiary active:text-text-primary'
           >
             <Search className='h-5 w-5' aria-hidden='true' />
             Search
-          </button>
+          </Button>
 
-          <button
+          <Button
+            name='mobile-more'
+            variant='bare'
             ref={moreButtonRef}
             onClick={sheetOpen ? closeSheet : openSheet}
             aria-expanded={sheetOpen}
             aria-label={sheetOpen ? 'Close more menu' : 'Open more menu'}
             className={cn(
-              'flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors cursor-pointer',
+              'flex flex-col items-center justify-center flex-1 gap-0.5 p-0 rounded-none hover:scale-100 text-[10px] font-medium transition-colors cursor-pointer',
               isMoreActive || sheetOpen
                 ? 'text-brand-500'
                 : 'text-text-tertiary active:text-text-primary'
@@ -170,7 +175,7 @@ export default function MobileNav({ pathname }: { pathname: string }) {
           >
             <MoreHorizontal className='h-5 w-5' aria-hidden='true' />
             More
-          </button>
+          </Button>
         </nav>
       </div>
 
@@ -207,13 +212,15 @@ export default function MobileNav({ pathname }: { pathname: string }) {
           </span>
           <div className='flex items-center gap-1'>
             <DarkModeToggle />
-            <button
+            <Button
+              name='close-more-menu'
+              variant='bare'
               onClick={closeSheet}
               aria-label='Close more menu'
               className='p-1.5 rounded-lg text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
             >
               <X className='h-4 w-4' />
-            </button>
+            </Button>
           </div>
         </div>
         <nav aria-label='More links'>
@@ -223,10 +230,12 @@ export default function MobileNav({ pathname }: { pathname: string }) {
               const active = pathname === link.href;
               return (
                 <li key={link.href}>
-                  <button
+                  <Button
+                    name={`more-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                    variant='bare'
                     onClick={() => handleSheetLink(link.label, link.href)}
                     className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+                      'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer',
                       active
                         ? 'text-brand-500 bg-surface-tertiary'
                         : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
@@ -234,7 +243,7 @@ export default function MobileNav({ pathname }: { pathname: string }) {
                   >
                     <Icon className='h-4 w-4' aria-hidden='true' />
                     {link.label}
-                  </button>
+                  </Button>
                 </li>
               );
             })}
