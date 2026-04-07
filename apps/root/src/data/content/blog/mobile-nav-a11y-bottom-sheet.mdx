@@ -2,10 +2,10 @@ export const metadata = {
   title: 'Mobile Nav Accessibility: The Bottom Sheet Dialog Pattern',
   date: '2026-04-06',
   excerpt:
-    'A nav redesign passed code review but failed 6 E2E tests on mobile — here is what axe caught and how aria-hidden, inert, and proper dialog semantics fixed it.',
+    'A nav redesign passes code review but fails E2E tests on mobile. Here's what axe caught and how aria-hidden, inert, and proper dialog semantics fixed it.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
-  tags: ['Accessibility', 'React', 'Mobile', 'ARIA'],
+  tags: ['Accessibility', 'React', 'Mobile', 'ARIA', 'Testing'],
   slug: 'mobile-nav-a11y-bottom-sheet',
   type: 'blog',
   topic: 'Accessibility',
@@ -13,9 +13,9 @@ export const metadata = {
 
 ## The Redesign That Broke Things
 
-We shipped a mobile bottom navigation bar — the iOS-style pattern with
+We shipped a mobile bottom navigation bar with much excitement. The iOS-style pattern with
 Home, Services, Projects, Experience across the bottom of the screen, plus
-a "More" button that opens a bottom sheet with secondary links. It looked
+a "More" button that opens a bottom sheet with secondary links. It's UI ergonomics. It looked
 great. It passed unit tests. Then Playwright's axe integration flagged 6
 failures, all on mobile viewports.
 
@@ -27,13 +27,13 @@ and the "More" bottom sheet had broken dialog semantics.
 The original design had Search and DarkModeToggle in a top header bar
 above the content. On mobile, this bar was `position: static` — it
 scrolled with the page. But the new bottom nav was `position: fixed` at
-`z-index: 50`. On short viewports, the top bar sat directly behind the
+`z-index: 50`. Meaning that on short viewports, the top bar sat directly behind the
 bottom bar. The search button was technically in the DOM, but you couldn't
-tap it.
+tap it because it was inaccessible.
 
 The fix was straightforward: move the search trigger into the bottom bar
 itself, as a peer to the other nav items. The DarkModeToggle moved into
-the More sheet, where it belongs — it's a preference, not a navigation
+the More sheet, where it belongs: it's a preference, not a navigation
 action.
 
 ```tsx
@@ -57,8 +57,8 @@ The More sheet was a `role="dialog"` with `aria-modal` toggled between
 not modal when closed. But screen readers don't interpret it that way.
 
 When `aria-modal` is `false`, the dialog is still visible in the
-accessibility tree. Screen reader users can Tab into an invisible sheet
-and interact with links they can't see. The correct pattern has three
+accessibility tree. Screen reader users can Tab into an "invisible" sheet
+and interact with links that are not on the screen. The correct pattern has three
 parts:
 
 1. **`aria-modal="true"`** — always. The sheet is either a modal dialog
@@ -102,26 +102,26 @@ renders its own fixed-position elements (the bottom bar, the backdrop,
 the sheet). Nesting fixed elements inside a fixed container with
 `overflow` handling creates unpredictable stacking behavior.
 
-We split them: `<header>` wraps only the desktop nav (`hidden md:block`),
-and `MobileNav` renders independently at the top level.
+We split them: `<header>` should wrap only the desktop nav (`hidden md:block`),
+and `MobileNav` should render independently at the top level.
 
 ## One More Thing: Layout-Matched Skeletons
 
 While fixing the nav, we noticed the desktop nav's loading state was a
-centered `Spinner`. When the real nav loaded, everything shifted — the
+centered `Spinner`. When the real nav loaded, everything shifted. The
 logo appeared on the left, links spread across the middle, CTAs landed on
 the right. Classic layout shift from a loading state that doesn't match
-what it's standing in for.
+the final layout.
 
 We replaced it with a `NavSkeleton` component using the shared-ui
 `Skeleton` primitive. Each skeleton element matches the dimensions of the
-real element it represents — 32x32 for the logo, 68px for "Services,"
+real element it represents: 32x32 for the logo, 68px for "Services,"
 82px for "Experience." The nav loads in place without anything jumping.
 
 ## The Takeaway
 
 A bottom sheet that slides out of view isn't hidden from assistive
 technology unless you explicitly declare it so. Visual CSS transitions
-and ARIA state are parallel systems that need to stay in sync — and
+and ARIA state are parallel systems that need to stay in sync, and
 `inert` is the missing piece that prevents keyboard focus from reaching
 elements that `aria-hidden` has removed from the accessibility tree.

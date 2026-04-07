@@ -2,10 +2,10 @@ export const metadata = {
   title: 'Fixing Hydration Mismatches Without Suppressing Them',
   date: '2026-04-06',
   excerpt:
-    'A three-line useSyncExternalStore hook that defers client-only state so server and client renders agree — no suppressHydrationWarning needed.',
+    'A three-line useSyncExternalStore hook helps server and client renders agree — no more suppressHydrationWarning.',
   author: 'Daniel Joffe',
   category: 'Frontend Engineering',
-  tags: ['React', 'Next.js', 'SSR', 'Accessibility'],
+  tags: ['React', 'Next.js', 'SSR', 'Accessibility', 'Debug'],
   slug: 'hydration-mismatch-use-synced-state',
   type: 'blog',
   topic: 'React Patterns',
@@ -15,11 +15,11 @@ export const metadata = {
 
 Our mobile navigation uses `aria-current="page"` to mark the active link.
 The value comes from `usePathname()`, which returns the current URL on the
-client — but during server-side rendering, every page's nav gets the same
-initial pathname. The result: the server marks "Home" as active, the client
-marks "Projects" as active, and React throws a hydration error.
+client, but during server-side rendering, every page's nav gets the same
+initial pathname. The result: the server marks "Home" as the active link, the client
+marks "Projects" as the active link, and React throws a hydration error.
 
-The error itself is harmless — React recovers by re-rendering on the client.
+The error itself is harmless. React recovers by re-rendering on the client.
 But it's noisy in dev, breaks strict mode, and indicates a real disagreement
 between server and client output. Suppressing it with
 `suppressHydrationWarning` just hides the symptom.
@@ -29,7 +29,7 @@ between server and client output. Suppressing it with
 The first instinct is to move the entire nav into a client-only component
 with `dynamic(() => import('./Nav'), { ssr: false })`. That works, but it
 means the navigation renders nothing on the server — bad for SEO, bad for
-first paint, and it introduces a layout shift when the nav pops in after
+first paint and performace, and it introduces a layout shift when the nav pops in after
 hydration.
 
 ## The Right Fix
@@ -85,8 +85,8 @@ lights up. Server and client agree on the initial render. No mismatch.
 
 Since the desktop nav uses `dynamic(() => import('./TabletUpNav'), { ssr: false })`
 for code splitting, it already has a loading state. We replaced the generic
-`Spinner` with a `NavSkeleton` that mirrors the actual nav layout — a logo
-placeholder, four link-shaped rectangles, and three right-side elements:
+`Spinner` with a `NavSkeleton` that mirrors the actual nav layout: a logo
+placeholder, four link-shaped rectangles, and three right-side elements.
 
 ```tsx
 function NavSkeleton() {
@@ -110,6 +110,6 @@ that gives no spatial information about what's loading.
 ## The Takeaway
 
 When server and client disagree on a value, the fix isn't to skip SSR or
-suppress the warning. It's to find the narrowest possible neutral state
-that both environments agree on, then upgrade to the real value after
-hydration. `useSyncExternalStore` makes that a three-line hook.
+suppress the warning. We find the narrowest possible and acceptable neutral state
+that both environments can agree on. Then, we upgrade to the real value after
+hydration. React's `useSyncExternalStore` makes that an easy three-line hook.

@@ -14,7 +14,7 @@ export const metadata = {
 ## The Problem with Favicon Generators
 
 Every time we updated the site logo, regenerating favicons meant uploading
-an SVG to a web tool, downloading a zip, extracting it, and manually
+an SVG to a "free" web tool, downloading a zip, extracting it, and manually
 copying files into `public/`. The output was inconsistent — different tools
 produce different compression, different background handling, different
 size matrices. And none of them lived in version control.
@@ -73,7 +73,7 @@ cp "${TMPDIR}/192.png" "${OUTPUT}/android-chrome-192x192.png"
 # ...
 ```
 
-The `.ico` combines three sizes into one file — this is what makes it
+The `.ico` combines three sizes into one file. This is what makes it
 display crisply across different contexts:
 
 ```bash
@@ -82,18 +82,65 @@ magick "${TMPDIR}/16.png" "${TMPDIR}/32.png" "${TMPDIR}/48.png" \
 ```
 
 Finally, we copy the source SVG as `favicon.svg` for browsers that
-support it. Modern browsers prefer the SVG when both are available — it
+support it. Modern browsers prefer the SVG when both are available: it
 scales perfectly at any resolution and supports dark mode via
 `prefers-color-scheme` media queries in the SVG itself.
 
 ## Making It Reusable
 
-The script takes two arguments — the source SVG and an optional output
-directory (defaulting to `apps/root/public/`):
+The script takes two arguments. The source SVG and an optional output
+directory (we defaulted our script to `apps/root/public/`):
 
 ```bash
 ./scripts/generate-favicons.sh ~/Downloads/logo.svg
 ./scripts/generate-favicons.sh icon.svg ./other-app/public/
+```
+
+## The Full Script
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+SRC="${1:?Usage: $0 <source.svg> [output-dir]}"
+OUT="${2:-apps/root/public}"
+
+if [ ! -f "$SRC" ]; then
+  echo "Error: source file '$SRC' not found" >&2
+  exit 1
+fi
+
+for cmd in rsvg-convert magick; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "Error: '$cmd' is required but not installed" >&2
+    echo "  brew install librsvg imagemagick" >&2
+    exit 1
+  fi
+done
+
+mkdir -p "$OUT"
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+cp "$SRC" "$OUT/favicon.svg"
+
+SIZES=(16 32 48 96 150 180 192 512)
+for size in "${SIZES[@]}"; do
+  rsvg-convert -w "$size" -h "$size" "$SRC" -o "$TMPDIR/icon-${size}.png"
+done
+
+cp "$TMPDIR/icon-16.png"  "$OUT/favicon-16x16.png"
+cp "$TMPDIR/icon-32.png"  "$OUT/favicon-32x32.png"
+cp "$TMPDIR/icon-48.png"  "$OUT/favicon-48x48.png"
+cp "$TMPDIR/icon-96.png"  "$OUT/favicon-96x96.png"
+cp "$TMPDIR/icon-150.png" "$OUT/mstile-150x150.png"
+cp "$TMPDIR/icon-180.png" "$OUT/apple-touch-icon.png"
+cp "$TMPDIR/icon-192.png" "$OUT/android-chrome-192x192.png"
+cp "$TMPDIR/icon-512.png" "$OUT/android-chrome-512x512.png"
+cp "$TMPDIR/icon-512.png" "$OUT/favicon.png"
+
+magick "$TMPDIR/icon-16.png" "$TMPDIR/icon-32.png" "$TMPDIR/icon-48.png" \
+  "$OUT/favicon.ico"
 ```
 
 We also wired it up as a Claude Code skill, so regenerating favicons
@@ -107,4 +154,4 @@ Favicon generation is a solved problem that doesn't need a web service.
 Two CLI tools, 64 lines of bash, and a clear mapping from sizes to
 filenames. The script lives in version control alongside the source SVG,
 so the pipeline is reproducible and the output is auditable. When the logo
-changes — and it will — we run one command instead of visiting a website.
+changes, and it will, we run one command on our machine instead of visiting a website.
