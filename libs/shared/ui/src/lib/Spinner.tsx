@@ -1,14 +1,12 @@
 import { forwardRef, type HTMLAttributes } from 'react';
+import {
+  SEMANTIC_SPINNER,
+  type SemanticVariant,
+} from './styles/semanticVariants';
 import { cn } from './utils';
 
 type SpinnerSize = 'sm' | 'md' | 'lg';
-type SpinnerVariant =
-  | 'accent'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'info'
-  | 'foreground';
+type SpinnerVariant = 'accent' | SemanticVariant | 'foreground';
 
 export interface SpinnerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -27,10 +25,7 @@ const sizeStyles: Record<SpinnerSize, string> = {
 
 const variantStyles: Record<SpinnerVariant, string> = {
   accent: 'border-brand-500/30 border-t-accent',
-  success: 'border-success/30 border-t-success',
-  warning: 'border-warning/30 border-t-warning',
-  error: 'border-error/30 border-t-error',
-  info: 'border-info/30 border-t-info',
+  ...SEMANTIC_SPINNER,
   foreground: 'border-foreground-subtle/30 border-t-foreground',
 };
 

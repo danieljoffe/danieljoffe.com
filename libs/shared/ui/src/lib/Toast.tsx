@@ -8,9 +8,10 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { SEMANTIC_TEXT, type SemanticVariant } from './styles/semanticVariants';
 import { cn } from './utils/cn';
 
-export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
+export type ToastVariant = SemanticVariant;
 
 export interface ToastItem {
   id: string;
@@ -36,12 +37,7 @@ const icons: Record<ToastVariant, typeof Info> = {
   error: XCircle,
 };
 
-const iconColors: Record<ToastVariant, string> = {
-  info: 'text-info',
-  success: 'text-success',
-  warning: 'text-warning',
-  error: 'text-error',
-};
+const iconColors = SEMANTIC_TEXT;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
