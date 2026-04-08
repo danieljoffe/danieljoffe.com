@@ -366,4 +366,65 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       creator: '@kevinku',
     },
   },
+  [blogSlugs.pnpmPhantomDependencies]: {
+    slug: blogSlugs.pnpmPhantomDependencies,
+    title:
+      'Phantom Dependencies: What pnpm Strict Mode Reveals About Your Monorepo',
+    description:
+      'Migrating from Yarn Classic to pnpm exposes dependencies that worked by accident, not by declaration.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.pnpmPhantomDependencies}`,
+    },
+    cover: {
+      alt: 'Tangled network cables in a server rack',
+      src: '/photo-1558494949-ef010cbdcc31',
+      origin: `${UNSPLASH_URL}/photos/close-up-photography-of-computer-motherboard-iar-afB0QQw`,
+      creator: '@jordanharrison',
+    },
+  },
+  [blogSlugs.staticSiteSearchCmdk]: {
+    slug: blogSlugs.staticSiteSearchCmdk,
+    title: 'Site Search Without a Server: Static Index and cmdk',
+    description:
+      'A build-time search index and cmdk power Cmd+K search across 47 pages with zero API calls.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.staticSiteSearchCmdk}`,
+    },
+    cover: {
+      alt: 'A magnifying glass resting on a laptop keyboard',
+      src: '/photo-1555066931-4365d14bab8c',
+      origin: `${UNSPLASH_URL}/photos/black-and-silver-laptop-computer-on-table-4hbJ-eymZ1o`,
+      creator: '@luca_bravo',
+    },
+  },
+  [blogSlugs.prefersReducedMotionComponentLibrary]: {
+    slug: blogSlugs.prefersReducedMotionComponentLibrary,
+    title: 'Systematic prefers-reduced-motion Across a Component Library',
+    description:
+      'Auditing every animated component for motion sensitivity reveals which animations are decorative and which need static alternatives.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.prefersReducedMotionComponentLibrary}`,
+    },
+    cover: {
+      alt: 'A slow-motion capture of water droplets frozen in time',
+      src: '/photo-1509228468518-180dd4864904',
+      origin: `${UNSPLASH_URL}/photos/brown-wooden-blocks-on-white-surface-s9CC2SKySJM`,
+      creator: '@brett_jordan',
+    },
+  },
+  [blogSlugs.cyclingThemeToggle]: {
+    slug: blogSlugs.cyclingThemeToggle,
+    title: 'Cycling Theme Toggle: From Radio Group to Single Button',
+    description:
+      'Replacing a three-button theme picker with a single cycling button and a keyboard shortcut reclaims nav space without losing discoverability.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.cyclingThemeToggle}`,
+    },
+    cover: {
+      alt: 'A light switch on a minimalist wall',
+      src: '/photo-1455659817273-f96807779a8a',
+      origin: `${UNSPLASH_URL}/photos/assorted-type-letters-Y6tGu-OH8lA`,
+      creator: '@amadorloureiro',
+    },
+  },
 };
