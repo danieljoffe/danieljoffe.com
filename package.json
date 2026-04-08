@@ -20,6 +20,7 @@
     "pom": "yarn typecheck && yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
     "affected": "nx affected -t lint test build typecheck e2e",
     "dev": "nx run-many --target=dev --all",
+    "postinstall": "command -v uv >/dev/null && uv sync || echo 'uv not found — skipping Python deps (install: https://docs.astral.sh/uv/)'",
     "prepare": "husky",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",

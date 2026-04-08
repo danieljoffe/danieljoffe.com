@@ -6,36 +6,36 @@
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/job-api && poetry run uvicorn app.main:app --reload --port 8000",
-        "cwd": "{workspaceRoot}"
+        "command": "uv run --package job-api uvicorn app.main:app --reload --port 8000",
+        "cwd": "apps/job-api"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/job-api && poetry run uvicorn app.main:app --reload --port 8000",
-        "cwd": "{workspaceRoot}"
+        "command": "uv run --package job-api uvicorn app.main:app --reload --port 8000",
+        "cwd": "apps/job-api"
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/job-api && poetry run pytest -v",
-        "cwd": "{workspaceRoot}"
+        "command": "uv run --package job-api pytest -v",
+        "cwd": "apps/job-api"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/job-api && poetry run ruff check .",
-        "cwd": "{workspaceRoot}"
+        "command": "uv run --package job-api ruff check .",
+        "cwd": "apps/job-api"
       }
     },
     "mypy": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/job-api && poetry run mypy app/",
-        "cwd": "{workspaceRoot}"
+        "command": "uv run --package job-api mypy app/",
+        "cwd": "apps/job-api"
       }
     }
   }

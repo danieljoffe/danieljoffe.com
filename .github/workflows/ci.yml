@@ -105,12 +105,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install Python dependencies
-        working-directory: apps/job-api
-        run: poetry install --no-interaction
+        run: uv sync --frozen
 
       - name: Run Python tasks
         run: yarn nx run-many -t lint test mypy --nxBail -p job-api
