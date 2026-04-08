@@ -83,6 +83,27 @@ describe('Tabs', () => {
     expect(screen.getByText('Only Content')).toBeInTheDocument();
   });
 
+  describe('variants', () => {
+    it('renders underline variant by default', () => {
+      render(<Tabs tabs={defaultTabs} />);
+      const tab1Button = screen.getByText('Tab 1');
+      expect(tab1Button).toHaveClass('border-b-2', 'border-brand-500');
+    });
+
+    it('renders pill variant with rounded styles', () => {
+      render(<Tabs tabs={defaultTabs} variant='pill' />);
+      const tab1Button = screen.getByText('Tab 1');
+      expect(tab1Button).toHaveClass('rounded-md', 'bg-surface');
+    });
+
+    it('pill variant inactive tab has no background', () => {
+      render(<Tabs tabs={defaultTabs} variant='pill' />);
+      const tab2Button = screen.getByText('Tab 2');
+      expect(tab2Button).not.toHaveClass('bg-surface');
+      expect(tab2Button).toHaveClass('text-text-secondary');
+    });
+  });
+
   describe('accessibility', () => {
     it('has role="tablist" on tab container', () => {
       render(<Tabs tabs={defaultTabs} />);

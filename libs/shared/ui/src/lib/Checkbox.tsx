@@ -65,7 +65,12 @@ export function Checkbox({
         {label && (
           <label
             htmlFor={checkboxId}
-            className='text-text-primary cursor-pointer select-none'
+            className={cn(
+              'text-text-primary select-none',
+              props.disabled
+                ? 'opacity-50 cursor-not-allowed'
+                : 'cursor-pointer'
+            )}
           >
             {label}
           </label>

@@ -81,6 +81,26 @@ describe('Input', () => {
     expect(input).toHaveClass('custom-class');
   });
 
+  describe('sizes', () => {
+    it('applies md size by default', () => {
+      render(<Input />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveClass('px-4', 'py-2.5');
+    });
+
+    it('applies sm size styles', () => {
+      render(<Input size='sm' />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveClass('px-3', 'py-1.5', 'text-sm');
+    });
+
+    it('applies lg size styles', () => {
+      render(<Input size='lg' />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveClass('px-5', 'py-3', 'text-lg');
+    });
+  });
+
   it('passes through additional input props', () => {
     render(<Input type='email' name='email' data-testid='email-input' />);
     const input = screen.getByTestId('email-input');

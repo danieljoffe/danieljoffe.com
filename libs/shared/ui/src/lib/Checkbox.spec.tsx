@@ -95,6 +95,19 @@ describe('Checkbox', () => {
     expect(visualLabel).toBeInTheDocument();
   });
 
+  it('applies disabled styles to label when disabled', () => {
+    render(<Checkbox label='Accept terms' disabled />);
+    const label = screen.getByText('Accept terms');
+    expect(label).toHaveClass('opacity-50', 'cursor-not-allowed');
+    expect(label).not.toHaveClass('cursor-pointer');
+  });
+
+  it('applies cursor-pointer to label when not disabled', () => {
+    render(<Checkbox label='Accept terms' />);
+    const label = screen.getByText('Accept terms');
+    expect(label).toHaveClass('cursor-pointer');
+  });
+
   describe('accessibility', () => {
     it('is accessible by label text', () => {
       render(<Checkbox label='Accept terms' />);

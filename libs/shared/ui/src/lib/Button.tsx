@@ -22,6 +22,7 @@ export interface ButtonProps
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   ref?: Ref<HTMLButtonElement> | undefined;
   loading?: boolean;
+  iconOnly?: boolean;
   as?: ElementType;
   href?: string;
   target?: string;
@@ -64,6 +65,12 @@ export const sizeButtonStyles: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
 };
 
+const iconOnlySizeStyles: Record<ButtonSize, string> = {
+  sm: 'p-1.5 text-sm hover:scale-[1.1]',
+  md: 'p-2.5 hover:scale-[1.05]',
+  lg: 'p-3 text-lg hover:scale-[1.025]',
+};
+
 const spinnerSizeStyles: Record<ButtonSize, string> = {
   sm: 'size-3.5',
   md: 'size-4',
@@ -74,6 +81,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
+  iconOnly = false,
   as: Component = 'button',
   children,
   className,
@@ -87,7 +95,7 @@ export function Button({
       className={cn(
         baseButtonStyles,
         variantButtonStyles[variant],
-        sizeButtonStyles[size],
+        iconOnly ? iconOnlySizeStyles[size] : sizeButtonStyles[size],
         className
       )}
       disabled={disabled || loading}

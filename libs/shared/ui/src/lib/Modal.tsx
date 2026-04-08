@@ -29,6 +29,7 @@ export interface ModalProps {
   footer?: ReactNode;
   variant?: ModalVariant;
   className?: string | undefined;
+  closeOnBackdropClick?: boolean;
 }
 
 const sizeStyles: Record<ModalSize, string> = {
@@ -51,6 +52,7 @@ export function Modal({
   footer,
   variant = 'default',
   className,
+  closeOnBackdropClick = true,
   ref,
 }: ModalProps) {
   const triggerRef = useRef<Element | null>(null);
@@ -128,7 +130,7 @@ export function Modal({
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div
         className='absolute inset-0 bg-surface/80 backdrop-blur-sm'
-        onClick={handleClose}
+        onClick={closeOnBackdropClick ? handleClose : undefined}
         aria-hidden='true'
       />
       <div

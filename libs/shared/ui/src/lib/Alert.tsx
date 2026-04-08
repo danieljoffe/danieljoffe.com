@@ -1,5 +1,13 @@
+'use client';
+
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
-import { type ReactNode, type HTMLAttributes, type Ref } from 'react';
+import {
+  useEffect,
+  useCallback,
+  type ReactNode,
+  type HTMLAttributes,
+  type Ref,
+} from 'react';
 import { Heading } from './Heading';
 import { cn } from './utils';
 
@@ -52,6 +60,19 @@ export function Alert({
 }: AlertProps) {
   const { container, icon: Icon } = variantStyles[variant];
   const isUrgent = variant === 'error' || variant === 'warning';
+
+  const handleEscape = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onDismiss?.();
+    },
+    [onDismiss]
+  );
+
+  useEffect(() => {
+    if (!dismissible || !onDismiss) return;
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [dismissible, onDismiss, handleEscape]);
 
   return (
     <div

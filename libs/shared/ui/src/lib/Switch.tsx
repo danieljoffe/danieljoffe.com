@@ -60,7 +60,13 @@ export function Switch({
           />
         </button>
         {label && (
-          <span id={labelId} className='text-text-primary select-none'>
+          <span
+            id={labelId}
+            className={cn(
+              'text-text-primary select-none',
+              disabled && 'opacity-50 cursor-not-allowed'
+            )}
+          >
             {label}
           </span>
         )}
