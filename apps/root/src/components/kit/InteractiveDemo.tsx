@@ -31,7 +31,9 @@ export function InteractiveDemo({
   const [hasError, setHasError] = useState(false);
 
   const argsParam = args
-    ? `&args=${Object.entries(args).map(([k, v]) => `${k}:${v}`).join(';')}`
+    ? `&args=${Object.entries(args)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(';')}`
     : '';
   const storyUrl = `${STORYBOOK_URL}/iframe.html?id=${story}&viewMode=story${argsParam}`;
   const fullUrl = `${STORYBOOK_URL}/?path=/story/${story}`;

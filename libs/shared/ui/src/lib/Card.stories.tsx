@@ -71,7 +71,7 @@ export const FullCard: Story = {
       </CardContent>
       <CardFooter>
         <Button size='sm'>Save</Button>
-        <Button size='sm' variant='ghost'>
+        <Button size='sm' variant='outline'>
           Cancel
         </Button>
       </CardFooter>

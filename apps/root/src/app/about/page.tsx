@@ -101,7 +101,7 @@ export default function About() {
                 scalable design systems that empower teams and delight users.
               </Text>
               <Text variant='bodyLg'>
-                For over 8 years, I&apos;ve focused on one thing: removing
+                For over 10 years, I&apos;ve focused on one thing: removing
                 friction. Simplifying complex systems, streamlining workflows,
                 and helping teams turn whiteboard ideas into real-world
                 solutions, faster, with less effort.
@@ -246,7 +246,7 @@ export default function About() {
         <SectionLabel icon={<Heart className='h-3.5 w-3.5' />} label='Mantra' />
         <div className='space-y-6'>
           <Text variant='bodyLg'>
-            I thrive at the intersection of technical and business teams —
+            I thrive at the intersection of technical and business teams:
             simplifying complex systems, removing friction, and investing in the
             people around me. When teams succeed, products succeed.
           </Text>

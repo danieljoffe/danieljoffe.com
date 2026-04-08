@@ -1,0 +1,106 @@
+export const metadata = {
+  title: 'Standardizing a Component Size Scale Across Component Library',
+  date: '2026-04-07',
+  excerpt:
+    'A design system with five avatar sizes, no badge size, and three spinner sizes is a design system arguing with itself. We standardized the scale.',
+  author: 'Daniel Joffe',
+  category: 'Design Systems',
+  tags: ['React', 'Design Systems', 'TypeScript', 'Component Architecture'],
+  slug: 'standardizing-component-size-scale',
+  type: 'blog',
+  topic: 'Design Systems',
+};
+
+## The Inconsistency
+
+Our shared-ui library had grown to 20+ components, and each one had
+invented its own size scale. Avatar offered five sizes (`xs` through
+`xl`). Badge had no size prop at all. Button, Spinner, and ProgressBar
+each defined their own `sm | md | lg` type locally. Nothing was shared,
+nothing was enforced, and the Storybook for each component told a
+slightly different story about what "small" _meant_.
+
+The problem isn't aesthetic. When a developer reaches for a Badge next
+to an Avatar and discovers there's no way to make them the same size,
+they hardcode a `className` override. Do that enough times and the
+design system becomes a suggestion.
+
+## The Audit
+
+We listed every component with a size or variant prop and asked two
+questions: how many options does it offer, and does anyone actually _use_
+them all?
+
+| Component   | Before                        | After          |
+| ----------- | ----------------------------- | -------------- |
+| Avatar      | xs, sm, md, lg, xl            | **sm, md, lg** |
+| Badge       | (none)                        | **sm, md, lg** |
+| Button      | sm, md, lg                    | No change      |
+| Spinner     | sm, md, lg + 6 color variants | sm, md, lg + 1 |
+| ProgressBar | sm, md, lg + 5 color variants | sm, md, lg + 3 |
+| Modal       | sm, md, lg, xl + 5 variants   | sm, md, lg, xl |
+
+Avatar's `xs` and `xl` sizes appeared in exactly zero places outside
+Storybook. Spinner had six color variants (`accent`, `success`,
+`warning`, `error`, `info`, `foreground`), but every single call site used
+`accent`. ProgressBar and Modal had similar phantom variants that
+existed only in stories.
+
+## The Shared Type
+
+The fix started with a single, two-line file:
+
+```tsx
+/** Standard 3-point size scale for interactive components. */
+export type ComponentSize = 'sm' | 'md' | 'lg';
+```
+
+Exported from the library's public API. Every component that
+accepts a size prop now imports this type instead of defining its own:
+
+```tsx
+import type { ComponentSize } from './types';
+
+const sizeStyles: Record<ComponentSize, string> = {
+  sm: 'h-8 w-8 text-xs',
+  md: 'h-10 w-10 text-sm',
+  lg: 'h-12 w-12 text-base',
+};
+```
+
+When Badge gained a size prop, it fell into the existing scale
+automatically. No discussion about whether to add `xs` or `xl`: the
+type makes the decision for you.
+
+## Trimming Without Breaking
+
+Removing unused variants is straightforward: delete the option, run the
+type checker, fix anything red. But Avatar's trim from five sizes to three
+required checking that no call site relied on `xs` or `xl`. A quick
+grep confirmed they were Storybook-only, so we updated the stories
+and removed the sizes.
+
+The riskier trim was Spinner. Six color variants collapsed to one. But
+every call site in the app used the default `accent` variant, so the
+others were dead weight: they made Storybook look comprehensive
+while adding no value to consumers.
+
+## The Radius Token
+
+While auditing sizes, we found a related inconsistency in border radius.
+Checkbox, Kbd, and Skeleton text lines all needed a radius smaller than
+`--radius-sm` (0.375rem), but it didn't exist. Each component
+improvised: `rounded`, `rounded-sm`, or a raw pixel value.
+
+We added `--radius-xs` (0.25rem) to the theme and pointed all three
+components at it. Same pattern as the size scale: name the thing, put
+it in one place, reference it everywhere.
+
+## The Takeaway
+
+A component library's API surface is a product. Every prop, variant, and
+size option is a decision a consumer has to make. Three points cover the
+common cases without forcing developers to guess the difference between
+`md` and `lg` and `xl`. When a component genuinely needs more range, it
+can break from the shared type; the burden of proof is on the exception,
+not the rule.

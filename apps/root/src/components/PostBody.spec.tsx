@@ -72,7 +72,6 @@ describe('PostBody', () => {
       alt: 'Test image',
       origin: 'https://unsplash.com/photos/test' as const,
       creator: '@photographer' as const,
-      blurHash: 'abc123',
     },
     breadcrumbs: [
       { label: 'Home', href: '/' },

@@ -79,17 +79,6 @@ export const WithFooter: Story = {
   },
 };
 
-export const AccentVariant: Story = {
-  args: {
-    isOpen: true,
-    title: 'Important Notice',
-    children: 'This modal uses the accent variant.',
-    size: 'md',
-    variant: 'accent',
-    onClose: fn(),
-  },
-};
-
 export const Large: Story = {
   args: {
     isOpen: true,

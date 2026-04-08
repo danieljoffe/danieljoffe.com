@@ -212,10 +212,10 @@ The design system now includes **24 components** across four categories:
 
 The shared-ui library is framework-agnostic by design — it depends only on React and Tailwind CSS. No `next/link`, `next/image`, `useRouter`, or any Next.js API. This separation is intentional and creates a clear two-layer architecture:
 
-| Layer | Location | Dependencies | Examples |
-| --- | --- | --- | --- |
-| Framework-agnostic | `libs/shared/ui/` | React, Tailwind CSS | Button, Card, Modal, Badge |
-| Next.js-specific | `apps/root/src/components/` | Next.js, shared-ui | Nav (uses `Link`, `useRouter`), PostCard (uses shared-ui `Badge` + `Heading`), Button wrapper (adds `Link` routing) |
+| Layer              | Location                    | Dependencies        | Examples                                                                                                            |
+| ------------------ | --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Framework-agnostic | `libs/shared/ui/`           | React, Tailwind CSS | Button, Card, Modal, Badge                                                                                          |
+| Next.js-specific   | `apps/root/src/components/` | Next.js, shared-ui  | Nav (uses `Link`, `useRouter`), PostCard (uses shared-ui `Badge` + `Heading`), Button wrapper (adds `Link` routing) |
 
 ### How it works in practice
 

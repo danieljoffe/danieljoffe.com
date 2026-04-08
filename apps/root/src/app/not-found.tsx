@@ -20,8 +20,8 @@ export default function NotFound() {
               Page Not Found
             </Heading>
             <Text variant='bodyLg' className='mb-6 max-w-md'>
-              The page you are looking for could not be found. Please check the
-              URL or return to the home page.
+              This page doesn&apos;t exist. Check the URL or head back to the
+              home page.
             </Text>
           </div>
           <Button
