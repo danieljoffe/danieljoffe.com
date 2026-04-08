@@ -62,9 +62,9 @@ export default function Index() {
 
           <Heading variant='hero'>{FULL_NAME}</Heading>
           <Text variant='subtitle' className='max-w-lg'>
-            {JOB_TITLE} who builds products end-to-end, from backend systems to
-            polished UIs. I ship fast, architect for scale, and eliminate the
-            bottlenecks that slow teams down.
+            {JOB_TITLE} who builds products end-to-end &mdash; from backend
+            systems to polished UIs. I ship fast, architect for scale, and
+            eliminate the bottlenecks that slow teams down.
           </Text>
 
           <HeroActions />
@@ -193,8 +193,8 @@ export default function Index() {
           heading="Let's Build Something Great Together"
           description={
             <>
-              Available for full-stack engineering roles. Let&apos;s talk about
-              your project.
+              Available for full-stack engineering roles &mdash; Q1 2026.
+              Let&apos;s talk about your project.
             </>
           }
         >

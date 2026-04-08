@@ -12,7 +12,7 @@ const steps = [
     number: 2,
     title: 'Get your report',
     description:
-      'Performance, accessibility, SEO, and best practices, all graded.',
+      'Performance, accessibility, SEO, and best practices \u2014 all graded.',
   },
   {
     number: 3,

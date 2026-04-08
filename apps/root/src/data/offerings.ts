@@ -51,7 +51,7 @@ export const offerings: {
     },
     {
       Icon: Target,
-      text: 'Mentored junior developers: one promoted to Senior, another went to JPL.',
+      text: 'Mentored junior developers—one promoted to Senior, another went to JPL.',
       metric: 'Talent Unlocked',
     },
     {
@@ -79,17 +79,17 @@ export const offerings: {
     {
       Icon: Rocket,
       title: 'I Build for Autonomy',
-      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently. The result: 200+ pages launched, 80% fewer engineering requests. I invest in people the same way. Five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
+      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently — 200+ pages launched, 80% fewer engineering requests. I invest in people the same way: five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
     },
     {
       Icon: BarChart3,
       title: 'I Measure What Matters',
-      text: 'Lighthouse scores, bounce rates, Core Web Vitals. I treat performance as a feature, not an afterthought. At FightCamp, systematic optimization lifted Lighthouse from ~35 to ~80 and cut mobile bounce rates by 39%.',
+      text: 'Lighthouse scores, bounce rates, Core Web Vitals — I treat performance as a feature. At FightCamp, systematic optimization lifted Lighthouse from ~35 to ~80 and cut mobile bounce rates by 39%.',
     },
     {
       Icon: Layers,
       title: 'I Think in Systems, Not Just Components',
-      text: 'Building auth systems and rate limiters taught me to reason about tradeoffs: JWT vs sessions, in-memory vs distributed state, fail-open vs fail-closed. I bring that architectural thinking to every layer of the stack, not just the UI.',
+      text: 'Building auth systems and rate limiters taught me to reason about tradeoffs — JWT vs sessions, in-memory vs distributed state, fail-open vs fail-closed. I bring that architectural thinking to every layer of the stack, not just the UI.',
     },
   ],
 };
