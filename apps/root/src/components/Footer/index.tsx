@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import {
+  FOCUS_RING,
+  FOCUS_RING_OFFSET,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
@@ -10,7 +14,6 @@ import {
   STORYBOOK_URL,
   RESUME_URL,
 } from '@/utils/constants';
-import { focusRing } from '@/lib/layoutStyles';
 
 const currentYear = new Date().getFullYear();
 
@@ -64,7 +67,7 @@ export default function Footer() {
                 rel='noopener noreferrer'
                 aria-label={label}
                 title={label.replace(/^(Send |Visit |Download )/, '')}
-                className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${focusRing}`}
+                className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
               >
                 <Icon className='h-4 w-4' />
               </a>
@@ -81,7 +84,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
+                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
                   >
                     {link.label}
                   </Link>
@@ -94,7 +97,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
+                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
                   >
                     {link.label}
                   </Link>
@@ -103,7 +106,7 @@ export default function Footer() {
               <li>
                 <Link
                   href={AUDIT_LINK.href}
-                  className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${focusRing} rounded-sm`}
+                  className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
                 >
                   {AUDIT_LINK.label}
                 </Link>
@@ -121,7 +124,7 @@ export default function Footer() {
             href={STORYBOOK_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className={`flex items-center gap-1 rounded-sm ${focusRing}`}
+            className={`flex items-center gap-1 rounded-sm ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
           >
             <Text variant='meta' as='span'>
               Browse the design system

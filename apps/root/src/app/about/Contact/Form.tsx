@@ -9,6 +9,16 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
+import {
+  BASE_FIELD,
+  DISABLED,
+  FIELD_ERROR,
+  FIELD_PADDING,
+  FIELD_PLACEHOLDER,
+  FORM_LABEL,
+  REQUIRED_MARK,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
+import { cn } from '@/lib/cn';
 import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
@@ -16,7 +26,6 @@ import { publicEnv } from '@/lib/public.env';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
-import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -175,13 +184,19 @@ export default function Form() {
         <legend className='sr-only'>Contact Information</legend>
         <div className='flex flex-col gap-4'>
           <div className='w-full'>
-            <label htmlFor='name' className='block text-text-primary mb-2'>
+            <label htmlFor='name' className={FORM_LABEL}>
               Name
-              <span className='text-error ml-1'>*</span>
+              <span className={REQUIRED_MARK}>*</span>
             </label>
             <input
               id='name'
-              className={errors?.name ? inputErrorStyles : inputStyles}
+              className={cn(
+                BASE_FIELD,
+                FIELD_PADDING,
+                FIELD_PLACEHOLDER,
+                DISABLED,
+                errors?.name && FIELD_ERROR
+              )}
               placeholder='John Doe'
               type='text'
               autoComplete='name'
@@ -197,13 +212,19 @@ export default function Form() {
           </div>
 
           <div className='w-full'>
-            <label htmlFor='email' className='block text-text-primary mb-2'>
+            <label htmlFor='email' className={FORM_LABEL}>
               Email
-              <span className='text-error ml-1'>*</span>
+              <span className={REQUIRED_MARK}>*</span>
             </label>
             <input
               id='email'
-              className={errors?.email ? inputErrorStyles : inputStyles}
+              className={cn(
+                BASE_FIELD,
+                FIELD_PADDING,
+                FIELD_PLACEHOLDER,
+                DISABLED,
+                errors?.email && FIELD_ERROR
+              )}
               placeholder='john.doe@example.com'
               type='email'
               autoComplete='email'
@@ -219,13 +240,19 @@ export default function Form() {
           </div>
 
           <div className='w-full'>
-            <label htmlFor='message' className='block text-text-primary mb-2'>
+            <label htmlFor='message' className={FORM_LABEL}>
               Message
-              <span className='text-error ml-1'>*</span>
+              <span className={REQUIRED_MARK}>*</span>
             </label>
             <textarea
               id='message'
-              className={errors?.message ? inputErrorStyles : inputStyles}
+              className={cn(
+                BASE_FIELD,
+                FIELD_PADDING,
+                FIELD_PLACEHOLDER,
+                DISABLED,
+                errors?.message && FIELD_ERROR
+              )}
               placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
               autoComplete='off'
               rows={5}

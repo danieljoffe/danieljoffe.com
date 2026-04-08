@@ -6,11 +6,18 @@ import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
+import {
+  BASE_FIELD,
+  DISABLED,
+  FIELD_ERROR,
+  FIELD_PADDING,
+  FIELD_PLACEHOLDER,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { analytics } from '@/lib/analytics';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { VALIDATION_PATTERNS } from '@/utils/constants';
+import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
-import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 import IssueCard from './IssueCard';
 
 interface EmailGateProps {
@@ -140,7 +147,13 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                     required
                     disabled={state.phase === 'submitting'}
                     data-sentry-mask
-                    className={validationError ? inputErrorStyles : inputStyles}
+                    className={cn(
+                      BASE_FIELD,
+                      FIELD_PADDING,
+                      FIELD_PLACEHOLDER,
+                      DISABLED,
+                      validationError && FIELD_ERROR
+                    )}
                   />
                   <FormFieldError message={validationError} id='email-error' />
                 </div>
@@ -152,7 +165,12 @@ export default function EmailGate({ gatedIssues, scanId }: EmailGateProps) {
                   aria-label='Name'
                   disabled={state.phase === 'submitting'}
                   data-sentry-mask
-                  className={inputStyles}
+                  className={cn(
+                    BASE_FIELD,
+                    FIELD_PADDING,
+                    FIELD_PLACEHOLDER,
+                    DISABLED
+                  )}
                 />
                 <Button
                   type='submit'

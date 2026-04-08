@@ -27,6 +27,7 @@
 ## Step 1: Create pnpm Workspace Config
 
 **Create `pnpm-workspace.yaml`** (new file):
+
 ```yaml
 packages:
   - 'apps/*'
@@ -41,6 +42,7 @@ This replaces the `"workspaces"` field in `package.json`.
 ## Step 2: Create `.npmrc` (Sentry Hoisting)
 
 **Create `.npmrc`** (new file):
+
 ```ini
 public-hoist-pattern[]=@sentry/*
 public-hoist-pattern[]=*import-in-the-middle*
@@ -51,6 +53,7 @@ public-hoist-pattern[]=*import-in-the-middle*
 **Risk: MEDIUM-HIGH** — this is the most likely source of migration issues. If builds fail with `sentryWebpackPlugin` or `@sentry/utils` resolution errors, additional hoist patterns may be needed.
 
 References:
+
 - [sentry-javascript#10306](https://github.com/getsentry/sentry-javascript/issues/10306) — `@sentry/utils` not found with Nx + pnpm
 - [sentry-javascript#14946](https://github.com/getsentry/sentry-javascript/issues/14946) — Sentry Feedback broken in pnpm monorepo
 
@@ -348,24 +351,24 @@ Lines 78-79 (`yarn-debug.log*`, `yarn-error.log*`) and line 120 (`.yarn-integrit
 
 Update command examples throughout. Key changes:
 
-| Section | Before | After |
-|---------|--------|-------|
-| Pre-Push Checklist | `yarn tsc --noEmit` | `pnpm tsc --noEmit` |
-| Pre-Push Checklist | `yarn nx test root` | `pnpm nx test root` |
-| Development | `npx nx dev root` | `pnpm nx dev root` |
-| Development | `npx nx build root` | `pnpm nx build root` |
-| Development | `npx nx start root` | `pnpm nx start root` |
-| Testing | `npx nx test root` | `pnpm nx test root` |
-| Testing | `npx nx e2e root-e2e` | `pnpm nx e2e root-e2e` |
-| Testing | `npx playwright test ...` | `pnpm exec playwright test ...` |
-| Testing | `yarn test:coverage` | `pnpm test:coverage` |
-| Testing | `yarn test:lighthouse` | `pnpm test:lighthouse` |
-| Linting | `yarn lint` | `pnpm lint` |
-| Linting | `yarn lint:fix` | `pnpm lint:fix` |
-| Linting | `yarn format` | `pnpm format` |
-| Linting | `yarn typecheck` | `pnpm typecheck` |
-| Storybook | `npx nx storybook root` | `pnpm nx storybook root` |
-| Nx guidance | `pnpm nx build`, `npm exec nx test` | `pnpm nx build`, `pnpm nx test` |
+| Section            | Before                              | After                           |
+| ------------------ | ----------------------------------- | ------------------------------- |
+| Pre-Push Checklist | `yarn tsc --noEmit`                 | `pnpm tsc --noEmit`             |
+| Pre-Push Checklist | `yarn nx test root`                 | `pnpm nx test root`             |
+| Development        | `npx nx dev root`                   | `pnpm nx dev root`              |
+| Development        | `npx nx build root`                 | `pnpm nx build root`            |
+| Development        | `npx nx start root`                 | `pnpm nx start root`            |
+| Testing            | `npx nx test root`                  | `pnpm nx test root`             |
+| Testing            | `npx nx e2e root-e2e`               | `pnpm nx e2e root-e2e`          |
+| Testing            | `npx playwright test ...`           | `pnpm exec playwright test ...` |
+| Testing            | `yarn test:coverage`                | `pnpm test:coverage`            |
+| Testing            | `yarn test:lighthouse`              | `pnpm test:lighthouse`          |
+| Linting            | `yarn lint`                         | `pnpm lint`                     |
+| Linting            | `yarn lint:fix`                     | `pnpm lint:fix`                 |
+| Linting            | `yarn format`                       | `pnpm format`                   |
+| Linting            | `yarn typecheck`                    | `pnpm typecheck`                |
+| Storybook          | `npx nx storybook root`             | `pnpm nx storybook root`        |
+| Nx guidance        | `pnpm nx build`, `npm exec nx test` | `pnpm nx build`, `pnpm nx test` |
 
 Also update the "Project Overview" section to reference pnpm instead of Yarn workspaces.
 
@@ -402,43 +405,44 @@ Update package manager detection logic in these 4 files:
 
 Quick reference for anyone used to Yarn Classic commands:
 
-| Yarn Classic | pnpm Equivalent |
-|---|---|
-| `yarn install` | `pnpm install` |
-| `yarn install --frozen-lockfile` | `pnpm install --frozen-lockfile` |
-| `yarn add <pkg>` | `pnpm add <pkg>` |
-| `yarn add -D <pkg>` | `pnpm add -D <pkg>` |
-| `yarn remove <pkg>` | `pnpm remove <pkg>` |
-| `yarn <script>` | `pnpm <script>` |
-| `yarn workspace <name> add <pkg>` | `pnpm --filter <name> add <pkg>` |
-| `npx <cmd>` | `pnpm exec <cmd>` (project binary) or `pnpm dlx <cmd>` (one-off) |
-| `yarn global add <pkg>` | `pnpm add -g <pkg>` |
-| `yarn upgrade` | `pnpm update` |
-| `yarn audit` | `pnpm audit` |
-| `yarn why <pkg>` | `pnpm why <pkg>` |
+| Yarn Classic                      | pnpm Equivalent                                                  |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `yarn install`                    | `pnpm install`                                                   |
+| `yarn install --frozen-lockfile`  | `pnpm install --frozen-lockfile`                                 |
+| `yarn add <pkg>`                  | `pnpm add <pkg>`                                                 |
+| `yarn add -D <pkg>`               | `pnpm add -D <pkg>`                                              |
+| `yarn remove <pkg>`               | `pnpm remove <pkg>`                                              |
+| `yarn <script>`                   | `pnpm <script>`                                                  |
+| `yarn workspace <name> add <pkg>` | `pnpm --filter <name> add <pkg>`                                 |
+| `npx <cmd>`                       | `pnpm exec <cmd>` (project binary) or `pnpm dlx <cmd>` (one-off) |
+| `yarn global add <pkg>`           | `pnpm add -g <pkg>`                                              |
+| `yarn upgrade`                    | `pnpm update`                                                    |
+| `yarn audit`                      | `pnpm audit`                                                     |
+| `yarn why <pkg>`                  | `pnpm why <pkg>`                                                 |
 
 ---
 
 ## Files Changed Summary
 
-| Category | Files | Risk |
-|---|---|---|
-| **New files** | `pnpm-workspace.yaml`, `.npmrc` | Low |
-| **Deleted files** | `yarn.lock` (replaced by `pnpm-lock.yaml`) | Low |
-| **CI/CD** | `.github/actions/ci/action.yml`, `.github/workflows/ci.yml`, `.github/actions/vercel-deploy/action.yml`, `.github/actions/vercel-deploy-storybook/action.yml` | Low |
-| **Docker** | `apps/audit-scan-service/Dockerfile` | Medium |
-| **Config** | `package.json` (root), `apps/audit-scan-service/package.json` | Low |
-| **Hooks** | `.husky/pre-commit` | Low |
-| **Ignore** | `.prettierignore` | Low |
-| **Docs** | `CLAUDE.md`, `README.md`, `TESTING.md`, `libs/shared/ui/README.md` | Low |
-| **Skills** | 4 skill markdown files | Low |
-| **Total** | **~20 files** | |
+| Category          | Files                                                                                                                                                         | Risk   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **New files**     | `pnpm-workspace.yaml`, `.npmrc`                                                                                                                               | Low    |
+| **Deleted files** | `yarn.lock` (replaced by `pnpm-lock.yaml`)                                                                                                                    | Low    |
+| **CI/CD**         | `.github/actions/ci/action.yml`, `.github/workflows/ci.yml`, `.github/actions/vercel-deploy/action.yml`, `.github/actions/vercel-deploy-storybook/action.yml` | Low    |
+| **Docker**        | `apps/audit-scan-service/Dockerfile`                                                                                                                          | Medium |
+| **Config**        | `package.json` (root), `apps/audit-scan-service/package.json`                                                                                                 | Low    |
+| **Hooks**         | `.husky/pre-commit`                                                                                                                                           | Low    |
+| **Ignore**        | `.prettierignore`                                                                                                                                             | Low    |
+| **Docs**          | `CLAUDE.md`, `README.md`, `TESTING.md`, `libs/shared/ui/README.md`                                                                                            | Low    |
+| **Skills**        | 4 skill markdown files                                                                                                                                        | Low    |
+| **Total**         | **~20 files**                                                                                                                                                 |        |
 
 ---
 
 ## Verification Plan
 
 ### Phase 1: Local (blocks all subsequent phases)
+
 ```bash
 pnpm install                              # Clean install succeeds
 pnpm tsc --noEmit                         # Zero type errors
@@ -449,23 +453,27 @@ pnpm nx storybook root                    # Storybook launches
 ```
 
 ### Phase 2: Sentry (highest risk)
+
 - Start dev server, open browser console — confirm Sentry DSN initializes
 - Run `pnpm nx build root` — verify no `sentryWebpackPlugin` / `@sentry/utils` errors
 - If issues: add more patterns to `.npmrc` (`public-hoist-pattern[]=@opentelemetry/*`, etc.)
 
 ### Phase 3: E2E
+
 ```bash
 pnpm exec playwright install --with-deps chromium
 pnpm nx e2e root-e2e                      # All E2E tests pass
 ```
 
 ### Phase 4: Docker
+
 ```bash
 pnpm exec nx docker:build @danieljoffe.com/audit-scan-service
 docker run -p 3001:3001 audit-scan-service
 ```
 
 ### Phase 5: CI
+
 - Push to feature branch
 - Verify GitHub Actions CI passes (lint, test, build, typecheck, e2e)
 - Verify Vercel preview deploy works
@@ -490,11 +498,11 @@ The migration is **fully git-reversible**. No infrastructure, environment variab
 
 ## Estimated Effort
 
-| Phase | Time | Notes |
-|---|---|---|
-| File changes (Steps 1-11) | 1-2 hours | Mostly mechanical find-and-replace |
-| Lockfile migration + phantom dep fixes | 30-60 min | `pnpm import` + fix any strict resolution errors |
-| Sentry debugging | 0-2 hours | Depends on whether initial hoist patterns are sufficient |
-| Local verification | 30 min | Run through all Phase 1-4 checks |
-| CI verification | 30 min | Push and watch pipeline |
-| **Total** | **3-6 hours** | Sentry is the wildcard |
+| Phase                                  | Time          | Notes                                                    |
+| -------------------------------------- | ------------- | -------------------------------------------------------- |
+| File changes (Steps 1-11)              | 1-2 hours     | Mostly mechanical find-and-replace                       |
+| Lockfile migration + phantom dep fixes | 30-60 min     | `pnpm import` + fix any strict resolution errors         |
+| Sentry debugging                       | 0-2 hours     | Depends on whether initial hoist patterns are sufficient |
+| Local verification                     | 30 min        | Run through all Phase 1-4 checks                         |
+| CI verification                        | 30 min        | Push and watch pipeline                                  |
+| **Total**                              | **3-6 hours** | Sentry is the wildcard                                   |
