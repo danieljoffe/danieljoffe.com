@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
@@ -16,9 +17,12 @@ async def update_status(
     posting_id: str,
     body: StatusUpdate,
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> dict[str, Any]:
     if body.status not in VALID_STATUSES:
-        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {VALID_STATUSES}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status. Must be one of: {VALID_STATUSES}",
+        )
 
     current = (
         supabase.table("job_postings")
@@ -30,7 +34,8 @@ async def update_status(
     if not current.data:
         raise HTTPException(status_code=404, detail="Posting not found")
 
-    old_status = current.data["status"]
+    row = cast(dict[str, Any], current.data)
+    old_status = row["status"]
 
     supabase.table("job_status_log").insert(
         {
@@ -44,7 +49,7 @@ async def update_status(
     supabase.table("job_postings").update(
         {
             "status": body.status,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
         }
     ).eq("id", posting_id).execute()
 

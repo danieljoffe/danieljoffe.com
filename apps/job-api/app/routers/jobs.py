@@ -1,4 +1,7 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Query
+from postgrest.types import CountMethod
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key
@@ -17,14 +20,14 @@ async def list_jobs(
     company: str | None = Query(None),
     search: str | None = Query(None),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> dict[str, Any]:
     offset = (page - 1) * page_size
     ascending = order == "asc"
 
     query = supabase.table("job_postings").select(
         "id, greenhouse_id, source_id, title, company_name, location, department, "
         "absolute_url, score, score_breakdown, status, first_seen_at, created_at",
-        count="exact",
+        count=CountMethod.exact,
     )
 
     if min_score is not None:

@@ -1,7 +1,6 @@
-from app.seed.keyword_config import keyword_config
-
-
 import pytest
+
+from app.seed.keyword_config import keyword_config
 
 
 @pytest.fixture

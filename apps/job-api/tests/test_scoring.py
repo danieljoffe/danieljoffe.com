@@ -1,5 +1,5 @@
+from app.seed.keyword_config import KeywordConfig
 from app.services.scoring import score_job, strip_html
-from app.seed.keyword_config import KeywordConfig, keyword_config
 
 
 def test_strip_html_removes_tags():

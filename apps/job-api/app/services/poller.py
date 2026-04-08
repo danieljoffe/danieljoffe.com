@@ -1,6 +1,6 @@
 import asyncio
-import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any, cast
 
 from supabase import Client
 
@@ -27,11 +27,12 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 
     result = PollResult(sources_polled=0, new_jobs=0, updated_jobs=0, errors=[])
 
-    for source in sources:
+    for raw_source in sources:
+        source = cast(dict[str, Any], raw_source)
         try:
-            board_token = source["board_token"]
-            company_name = source["company_name"]
-            source_id = source["id"]
+            board_token: str = source["board_token"]
+            company_name: str = source["company_name"]
+            source_id: str = source["id"]
 
             jobs = await fetch_board_jobs(board_token)
             result.sources_polled += 1
@@ -42,7 +43,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 
                 score_result = score_job(job.title, job.content, keyword_config)
 
-                row = {
+                row: dict[str, Any] = {
                     "greenhouse_id": job.id,
                     "source_id": source_id,
                     "title": job.title,
@@ -63,7 +64,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
                 )
 
                 if upsert_resp.data:
-                    data = upsert_resp.data[0]
+                    data = cast(dict[str, Any], upsert_resp.data[0])
                     if data.get("created_at") == data.get("updated_at"):
                         result.new_jobs += 1
                     else:
@@ -71,7 +72,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 
             supabase.table("job_sources").update(
                 {
-                    "last_polled_at": datetime.now(timezone.utc).isoformat(),
+                    "last_polled_at": datetime.now(UTC).isoformat(),
                     "job_count": len(jobs),
                 }
             ).eq("id", source_id).execute()

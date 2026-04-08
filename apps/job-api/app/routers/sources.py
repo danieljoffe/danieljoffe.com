@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from fastapi import APIRouter, Depends
 from supabase import Client
 
@@ -9,7 +11,7 @@ router = APIRouter(prefix="/sources", tags=["sources"], dependencies=[Depends(ve
 
 
 @router.get("")
-async def list_sources(supabase: Client = Depends(get_supabase)) -> dict:
+async def list_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
     resp = supabase.table("job_sources").select("*").order("company_name").execute()
     return {"sources": resp.data or []}
 
@@ -18,7 +20,7 @@ async def list_sources(supabase: Client = Depends(get_supabase)) -> dict:
 async def manage_source(
     body: SourceAction,
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> dict[str, Any]:
     if body.action == "add":
         if not body.company_name:
             return {"error": "company_name required for add"}
@@ -45,7 +47,8 @@ async def manage_source(
             .execute()
         )
         if current.data:
-            new_enabled = not current.data["enabled"]
+            row = cast(dict[str, Any], current.data)
+            new_enabled = not row["enabled"]
             supabase.table("job_sources").update({"enabled": new_enabled}).eq(
                 "board_token", body.board_token
             ).execute()
@@ -56,7 +59,7 @@ async def manage_source(
 
 
 @router.post("/seed")
-async def seed_sources(supabase: Client = Depends(get_supabase)) -> dict:
+async def seed_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
     inserted = 0
     for company in COMPANY_SEED:
         supabase.table("job_sources").upsert(company, on_conflict="board_token").execute()
