@@ -436,7 +436,11 @@ importers:
         specifier: ^24.38.0
         version: 24.38.0(typescript@5.9.3)
 
-  apps/root: {}
+  apps/root:
+    dependencies:
+      '@danieljoffe.com/shared-ui':
+        specifier: workspace:*
+        version: link:../../libs/shared/ui
 
   apps/root-e2e: {}
 
