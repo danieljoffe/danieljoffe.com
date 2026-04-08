@@ -5,6 +5,7 @@ import {
   type Ref,
 } from 'react';
 import { Spinner } from './Spinner';
+import { DISABLED, FOCUS_RING, FOCUS_RING_OFFSET } from './styles/formStyles';
 import { cn } from './utils';
 
 export type ButtonVariant = 'bare' | 'primary' | 'secondary' | 'outline';
@@ -31,8 +32,8 @@ export interface ButtonProps
 
 export const baseButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition',
-  'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-  'focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed',
+  `duration-200 ${FOCUS_RING} ${FOCUS_RING_OFFSET}`,
+  DISABLED,
   'hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none',
 ].join(' ');
 

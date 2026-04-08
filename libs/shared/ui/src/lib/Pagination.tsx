@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DISABLED, FOCUS_RING, FOCUS_RING_OFFSET } from './styles/formStyles';
 import type { ComponentSize } from './types';
 import { cn } from './utils/cn';
 
@@ -70,7 +71,10 @@ export function Pagination({
         aria-label='Previous page'
         aria-disabled={isPrevDisabled ? 'true' : undefined}
         className={cn(
-          'rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
+          DISABLED,
+          FOCUS_RING,
+          FOCUS_RING_OFFSET,
           navButtonSizeStyles[size]
         )}
       >
@@ -101,7 +105,8 @@ export function Pagination({
             aria-current={page === currentPage ? 'page' : undefined}
             className={cn(
               'rounded-md transition-colors cursor-pointer',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+              FOCUS_RING,
+              FOCUS_RING_OFFSET,
               pageButtonSizeStyles[size],
               page === currentPage
                 ? 'bg-brand-600 text-white font-medium'
@@ -118,7 +123,10 @@ export function Pagination({
         aria-label='Next page'
         aria-disabled={isNextDisabled ? 'true' : undefined}
         className={cn(
-          'rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
+          DISABLED,
+          FOCUS_RING,
+          FOCUS_RING_OFFSET,
           navButtonSizeStyles[size]
         )}
       >

@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { Button } from './Button';
 import { Heading } from './Heading';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import { cn } from './utils';
 
 const FOCUSABLE_SELECTOR =
@@ -163,7 +164,7 @@ export function Modal({
               size='sm'
               onClick={handleClose}
               aria-label='Close dialog'
-              className='text-text-tertiary hover:text-text-primary transition-colors'
+              className={DISMISS_BUTTON}
             >
               <X className='size-5' aria-hidden='true' />
             </Button>
@@ -175,7 +176,7 @@ export function Modal({
             size='sm'
             onClick={handleClose}
             aria-label='Close dialog'
-            className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
+            className={cn('absolute top-4 right-4', DISMISS_BUTTON)}
           >
             <X className='size-5' aria-hidden='true' />
           </Button>

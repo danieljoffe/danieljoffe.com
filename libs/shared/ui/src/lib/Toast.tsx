@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Heading } from './Heading';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import { SEMANTIC_TEXT, type SemanticVariant } from './styles/semanticVariants';
 import { Text } from './Text';
 import { cn } from './utils/cn';
@@ -119,7 +120,7 @@ function ToastCard({
       <button
         onClick={() => handleDismiss()}
         aria-label='Dismiss notification'
-        className='p-0.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
+        className={cn('p-0.5 cursor-pointer', DISMISS_BUTTON)}
       >
         <X className='h-4 w-4' />
       </button>

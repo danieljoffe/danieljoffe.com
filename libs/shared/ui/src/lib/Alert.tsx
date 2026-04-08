@@ -9,6 +9,7 @@ import {
   type Ref,
 } from 'react';
 import { Heading } from './Heading';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import {
   SEMANTIC_BG_LIGHT,
   SEMANTIC_BORDER,
@@ -96,7 +97,7 @@ export function Alert({
           <button
             onClick={onDismiss}
             aria-label='Dismiss alert'
-            className='text-text-tertiary hover:text-text-primary transition-colors'
+            className={DISMISS_BUTTON}
           >
             <X className='size-4' aria-hidden='true' />
           </button>

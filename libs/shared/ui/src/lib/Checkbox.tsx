@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { useId, type InputHTMLAttributes, type Ref } from 'react';
+import { DISABLED_PEER, FOCUS_RING_PEER } from './styles/formStyles';
 import { Text } from './Text';
 import { cn } from './utils';
 
@@ -45,10 +46,9 @@ export function Checkbox({
             className={cn(
               'flex items-center justify-center size-5 border-2',
               'border-border-secondary rounded-xs bg-surface cursor-pointer transition-all',
-              'peer-checked:bg-brand-500 peer-checked:border-brand-500 peer-focus-visible:ring-2',
-              'peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2 ',
-              'peer-focus-visible:ring-offset-surface',
-              'peer-disabled:opacity-50 peer-disabled:cursor-not-allowed',
+              'peer-checked:bg-brand-500 peer-checked:border-brand-500',
+              FOCUS_RING_PEER,
+              DISABLED_PEER,
               error && 'border-error',
               className
             )}
