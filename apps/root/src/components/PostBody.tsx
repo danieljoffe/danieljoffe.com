@@ -35,7 +35,6 @@ export default function PostBody({
             alt={cover.alt}
             origin={cover.origin}
             creator={cover.creator}
-            blurHash={cover.blurHash}
             width={512}
             height={288}
             preload={true}
