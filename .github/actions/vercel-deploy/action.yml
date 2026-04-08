@@ -37,6 +37,10 @@ runs:
       shell: bash
       run: npm i -g vercel@${{ inputs.vercel-version }}
 
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
     - name: Pull Vercel Config
       shell: bash
       run: vercel pull --yes ${{ inputs.production == 'true' && '--environment=production' || '' }} --token=${{ inputs.vercel-token }}
