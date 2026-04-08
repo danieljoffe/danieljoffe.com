@@ -13,7 +13,7 @@ export interface PostBase {
   title: string;
   description: string;
   cover: UnsplashImageMeta;
-  link: NavLink;
+  link: Pick<NavLink, 'href'>;
 }
 
 export interface PostThumbnail extends PostBase {
