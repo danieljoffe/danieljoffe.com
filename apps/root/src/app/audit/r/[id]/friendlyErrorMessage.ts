@@ -6,7 +6,7 @@ export function friendlyErrorMessage(raw: string | null): string {
   if (!raw) return 'Something went wrong. Please try again.';
 
   if (raw.includes('WS endpoint URL'))
-    return "Our scanner couldn't start. The site may be blocking automated browsers. Please try again.";
+    return "Our scanner couldn't start. The site is likely blocking automated browsers. Please try again.";
 
   if (/timed?\s*out/i.test(raw))
     return 'This site took too long to load. Please try again.';
