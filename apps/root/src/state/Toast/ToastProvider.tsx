@@ -8,10 +8,16 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import {
+  DISMISS_BUTTON,
+  FOCUS_RING,
+  FOCUS_RING_OFFSET,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
+import type { SemanticVariant } from '@danieljoffe.com/shared-ui/styles/semanticVariants';
+import { SEMANTIC_TEXT } from '@danieljoffe.com/shared-ui/styles/semanticVariants';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { focusRing } from '@/lib/layoutStyles';
 
-export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
+export type ToastVariant = SemanticVariant;
 
 export interface ToastItem {
   id: string;
@@ -39,12 +45,7 @@ const icons: Record<ToastVariant, typeof Info> = {
   error: XCircle,
 };
 
-const iconColors: Record<ToastVariant, string> = {
-  info: 'text-info',
-  success: 'text-success',
-  warning: 'text-warning',
-  error: 'text-error',
-};
+const iconColors = SEMANTIC_TEXT;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -84,7 +85,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
               <button
                 onClick={() => dismiss(t.id)}
-                className={`p-0.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer rounded-sm ${focusRing}`}
+                className={`p-0.5 ${DISMISS_BUTTON} cursor-pointer rounded-sm ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
               >
                 <X className='h-4 w-4' />
               </button>

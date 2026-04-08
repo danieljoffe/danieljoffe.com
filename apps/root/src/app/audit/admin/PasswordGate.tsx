@@ -3,8 +3,13 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import {
+  BASE_FIELD,
+  FIELD_PADDING,
+  FIELD_PLACEHOLDER,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
+import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
-import { inputStyles } from '@/lib/formStyles';
 
 interface PasswordGateProps {
   onAuthenticated: (password: string) => void;
@@ -98,7 +103,7 @@ export default function PasswordGate({ onAuthenticated }: PasswordGateProps) {
                 autoFocus
                 disabled={isLockedOut}
                 data-sentry-mask
-                className={inputStyles}
+                className={cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER)}
               />
               {isLockedOut && (
                 <Text variant='error' className='text-center' role='alert'>

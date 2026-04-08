@@ -215,9 +215,11 @@ export default function MobileNav({ pathname }: { pathname: string }) {
             <Button
               name='close-more-menu'
               variant='bare'
+              size='sm'
+              iconOnly
               onClick={closeSheet}
               aria-label='Close more menu'
-              className='p-1.5 rounded-lg text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
+              className='rounded-lg text-text-tertiary hover:text-text-primary'
             >
               <X className='h-4 w-4' />
             </Button>
