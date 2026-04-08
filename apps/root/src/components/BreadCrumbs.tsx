@@ -2,7 +2,7 @@
 import { ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/Button';
-import { BreadCrumbsProps } from '@/types/base';
+import type { BreadCrumbsProps } from '@/types/base';
 
 export default function BreadCrumbs({ items }: BreadCrumbsProps) {
   const pathname = usePathname();

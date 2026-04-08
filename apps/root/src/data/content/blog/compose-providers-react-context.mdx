@@ -1,0 +1,177 @@
+export const metadata = {
+  title: 'Composing React Providers Without the Nesting Nightmare',
+  date: '2026-04-05',
+  excerpt:
+    'A functional composition pattern that turns deeply nested provider trees into a flat, readable list. Includes automatic React DevTools display names.',
+  author: 'Daniel Joffe',
+  category: 'React Patterns',
+  tags: [
+    'React',
+    'Context API',
+    'TypeScript',
+    'State Management',
+    'Performance',
+    'Design Patterns',
+  ],
+  slug: 'compose-providers-react-context',
+  type: 'blog',
+};
+
+## Composing React Providers Without the Nesting Nightmare
+
+If you've worked on a React app with more than two context providers, you've seen this:
+
+```tsx title="The nesting problem"
+<ThemeProvider>
+  <AuthProvider>
+    <ToastProvider>
+      <ModalProvider>
+        <AnalyticsProvider>
+          <FeatureFlagProvider>{children}</FeatureFlagProvider>
+        </AnalyticsProvider>
+      </ModalProvider>
+    </ToastProvider>
+  </AuthProvider>
+</ThemeProvider>
+```
+
+Every new provider adds another level of indentation. The ordering matters but isn't obvious. Adding, removing, or reordering providers means carefully editing nested JSX. It's a maintenance tax that scales linearly with your provider count.
+
+## The Pattern
+
+Here's a `composeProviders` utility that reduces the nesting to a flat list:
+
+```typescript title="composeProviders.ts" {1-8}
+import { ComponentType } from 'react';
+
+type WithChildren = { children: React.ReactNode };
+
+const composeProviders = (providers: ComponentType<WithChildren>[]) =>
+  providers.reduce((Acc, Curr) => {
+    const Composed = ({ children }: WithChildren) => (
+      <Acc>
+        <Curr>{children}</Curr>
+      </Acc>
+    );
+    Composed.displayName =
+      `${Acc.displayName ?? Acc.name}(${Curr.displayName ?? Curr.name})`;
+    return Composed;
+  });
+```
+
+Now the provider tree reads like a configuration:
+
+```tsx title="AppContext.tsx" {1-6}
+const Providers = composeProviders([
+  ThemeProvider,
+  ToastProvider,
+  ModalProvider,
+]);
+
+export default function AppContext({ children }: WithChildren) {
+  return (
+    <Providers>
+      <Nav />
+      {children}
+    </Providers>
+  );
+}
+```
+
+## Why This Works
+
+### It's just `reduce`
+
+The utility walks the array left to right, wrapping each provider around the next. The result is functionally identical to hand-written nesting. It produces the same component tree at runtime. No runtime overhead, no extra renders, no magic.
+
+### Display names are automatic
+
+The `displayName` assignment means React DevTools shows the full provider chain:
+
+```
+ThemeProvider(ToastProvider(ModalProvider(...)))
+```
+
+Without this, composed components show as `Anonymous` in the component tree, making debugging impossible. The `?? Acc.name` fallback handles providers that don't set `displayName` explicitly.
+
+### Order is explicit and scannable
+
+Provider order matters: inner providers can consume outer providers' contexts. In nested JSX, this ordering is implicit in the indentation hierarchy. In the array, it's a flat list you can read top to bottom. Reordering is a cut-and-paste of a single line.
+
+### Adding a provider is a one-line change
+
+```diff
+const Providers = composeProviders([
+  ThemeProvider,
+  ToastProvider,
+  ModalProvider,
++ NotificationProvider,
+]);
+```
+
+No indentation changes, no bracket matching, no risk of accidentally nesting in the wrong position.
+
+## When NOT to Use This
+
+This pattern works well for **app-level providers** that wrap your entire tree: theme, auth, toast, modals. It's not a good fit for:
+
+- **Providers with custom props**: If a provider needs configuration (`<QueryProvider client={queryClient}>`), you can't pass it as a bare component reference. You'd need to wrap it in a closure first, which defeats the readability gain.
+- **Conditional providers**: If some providers only render in certain environments, a static array doesn't express that. Use JSX for conditional trees.
+- **Server components**: This utility creates client components. If your layout is a server component, the composed result forces a client boundary.
+
+For providers that need props, a hybrid approach works: compose the zero-config providers and nest the configured ones manually:
+
+```tsx
+const Providers = composeProviders([ThemeProvider, ToastProvider]);
+
+export default function AppContext({ children }: WithChildren) {
+  return (
+    <QueryProvider client={queryClient}>
+      <Providers>{children}</Providers>
+    </QueryProvider>
+  );
+}
+```
+
+## The Performance Win You Get for Free
+
+This pattern pairs naturally with **splitting a monolithic provider into focused ones**. If you have a single context with 15 properties, every state change re-renders every consumer. Splitting into 3 focused contexts means a theme change only re-renders theme consumers — not modal or toast consumers.
+
+The composition pattern makes this split painless to manage. Without it, going from 1 provider to 5 means adding 4 levels of nesting. With it, you add 4 lines to an array.
+
+We documented the full refactor, splitting a 153-line `GlobalProvider` into three focused providers, in the [AppContext simplification case study](/projects/appcontext-simplification-case-study). The `composeProviders` utility was the finishing touch that made the split maintainable.
+
+## TypeScript Details
+
+The type constraint is minimal: each provider just needs to accept `children`:
+
+```typescript
+type WithChildren = { children: React.ReactNode };
+const composeProviders = (providers: ComponentType<WithChildren>[]) => ...
+```
+
+This means any standard provider component works. If you have providers with additional required props, TypeScript will catch the error at the call site. You can't pass `QueryProvider` (which requires a `client` prop) into the array without a type error.
+
+## The Full Pattern
+
+Here's the complete, copy-paste-ready version:
+
+```typescript title="composeProviders.ts"
+import { ComponentType, ReactNode } from 'react';
+
+type WithChildren = { children: ReactNode };
+
+export const composeProviders = (providers: ComponentType<WithChildren>[]) =>
+  providers.reduce((Acc, Curr) => {
+    const Composed = ({ children }: WithChildren) => (
+      <Acc>
+        <Curr>{children}</Curr>
+      </Acc>
+    );
+    Composed.displayName =
+      `${Acc.displayName ?? Acc.name}(${Curr.displayName ?? Curr.name})`;
+    return Composed;
+  });
+```
+
+Eight lines. No dependencies. Works with any React provider that accepts children. The next time you catch yourself adding a seventh level of provider nesting, try this instead.

@@ -1,7 +1,8 @@
-import { useModal } from '@/state/Modal/ModalProvider';
-import Button from '@/components/Button';
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { useModal } from '@/state/Modal/ModalProvider';
+import Button from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Z_INDEX, ANIMATION_DURATION } from '@/utils/constants';
 
@@ -96,7 +97,9 @@ export default function Modal() {
             aria-modal='true'
           >
             <header className='sr-only'>
-              <h2 id='modal-title'>Navigation Menu</h2>
+              <Heading variant='component' as='h2' id='modal-title'>
+                Navigation Menu
+              </Heading>
               <p id='modal-description'>
                 Use the menu below to navigate to different sections of the
                 website.

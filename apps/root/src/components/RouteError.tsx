@@ -9,7 +9,7 @@ export default function RouteError({
   error,
   reset,
   route,
-  description = 'There was an error loading this page. Please try again.',
+  description = 'This page failed to load. Please try again.',
 }: {
   error: Error & { digest?: string };
   reset: () => void;

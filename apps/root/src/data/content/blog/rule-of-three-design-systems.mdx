@@ -1,0 +1,98 @@
+export const metadata = {
+  title: 'The Rule of Three in Design Systems',
+  date: '2026-04-05',
+  excerpt:
+    'When to extract a repeated pattern into a shared abstraction, and when to leave it inline. A practical framework from auditing typography across a portfolio site.',
+  author: 'Daniel Joffe',
+  category: 'Design Systems',
+  tags: ['Design Systems', 'Architecture', 'React', 'Refactoring'],
+  slug: 'rule-of-three-design-systems',
+  type: 'blog',
+  topic: 'Architecture',
+};
+
+## The Temptation to Abstract Early
+
+Every developer knows the feeling: you write a 90-character Tailwind class
+string, paste it into a second file, and your refactoring instinct fires.
+"This should be a component."
+
+But premature extraction creates a different kind of debt. A shared component
+with one or two consumers is harder to change than inline code. You have to
+reason about all the places it's used, maintain its props API, and write tests
+for it. If the two usages later diverge (and they often do), you're stuck
+maintaining an abstraction that serves neither well.
+
+The **Rule of Three** is a simple heuristic: don't extract until a pattern
+appears at least three times. Below three, the cost of abstraction exceeds
+the cost of duplication.
+
+## The Typography Audit
+
+We audited every heading and text pattern across a 20-page portfolio site.
+The findings split cleanly into two categories:
+
+### Patterns that repeated 3+ times (extract)
+
+| Pattern            | Occurrences   | Action                             |
+| ------------------ | ------------- | ---------------------------------- |
+| Page hero title    | 7 pages       | `<Heading variant="hero">`         |
+| Card title         | 5+ components | `<Heading variant="cardTitle">`    |
+| Card description   | 5+ components | `<Text variant="cardDescription">` |
+| Section label      | 5 sections    | `<Text variant="label">`           |
+| Metadata/timestamp | 4+ components | `<Text variant="meta">`            |
+| Body paragraph     | 6+ pages      | `<Text variant="body">`            |
+
+### Patterns that appeared 1–2 times (leave inline)
+
+| Pattern                       | Occurrences | Decision     |
+| ----------------------------- | ----------- | ------------ |
+| About page name/title styling | 1           | Leave inline |
+| FAQ question text             | 1 component | Leave inline |
+| Experience role badge text    | 1 component | Leave inline |
+| Breadcrumb current page       | 1 component | Leave inline |
+
+The one-off patterns are specific to their context. Extracting "FAQ question
+text" into a variant would create a variant used by exactly one file. That's overhead
+with no benefit.
+
+## When the Rule Bends
+
+There are cases where extracting before three occurrences makes sense:
+
+1. **Safety-critical patterns**: Form error messages (`text-sm text-error`)
+   appeared twice but serve a clear a11y contract. Consistent error display
+   matters. We extracted `<Text variant="error">`.
+
+2. **Cross-boundary patterns**: A pattern used once in the app and once in
+   shared-ui justifies extraction because the cost of divergence is higher
+   across library boundaries.
+
+3. **Complex patterns**: If a single occurrence involves 5+ coordinated
+   classes with responsive breakpoints and dark mode variants, the risk of
+   copy-paste drift is high enough to extract early.
+
+## Applying It Beyond Typography
+
+The rule works for any design system decision:
+
+| Abstraction          | Extract when...                                 |
+| -------------------- | ----------------------------------------------- |
+| **UI component**     | 3+ files use the same element + class combo     |
+| **Style constant**   | 3+ components share the same className string   |
+| **Custom hook**      | 3+ components duplicate the same stateful logic |
+| **Utility function** | 3+ call sites with the same transformation      |
+
+The key insight: **three is the minimum where a pattern proves it's stable**.
+Two occurrences might converge by coincidence. Three occurrences prove there's
+a genuine shared concept worth naming and maintaining.
+
+## The Counter-Argument
+
+Some teams extract everything into a design system from day one. This works
+when you have a mature design spec with validated patterns. But for evolving
+products — startups, portfolio sites, MVPs — the spec is the code. Premature
+extraction freezes patterns before they've proven themselves.
+
+Three similar lines of code is better than a premature abstraction. Wait for
+the pattern to stabilize, then extract with confidence.

@@ -3,6 +3,8 @@
 import { composePlugins, withNx } from '@nx/next';
 import { withBotId } from 'botid/next/config';
 import createMDX from '@next/mdx';
+// remark-gfm is referenced by string below to keep MDX loader options
+// JSON-serializable for Turbopack (same approach as rehype-pretty-code).
 import bundleAnalyzer from '@next/bundle-analyzer';
 import { createRequire } from 'node:module';
 
@@ -32,6 +34,7 @@ const prettyCodeOptions = {
 // This keeps loader options JSON-serializable for both webpack and Turbopack.
 const withMDX = createMDX({
   options: {
+    remarkPlugins: ['remark-gfm'],
     rehypePlugins: [['rehype-pretty-code', prettyCodeOptions]],
   },
 });
@@ -44,12 +47,11 @@ const nextConfig = {
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
+  devIndicators: false,
   // Performance optimizations
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
-    // Enable critical CSS inlining with critters
-    optimizeCss: true,
     optimizePackageImports: [
       '@gsap/react',
       'gsap',
@@ -111,7 +113,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'grwmzluuqyczatkxorfa.supabase.co',
       },
     ],
     formats: ['image/webp', 'image/avif'],

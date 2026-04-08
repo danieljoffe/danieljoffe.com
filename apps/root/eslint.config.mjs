@@ -2,27 +2,30 @@
 import storybook from 'eslint-plugin-storybook';
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import reactPlugin from 'eslint-plugin-react';
+import importPlugin from 'eslint-plugin-import';
 import { fixupPluginRules } from '@eslint/compat';
 import baseConfig from '../../eslint.config.mjs';
 import requireButtonName from './eslint-rules/require-button-name.js';
+import noRawHeadings from './eslint-rules/no-raw-headings.js';
 
-// eslint-config-next bundles its own typescript-eslint instance (conflicts with the
-// Nx-managed version) and an eslint-plugin-react instance that uses deprecated
-// context APIs removed in ESLint 10. Strip both and provide compatible versions.
+// eslint-config-next bundles its own typescript-eslint, eslint-plugin-react, and
+// eslint-plugin-import instances. typescript-eslint conflicts with the Nx-managed
+// version, and the react + import plugins use deprecated context APIs removed in
+// ESLint 10. Strip all three and provide compatible versions.
 const nextConfigs = nextCoreWebVitals.map(cfg => {
   if (!cfg.plugins) return cfg;
   const {
     '@typescript-eslint': _ts,
     react: _react,
+    import: _import,
     ...keepPlugins
   } = cfg.plugins;
   return {
     ...cfg,
     plugins: {
       ...keepPlugins,
-      // Wrap eslint-plugin-react with the ESLint 10 compatibility shim so its
-      // deprecated context.getFilename() calls are bridged to context.filename.
       react: fixupPluginRules(reactPlugin),
+      import: fixupPluginRules(importPlugin),
     },
   };
 });
@@ -43,17 +46,71 @@ const config = [
   },
   ...storybook.configs['flat/recommended'],
   {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    settings: {
+      'import/internal-regex': '^@/',
+    },
+    rules: {
+      // Import ordering: node → packages → lib imports → local files
+      'import/order': [
+        'error',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+          ],
+          pathGroups: [
+            {
+              pattern: '@danieljoffe.com/**',
+              group: 'external',
+              position: 'after',
+            },
+            {
+              pattern: '@/**',
+              group: 'internal',
+              position: 'before',
+            },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin'],
+          'newlines-between': 'never',
+        },
+      ],
+      'import/no-cycle': 'error',
+      'import/no-duplicates': 'error',
+    },
+  },
+  {
     files: ['**/*.tsx'],
     ignores: ['**/*.stories.tsx'],
     plugins: {
       'custom-rules': {
         rules: {
           'require-button-name': requireButtonName,
+          'no-raw-headings': noRawHeadings,
         },
       },
     },
     rules: {
       'custom-rules/require-button-name': 'warn',
+      'custom-rules/no-raw-headings': 'warn',
+    },
+  },
+  // Raw headings are allowed in error boundaries (render outside app tree where
+  // kit may not be available) and in test fixtures that render mock MDX content.
+  {
+    files: [
+      '**/global-error.tsx',
+      '**/ErrorBoundary.tsx',
+      '**/RouteError.tsx',
+      '**/*.spec.tsx',
+      '**/*.test.tsx',
+    ],
+    rules: {
+      'custom-rules/no-raw-headings': 'off',
     },
   },
 ];

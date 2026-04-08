@@ -1,11 +1,18 @@
-// Navigation links for testing
-export const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/experience', label: 'Experience' },
-  { href: '/projects', label: 'Projects' },
+// Primary navigation links — always visible in nav bar
+export const PRIMARY_NAV_LINKS = [
   { href: '/services', label: 'Services' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/experience', label: 'Experience' },
 ];
+
+// Secondary navigation links — inside "More" dropdown/sheet
+export const MORE_NAV_LINKS = [
+  { href: '/about', label: 'About' },
+  { href: '/blog', label: 'Blog' },
+];
+
+// All nav links (union of primary + more)
+export const NAV_LINKS = [...PRIMARY_NAV_LINKS, ...MORE_NAV_LINKS];
 
 // Project slugs for parametrized tests (from apps/root/src/data/project.ts)
 export const PROJECT_SLUGS = [

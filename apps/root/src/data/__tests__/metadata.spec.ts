@@ -1,3 +1,5 @@
+import { buildPostMetadata } from '@/lib/buildPostMetadata';
+import { PostMetadata } from '@/types/postTypes';
 import { rootMetadata } from '../metadata/root';
 import { aboutMetadata } from '../metadata/about';
 import { homeMetadata } from '../metadata/home';
@@ -5,8 +7,6 @@ import { servicesMetadata } from '../metadata/services';
 import { notFoundMetadata } from '../metadata/notFound';
 import { projectRootMetadata } from '../metadata/project';
 import { experienceRootMetadata } from '../metadata/experience';
-import { buildPostMetadata } from '@/lib/buildPostMetadata';
-import { PostMetadata } from '@/types/postTypes';
 
 // ---------------------------------------------------------------------------
 // Helpers

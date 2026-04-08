@@ -248,7 +248,7 @@ describe('Tooltip', () => {
     // The test passing without error confirms cleanup works
   });
 
-  it('links trigger to tooltip via aria-describedby', () => {
+  it('applies aria-describedby to the child element, not the wrapper', () => {
     const { container } = render(
       <Tooltip content='Tooltip text'>
         <button>Hover me</button>
@@ -256,10 +256,42 @@ describe('Tooltip', () => {
     );
     const tooltip = container.querySelector('[role="tooltip"]');
     const trigger = container.querySelector('[role="presentation"]');
+    const button = screen.getByRole('button', { name: 'Hover me' });
+
     expect(tooltip).toHaveAttribute('id');
-    expect(trigger).toHaveAttribute(
+    // aria-describedby should be on the child, not the wrapper
+    expect(button).toHaveAttribute(
       'aria-describedby',
       tooltip?.getAttribute('id')
     );
+    expect(trigger).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('sets aria-hidden="true" on tooltip when not visible', () => {
+    const { container } = render(
+      <Tooltip content='Tooltip text'>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+    const tooltip = container.querySelector('[role="tooltip"]');
+    expect(tooltip).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('sets aria-hidden="false" on tooltip when visible', () => {
+    const { container } = render(
+      <Tooltip content='Tooltip text' delay={200}>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+
+    const trigger = screen.getByRole('button');
+    fireEvent.mouseEnter(trigger);
+
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+
+    const tooltip = container.querySelector('[role="tooltip"]');
+    expect(tooltip).toHaveAttribute('aria-hidden', 'false');
   });
 });

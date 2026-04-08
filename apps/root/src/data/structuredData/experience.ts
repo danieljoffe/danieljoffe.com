@@ -1,8 +1,5 @@
 import { AllowedExperienceSlugs, ExperienceStructuredData } from '@/types/base';
-import {
-  personStructuredData as member,
-  CollectionPageStructuredData,
-} from './base';
+import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 import {
   experienceNames,
   experienceRoles,
@@ -11,9 +8,12 @@ import {
   experiencePageSlugs,
 } from '../experience';
 import { experienceRecords } from '../experienceThumbnails';
-import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
+import {
+  personStructuredData as member,
+  CollectionPageStructuredData,
+} from './base';
 
-export const wincExperienceSD: ExperienceStructuredData = {
+const wincExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.Winc,
@@ -29,7 +29,7 @@ export const wincExperienceSD: ExperienceStructuredData = {
   member,
 };
 
-export const IBExperienceSD: ExperienceStructuredData = {
+const IBExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.IB,
@@ -45,7 +45,7 @@ export const IBExperienceSD: ExperienceStructuredData = {
   member,
 };
 
-export const TLCExperienceSD: ExperienceStructuredData = {
+const TLCExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.TLC,
@@ -61,7 +61,7 @@ export const TLCExperienceSD: ExperienceStructuredData = {
   member,
 };
 
-export const FCExperienceSD: ExperienceStructuredData = {
+const FCExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.FC,
@@ -77,13 +77,13 @@ export const FCExperienceSD: ExperienceStructuredData = {
   member,
 };
 
-export const PDExperienceSD: ExperienceStructuredData = {
+const PDExperienceSD: ExperienceStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Role',
   roleName: experienceRoles.SD,
   startDate: '2023-01',
   description:
-    'Senior Frontend Developer combining formal computer science education with contract engineering work.',
+    'Full-Stack Engineer combining formal computer science education with contract engineering work.',
   worksFor: {
     '@type': 'Corporation',
     name: experienceNames.SD,
@@ -106,9 +106,9 @@ export const experienceStructuredData: Record<
 export const experienceRootStructuredData: CollectionPageStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: `Experience | ${FULL_NAME} - Frontend Engineer`,
+  name: `Experience | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'An overview of my professional journey as a frontend engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',
+    'An overview of my professional journey as a full-stack engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',
   url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}`,
   author: member,
   mainEntity: {

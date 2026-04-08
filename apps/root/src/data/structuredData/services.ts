@@ -24,9 +24,9 @@ const services = [
     timeline: '3-6 weeks',
   },
   {
-    name: 'MVP & Product Frontend Builds',
+    name: 'MVP & Product Builds',
     description:
-      'Architect and build complete frontend applications with Next.js, React, TypeScript. Includes auth, state management, and deployment.',
+      'Architect and build complete web applications with Next.js, React, TypeScript, and Node.js. Includes auth, state management, and deployment.',
     price: '12000.00',
     timeline: '4-12 weeks',
   },
@@ -35,7 +35,7 @@ const services = [
 export const servicesStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Service',
-  serviceType: 'Frontend Development & Consulting',
+  serviceType: 'Full-Stack Development & Consulting',
   provider: personStructuredData,
   areaServed: {
     '@type': 'Place',
@@ -45,7 +45,7 @@ export const servicesStructuredData = {
     'Performance audits, component libraries, CMS tooling, and MVP builds. I help startups ship faster, load faster, and stop depending on engineering for everything.',
   hasOfferCatalog: {
     '@type': 'OfferCatalog',
-    name: 'Frontend Development Services',
+    name: 'Full-Stack Development Services',
     itemListElement: services.map((service, index) => ({
       '@type': 'Offer',
       itemOffered: {
@@ -69,9 +69,9 @@ export const servicesStructuredData = {
 export const servicesPageStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: `Services | ${FULL_NAME} - Frontend Development & Consulting`,
+  name: `Services | ${FULL_NAME} - Full-Stack Development & Consulting`,
   description:
-    'Performance audits, component libraries, CMS tooling, and MVP builds. Ship faster with a senior frontend partner.',
+    'Performance audits, component libraries, CMS tooling, and MVP builds. Ship faster with a senior full-stack partner.',
   url: `${DOMAIN_URL}${SERVICES_LINK.href}`,
   author: personStructuredData,
   mainEntity: servicesStructuredData,

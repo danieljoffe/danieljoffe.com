@@ -42,6 +42,8 @@ const config = {
   moduleNameMapper: {
     '^@danieljoffe\\.com/shared-ui$':
       '<rootDir>/../../libs/shared/ui/src/index.ts',
+    '^@danieljoffe\\.com/shared-ui/(.*)$':
+      '<rootDir>/../../libs/shared/ui/src/lib/$1.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^gsap/MorphSVGPlugin$': '<rootDir>/__mocks__/gsap.morphSVGPlugin.js',
     '^gsap/CustomEase$': '<rootDir>/__mocks__/gsap.customEase.js',

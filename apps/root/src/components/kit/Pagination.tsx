@@ -1,3 +1,4 @@
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 
 interface PaginationProps {
@@ -26,9 +27,9 @@ export function Pagination({
       >
         Previous
       </Button>
-      <span className='text-sm text-text-secondary'>
+      <Text variant='body' as='span'>
         Page {page} of {totalPages}
-      </span>
+      </Text>
       <Button
         variant='outline'
         size='sm'

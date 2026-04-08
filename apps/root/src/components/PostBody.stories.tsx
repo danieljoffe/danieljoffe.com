@@ -7,7 +7,6 @@ const mockCover = {
   origin:
     'https://unsplash.com/photos/aerial-photo-of-foggy-mountains-1527pjeb6jg' as const,
   creator: '@samferrara' as const,
-  blurHash: 'L125+JD~D#-rn$WCkCj?D~xbxbNc',
 };
 
 const meta = {

@@ -15,7 +15,7 @@ export default function PostDetailLayout({
   const Post = entry.component;
 
   return (
-    <section className='w-full flex flex-col justify-center'>
+    <main id='main-content' className='w-full flex flex-col justify-center'>
       <div className='max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody
           cover={entry.thumbnail.cover}
@@ -37,6 +37,6 @@ export default function PostDetailLayout({
           __html: JSON.stringify(entry.structuredData).replace(/</g, '\\u003c'),
         }}
       />
-    </section>
+    </main>
   );
 }

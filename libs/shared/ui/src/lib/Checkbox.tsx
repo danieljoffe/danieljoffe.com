@@ -1,20 +1,32 @@
 import { Check } from 'lucide-react';
-import { forwardRef, useId, type InputHTMLAttributes } from 'react';
+import { useId, type InputHTMLAttributes, type Ref } from 'react';
+import { Text } from './Text';
 import { cn } from './utils';
 
 export interface CheckboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'type'
 > {
+  ref?: Ref<HTMLInputElement> | undefined;
   label?: string | undefined;
+  error?: string | undefined;
 }
 
-export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ label, className, id, checked, ...props }, ref) => {
-    const generatedId = useId();
-    const checkboxId = id ?? generatedId;
+export function Checkbox({
+  label,
+  error,
+  className,
+  id,
+  checked,
+  ref,
+  ...props
+}: CheckboxProps) {
+  const generatedId = useId();
+  const checkboxId = id ?? generatedId;
+  const errorId = error ? `${checkboxId}-error` : undefined;
 
-    return (
+  return (
+    <div>
       <div className='flex items-center gap-2'>
         <div className='relative'>
           <input
@@ -22,6 +34,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             type='checkbox'
             id={checkboxId}
             checked={checked}
+            aria-invalid={error ? 'true' : undefined}
+            aria-describedby={errorId}
             className='peer sr-only'
             {...props}
           />
@@ -30,10 +44,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             onClick={() => document.getElementById(checkboxId)?.click()}
             className={cn(
               'flex items-center justify-center size-5 border-2',
-              'border-border-secondary rounded bg-surface cursor-pointer transition-all',
+              'border-border-secondary rounded-xs bg-surface cursor-pointer transition-all',
               'peer-checked:bg-brand-500 peer-checked:border-brand-500 peer-focus-visible:ring-2',
               'peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2 ',
               'peer-focus-visible:ring-offset-surface',
+              'peer-disabled:opacity-50 peer-disabled:cursor-not-allowed',
+              error && 'border-error',
               className
             )}
           >
@@ -49,13 +65,22 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         {label && (
           <label
             htmlFor={checkboxId}
-            className='text-text-primary cursor-pointer select-none'
+            className={cn(
+              'text-text-primary select-none',
+              props.disabled
+                ? 'opacity-50 cursor-not-allowed'
+                : 'cursor-pointer'
+            )}
           >
             {label}
           </label>
         )}
       </div>
-    );
-  }
-);
-Checkbox.displayName = 'Checkbox';
+      {error && (
+        <Text variant='error' id={errorId} className='mt-1.5' role='alert'>
+          {error}
+        </Text>
+      )}
+    </div>
+  );
+}

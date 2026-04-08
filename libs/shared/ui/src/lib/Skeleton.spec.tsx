@@ -49,4 +49,35 @@ describe('Skeleton', () => {
     const { container } = render(<Skeleton className='custom-class' />);
     expect(container.firstChild).toHaveClass('custom-class');
   });
+
+  describe('sizes', () => {
+    it('applies md text line height by default', () => {
+      const { container } = render(<Skeleton />);
+      expect(container.querySelector('.h-4')).toBeInTheDocument();
+    });
+
+    it('applies sm text line height', () => {
+      const { container } = render(<Skeleton size='sm' />);
+      expect(container.querySelector('.h-3')).toBeInTheDocument();
+    });
+
+    it('applies lg text line height', () => {
+      const { container } = render(<Skeleton size='lg' />);
+      expect(container.querySelector('.h-5')).toBeInTheDocument();
+    });
+
+    it('uses sm circular default size', () => {
+      const { container } = render(<Skeleton variant='circular' size='sm' />);
+      const el = container.querySelector('.rounded-full') as HTMLElement;
+      expect(el.style.width).toBe('32px');
+    });
+
+    it('uses lg rectangular default height', () => {
+      const { container } = render(
+        <Skeleton variant='rectangular' size='lg' />
+      );
+      const el = container.querySelector('.rounded-lg') as HTMLElement;
+      expect(el.style.height).toBe('180px');
+    });
+  });
 });

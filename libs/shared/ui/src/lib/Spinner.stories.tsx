@@ -14,22 +14,6 @@ const meta = {
         defaultValue: { summary: 'md' },
       },
     },
-    variant: {
-      description: 'Color variant of the spinner',
-      control: 'select',
-      options: [
-        undefined,
-        'accent',
-        'success',
-        'warning',
-        'error',
-        'info',
-        'foreground',
-      ],
-      table: {
-        defaultValue: { summary: 'accent' },
-      },
-    },
   },
 } satisfies Meta<typeof Spinner>;
 export default meta;
@@ -39,7 +23,6 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     size: 'md',
-    variant: 'accent',
     'aria-label': 'Loading',
   },
 };
@@ -47,7 +30,6 @@ export const Default: Story = {
 export const Small: Story = {
   args: {
     size: 'sm',
-    variant: 'accent',
     'aria-label': 'Loading',
   },
 };
@@ -55,42 +37,6 @@ export const Small: Story = {
 export const Large: Story = {
   args: {
     size: 'lg',
-    variant: 'accent',
-    'aria-label': 'Loading',
-  },
-};
-
-export const Success: Story = {
-  args: {
-    variant: 'success',
-    'aria-label': 'Loading',
-  },
-};
-
-export const Warning: Story = {
-  args: {
-    variant: 'warning',
-    'aria-label': 'Loading',
-  },
-};
-
-export const Error: Story = {
-  args: {
-    variant: 'error',
-    'aria-label': 'Loading',
-  },
-};
-
-export const Info: Story = {
-  args: {
-    variant: 'info',
-    'aria-label': 'Loading',
-  },
-};
-
-export const Foreground: Story = {
-  args: {
-    variant: 'foreground',
     'aria-label': 'Loading',
   },
 };

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkBotId } from 'botid/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { captureApiError } from '@/lib/errorTracking';
 import {
   isValidUrl,
   normalizeUrl,
   hashIp,
 } from '@danieljoffe.com/shared-audit';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { captureApiError } from '@/lib/errorTracking';
 
 const RATE_LIMIT_MAX = process.env.NODE_ENV === 'development' ? 999 : 10;
 const RATE_LIMIT_WINDOW_HOURS = 1;

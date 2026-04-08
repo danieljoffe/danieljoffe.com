@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
 import { formatDate } from '@/lib/dateFormatting';
-import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';
 
@@ -76,25 +78,22 @@ export default function ReportHeader({
             )}
 
             <div className='min-w-0 flex-1'>
-              <h1
-                id='report-header-heading'
-                className='font-sans text-2xl md:text-3xl font-semibold tracking-tight'
-              >
+              <Heading variant='section' id='report-header-heading'>
                 {pageTitle || url}
-              </h1>
-              <p className='text-sm text-text-secondary truncate max-w-md mt-1'>
+              </Heading>
+              <Text variant='body' className='truncate max-w-md mt-1'>
                 {url}
-              </p>
+              </Text>
               {completedAt && (
-                <p className='text-xs text-text-tertiary mt-1'>
+                <Text variant='meta' as='p' className='mt-1'>
                   Scanned {formatDate(completedAt)}
-                </p>
+                </Text>
               )}
-              <p className='text-xs text-text-tertiary mt-0.5'>
+              <Text variant='meta' as='p' className='mt-0.5'>
                 {deviceMode === 'desktop'
                   ? 'Tested on Desktop (Broadband)'
                   : 'Tested on Mobile (4G)'}
-              </p>
+              </Text>
             </div>
           </div>
         </div>

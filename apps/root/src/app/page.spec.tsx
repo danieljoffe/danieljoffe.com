@@ -37,14 +37,9 @@ describe('Homepage', () => {
     expect(heading).toHaveTextContent(/daniel joffe/i);
   });
 
-  it('renders hero descriptions', () => {
+  it('renders hero description', () => {
     render(<Page />);
-    expect(
-      screen.getByText('I build full-stack products.')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('I architect backend systems.')
-    ).toBeInTheDocument();
+    expect(screen.getByText(/builds products end-to-end/i)).toBeInTheDocument();
   });
 
   it('renders Previous Teams section', () => {

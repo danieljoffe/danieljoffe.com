@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
+import { focusRing } from '@/lib/layoutStyles';
 import { servicesFAQs } from '@/data/services';
 
 export default function FAQ() {
@@ -14,7 +16,7 @@ export default function FAQ() {
         <div key={index}>
           <button
             type='button'
-            className='w-full py-4 flex items-center justify-between text-left cursor-pointer'
+            className={`w-full py-4 flex items-center justify-between text-left cursor-pointer rounded-sm ${focusRing}`}
             onClick={() => setOpenIndex(openIndex === index ? null : index)}
             aria-expanded={openIndex === index}
           >
@@ -35,9 +37,7 @@ export default function FAQ() {
               openIndex === index ? 'max-h-96 pb-4' : 'max-h-0'
             )}
           >
-            <p className='text-sm text-text-secondary leading-relaxed'>
-              {faq.answer}
-            </p>
+            <Text variant='body'>{faq.answer}</Text>
           </div>
         </div>
       ))}

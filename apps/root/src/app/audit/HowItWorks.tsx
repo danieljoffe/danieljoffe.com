@@ -1,3 +1,6 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+
 const steps = [
   {
     number: 1,
@@ -9,7 +12,7 @@ const steps = [
     number: 2,
     title: 'Get your report',
     description:
-      'Performance, accessibility, SEO, and best practices \u2014 all graded.',
+      'Performance, accessibility, SEO, and best practices, all graded.',
   },
   {
     number: 3,
@@ -25,9 +28,14 @@ export default function HowItWorks() {
       className='w-full overflow-hidden flex flex-col justify-center'
     >
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <h2 id='how-it-works-heading' className='text-center'>
+        <Heading
+          variant='section'
+          as='h2'
+          id='how-it-works-heading'
+          className='text-center'
+        >
           How It Works
-        </h2>
+        </Heading>
         <ol className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-6'>
           {steps.map(step => (
             <li
@@ -38,10 +46,10 @@ export default function HowItWorks() {
                 <span className='inline-flex items-center justify-center size-10 rounded-full bg-brand-500 text-text-inverse font-bold'>
                   {step.number}
                 </span>
-                <h3 className='text-lg font-semibold'>{step.title}</h3>
-                <p className='text-sm text-text-secondary'>
-                  {step.description}
-                </p>
+                <Heading variant='component' as='h3'>
+                  {step.title}
+                </Heading>
+                <Text variant='body'>{step.description}</Text>
               </div>
             </li>
           ))}

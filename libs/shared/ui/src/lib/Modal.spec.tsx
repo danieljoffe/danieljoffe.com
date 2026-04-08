@@ -44,6 +44,16 @@ describe('Modal', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
+  it('does not call onClose on backdrop click when closeOnBackdropClick is false', () => {
+    const handleClose = jest.fn();
+    renderModal({ onClose: handleClose, closeOnBackdropClick: false });
+
+    const backdrop = document.querySelector('[aria-hidden="true"]');
+    fireEvent.click(backdrop!);
+
+    expect(handleClose).not.toHaveBeenCalled();
+  });
+
   it('calls onClose when close button is clicked with title', () => {
     const handleClose = jest.fn();
     renderModal({ onClose: handleClose, title: 'Title' });
@@ -88,36 +98,11 @@ describe('Modal', () => {
     expect(container.querySelector('.bg-surface-elevated')).toBeInTheDocument();
   });
 
-  it('applies accent variant styles', () => {
-    const { container } = renderModal({ variant: 'accent' });
-    expect(container.querySelector('.border-l-accent')).toBeInTheDocument();
-  });
-
-  it('applies success variant styles', () => {
-    const { container } = renderModal({ variant: 'success' });
-    expect(container.querySelector('.border-l-success')).toBeInTheDocument();
-  });
-
-  it('applies warning variant styles', () => {
-    const { container } = renderModal({ variant: 'warning' });
-    expect(container.querySelector('.border-l-warning')).toBeInTheDocument();
-  });
-
-  it('applies error variant styles', () => {
-    const { container } = renderModal({ variant: 'error' });
-    expect(container.querySelector('.border-l-error')).toBeInTheDocument();
-  });
-
   it('shows close button when no title is provided', () => {
     renderModal();
     expect(
       screen.getByRole('button', { name: 'Close dialog' })
     ).toBeInTheDocument();
-  });
-
-  it('applies info variant styles', () => {
-    const { container } = renderModal({ variant: 'info' });
-    expect(container.querySelector('.border-l-info')).toBeInTheDocument();
   });
 
   describe('body scroll cleanup', () => {

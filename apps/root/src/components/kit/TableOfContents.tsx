@@ -208,7 +208,7 @@ function MobileToc({
           isOpen ? 'Close table of contents' : 'Open table of contents'
         }
         aria-expanded={isOpen}
-        className='fixed bottom-6 left-6 z-40 flex items-center justify-center size-10 rounded-full bg-surface-elevated border border-brand-500/20 shadow-lg text-text-primary hover:border-brand-500/40 hover:bg-brand-500/5 transition-all duration-200 cursor-pointer'
+        className='fixed bottom-20 md:bottom-6 left-6 z-40 flex items-center justify-center size-10 rounded-full bg-surface-elevated border border-brand-500/20 shadow-lg text-text-primary hover:border-brand-500/40 hover:bg-brand-500/5 transition-all duration-200 cursor-pointer'
       >
         <List className='size-4' aria-hidden='true' />
       </button>
@@ -229,7 +229,7 @@ function MobileToc({
         aria-label='Table of contents'
         aria-modal={isOpen}
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
+          'fixed bottom-0 left-0 right-0 z-51 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
           isOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
         )}
       >

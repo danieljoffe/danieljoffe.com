@@ -38,13 +38,6 @@ export const Default: Story = {
   },
 };
 
-export const Accent: Story = {
-  args: {
-    children: 'Accent',
-    variant: 'accent',
-  },
-};
-
 export const Success: Story = {
   args: {
     children: 'Success',
