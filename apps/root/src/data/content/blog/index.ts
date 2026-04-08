@@ -58,6 +58,21 @@ import MobileNavA11yBottomSheet, {
 import FaviconPipelineOneSvg, {
   metadata as faviconPipelineMeta,
 } from './favicon-pipeline-one-svg.mdx';
+import StandardizingComponentSizeScale, {
+  metadata as standardizingSizeScaleMeta,
+} from './standardizing-component-size-scale.mdx';
+import FormApiAlignmentAria, {
+  metadata as formApiAlignmentMeta,
+} from './form-api-alignment-aria.mdx';
+import TooltipAriaDescribedbyWrongElement, {
+  metadata as tooltipAriaDescribedbyMeta,
+} from './tooltip-aria-describedby-wrong-element.mdx';
+import CiDocsOnlyShellDetection, {
+  metadata as ciDocsOnlyShellMeta,
+} from './ci-docs-only-shell-detection.mdx';
+import CalendlyEmbedTimeoutFallback, {
+  metadata as calendlyEmbedTimeoutMeta,
+} from './calendly-embed-timeout-fallback.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -80,6 +95,11 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'hydration-mismatch-use-synced-state': HydrationMismatchUseSyncedState,
   'mobile-nav-a11y-bottom-sheet': MobileNavA11yBottomSheet,
   'favicon-pipeline-one-svg': FaviconPipelineOneSvg,
+  'standardizing-component-size-scale': StandardizingComponentSizeScale,
+  'form-api-alignment-aria': FormApiAlignmentAria,
+  'tooltip-aria-describedby-wrong-element': TooltipAriaDescribedbyWrongElement,
+  'ci-docs-only-shell-detection': CiDocsOnlyShellDetection,
+  'calendly-embed-timeout-fallback': CalendlyEmbedTimeoutFallback,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -102,4 +122,9 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'hydration-mismatch-use-synced-state': hydrationMismatchMeta,
   'mobile-nav-a11y-bottom-sheet': mobileNavA11yMeta,
   'favicon-pipeline-one-svg': faviconPipelineMeta,
+  'standardizing-component-size-scale': standardizingSizeScaleMeta,
+  'form-api-alignment-aria': formApiAlignmentMeta,
+  'tooltip-aria-describedby-wrong-element': tooltipAriaDescribedbyMeta,
+  'ci-docs-only-shell-detection': ciDocsOnlyShellMeta,
+  'calendly-embed-timeout-fallback': calendlyEmbedTimeoutMeta,
 };

@@ -9,6 +9,8 @@ import { STORYBOOK_URL } from '@/utils/constants';
 interface InteractiveDemoProps {
   /** Storybook story ID (e.g. "button--primary") */
   story: string;
+  /** Storybook args to pass via URL params (e.g. { variant: "secondary", size: "lg" }) */
+  args?: Record<string, string>;
   /** Iframe height in pixels */
   height?: number;
   /** Accessible title for the iframe */
@@ -19,6 +21,7 @@ const LOAD_TIMEOUT_MS = 10_000;
 
 export function InteractiveDemo({
   story,
+  args,
   height = 300,
   title,
 }: InteractiveDemoProps) {
@@ -27,7 +30,12 @@ export function InteractiveDemo({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  const storyUrl = `${STORYBOOK_URL}/iframe.html?id=${story}&viewMode=story`;
+  const argsParam = args
+    ? `&args=${Object.entries(args)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(';')}`
+    : '';
+  const storyUrl = `${STORYBOOK_URL}/iframe.html?id=${story}&viewMode=story${argsParam}`;
   const fullUrl = `${STORYBOOK_URL}/?path=/story/${story}`;
 
   // Lazy-load via IntersectionObserver

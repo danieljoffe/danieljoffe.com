@@ -1,9 +1,9 @@
 import { type HTMLAttributes, type Ref } from 'react';
 import { Text } from './Text';
+import type { ComponentSize } from './types';
 import { cn } from './utils';
 
-type ProgressBarVariant = 'accent' | 'success' | 'warning' | 'error' | 'info';
-type ProgressBarSize = 'sm' | 'md' | 'lg';
+type ProgressBarVariant = 'accent' | 'success' | 'error';
 
 export interface ProgressBarProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -13,7 +13,7 @@ export interface ProgressBarProps extends Omit<
   value: number;
   max?: number;
   variant?: ProgressBarVariant;
-  size?: ProgressBarSize;
+  size?: ComponentSize;
   showLabel?: boolean;
   className?: string;
 }
@@ -21,12 +21,10 @@ export interface ProgressBarProps extends Omit<
 const variantStyles: Record<ProgressBarVariant, string> = {
   accent: 'bg-brand-500',
   success: 'bg-success',
-  warning: 'bg-warning',
   error: 'bg-error',
-  info: 'bg-info',
 };
 
-const sizeStyles: Record<ProgressBarSize, string> = {
+const sizeStyles: Record<ComponentSize, string> = {
   sm: 'h-1',
   md: 'h-2',
   lg: 'h-3',

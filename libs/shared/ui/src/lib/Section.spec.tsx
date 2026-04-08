@@ -23,19 +23,19 @@ describe('Section', () => {
     expect(container.firstChild).toHaveClass('py-4');
   });
 
-  it('applies md padding', () => {
+  it('applies md padding with responsive breakpoints', () => {
     const { container } = render(<Section padding='md'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-8');
+    expect(container.firstChild).toHaveClass('py-6', 'sm:py-8', 'md:py-12');
   });
 
-  it('applies lg padding', () => {
+  it('applies lg padding with responsive breakpoints', () => {
     const { container } = render(<Section padding='lg'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-12');
+    expect(container.firstChild).toHaveClass('py-8', 'sm:py-12', 'md:py-16');
   });
 
-  it('applies xl padding with responsive breakpoint', () => {
+  it('applies xl padding with responsive breakpoints', () => {
     const { container } = render(<Section padding='xl'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-16', 'sm:py-24');
+    expect(container.firstChild).toHaveClass('py-12', 'sm:py-16', 'md:py-24');
   });
 
   // Background tests
@@ -66,7 +66,12 @@ describe('Section', () => {
   // Base styles tests
   it('applies relative positioning and responsive horizontal padding by default', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).toHaveClass('relative', 'px-6', 'lg:px-0');
+    expect(container.firstChild).toHaveClass(
+      'relative',
+      'px-4',
+      'sm:px-6',
+      'lg:px-0'
+    );
   });
 
   // Center tests
@@ -144,9 +149,12 @@ describe('Section', () => {
     );
     expect(container.firstChild).toHaveClass(
       'relative',
-      'px-6',
+      'px-4',
+      'sm:px-6',
       'lg:px-0',
-      'py-12',
+      'py-8',
+      'sm:py-12',
+      'md:py-16',
       'bg-surface-elevated',
       'flex',
       'justify-center',

@@ -1,9 +1,9 @@
 import { type HTMLAttributes, type ReactNode, type Ref } from 'react';
+import type { ComponentSize } from './types';
 import { cn } from './utils';
 
 export type BadgeVariant =
   | 'default'
-  | 'accent'
   | 'success'
   | 'warning'
   | 'error'
@@ -18,11 +18,11 @@ export interface BadgeProps extends Omit<
   ref?: Ref<HTMLSpanElement> | undefined;
   children: ReactNode;
   variant?: BadgeVariant;
+  size?: ComponentSize;
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
   default: 'bg-surface-elevated text-text-secondary border border-border',
-  accent: 'bg-brand-50 text-brand-500 border border-brand-500/30',
   success: 'bg-success-light text-success border border-success/30',
   warning: 'bg-warning-light text-warning border border-warning/30',
   error: 'bg-error-light text-error border border-error/30',
@@ -31,9 +31,16 @@ const variantStyles: Record<BadgeVariant, string> = {
   'brand-solid': 'bg-brand-600 text-white',
 };
 
+const sizeStyles: Record<ComponentSize, string> = {
+  sm: 'px-1.5 py-0.5 text-[10px]',
+  md: 'px-2.5 py-0.5 text-xs',
+  lg: 'px-3 py-1 text-sm',
+};
+
 export function Badge({
   children,
   variant = 'default',
+  size = 'md',
   className,
   ref,
   ...props
@@ -42,7 +49,8 @@ export function Badge({
     <span
       ref={ref}
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium',
+        'inline-flex items-center rounded-md font-medium',
+        sizeStyles[size],
         variantStyles[variant],
         className
       )}

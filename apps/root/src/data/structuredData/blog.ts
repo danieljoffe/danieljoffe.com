@@ -190,6 +190,55 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.faviconPipelineOneSvg]?.date ?? '',
       author,
     },
+    [blogSlugs.standardizingComponentSizeScale]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.standardizingComponentSizeScale].title,
+      description:
+        blogRecords[blogSlugs.standardizingComponentSizeScale].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.standardizingComponentSizeScale]?.date ?? '',
+      author,
+    },
+    [blogSlugs.formApiAlignmentAria]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.formApiAlignmentAria].title,
+      description: blogRecords[blogSlugs.formApiAlignmentAria].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.formApiAlignmentAria]?.date ?? '',
+      author,
+    },
+    [blogSlugs.tooltipAriaDescribedbyWrongElement]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.tooltipAriaDescribedbyWrongElement].title,
+      description:
+        blogRecords[blogSlugs.tooltipAriaDescribedbyWrongElement].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.tooltipAriaDescribedbyWrongElement]?.date ??
+        '',
+      author,
+    },
+    [blogSlugs.ciDocsOnlyShellDetection]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.ciDocsOnlyShellDetection].title,
+      description: blogRecords[blogSlugs.ciDocsOnlyShellDetection].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.ciDocsOnlyShellDetection]?.date ?? '',
+      author,
+    },
+    [blogSlugs.calendlyEmbedTimeoutFallback]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.calendlyEmbedTimeoutFallback].title,
+      description:
+        blogRecords[blogSlugs.calendlyEmbedTimeoutFallback].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.calendlyEmbedTimeoutFallback]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {

@@ -7,16 +7,7 @@ import {
 import { Spinner } from './Spinner';
 import { cn } from './utils';
 
-export type ButtonVariant =
-  | 'bare'
-  | 'primary'
-  | 'secondary'
-  | 'ghost'
-  | 'outline'
-  | 'success'
-  | 'error'
-  | 'warning'
-  | 'info';
+export type ButtonVariant = 'bare' | 'primary' | 'secondary' | 'outline';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export interface ButtonBase {
@@ -53,16 +44,9 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   secondary: `${
     regularButton
   } bg-surface-elevated text-text-primary hover:bg-surface border border-border`,
-  ghost: `${
-    regularButton
-  } text-text-secondary hover:bg-surface-elevated hover:text-text-primary`,
   outline: `${
     regularButton
   } border border-border-secondary text-text-primary hover:bg-surface-elevated`,
-  success: `${regularButton} bg-success text-white hover:opacity-90`,
-  error: `${regularButton} bg-error text-text-inverse hover:opacity-90`,
-  warning: `${regularButton} bg-warning text-text-inverse hover:opacity-90`,
-  info: `${regularButton} bg-info text-text-inverse hover:opacity-90`,
 };
 
 const baseOutline =
@@ -71,12 +55,7 @@ export const variantLinkOutline: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${baseOutline} hover:outline-brand-500`,
   secondary: `${baseOutline} hover:outline-border-strong`,
-  ghost: `${baseOutline} hover:outline-foreground-muted`,
   outline: `${baseOutline} hover:outline-border-strong`,
-  success: `${baseOutline} hover:outline-success`,
-  error: `${baseOutline} hover:outline-error`,
-  warning: `${baseOutline} hover:outline-warning`,
-  info: `${baseOutline} hover:outline-info`,
 };
 
 export const sizeButtonStyles: Record<ButtonSize, string> = {

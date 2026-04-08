@@ -15,7 +15,7 @@ export function Skeleton({
   height,
   lines = 1,
 }: SkeletonProps) {
-  const base = 'animate-pulse bg-surface-tertiary';
+  const base = 'animate-pulse motion-reduce:animate-none bg-surface-tertiary';
 
   if (variant === 'circular') {
     return (
@@ -45,7 +45,7 @@ export function Skeleton({
           key={i}
           className={cn(
             base,
-            'h-4 rounded',
+            'h-4 rounded-xs',
             i === lines - 1 && lines > 1 && 'w-3/4'
           )}
           style={{ height }}

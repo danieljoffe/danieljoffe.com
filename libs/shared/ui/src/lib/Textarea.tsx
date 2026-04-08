@@ -52,6 +52,7 @@ export function Textarea({
           'text-text-primary placeholder:text-text-tertiary',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
           'focus-visible:border-transparent transition-all resize-vertical',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
           getStateClasses(),
           className
         )}

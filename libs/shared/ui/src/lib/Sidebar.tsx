@@ -108,7 +108,7 @@ export function Sidebar({
       className={cn(
         'flex flex-col h-full bg-surface border-r border-border',
         'transition-all duration-200 motion-reduce:transition-none',
-        collapsed ? 'w-16' : 'w-60',
+        collapsed ? 'w-16' : 'w-48 md:w-60',
         className
       )}
     >

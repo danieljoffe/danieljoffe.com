@@ -1,22 +1,19 @@
+import type { ComponentSize } from './types';
 import { cn } from './utils/cn';
-
-type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface AvatarProps {
   src?: string;
   alt?: string;
   initials?: string;
-  size?: AvatarSize;
+  size?: ComponentSize;
   status?: 'online' | 'offline' | 'away' | 'busy';
   className?: string;
 }
 
-const sizeStyles: Record<AvatarSize, string> = {
-  xs: 'h-6 w-6 text-[10px]',
+const sizeStyles: Record<ComponentSize, string> = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-10 w-10 text-sm',
   lg: 'h-12 w-12 text-base',
-  xl: 'h-16 w-16 text-lg',
 };
 
 const statusColors: Record<string, string> = {
@@ -54,7 +51,7 @@ export function Avatar({
           className={cn(
             'absolute bottom-0 right-0 rounded-full border-2 border-surface',
             statusColors[status],
-            size === 'xs' || size === 'sm' ? 'h-2 w-2' : 'h-3 w-3'
+            size === 'sm' ? 'h-2 w-2' : 'h-3 w-3'
           )}
         />
       )}

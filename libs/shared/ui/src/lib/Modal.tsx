@@ -17,13 +17,7 @@ const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
-type ModalVariant =
-  | 'default'
-  | 'accent'
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'info';
+type ModalVariant = 'default';
 
 export interface ModalProps {
   ref?: Ref<HTMLDivElement> | undefined;
@@ -46,15 +40,6 @@ const sizeStyles: Record<ModalSize, string> = {
 
 const variantStyles: Record<ModalVariant, string> = {
   default: 'bg-surface-elevated border border-border-secondary',
-  accent:
-    'bg-surface-elevated border border-border-secondary border-l-4 border-l-accent',
-  success:
-    'bg-surface-elevated border border-border-secondary border-l-4 border-l-success',
-  warning:
-    'bg-surface-elevated border border-border-secondary border-l-4 border-l-warning',
-  error:
-    'bg-surface-elevated border border-border-secondary border-l-4 border-l-error',
-  info: 'bg-surface-elevated border border-border-secondary border-l-4 border-l-info',
 };
 
 export function Modal({
@@ -167,7 +152,7 @@ export function Modal({
         )}
       >
         {title && (
-          <div className='flex items-center justify-between p-6 border-b border-border'>
+          <div className='flex items-center justify-between p-4 sm:p-6 border-b border-border'>
             <Heading variant='component' id={titleId}>
               {title}
             </Heading>
@@ -193,9 +178,9 @@ export function Modal({
             <X className='size-5' aria-hidden='true' />
           </Button>
         )}
-        <div className='p-6'>{children}</div>
+        <div className='p-4 sm:p-6'>{children}</div>
         {footer && (
-          <div className='flex items-center justify-end gap-3 p-6 border-t border-border'>
+          <div className='flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-border'>
             {footer}
           </div>
         )}

@@ -131,7 +131,7 @@ describe('UnsplashImage', () => {
     alt: 'Test image',
     creator: '@testuser',
     origin: `${UNSPLASH_URL}/photos/test-photo` as const,
-    blurHash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.',
+
     width: 800,
     height: 500,
     priority: true,
@@ -283,7 +283,6 @@ describe('UnsplashImage', () => {
             alt='test'
             creator={'@test' as `@${string}`}
             origin={`${UNSPLASH_URL}/photos/test` as const}
-            blurHash=''
             priority={true}
           />
         );
@@ -296,7 +295,7 @@ describe('UnsplashImage', () => {
         alt: mockProps.alt,
         creator: mockProps.creator,
         origin: mockProps.origin,
-        blurHash: mockProps.blurHash,
+
         priority: mockProps.priority,
         fill: false,
       } as UnsplashImageProps;

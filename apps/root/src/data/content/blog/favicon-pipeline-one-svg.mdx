@@ -2,7 +2,7 @@ export const metadata = {
   title: 'A Favicon Pipeline from One SVG',
   date: '2026-04-06',
   excerpt:
-    'A 64-line bash script that generates 11 SEO-ready images from a single SVG — favicon.ico, apple-touch-icon, android-chrome, and mstile — using rsvg-convert and ImageMagick.',
+    'A 64-line bash script generates 11 SEO-ready images from a single SVG: favicon.ico, apple-touch-icon, android-chrome, and mstile, using rsvg-convert and ImageMagick.',
   author: 'Daniel Joffe',
   category: 'Developer Tooling',
   tags: ['Tooling', 'SEO', 'Bash', 'DevOps'],
@@ -15,7 +15,7 @@ export const metadata = {
 
 Every time we updated the site logo, regenerating favicons meant uploading
 an SVG to a "free" web tool, downloading a zip, extracting it, and manually
-copying files into `public/`. The output was inconsistent — different tools
+copying files into `public/`. The output was inconsistent: different tools
 produce different compression, different background handling, different
 size matrices. And none of them lived in version control.
 
@@ -42,7 +42,7 @@ platforms actually request:
 | `mstile-150x150.png`     | 150x150    | Windows tiles                |
 
 That's 11 files from one source SVG. The `favicon.ico` is actually three
-PNGs bundled into one file — 16, 32, and 48px — so the browser can pick
+PNGs bundled into one file (16, 32, and 48px) so the browser can pick
 the best size for the context.
 
 ## The Script
