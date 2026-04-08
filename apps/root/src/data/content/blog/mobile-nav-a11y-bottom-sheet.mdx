@@ -25,7 +25,7 @@ and the "More" bottom sheet had broken dialog semantics.
 ## The Hidden Search Button
 
 The original design had Search and DarkModeToggle in a top header bar
-above the content. On mobile, this bar was `position: static` — it
+above the content. On mobile, this bar was `position: static`; it
 scrolled with the page. But the new bottom nav was `position: fixed` at
 `z-index: 50`. Meaning that on short viewports, the top bar sat directly behind the
 bottom bar. The search button was technically in the DOM, but you couldn't
@@ -53,7 +53,7 @@ action.
 ## The Dialog That Wasn't
 
 The More sheet was a `role="dialog"` with `aria-modal` toggled between
-`true` and `false`. That sounds right — the sheet is modal when open and
+`true` and `false`. That sounds right: the sheet is modal when open and
 not modal when closed. But screen readers don't interpret it that way.
 
 When `aria-modal` is `false`, the dialog is still visible in the
@@ -97,7 +97,7 @@ desktop and mobile navigation in a single `<header>`:
 </header>
 ```
 
-On mobile, this `<header>` was fixed to the bottom — but `<MobileNav>`
+On mobile, this `<header>` was fixed to the bottom, but `<MobileNav>`
 renders its own fixed-position elements (the bottom bar, the backdrop,
 the sheet). Nesting fixed elements inside a fixed container with
 `overflow` handling creates unpredictable stacking behavior.

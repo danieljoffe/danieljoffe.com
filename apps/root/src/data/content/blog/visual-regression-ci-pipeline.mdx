@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Automating Visual Regression Testing in GitHub Actions',
   date: '2026-04-04',
   excerpt:
-    'How a CI pipeline catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT. Snapshot maintenance becomes a one-click operation.',
+    'A CI pipeline that catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT for one-click snapshot maintenance.',
   author: 'Daniel Joffe',
   category: 'DevOps',
   tags: [
@@ -19,8 +19,8 @@ export const metadata = {
 
 ## The Problem
 
-Every UI change on this portfolio — a new section label, a font size tweak, a
-layout restructure — risks unintended visual side effects on other pages. Manual
+Every UI change on this portfolio, a new section label, a font size tweak, a
+layout restructure, risks unintended visual side effects on other pages. Manual
 visual QA doesn't scale, especially when a single PR might touch shared
 components used across dozens of routes.
 
@@ -119,7 +119,7 @@ apps/root-e2e/src/
     └── projects-listing-chromium-linux.png
 ```
 
-The snapshots are committed to the repo — not stored as artifacts — so
+The snapshots are committed to the repo, not stored as artifacts, so
 developers can review visual diffs in the PR itself using GitHub's image
 comparison tools.
 
