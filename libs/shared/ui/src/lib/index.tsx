@@ -105,3 +105,12 @@ export type { TextareaProps } from './Textarea';
 export type { Theme, ThemeContextType } from './ThemeProvider';
 export type { ToastVariant, ToastItem, ToastContextType } from './Toast';
 export type { TooltipProps } from './Tooltip';
+
+// Semantic variant system
+export type { SemanticVariant } from './styles/semanticVariants';
+export {
+  SEMANTIC_TEXT,
+  SEMANTIC_BG_LIGHT,
+  SEMANTIC_BORDER,
+  SEMANTIC_SPINNER,
+} from './styles/semanticVariants';

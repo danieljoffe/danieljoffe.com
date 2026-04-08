@@ -12,14 +12,15 @@ import {
 } from 'react';
 import { Heading } from './Heading';
 import { DISMISS_BUTTON } from './styles/formStyles';
+import { SEMANTIC_TEXT, type SemanticVariant } from './styles/semanticVariants';
 import { Text } from './Text';
 import { cn } from './utils/cn';
 
-export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
+export type ToastVariant = SemanticVariant;
 
 export interface ToastItem {
   id: string;
-  variant: ToastVariant;
+  variant: SemanticVariant;
   title: string;
   description?: string;
   duration?: number;
@@ -35,19 +36,14 @@ export function useToast() {
   return useContext(ToastContext);
 }
 
-const icons: Record<ToastVariant, typeof Info> = {
+const icons: Record<SemanticVariant, typeof Info> = {
   info: Info,
   success: CheckCircle,
   warning: AlertTriangle,
   error: XCircle,
 };
 
-const iconColors: Record<ToastVariant, string> = {
-  info: 'text-info',
-  success: 'text-success',
-  warning: 'text-warning',
-  error: 'text-error',
-};
+const iconColors = SEMANTIC_TEXT;
 
 const DEFAULT_DISMISS_MS = 4000;
 let toastCounter = 0;
