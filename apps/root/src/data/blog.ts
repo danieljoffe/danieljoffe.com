@@ -24,6 +24,11 @@ export const blogSlugs = {
   tooltipAriaDescribedbyWrongElement: 'tooltip-aria-describedby-wrong-element',
   ciDocsOnlyShellDetection: 'ci-docs-only-shell-detection',
   calendlyEmbedTimeoutFallback: 'calendly-embed-timeout-fallback',
+  pnpmPhantomDependencies: 'pnpm-phantom-dependencies',
+  staticSiteSearchCmdk: 'static-site-search-cmdk',
+  prefersReducedMotionComponentLibrary:
+    'prefers-reduced-motion-component-library',
+  cyclingThemeToggle: 'cycling-theme-toggle',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
