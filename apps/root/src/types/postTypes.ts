@@ -58,5 +58,4 @@ export interface PostMetadata {
   duration?: string;
   industry?: string;
   topic?: string;
-  series?: string;
 }
