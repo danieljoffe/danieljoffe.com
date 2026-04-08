@@ -14,7 +14,6 @@ Check whether there's a `packageManager` field in the root-level `package.json`.
 Alternatively check lockfile in repo root:
 
 - `pnpm-lock.yaml` → pnpm
-- `yarn.lock` → yarn
 - `bun.lock` / `bun.lockb` → bun
 - `package-lock.json` → npm
 

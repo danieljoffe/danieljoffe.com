@@ -35,6 +35,7 @@ interface ButtonProps
     ButtonBase,
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   loading?: boolean;
+  iconOnly?: boolean;
 }
 
 interface AsButtonProps extends ButtonProps {
@@ -76,6 +77,12 @@ const sizeButtonStyles: Record<string, string> = {
   sm: 'px-3 py-1.5 text-sm hover:scale-[1.1]',
   md: 'px-4 py-3 hover:scale-[1.05]',
   lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
+};
+
+const iconOnlySizeStyles: Record<string, string> = {
+  sm: 'p-1.5 text-sm hover:scale-[1.1]',
+  md: 'p-2.5 hover:scale-[1.05]',
+  lg: 'p-3 text-lg hover:scale-[1.025]',
 };
 
 const variantLinkOutline: Record<string, string> = {
@@ -172,9 +179,12 @@ const Button = React.forwardRef<HTMLButtonElement, AppButtonProps>(
       children,
       variant,
       size,
+      iconOnly,
       className,
       ...buttonRest
     } = restButton;
+
+    const sizeMap = iconOnly ? iconOnlySizeStyles : sizeButtonStyles;
 
     return (
       <button
@@ -187,7 +197,7 @@ const Button = React.forwardRef<HTMLButtonElement, AppButtonProps>(
         className={cn(
           baseButtonStyles,
           variantButtonStyles[variant ?? 'primary'],
-          sizeButtonStyles[size ?? 'md'],
+          sizeMap[size ?? 'md'],
           className
         )}
       >

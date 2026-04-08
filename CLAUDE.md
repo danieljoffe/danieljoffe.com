@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal portfolio website for Daniel Joffe built with Next.js 16 (App Router), React 19, and TypeScript. This is an Nx monorepo with Yarn workspaces.
+Personal portfolio website for Daniel Joffe built with Next.js 16 (App Router), React 19, and TypeScript. This is an Nx monorepo with pnpm workspaces.
 
 Live site: https://danieljoffe.com
 
@@ -21,8 +21,8 @@ Live site: https://danieljoffe.com
 Before pushing any changes, **always** run the full unit test suite and typecheck:
 
 ```bash
-yarn tsc --noEmit         # Must have zero errors
-yarn nx test root         # All tests must pass
+pnpm tsc --noEmit         # Must have zero errors
+pnpm nx test root         # All tests must pass
 ```
 
 Do not push if either command fails. Fix the issue first.
@@ -32,37 +32,37 @@ Do not push if either command fails. Fix the issue first.
 ### Development
 
 ```bash
-npx nx dev root                    # Start dev server at localhost:3000
-npx nx build root                  # Build for production
-npx nx start root                  # Start production server
+pnpm nx dev root                   # Start dev server at localhost:3000
+pnpm nx build root                 # Build for production
+pnpm nx start root                 # Start production server
 ```
 
 ### Testing
 
 ```bash
-npx nx test root                   # Run unit tests
-npx nx test root --watch           # Run tests in watch mode
-npx nx test root -- --testPathPattern="Button"  # Run single test file
-npx nx e2e root-e2e                # Run E2E tests (Playwright)
-npx playwright test accessibility.spec.ts       # Run specific E2E test
-yarn test:coverage                 # Run all tests with coverage
-yarn test:lighthouse               # Run Lighthouse CI
+pnpm nx test root                  # Run unit tests
+pnpm nx test root --watch          # Run tests in watch mode
+pnpm nx test root -- --testPathPattern="Button"  # Run single test file
+pnpm nx e2e root-e2e               # Run E2E tests (Playwright)
+pnpm exec playwright test accessibility.spec.ts  # Run specific E2E test
+pnpm test:coverage                 # Run all tests with coverage
+pnpm test:lighthouse               # Run Lighthouse CI
 ```
 
 ### Linting & Formatting
 
 ```bash
-yarn lint                          # Lint all projects
-yarn lint:fix                      # Lint and auto-fix
-yarn format                        # Format with Prettier
-yarn typecheck                     # TypeScript type checking
+pnpm lint                          # Lint all projects
+pnpm lint:fix                      # Lint and auto-fix
+pnpm format                        # Format with Prettier
+pnpm typecheck                     # TypeScript type checking
 ```
 
 ### Storybook
 
 ```bash
-npx nx storybook root              # Start Storybook for root app
-npx nx storybook @danieljoffe.com/shared-ui  # Start Storybook for UI library
+pnpm nx storybook root             # Start Storybook for root app
+pnpm nx storybook @danieljoffe.com/shared-ui  # Start Storybook for UI library
 ```
 
 ## Architecture

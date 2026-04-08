@@ -44,71 +44,71 @@ The project implements a multi-layered testing strategy including:
 
 ```bash
 # Run all unit tests
-yarn test
+pnpm test
 
 # Run tests with coverage
-yarn test:coverage
+pnpm test:coverage
 
 # Run tests in watch mode
-npx nx test root --watch
+pnpm nx test root --watch
 ```
 
 ### End-to-End Tests
 
 ```bash
 # Run all E2E tests
-yarn test:e2e
+pnpm test:e2e
 
 # Run specific test file
-npx playwright test accessibility.spec.ts
+pnpm exec playwright test accessibility.spec.ts
 
 # Run tests in headed mode
-npx playwright test --headed
+pnpm exec playwright test --headed
 
 # Run tests in debug mode
-npx playwright test --debug
+pnpm exec playwright test --debug
 ```
 
 ### Accessibility Tests
 
 ```bash
 # Run accessibility tests
-npx playwright test --grep="Accessibility Tests"
+pnpm exec playwright test --grep="Accessibility Tests"
 
 # Run with specific browser
-npx playwright test --project=chromium --grep="Accessibility Tests"
+pnpm exec playwright test --project=chromium --grep="Accessibility Tests"
 ```
 
 ### Performance Tests
 
 ```bash
 # Run performance tests
-npx playwright test --grep="Performance Tests"
+pnpm exec playwright test --grep="Performance Tests"
 
 # Run Lighthouse CI
-yarn test:lighthouse
+pnpm test:lighthouse
 
 # Collect Lighthouse data only
-yarn test:lighthouse:collect
+pnpm test:lighthouse:collect
 
 # Assert against Lighthouse thresholds
-yarn test:lighthouse:assert
+pnpm test:lighthouse:assert
 ```
 
 ### Code Quality
 
 ```bash
 # Run ESLint
-yarn lint
+pnpm lint
 
 # Fix ESLint issues
-yarn lint:fix
+pnpm lint:fix
 
 # Check Prettier formatting
-yarn format:check
+pnpm format:check
 
 # Format code with Prettier
-yarn format
+pnpm format
 ```
 
 ## Test Coverage
@@ -320,13 +320,13 @@ test('homepage visual regression', async ({ page }) => {
 
 ```bash
 # Debug Playwright tests
-npx playwright test --debug
+pnpm exec playwright test --debug
 
 # Run specific test with verbose output
-npx playwright test --grep="specific test" --verbose
+pnpm exec playwright test --grep="specific test" --verbose
 
 # Check Lighthouse results
-yarn test:lighthouse:collect
+pnpm test:lighthouse:collect
 ```
 
 ## Resources

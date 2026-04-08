@@ -51,7 +51,7 @@
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
           "{workspaceRoot}/apps/audit-scan-service/dist/package.json",
-          "{workspaceRoot}/apps/audit-scan-service/dist/yarn.lock"
+          "{workspaceRoot}/apps/audit-scan-service/dist/pnpm-lock.yaml"
         ],
         "options": {
           "buildTarget": "build"
@@ -103,6 +103,7 @@
   },
   "dependencies": {
     "@axe-core/puppeteer": "^4.11.1",
+    "@danieljoffe.com/shared-audit": "workspace:*",
     "@supabase/supabase-js": "^2.98.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",

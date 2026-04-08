@@ -1,24 +1,26 @@
-# Build the docker image with `npx nx docker:build @danieljoffe.com/audit-scan-service`.
+# Build the docker image with `pnpm exec nx docker:build @danieljoffe.com/audit-scan-service`.
 # Run the container with `docker run -p 3001:3001 audit-scan-service`.
 
 # Stage 1: Build
 FROM docker.io/node:lts-alpine AS builder
 
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
 # Copy workspace root files needed for install + build
-COPY package.json yarn.lock ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/audit-scan-service/package.json apps/audit-scan-service/package.json
 COPY libs/shared/audit/package.json libs/shared/audit/package.json
 
-RUN yarn install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY nx.json tsconfig.base.json ./
 COPY apps/audit-scan-service apps/audit-scan-service
 COPY libs/shared/audit libs/shared/audit
 
-RUN npx nx build audit-scan-service --configuration=production
+RUN pnpm exec nx build audit-scan-service --configuration=production
 
 # Stage 2: Runtime
 FROM docker.io/node:20-slim

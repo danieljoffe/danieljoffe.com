@@ -24,6 +24,11 @@
       "types": "./dist/lib/styles/*.d.ts",
       "default": "./src/lib/styles/*.ts"
     },
+    "./types": {
+      "@danieljoffe.com/source": "./src/lib/types.ts",
+      "types": "./dist/lib/types.d.ts",
+      "default": "./src/lib/types.ts"
+    },
     "./styles/theme.css": "./src/styles/theme.css"
   },
   "dependencies": {
