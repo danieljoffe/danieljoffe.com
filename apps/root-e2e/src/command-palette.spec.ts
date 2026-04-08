@@ -134,7 +134,9 @@ test.describe('command palette', () => {
     await openPaletteViaClick(page);
 
     // Wait for items to render, then click the About entry
-    const aboutItem = page.locator('[cmdk-item]', { hasText: 'About' });
+    const aboutItem = page.locator('[cmdk-item]').filter({
+      has: page.locator('p.font-medium', { hasText: /^About$/ }),
+    });
     await expect(aboutItem).toBeVisible();
     await aboutItem.click();
     await page.waitForURL('**/about');

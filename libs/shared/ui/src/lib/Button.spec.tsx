@@ -113,6 +113,40 @@ describe('Button', () => {
     });
   });
 
+  describe('iconOnly', () => {
+    it('applies equal padding when iconOnly is true', () => {
+      render(
+        <Button iconOnly aria-label='Close'>
+          <span>X</span>
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass('p-2.5');
+    });
+
+    it('applies sm iconOnly padding', () => {
+      render(
+        <Button iconOnly size='sm' aria-label='Close'>
+          <span>X</span>
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass('p-1.5');
+    });
+
+    it('applies lg iconOnly padding', () => {
+      render(
+        <Button iconOnly size='lg' aria-label='Close'>
+          <span>X</span>
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass('p-3');
+    });
+
+    it('uses regular padding when iconOnly is false', () => {
+      render(<Button>Text</Button>);
+      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-3');
+    });
+  });
+
   describe('loading', () => {
     it('renders a spinner when loading', () => {
       const { container } = render(<Button loading>Submit</Button>);

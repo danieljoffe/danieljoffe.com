@@ -2,6 +2,7 @@
   "name": "@danieljoffe.com/source",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": "24.x"
   },
@@ -17,7 +18,7 @@
     "test:lighthouse:collect": "lhci collect",
     "test:lighthouse:assert": "lhci assert",
     "typecheck": "nx run-many --target=typecheck --all",
-    "pom": "yarn typecheck && yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
+    "pom": "pnpm typecheck && pnpm lint:fix && pnpm format && pnpm test && pnpm test:coverage && pnpm test:e2e && pnpm test:lighthouse",
     "affected": "nx affected -t lint test build typecheck e2e",
     "dev": "nx run-many --target=dev --all",
     "prepare": "husky",
@@ -168,25 +169,34 @@
     "vite-plugin-dts": "4.5.4",
     "vitest": "4.0.18"
   },
-  "workspaces": [
-    "apps/*",
-    "libs/*",
-    "libs/shared/*"
-  ],
-  "resolutions": {
-    "axios": "1.13.6",
-    "tmp": "^0.2.4",
-    "@opentelemetry/core": "2.6.0",
-    "@opentelemetry/resources": "2.6.0",
-    "@opentelemetry/sdk-trace-base": "2.6.0",
-    "@typescript-eslint/utils": "8.56.1",
-    "@typescript-eslint/type-utils": "8.56.1",
-    "@typescript-eslint/eslint-plugin": "8.56.1",
-    "@typescript-eslint/parser": "8.56.1",
-    "@typescript-eslint/types": "8.56.1",
-    "@typescript-eslint/typescript-estree": "8.56.1",
-    "@typescript-eslint/visitor-keys": "8.56.1",
-    "@typescript-eslint/scope-manager": "8.56.1"
+  "pnpm": {
+    "overrides": {
+      "axios": "1.13.6",
+      "tmp": "^0.2.4",
+      "@opentelemetry/core": "2.6.0",
+      "@opentelemetry/resources": "2.6.0",
+      "@opentelemetry/sdk-trace-base": "2.6.0",
+      "@typescript-eslint/utils": "8.56.1",
+      "@typescript-eslint/type-utils": "8.56.1",
+      "@typescript-eslint/eslint-plugin": "8.56.1",
+      "@typescript-eslint/parser": "8.56.1",
+      "@typescript-eslint/types": "8.56.1",
+      "@typescript-eslint/typescript-estree": "8.56.1",
+      "@typescript-eslint/visitor-keys": "8.56.1",
+      "@typescript-eslint/scope-manager": "8.56.1"
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@sentry/cli",
+      "@swc/core",
+      "esbuild",
+      "nx",
+      "oxc-resolver",
+      "puppeteer",
+      "sharp",
+      "supabase",
+      "unrs-resolver"
+    ]
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

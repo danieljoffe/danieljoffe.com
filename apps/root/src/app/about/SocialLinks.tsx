@@ -1,9 +1,12 @@
 'use client';
 
 import { AtSign, Download, Github, Linkedin } from 'lucide-react';
+import {
+  FOCUS_RING,
+  FOCUS_RING_OFFSET,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { profileData } from '@/data/profileData';
 import { analytics } from '@/lib/analytics';
-import { focusRing } from '@/lib/layoutStyles';
 import { PROJECTS_LINK } from '@/utils/constants';
 import { downloadResume } from '@/utils/helpers';
 
@@ -42,7 +45,7 @@ export default function SocialLinks() {
           rel='noopener noreferrer'
           aria-label={label}
           onClick={() => analytics.ctaClick(analyticsId, PROJECTS_LINK.href)}
-          className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${focusRing}`}
+          className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
         >
           <Icon className='h-4 w-4' />
         </a>
@@ -53,7 +56,7 @@ export default function SocialLinks() {
           analytics.ctaClick('download_resume', PROJECTS_LINK.href);
           downloadResume();
         }}
-        className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors cursor-pointer ${focusRing}`}
+        className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors cursor-pointer ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
       >
         <Download className='h-4 w-4' />
       </button>

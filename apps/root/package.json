@@ -1,5 +1,8 @@
 {
   "name": "@danieljoffe.com/root",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@danieljoffe.com/shared-ui": "workspace:*"
+  }
 }

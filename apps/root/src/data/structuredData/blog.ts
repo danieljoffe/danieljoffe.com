@@ -239,6 +239,44 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.calendlyEmbedTimeoutFallback]?.date ?? '',
       author,
     },
+    [blogSlugs.pnpmPhantomDependencies]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.pnpmPhantomDependencies].title,
+      description: blogRecords[blogSlugs.pnpmPhantomDependencies].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.pnpmPhantomDependencies]?.date ?? '',
+      author,
+    },
+    [blogSlugs.staticSiteSearchCmdk]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.staticSiteSearchCmdk].title,
+      description: blogRecords[blogSlugs.staticSiteSearchCmdk].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.staticSiteSearchCmdk]?.date ?? '',
+      author,
+    },
+    [blogSlugs.prefersReducedMotionComponentLibrary]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline:
+        blogRecords[blogSlugs.prefersReducedMotionComponentLibrary].title,
+      description:
+        blogRecords[blogSlugs.prefersReducedMotionComponentLibrary].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.prefersReducedMotionComponentLibrary]?.date ??
+        '',
+      author,
+    },
+    [blogSlugs.cyclingThemeToggle]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.cyclingThemeToggle].title,
+      description: blogRecords[blogSlugs.cyclingThemeToggle].description,
+      datePublished: blogMdxMetadata[blogSlugs.cyclingThemeToggle]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {

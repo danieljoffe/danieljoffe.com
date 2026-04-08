@@ -7,10 +7,14 @@ import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import {
+  FOCUS_RING,
+  FOCUS_RING_OFFSET,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
-import { cardBase, focusRing } from '@/lib/layoutStyles';
+import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';
 import CalendlyEmbed from './CalendlyEmbed';
@@ -38,7 +42,7 @@ export default function Services() {
             <HeroCTA />
             <a
               href='#services-grid'
-              className={`inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm ${focusRing}`}
+              className={`inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
             >
               See what I offer
               <ChevronDown className='h-4 w-4' />

@@ -3,7 +3,10 @@
 import { useCallback, useState } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { focusRing } from '@/lib/layoutStyles';
+import {
+  FOCUS_RING,
+  FOCUS_RING_OFFSET,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import Button from '@/components/Button';
 import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
@@ -103,7 +106,7 @@ export default function AdminDashboard() {
                   key={tab.id}
                   role='tab'
                   aria-selected={activeTab === tab.id}
-                  className={`px-4 py-2.5 border-b-2 transition-colors ${focusRing} ${
+                  className={`px-4 py-2.5 border-b-2 transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} ${
                     activeTab === tab.id
                       ? 'border-brand-500 text-brand-500'
                       : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'

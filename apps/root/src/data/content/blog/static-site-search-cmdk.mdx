@@ -1,0 +1,117 @@
+export const metadata = {
+  title: 'Site Search Without a Server: Static Index and cmdk',
+  date: '2026-04-08',
+  excerpt:
+    'A build-time search index and cmdk power Cmd+K search across 47 pages with zero API calls.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['React', 'Next.js', 'Search', 'Performance'],
+  slug: 'static-site-search-cmdk',
+  type: 'blog',
+  topic: 'Architecture',
+};
+
+## The Problem
+
+Adding search to a content site usually means choosing between a hosted service
+(Algolia, Typesense) and running your own index (ElasticSearch, Meilisearch).
+Both require a backend, API keys, and sync logic to keep the index current.
+
+This site has 10 projects, 5 experience entries, 24 blog posts, 4 services, and
+4 static pages. That's 47 searchable items. A server for 47 items is overhead we
+don't need.
+
+## The Search Index
+
+The site already has a content registry that provides metadata for every page.
+We built a `buildSearchIndex()` function that aggregates it into a flat array:
+
+```tsx
+export interface SearchEntry {
+  title: string;
+  excerpt: string;
+  tags: string[];
+  category: string;
+  type: 'project' | 'experience' | 'blog' | 'service' | 'page';
+  slug: string;
+  url: string;
+}
+
+export function buildSearchIndex(): SearchEntry[] {
+  return [
+    ...buildContentEntries(projectHistory, 'project', projectsRecords, projectMdxMetadata),
+    ...buildContentEntries(experienceHistory, 'experience', experienceRecords, experienceMdxMetadata),
+    ...buildContentEntries(blogHistory, 'blog', blogRecords, blogMdxMetadata),
+    ...serviceEntries,
+    ...pageEntries,
+  ];
+}
+```
+
+Each content type pulls from existing data files: thumbnails for title and
+description, MDX metadata for tags and category, content order for the slug
+list. No separate index to maintain; when we add a blog post, search updates
+automatically because it reads from the same source of truth.
+
+## The Command Palette
+
+[cmdk](https://cmdk.paco.me) is a headless command menu component. It provides
+fuzzy filtering, keyboard navigation, and grouped results with zero styling
+opinions. We feed it the search index and let it handle matching:
+
+```tsx
+const index = useMemo(() => buildSearchIndex(), []);
+
+<Command.Item
+  value={`${entry.title} ${entry.excerpt} ${entry.tags.join(' ')}`}
+  onSelect={() => router.push(entry.url)}
+>
+```
+
+The `value` prop determines what cmdk searches against. By concatenating title,
+excerpt, and tags, a search for "accessibility" matches blog posts tagged
+`Accessibility`, project descriptions mentioning the word, and the audit tool
+page. cmdk handles the ranking.
+
+## Decoupling the Trigger
+
+The command palette renders in the app layout. The search trigger button lives
+in the nav. Rather than prop-drilling an `onOpen` callback through the nav
+component tree, the trigger dispatches a custom DOM event:
+
+```tsx
+// SearchTrigger.tsx
+const handleClick = () => {
+  document.dispatchEvent(new CustomEvent('open-command-palette'));
+};
+
+// CommandPalette.tsx
+useEffect(() => {
+  const handler = () => setOpen(true);
+  document.addEventListener('open-command-palette', handler);
+  return () => document.removeEventListener('open-command-palette', handler);
+}, []);
+```
+
+The palette also listens for `Cmd+K` / `Ctrl+K` globally. Two entry points,
+zero coupling between components.
+
+## Zero Cost Until First Use
+
+The palette component is always mounted but renders nothing when closed:
+
+```tsx
+if (!open)
+  return <span data-testid='command-palette-ready' className='hidden' />;
+```
+
+The hidden sentinel element lets E2E tests wait for the component to mount
+before simulating keyboard shortcuts. The search index is built once via
+`useMemo` with no dependencies, so subsequent opens reuse the same array.
+
+## The Takeaway
+
+Search doesn't need a server when your content is your codebase. A static
+index built from existing data files, a headless component for fuzzy matching,
+and a custom event for decoupled triggering. For a portfolio site with dozens
+of pages, this is the entire backend.

@@ -1,0 +1,113 @@
+export const metadata = {
+  title: 'Systematic prefers-reduced-motion Across a Component Library',
+  date: '2026-04-08',
+  excerpt:
+    'Auditing every animated component for motion sensitivity reveals which animations are decorative and which need static alternatives.',
+  author: 'Daniel Joffe',
+  category: 'Accessibility',
+  tags: ['Accessibility', 'Tailwind CSS', 'Design Systems', 'CSS'],
+  slug: 'prefers-reduced-motion-component-library',
+  type: 'blog',
+  topic: 'Accessibility',
+};
+
+## The Audit
+
+Our shared-ui library had 30+ components. Twelve of them used CSS animations
+or transitions: Spinner, Loading, ProgressBar, Switch, Sidebar, ThemeToggle,
+Button, Skeleton, Dropdown, Toast, Modal, and Tooltip. None of them respected
+`prefers-reduced-motion`.
+
+A global CSS rule like `@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }` would have been a one-line fix. But it's a
+blunt instrument. It removes all animation indiscriminately, including
+transitions that communicate state changes. We needed a component-level
+approach.
+
+## Decorative vs. Functional
+
+The audit forced a classification for every animation in the library.
+
+**Decorative animations** exist for visual polish. Removing them changes nothing
+about the user's understanding of the interface:
+
+| Component   | Animation          | Verdict         |
+| ----------- | ------------------ | --------------- |
+| Spinner     | `animate-spin`     | Decorative      |
+| Loading     | bouncing dots      | Decorative      |
+| Skeleton    | `animate-pulse`    | Decorative      |
+| ProgressBar | indeterminate fill | Decorative      |
+
+**Functional transitions** communicate state changes. Removing them requires a
+static alternative so the user still understands what happened:
+
+| Component   | Animation            | Verdict                    |
+| ----------- | -------------------- | -------------------------- |
+| Switch      | thumb slide          | Functional (position snap) |
+| Sidebar     | panel slide          | Functional (instant show)  |
+| Toast       | entry/exit slide     | Functional (instant show)  |
+| Dropdown    | menu slide-down      | Functional (instant show)  |
+
+For decorative animations, `motion-reduce:animate-none` is sufficient. For
+functional transitions, `motion-reduce:transition-none` snaps the element to
+its final state instantly.
+
+## The Tailwind Pattern
+
+Tailwind CSS 4's `motion-reduce:` variant maps directly to
+`@media (prefers-reduced-motion: reduce)`. We applied it at the component
+level, next to the animation it modifies:
+
+```tsx
+// Spinner — decorative, safe to freeze
+<div
+  className='inline-block rounded-full animate-spin motion-reduce:animate-none'
+  role='status'
+  aria-label={ariaLabel}
+/>
+```
+
+```tsx
+// Loading — decorative bouncing dots
+<div className='size-2 bg-brand-500 rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite] motion-reduce:animate-none' />
+```
+
+For functional transitions, we paired `motion-reduce:transition-none` with the
+existing transition class. The Switch thumb, for example, still moves to the
+correct position; it just snaps there instead of sliding:
+
+```tsx
+// Switch — functional, snap to final position
+<span
+  className={cn(
+    'inline-block h-4 w-4 transform rounded-full bg-surface transition-transform motion-reduce:transition-none',
+    checked ? 'translate-x-6' : 'translate-x-1'
+  )}
+/>
+```
+
+The `translate-x` still applies. The `transition-transform` is what gets
+removed. Position changes are instant, but the end state is identical.
+
+## Testing Motion Preferences
+
+Each component that received `motion-reduce:` support got a corresponding test
+verifying the class is present:
+
+```tsx
+it('applies motion-reduce:animate-none', () => {
+  const { container } = render(<Spinner />);
+  const spinner = container.firstChild;
+  expect(spinner).toHaveClass('motion-reduce:animate-none');
+});
+```
+
+This isn't testing browser behavior; it's testing that the class survives
+refactoring. A future contributor who removes the animation classes will see a
+failing test that makes the intent explicit.
+
+## The Takeaway
+
+A global `animation: none` rule treats all motion the same. Component-level
+`motion-reduce:` utilities let us distinguish between motion that's decorative
+and motion that communicates state. Twelve components, twelve decisions, twelve
+lines of Tailwind. The audit is the work; the implementation is trivial.

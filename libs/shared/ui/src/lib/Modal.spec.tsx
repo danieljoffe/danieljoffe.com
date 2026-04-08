@@ -44,6 +44,16 @@ describe('Modal', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
+  it('does not call onClose on backdrop click when closeOnBackdropClick is false', () => {
+    const handleClose = jest.fn();
+    renderModal({ onClose: handleClose, closeOnBackdropClick: false });
+
+    const backdrop = document.querySelector('[aria-hidden="true"]');
+    fireEvent.click(backdrop!);
+
+    expect(handleClose).not.toHaveBeenCalled();
+  });
+
   it('calls onClose when close button is clicked with title', () => {
     const handleClose = jest.fn();
     renderModal({ onClose: handleClose, title: 'Title' });

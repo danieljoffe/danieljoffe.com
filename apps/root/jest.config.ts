@@ -42,6 +42,8 @@ const config = {
   moduleNameMapper: {
     '^@danieljoffe\\.com/shared-ui$':
       '<rootDir>/../../libs/shared/ui/src/index.ts',
+    '^@danieljoffe\\.com/shared-ui/styles/(.*)$':
+      '<rootDir>/../../libs/shared/ui/src/lib/styles/$1.ts',
     '^@danieljoffe\\.com/shared-ui/(.*)$':
       '<rootDir>/../../libs/shared/ui/src/lib/$1.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',

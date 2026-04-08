@@ -6,9 +6,15 @@ import { Check, Monitor, Smartphone } from 'lucide-react';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
+import {
+  BASE_FIELD,
+  FIELD_ERROR,
+  FIELD_PADDING,
+  FIELD_PLACEHOLDER,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
+import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
-import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 
@@ -128,7 +134,12 @@ export default function URLInputForm() {
               aria-label='Website URL'
               aria-describedby={validationError ? 'url-error' : undefined}
               disabled={state.phase === 'submitting'}
-              className={validationError ? inputErrorStyles : inputStyles}
+              className={cn(
+                BASE_FIELD,
+                FIELD_PADDING,
+                FIELD_PLACEHOLDER,
+                validationError && FIELD_ERROR
+              )}
             />
             <FormFieldError message={validationError} id='url-error' />
           </div>
