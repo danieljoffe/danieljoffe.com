@@ -53,7 +53,7 @@ export default async function OgImage() {
 
       <span
         style={{
-          fontFamily: 'Fraunces',
+          fontFamily: 'Inter',
           fontSize: '56px',
           fontWeight: 700,
           color: '#ffffff',
@@ -62,7 +62,7 @@ export default async function OgImage() {
           textAlign: 'center',
         }}
       >
-        Frontend Development & Consulting
+        Full-Stack Development & Consulting
       </span>
 
       <span

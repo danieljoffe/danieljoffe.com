@@ -1,0 +1,104 @@
+export const metadata = {
+  title: 'Tooltip aria-describedby Was on the Wrong Element',
+  date: '2026-04-07',
+  excerpt:
+    'Our Tooltip passed every test but put aria-describedby on a wrapper div instead of the trigger. Screen readers never announced it.',
+  author: 'Daniel Joffe',
+  category: 'Accessibility',
+  tags: ['React', 'Accessibility', 'ARIA', 'Design Systems'],
+  slug: 'tooltip-aria-describedby-wrong-element',
+  type: 'blog',
+  topic: 'Accessibility',
+};
+
+## The Bug
+
+Our Tooltip component wrapped its children in a `div[role="presentation"]`
+that handled mouse and focus events. The `aria-describedby` attribute
+lived on that wrapper, pointing at the tooltip's `id`. Everything looked
+correct in the DOM inspector.
+
+Screen readers never announced the tooltip content. A VoiceOver user
+focusing a button with a tooltip heard "Save, button", nothing else.
+`aria-describedby` was on the `role="presentation"` wrapper, not the
+`<button>` inside it. Assistive technology ignores `role="presentation"`
+elements for accessibility tree purposes, so the association went nowhere.
+
+## The Fix
+
+The tooltip needs to inject `aria-describedby` onto whatever element
+the consumer passes as `children`. That means cloning the child element:
+
+```tsx
+const child = isValidElement(children)
+  ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+      'aria-describedby': tooltipId,
+    })
+  : children;
+
+return (
+  <div className='relative inline-block'>
+    <div
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
+      onFocus={showTooltip}
+      onBlur={hideTooltip}
+      role='presentation'
+    >
+      {child}
+    </div>
+    <div id={tooltipId} role='tooltip' aria-hidden={!isVisible}>
+      {content}
+    </div>
+  </div>
+);
+```
+
+The wrapper div still handles events, but `aria-describedby` is now on
+the actual interactive element: the `<button>`, `<a>`, or whatever the
+child is. The tooltip div also gets `aria-hidden={!isVisible}` so screen
+readers don't announce its content as regular page text when it's at
+opacity 0.
+
+This required changing the `children` type from `ReactNode` to
+`ReactElement`, since `cloneElement` needs an element, not a string
+or fragment. A reasonable constraint; a tooltip without an interactive
+trigger element isn't useful.
+
+## Testing the Right Thing
+
+The original test asserted that the wrapper had `aria-describedby`. It
+passed because the wrapper _did_. The test was correct about the
+implementation and wrong about the spec.
+
+The updated test checks the child element:
+
+```tsx
+it('applies aria-describedby to the child element, not the wrapper', () => {
+  const { container } = render(
+    <Tooltip content='Tooltip text'>
+      <button>Hover me</button>
+    </Tooltip>
+  );
+  const button = screen.getByRole('button', { name: 'Hover me' });
+  const tooltip = container.querySelector('[role="tooltip"]');
+  const wrapper = container.querySelector('[role="presentation"]');
+
+  expect(button).toHaveAttribute(
+    'aria-describedby',
+    tooltip?.getAttribute('id')
+  );
+  expect(wrapper).not.toHaveAttribute('aria-describedby');
+});
+```
+
+The negative assertion matters. It documents that the wrapper should
+_not_ have the attribute, preventing future regressions from re-adding
+it to the wrong element.
+
+## The Takeaway
+
+Testing for the presence of an ARIA attribute is only half the job.
+The other half is testing _which element_ it's on. The wrapper had the
+right attribute; the child element needed it. Screen readers don't care
+about your wrapper divs.

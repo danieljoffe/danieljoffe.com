@@ -5,16 +5,18 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { InferType } from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
 import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/contact/schema';
 import { analytics } from '@/lib/analytics';
 import { publicEnv } from '@/lib/public.env';
-import { yupResolver } from '@hookform/resolvers/yup';
 import Button from '@/components/Button';
 import { captureFormError, addBreadcrumb } from '@/lib/errorTracking';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { inputStyles, inputErrorStyles } from '@/lib/formStyles';
-import { FormFieldError } from '@/components/kit';
 
 const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ssr: false,
@@ -35,9 +37,9 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
             />
           ))}
         </div>
-        <span className='text-sm text-text-secondary animate-pulse'>
+        <Text variant='body' as='span' className='animate-pulse'>
           Loading...
-        </span>
+        </Text>
       </div>
     </div>
   ),
@@ -159,9 +161,14 @@ export default function Form() {
       noValidate
     >
       <header>
-        <h3 id='contact-form-heading' className='sr-only'>
+        <Heading
+          variant='component'
+          as='h3'
+          id='contact-form-heading'
+          className='sr-only'
+        >
           Contact Form
-        </h3>
+        </Heading>
       </header>
 
       <fieldset>
@@ -252,9 +259,9 @@ export default function Form() {
       </div>
 
       <div ref={captchaContainerRef} className='min-h-[78px]'>
-        <label className='text-sm text-text-secondary block mb-1'>
+        <Text variant='body' as='label' className='block mb-1'>
           Security verification
-        </label>
+        </Text>
         {shouldLoadCaptcha && (
           <HCaptcha
             sitekey={publicEnv.NEXT_PUBLIC_HCAPTCHA_SITE_ID ?? ''}
@@ -286,12 +293,12 @@ export default function Form() {
         errors.root?.unknownError ||
         errors.hcaptcha) && (
         <div id='form-error' role='alert' aria-live='assertive'>
-          <p className='text-error text-sm'>
+          <Text variant='error'>
             {errors.root?.serverError?.message ||
               errors.root?.configurationError?.message ||
               errors.root?.unknownError?.message ||
               errors.hcaptcha?.message}
-          </p>
+          </Text>
         </div>
       )}
     </form>

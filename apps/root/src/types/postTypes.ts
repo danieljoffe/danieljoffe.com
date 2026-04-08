@@ -6,7 +6,6 @@ export interface UnsplashImageMeta {
   src: `/photo-${string}`;
   origin: `${typeof UNSPLASH_URL}/photos${string}`;
   creator: `@${string}`;
-  blurHash: string;
 }
 
 export interface PostBase {
@@ -14,11 +13,10 @@ export interface PostBase {
   title: string;
   description: string;
   cover: UnsplashImageMeta;
-  link: NavLink;
+  link: Pick<NavLink, 'href'>;
 }
 
 export interface PostThumbnail extends PostBase {
-  backgroundColor?: string;
   duration?: string;
   role?: string;
   readingTime?: number;
@@ -60,5 +58,4 @@ export interface PostMetadata {
   duration?: string;
   industry?: string;
   topic?: string;
-  series?: string;
 }

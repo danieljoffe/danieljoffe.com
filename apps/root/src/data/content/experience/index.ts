@@ -1,7 +1,6 @@
+import { ComponentType } from 'react';
 import { AllowedExperienceSlugs } from '@/types/base';
 import { PostMetadata } from '@/types/postTypes';
-import { ComponentType } from 'react';
-
 import Winc, { metadata as wincMeta } from './winc.mdx';
 import InternetBrands, { metadata as ibMeta } from './internet-brands.mdx';
 import TheLibraryCorporation, {

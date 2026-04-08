@@ -1,0 +1,181 @@
+{/* git bracket: bde9947 - d95b87e */}
+
+export const metadata = {
+  title: 'From Monolith to Composition — Simplifying AppContext',
+  date: '2026-03-18',
+  excerpt:
+    'How splitting a monolithic GlobalProvider into focused, composable providers eliminated tree-wide re-renders and improved developer ergonomics.',
+  author: 'Daniel Joffe',
+  category: 'Performance Engineering',
+  tags: [
+    'React',
+    'State Management',
+    'Performance',
+    'Refactoring',
+    'Context API',
+    'TypeScript',
+  ],
+  slug: 'appcontext-simplification-case-study',
+  type: 'project',
+  role: 'Solo Developer',
+  duration: 'March 2026',
+};
+
+## From Monolith to Composition — Simplifying AppContext
+
+## Overview
+
+**Project:** State architecture refactor for danieljoffe.com
+
+**Role:** Solo Developer
+
+**Duration:** March 3–18, 2026 (4 phases over 15 days)
+
+**Purpose:** Break a monolithic context provider into focused, composable units — eliminating unnecessary re-renders and making the provider tree maintainable as the app grows.
+
+## The Challenge
+
+The portfolio site's entire state lived in a single `GlobalProvider` — theme mode, modal state, window dimensions, and dark mode preferences all bundled into one context. Every state change, no matter how small, triggered a re-render of every consumer in the tree.
+
+### The monolith:
+
+```typescript title="GlobalProvider.tsx (before)" {3-5}
+// 153 lines — one context, 15 properties, all coupled
+const value = useMemo(
+  () => ({
+    isModalOpen,
+    toggleModal,
+    modalContent,
+    setModalContent,
+    windowWidth,
+    windowHeight,
+    isMobile,
+    isTablet,
+    isDesktop,
+    themeMode,
+    isDarkMode,
+    setThemeMode,
+    toggleDarkMode,
+  }),
+  [
+    /* 15 dependencies — any change re-renders everything */
+  ]
+);
+```
+
+### The problems:
+
+- **Tree-wide re-renders**: Toggling dark mode re-rendered modal consumers. Opening a modal re-rendered theme consumers. Resizing the window re-rendered everything.
+- **`useWindowResize` fired on every frame**: A resize event listener updated state on every pixel change, causing layout thrashing during window resizing.
+- **Untestable**: You couldn't test theme behavior without also wiring up modal and window state.
+- **Scaling bottleneck**: Adding new providers (like Toast notifications) meant adding more properties to an already bloated context.
+
+## My Approach
+
+### Phase 1: Split the monolith (March 5)
+
+The first step was separating concerns. `GlobalProvider` became three focused providers — each owning exactly one piece of state:
+
+```typescript title="ThemeProvider.tsx"
+// Owns: themeMode, isDarkMode, setThemeMode, toggleDarkMode
+// Listens to: localStorage, system preference via matchMedia
+export function ThemeProvider({ children }: WithChildren) {
+  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
+  // ...only theme-related state and effects
+}
+```
+
+```typescript title="ModalProvider.tsx"
+// Owns: isModalOpen, modalContent, toggleModal
+// Uses matchMedia instead of useWindowResize
+export default function ModalProvider({ children }: WithChildren) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // ...only modal-related state and effects
+}
+```
+
+The key architectural win: **replacing `useWindowResize` with `matchMedia`**. Instead of firing on every pixel during a resize, the modal provider now listens only for breakpoint transitions:
+
+```typescript title="ModalProvider.tsx — matchMedia vs resize listener"
+// BEFORE: fires on every frame during resize
+const { isMobile } = useWindowResize();
+
+// AFTER: fires only when crossing the breakpoint
+useEffect(() => {
+  const mq = window.matchMedia('(max-width: 768px)');
+  const handler = (e: MediaQueryListEvent) => {
+    if (!e.matches && isModalOpen) setIsModalOpen(false);
+  };
+  mq.addEventListener('change', handler);
+  return () => mq.removeEventListener('change', handler);
+}, [isModalOpen]);
+```
+
+### Phase 2: Extract to shared-ui (March 18)
+
+ThemeProvider and ToastProvider moved into `@danieljoffe.com/shared-ui` — the monorepo's framework-agnostic component library. This meant any app in the monorepo could use consistent theming and toast notifications without reinventing them.
+
+ModalProvider stayed in the app — it depends on Next.js dynamic imports and app-specific routing, making it a poor candidate for a shared library.
+
+### Phase 3: Compose providers functionally (March 18)
+
+The final piece was eliminating nested JSX. A `composeProviders` utility reduced the provider tree from nested callbacks to a flat list:
+
+```typescript title="AppContext.tsx (after)" {1-8,10-14}
+const composeProviders = (providers: ComponentType<WithChildren>[]) =>
+  providers.reduce((Acc, Curr) => {
+    const Composed = ({ children }: WithChildren) => (
+      <Acc>
+        <Curr>{children}</Curr>
+      </Acc>
+    );
+    Composed.displayName =
+      `${Acc.displayName ?? Acc.name}(${Curr.displayName ?? Curr.name})`;
+    return Composed;
+  });
+
+const Providers = composeProviders([
+  ThemeProvider,
+  ToastProvider,
+  ModalProvider,
+]);
+
+export default function AppContext({ children }: WithChildren) {
+  return (
+    <Providers>
+      <Nav />
+      <ErrorBoundary>{children}</ErrorBoundary>
+      <Modal />
+      <ScrollToTop />
+      <KeyboardShortcuts />
+      <Suspense fallback={null}>
+        <ScrollToElement />
+      </Suspense>
+    </Providers>
+  );
+}
+```
+
+Adding or removing a provider is now a one-line change to an array — no JSX nesting to untangle. The auto-generated `displayName` means React DevTools shows the full provider chain for debugging.
+
+## The Results
+
+| Metric                 | Before                                        | After                           |
+| ---------------------- | --------------------------------------------- | ------------------------------- |
+| Provider count         | 1 monolithic (153 lines)                      | 3 focused (avg 91 lines each)   |
+| Context properties     | 15 in one context                             | 3–5 per context                 |
+| Resize listener        | Every frame (useWindowResize)                 | Breakpoint only (matchMedia)    |
+| Re-render scope        | Entire tree on any change                     | Only affected consumers         |
+| Adding a provider      | Add properties to monolith + update memo deps | One line in the providers array |
+| Shared across monorepo | No                                            | Theme + Toast in shared-ui      |
+
+## Key Takeaways
+
+- **Split by concern, not by size.** The goal wasn't making files smaller — it was ensuring that a theme change doesn't re-render modal consumers and vice versa. Separation of concerns directly maps to render performance in React.
+- **`matchMedia` over resize listeners.** If you only care about breakpoints, there's no reason to fire state updates on every pixel of a window resize. `matchMedia` is the browser's built-in debouncer.
+- **Functional composition scales.** `composeProviders` is 8 lines of code that eliminated an entire class of nesting problems. The pattern makes the provider tree transparent — you see exactly what wraps what, in order.
+- **Shared-ui boundary matters.** ThemeProvider and ToastProvider are framework-agnostic (React + Tailwind only) and moved to the shared library. ModalProvider depends on Next.js — it stayed in the app. Knowing where to draw that line prevents coupling.
+
+## Technologies Used
+
+React Context API, TypeScript, matchMedia API, Next.js App Router, Nx Monorepo, @danieljoffe.com/shared-ui

@@ -17,7 +17,7 @@ export const metadata = {
   type: 'project',
 };
 
-# Building a Design System: UI Components for danieljoffe.com
+## Building a Design System: UI Components for danieljoffe.com
 
 When building this portfolio, I wanted more than hastily assembled components—I wanted a design system that would scale. Here's what I built and why it matters. This is the first installment documenting the foundational components.
 
@@ -27,22 +27,20 @@ When building this portfolio, I wanted more than hastily assembled components—
 
 A flexible button with three variants (primary, secondary, icon) and three sizes. Uses `React.forwardRef` for proper ref forwarding and includes built-in accessibility with ARIA attributes and keyboard navigation.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-button--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-button--default'
+  title='Button — Default variant'
+  height={120}
 />
 
 ### Input
 
 A polymorphic form component that renders as either `<input>` or `<textarea>`. Handles validation states, error messages, and success feedback with proper ARIA relationships using `React.useId()`.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-input--default'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-input--default'
+  title='Input — Default'
+  height={170}
 />
 
 ## Layout Components
@@ -51,22 +49,20 @@ A polymorphic form component that renders as either `<input>` or `<textarea>`. H
 
 A simple but essential wrapper that centers content and provides consistent spacing. Used on almost every page.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-container--default'
-  width='400'
-  height='300'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-container--default'
+  title='Container'
+  height={200}
 />
 
 ### Grid
 
 A responsive grid layout for displaying content cards. Automatically adjusts columns based on viewport size.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-grid--two-columns'
-  width='400'
-  height='400'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-grid--two-columns'
+  title='Grid — Two Columns'
+  height={300}
 />
 
 ## Utility Components
@@ -75,22 +71,20 @@ A responsive grid layout for displaying content cards. Automatically adjusts col
 
 A loading spinner component for async states. Provides visual feedback during data fetching or processing.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-loading--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-loading--default'
+  title='Loading Spinner'
+  height={150}
 />
 
 ### Modal
 
 A portal-based modal component controlled via global state. Renders content above the main application with proper focus management.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-modal--default'
-  width='400'
-  height='300'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='overlay-modal--default'
+  title='Modal — Default'
+  height={300}
 />
 
 ## Design Principles

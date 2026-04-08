@@ -1,6 +1,8 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DISABLED, FOCUS_RING, FOCUS_RING_OFFSET } from './styles/formStyles';
+import type { ComponentSize } from './types';
 import { cn } from './utils/cn';
 
 export interface PaginationProps {
@@ -8,13 +10,35 @@ export interface PaginationProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   className?: string;
+  ariaLabel?: string;
+  size?: ComponentSize;
 }
+
+const navButtonSizeStyles: Record<ComponentSize, string> = {
+  sm: 'p-1',
+  md: 'p-1.5',
+  lg: 'p-2',
+};
+
+const pageButtonSizeStyles: Record<ComponentSize, string> = {
+  sm: 'h-6 min-w-6 px-1.5 text-xs',
+  md: 'h-8 min-w-8 px-2 text-sm',
+  lg: 'h-10 min-w-10 px-3 text-base',
+};
+
+const iconSizeStyles: Record<ComponentSize, string> = {
+  sm: 'h-3.5 w-3.5',
+  md: 'h-4 w-4',
+  lg: 'h-5 w-5',
+};
 
 export function Pagination({
   currentPage,
   totalPages,
   onPageChange,
   className,
+  ariaLabel = 'Pagination',
+  size = 'md',
 }: PaginationProps) {
   const getPages = (): (number | '...')[] => {
     if (totalPages <= 7)
@@ -33,26 +57,57 @@ export function Pagination({
     return pages;
   };
 
+  const isPrevDisabled = currentPage <= 1;
+  const isNextDisabled = currentPage >= totalPages;
+
   return (
-    <nav className={cn('flex items-center gap-1', className)}>
+    <nav
+      aria-label={ariaLabel}
+      className={cn('flex items-center gap-1', className)}
+    >
       <button
         onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage <= 1}
-        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+        disabled={isPrevDisabled}
+        aria-label='Previous page'
+        aria-disabled={isPrevDisabled ? 'true' : undefined}
+        className={cn(
+          'rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
+          DISABLED,
+          FOCUS_RING,
+          FOCUS_RING_OFFSET,
+          navButtonSizeStyles[size]
+        )}
       >
-        <ChevronLeft className='h-4 w-4' />
+        <ChevronLeft className={iconSizeStyles[size]} />
       </button>
       {getPages().map((page, i) =>
         page === '...' ? (
-          <span key={`dots-${i}`} className='px-1 text-text-tertiary text-sm'>
+          <span
+            key={`dots-${i}`}
+            className={cn(
+              'px-1 text-text-tertiary',
+              size === 'sm'
+                ? 'text-xs'
+                : size === 'lg'
+                  ? 'text-base'
+                  : 'text-sm'
+            )}
+          >
             ...
           </span>
         ) : (
           <button
             key={page}
             onClick={() => onPageChange(page)}
+            aria-label={
+              page === currentPage ? `Page ${page}` : `Go to page ${page}`
+            }
+            aria-current={page === currentPage ? 'page' : undefined}
             className={cn(
-              'h-8 min-w-8 px-2 text-sm rounded-md transition-colors cursor-pointer',
+              'rounded-md transition-colors cursor-pointer',
+              FOCUS_RING,
+              FOCUS_RING_OFFSET,
+              pageButtonSizeStyles[size],
               page === currentPage
                 ? 'bg-brand-600 text-white font-medium'
                 : 'text-text-secondary hover:bg-surface-tertiary'
@@ -64,10 +119,18 @@ export function Pagination({
       )}
       <button
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage >= totalPages}
-        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+        disabled={isNextDisabled}
+        aria-label='Next page'
+        aria-disabled={isNextDisabled ? 'true' : undefined}
+        className={cn(
+          'rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
+          DISABLED,
+          FOCUS_RING,
+          FOCUS_RING_OFFSET,
+          navButtonSizeStyles[size]
+        )}
       >
-        <ChevronRight className='h-4 w-4' />
+        <ChevronRight className={iconSizeStyles[size]} />
       </button>
     </nav>
   );

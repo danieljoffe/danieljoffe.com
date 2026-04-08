@@ -1,22 +1,14 @@
 import {
-  forwardRef,
   type ButtonHTMLAttributes,
   type ElementType,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { Spinner } from './Spinner';
+import { DISABLED, FOCUS_RING, FOCUS_RING_OFFSET } from './styles/formStyles';
 import { cn } from './utils';
 
-export type ButtonVariant =
-  | 'bare'
-  | 'primary'
-  | 'secondary'
-  | 'ghost'
-  | 'outline'
-  | 'success'
-  | 'error'
-  | 'warning'
-  | 'info';
+export type ButtonVariant = 'bare' | 'primary' | 'secondary' | 'outline';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export interface ButtonBase {
@@ -29,7 +21,9 @@ export interface ButtonProps
   extends
     ButtonBase,
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  ref?: Ref<HTMLButtonElement> | undefined;
   loading?: boolean;
+  iconOnly?: boolean;
   as?: ElementType;
   href?: string;
   target?: string;
@@ -38,8 +32,8 @@ export interface ButtonProps
 
 export const baseButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition',
-  'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-  'focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed',
+  `duration-200 ${FOCUS_RING} ${FOCUS_RING_OFFSET}`,
+  DISABLED,
   'hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none',
 ].join(' ');
 
@@ -52,16 +46,9 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   secondary: `${
     regularButton
   } bg-surface-elevated text-text-primary hover:bg-surface border border-border`,
-  ghost: `${
-    regularButton
-  } text-text-secondary hover:bg-surface-elevated hover:text-text-primary`,
   outline: `${
     regularButton
   } border border-border-secondary text-text-primary hover:bg-surface-elevated`,
-  success: `${regularButton} bg-success text-white hover:opacity-90`,
-  error: `${regularButton} bg-error text-text-inverse hover:opacity-90`,
-  warning: `${regularButton} bg-warning text-text-inverse hover:opacity-90`,
-  info: `${regularButton} bg-info text-text-inverse hover:opacity-90`,
 };
 
 const baseOutline =
@@ -70,12 +57,7 @@ export const variantLinkOutline: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${baseOutline} hover:outline-brand-500`,
   secondary: `${baseOutline} hover:outline-border-strong`,
-  ghost: `${baseOutline} hover:outline-foreground-muted`,
   outline: `${baseOutline} hover:outline-border-strong`,
-  success: `${baseOutline} hover:outline-success`,
-  error: `${baseOutline} hover:outline-error`,
-  warning: `${baseOutline} hover:outline-warning`,
-  info: `${baseOutline} hover:outline-info`,
 };
 
 export const sizeButtonStyles: Record<ButtonSize, string> = {
@@ -84,53 +66,54 @@ export const sizeButtonStyles: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
 };
 
+const iconOnlySizeStyles: Record<ButtonSize, string> = {
+  sm: 'p-1.5 text-sm hover:scale-[1.1]',
+  md: 'p-2.5 hover:scale-[1.05]',
+  lg: 'p-3 text-lg hover:scale-[1.025]',
+};
+
 const spinnerSizeStyles: Record<ButtonSize, string> = {
   sm: 'size-3.5',
   md: 'size-4',
   lg: 'size-5',
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      variant = 'primary',
-      size = 'md',
-      loading = false,
-      as: Component = 'button',
-      children,
-      className,
-      disabled,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <Component
-        ref={ref}
-        className={cn(
-          baseButtonStyles,
-          variantButtonStyles[variant],
-          sizeButtonStyles[size],
-          className
-        )}
-        disabled={disabled || loading}
-        aria-busy={loading || undefined}
-        {...props}
-      >
-        {loading && (
-          <Spinner
-            size='sm'
-            className={cn(
-              'border-current/30 border-t-current',
-              spinnerSizeStyles[size]
-            )}
-            aria-hidden='true'
-          />
-        )}
-        {children}
-      </Component>
-    );
-  }
-);
-
-Button.displayName = 'Button';
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  iconOnly = false,
+  as: Component = 'button',
+  children,
+  className,
+  disabled,
+  ref,
+  ...props
+}: ButtonProps) {
+  return (
+    <Component
+      ref={ref}
+      className={cn(
+        baseButtonStyles,
+        variantButtonStyles[variant],
+        iconOnly ? iconOnlySizeStyles[size] : sizeButtonStyles[size],
+        className
+      )}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading && (
+        <Spinner
+          size='sm'
+          className={cn(
+            'border-current/30 border-t-current',
+            spinnerSizeStyles[size]
+          )}
+          aria-hidden='true'
+        />
+      )}
+      {children}
+    </Component>
+  );
+}

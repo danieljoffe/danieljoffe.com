@@ -1,3 +1,6 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+
 interface ScoreCardsProps {
   performance: number | null;
   accessibility: number | null;
@@ -25,7 +28,9 @@ function ScoreCardItem({ label, score }: ScoreCardItemProps) {
 
   return (
     <div className='rounded-lg border border-border bg-surface-elevated p-6 text-center'>
-      <p className='text-sm text-text-secondary mb-2'>{label}</p>
+      <Text variant='body' className='mb-2'>
+        {label}
+      </Text>
       <p className='text-4xl font-bold' style={{ color }}>
         {score !== null ? score : 'N/A'}
       </p>
@@ -46,20 +51,25 @@ export default function ScoreCards({
       className='w-full overflow-hidden flex flex-col justify-center'
     >
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <h2 id='scores-heading' className='sr-only'>
+        <Heading
+          variant='section'
+          as='h2'
+          id='scores-heading'
+          className='sr-only'
+        >
           Scores
-        </h2>
+        </Heading>
         <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
           <ScoreCardItem label='Performance' score={performance} />
           <ScoreCardItem label='Accessibility' score={accessibility} />
           <ScoreCardItem label='SEO' score={seo} />
           <ScoreCardItem label='Best Practices' score={bestPractices} />
         </div>
-        <p className='text-xs text-text-secondary text-center mt-3'>
+        <Text variant='detail' className='text-center mt-3'>
           {deviceMode === 'desktop'
             ? 'Scores reflect a desktop device on a broadband connection.'
             : 'Scores reflect a mobile device on a 4G connection. Results may differ on desktop or faster networks.'}
-        </p>
+        </Text>
       </div>
     </section>
   );

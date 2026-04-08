@@ -1,0 +1,132 @@
+export const metadata = {
+  title: 'Making Data Tables Keyboard-Navigable',
+  date: '2026-04-06',
+  excerpt:
+    'Adding scope, caption, clickable row keyboard support, and focus-visible to a Table component. The accessibility basics HTML tables need but rarely get.',
+  author: 'Daniel Joffe',
+  category: 'Accessibility',
+  tags: ['React', 'Accessibility', 'Design Systems', 'HTML'],
+  slug: 'keyboard-navigable-data-tables',
+  type: 'blog',
+  topic: 'Accessibility',
+};
+
+## The Problem with Styled Tables
+
+Custom table components tend to inherit all of HTML's visual structure and
+none of its semantic structure. Our shared-ui `Table` had `<thead>`,
+`<tbody>`, `<th>`, and `<td>` — correct markup. But it was missing the
+attributes that tell assistive technology how to interpret that markup.
+
+And then there was `onRowClick`. A clickable table row that only responded
+to mouse events. Keyboard users couldn't reach it. Screen reader users
+didn't know it was interactive.
+
+## scope="col" — The One Attribute Every Table Needs
+
+Without `scope`, a screen reader has to guess which header belongs to which
+column. On a simple table it usually guesses right. On a table with merged
+cells or ambiguous layout, it doesn't.
+
+```tsx
+<th scope='col' className={cn('px-4 py-3 font-medium text-text-secondary')}>
+  {col.header}
+</th>
+```
+
+One attribute, applied to every `<th>` in the header. It removes all
+ambiguity about the header-to-data relationship.
+
+## Caption vs aria-label
+
+A table should identify itself. HTML gives us two options:
+
+- **`<caption>`**: visible, rendered inside the table. Best when the label
+  should be visible to all users.
+- **`aria-label`**: invisible, read only by screen readers. Best when the
+  surrounding context already provides a visible heading.
+
+We support both, with `caption` taking precedence:
+
+```tsx
+<table aria-label={!caption ? ariaLabel : undefined}>
+  {caption && (
+    <caption className='px-4 py-3 text-left text-sm font-medium'>
+      {caption}
+    </caption>
+  )}
+```
+
+This avoids the common mistake of providing both, which can cause screen
+readers to announce the table's identity twice.
+
+## Making Clickable Rows Accessible
+
+The `onRowClick` prop was the real accessibility gap. A `<tr>` with an
+`onClick` handler looks interactive to a mouse user (via hover styles and a
+pointer cursor) but is completely invisible to keyboard navigation.
+
+The fix has three parts:
+
+```tsx
+<tr
+  tabIndex={onRowClick ? 0 : undefined}
+  role={onRowClick ? 'button' : undefined}
+  onKeyDown={onRowClick ? (e) => handleRowKeyDown(e, row) : undefined}
+  aria-label={onRowClick && getRowAriaLabel ? getRowAriaLabel(row) : undefined}
+  className={cn(
+    onRowClick && [
+      'cursor-pointer hover:bg-surface-tertiary',
+      'focus-visible:outline-2 focus-visible:outline-offset-[-2px]',
+      'focus-visible:outline-accent',
+    ]
+  )}
+>
+```
+
+**`tabIndex={0}`** puts the row in the tab order. **`role="button"`** tells
+screen readers the row is activatable. The keyboard handler fires `onRowClick`
+on Enter or Space:
+
+```tsx
+const handleRowKeyDown = (e: KeyboardEvent<HTMLTableRowElement>, row: T) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    onRowClick?.(row);
+  }
+};
+```
+
+`e.preventDefault()` on Space is essential. Without it, the page scrolls.
+
+## The rowKey and getRowAriaLabel Props
+
+Two small API additions that solve real problems:
+
+**`rowKey`** replaces array-index keys. When table data changes (sorting,
+filtering, pagination), index-based keys cause React to remount rows
+unnecessarily. A stable key function avoids this:
+
+```tsx
+<tr key={rowKey ? rowKey(row) : i}>
+```
+
+**`getRowAriaLabel`** gives clickable rows a meaningful accessible name.
+Without it, a screen reader announces "button" with no indication of what
+the row represents. With it:
+
+```tsx
+// Usage
+<Table
+  onRowClick={handleRowClick}
+  getRowAriaLabel={row => `View details for ${row.name}`}
+/>
+```
+
+## The Takeaway
+
+Table accessibility is cumulative. No single attribute makes a table
+accessible. It's `scope` _and_ `caption` _and_ keyboard support _and_
+focus indicators working together. The total diff was ~60 lines of
+component code and 16 new tests. None of it was clever. All of it was
+necessary.

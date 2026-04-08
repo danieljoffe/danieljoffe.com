@@ -8,6 +8,7 @@ export const projectSlugs = {
   csModernPractice: 'portfolio-modern-practice-study-case',
   csLogisticsDashboard: 'logistics-dashboard-study-case',
   csContactForm: 'contact-form-case-study',
+  csAppContext: 'appcontext-simplification-case-study',
 } as const;
 
 export const projectPageSlugs = [...Object.values(projectSlugs)];

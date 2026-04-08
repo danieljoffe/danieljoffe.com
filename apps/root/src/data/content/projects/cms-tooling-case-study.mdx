@@ -19,7 +19,7 @@ export const metadata = {
   duration: 'June 2015 - October 2017',
 };
 
-# Case Study 3: Winc — Self-Serve Landing Page CMS
+## Case Study 3: Winc — Self-Serve Landing Page CMS
 
 ## Overview
 
@@ -86,56 +86,52 @@ I started this as a side project during downtime, recognizing the recurring bott
 
 ## The Results
 
-<div className='overflow-x-auto -mx-4 px-4'>
-  <table>
-    <thead>
-      <tr>
-        <th scope='col'>Metric</th>
-        <th scope='col'>Before</th>
-        <th scope='col'>After</th>
-        <th scope='col'>Impact</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Landing Pages per Month</td>
-        <td>12</td>
-        <td>200+ in 2 months</td>
-        <td>1,600% increase</td>
-      </tr>
-      <tr>
-        <td>Pages per Week</td>
-        <td>3-4</td>
-        <td>8-12 average</td>
-        <td>3x velocity</td>
-      </tr>
-      <tr>
-        <td>Engineering Time Saved</td>
-        <td>—</td>
-        <td>12+ hours/week</td>
-        <td>Freed for features</td>
-      </tr>
-      <tr>
-        <td>Page Migration Time</td>
-        <td>—</td>
-        <td>2 weeks</td>
-        <td>Quick adoption</td>
-      </tr>
-      <tr>
-        <td>Conversion Rate</td>
-        <td>1.4%</td>
-        <td>2.0%</td>
-        <td>~43% improvement</td>
-      </tr>
-      <tr>
-        <td>Engineering Dependency</td>
-        <td>100%</td>
-        <td>0%</td>
-        <td>Full autonomy</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<MetricsDashboard
+  metrics={[
+    {
+      label: 'Landing Pages per Month',
+      before: '12',
+      after: '200+',
+      improvement: '1,600% increase',
+      delta: 'positive',
+    },
+    {
+      label: 'Pages per Week',
+      before: '3-4',
+      after: '8-12',
+      improvement: '3x velocity',
+      delta: 'positive',
+    },
+    {
+      label: 'Engineering Time Saved',
+      before: '—',
+      after: '12+ hrs/week',
+      improvement: 'Freed for features',
+      delta: 'positive',
+    },
+    {
+      label: 'Page Migration Time',
+      before: '—',
+      after: '2 weeks',
+      improvement: 'Quick adoption',
+      delta: 'positive',
+    },
+    {
+      label: 'Conversion Rate',
+      before: '1.4%',
+      after: '2.0%',
+      improvement: '~43% improvement',
+      delta: 'positive',
+    },
+    {
+      label: 'Engineering Dependency',
+      before: '100%',
+      after: '0%',
+      improvement: 'Full autonomy',
+      delta: 'positive',
+    },
+  ]}
+/>
 
 ## Key Takeaways
 

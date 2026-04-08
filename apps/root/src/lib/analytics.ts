@@ -45,8 +45,6 @@ export const analytics = {
   auditEmailCaptured: (scanId: string) =>
     trackEvent('audit_email_captured', { scan_id: scanId }),
   auditCalendlyClicked: () => trackEvent('audit_calendly_clicked'),
-  calendlyBooking: (source: string) =>
-    trackEvent('calendly_booking', { source }),
   auditReportShared: (scanId: string) =>
     trackEvent('audit_report_shared', { scan_id: scanId }),
 };

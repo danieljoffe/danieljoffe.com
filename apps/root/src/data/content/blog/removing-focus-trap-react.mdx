@@ -1,0 +1,100 @@
+export const metadata = {
+  title: 'Removing focus-trap-react: Native Focus Management in Modals',
+  date: '2026-04-05',
+  excerpt:
+    'Replacing a 15KB focus-trap dependency with native dialog behavior and manual focus management drops bundle size and simplifies the shared-ui library.',
+  author: 'Daniel Joffe',
+  category: 'Performance Engineering',
+  tags: ['React', 'Accessibility', 'Performance', 'Design Systems'],
+  slug: 'removing-focus-trap-react',
+  type: 'blog',
+  topic: 'Accessibility',
+};
+
+## The Dependency Problem
+
+Our shared-ui library had a single external runtime dependency beyond React:
+`focus-trap-react`. It was used in exactly one component, the `Modal`. And
+it brought baggage:
+
+- **~15KB** added to the bundle (focus-trap + tabbable + focus-trap-react)
+- **Deprecated context APIs** that broke with ESLint 10 and required compat shims
+- **A mock file** (`__mocks__/focus-trap-react.tsx`) just to make tests pass
+- **An implicit contract** that every consumer of shared-ui also needed this
+  dependency in their bundle
+
+For a library whose guiding principle is "only depend on React and Tailwind
+CSS," this was a violation hiding in plain sight.
+
+## The Native Alternative
+
+Modern browsers give us everything we need for focus trapping. The HTML
+`<dialog>` element, when opened with `showModal()`, provides:
+
+- **Built-in focus trapping**: Tab cycles within the dialog automatically
+- **Inert backdrop**: Content behind the dialog becomes non-interactive
+- **Escape key handling**: The `cancel` event fires on Escape
+- **Focus restoration**: Focus returns to the trigger element on close
+
+For our React component, the refactored Modal stores a ref to the triggering
+element, manages `document.body.style.overflow` for scroll lock, and uses
+keyboard event listeners for Escape:
+
+```tsx
+export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  const triggerRef = useRef<Element | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      triggerRef.current = document.activeElement;
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  const handleClose = useCallback(() => {
+    onClose();
+    if (triggerRef.current instanceof HTMLElement) {
+      triggerRef.current.focus();
+    }
+  }, [onClose]);
+  // ...
+}
+```
+
+## What We Gained
+
+1. **Zero runtime dependencies** in shared-ui (beyond React peer dep)
+2. **Deleted** the mock file. One less testing workaround
+3. **Smaller bundle**: ~15KB saved for every page that imports from shared-ui
+4. **ESLint 10 compatibility**: no more `fixupPluginRules` shims for this dep
+5. **Simpler mental model**: the Modal manages its own focus lifecycle
+
+## Accessibility Testing
+
+The critical question: does it still work for keyboard and screen reader users?
+We verified:
+
+- **Tab cycling** stays within the modal when open
+- **Shift+Tab** wraps correctly at the first focusable element
+- **Escape** closes the modal and returns focus to the trigger
+- **Click outside** the modal closes it
+- **`aria-modal="true"`** and **`role="dialog"`** remain on the container
+- **`aria-labelledby`** connects the title to the dialog
+
+The existing Playwright E2E tests and Jest unit tests all pass without
+modification. The behavioral contract is identical.
+
+## The Lesson
+
+Before adding a dependency, check what the platform already provides. Focus
+trapping was a solved problem in 2020 when `<dialog>` shipped in all major
+browsers. Three years later, we were still bundling a polyfill-style library
+for something the browser does natively.
+
+The shared-ui library now has a clean dependency story: React, Tailwind CSS,
+and nothing else.

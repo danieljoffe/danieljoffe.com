@@ -1,5 +1,4 @@
-'use client';
-
+import type { ComponentSize } from './types';
 import { cn } from './utils/cn';
 
 export interface SkeletonProps {
@@ -8,7 +7,26 @@ export interface SkeletonProps {
   width?: string | number;
   height?: string | number;
   lines?: number;
+  size?: ComponentSize;
 }
+
+const textLineSizeStyles: Record<ComponentSize, string> = {
+  sm: 'h-3',
+  md: 'h-4',
+  lg: 'h-5',
+};
+
+const circularSizeDefaults: Record<ComponentSize, number> = {
+  sm: 32,
+  md: 40,
+  lg: 56,
+};
+
+const rectangularHeightDefaults: Record<ComponentSize, number> = {
+  sm: 80,
+  md: 120,
+  lg: 180,
+};
 
 export function Skeleton({
   className,
@@ -16,16 +34,18 @@ export function Skeleton({
   width,
   height,
   lines = 1,
+  size = 'md',
 }: SkeletonProps) {
-  const base = 'animate-pulse bg-surface-tertiary';
+  const base = 'animate-pulse motion-reduce:animate-none bg-surface-tertiary';
 
   if (variant === 'circular') {
+    const defaultSize = circularSizeDefaults[size];
     return (
       <div
         className={cn(base, 'rounded-full', className)}
         style={{
-          width: width || 40,
-          height: height || width || 40,
+          width: width || defaultSize,
+          height: height || width || defaultSize,
         }}
       />
     );
@@ -35,7 +55,10 @@ export function Skeleton({
     return (
       <div
         className={cn(base, 'rounded-lg', className)}
-        style={{ width: width || '100%', height: height || 120 }}
+        style={{
+          width: width || '100%',
+          height: height || rectangularHeightDefaults[size],
+        }}
       />
     );
   }
@@ -47,7 +70,8 @@ export function Skeleton({
           key={i}
           className={cn(
             base,
-            'h-4 rounded',
+            textLineSizeStyles[size],
+            'rounded-xs',
             i === lines - 1 && lines > 1 && 'w-3/4'
           )}
           style={{ height }}

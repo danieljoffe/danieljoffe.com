@@ -14,6 +14,9 @@ inputs:
   production:
     description: Whether this is a production deployment
     default: 'false'
+  vercel-version:
+    description: Vercel CLI version to install
+    default: '50.15.1'
 
 outputs:
   url:
@@ -42,7 +45,7 @@ runs:
 
     - name: Install Vercel CLI
       shell: bash
-      run: npm i -g vercel@50.15.1
+      run: npm i -g vercel@${{ inputs.vercel-version }}
 
     - name: Prepare Vercel prebuilt output
       shell: bash

@@ -32,7 +32,7 @@ export const services: Service[] = [
     title: 'Performance Audits & Optimization',
     highlighted: true,
     description:
-      'Your site is slow and users are bouncing. I diagnose the root causes—bloated bundles, unoptimized assets, layout shifts—and fix them systematically.',
+      'Your site is slow and users are bouncing. I diagnose the root causes (bloated bundles, unoptimized assets, layout shifts) and fix them systematically.',
     deliverables: [
       'Lighthouse & Core Web Vitals audit with prioritized action plan',
       'Implementation of fixes (lazy loading, image/video optimization, bundle analysis)',
@@ -50,8 +50,8 @@ export const services: Service[] = [
     description:
       'Your codebase has inconsistent UI, duplicated components, and no documentation. I build shared component systems that scale.',
     deliverables: [
-      'Audited existing components for consolidation',
-      'Documented component library with Storybook',
+      'Audit of existing components for consolidation',
+      'Documented component library in Storybook',
       'Contribution guidelines so your team can maintain it',
     ],
     proof:
@@ -80,7 +80,7 @@ export const services: Service[] = [
     title: 'MVP & Product Frontend Builds',
     highlighted: false,
     description:
-      'You have a backend or an idea and need a production-quality frontend—fast. I architect and build complete frontend applications.',
+      'You have a backend or an idea and need a production-quality frontend, fast. I architect and build complete frontend applications.',
     deliverables: [
       'Frontend architecture (Next.js, React, TypeScript)',
       'Responsive, accessible UI implementation',
@@ -98,7 +98,8 @@ export const servicesAudience: Audience[] = [
   {
     Icon: Rocket,
     label: 'Founders',
-    description: 'who need a senior frontend partner, not just a pair of hands',
+    description:
+      'who need a senior full-stack partner, not just a pair of hands',
   },
   {
     Icon: TrendingUp,
@@ -169,6 +170,6 @@ export const servicesFAQs = [
   {
     question: 'What about ongoing maintenance?',
     answer:
-      'I offer monthly retainer packages for teams that need continued frontend support after the initial build.',
+      'I offer monthly retainer packages for teams that need continued engineering support after the initial build.',
   },
 ];

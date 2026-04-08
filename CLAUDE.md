@@ -14,6 +14,7 @@ Live site: https://danieljoffe.com
 - **`main`** is the production branch. Only `develop` can be merged into `main`.
 - Never open a PR targeting `main` directly from a feature branch.
 - Create a new branch per issue: `feature/<feature-name>` from `main`.
+- **Keep `develop` in sync with `main`**: Before creating or updating a PR targeting `develop`, check if `develop` is behind `main` (`git log develop..main --oneline`). If it is, merge `main` into `develop` and push. Flag any merge conflicts for the user instead of auto-resolving.
 
 ## Pre-Push Checklist
 
@@ -151,6 +152,14 @@ The workspace uses Nx plugins for automatic target inference:
 - Tests: accessibility, navigation, contact-form, performance, dynamic-routes, error-handling
 - CI runs only Chromium; local runs all browsers + mobile
 
+### CI Pipelines
+
+- `ci.yml`: Runs on push to `develop` and PRs (except to `main`). Runs lint, typecheck, test, build, e2e (PR only), Chromatic, Lighthouse.
+- `ci-preview.yml`: Runs on PRs to `main` (release validation). Requires source branch is `develop`.
+- `ci.yml` uses a `changes` job with a shell-based file check to detect docs-only PRs. When only non-code files change (`*.md`, `.claude/*`, `.mcp.json`, `.vscode/*`, `.github/ISSUE_TEMPLATE/*`, `.github/prompts/*`, `.github/skills/*`, `.github/agents/*`, `.github/workflows/*`, `.husky/*`, `.prettierrc`, `.nvmrc`, `.sentryclirc`, `.editorconfig`, `.nxignore`, `LICENSE`), the `ci` job is skipped but the `ci-status` gate job still runs and passes. Push events to `develop` always run CI.
+- Branch protection rulesets require `ci-status` (not `ci`) so docs-only PRs can merge without running the full suite.
+- Snapshot regeneration: `workflow_dispatch` with `update-snapshots: true` on `ci.yml`.
+
 ## Sentry Integration
 
 Use `import * as Sentry from "@sentry/nextjs"` for all Sentry functionality. Key patterns:
@@ -274,6 +283,7 @@ Test abstractions that contain logic. Pure style extractions don't need tests.
 
 - **Button**: Always use `@/components/Button` for buttons and button-styled links. The `name` prop is required by lint (except in `.stories.tsx`). Use `as='link'` with `href` for navigation that looks like a button.
 - **Shared UI library**: Before creating a new component, check `libs/shared/ui/src/lib/` for an existing one. Prefer `@danieljoffe.com/shared-ui` components over building app-specific equivalents. If a shared-ui component is close but not quite right, extend it in the library rather than duplicating locally. Only promote an app-specific pattern to shared-ui when the Rule of Three applies (3+ usages across apps/libs). **Important**: `shared-ui` must only depend on React and Tailwind CSS — no Next.js APIs (`Link`, `useRouter`, `next/image`, etc.).
+- **Shared UI ref pattern (React 19)**: Do **not** use `forwardRef` in shared-ui components. Instead, accept `ref` as a regular prop via `ref?: Ref<HTMLElement>` in the props interface and destructure it alongside other props. This is the React 19 pattern — `forwardRef` is deprecated. Components that are pure (no hooks/state) work in both server and client contexts without `'use client'`. Do not create `Client*` wrapper components in the app just to add a client boundary for ref compatibility — that pattern is obsolete.
 - **Kit components (Next.js-specific)**: Components that depend on Next.js APIs (`Link`, `useRouter`, `next/image`, `usePathname`, etc.) live in `components/kit/` or `components/` within the app. Import kit components from `@/components/kit` barrel export, not individual files. New kit components must be added to `kit/index.ts`.
 - **Toast notifications**: Use `useToast()` from `@/state/Toast/ToastProvider` for user feedback on async actions (success, error, network).
 - **`global-error.tsx`**: Uses inline styles intentionally (renders outside the app tree where Tailwind isn't available). Don't convert to Tailwind.

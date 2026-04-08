@@ -28,9 +28,48 @@ permissions:
   statuses: write
 
 jobs:
-  ci:
-    if: ${{ !inputs.update-snapshots }}
+  changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      docs-only: ${{ steps.check.outputs.docs-only }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check for docs-only changes
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
+          else
+            # Push to develop — always run CI
+            echo "docs-only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          DOCS_ONLY=true
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              *.md) ;;
+              .claude/*) ;;
+              .mcp.json) ;;
+              .vscode/*) ;;
+              .github/ISSUE_TEMPLATE/*|.github/prompts/*|.github/skills/*|.github/agents/*|.github/workflows/*) ;;
+              .husky/*) ;;
+              .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE) ;;
+              *) DOCS_ONLY=false; break ;;
+            esac
+          done <<< "$CHANGED"
+
+          echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: changes
+    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
         with:
@@ -40,12 +79,28 @@ jobs:
       - uses: ./.github/actions/ci
         with:
           run-e2e: ${{ github.event_name != 'push' }}
+          base-branch: ${{ github.base_ref || 'main' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           chromatic-project-token: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+  ci-status:
+    if: always()
+    needs: [changes, ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: CI succeeded or was skipped
+        run: |
+          if [ "${{ needs.ci.result }}" = "failure" ] || [ "${{ needs.ci.result }}" = "cancelled" ]; then
+            echo "CI failed"
+            exit 1
+          fi
+          echo "CI passed or was skipped (docs-only change)"
 
   update-snapshots:
     if: ${{ inputs.update-snapshots }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     permissions:
       contents: write
     steps:

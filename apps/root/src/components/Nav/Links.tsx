@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import { AUDIT_LINK, NAV_LINKS } from '@/utils/constants';
-import { useRouter } from 'next/navigation';
 
 export default function NavLinks({
   pathname,
@@ -43,7 +43,6 @@ export default function NavLinks({
               }
               role='menuitem'
               aria-current={pathname === link.href ? 'page' : undefined}
-              aria-label={`Navigate to ${link.label} page`}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 pathname === link.href
@@ -62,7 +61,6 @@ export default function NavLinks({
           handleLinkClick(e, AUDIT_LINK.label, AUDIT_LINK.href)
         }
         aria-current={pathname === AUDIT_LINK.href ? 'page' : undefined}
-        aria-label={`Navigate to ${AUDIT_LINK.label} page`}
         className='inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors md:ml-2'
       >
         {AUDIT_LINK.label}

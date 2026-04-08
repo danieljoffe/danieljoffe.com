@@ -113,7 +113,7 @@ describe('Textarea', () => {
     expect(textarea).toHaveAttribute('aria-required', 'true');
   });
 
-  it('accepts ref via forwardRef', () => {
+  it('accepts ref prop', () => {
     const ref = React.createRef<HTMLTextAreaElement>();
     render(<Textarea ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLTextAreaElement);

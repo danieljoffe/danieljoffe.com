@@ -95,6 +95,35 @@ describe('Switch', () => {
     expect(thumb).toHaveClass('translate-x-1');
   });
 
+  it('applies disabled styles to label when disabled', () => {
+    render(
+      <Switch
+        checked={false}
+        onChange={() => {}}
+        label='Notifications'
+        disabled
+      />
+    );
+    const label = screen.getByText('Notifications');
+    expect(label).toHaveClass('opacity-50', 'cursor-not-allowed');
+  });
+
+  describe('reduced motion', () => {
+    it('applies motion-reduce:transition-none to switch track', () => {
+      render(<Switch checked={false} onChange={() => {}} />);
+      const switchEl = screen.getByRole('switch');
+      expect(switchEl).toHaveClass('motion-reduce:transition-none');
+    });
+
+    it('applies motion-reduce:transition-none to switch thumb', () => {
+      const { container } = render(
+        <Switch checked={false} onChange={() => {}} />
+      );
+      const thumb = container.querySelector('span');
+      expect(thumb).toHaveClass('motion-reduce:transition-none');
+    });
+  });
+
   describe('accessibility', () => {
     it('has focus-visible ring styles', () => {
       render(<Switch checked={false} onChange={() => {}} />);

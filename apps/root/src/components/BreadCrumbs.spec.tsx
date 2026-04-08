@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import type { NavLink } from '@/types/base';
 import BreadCrumbs from './BreadCrumbs';
-import { NavLink } from '@/types/base';
 
 // Mock next/navigation
 const mockUsePathname = jest.fn();

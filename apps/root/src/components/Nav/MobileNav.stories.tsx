@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from 'storybook/test';
 import MobileNav from './MobileNav';
 
 const meta = {
@@ -7,12 +6,10 @@ const meta = {
   title: 'Components/Nav/MobileNav',
   tags: ['autodocs'],
   argTypes: {
-    menuOpen: {
-      description: 'Whether the mobile menu is open',
-      control: 'boolean',
-    },
-    setMenuOpen: {
-      description: 'Callback to toggle the mobile menu',
+    pathname: {
+      description: 'Current pathname to highlight active link',
+      options: ['/', '/services', '/projects', '/experience', '/about'],
+      control: 'select',
     },
   },
 } satisfies Meta<typeof MobileNav>;
@@ -20,16 +17,14 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Closed: Story = {
+export const Default: Story = {
   args: {
-    menuOpen: false,
-    setMenuOpen: fn(),
+    pathname: '/',
   },
 };
 
-export const Open: Story = {
+export const ActiveService: Story = {
   args: {
-    menuOpen: true,
-    setMenuOpen: fn(),
+    pathname: '/services',
   },
 };

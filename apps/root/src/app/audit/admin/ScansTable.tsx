@@ -1,8 +1,8 @@
 'use client';
 
-import { Pagination, Spinner } from '@/components/kit';
-import ClientBadge from '@/components/ClientBadge';
-import type { BadgeVariant } from '@danieljoffe.com/shared-ui';
+import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Pagination } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 
@@ -100,7 +100,7 @@ export default function ScansTable({ password }: ScansTableProps) {
             {loading ? (
               <tr>
                 <td colSpan={5} className='py-8 text-center'>
-                  <Spinner label='Loading scans' />
+                  <Spinner aria-label='Loading scans' />
                 </td>
               </tr>
             ) : scans.length === 0 ? (
@@ -125,19 +125,17 @@ export default function ScansTable({ password }: ScansTableProps) {
                   <td className='py-3 px-3 max-w-50 truncate'>{scan.url}</td>
                   <td className='py-3 px-3'>
                     {scan.grade_overall ? (
-                      <ClientBadge
-                        variant={getGradeVariant(scan.grade_overall)}
-                      >
+                      <Badge variant={getGradeVariant(scan.grade_overall)}>
                         {scan.grade_overall}
-                      </ClientBadge>
+                      </Badge>
                     ) : (
                       <span className='text-text-tertiary'>-</span>
                     )}
                   </td>
                   <td className='py-3 px-3'>
-                    <ClientBadge variant={getStatusVariant(scan.status)}>
+                    <Badge variant={getStatusVariant(scan.status)}>
                       {scan.status}
-                    </ClientBadge>
+                    </Badge>
                   </td>
                   <td className='py-3 px-3'>
                     {scan.has_lead ? (

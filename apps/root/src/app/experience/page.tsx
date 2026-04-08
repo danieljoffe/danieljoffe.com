@@ -1,17 +1,16 @@
 import { Metadata } from 'next';
-import { Briefcase, ArrowUpRight, Calendar, Layers } from 'lucide-react';
+import { Briefcase, ArrowUpRight, Calendar, Clock } from 'lucide-react';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
 import { experienceFull } from '@/data/experience';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  PostCard,
-  StructuredData,
-  CompanyLogo,
-} from '@/components/kit';
+import { CompanyLogo } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');
@@ -19,7 +18,7 @@ const experienceList = experienceEntries.reverse().map(entry => ({
   ...entry.thumbnail,
   readingTime: entry.readingTime,
 }));
-const experienceFullList = Object.values(experienceFull).reverse();
+const experienceFullList = Object.values(experienceFull);
 
 export const metadata: Metadata = experienceRootMetadata;
 
@@ -31,15 +30,12 @@ export default function ExperiencePage() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Experience
-          </h1>
-          <p className='text-lg text-text-secondary max-w-xl mx-auto'>
-            An overview of my professional journey as a frontend
-            engineer&mdash;covering key roles, impactful projects, and the
-            technical expertise I bring to building performant, user-focused web
-            applications.
-          </p>
+          <Heading variant='hero'>Experience</Heading>
+          <Text variant='subtitle' className='max-w-xl mx-auto'>
+            My professional journey as a full-stack engineer: key roles,
+            impactful projects, and the technical expertise behind performant,
+            user-focused web applications.
+          </Text>
         </div>
       </Section>
 
@@ -81,9 +77,9 @@ export default function ExperiencePage() {
                     <div className='flex-1 min-w-0'>
                       <div className='flex items-start justify-between gap-2'>
                         <div>
-                          <p className='text-sm font-semibold text-text-primary'>
+                          <Heading variant='cardTitle' as='p'>
                             {exp.title}
-                          </p>
+                          </Heading>
                           {exp.role && (
                             <p className='text-xs text-brand-500 font-medium mt-0.5'>
                               {exp.role}
@@ -92,46 +88,32 @@ export default function ExperiencePage() {
                         </div>
                         <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity' />
                       </div>
-                      <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                      <Text variant='body' className='mt-1'>
                         {exp.description}
-                      </p>
-                      {exp.duration && (
-                        <div className='flex items-center gap-1.5 mt-2'>
-                          <Calendar className='h-3 w-3 text-text-tertiary' />
-                          <span className='text-xs text-text-tertiary'>
-                            {exp.duration}
+                      </Text>
+                      <div className='flex items-center gap-3 mt-2'>
+                        {exp.duration && (
+                          <span className='flex items-center gap-1.5'>
+                            <Calendar className='h-3 w-3 text-text-tertiary' />
+                            <Text variant='meta' as='span'>
+                              {exp.duration}
+                            </Text>
                           </span>
-                        </div>
-                      )}
+                        )}
+                        {exp.readingTime > 0 && (
+                          <span className='flex items-center gap-1.5'>
+                            <Clock className='h-3 w-3 text-text-tertiary' />
+                            <Text variant='meta' as='span'>
+                              {exp.readingTime} min read
+                            </Text>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </ExperienceCardLink>
                 );
               })}
           </div>
-        </div>
-      </Section>
-
-      {/* ══════════════════════════════════
-          GRID VIEW
-          ══════════════════════════════════ */}
-      <Section>
-        <SectionLabel
-          icon={<Layers className='h-3.5 w-3.5' />}
-          label='At a Glance'
-        />
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          {experienceList.map((exp, i) => {
-            const full = experienceFullList.find(f => f.slug === exp.slug);
-            return (
-              <PostCard
-                key={exp.slug}
-                post={exp}
-                logo={full?.logo}
-                priority={i < 2}
-                analyticsType='experience'
-              />
-            );
-          })}
         </div>
       </Section>
 

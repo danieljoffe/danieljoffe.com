@@ -17,7 +17,7 @@ export const metadata = {
   type: 'project',
 };
 
-# Expanding the Design System: UI Components Part 2
+## Expanding the Design System: UI Components Part 2
 
 Building on the [foundational components](/projects/ui-components-v1), this second installment adds form controls, feedback mechanisms, and layout primitives. The library now covers most common UI patterns.
 
@@ -27,44 +27,40 @@ Building on the [foundational components](/projects/ui-components-v1), this seco
 
 A controlled checkbox with label support. Handles both click and keyboard interactions with proper ARIA attributes for screen reader compatibility.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-checkbox--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-checkbox--default'
+  title='Checkbox — Default'
+  height={100}
 />
 
 ### Select
 
 A native select wrapper with label, error state, and validation support. Uses `aria-invalid` and `aria-describedby` to connect error messages for assistive technologies.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-select--with-label'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-select--with-label'
+  title='Select — With Label'
+  height={170}
 />
 
 ### Switch
 
 A toggle switch component for binary choices. Uses the `switch` ARIA role with proper `aria-checked` state management. Supports both controlled and uncontrolled usage.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-switch--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-switch--default'
+  title='Switch — Default'
+  height={100}
 />
 
 ### Textarea
 
 A multi-line text input with validation states, character counting, and auto-resize capabilities. Shares the same validation patterns as the Input component.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-textarea--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='forms-textarea--default'
+  title='Textarea — Default'
+  height={200}
 />
 
 ## Feedback Components
@@ -73,55 +69,50 @@ A multi-line text input with validation states, character counting, and auto-res
 
 A dismissible alert component with four variants: info, success, warning, and error. Uses `role="alert"` with `aria-live="assertive"` for urgent messages and `role="status"` with `aria-live="polite"` for informational content.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-alert--default'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-alert--default'
+  title='Alert — Default'
+  height={150}
 />
 
 ### Badge
 
 A simple label component for status indicators and tags. Supports multiple semantic variants: default, accent, success, warning, error, and info.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-badge--default'
-  width='400'
-  height='80'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-badge--default'
+  title='Badge — Default'
+  height={80}
 />
 
 ### Tooltip
 
 A hover-triggered tooltip with configurable position and delay. Uses `role="tooltip"` with `aria-hidden` state management to ensure screen readers announce content appropriately.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-tooltip--default'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='overlay-tooltip--default'
+  title='Tooltip — Default'
+  height={150}
 />
 
 ### ProgressBar
 
 A visual progress indicator for loading states and completion tracking. Includes proper ARIA attributes for accessibility.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-progressbar--default'
-  width='400'
-  height='80'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-progressbar--default'
+  title='ProgressBar — Default'
+  height={80}
 />
 
 ### Spinner
 
 A loading spinner for async operations. Complements the Loading component from Part 1 with a more compact visual indicator.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-spinner--default'
-  width='400'
-  height='100'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='feedback-spinner--default'
+  title='Spinner — Default'
+  height={100}
 />
 
 ## Layout Components
@@ -130,125 +121,129 @@ A loading spinner for async operations. Complements the Loading component from P
 
 A composable card component with sub-components: CardHeader, CardTitle, and CardContent. Supports elevation variants and configurable padding.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-card--full-card'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='data-display-card--full-card'
+  title='Card — Full Card'
+  height={200}
 />
 
 ### Stack
 
 A flexbox-based layout primitive for vertical or horizontal stacking with consistent spacing. Eliminates the need for manual gap utilities.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-stack--vertical'
-  width='400'
-  height='250'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-stack--vertical'
+  title='Stack — Vertical'
+  height={250}
 />
 
 ### Tabs
 
 An accessible tab interface with proper ARIA roles: `tablist`, `tab`, and `tabpanel`. Supports keyboard navigation and controlled/uncontrolled modes.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/components-tabs--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='data-display-tabs--default'
+  title='Tabs — Default'
+  height={200}
 />
 
 ### Section
 
 A semantic section wrapper for page content organization. Provides consistent vertical spacing and optional headings.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-section--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-section--default'
+  title='Section — Default'
+  height={200}
 />
 
 ### Divider
 
 A simple horizontal rule for visual separation between content sections.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-divider--default'
-  width='400'
-  height='80'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-divider--default'
+  title='Divider — Default'
+  height={80}
 />
 
 ### AspectRatio
 
 A container that maintains a specified aspect ratio for its content. Useful for responsive images and video embeds.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-aspectratio--default'
-  width='400'
-  height='300'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-aspectratio--default'
+  title='AspectRatio — Default'
+  height={300}
 />
 
 ### Spacer
 
 A utility component for adding consistent whitespace. Available in preset sizes for maintaining vertical rhythm.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-spacer--medium'
-  width='400'
-  height='150'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-spacer--default'
+  title='Spacer — Default'
+  height={150}
 />
 
 ### PageContainer
 
 A top-level page wrapper that combines Container with page-specific padding and max-width constraints.
 
-<iframe
-  src='https://ui.danieljoffe.com/iframe.html?path=/story/layout-pagecontainer--default'
-  width='400'
-  height='200'
-  className='min-w-full rounded-md border-[0.5rem]'
+<InteractiveDemo
+  story='layout-pagecontainer--default'
+  title='PageContainer — Default'
+  height={200}
 />
 
 ## Component Count
 
 The design system now includes **24 components** across four categories:
 
-<div className='overflow-x-auto -mx-4 px-4'>
-  <table>
-    <thead>
-      <tr>
-        <th scope='col'>Category</th>
-        <th scope='col'>Components</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Form</td>
-        <td>Button, Input, Checkbox, Select, Switch, Textarea</td>
-      </tr>
-      <tr>
-        <td>Feedback</td>
-        <td>Alert, Badge, Loading, Modal, ProgressBar, Spinner, Tooltip</td>
-      </tr>
-      <tr>
-        <td>Layout</td>
-        <td>
-          AspectRatio, Card, Container, Divider, Grid, PageContainer, Section,
-          Spacer, Stack
-        </td>
-      </tr>
-      <tr>
-        <td>Navigation</td>
-        <td>Tabs</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+| Category   | Components                                                                         |
+| ---------- | ---------------------------------------------------------------------------------- |
+| Form       | Button, Input, Checkbox, Select, Switch, Textarea                                  |
+| Feedback   | Alert, Badge, Loading, Modal, ProgressBar, Spinner, Tooltip                        |
+| Layout     | AspectRatio, Card, Container, Divider, Grid, PageContainer, Section, Spacer, Stack |
+| Navigation | Tabs                                                                               |
+
+## Framework Adaptation Pattern
+
+The shared-ui library is framework-agnostic by design — it depends only on React and Tailwind CSS. No `next/link`, `next/image`, `useRouter`, or any Next.js API. This separation is intentional and creates a clear two-layer architecture:
+
+| Layer              | Location                    | Dependencies        | Examples                                                                                                            |
+| ------------------ | --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Framework-agnostic | `libs/shared/ui/`           | React, Tailwind CSS | Button, Card, Modal, Badge                                                                                          |
+| Next.js-specific   | `apps/root/src/components/` | Next.js, shared-ui  | Nav (uses `Link`, `useRouter`), PostCard (uses shared-ui `Badge` + `Heading`), Button wrapper (adds `Link` routing) |
+
+### How it works in practice
+
+The app-level `Button` component (`components/Button.tsx`) wraps the shared-ui `Button` to add Next.js `Link` integration — when rendered as a link, it uses `next/link` for client-side navigation with prefetching. The shared-ui `Button` knows nothing about routing.
+
+Similarly, kit components like `PostCard` compose shared-ui primitives (`Badge`, `Heading`, `Text`) with Next.js-specific concerns like image optimization and route-aware links.
+
+### React 19 migration
+
+During the V1→V2 evolution, React 19 deprecated `forwardRef`. The shared-ui library now accepts `ref` as a regular prop in the component interface:
+
+```tsx
+// Before (React 18 — forwardRef)
+const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+  return <button ref={ref} {...props} />;
+});
+
+// After (React 19 — ref as prop)
+function Button({ ref, ...props }: ButtonProps) {
+  return <button ref={ref} {...props} />;
+}
+```
+
+This eliminated all `forwardRef` wrappers and the `Client*` wrapper pattern that was previously needed for ref compatibility at `'use client'` boundaries.
+
+### Why this matters
+
+This architecture means the shared-ui library can be consumed by _any_ React project — not just this Next.js app. A Vite app, a Remix app, or a React Native Web project could all use the same components. The framework-specific adaptation stays in the consuming app.
 
 ## What I Learned
 

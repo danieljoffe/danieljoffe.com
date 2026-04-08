@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
-import { servicesMetadata } from '@/data/metadata/services';
-import { services, servicesAudience, howItWorks } from '@/data/services';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
-import {
-  Section,
-  SectionLabel,
-  PageLayout,
-  StructuredData,
-} from '@/components/kit';
-import { Badge } from '@danieljoffe.com/shared-ui';
-import { cardBase } from '@/lib/layoutStyles';
+import { services, servicesAudience, howItWorks } from '@/data/services';
+import { servicesMetadata } from '@/data/metadata/services';
+import { cardBase, focusRing } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import HeroCTA from './HeroCTA';
 import CalendlyEmbed from './CalendlyEmbed';
@@ -29,18 +29,16 @@ export default function Services() {
           <Badge variant='brand-solid'>
             Currently available for new projects
           </Badge>
-          <h1 className='text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]'>
-            Your frontend is costing you users.
-          </h1>
-          <p className='text-lg text-text-secondary max-w-lg mx-auto'>
+          <Heading variant='hero'>Your frontend is costing you users.</Heading>
+          <Text variant='subtitle' className='max-w-lg mx-auto'>
             I help startups and growing teams ship faster, load faster, and stop
             depending on engineering for everything.
-          </p>
+          </Text>
           <div className='flex flex-col items-center gap-4 pt-2'>
             <HeroCTA />
             <a
               href='#services-grid'
-              className='inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors'
+              className={`inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm ${focusRing}`}
             >
               See what I offer
               <ChevronDown className='h-4 w-4' />
@@ -65,54 +63,59 @@ export default function Services() {
               <div className='space-y-4 flex-1'>
                 <div className='flex items-center gap-2'>
                   <service.Icon className='h-5 w-5 text-brand-500 shrink-0' />
-                  <p className='text-sm font-semibold text-text-primary'>
+                  <Heading variant='cardTitle' as='p'>
                     {service.title}
-                  </p>
+                  </Heading>
                 </div>
 
                 {service.highlighted && (
                   <Badge variant='brand'>Most popular</Badge>
                 )}
 
-                <p className='text-sm text-text-secondary leading-relaxed'>
-                  {service.description}
-                </p>
+                <Text variant='body'>{service.description}</Text>
 
                 <div>
-                  <p className='text-xs font-semibold text-text-primary mb-2'>
+                  <Text
+                    variant='label'
+                    as='p'
+                    className='mb-2 text-text-primary'
+                  >
                     What you get:
-                  </p>
+                  </Text>
                   <ul className='space-y-1.5'>
                     {service.deliverables.map((item, j) => (
-                      <li
-                        key={j}
-                        className='text-sm text-text-secondary flex items-start gap-2'
-                      >
+                      <li key={j} className='flex items-start gap-2'>
                         <Check className='h-3.5 w-3.5 text-success shrink-0 mt-0.5' />
-                        <span>{item}</span>
+                        <Text variant='body' as='span'>
+                          {item}
+                        </Text>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <p className='text-xs text-text-tertiary italic border-l-2 border-brand-200 pl-3'>
+                <Text
+                  variant='meta'
+                  as='p'
+                  className='italic border-l-2 border-brand-200 pl-3'
+                >
                   {service.proof}
-                </p>
+                </Text>
               </div>
 
-              <div className='flex items-center gap-4 pt-4 mt-4 border-t border-border text-xs text-text-tertiary'>
-                <span>
-                  <span className='font-semibold text-text-secondary'>
+              <div className='flex items-center gap-4 pt-4 mt-4 border-t border-border'>
+                <Text variant='meta' as='span'>
+                  <Text variant='detail' as='span' className='font-semibold'>
                     Timeline:
-                  </span>{' '}
+                  </Text>{' '}
                   {service.timeline}
-                </span>
-                <span>
-                  <span className='font-semibold text-text-secondary'>
+                </Text>
+                <Text variant='meta' as='span'>
+                  <Text variant='detail' as='span' className='font-semibold'>
                     From:
-                  </span>{' '}
+                  </Text>{' '}
                   {service.price}
-                </span>
+                </Text>
               </div>
             </div>
           ))}
@@ -137,12 +140,12 @@ export default function Services() {
                 {step.number}
               </span>
               <div>
-                <p className='text-sm font-semibold text-text-primary'>
+                <Heading variant='cardTitle' as='p'>
                   {step.title}
-                </p>
-                <p className='text-sm text-text-secondary mt-1 leading-relaxed'>
+                </Heading>
+                <Text variant='body' className='mt-1'>
                   {step.description}
-                </p>
+                </Text>
               </div>
             </div>
           ))}
@@ -161,12 +164,12 @@ export default function Services() {
           {servicesAudience.map((audience, i) => (
             <div key={i} className={cn(cardBase, 'flex items-start gap-3 p-4')}>
               <audience.Icon className='h-4 w-4 text-brand-500 shrink-0 mt-0.5' />
-              <p className='text-sm text-text-secondary'>
+              <Text variant='body'>
                 <span className='font-semibold text-text-primary'>
                   {audience.label}
                 </span>{' '}
                 {audience.description}
-              </p>
+              </Text>
             </div>
           ))}
         </div>
@@ -188,13 +191,13 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-2 mb-6'>
-          <h2 className='text-2xl sm:text-3xl font-bold text-text-primary'>
+          <Heading variant='section'>
             Let&apos;s figure out how I can help.
-          </h2>
-          <p className='text-text-secondary'>
-            Book a free 30-minute call. No contracts, no commitments&mdash;just
-            a conversation about your frontend challenges.
-          </p>
+          </Heading>
+          <Text variant='bodyLg'>
+            Book a free 30-minute call. No contracts, no commitments. Just a
+            conversation about your engineering challenges.
+          </Text>
         </div>
         <CalendlyEmbed />
       </Section>

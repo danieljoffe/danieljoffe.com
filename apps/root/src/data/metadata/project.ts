@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 
 export const projectRootMetadata: Metadata = {
   title: 'Projects | Daniel Joffe - Full-Stack Engineer',
-  description: 'Projects | Daniel Joffe - Full-Stack Engineer',
+  description:
+    'Case studies spanning full-stack development, backend architecture, and frontend systems. Each project includes the challenge, approach, and measurable outcomes.',
   keywords: [
     'Daniel Joffe',
     'Portfolio',
