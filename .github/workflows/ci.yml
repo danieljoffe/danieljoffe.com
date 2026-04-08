@@ -83,9 +83,47 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           chromatic-project-token: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
+  ci-python:
+    needs: changes
+    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - uses: nrwl/nx-set-shas@v5
+        with:
+          main-branch-name: ${{ github.base_ref || 'main' }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install Python dependencies
+        working-directory: apps/job-api
+        run: poetry install --no-interaction
+
+      - name: Run affected Python tasks
+        run: yarn nx affected -t lint test mypy --nxBail --projects=job-api
+        env:
+          NX_NO_CLOUD: 'true'
+
   ci-status:
     if: always()
-    needs: [changes, ci]
+    needs: [changes, ci, ci-python]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -93,6 +131,10 @@ jobs:
         run: |
           if [ "${{ needs.ci.result }}" = "failure" ] || [ "${{ needs.ci.result }}" = "cancelled" ]; then
             echo "CI failed"
+            exit 1
+          fi
+          if [ "${{ needs.ci-python.result }}" = "failure" ] || [ "${{ needs.ci-python.result }}" = "cancelled" ]; then
+            echo "CI Python failed"
             exit 1
           fi
           echo "CI passed or was skipped (docs-only change)"

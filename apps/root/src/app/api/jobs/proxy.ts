@@ -36,7 +36,7 @@ export async function proxyToFastAPI(
         'x-api-key': JOB_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? JSON.stringify(body) : null,
     });
 
     const data = await res.json();
