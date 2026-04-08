@@ -55,7 +55,7 @@
 ### Ecosystem Compatibility (PnP Mode)
 - ~15% of npm packages are PnP-incompatible according to 2026 estimates. This requires `packageExtensions` workarounds in `.yarnrc.yml`.
 - **Storybook + PnP**: Long history of issues ([#19764](https://github.com/storybookjs/storybook/issues/19764), [#27094](https://github.com/storybookjs/storybook/issues/27094), [#31237](https://github.com/storybookjs/storybook/issues/31237)). Module resolution failures with `@storybook/addon-essentials` and Yarn 4 PnP specifically.
-- **Sentry + PnP**: `sentry-cli` install script fails in PnP ([#1204](https://github.com/getsentry/sentry-cli/issues/1204)). `@sentry/nextjs` build fails in PnP mode ([#13641](https://github.com/getsentry/sentry-javascript/issues/13641)). SSR failures reported on deployment platforms ([#5107](https://github.com/getsentry/sentry-javascript/issues/5107)).
+- **Sentry + PnP**: `sentry-cli` install script fails in PnP — cannot find `node-fetch` ([#1204](https://github.com/getsentry/sentry-cli/issues/1204)). `@sentry/nextjs` build fails with `TypeError: Cannot destructure property 'sentryWebpackPlugin'` ([#13641](https://github.com/getsentry/sentry-javascript/issues/13641)). SSR failures reported on deployment platforms ([#5107](https://github.com/getsentry/sentry-javascript/issues/5107)). No 2025+ confirmation these are resolved upstream.
 - **Next.js Turbopack + PnP**: Turbopack cannot resolve `next` without `node_modules` ([#74648](https://github.com/vercel/next.js/issues/74648)). Fatal errors with Yarn 4.6.0 + Next.js 15.1.4 + Turbopack.
 
 ### Migration Effort
@@ -91,11 +91,11 @@
 | **React 19** | Works | Works | No known issues. |
 | **TypeScript** | Works | Works | Requires `@yarnpkg/sdks` for IDE support in PnP. |
 | **Tailwind CSS 4** | Works | Works | No known issues. |
-| **Nx 22** | Works | Partial | Some Nx recipes/generators may break with PnP. Path alias issues reported ([berry#5653](https://github.com/yarnpkg/berry/issues/5653)). `node-modules` mode recommended. |
+| **Nx 22** | Works | Partial | `nx g @nx/js:lib` fails in PnP ([nx#29125](https://github.com/nrwl/nx/issues/29125)). Jest via `@nrwl/jest` has PnP issues ([nx#11733](https://github.com/nrwl/nx/issues/11733)). Nx Console VS Code extension doesn't support PnP ([nx-console#1164](https://github.com/nrwl/nx-console/issues/1164)). Path alias issues ([berry#5653](https://github.com/yarnpkg/berry/issues/5653)). `node-modules` mode recommended. |
 | **Sentry** | Works | Broken | `sentry-cli` and `@sentry/nextjs` have documented PnP failures. **Blocker for PnP.** |
 | **Storybook** | Works | Broken | Persistent PnP issues across Storybook 7, 8, and 9. **Blocker for PnP.** |
 | **GSAP** | Works | Works | GSAP moved to public npm (no more private registry). No PnP-specific issues. |
-| **Playwright** | Works | Likely works | Browser install via `yarn playwright install` works. No documented PnP blockers. |
+| **Playwright** | Works | Broken | Component testing fails ([#33445](https://github.com/microsoft/playwright/issues/33445)). `ERR_INVALID_URL_SCHEME` regression in v1.50+ ([#34706](https://github.com/microsoft/playwright/issues/34706)). VS Code extension can't detect tests ([#18931](https://github.com/microsoft/playwright/issues/18931)). **Blocker for PnP.** |
 | **Jest** | Works | Works | Requires `@yarnpkg/sdks` for proper resolution in PnP. |
 | **ESLint + Prettier** | Works | Works | Requires SDK setup for PnP. |
 | **Husky + lint-staged** | Works | Works | Modern versions compatible. Install at workspace root. |
@@ -113,7 +113,9 @@
 Given this project's stack, **PnP is not viable** due to hard blockers:
 - Sentry (`@sentry/nextjs`) build failures in PnP
 - Storybook persistent module resolution failures in PnP
+- Playwright component testing and VS Code extension broken in PnP
 - Next.js Turbopack incompatibility with PnP
+- Vercel explicitly does not support PnP deployments
 
 The `node-modules` linker gives you all of Berry's CLI, tooling, and monorepo improvements while maintaining full compatibility with existing dependencies.
 
@@ -121,19 +123,47 @@ The `node-modules` linker gives you all of Berry's CLI, tooling, and monorepo im
 
 ```
 Phase 1: Yarn Berry with node-modules linker
-  - yarn set version berry
-  - Add .yarnrc.yml with nodeLinker: node-modules
-  - Update CI scripts (--frozen-lockfile -> --immutable)
-  - Update Dockerfile
-  - Add packageManager field to package.json
-  - Enable Corepack on Vercel (ENABLE_EXPERIMENTAL_COREPACK=1)
-  - Test all workflows
+  1. corepack enable
+  2. yarn set version berry
+  3. Add .yarnrc.yml with nodeLinker: node-modules
+  4. Add "packageManager": "yarn@4.x.x" to root package.json
+  5. yarn install (regenerates lockfile in YAML format — large diff)
+  6. Update CI scripts (--frozen-lockfile -> --immutable)
+  7. Update Dockerfile
+  8. Enable Corepack on Vercel (ENABLE_EXPERIMENTAL_COREPACK=1)
+  9. Test all workflows
 
 Phase 2 (optional, future): Evaluate PnP
-  - Only after Sentry, Storybook, and Turbopack add PnP support
+  - Only after Sentry, Storybook, Turbopack, and Playwright add PnP support
   - Use yarn dlx @yarnpkg/doctor to audit compatibility
   - Migrate incrementally
 ```
+
+### Project-Specific Changes Required
+
+| File | Change |
+|---|---|
+| `package.json` | Add `"packageManager": "yarn@4.x.x"` field |
+| `package.json` | `resolutions` field still works — no change needed |
+| `.yarnrc.yml` (new) | Create with `nodeLinker: node-modules` |
+| `.github/actions/ci/action.yml:25` | `yarn install --frozen-lockfile` -> `yarn install --immutable` |
+| `.github/actions/ci/action.yml:21` | Verify `actions/setup-node@v5` with `cache: yarn` detects Berry via `packageManager` field |
+| `.github/workflows/ci.yml` | Same `--frozen-lockfile` -> `--immutable` changes |
+| `apps/audit-scan-service/Dockerfile` | Update `yarn install --frozen-lockfile` -> `yarn install --immutable` |
+| `.husky/pre-commit` | No change needed (`npx lint-staged` and `yarn typecheck` still work) |
+| `yarn.lock` | Regenerated in YAML format (large one-time diff) |
+| `.yarn/releases/` (new) | Yarn Berry binary (~2.5MB) committed to repo |
+
+### CLI Command Changes
+
+| Yarn Classic | Yarn Berry |
+|---|---|
+| `yarn install --frozen-lockfile` | `yarn install --immutable` |
+| `yarn global add <pkg>` | `yarn dlx <pkg>` |
+| `yarn upgrade` | `yarn up` |
+| `yarn audit` | `yarn npm audit` |
+| `npx <cmd>` | `yarn dlx <cmd>` (one-off) or `yarn run <cmd>` (project binary) |
+| `yarn install --production` | `yarn workspaces focus --all --production` |
 
 ### Estimated Effort
 - **Phase 1**: Low-medium. Mostly config changes and CI updates. Main risk is undiscovered edge cases in the Nx + Yarn Berry + Vercel pipeline.
@@ -172,7 +202,17 @@ This may be worth evaluating alongside Yarn Berry if the primary goals are perfo
 - [Yarn Berry TypeScript Path Aliases (berry#5653)](https://github.com/yarnpkg/berry/issues/5653)
 - [Zero-Installs Repo Size (berry#4845)](https://github.com/yarnpkg/berry/discussions/4845)
 - [Playwright + Yarn 2 Browser Install (playwright#13550)](https://github.com/microsoft/playwright/issues/13550)
+- [Playwright Component Testing + PnP (playwright#33445)](https://github.com/microsoft/playwright/issues/33445)
+- [Playwright ERR_INVALID_URL_SCHEME + PnP (playwright#34706)](https://github.com/microsoft/playwright/issues/34706)
+- [Playwright VS Code Extension + PnP (playwright#18931)](https://github.com/microsoft/playwright/issues/18931)
+- [Nx generator PnP failure (nx#29125)](https://github.com/nrwl/nx/issues/29125)
+- [Nx Jest PnP issues (nx#11733)](https://github.com/nrwl/nx/issues/11733)
+- [Nx Console PnP support (nx-console#1164)](https://github.com/nrwl/nx-console/issues/1164)
+- [Nx Console PnP reindexing (nx-console#2062)](https://github.com/nrwl/nx-console/issues/2062)
+- [Nx: Using Yarn PnP with Nx (official guide)](https://nx.dev/docs/guides/tips-n-tricks/yarn-pnp)
+- [Storybook PnP ESM fix (storybook#31096)](https://github.com/storybookjs/storybook/pull/31096)
 - [Husky + lint-staged + Berry (berry#2460)](https://github.com/yarnpkg/berry/discussions/2460)
+- [Vercel: Does Vercel support Yarn 4?](https://vercel.com/kb/guide/does-vercel-support-yarn-4)
 - [GSAP Public NPM Migration](https://gsap.com/resources/private-repo-migration/)
 - [2026 Package Manager Benchmarks](https://dev.to/_d7eb1c1703182e3ce1782/npm-vs-pnpm-vs-yarn-package-manager-showdown-2026-benchmarks-2c38)
 - [pnpm Official Benchmarks](https://pnpm.io/benchmarks)
