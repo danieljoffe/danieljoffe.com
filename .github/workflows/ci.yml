@@ -67,7 +67,7 @@ jobs:
 
   ci:
     needs: changes
-    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots }}
+    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -85,7 +85,7 @@ jobs:
 
   ci-python:
     needs: changes
-    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots }}
+    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
