@@ -75,9 +75,27 @@ describe('PageContainer', () => {
     expect(inner).toHaveClass('custom-class');
   });
 
-  it('passes additional props to inner container', () => {
-    render(<PageContainer data-custom='value'>Content</PageContainer>);
-    const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveAttribute('data-custom', 'value');
+  it('passes additional props to outer wrapper', () => {
+    render(<PageContainer id='main-content'>Content</PageContainer>);
+    const outer = screen.getByTestId('page-container-outer');
+    expect(outer).toHaveAttribute('id', 'main-content');
+  });
+
+  it('renders as div by default', () => {
+    render(<PageContainer>Content</PageContainer>);
+    const outer = screen.getByTestId('page-container-outer');
+    expect(outer.tagName).toBe('DIV');
+  });
+
+  it('renders as main when as="main"', () => {
+    render(<PageContainer as='main'>Content</PageContainer>);
+    const outer = screen.getByTestId('page-container-outer');
+    expect(outer.tagName).toBe('MAIN');
+  });
+
+  it('renders as section when as="section"', () => {
+    render(<PageContainer as='section'>Content</PageContainer>);
+    const outer = screen.getByTestId('page-container-outer');
+    expect(outer.tagName).toBe('SECTION');
   });
 });

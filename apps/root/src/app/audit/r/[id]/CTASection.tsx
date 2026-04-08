@@ -1,3 +1,5 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
 import CalendlyButton from './CalendlyButton';
 
@@ -6,13 +8,13 @@ export default function CTASection() {
     <section aria-labelledby='cta-heading' className={sectionContainer}>
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 text-center py-16'>
         <div className='flex flex-col gap-4 items-center'>
-          <h2 id='cta-heading' className='font-sans text-3xl font-semibold'>
+          <Heading variant='section' id='cta-heading'>
             Want these fixed?
-          </h2>
-          <p className='text-text-secondary max-w-md'>
+          </Heading>
+          <Text variant='bodyLg' className='max-w-md'>
             I help teams ship faster, more accessible websites. Let&apos;s talk
             about what&apos;s slowing yours down.
-          </p>
+          </Text>
           <CalendlyButton />
         </div>
       </div>

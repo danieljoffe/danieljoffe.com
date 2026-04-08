@@ -47,6 +47,14 @@ describe('ThemeToggle', () => {
     expect(localStorage.getItem('theme')).toBe('system');
   });
 
+  it('applies motion-reduce:transition-none to theme buttons', () => {
+    renderToggle();
+    const buttons = screen.getAllByRole('button');
+    buttons.forEach(button => {
+      expect(button).toHaveClass('motion-reduce:transition-none');
+    });
+  });
+
   it('has accessible button titles', () => {
     renderToggle();
     const buttons = screen.getAllByRole('button');

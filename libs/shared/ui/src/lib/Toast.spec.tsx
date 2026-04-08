@@ -8,6 +8,12 @@ function ToastTrigger() {
       <button onClick={() => toast({ variant: 'success', title: 'Saved!' })}>
         Success
       </button>
+      <button onClick={() => toast({ variant: 'info', title: 'Heads up' })}>
+        Info
+      </button>
+      <button onClick={() => toast({ variant: 'warning', title: 'Watch out' })}>
+        Warning
+      </button>
       <button
         onClick={() =>
           toast({
@@ -72,7 +78,7 @@ describe('Toast', () => {
     expect(screen.getByText('Saved!')).toBeInTheDocument();
 
     act(() => {
-      jest.advanceTimersByTime(4000);
+      jest.advanceTimersByTime(4150);
     });
 
     expect(screen.queryByText('Saved!')).not.toBeInTheDocument();
@@ -87,11 +93,13 @@ describe('Toast', () => {
     fireEvent.click(screen.getByText('Success'));
     expect(screen.getByText('Saved!')).toBeInTheDocument();
 
-    const closeButtons = screen.getAllByRole('button').filter(btn => {
-      const svg = btn.querySelector('svg');
-      return svg && btn.closest('.animate-slide-up');
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Dismiss notification' })
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(150);
     });
-    fireEvent.click(closeButtons[0]);
 
     expect(screen.queryByText('Saved!')).not.toBeInTheDocument();
   });
@@ -116,5 +124,133 @@ describe('Toast', () => {
       </ToastProvider>
     );
     expect(screen.getByText('App Content')).toBeInTheDocument();
+  });
+
+  // --- Accessibility: aria-live region ---
+
+  it('toast container has aria-live="polite"', () => {
+    const { container } = render(
+      <ToastProvider>
+        <div>App</div>
+      </ToastProvider>
+    );
+    const region = container.querySelector('[aria-live="polite"]');
+    expect(region).toBeInTheDocument();
+  });
+
+  it('toast container has aria-atomic="true"', () => {
+    const { container } = render(
+      <ToastProvider>
+        <div>App</div>
+      </ToastProvider>
+    );
+    const region = container.querySelector('[aria-live="polite"]');
+    expect(region).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  // --- Accessibility: role per variant ---
+
+  it('info toast has role="status"', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Info'));
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('success toast has role="status"', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Success'));
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('error toast has role="alert"', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Error'));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('warning toast has role="alert"', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Warning'));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  // --- Accessibility: aria-atomic on individual toast ---
+
+  it('individual toast has aria-atomic="true"', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Info'));
+    expect(screen.getByRole('status')).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  // --- Accessibility: close button label ---
+
+  it('close button has aria-label="Dismiss notification"', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Info'));
+    expect(
+      screen.getByRole('button', { name: 'Dismiss notification' })
+    ).toBeInTheDocument();
+  });
+
+  // --- Pause on hover ---
+
+  it('pauses auto-dismiss on mouse hover and resumes on leave', () => {
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('Info'));
+    const toast = screen.getByRole('status');
+
+    // Advance partway through the timeout
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    // Hover to pause
+    fireEvent.mouseEnter(toast);
+
+    // Advance well past the original timeout
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    // Toast should still be visible because hover paused the timer
+    expect(screen.getByText('Heads up')).toBeInTheDocument();
+
+    // Mouse leave to resume
+    fireEvent.mouseLeave(toast);
+
+    // Advance the remaining time (~2000ms) plus 150ms dismiss animation
+    act(() => {
+      jest.advanceTimersByTime(2150);
+    });
+
+    expect(screen.queryByText('Heads up')).not.toBeInTheDocument();
   });
 });

@@ -15,6 +15,9 @@ const Modal = dynamic(() => import('@/components/Modal'), { ssr: false });
 const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
   ssr: false,
 });
+const CommandPalette = dynamic(() => import('@/components/CommandPalette'), {
+  ssr: false,
+});
 
 const composeProviders = (providers: ComponentType<WithChildren>[]) =>
   providers.reduce((Acc, Curr) => {
@@ -41,6 +44,7 @@ export default function AppContext({ children }: WithChildren) {
       <Modal />
       <ScrollToTop />
       <KeyboardShortcuts />
+      <CommandPalette />
       <Suspense fallback={null}>
         <ScrollToElement />
       </Suspense>

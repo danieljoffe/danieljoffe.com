@@ -77,7 +77,37 @@ describe('Sidebar', () => {
 
   it('applies expanded width by default', () => {
     const { container } = render(<Sidebar items={items} />);
-    expect(container.querySelector('.w-60')).toBeInTheDocument();
+    const aside = container.querySelector('aside');
+    expect(aside).toHaveClass('w-48', 'md:w-60');
+  });
+
+  it('applies motion-reduce:transition-none to sidebar container', () => {
+    const { container } = render(<Sidebar items={items} />);
+    const aside = container.querySelector('aside');
+    expect(aside).toHaveClass('motion-reduce:transition-none');
+  });
+
+  it('applies motion-reduce:transition-none to sidebar item buttons', () => {
+    render(<Sidebar items={items} />);
+    const buttons = screen.getAllByRole('button');
+    buttons.forEach(button => {
+      expect(button).toHaveClass('motion-reduce:transition-none');
+    });
+  });
+
+  // --- focus-visible styles on sidebar buttons ---
+
+  it('applies focus-visible ring classes on sidebar buttons', () => {
+    render(<Sidebar items={items} />);
+    const homeButton = screen.getByText('Home').closest('button')!;
+    expect(homeButton.className).toContain('focus-visible:ring-2');
+  });
+
+  it('applies focus-visible ring classes on child items', () => {
+    render(<Sidebar items={items} />);
+    fireEvent.click(screen.getByText('Projects'));
+    const childButton = screen.getByText('Project A').closest('button')!;
+    expect(childButton.className).toContain('focus-visible:ring-2');
   });
 
   it('hides labels and children when collapsed', () => {

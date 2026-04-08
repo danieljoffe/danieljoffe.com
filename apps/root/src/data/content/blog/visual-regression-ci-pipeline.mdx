@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Automating Visual Regression Testing in GitHub Actions',
   date: '2026-04-04',
   excerpt:
-    'How I built a CI pipeline that catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT — turning snapshot maintenance from a chore into a one-click operation.',
+    'A CI pipeline that catches visual regressions with Playwright screenshots, auto-updates baselines via workflow dispatch, and re-triggers itself using a PAT for one-click snapshot maintenance.',
   author: 'Daniel Joffe',
   category: 'DevOps',
   tags: [
@@ -19,8 +19,8 @@ export const metadata = {
 
 ## The Problem
 
-Every UI change on this portfolio — a new section label, a font size tweak, a
-layout restructure — risks unintended visual side effects on other pages. Manual
+Every UI change on this portfolio, a new section label, a font size tweak, a
+layout restructure, risks unintended visual side effects on other pages. Manual
 visual QA doesn't scale, especially when a single PR might touch shared
 components used across dozens of routes.
 
@@ -62,7 +62,7 @@ commits them to the branch, and pushes.
 ## The PAT Token Trick
 
 Here's the subtle part. GitHub Actions commits made with `GITHUB_TOKEN` don't
-trigger subsequent workflow runs — this is a security feature to prevent infinite
+trigger subsequent workflow runs. This is a security feature to prevent infinite
 loops. But it also means that after the snapshot job commits updated baselines,
 CI wouldn't re-run to verify them.
 
@@ -119,7 +119,7 @@ apps/root-e2e/src/
     └── projects-listing-chromium-linux.png
 ```
 
-The snapshots are committed to the repo — not stored as artifacts — so
+The snapshots are committed to the repo, not stored as artifacts, so
 developers can review visual diffs in the PR itself using GitHub's image
 comparison tools.
 
@@ -162,11 +162,11 @@ noise in the git history.
 
 ## Results
 
-- **One-click baseline updates** — no local Playwright install needed
-- **Automatic CI re-verification** — PAT-based push triggers a fresh run
-- **Zero wasted runner time** — concurrency groups cancel stale jobs
-- **Git-tracked baselines** — visual diffs reviewable in PR
-- **Nx-aware** — E2E only runs when the app is actually affected
+- **One-click baseline updates**: no local Playwright install needed
+- **Automatic CI re-verification**: PAT-based push triggers a fresh run
+- **Zero wasted runner time**: concurrency groups cancel stale jobs
+- **Git-tracked baselines**: visual diffs reviewable in PR
+- **Nx-aware**: E2E only runs when the app is actually affected
 
 The pipeline has caught several regressions already: a `max-w-3xl` that should
 have been `max-w-5xl`, an `overflow-hidden` clipping content, and a SectionLabel

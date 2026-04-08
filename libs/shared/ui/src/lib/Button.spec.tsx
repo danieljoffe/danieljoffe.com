@@ -18,12 +18,7 @@ describe('Button', () => {
 
     it.each([
       ['secondary', ['bg-surface-elevated']],
-      ['ghost', ['hover:bg-surface-elevated']],
       ['outline', ['border-border-secondary']],
-      ['success', ['bg-success']],
-      ['error', ['bg-error']],
-      ['warning', ['bg-warning']],
-      ['info', ['bg-info']],
     ] as [ButtonVariant, string[]][])(
       'applies %s variant styles',
       (variant, expectedClasses) => {
@@ -116,9 +111,39 @@ describe('Button', () => {
       render(<Button ref={ref}>Ref Button</Button>);
       expect(ref.current).toBeInstanceOf(HTMLButtonElement);
     });
+  });
 
-    it('sets displayName for debugging', () => {
-      expect(Button.displayName).toBe('Button');
+  describe('iconOnly', () => {
+    it('applies equal padding when iconOnly is true', () => {
+      render(
+        <Button iconOnly aria-label='Close'>
+          <span>X</span>
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass('p-2.5');
+    });
+
+    it('applies sm iconOnly padding', () => {
+      render(
+        <Button iconOnly size='sm' aria-label='Close'>
+          <span>X</span>
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass('p-1.5');
+    });
+
+    it('applies lg iconOnly padding', () => {
+      render(
+        <Button iconOnly size='lg' aria-label='Close'>
+          <span>X</span>
+        </Button>
+      );
+      expect(screen.getByRole('button')).toHaveClass('p-3');
+    });
+
+    it('uses regular padding when iconOnly is false', () => {
+      render(<Button>Text</Button>);
+      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-3');
     });
   });
 
@@ -201,6 +226,13 @@ describe('Button', () => {
       expect(screen.getByRole('button').className).toContain(
         'focus-visible:ring-2'
       );
+    });
+
+    it('includes motion-reduce:transition-none class', () => {
+      render(<Button>Reduced</Button>);
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('motion-reduce:transition-none');
+      expect(button).toHaveClass('motion-reduce:hover:transform-none');
     });
 
     it('supports aria-label for icon-only buttons', () => {

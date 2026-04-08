@@ -20,7 +20,7 @@ export const metadata = {
   duration: 'November 2021 - January 2023',
 };
 
-# Case Studies: Daniel Joffe Portfolio
+## Case Studies: Daniel Joffe Portfolio
 
 ## Case Study 1: FightCamp — Performance Optimization
 
@@ -95,79 +95,73 @@ I discovered the performance issues during an R&D Friday and received approval t
 
 ### The Results
 
-<div
-  className='overflow-x-auto -mx-4 px-4'
-  tabIndex={0}
-  role='region'
-  aria-label='Performance metrics comparison'
->
-  <table>
-    <thead>
-      <tr>
-        <th scope='col'>Metric</th>
-        <th scope='col'>Before</th>
-        <th scope='col'>After</th>
-        <th scope='col'>Improvement</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>First Contentful Paint (Mobile)</td>
-        <td>8-12s</td>
-        <td>1.8-2.5s</td>
-        <td>~80% faster</td>
-      </tr>
-      <tr>
-        <td>Largest Contentful Paint</td>
-        <td>15-20s</td>
-        <td>5-8s</td>
-        <td>~63% faster</td>
-      </tr>
-      <tr>
-        <td>Total Blocking Time</td>
-        <td>3-4s</td>
-        <td>0.8-1.3s</td>
-        <td>~70% reduction</td>
-      </tr>
-      <tr>
-        <td>Cumulative Layout Shift</td>
-        <td>3-6s</td>
-        <td>0.6-1.25s</td>
-        <td>~79% reduction</td>
-      </tr>
-      <tr>
-        <td>Speed Index</td>
-        <td>11-14s</td>
-        <td>4-6s</td>
-        <td>~60% faster</td>
-      </tr>
-      <tr>
-        <td>Lighthouse Score</td>
-        <td>32-43</td>
-        <td>~80</td>
-        <td>+40 points</td>
-      </tr>
-      <tr>
-        <td>Bundle Size</td>
-        <td>650-800KB</td>
-        <td>250-300KB</td>
-        <td>~62% reduction</td>
-      </tr>
-      <tr>
-        <td>Mobile Bounce Rate</td>
-        <td>60-75%</td>
-        <td>37-45%</td>
-        <td>~39% reduction</td>
-      </tr>
-      <tr>
-        <td>Engineering Requests</td>
-        <td>~10/week</td>
-        <td>~2/week</td>
-        <td>80% reduction</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<MetricsDashboard
+  metrics={[
+    {
+      label: 'First Contentful Paint (Mobile)',
+      before: '8-12s',
+      after: '1.8-2.5s',
+      improvement: '~80% faster',
+      delta: 'positive',
+    },
+    {
+      label: 'Largest Contentful Paint',
+      before: '15-20s',
+      after: '5-8s',
+      improvement: '~63% faster',
+      delta: 'positive',
+    },
+    {
+      label: 'Total Blocking Time',
+      before: '3-4s',
+      after: '0.8-1.3s',
+      improvement: '~70% reduction',
+      delta: 'positive',
+    },
+    {
+      label: 'Cumulative Layout Shift',
+      before: '3-6s',
+      after: '0.6-1.25s',
+      improvement: '~79% reduction',
+      delta: 'positive',
+    },
+    {
+      label: 'Speed Index',
+      before: '11-14s',
+      after: '4-6s',
+      improvement: '~60% faster',
+      delta: 'positive',
+    },
+    {
+      label: 'Lighthouse Score',
+      before: '32-43',
+      after: '~80',
+      improvement: '+40 points',
+      delta: 'positive',
+    },
+    {
+      label: 'Bundle Size',
+      before: '650-800KB',
+      after: '250-300KB',
+      improvement: '~62% reduction',
+      delta: 'positive',
+    },
+    {
+      label: 'Mobile Bounce Rate',
+      before: '60-75%',
+      after: '37-45%',
+      improvement: '~39% reduction',
+      delta: 'positive',
+    },
+    {
+      label: 'Engineering Requests',
+      before: '~10/week',
+      after: '~2/week',
+      improvement: '80% reduction',
+      delta: 'positive',
+    },
+  ]}
+/>
 
 ### Key Takeaways
 

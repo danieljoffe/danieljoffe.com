@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { PageLayout } from '@/components/kit';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import AdminDashboard from './AdminDashboard';
 
 export const metadata: Metadata = {

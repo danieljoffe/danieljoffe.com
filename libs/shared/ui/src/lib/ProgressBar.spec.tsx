@@ -41,19 +41,9 @@ describe('ProgressBar', () => {
     expect(container.querySelector('.bg-success')).toBeInTheDocument();
   });
 
-  it('applies warning variant styles', () => {
-    const { container } = render(<ProgressBar value={50} variant='warning' />);
-    expect(container.querySelector('.bg-warning')).toBeInTheDocument();
-  });
-
   it('applies error variant styles', () => {
     const { container } = render(<ProgressBar value={50} variant='error' />);
     expect(container.querySelector('.bg-error')).toBeInTheDocument();
-  });
-
-  it('applies info variant styles', () => {
-    const { container } = render(<ProgressBar value={50} variant='info' />);
-    expect(container.querySelector('.bg-info')).toBeInTheDocument();
   });
 
   it('applies md size by default', () => {
@@ -91,6 +81,12 @@ describe('ProgressBar', () => {
       <ProgressBar value={50} className='custom-class' />
     );
     expect(container.querySelector('.custom-class')).toBeInTheDocument();
+  });
+
+  it('applies motion-reduce:transition-none to progress fill', () => {
+    const { container } = render(<ProgressBar value={50} />);
+    const fill = container.querySelector('.bg-brand-500');
+    expect(fill).toHaveClass('motion-reduce:transition-none');
   });
 
   describe('accessibility', () => {

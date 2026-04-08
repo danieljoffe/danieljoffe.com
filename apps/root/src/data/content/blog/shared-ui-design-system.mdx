@@ -1,0 +1,233 @@
+export const metadata = {
+  title:
+    'From Wrapper Hell to a Single Source of Truth: Consolidating a Design System',
+  date: '2026-04-04',
+  excerpt:
+    'How promoting kit wrappers into a shared-ui component library, enforcing typography variants, and establishing layout primitives with sensible defaults eliminates 2,000 lines of duplication.',
+  author: 'Daniel Joffe',
+  category: 'Design Systems',
+  tags: ['React', 'Design Systems', 'TypeScript', 'Tailwind CSS', 'Monorepo'],
+  slug: 'shared-ui-design-system',
+  type: 'blog',
+  topic: 'Design Systems',
+};
+
+## The Problem
+
+The portfolio site had grown organically. A shared-ui library existed with
+generic components (Button, Alert, Spinner), but the app had its own `kit/`
+directory full of wrappers that re-exported shared-ui components with "app-specific"
+additions. The result was a layered mess:
+
+- **Typography wrappers**: `kit/Heading.tsx` imported `shared-ui/Heading`, added
+  7 app variants (`hero`, `subtitle`, `mdxH1`–`mdxH4`), and duplicated the entire
+  rendering logic: polymorphic tag selection, `cn()` class merging, variant-to-style
+  mapping. `kit/Text.tsx` did the same for a single variant (`subtitle`).
+- **Layout wrappers**: `kit/PageLayout.tsx` wrapped `shared-ui/PageContainer` to
+  add `as='main'` and spacing. `kit/Section.tsx` wrapped `shared-ui/Section` to
+  flip two default props.
+- **Component wrappers**: `kit/Spinner.tsx`, `kit/ErrorAlert.tsx`, `kit/SectionLabel.tsx`,
+  and others re-exported shared-ui equivalents with minor prop adaptations.
+
+Every wrapper created a maintenance burden: parallel variant sets to keep in sync,
+duplicated type definitions, and confusion about where to import from. Consumers
+had to know which layer owned which variant. Pages mixed `@/components/kit` and
+`@danieljoffe.com/shared-ui` imports inconsistently.
+
+## The Principles
+
+Before writing any code, we established three rules:
+
+1. **shared-ui is the single source of truth** for all reusable UI primitives:
+   typography, layout, and generic components. It depends only on React and
+   Tailwind CSS. No Next.js APIs.
+2. **No wrappers that only add variants**. If a component needs more variants,
+   add them to shared-ui directly. Kit exists only for components that compose
+   shared-ui with Next.js-specific APIs (`Link`, `useRouter`, `next/image`).
+3. **Defaults should match the dominant usage pattern**. If 15 out of 15 pages
+   use the same spacing, bake it in as the default. Don't make every consumer
+   repeat the same props.
+
+## The Typography System
+
+The first target was the Heading/Text split. The kit wrappers maintained a
+`sharedVariants` set to decide whether to delegate to shared-ui or render
+locally — a runtime check for a compile-time concern.
+
+The fix was simple: move every variant into shared-ui.
+
+### Heading: 10 Variants
+
+```tsx
+const variantStyles: Record<HeadingVariant, string> = {
+  hero: 'text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]',
+  detail: 'text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight',
+  subtitle: 'text-2xl font-bold tracking-tight',
+  section: 'text-2xl sm:text-3xl font-bold tracking-tight',
+  cardTitle: 'text-sm font-semibold',
+  component: 'text-lg font-semibold',
+  mdxH1: 'text-2xl font-bold tracking-tight mb-6',
+  mdxH2: 'text-lg font-semibold mt-12 mb-4 scroll-mt-20',
+  mdxH3: 'text-sm font-semibold mt-8 mb-3 scroll-mt-20',
+  mdxH4: 'text-xs font-medium mt-6 mb-2 uppercase tracking-wider',
+};
+```
+
+Each variant maps to a sensible default HTML element (`hero` → `h1`,
+`cardTitle` → `h3`), overridable via the `as` prop. The consumer picks
+the visual intent; the component handles the semantics.
+
+### Text: 10 Variants
+
+```tsx
+const variantStyles: Record<TextVariant, string> = {
+  body: 'text-sm text-text-secondary leading-relaxed',
+  bodyLg: 'text-base text-text-secondary leading-relaxed',
+  subtitle: 'text-lg text-text-secondary leading-relaxed',
+  cardDescription: 'text-sm text-text-secondary leading-relaxed',
+  detail: 'text-xs text-text-secondary',
+  label: 'text-xs font-semibold uppercase tracking-wider text-text-tertiary',
+  meta: 'text-xs text-text-tertiary',
+  caption: 'text-sm text-text-tertiary',
+  helper: 'text-sm text-text-tertiary',
+  error: 'text-sm text-error',
+};
+```
+
+With the wrappers gone, every consumer imports directly from shared-ui:
+
+```tsx
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+```
+
+No kit layer. No delegation. No variant sets to keep in sync.
+
+## Layout Primitives With Defaults
+
+The second insight came from looking at the 15 pages that all repeated
+`className='py-16 lg:py-24 space-y-24'` on their PageLayout. If every
+consumer passes the same props, those aren't options — they're the default.
+
+### PageLayout
+
+```tsx
+export function PageLayout({ children, wide = false, className, ...rest }) {
+  return (
+    <PageContainer
+      as='main'
+      id='main-content'
+      size={wide ? 'md' : 'sm'}
+      className={cn('py-16 lg:py-24 space-y-24', className)}
+      {...rest}
+    >
+      {children}
+    </PageContainer>
+  );
+}
+```
+
+Now a page is just:
+
+```tsx
+<PageLayout>
+  <Section>...</Section>
+  <Section>...</Section>
+</PageLayout>
+```
+
+No props needed for the common case. `wide` toggles to a wider container
+for data-heavy pages. Custom `className` merges with the defaults via `cn()`.
+
+### Section
+
+The shared-ui Section had defaults that didn't match reality: `center=true`
+and `overflow='hidden'`. Every page overrode both. We flipped the defaults
+and added the base horizontal padding that every section needed:
+
+```tsx
+export function Section({
+  children,
+  padding = 'none',
+  center = false,
+  overflow = 'visible',
+  className,
+  ...rest
+}) {
+  return (
+    <section
+      className={cn('relative px-6 lg:px-0', /* variant classes */, className)}
+      {...rest}
+    >
+      {children}
+    </section>
+  );
+}
+```
+
+## Component Promotion
+
+With the typography and layout systems consolidated, the remaining kit
+components fell into two categories:
+
+### Moved to shared-ui (no Next.js deps)
+
+- **Kbd**: keyboard shortcut badge
+- **GridBg**: decorative CSS grid background
+- **StructuredData**: JSON-LD script injector
+- **SectionLabel**: icon + label + decorative rule
+- **CTACard**: card with heading, description, and action slot
+
+Each was a pure React + Tailwind component that had been in kit only by
+convention. Moving them to shared-ui made them available to any app in
+the monorepo.
+
+### Kept in kit (Next.js dependent)
+
+- **PostCard**: uses `next/link` for client-side navigation
+- **CoverImage**: uses `next/image` for optimization
+- **CompanyLogo**: uses `next/image`
+
+These genuinely compose Next.js APIs with shared-ui primitives. That's
+what kit is for.
+
+### Deleted entirely
+
+- **kit/Heading.tsx**, **kit/Text.tsx**: replaced by shared-ui variants
+- **kit/PageLayout.tsx**, **kit/Section.tsx**: replaced by shared-ui with better defaults
+- **kit/ErrorAlert.tsx**: replaced by `<Alert variant='error'>` + inline retry button
+- **kit/Spinner.tsx**: direct shared-ui import (`label` → `aria-label`)
+- **ClientBadge**, **ClientSkeleton**: React 19 ref prop pattern eliminated the
+  need for client wrappers around server-compatible components
+
+## Enforcement
+
+A design system without enforcement is just a suggestion. We added a custom
+ESLint rule that bans raw `<h1>` through `<h6>` elements in JSX, directing
+developers to use the `Heading` component instead. The rule catches violations
+at lint time, not in code review.
+
+## Results
+
+- **176 files changed**, -4,282 / +2,273 lines. A net reduction of ~2,000 lines
+- **31 consumer files** updated to import directly from shared-ui
+- **11 kit wrapper files** deleted
+- **Zero new dependencies**: shared-ui still only requires React + Tailwind
+- All 1,266 unit tests pass. All 695 E2E tests pass. Zero hydration errors.
+
+## Takeaways
+
+**Wrappers that only add variants are a code smell.** If the wrapper doesn't
+add behavior (hooks, state, API calls), the variants belong in the library.
+The "app-specific" label was just an excuse to avoid touching the shared layer.
+
+**Defaults should encode the dominant pattern.** When every consumer overrides
+a default, the default is wrong. Changing `center=true` to `center=false` in
+Section eliminated 15 identical prop overrides.
+
+**The Rule of Three applies to deletion too.** If three wrappers exist just
+to flip a prop, delete all three and fix the source.
+
+**Enforce at the tool level.** A lint rule catches more violations than a
+convention document. The `no-raw-headings` rule has already prevented
+regressions in the same session it was introduced.

@@ -23,19 +23,19 @@ describe('Section', () => {
     expect(container.firstChild).toHaveClass('py-4');
   });
 
-  it('applies md padding', () => {
+  it('applies md padding with responsive breakpoints', () => {
     const { container } = render(<Section padding='md'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-8');
+    expect(container.firstChild).toHaveClass('py-6', 'sm:py-8', 'md:py-12');
   });
 
-  it('applies lg padding', () => {
+  it('applies lg padding with responsive breakpoints', () => {
     const { container } = render(<Section padding='lg'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-12');
+    expect(container.firstChild).toHaveClass('py-8', 'sm:py-12', 'md:py-16');
   });
 
-  it('applies xl padding with responsive breakpoint', () => {
+  it('applies xl padding with responsive breakpoints', () => {
     const { container } = render(<Section padding='xl'>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-16', 'sm:py-24');
+    expect(container.firstChild).toHaveClass('py-12', 'sm:py-16', 'md:py-24');
   });
 
   // Background tests
@@ -63,9 +63,25 @@ describe('Section', () => {
     expect(container.firstChild).toHaveClass('bg-surface-elevated');
   });
 
-  // Center tests
-  it('applies centering by default', () => {
+  // Base styles tests
+  it('applies relative positioning and responsive horizontal padding by default', () => {
     const { container } = render(<Section>Content</Section>);
+    expect(container.firstChild).toHaveClass(
+      'relative',
+      'px-4',
+      'sm:px-6',
+      'lg:px-0'
+    );
+  });
+
+  // Center tests
+  it('does not apply centering by default', () => {
+    const { container } = render(<Section>Content</Section>);
+    expect(container.firstChild).not.toHaveClass('justify-center');
+  });
+
+  it('applies centering when center=true', () => {
+    const { container } = render(<Section center>Content</Section>);
     expect(container.firstChild).toHaveClass(
       'flex',
       'flex-col',
@@ -73,20 +89,15 @@ describe('Section', () => {
     );
   });
 
-  it('removes centering when center=false', () => {
-    const { container } = render(<Section center={false}>Content</Section>);
-    expect(container.firstChild).not.toHaveClass('justify-center');
-  });
-
   // Overflow tests
-  it('applies hidden overflow by default', () => {
+  it('applies visible overflow by default', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).toHaveClass('overflow-hidden');
+    expect(container.firstChild).toHaveClass('overflow-visible');
   });
 
-  it('applies visible overflow', () => {
-    const { container } = render(<Section overflow='visible'>Content</Section>);
-    expect(container.firstChild).toHaveClass('overflow-visible');
+  it('applies hidden overflow', () => {
+    const { container } = render(<Section overflow='hidden'>Content</Section>);
+    expect(container.firstChild).toHaveClass('overflow-hidden');
   });
 
   it('applies auto overflow', () => {
@@ -137,7 +148,13 @@ describe('Section', () => {
       </Section>
     );
     expect(container.firstChild).toHaveClass(
-      'py-12',
+      'relative',
+      'px-4',
+      'sm:px-6',
+      'lg:px-0',
+      'py-8',
+      'sm:py-12',
+      'md:py-16',
       'bg-surface-elevated',
       'flex',
       'justify-center',

@@ -15,13 +15,19 @@ export const FORM_LABEL = 'block text-text-primary mb-2';
 /** Required-field asterisk (Input, Textarea). */
 export const REQUIRED_MARK = 'text-error ml-1';
 
-/** Shared base for text inputs, selects, and textareas. */
+/**
+ * Shared base for text inputs, selects, and textareas.
+ * Does NOT include padding — that varies per component (Input has size prop).
+ */
 export const BASE_FIELD = [
-  'w-full px-4 py-2.5 bg-surface border border-border rounded-md',
+  'w-full bg-surface border border-border rounded-md',
   'text-text-primary',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
   'focus-visible:border-transparent transition-all',
 ].join(' ');
+
+/** Default field padding when no size prop is used. */
+export const FIELD_PADDING = 'px-4 py-2.5';
 
 /** Placeholder styling added to free-text fields (Input, Textarea). */
 export const FIELD_PLACEHOLDER = 'placeholder:text-text-tertiary';
@@ -35,16 +41,6 @@ export const FIELD_ERROR = 'border-error focus-visible:ring-error';
 
 /** Border + ring override when a field value is confirmed valid. */
 export const FIELD_SUCCESS = 'border-success focus-visible:ring-success';
-
-/* ------------------------------------------------------------------ */
-/*  Feedback text below a field                                        */
-/* ------------------------------------------------------------------ */
-
-/** Error message shown below a field (Input, Select, Textarea). */
-export const ERROR_TEXT = 'mt-1.5 text-sm text-error';
-
-/** Helper / hint text shown below a field (Input, Textarea). */
-export const HELPER_TEXT = 'mt-1.5 text-sm text-text-tertiary';
 
 /* ------------------------------------------------------------------ */
 /*  Disabled states                                                    */

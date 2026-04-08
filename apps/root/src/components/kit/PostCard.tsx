@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
-import ClientBadge from '@/components/ClientBadge';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
@@ -50,31 +52,31 @@ export function PostCard({
 
       <div className='p-4 space-y-2'>
         <div className='flex items-start justify-between gap-2'>
-          <p className='text-sm font-semibold text-text-primary'>
+          <Heading variant='cardTitle' as='p'>
             {post.title}
-          </p>
+          </Heading>
           <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
         </div>
-        {post.role && <ClientBadge variant='brand'>{post.role}</ClientBadge>}
-        <p className='text-sm text-text-secondary leading-relaxed line-clamp-2'>
+        {post.role && <Badge variant='brand'>{post.role}</Badge>}
+        <Text variant='cardDescription' className='line-clamp-2'>
           {post.description}
-        </p>
+        </Text>
         {(post.duration || post.readingTime) && (
           <div className='flex items-center gap-3'>
             {post.duration && (
               <div className='flex items-center gap-1.5'>
                 <Calendar className='h-3 w-3 text-text-tertiary' />
-                <span className='text-xs text-text-tertiary'>
+                <Text variant='meta' as='span'>
                   {post.duration}
-                </span>
+                </Text>
               </div>
             )}
             {post.readingTime && (
               <div className='flex items-center gap-1.5'>
                 <Clock className='h-3 w-3 text-text-tertiary' />
-                <span className='text-xs text-text-tertiary'>
+                <Text variant='meta' as='span'>
                   {post.readingTime} min read
-                </span>
+                </Text>
               </div>
             )}
           </div>

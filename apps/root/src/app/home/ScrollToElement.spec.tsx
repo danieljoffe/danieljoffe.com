@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import ScrollToElement from './ScrollToElement';
 
 const mockGet = jest.fn();
 
@@ -7,8 +8,6 @@ jest.mock('next/navigation', () => ({
     get: mockGet,
   }),
 }));
-
-import ScrollToElement from './ScrollToElement';
 
 describe('ScrollToElement', () => {
   beforeEach(() => {

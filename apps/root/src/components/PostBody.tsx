@@ -1,8 +1,9 @@
+import { Calendar, Clock, Tag } from 'lucide-react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PostBodyProps } from '@/types/postTypes';
+import { TableOfContents } from '@/components/kit';
 import UnsplashImage from './UnsplashImage';
 import BreadCrumbs from './BreadCrumbs';
-import { TableOfContents } from '@/components/kit';
-import { Calendar, Clock, Tag } from 'lucide-react';
 
 export default function PostBody({
   children,
@@ -25,16 +26,15 @@ export default function PostBody({
 
       {/* Hero: title + cover image side by side on desktop */}
       <div className='flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10'>
-        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight lg:flex-1 lg:min-w-0'>
+        <Heading variant='detail' className='lg:flex-1 lg:min-w-0'>
           {title}
-        </h1>
+        </Heading>
         <div className='lg:flex-1 lg:min-w-0'>
           <UnsplashImage
             src={cover.src}
             alt={cover.alt}
             origin={cover.origin}
             creator={cover.creator}
-            blurHash={cover.blurHash}
             width={512}
             height={288}
             preload={true}

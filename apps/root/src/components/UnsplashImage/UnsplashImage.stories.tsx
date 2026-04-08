@@ -6,7 +6,6 @@ const origin =
 const creator = '@samferrara';
 const alt = 'Aerial photo of foggy mountains';
 const src = '/photo-1506905925346-21bda4d32df4';
-const blurHash = 'L125+JD~D#-rn$WCkCj?D~xbxbNc';
 
 const meta = {
   component: UnsplashImage,
@@ -69,7 +68,6 @@ export const Default: Story = {
     origin,
     priority: false,
     fill: true,
-    blurHash,
   },
 };
 
@@ -83,7 +81,6 @@ export const WithDimensions: Story = {
     width: 400,
     height: 300,
     fill: false,
-    blurHash,
   },
 };
 
@@ -95,6 +92,5 @@ export const HighPriority: Story = {
     origin,
     priority: true,
     fill: true,
-    blurHash,
   },
 };

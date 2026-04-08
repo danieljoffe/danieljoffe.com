@@ -1,0 +1,62 @@
+name: UI/UX Audit
+description: Run a page-level design review across all pages and breakpoints. Use after large batches of work.
+labels: ['enhancement', 'portfolio']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## When to run this audit
+        After shipping a large batch of changes (new pages, component library updates, responsive fixes). This is an on-demand process — run it when the volume of changes warrants a holistic review.
+
+  - type: textarea
+    id: trigger
+    attributes:
+      label: What triggered this audit?
+      description: What recent work landed that warrants a review?
+      placeholder: 'Merged 5 shared-ui PRs (#266–#270) covering spacing tokens, variant standardization, form APIs, motion, and responsive breakpoints.'
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: pages
+    attributes:
+      label: Pages to review
+      description: Check each page after reviewing at mobile, tablet, and desktop breakpoints.
+      options:
+        - label: Homepage (`/`)
+        - label: About (`/about`)
+        - label: Projects listing (`/projects`)
+        - label: Project detail pages (`/projects/[slug]`)
+        - label: Experience listing (`/experience`)
+        - label: Experience detail pages (`/experience/[slug]`)
+        - label: Blog listing (`/blog`)
+        - label: Blog detail pages (`/blog/[slug]`)
+        - label: Services (`/services`)
+        - label: Audit tool (`/audit`)
+        - label: Audit report (`/audit/r/[id]`)
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Review checklist
+      description: Cross-cutting concerns to verify across all pages.
+      options:
+        - label: 'Spacing & alignment — consistent vertical rhythm, no orphaned padding'
+        - label: 'Responsive — no overflow, no overlapping elements at any breakpoint'
+        - label: 'Typography — hierarchy is clear, no mismatched font sizes'
+        - label: 'Color & contrast — semantic colors used correctly, meets WCAG AA'
+        - label: 'Interactive states — hover, focus, disabled, loading all look correct'
+        - label: 'Dark mode — all pages look correct in both themes'
+        - label: 'Navigation — active states correct, mobile nav works, command palette works'
+        - label: 'Forms — validation states, error messages, disabled styling consistent'
+        - label: 'Loading states — skeletons, spinners, and transitions feel smooth'
+
+  - type: textarea
+    id: findings
+    attributes:
+      label: Findings
+      description: List any issues found. Each finding should become its own issue.
+      placeholder: |
+        - [ ] Homepage hero CTA misaligned on tablet (768px)
+        - [ ] Blog listing cards have inconsistent spacing at md breakpoint
+        - [ ] Dark mode: services page FAQ section has low contrast text

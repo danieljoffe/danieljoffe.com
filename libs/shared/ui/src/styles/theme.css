@@ -1,10 +1,26 @@
 @theme {
-  /* Spacing & Radius */
+  /* Radius scale */
+  --radius-xs: 0.25rem;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-full: 9999px;
+
+  /*
+   * Spacing conventions (documented, not tokenized — Tailwind's scale is the source of truth)
+   *
+   * Padding scale for card-level containers:
+   *   sm = p-4 (1rem)    — Alert, Toast, compact cards
+   *   md = p-6 (1.5rem)  — Card default, Modal sections, StatsCard
+   *   lg = p-8 (2rem)    — Large cards, CTACard
+   *
+   * Form input padding:         px-4 py-2.5
+   * Label-to-input gap:         mb-2
+   * Error/helper text offset:   mt-1.5
+   * Inline element gap:         gap-2 (checkboxes, switches, icon+text)
+   * Section/footer actions gap:  gap-3
+   */
 
   /* Fonts */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -24,6 +40,7 @@
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-slide-up: slide-up 0.2s ease-out;
   --animate-slide-down: slide-down 0.15s ease-out;
+  --animate-slide-out-down: slide-out-down 0.15s ease-in forwards;
   --animate-scale-in: scale-in 0.15s ease-out;
 
   /* Colors - Brand (blue-indigo, oklch hue 250) */
@@ -128,6 +145,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 

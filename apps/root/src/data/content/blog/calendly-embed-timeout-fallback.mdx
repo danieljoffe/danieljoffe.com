@@ -1,0 +1,122 @@
+export const metadata = {
+  title: 'An 8-Second Timeout for Third-Party Iframes',
+  date: '2026-04-07',
+  excerpt:
+    'An iframe that never loads looks like a broken page leaving users staring and waiting. We added a timeout and predictability.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['React', 'UX', 'Third-Party Embeds', 'Resilience'],
+  slug: 'calendly-embed-timeout-fallback',
+  type: 'blog',
+  topic: 'Frontend Engineering',
+};
+
+## The Invisible Failure
+
+Our services page embeds a Calendly scheduling widget in an iframe. It
+loads lazily via IntersectionObserver and shows a spinner until the
+iframe fires `onLoad`. Clean pattern, _should_ work well,
+until it does not load at all.
+Ad blockers, corporate proxies, CSP policies, and flaky connections
+can all prevent the iframe from loading. When that happens, the spinner
+spins and spins forever. No error, no feedback, no way for the user to
+book a call. The page looks and is effectively broken.
+
+## The Timeout
+
+The fix is straightforward: if the iframe has not loaded after 8
+seconds, give up and show a fallback.
+
+```tsx
+const LOAD_TIMEOUT_MS = 8000;
+
+const [shouldLoad, setShouldLoad] = useState(false);
+const [isLoaded, setIsLoaded] = useState(false);
+const [timedOut, setTimedOut] = useState(false);
+
+useEffect(() => {
+  if (!shouldLoad || isLoaded) return;
+
+  const timer = setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
+  return () => clearTimeout(timer);
+}, [shouldLoad, isLoaded]);
+```
+
+Three states: `shouldLoad` (IntersectionObserver triggered), `isLoaded`
+(iframe fired `onLoad`), and `timedOut` (8 seconds elapsed without
+`onLoad`). The timeout only starts when `shouldLoad` is true and clears
+itself if `isLoaded` arrives first.
+
+## The Fallback
+
+When the timeout fires, the entire embed is replaced with a card
+containing a direct link to Calendly:
+
+```tsx
+if (timedOut && !isLoaded) {
+  return (
+    <div
+      className='flex flex-col items-center justify-center gap-4
+      rounded-xl border border-border bg-surface p-12 text-center'
+    >
+      <Calendar className='h-10 w-10 text-text-tertiary' />
+      <p className='text-text-secondary text-sm max-w-md'>
+        The scheduling widget couldn&apos;t load. Book directly on Calendly
+        instead.
+      </p>
+      <Button
+        name='calendly-fallback'
+        as='link'
+        href={CALENDLY_URL}
+        target='_blank'
+        rel='noopener noreferrer'
+        onClick={() =>
+          analytics.ctaClick('services_calendly_fallback', CALENDLY_URL)
+        }
+      >
+        Open Calendly
+      </Button>
+    </div>
+  );
+}
+```
+
+The fallback click is tracked with analytics so we can see how often
+users hit this path. If the number is high, there is a conversation to
+have about whether an iframe embed is the right approach at all.
+
+## Why 8 Seconds
+
+The timeout needs to be long enough that slow connections can still
+load the embed, and short enough that users do not leave. Calendly's
+embed is heavy: it loads its own JavaScript, CSS, and API calls. On a
+3G connection, 4-5 seconds is realistic. We chose 8 seconds as a
+buffer above that, which means a user on a working but slow connection
+will never see the fallback, but a user whose ad blocker killed the
+request will see it within a reasonable wait.
+
+## The Late Load
+
+If the iframe loads after the timeout fires, the `onLoad` handler still
+works:
+
+```tsx
+const onIframeLoad = useCallback(() => {
+  setIsLoaded(true);
+  setTimedOut(false);
+}, []);
+```
+
+Setting `timedOut` back to `false` switches the UI from fallback to
+embed. This handles the rare case where a slow connection delivers the
+iframe after 8 seconds. The user sees the fallback briefly, then the
+real widget appears. Not ideal, but better than showing the fallback
+permanently when the embed eventually loads.
+
+## The Takeaway
+
+Third-party iframes fail silently. They do not throw errors, they do
+not fire `onerror`, and they do not tell you they've been blocked. A
+timeout with a direct link fallback turns a broken page into a
+functional one. Any embedded widget where you control neither the
+content nor the network path deserves the same treatment.

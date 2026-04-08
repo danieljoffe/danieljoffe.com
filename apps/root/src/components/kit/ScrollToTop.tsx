@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
 import { cn } from '@/lib/cn';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
-import { Kbd } from './Kbd';
 
 const SCROLL_THRESHOLD = 300;
 
@@ -31,7 +31,7 @@ export function ScrollToTop() {
       onClick={scrollToTop}
       aria-label='Scroll to top (T)'
       className={cn(
-        'fixed bottom-6 right-6 z-50 p-2.5 rounded-full',
+        'fixed bottom-20 md:bottom-6 right-6 z-40 p-2.5 rounded-full',
         'bg-surface-elevated border border-brand-500/20 shadow-lg',
         'text-text-primary hover:border-brand-500/40 hover:bg-brand-500/5',
         'transition-all duration-200 cursor-pointer',

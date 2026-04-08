@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { focusRing } from '@/lib/layoutStyles';
 import Button from '@/components/Button';
 import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
@@ -53,7 +56,9 @@ export default function AdminDashboard() {
     <div className='max-w-3xl mx-auto w-full px-4 sm:px-6'>
       <div className='flex flex-col gap-6 py-8'>
         <div className='flex flex-row justify-between items-start'>
-          <h1 className='text-2xl font-bold'>Audit Admin</h1>
+          <Heading variant='section' as='h1'>
+            Audit Admin
+          </Heading>
           <Button
             variant='bare'
             name='admin-sign-out'
@@ -65,7 +70,7 @@ export default function AdminDashboard() {
         </div>
 
         {statsError ? (
-          <p className='text-error text-sm'>{statsError}</p>
+          <Text variant='error'>{statsError}</Text>
         ) : stats ? (
           <StatsRow
             stats={[
@@ -98,7 +103,7 @@ export default function AdminDashboard() {
                   key={tab.id}
                   role='tab'
                   aria-selected={activeTab === tab.id}
-                  className={`px-4 py-2.5 border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
+                  className={`px-4 py-2.5 border-b-2 transition-colors ${focusRing} ${
                     activeTab === tab.id
                       ? 'border-brand-500 text-brand-500'
                       : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'

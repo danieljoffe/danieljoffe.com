@@ -5,10 +5,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
+import { Heading } from './Heading';
 import { DISMISS_BUTTON } from './styles/formStyles';
+import { Text } from './Text';
 import { cn } from './utils/cn';
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
@@ -18,6 +22,7 @@ export interface ToastItem {
   variant: ToastVariant;
   title: string;
   description?: string;
+  duration?: number;
 }
 
 export interface ToastContextType {
@@ -44,54 +49,113 @@ const iconColors: Record<ToastVariant, string> = {
   error: 'text-error',
 };
 
+const DEFAULT_DISMISS_MS = 4000;
+let toastCounter = 0;
+
+function ToastCard({
+  toast: t,
+  onDismiss,
+}: {
+  toast: ToastItem;
+  onDismiss: (id: string) => void;
+}) {
+  const duration = t.duration ?? DEFAULT_DISMISS_MS;
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const remainingRef = useRef(duration);
+  const startRef = useRef(Date.now());
+  const [dismissing, setDismissing] = useState(false);
+
+  const isUrgent = t.variant === 'error' || t.variant === 'warning';
+  const Icon = icons[t.variant];
+
+  const handleDismiss = useCallback(() => {
+    setDismissing(true);
+    setTimeout(() => onDismiss(t.id), 150);
+  }, [onDismiss, t.id]);
+
+  const startTimer = useCallback(() => {
+    startRef.current = Date.now();
+    timerRef.current = setTimeout(() => {
+      handleDismiss();
+    }, remainingRef.current);
+  }, [handleDismiss]);
+
+  const pauseTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+      remainingRef.current -= Date.now() - startRef.current;
+    }
+  }, []);
+
+  useEffect(() => {
+    startTimer();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [startTimer]);
+
+  return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- hover/focus pause timer, not user interaction
+    <div
+      role={isUrgent ? 'alert' : 'status'}
+      aria-atomic='true'
+      onMouseEnter={pauseTimer}
+      onMouseLeave={startTimer}
+      onFocus={pauseTimer}
+      onBlur={startTimer}
+      className={cn(
+        'flex items-start gap-3 p-4 bg-surface-elevated border border-border',
+        'rounded-lg shadow-lg motion-reduce:animate-none',
+        dismissing ? 'animate-slide-out-down' : 'animate-slide-up'
+      )}
+    >
+      <Icon className={cn('h-5 w-5 shrink-0', iconColors[t.variant])} />
+      <div className='flex-1 min-w-0'>
+        <Heading variant='cardTitle' as='p'>
+          {t.title}
+        </Heading>
+        {t.description && (
+          <Text variant='meta' className='mt-0.5'>
+            {t.description}
+          </Text>
+        )}
+      </div>
+      <button
+        onClick={() => handleDismiss()}
+        aria-label='Dismiss notification'
+        className={cn('p-0.5 cursor-pointer', DISMISS_BUTTON)}
+      >
+        <X className='h-4 w-4' />
+      </button>
+    </div>
+  );
+}
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const addToast = useCallback((params: Omit<ToastItem, 'id'>) => {
-    const id = Math.random().toString(36).slice(2);
+    const id = `toast-${++toastCounter}`;
     setToasts(prev => [...prev, { ...params, id }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 4000);
   }, []);
 
-  const dismiss = (id: string) =>
-    setToasts(prev => prev.filter(t => t.id !== id));
+  const dismiss = useCallback(
+    (id: string) => setToasts(prev => prev.filter(t => t.id !== id)),
+    []
+  );
 
   return (
     <ToastContext.Provider value={{ toast: addToast }}>
       {children}
-      <div className='fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm'>
-        {toasts.map(t => {
-          const Icon = icons[t.variant];
-          return (
-            <div
-              key={t.id}
-              className={cn(
-                'flex items-start gap-3 p-4 bg-surface-elevated border border-border',
-                'rounded-lg shadow-lg animate-slide-up'
-              )}
-            >
-              <Icon className={cn('h-5 w-5 shrink-0', iconColors[t.variant])} />
-              <div className='flex-1 min-w-0'>
-                <p className='text-sm font-medium text-text-primary'>
-                  {t.title}
-                </p>
-                {t.description && (
-                  <p className='text-xs text-text-secondary mt-0.5'>
-                    {t.description}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => dismiss(t.id)}
-                className={cn('p-0.5 cursor-pointer', DISMISS_BUTTON)}
-              >
-                <X className='h-4 w-4' />
-              </button>
-            </div>
-          );
-        })}
+      <div
+        aria-live='polite'
+        aria-atomic='true'
+        className='fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm'
+      >
+        {toasts.map(t => (
+          <ToastCard key={t.id} toast={t} onDismiss={dismiss} />
+        ))}
       </div>
     </ToastContext.Provider>
   );

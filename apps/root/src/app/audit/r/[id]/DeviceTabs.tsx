@@ -1,6 +1,6 @@
 import { Monitor, Smartphone } from 'lucide-react';
-import Button from '@/components/Button';
 import type { DeviceMode } from '@danieljoffe.com/shared-audit';
+import Button from '@/components/Button';
 
 interface DeviceTabsProps {
   currentDevice: DeviceMode;
