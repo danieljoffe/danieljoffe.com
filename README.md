@@ -43,7 +43,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 ### Development & Build Tools
 
 - **Monorepo**: Nx 21.4.1
-- **Package Manager**: Yarn
+- **Package Manager**: pnpm
 - **Linting**: ESLint 9 with custom configuration
 - **Testing**: Jest + React Testing Library
 - **E2E Testing**: Playwright
@@ -85,7 +85,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 
 - **API_DOCUMENTATION.md** - Complete API reference with examples in each api route
 - **[Testing Guide](./TESTING.md)** - Comprehensive testing and QA documentation
-- **Component Documentation** - Available via Storybook (`yarn storybook`)
+- **Component Documentation** - Available via Storybook (`pnpm storybook`)
 
 ---
 
@@ -94,7 +94,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 ### Prerequisites
 
 - Node.js 18+
-- Yarn package manager
+- pnpm package manager
 - Git
 
 ### Installation
@@ -109,7 +109,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 2. **Install dependencies**
 
    ```bash
-   yarn install
+   pnpm install
    ```
 
 3. **Set up environment variables**
@@ -122,7 +122,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 4. **Start the development server**
 
    ```bash
-   npx nx dev root
+   pnpm nx dev root
    ```
 
    The application will be available at `http://localhost:3000`
@@ -135,35 +135,35 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 
 ```bash
 # Start development server
-npx nx dev root
+pnpm nx dev root
 
 # Build for production
-npx nx build root
+pnpm nx build root
 
 # Start production server
-npx nx start root
+pnpm nx start root
 
 # Run linting
-npx nx lint root
+pnpm nx lint root
 
 # Run tests
-npx nx test root
+pnpm nx test root
 
 # Run E2E tests
-npx nx e2e root-e2e
+pnpm nx e2e root-e2e
 ```
 
 ### Development Tools
 
 ```bash
 # Start Storybook (root app)
-npx nx storybook root
+pnpm nx storybook root
 
 # Start Storybook (shared UI library)
-npx nx storybook @danieljoffe.com/shared-ui
+pnpm nx storybook @danieljoffe.com/shared-ui
 
 # Generate project graph
-npx nx graph
+pnpm nx graph
 ```
 
 ---
@@ -179,16 +179,16 @@ The project includes comprehensive testing setup:
 
 ```bash
 # Run app unit tests
-npx nx test root
+pnpm nx test root
 
 # Run shared UI library tests
-npx nx test @danieljoffe.com/shared-ui
+pnpm nx test @danieljoffe.com/shared-ui
 
 # Run E2E tests
-npx nx e2e root-e2e
+pnpm nx e2e root-e2e
 
 # Run tests in watch mode
-npx nx test root --watch
+pnpm nx test root --watch
 ```
 
 ---

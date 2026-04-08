@@ -15,45 +15,47 @@ inputs:
 runs:
   using: composite
   steps:
+    - uses: pnpm/action-setup@v4
+
     - uses: actions/setup-node@v5
       with:
         node-version-file: .nvmrc
-        cache: yarn
+        cache: pnpm
 
     - name: Install dependencies
       shell: bash
-      run: yarn install --frozen-lockfile
+      run: pnpm install --frozen-lockfile
 
     - uses: nrwl/nx-set-shas@v5
 
     - name: Run affected tasks
       shell: bash
-      run: yarn nx affected -t lint test build typecheck build-storybook --nxBail
+      run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail
       env:
         NX_NO_CLOUD: 'true'
 
     - name: Install Playwright
       if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
-      run: yarn playwright install --with-deps chromium
+      run: pnpm exec playwright install --with-deps chromium
 
     - name: Run e2e tests
       if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
-      run: yarn nx affected -t e2e --nxBail
+      run: pnpm nx affected -t e2e --nxBail
       env:
         NX_NO_CLOUD: 'true'
 
     - name: Run Chromatic visual tests
       if: ${{ inputs.chromatic-project-token != '' }}
       shell: bash
-      run: yarn chromatic:ui --exit-zero-on-changes --exit-once-sent
+      run: pnpm chromatic:ui --exit-zero-on-changes --exit-once-sent
       env:
         CHROMATIC_PROJECT_TOKEN: ${{ inputs.chromatic-project-token }}
 
     - name: Run Lighthouse CI
       if: ${{ inputs.run-e2e == 'true' }}
       shell: bash
-      run: yarn test:lighthouse
+      run: pnpm test:lighthouse
       env:
         LHCI_GITHUB_APP_TOKEN: ${{ inputs.github-token }}

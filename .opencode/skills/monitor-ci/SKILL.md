@@ -131,7 +131,7 @@ When verifiable (non-e2e) unverified tasks exist:
 
 1. **Detect package manager:**
    - `pnpm-lock.yaml` exists → `pnpm nx`
-   - `yarn.lock` exists → `yarn nx`
+   - `package-lock.json` exists → `npx nx`
    - Otherwise → `npx nx`
 
 2. **Run verifiable tasks in parallel:**
@@ -264,11 +264,11 @@ This means the expected CI Attempt was never created - CI likely failed before N
    ```
 
 2. **If user configured auto-fix attempts** (e.g., `--auto-fix-workflow`):
-   - Detect package manager: check for `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`
+   - Detect package manager: check for `pnpm-lock.yaml`, `package-lock.json`
    - Run install to update lockfile:
 
      ```bash
-     pnpm install   # or npm install / yarn install
+     pnpm install   # or npm install
      ```
 
    - If lockfile changed:

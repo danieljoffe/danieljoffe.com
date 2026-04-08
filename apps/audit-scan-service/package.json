@@ -51,7 +51,7 @@
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
           "{workspaceRoot}/apps/audit-scan-service/dist/package.json",
-          "{workspaceRoot}/apps/audit-scan-service/dist/yarn.lock"
+          "{workspaceRoot}/apps/audit-scan-service/dist/pnpm-lock.yaml"
         ],
         "options": {
           "buildTarget": "build"
