@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DISABLED } from './styles/formStyles';
 import { cn } from './utils/cn';
 
 export interface PaginationProps {
@@ -38,7 +39,10 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
-        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+        className={cn(
+          'p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
+          DISABLED
+        )}
       >
         <ChevronLeft className='h-4 w-4' />
       </button>
@@ -65,7 +69,10 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
-        className='p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer'
+        className={cn(
+          'p-1.5 rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
+          DISABLED
+        )}
       >
         <ChevronRight className='h-4 w-4' />
       </button>

@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { forwardRef, useId, type InputHTMLAttributes } from 'react';
+import { DISABLED_PEER, FOCUS_RING_PEER } from './styles/formStyles';
 import { cn } from './utils';
 
 export interface CheckboxProps extends Omit<
@@ -31,9 +32,9 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={cn(
               'flex items-center justify-center size-5 border-2',
               'border-border-secondary rounded bg-surface cursor-pointer transition-all',
-              'peer-checked:bg-brand-500 peer-checked:border-brand-500 peer-focus-visible:ring-2',
-              'peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2 ',
-              'peer-focus-visible:ring-offset-surface',
+              'peer-checked:bg-brand-500 peer-checked:border-brand-500',
+              FOCUS_RING_PEER,
+              DISABLED_PEER,
               className
             )}
           >

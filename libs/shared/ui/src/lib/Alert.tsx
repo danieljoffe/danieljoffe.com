@@ -1,5 +1,6 @@
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import { forwardRef, type ReactNode, type HTMLAttributes } from 'react';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import { cn } from './utils';
 
 type AlertVariant = 'info' | 'success' | 'warning' | 'error';
@@ -72,7 +73,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
             <button
               onClick={onDismiss}
               aria-label='Dismiss alert'
-              className='text-text-tertiary hover:text-text-primary transition-colors'
+              className={DISMISS_BUTTON}
             >
               <X className='size-4' aria-hidden='true' />
             </button>

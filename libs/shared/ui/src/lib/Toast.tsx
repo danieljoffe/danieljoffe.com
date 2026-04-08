@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import { cn } from './utils/cn';
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error';
@@ -84,7 +85,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
               <button
                 onClick={() => dismiss(t.id)}
-                className='p-0.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer'
+                className={cn('p-0.5 cursor-pointer', DISMISS_BUTTON)}
               >
                 <X className='h-4 w-4' />
               </button>

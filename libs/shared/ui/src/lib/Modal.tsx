@@ -10,6 +10,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import { cn } from './utils';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -139,7 +140,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 <button
                   onClick={handleClose}
                   aria-label='Close dialog'
-                  className='text-text-tertiary hover:text-text-primary transition-colors'
+                  className={DISMISS_BUTTON}
                 >
                   <X className='size-5' aria-hidden='true' />
                 </button>
@@ -149,7 +150,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
               <button
                 onClick={handleClose}
                 aria-label='Close dialog'
-                className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
+                className={cn('absolute top-4 right-4', DISMISS_BUTTON)}
               >
                 <X className='size-5' aria-hidden='true' />
               </button>

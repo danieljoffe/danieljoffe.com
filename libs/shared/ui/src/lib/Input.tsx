@@ -1,4 +1,14 @@
 import { forwardRef, useId, type InputHTMLAttributes } from 'react';
+import {
+  BASE_FIELD,
+  ERROR_TEXT,
+  FIELD_ERROR,
+  FIELD_PLACEHOLDER,
+  FIELD_SUCCESS,
+  FORM_LABEL,
+  HELPER_TEXT,
+  REQUIRED_MARK,
+} from './styles/formStyles';
 import { cn } from './utils';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -20,17 +30,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const describedBy = errorId || helperId;
 
     const getStateClasses = () => {
-      if (error) return 'border-error focus-visible:ring-error';
-      if (success) return 'border-success focus-visible:ring-success';
+      if (error) return FIELD_ERROR;
+      if (success) return FIELD_SUCCESS;
       return '';
     };
 
     return (
       <div className='w-full'>
         {label && (
-          <label htmlFor={inputId} className='block text-text-primary mb-2'>
+          <label htmlFor={inputId} className={FORM_LABEL}>
             {label}
-            {required && <span className='text-error ml-1'>*</span>}
+            {required && <span className={REQUIRED_MARK}>*</span>}
           </label>
         )}
         <input
@@ -41,22 +51,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy}
           required={required}
           className={cn(
-            'w-full px-4 py-2.5 bg-surface border border-border rounded-md',
-            'text-text-primary placeholder:text-text-tertiary focus-visible:outline-none',
-            'focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent',
-            'transition-all',
+            BASE_FIELD,
+            FIELD_PLACEHOLDER,
             getStateClasses(),
             className
           )}
           {...props}
         />
         {error && (
-          <p id={errorId} className='mt-1.5 text-sm text-error' role='alert'>
+          <p id={errorId} className={ERROR_TEXT} role='alert'>
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={helperId} className='mt-1.5 text-sm text-text-tertiary'>
+          <p id={helperId} className={HELPER_TEXT}>
             {helperText}
           </p>
         )}

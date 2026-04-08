@@ -1,5 +1,11 @@
 import { ChevronDown } from 'lucide-react';
 import { forwardRef, useId, type SelectHTMLAttributes } from 'react';
+import {
+  BASE_FIELD,
+  ERROR_TEXT,
+  FIELD_ERROR,
+  FORM_LABEL,
+} from './styles/formStyles';
 import { cn } from './utils';
 
 export interface SelectOption {
@@ -22,7 +28,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className='w-full'>
         {label && (
-          <label htmlFor={selectId} className='block text-text-primary mb-2'>
+          <label htmlFor={selectId} className={FORM_LABEL}>
             {label}
           </label>
         )}
@@ -33,10 +39,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             aria-invalid={error ? 'true' : undefined}
             aria-describedby={errorId}
             className={cn(
-              'w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary',
-              'appearance-none focus-visible:outline-none focus-visible:ring-2',
-              'focus-visible:ring-brand-500 focus-visible:border-transparent transition-all',
-              error && 'border-error focus-visible:ring-error',
+              BASE_FIELD,
+              'appearance-none',
+              error && FIELD_ERROR,
               className
             )}
             {...props}
@@ -53,7 +58,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           />
         </div>
         {error && (
-          <p id={errorId} className='mt-1.5 text-sm text-error' role='alert'>
+          <p id={errorId} className={ERROR_TEXT} role='alert'>
             {error}
           </p>
         )}
