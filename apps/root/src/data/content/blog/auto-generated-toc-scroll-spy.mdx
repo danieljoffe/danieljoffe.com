@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Building an Auto-Generated Table of Contents with Scroll Spy',
   date: '2026-04-04',
   excerpt:
-    'How a responsive, accessible table of contents extracts headings from rendered MDX, tracks reading position with IntersectionObserver, and adapts between a sticky sidebar and a mobile bottom sheet.',
+    'A responsive, accessible table of contents that extracts headings from rendered MDX, tracks reading position with IntersectionObserver, and adapts between a sticky sidebar and a mobile bottom sheet.',
   author: 'Daniel Joffe',
   category: 'Frontend Engineering',
   tags: [
@@ -19,12 +19,12 @@ export const metadata = {
 
 ## The Problem
 
-Long-form MDX posts on this portfolio — case studies running 1,500+ words with
-multiple sections — had no way for readers to see where they were or jump to a
+Long-form MDX posts on this portfolio, case studies running 1,500+ words with
+multiple sections, had no way for readers to see where they were or jump to a
 specific section. The browser's native scroll position was the only indicator of
 progress.
 
-I needed a table of contents that:
+We needed a table of contents that:
 
 1. **Self-generates** from the MDX content (no manual configuration per post)
 2. **Tracks reading position** in real time
@@ -70,7 +70,7 @@ Key decisions here:
 ## Scroll Spy with IntersectionObserver
 
 Instead of a scroll event listener polling `getBoundingClientRect()` on every
-frame, I used IntersectionObserver to let the browser tell me when headings enter
+frame, we used IntersectionObserver to let the browser tell us when headings enter
 or leave the viewport:
 
 ```typescript
