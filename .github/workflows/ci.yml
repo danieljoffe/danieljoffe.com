@@ -101,10 +101,6 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
-      - uses: nrwl/nx-set-shas@v5
-        with:
-          main-branch-name: ${{ github.base_ref || 'main' }}
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -116,10 +112,8 @@ jobs:
         working-directory: apps/job-api
         run: poetry install --no-interaction
 
-      - name: Run affected Python tasks
-        run: yarn nx affected -t lint test mypy --nxBail --projects=job-api
-        env:
-          NX_NO_CLOUD: 'true'
+      - name: Run Python tasks
+        run: yarn nx run-many -t lint test mypy --nxBail -p job-api
 
   ci-status:
     if: always()
