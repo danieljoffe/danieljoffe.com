@@ -1,4 +1,13 @@
 import { useId, type InputHTMLAttributes, type Ref } from 'react';
+import {
+  BASE_FIELD,
+  DISABLED,
+  FIELD_ERROR,
+  FIELD_PLACEHOLDER,
+  FIELD_SUCCESS,
+  FORM_LABEL,
+  REQUIRED_MARK,
+} from './styles/formStyles';
 import { Text } from './Text';
 import type { ComponentSize } from './types';
 import { cn } from './utils';
@@ -40,17 +49,17 @@ export function Input({
   const describedBy = errorId || helperId;
 
   const getStateClasses = () => {
-    if (error) return 'border-error focus-visible:ring-error';
-    if (success) return 'border-success focus-visible:ring-success';
+    if (error) return FIELD_ERROR;
+    if (success) return FIELD_SUCCESS;
     return '';
   };
 
   return (
     <div className='w-full'>
       {label && (
-        <label htmlFor={inputId} className='block text-text-primary mb-2'>
+        <label htmlFor={inputId} className={FORM_LABEL}>
           {label}
-          {required && <span className='text-error ml-1'>*</span>}
+          {required && <span className={REQUIRED_MARK}>*</span>}
         </label>
       )}
       <input
@@ -61,11 +70,10 @@ export function Input({
         aria-describedby={describedBy}
         required={required}
         className={cn(
-          'w-full bg-surface border border-border rounded-md',
+          BASE_FIELD,
           sizeStyles[size],
-          'text-text-primary placeholder:text-text-tertiary focus-visible:outline-none',
-          'focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:border-transparent',
-          'transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+          FIELD_PLACEHOLDER,
+          DISABLED,
           getStateClasses(),
           className
         )}
