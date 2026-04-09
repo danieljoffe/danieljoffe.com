@@ -57,6 +57,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Copy built output (includes bundled workspace code + package.json + lockfile)
 COPY --from=builder /app/apps/audit-scan-service/dist .
 
+# Bring in the package definitions and lockfile
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
 # Run as non-root user with a writable home dir for Chromium temp/crash files
