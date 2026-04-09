@@ -30,22 +30,22 @@ The audit forced a classification for every animation in the library.
 **Decorative animations** exist for visual polish. Removing them changes nothing
 about the user's understanding of the interface:
 
-| Component   | Animation          | Verdict         |
-| ----------- | ------------------ | --------------- |
-| Spinner     | `animate-spin`     | Decorative      |
-| Loading     | bouncing dots      | Decorative      |
-| Skeleton    | `animate-pulse`    | Decorative      |
-| ProgressBar | indeterminate fill | Decorative      |
+| Component   | Animation          | Verdict    |
+| ----------- | ------------------ | ---------- |
+| Spinner     | `animate-spin`     | Decorative |
+| Loading     | bouncing dots      | Decorative |
+| Skeleton    | `animate-pulse`    | Decorative |
+| ProgressBar | indeterminate fill | Decorative |
 
 **Functional transitions** communicate state changes. Removing them requires a
 static alternative so the user still understands what happened:
 
-| Component   | Animation            | Verdict                    |
-| ----------- | -------------------- | -------------------------- |
-| Switch      | thumb slide          | Functional (position snap) |
-| Sidebar     | panel slide          | Functional (instant show)  |
-| Toast       | entry/exit slide     | Functional (instant show)  |
-| Dropdown    | menu slide-down      | Functional (instant show)  |
+| Component | Animation        | Verdict                    |
+| --------- | ---------------- | -------------------------- |
+| Switch    | thumb slide      | Functional (position snap) |
+| Sidebar   | panel slide      | Functional (instant show)  |
+| Toast     | entry/exit slide | Functional (instant show)  |
+| Dropdown  | menu slide-down  | Functional (instant show)  |
 
 For decorative animations, `motion-reduce:animate-none` is sufficient. For
 functional transitions, `motion-reduce:transition-none` snaps the element to

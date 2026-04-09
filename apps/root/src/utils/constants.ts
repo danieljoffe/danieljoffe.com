@@ -110,6 +110,10 @@ export const EXPERIENCE_LINK: NavLink = {
   label: 'Experience',
 };
 export const BLOG_LINK: NavLink = { href: '/blog', label: 'Blog' };
+export const BLOG_TAGS_LINK: NavLink = {
+  href: '/blog/tags',
+  label: 'Tags',
+};
 export const AUDIT_LINK: NavLink = { href: '/audit', label: 'Free Audit' };
 
 /** Primary nav links — always visible in desktop and mobile bottom bar */

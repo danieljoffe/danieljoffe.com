@@ -50,7 +50,8 @@ monitor) signals the current mode. For screen reader users, we label the
 button with the next state, not the current one:
 
 ```tsx
-const nextLabel = cycleOrder[(cycleOrder.indexOf(theme) + 1) % cycleOrder.length];
+const nextLabel =
+  cycleOrder[(cycleOrder.indexOf(theme) + 1) % cycleOrder.length];
 
 <button
   onClick={cycleTheme}
@@ -59,7 +60,7 @@ const nextLabel = cycleOrder[(cycleOrder.indexOf(theme) + 1) % cycleOrder.length
 >
   <Icon className='h-4 w-4' aria-hidden='true' />
   <Kbd>D</Kbd>
-</button>
+</button>;
 ```
 
 `aria-label="Switch to dark mode"` tells a screen reader user what will happen
