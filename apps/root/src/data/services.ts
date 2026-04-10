@@ -188,4 +188,86 @@ export const servicesFAQs = [
   },
 ];
 
+export const componentLibrariesSection: ServiceSectionData = {
+  id: 'component-libraries',
+  painPoint: {
+    headline:
+      'Your team rebuilds the same button, modal, and form on every project. Each one looks slightly different.',
+    subtext: undefined,
+  },
+  description:
+    'I consolidate your UI into a single, documented component library that your whole team shares. Build once, use everywhere.',
+  questions: [
+    {
+      question: "We're not using React. Can you still help?",
+      answer:
+        "Yes. I've built component libraries in React, Vue, and framework-agnostic Web Components. The approach adapts to your stack.",
+    },
+    {
+      question: "We already have components, they're just messy.",
+      answer:
+        "That's the most common starting point. I audit what you have, consolidate duplicates, standardize patterns, and document everything — no need to start from scratch.",
+    },
+    {
+      question: 'How do you handle adoption across the team?',
+      answer:
+        'I build the library with your developers, not in isolation. I include contribution guidelines, run training sessions, and set up Storybook so everyone can discover and use components independently.',
+    },
+    {
+      question: 'Is this worth it for a small team of 2-3 developers?',
+      answer:
+        "Especially for small teams. A shared library eliminates the 'which button do I use?' question and lets you ship faster instead of rebuilding the same UI patterns.",
+    },
+    {
+      question: 'What about design tokens and theming?',
+      answer:
+        'I set up a token-based system (colors, spacing, typography) that makes global updates trivial. Change a token, update everywhere.',
+    },
+  ],
+  deliverables: [
+    'Component consolidation audit',
+    'Shared component library with TypeScript',
+    'Interactive Storybook documentation',
+    'Contribution guidelines and team training',
+  ],
+  proof: {
+    title: 'Internet Brands Design System',
+    metrics: [
+      {
+        label: 'Delivery Time',
+        before: '10 months',
+        after: '1 month',
+        improvement: '10× faster',
+        delta: 'positive',
+      },
+      {
+        label: 'Adoption Rate',
+        before: '0%',
+        after: '80%',
+        improvement: 'Org-wide adoption',
+        delta: 'positive',
+      },
+      {
+        label: 'Documented Components',
+        before: '0',
+        after: '30+',
+        improvement: 'Full coverage',
+        delta: 'positive',
+      },
+      {
+        label: 'Developers Trained',
+        before: '0',
+        after: '7',
+        improvement: 'Team capability',
+        delta: 'neutral',
+      },
+    ],
+    caseStudySlug: 'component-library-case-study',
+  },
+  timeline: '4–8 weeks',
+  price: '$10,000',
+  ctaLabel: undefined,
+  ctaHref: undefined,
+};
+
 export const serviceSections: ServiceSectionData[] = [];

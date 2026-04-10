@@ -54,6 +54,15 @@ describe('Services Page', () => {
     expect(screen.getByTestId('faq')).toBeInTheDocument();
   });
 
+  it('renders Component Libraries section', () => {
+    render(<Page />);
+    expect(
+      screen.getByRole('heading', {
+        name: /your team rebuilds the same button, modal, and form on every project/i,
+      })
+    ).toBeInTheDocument();
+  });
+
   it('renders CTA section', () => {
     render(<Page />);
     expect(
