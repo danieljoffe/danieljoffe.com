@@ -11,6 +11,7 @@ import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
+import { Step } from '@/components/kit';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
@@ -134,23 +135,38 @@ export default function Services() {
           icon={<Layers className='h-3.5 w-3.5' />}
           label='How I Work'
         />
-        <div className='space-y-3'>
-          {howItWorks.map(step => (
-            <div
-              key={step.number}
-              className='flex items-start gap-4 p-4 rounded-xl border border-border'
-            >
-              <span className='inline-flex items-center justify-center h-9 w-9 rounded-full bg-brand-600 text-white text-sm font-bold shrink-0'>
-                {step.number}
-              </span>
-              <div>
-                <Heading variant='cardTitle' as='p'>
-                  {step.title}
-                </Heading>
-                <Text variant='body' className='mt-1'>
-                  {step.description}
-                </Text>
-              </div>
+
+        {/* Desktop: horizontal stepper */}
+        <div className='hidden md:grid md:grid-cols-4 gap-6'>
+          {howItWorks.map((step, i) => (
+            <div key={step.number} className='relative text-center'>
+              {/* Connecting line */}
+              {i < howItWorks.length - 1 && (
+                <div className='absolute top-4.5 left-[calc(50%+1.125rem)] right-[calc(-50%+1.125rem)] h-px bg-border' />
+              )}
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+                className='flex-col items-center text-center'
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile: connected vertical timeline */}
+        <div className='md:hidden space-y-0'>
+          {howItWorks.map((step, i) => (
+            <div key={step.number} className='relative pb-6 last:pb-0'>
+              {/* Vertical connecting line */}
+              {i < howItWorks.length - 1 && (
+                <div className='absolute left-4.5 top-9 bottom-0 w-px bg-border' />
+              )}
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+              />
             </div>
           ))}
         </div>

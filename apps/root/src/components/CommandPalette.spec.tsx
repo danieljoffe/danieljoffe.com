@@ -11,27 +11,37 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+const mockEntries = [
+  {
+    id: 'page:home',
+    title: 'Home',
+    excerpt: 'Homepage',
+    tags: [],
+    category: 'Pages',
+    type: 'page',
+    slug: 'home',
+    url: '/',
+    body: '',
+    date: '',
+    author: 'Daniel Joffe',
+  },
+  {
+    id: 'project:test-project',
+    title: 'Test Project',
+    excerpt: 'A test project',
+    tags: ['React'],
+    category: 'Projects',
+    type: 'project',
+    slug: 'test-project',
+    url: '/projects/test-project',
+    body: 'Test project body content',
+    date: '2024-01-01',
+    author: 'Daniel Joffe',
+  },
+];
+
 jest.mock('@/lib/searchIndex', () => ({
-  buildSearchIndex: () => [
-    {
-      title: 'Home',
-      excerpt: 'Homepage',
-      tags: [],
-      category: 'Pages',
-      type: 'page',
-      slug: 'home',
-      url: '/',
-    },
-    {
-      title: 'Test Project',
-      excerpt: 'A test project',
-      tags: ['React'],
-      category: 'Projects',
-      type: 'project',
-      slug: 'test-project',
-      url: '/projects/test-project',
-    },
-  ],
+  buildSearchIndex: () => mockEntries,
 }));
 
 jest.mock('@/utils/constants', () => ({

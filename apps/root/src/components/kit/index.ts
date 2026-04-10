@@ -6,4 +6,5 @@ export { CompanyLogo } from './CompanyLogo';
 export { Pagination } from './Pagination';
 export { PostPagination } from './PostPagination';
 export { ScrollToTop } from './ScrollToTop';
+export { Step } from './Step';
 export { TableOfContents } from './TableOfContents';

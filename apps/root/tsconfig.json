@@ -53,10 +53,10 @@
   ],
   "references": [
     {
-      "path": "../../libs/shared/ui"
+      "path": "../../libs/shared/ui/tsconfig.json"
     },
     {
-      "path": "../../libs/shared/audit"
+      "path": "../../libs/shared/audit/tsconfig.json"
     },
     {
       "path": "./tsconfig.storybook.json"

@@ -85,50 +85,62 @@ describe('analytics', () => {
     });
   });
 
-  // Audit events
-  it('tracks audit scan started events', () => {
+  // Audit funnel events
+  it('tracks audit scan started with a new funnel_session_id', () => {
     analytics.auditScanStarted('https://example.com');
     expect(mockGtag).toHaveBeenCalledWith('event', 'audit_scan_started', {
       url: 'https://example.com',
+      funnel_session_id: expect.stringMatching(/^fs_\d+_[a-z0-9]+$/),
     });
   });
 
-  it('tracks audit scan completed events', () => {
+  it('carries funnel_session_id through subsequent audit events', () => {
+    analytics.auditScanStarted('https://example.com');
+    const sessionId = mockGtag.mock.calls[0][2].funnel_session_id as string;
+
     analytics.auditScanCompleted('scan-123', 'B');
     expect(mockGtag).toHaveBeenCalledWith('event', 'audit_scan_completed', {
       scan_id: 'scan-123',
       grade: 'B',
+      funnel_session_id: sessionId,
+    });
+
+    analytics.auditEmailCaptured('scan-456');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'audit_email_captured', {
+      scan_id: 'scan-456',
+      funnel_session_id: sessionId,
+    });
+
+    analytics.auditCalendlyClicked();
+    expect(mockGtag).toHaveBeenCalledWith('event', 'audit_calendly_clicked', {
+      funnel_session_id: sessionId,
+    });
+
+    analytics.auditReportShared('scan-789');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'audit_report_shared', {
+      scan_id: 'scan-789',
+      funnel_session_id: sessionId,
     });
   });
 
-  it('tracks audit scan failed events', () => {
+  it('tracks audit scan failed with funnel_session_id when available', () => {
+    analytics.auditScanStarted('https://example.com');
+    const sessionId = mockGtag.mock.calls[0][2].funnel_session_id as string;
+
     analytics.auditScanFailed('https://example.com', 'Timeout');
     expect(mockGtag).toHaveBeenCalledWith('event', 'audit_scan_failed', {
       url: 'https://example.com',
       error_message: 'Timeout',
+      funnel_session_id: sessionId,
     });
   });
 
-  it('tracks audit email captured events', () => {
-    analytics.auditEmailCaptured('scan-456');
-    expect(mockGtag).toHaveBeenCalledWith('event', 'audit_email_captured', {
-      scan_id: 'scan-456',
-    });
-  });
-
-  it('tracks audit calendly clicked events', () => {
-    analytics.auditCalendlyClicked();
-    expect(mockGtag).toHaveBeenCalledWith(
-      'event',
-      'audit_calendly_clicked',
-      {}
-    );
-  });
-
-  it('tracks audit report shared events', () => {
-    analytics.auditReportShared('scan-789');
-    expect(mockGtag).toHaveBeenCalledWith('event', 'audit_report_shared', {
-      scan_id: 'scan-789',
+  it('omits funnel_session_id from audit events when no session exists', () => {
+    sessionStorage.clear();
+    analytics.auditScanCompleted('scan-123', 'B');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'audit_scan_completed', {
+      scan_id: 'scan-123',
+      grade: 'B',
     });
   });
 });
