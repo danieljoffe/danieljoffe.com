@@ -276,12 +276,11 @@ export default function About() {
           label="Let's Connect"
         />
         <CTACard
-          heading="Let's Connect"
+          heading="Let's figure out if I'm the right fit."
           description={
             <>
-              Available for contract work, consulting, and fractional
-              engineering engagements. Have a project in mind? I&apos;d love to
-              hear about it.
+              Tell me about your project. I respond within 24 hours, and
+              I&apos;ll be upfront about whether I can actually help.
             </>
           }
         >
