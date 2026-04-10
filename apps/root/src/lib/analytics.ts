@@ -20,6 +20,11 @@ function getFunnelSessionId(): string | undefined {
   return sessionStorage.getItem(FUNNEL_SESSION_KEY) ?? undefined;
 }
 
+function funnelParams(): EventParams {
+  const id = getFunnelSessionId();
+  return id ? { funnel_session_id: id } : {};
+}
+
 export const analytics = {
   // Navigation events
   navClick: (label: string) => trackEvent('nav_click', { link_label: label }),
@@ -58,36 +63,26 @@ export const analytics = {
     trackEvent('audit_scan_completed', {
       scan_id: scanId,
       grade,
-      ...(getFunnelSessionId() && {
-        funnel_session_id: getFunnelSessionId()!,
-      }),
+      ...funnelParams(),
     }),
   auditScanFailed: (url: string, error: string) =>
     trackEvent('audit_scan_failed', {
       url,
       error_message: error,
-      ...(getFunnelSessionId() && {
-        funnel_session_id: getFunnelSessionId()!,
-      }),
+      ...funnelParams(),
     }),
   auditEmailCaptured: (scanId: string) =>
     trackEvent('audit_email_captured', {
       scan_id: scanId,
-      ...(getFunnelSessionId() && {
-        funnel_session_id: getFunnelSessionId()!,
-      }),
+      ...funnelParams(),
     }),
   auditCalendlyClicked: () =>
     trackEvent('audit_calendly_clicked', {
-      ...(getFunnelSessionId() && {
-        funnel_session_id: getFunnelSessionId()!,
-      }),
+      ...funnelParams(),
     }),
   auditReportShared: (scanId: string) =>
     trackEvent('audit_report_shared', {
       scan_id: scanId,
-      ...(getFunnelSessionId() && {
-        funnel_session_id: getFunnelSessionId()!,
-      }),
+      ...funnelParams(),
     }),
 };
