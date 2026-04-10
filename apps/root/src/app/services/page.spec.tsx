@@ -54,6 +54,15 @@ describe('Services Page', () => {
     expect(screen.getByTestId('faq')).toBeInTheDocument();
   });
 
+  it('renders MVP Builds service section', () => {
+    render(<Page />);
+    expect(
+      screen.getByRole('heading', {
+        name: /you have a product idea, a market opportunity, and a window that's closing/i,
+      })
+    ).toBeInTheDocument();
+  });
+
   it('renders CTA section', () => {
     render(<Page />);
     expect(
