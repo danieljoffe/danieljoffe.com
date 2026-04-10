@@ -9,6 +9,7 @@ import {
   Target,
 } from 'lucide-react';
 import type { Metric } from '@/components/kit/MetricsDashboard';
+import { projectSlugs } from '@/data/project';
 
 interface Service {
   Icon: LucideIcon;
@@ -187,6 +188,88 @@ export const servicesFAQs = [
       'I offer monthly retainer packages for teams that need continued engineering support after the initial build.',
   },
 ];
+
+export const performanceAuditsSection: ServiceSectionData = {
+  id: 'performance-audits',
+  painPoint: {
+    headline:
+      "Your site takes 8 seconds to load. You're losing 53% of mobile visitors before they see your content.",
+    subtext: undefined,
+  },
+  description:
+    "I measure exactly what's slowing your site down, fix the biggest bottlenecks, and prove the improvement with before/after metrics.",
+  questions: [
+    {
+      question: 'How is this different from running PageSpeed Insights?',
+      answer:
+        'PageSpeed gives you a score. I give you a fixed site. I diagnose root causes — render-blocking resources, unoptimized images, bloated bundles — implement the fixes, and measure the real-world impact.',
+    },
+    {
+      question: 'Do Core Web Vitals really affect search rankings?',
+      answer:
+        'Yes. Google uses Core Web Vitals as a ranking signal. Poor performance means lower visibility, fewer clicks, and lost revenue.',
+    },
+    {
+      question: 'What platforms do you work with?',
+      answer:
+        "React, Next.js, Vue, WordPress, Shopify — performance principles apply universally. The tooling changes, but the methodology doesn't.",
+    },
+    {
+      question: 'How do you measure improvement?',
+      answer:
+        'Before/after Lighthouse audits, Core Web Vitals field data, and real user metrics. You get a clear report showing exactly what changed and by how much.',
+    },
+    {
+      question: 'What kind of ROI can I expect?',
+      answer:
+        "Faster sites convert better. A 1-second improvement in load time can increase conversions by 7%. I've seen bounce rates drop 39% and page views increase significantly after optimization work.",
+    },
+  ],
+  deliverables: [
+    'Lighthouse & Core Web Vitals audit report',
+    'Prioritized fix recommendations with effort estimates',
+    'Implementation of top-priority improvements',
+    'Before/after performance metrics report',
+  ],
+  proof: {
+    title: 'FightCamp Performance Overhaul',
+    metrics: [
+      {
+        label: 'Lighthouse Score',
+        before: '32–43',
+        after: '~80',
+        improvement: '+40 points',
+        delta: 'positive',
+      },
+      {
+        label: 'Bundle Size',
+        before: '650–800KB',
+        after: '250–300KB',
+        improvement: '~62% reduction',
+        delta: 'positive',
+      },
+      {
+        label: 'Mobile Bounce Rate',
+        before: 'High',
+        after: '−39%',
+        improvement: '39% drop',
+        delta: 'positive',
+      },
+      {
+        label: 'First Contentful Paint',
+        before: '8–12s',
+        after: '1.8–2.5s',
+        improvement: '~80% faster',
+        delta: 'positive',
+      },
+    ],
+    caseStudySlug: projectSlugs.csPerformance,
+  },
+  timeline: '2–4 weeks',
+  price: '$5,000',
+  ctaLabel: undefined,
+  ctaHref: undefined,
+};
 
 export interface PainPointMatcher {
   problem: string;

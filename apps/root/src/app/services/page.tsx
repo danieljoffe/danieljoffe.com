@@ -18,12 +18,14 @@ import {
   services,
   servicesAudience,
   howItWorks,
+  performanceAuditsSection,
   painPointMatchers,
   serviceComparisons,
 } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
+import { ServiceSection } from './ServiceSection';
 import HeroCTA from './HeroCTA';
 import CalendlyEmbed from './CalendlyEmbed';
 import FAQ from './FAQ';
@@ -159,6 +161,13 @@ export default function Services() {
             </div>
           ))}
         </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          PERFORMANCE AUDITS
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...performanceAuditsSection} />
       </Section>
 
       {/* ══════════════════════════════════
