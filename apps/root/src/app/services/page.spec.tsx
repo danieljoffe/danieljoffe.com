@@ -44,6 +44,14 @@ describe('Services Page', () => {
     expect(screen.getByText(/how i work/i)).toBeInTheDocument();
   });
 
+  it('renders all How I Work step titles', () => {
+    render(<Page />);
+    expect(screen.getByText('Discovery Call (Free)')).toBeInTheDocument();
+    expect(screen.getByText('Scope & Proposal')).toBeInTheDocument();
+    expect(screen.getByText('Build & Ship')).toBeInTheDocument();
+    expect(screen.getByText('Handoff & Support')).toBeInTheDocument();
+  });
+
   it('renders Who I Work Best With section', () => {
     render(<Page />);
     expect(screen.getByText(/who i work best with/i)).toBeInTheDocument();
