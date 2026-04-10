@@ -11,6 +11,7 @@ import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
+import { Step } from '@/components/kit';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import { services, servicesAudience, howItWorks } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
@@ -143,15 +144,12 @@ export default function Services() {
               {i < howItWorks.length - 1 && (
                 <div className='absolute top-4.5 left-[calc(50%+1.125rem)] right-[calc(-50%+1.125rem)] h-px bg-border' />
               )}
-              <span className='relative inline-flex items-center justify-center h-9 w-9 rounded-full bg-brand-600 text-white text-sm font-bold'>
-                {step.number}
-              </span>
-              <Heading variant='cardTitle' as='p' className='mt-3'>
-                {step.title}
-              </Heading>
-              <Text variant='body' className='mt-1'>
-                {step.description}
-              </Text>
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+                className='flex-col items-center text-center'
+              />
             </div>
           ))}
         </div>
@@ -159,25 +157,16 @@ export default function Services() {
         {/* Mobile: connected vertical timeline */}
         <div className='md:hidden space-y-0'>
           {howItWorks.map((step, i) => (
-            <div
-              key={step.number}
-              className='relative flex gap-4 pb-6 last:pb-0'
-            >
+            <div key={step.number} className='relative pb-6 last:pb-0'>
               {/* Vertical connecting line */}
               {i < howItWorks.length - 1 && (
                 <div className='absolute left-4.5 top-9 bottom-0 w-px bg-border' />
               )}
-              <span className='relative inline-flex items-center justify-center h-9 w-9 rounded-full bg-brand-600 text-white text-sm font-bold shrink-0'>
-                {step.number}
-              </span>
-              <div className='pt-1'>
-                <Heading variant='cardTitle' as='p'>
-                  {step.title}
-                </Heading>
-                <Text variant='body' className='mt-1'>
-                  {step.description}
-                </Text>
-              </div>
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+              />
             </div>
           ))}
         </div>
