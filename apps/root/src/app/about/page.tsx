@@ -7,13 +7,7 @@ import {
   Briefcase,
   Heart,
   MessageCircle,
-  Rocket,
-  Handshake,
-  BookOpen,
-  Cog,
-  TrendingUp,
   ChevronRight,
-  type LucideIcon,
 } from 'lucide-react';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
@@ -34,36 +28,22 @@ import ContactForm from './ContactForm';
 
 export const metadata: Metadata = aboutMetadata;
 
-/* ─── Mantra items ─── */
-const mantraItems: {
-  company: string;
-  description: string;
-  icon: LucideIcon;
-}[] = [
+/* ─── Guiding values ─── */
+const values: { title: string; description: string }[] = [
   {
-    company: 'Winc',
-    description: 'Marketing velocity and brand transformation',
-    icon: Rocket,
+    title: 'Autonomy over dependency.',
+    description:
+      'The best thing I can build for your team is the ability to ship without me.',
   },
   {
-    company: 'Internet Brands',
-    description: 'Team leadership and regulatory compliance',
-    icon: Handshake,
+    title: 'Proof over promises.',
+    description:
+      'I measure outcomes: load times, adoption rates, engineering hours saved. Not effort.',
   },
   {
-    company: 'Library Corporation',
-    description: 'Domain specialization and accessibility',
-    icon: BookOpen,
-  },
-  {
-    company: 'FightCamp',
-    description: 'Infrastructure scaling and team empowerment',
-    icon: Cog,
-  },
-  {
-    company: 'Current',
-    description: 'Foundation building and strategic growth',
-    icon: TrendingUp,
+    title: 'Systems over heroics.',
+    description:
+      'Good architecture means nobody needs to be a hero. I build the foundations that make everyone faster.',
   },
 ];
 
@@ -238,9 +218,12 @@ export default function About() {
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {expertiseCategories.map(category => (
             <div key={category.label} className={cn(cardBase, 'p-4')}>
-              <Heading variant='cardTitle' as='p' className='mb-3'>
+              <Heading variant='cardTitle' as='p' className='mb-1'>
                 {category.label}
               </Heading>
+              <Text variant='body' className='mb-3'>
+                {category.description}
+              </Text>
               <div className='flex flex-wrap gap-1.5'>
                 {category.skills.map(tag => {
                   const slug = encodeURIComponent(
@@ -265,60 +248,22 @@ export default function About() {
       </Section>
 
       {/* ══════════════════════════════════
-          MANTRA / EVOLUTION
+          WHAT I VALUE
           ══════════════════════════════════ */}
       <Section>
-        <SectionLabel icon={<Heart className='h-3.5 w-3.5' />} label='Mantra' />
-        <div className='space-y-6'>
-          <Text variant='bodyLg'>
-            I thrive at the intersection of technical and business teams:
-            simplifying complex systems, removing friction, and investing in the
-            people around me. When teams succeed, products succeed.
-          </Text>
-
-          <div className='space-y-1'>
-            {mantraItems.map(({ company, description, icon: Icon }, i) => (
-              <div key={company} className='group relative pl-8 pb-6 last:pb-0'>
-                {i < mantraItems.length - 1 && (
-                  <div className='absolute left-2.75 top-3 bottom-0 w-px bg-border' />
-                )}
-                <div
-                  className={cn(
-                    'absolute left-0 top-1.5 h-5.5 w-5.5 rounded-full border-2 flex items-center justify-center',
-                    i === mantraItems.length - 1
-                      ? 'border-brand-500 bg-brand-50'
-                      : 'border-border bg-surface'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'h-2 w-2 rounded-full',
-                      i === mantraItems.length - 1
-                        ? 'bg-brand-500'
-                        : 'bg-border-secondary'
-                    )}
-                  />
-                </div>
-                <div>
-                  <div className='flex items-center gap-2'>
-                    <Icon className='h-4 w-4 text-brand-500' />
-                    <Heading variant='cardTitle' as='p'>
-                      {company}
-                    </Heading>
-                  </div>
-                  <Text variant='body' className='mt-1'>
-                    {description}
-                  </Text>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Text variant='bodyLg'>
-            What&apos;s remained constant is my focus on removing bottlenecks,
-            empowering teams, and driving measurable business impact through
-            thoughtful technical solutions.
-          </Text>
+        <SectionLabel
+          icon={<Heart className='h-3.5 w-3.5' />}
+          label='What I Value'
+        />
+        <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+          {values.map(value => (
+            <div key={value.title} className={cn(cardBase, 'p-4')}>
+              <Heading variant='cardTitle' as='p' className='mb-2'>
+                {value.title}
+              </Heading>
+              <Text variant='body'>{value.description}</Text>
+            </div>
+          ))}
         </div>
       </Section>
 
