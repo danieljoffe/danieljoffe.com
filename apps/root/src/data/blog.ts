@@ -30,6 +30,7 @@ export const blogSlugs = {
     'prefers-reduced-motion-component-library',
   cyclingThemeToggle: 'cycling-theme-toggle',
   minisearchRankedSearchCmdk: 'minisearch-ranked-search-cmdk',
+  funnelSessionIdAnalytics: 'funnel-session-id-analytics',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

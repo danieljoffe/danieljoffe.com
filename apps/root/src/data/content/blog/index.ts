@@ -88,6 +88,9 @@ import CyclingThemeToggle, {
 import MinisearchRankedSearchCmdk, {
   metadata as minisearchRankedSearchCmdkMeta,
 } from './minisearch-ranked-search-cmdk.mdx';
+import FunnelSessionIdAnalytics, {
+  metadata as funnelSessionIdAnalyticsMeta,
+} from './funnel-session-id-analytics.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -121,6 +124,7 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
     PrefersReducedMotionComponentLibrary,
   'cycling-theme-toggle': CyclingThemeToggle,
   'minisearch-ranked-search-cmdk': MinisearchRankedSearchCmdk,
+  'funnel-session-id-analytics': FunnelSessionIdAnalytics,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -153,4 +157,5 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'prefers-reduced-motion-component-library': prefersReducedMotionMeta,
   'cycling-theme-toggle': cyclingThemeToggleMeta,
   'minisearch-ranked-search-cmdk': minisearchRankedSearchCmdkMeta,
+  'funnel-session-id-analytics': funnelSessionIdAnalyticsMeta,
 };
