@@ -3,7 +3,7 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
 
 interface StepProps {
-  number: number;
+  number: number | string;
   title: string;
   description: string;
   className?: string;
