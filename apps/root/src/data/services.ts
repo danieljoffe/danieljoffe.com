@@ -436,6 +436,83 @@ export const componentLibrariesSection: ServiceSectionData = {
   ctaHref: undefined,
 };
 
+export const mvpBuildsSection: ServiceSectionData = {
+  id: 'mvp-builds',
+  painPoint: {
+    headline:
+      "You have a product idea, a market opportunity, and a window that's closing. You need a working product, not a roadmap.",
+    subtext:
+      "Or: your last developer left. There's a half-built codebase, no documentation, and a deadline.",
+  },
+  description:
+    'I build production-ready MVPs from scratch or rescue stalled projects — frontend, backend integration, authentication, and deployment. You get a working product and clean handoff documentation.',
+  questions: [
+    {
+      question: 'Can you work with my existing API or backend?',
+      answer:
+        'Yes. I integrate with any REST or GraphQL API. If you need backend work too, I handle Node.js, Express, and serverless architectures.',
+    },
+    {
+      question: 'What if I have a half-built codebase from another developer?',
+      answer:
+        "I start with an honest codebase audit. I'll tell you what's salvageable, what needs rewriting, and give you a realistic timeline before we commit to anything.",
+    },
+    {
+      question: "I don't have a designer. Can you still build something good?",
+      answer:
+        'Yes. I use proven UI patterns, component libraries, and clean layouts to build interfaces that look professional without needing custom design. If you bring designs later, the code adapts.',
+    },
+    {
+      question: "Who owns the code when we're done?",
+      answer:
+        'You do. 100%. You get the full codebase, deployment access, documentation, and a walkthrough. No lock-in, no dependencies on me.',
+    },
+    {
+      question: 'What happens after launch?',
+      answer:
+        'I offer monthly retainers for ongoing support, or I hand off completely with documentation your team can maintain. Your call.',
+    },
+  ],
+  deliverables: [
+    'Complete full-stack MVP application',
+    'Responsive, accessible user interface',
+    'Authentication and state management',
+    'CI/CD pipeline and hosting setup',
+    'Knowledge transfer documentation',
+  ],
+  proof: {
+    title: 'Logistics Dashboard MVP',
+    metrics: [
+      {
+        label: 'Delivery Timeline',
+        before: 'No product',
+        after: '3 months',
+        improvement: 'On-time delivery',
+        delta: 'positive',
+      },
+      {
+        label: 'Authentication',
+        before: 'None',
+        after: 'AWS Cognito',
+        improvement: 'Enterprise-grade',
+        delta: 'positive',
+      },
+      {
+        label: 'User Roles',
+        before: '0',
+        after: '3',
+        improvement: 'Role-based access',
+        delta: 'neutral',
+      },
+    ],
+    caseStudySlug: 'logistics-dashboard-study-case',
+  },
+  timeline: '4–12 weeks',
+  price: '$12,000',
+  ctaLabel: undefined,
+  ctaHref: undefined,
+};
+
 export interface PainPointMatcher {
   problem: string;
   service: string;

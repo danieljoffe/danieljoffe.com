@@ -20,9 +20,10 @@ import {
   howItWorks,
   performanceAuditsSection,
   componentLibrariesSection,
+  cmsToolingSection,
+  mvpBuildsSection,
   painPointMatchers,
   serviceComparisons,
-  cmsToolingSection,
 } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
 import { cardBase } from '@/lib/layoutStyles';
@@ -184,6 +185,13 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <ServiceSection {...cmsToolingSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
+          MVP BUILDS
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...mvpBuildsSection} />
       </Section>
 
       {/* ══════════════════════════════════
