@@ -50,12 +50,12 @@ export const offerings: {
     {
       Icon: Search,
       title: 'I Audit Before I Build',
-      text: 'At FightCamp, I found HD images and 800MB videos loading on every page. Lazy loading, srcset optimization, and bundle analysis cut bundle size by 62% and improved load times by 80%.',
+      text: 'At FightCamp, I found HD images and 800MB videos loading on every page. Lazy loading, srcset optimization, and bundle analysis cut bundle size by 62% and eliminated render-blocking on every page.',
     },
     {
       Icon: Rocket,
       title: 'I Build for Autonomy',
-      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently. The result: 200+ pages launched, 80% fewer engineering requests. I invest in people the same way. Five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
+      text: "The best thing I can leave behind is a team that doesn't need me. I build CMS tooling that gets marketing off the engineering backlog, component libraries that new hires learn in a day, and documentation that outlives the person who wrote it. I invest in people the same way. Five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
     },
     {
       Icon: BarChart3,
