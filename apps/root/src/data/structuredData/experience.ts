@@ -108,7 +108,7 @@ export const experienceRootStructuredData: CollectionPageStructuredData = {
   '@type': 'CollectionPage',
   name: `Experience | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'An overview of my professional journey as a full-stack engineer—covering key roles, impactful projects, and the technical expertise I bring to building performant, user-focused web applications.',
+    'Five companies, ten years. Every engagement left the team faster and more autonomous than I found them.',
   url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}`,
   author: member,
   mainEntity: {
