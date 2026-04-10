@@ -30,7 +30,7 @@ export const aboutMetadata: Metadata = {
   },
   twitter: {
     title: `About Daniel Joffe - Professional Journey & Experience`,
-    description: `Background, values, and experience. Includes career timeline and mantra.`,
+    description: `Background, values, and experience. Includes career timeline and guiding principles.`,
     card: 'summary_large_image',
     creator: '@danieljoffe',
   },

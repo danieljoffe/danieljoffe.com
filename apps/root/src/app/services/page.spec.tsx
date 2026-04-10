@@ -61,7 +61,7 @@ describe('Services Page', () => {
     render(<Page />);
     expect(
       screen.getByRole('heading', {
-        name: /your frontend is costing you users/i,
+        name: /your engineering bottleneck has a fix/i,
       })
     ).toBeInTheDocument();
   });

@@ -39,7 +39,9 @@ describe('Homepage', () => {
 
   it('renders hero description', () => {
     render(<Page />);
-    expect(screen.getByText(/builds products end-to-end/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/helping startups ship faster/i)
+    ).toBeInTheDocument();
   });
 
   it('renders Previous Teams section', () => {
@@ -52,16 +54,16 @@ describe('Homepage', () => {
     expect(screen.getByText(/achievements/i)).toBeInTheDocument();
   });
 
-  it('renders How I Work section', () => {
+  it('renders How I Think section', () => {
     render(<Page />);
-    expect(screen.getByText(/how i work/i)).toBeInTheDocument();
+    expect(screen.getByText(/how i think/i)).toBeInTheDocument();
   });
 
   it('renders CTA section', () => {
     render(<Page />);
     expect(
       screen.getByRole('heading', {
-        name: /let's build something great together/i,
+        name: /got a project that needs senior engineering/i,
       })
     ).toBeInTheDocument();
   });

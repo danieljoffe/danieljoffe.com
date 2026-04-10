@@ -303,7 +303,7 @@ export const blogRootStructuredData: CollectionPageStructuredData = {
   '@type': 'CollectionPage',
   name: `Blog | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned from a full-stack engineer.',
+    "Notes from shipping code. Deep-dives on the problems I've debugged, the patterns I've extracted, and the decisions I'd make differently next time.",
   url: `${DOMAIN_URL}${BLOG_LINK.href}`,
   author,
   mainEntity: {
