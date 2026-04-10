@@ -22,6 +22,7 @@ import {
   componentLibrariesSection,
   painPointMatchers,
   serviceComparisons,
+  cmsToolingSection,
 } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
 import { cardBase } from '@/lib/layoutStyles';
@@ -176,6 +177,13 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <ServiceSection {...componentLibrariesSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
+          CMS & TOOLING
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...cmsToolingSection} />
       </Section>
 
       {/* ══════════════════════════════════
