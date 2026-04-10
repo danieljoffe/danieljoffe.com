@@ -13,11 +13,11 @@ export default function Contact() {
           id='contact-heading'
           className='text-center'
         >
-          Let&apos;s Connect
+          Let&apos;s figure out if I&apos;m the right fit.
         </Heading>
         <Text variant='bodyLg' className='text-center !mb-2'>
-          Available for contract work, consulting, and fractional engineering
-          engagements. Have a project in mind? I&apos;d love to hear about it.
+          Tell me about your project. I respond within 24 hours, and I&apos;ll
+          be upfront about whether I can actually help.
         </Text>
         <Text variant='body' as='p' className='text-center font-medium'>
           <strong className='font-bold'>Response time:</strong> Usually within

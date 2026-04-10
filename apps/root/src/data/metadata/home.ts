@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const homeMetadata: Metadata = {
   title: 'Full-Stack Engineer',
   description:
-    'Full-Stack Engineer with 10+ years of experience. Reduced load times by 80% at FightCamp, built design systems at Internet Brands. Available for full-stack engineering roles.',
+    'Full-Stack Engineer with 10+ years of experience. Reduced load times by 80% at FightCamp, built design systems at Internet Brands. Taking on 1-2 projects at a time.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
