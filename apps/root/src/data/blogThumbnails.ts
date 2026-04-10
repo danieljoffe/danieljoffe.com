@@ -164,10 +164,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.accessibleDropdownKeyboardNav}`,
     },
     cover: {
-      alt: 'A keyboard with illuminated keys in a dark environment',
-      src: '/photo-1541140532154-b024d6e1841f',
-      origin: `${UNSPLASH_URL}/photos/black-computer-keyboard-in-close-up-photography-mP7aPSUm7aE`,
-      creator: '@nubelson',
+      alt: 'A backlit mechanical keyboard in a dark room',
+      src: '/photo-1576864333223-db90dadfb975',
+      origin: `${UNSPLASH_URL}/photos/photo-1576864333223-db90dadfb975`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.toastPauseOnHover]: {
@@ -210,10 +210,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.importTypeCircularDependency}`,
     },
     cover: {
-      alt: 'Tangled cables forming a circular loop',
-      src: '/photo-1558618666-fcd25c85f82e',
-      origin: `${UNSPLASH_URL}/photos/close-up-photo-of-cables-plugged-into-the-server-bUWBWMH0kE0`,
-      creator: '@thomasjsn',
+      alt: 'Tangled network cables forming loops',
+      src: '/photo-1682182004400-36e25830a557',
+      origin: `${UNSPLASH_URL}/photos/photo-1682182004400-36e25830a557`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.mobileBottomNavZIndex]: {
@@ -255,10 +255,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.hydrationMismatchUseSyncedState}`,
     },
     cover: {
-      alt: 'Two puzzle pieces fitting together on a clean surface',
-      src: '/photo-1494412574643-ff11b0a5eb95',
-      origin: `${UNSPLASH_URL}/photos/two-white-and-red-dices-FO7bKvgETgQ`,
-      creator: '@brett_jordan',
+      alt: 'Water droplets syncing into ripples on a surface',
+      src: '/photo-1611329857570-f02f340e7378',
+      origin: `${UNSPLASH_URL}/photos/photo-1611329857570-f02f340e7378`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.mobileNavA11yBottomSheet]: {
