@@ -77,7 +77,7 @@ export default function About() {
         <div className='relative space-y-6'>
           <div className='flex flex-col gap-x-5 gap-y-12'>
             <Heading variant='hero' className='text-center md:text-left'>
-              Building Without Friction
+              The engineer behind the systems
             </Heading>
 
             <div className='flex flex-col sm:flex-row gap-8 items-center'>
@@ -110,56 +110,23 @@ export default function About() {
         <SectionLabel icon={<User className='h-3.5 w-3.5' />} label='About' />
         <div className='space-y-6'>
           <Text variant='bodyLg'>
-            I specialize in building fast, accessible interfaces and scalable
-            design systems that empower teams and delight users.
+            Most frontend engineers write components. I build the systems that
+            make hundreds of components work together: design systems adopted
+            across organizations, CMS tooling that takes marketing teams off the
+            engineering backlog, performance overhauls that cut load times by
+            80%.
           </Text>
           <Text variant='bodyLg'>
-            For over 10 years, I&apos;ve focused on one thing: removing
-            friction. Simplifying complex systems, streamlining workflows, and
-            helping teams turn whiteboard ideas into real-world solutions,
-            faster, with less effort.
+            I&apos;ve been doing this for over a decade, across startups (Winc,
+            FightCamp), enterprise (Internet Brands), and specialized
+            environments (The Library Corporation). The common thread: every
+            engagement left the team faster and more autonomous than I found
+            them.
           </Text>
           <Text variant='bodyLg'>
-            Explore my journey below, and let&apos;s discuss how I can help your
-            team.
+            Below is the full picture: the tools I use, the companies I&apos;ve
+            worked with, and the philosophy that ties it all together.
           </Text>
-        </div>
-      </Section>
-
-      {/* ══════════════════════════════════
-          TECHNICAL EXPERTISE
-          ══════════════════════════════════ */}
-      <Section>
-        <SectionLabel
-          icon={<Code2 className='h-3.5 w-3.5' />}
-          label='Technical Expertise'
-        />
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          {expertiseCategories.map(category => (
-            <div key={category.label} className={cn(cardBase, 'p-4')}>
-              <Heading variant='cardTitle' as='p' className='mb-3'>
-                {category.label}
-              </Heading>
-              <div className='flex flex-wrap gap-1.5'>
-                {category.skills.map(tag => {
-                  const slug = encodeURIComponent(
-                    tag.toLowerCase().replace(/\s+/g, '-')
-                  );
-                  return (
-                    <Button
-                      key={tag}
-                      href={`/blog/tags/${slug}`}
-                      as='link'
-                      variant='outline'
-                      size='sm'
-                    >
-                      {tag}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
         </div>
       </Section>
 
@@ -257,6 +224,43 @@ export default function About() {
               );
             })}
           </div>
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          TECHNICAL EXPERTISE
+          ══════════════════════════════════ */}
+      <Section>
+        <SectionLabel
+          icon={<Code2 className='h-3.5 w-3.5' />}
+          label='Technical Expertise'
+        />
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+          {expertiseCategories.map(category => (
+            <div key={category.label} className={cn(cardBase, 'p-4')}>
+              <Heading variant='cardTitle' as='p' className='mb-3'>
+                {category.label}
+              </Heading>
+              <div className='flex flex-wrap gap-1.5'>
+                {category.skills.map(tag => {
+                  const slug = encodeURIComponent(
+                    tag.toLowerCase().replace(/\s+/g, '-')
+                  );
+                  return (
+                    <Button
+                      key={tag}
+                      href={`/blog/tags/${slug}`}
+                      as='link'
+                      variant='outline'
+                      size='sm'
+                    >
+                      {tag}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </Section>
 
