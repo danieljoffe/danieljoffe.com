@@ -6,15 +6,28 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { cn } from '@/lib/cn';
 import { STORYBOOK_URL } from '@/utils/constants';
 
+export interface DemoControl {
+  label: string;
+  args: Record<string, string>;
+}
+
 interface InteractiveDemoProps {
   /** Storybook story ID (e.g. "button--primary") */
   story: string;
   /** Storybook args to pass via URL params (e.g. { variant: "secondary", size: "lg" }) */
   args?: Record<string, string>;
+  /** Variant controls rendered as buttons above the iframe */
+  controls?: DemoControl[];
   /** Iframe height in pixels */
   height?: number;
   /** Accessible title for the iframe */
   title: string;
+}
+
+function buildArgsParam(args: Record<string, string>): string {
+  const entries = Object.entries(args);
+  if (entries.length === 0) return '';
+  return `&args=${entries.map(([k, v]) => `${k}:${v}`).join(';')}`;
 }
 
 const LOAD_TIMEOUT_MS = 10_000;
@@ -22,6 +35,7 @@ const LOAD_TIMEOUT_MS = 10_000;
 export function InteractiveDemo({
   story,
   args,
+  controls,
   height = 300,
   title,
 }: InteractiveDemoProps) {
@@ -29,12 +43,10 @@ export function InteractiveDemo({
   const [isVisible, setIsVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [activeControl, setActiveControl] = useState(0);
 
-  const argsParam = args
-    ? `&args=${Object.entries(args)
-        .map(([k, v]) => `${k}:${v}`)
-        .join(';')}`
-    : '';
+  const activeArgs = controls ? controls[activeControl]?.args : args;
+  const argsParam = activeArgs ? buildArgsParam(activeArgs) : '';
   const storyUrl = `${STORYBOOK_URL}/iframe.html?id=${story}&viewMode=story${argsParam}`;
   const fullUrl = `${STORYBOOK_URL}/?path=/story/${story}`;
 
@@ -76,6 +88,12 @@ export function InteractiveDemo({
     setHasError(true);
   }, []);
 
+  const handleControlClick = useCallback((index: number) => {
+    setActiveControl(index);
+    setIsLoaded(false);
+    setHasError(false);
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -96,6 +114,30 @@ export function InteractiveDemo({
           <ExternalLink className='h-3 w-3' />
         </a>
       </div>
+
+      {controls && controls.length > 0 && (
+        <div
+          className='flex flex-wrap gap-1.5 border-b border-border px-4 py-2'
+          role='group'
+          aria-label='Demo variant controls'
+        >
+          {controls.map((control, i) => (
+            <button
+              key={control.label}
+              type='button'
+              onClick={() => handleControlClick(i)}
+              className={cn(
+                'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                i === activeControl
+                  ? 'bg-brand-500 text-text-inverse'
+                  : 'bg-surface-elevated text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+              )}
+            >
+              {control.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className='relative' style={{ height }}>
         {hasError ? (

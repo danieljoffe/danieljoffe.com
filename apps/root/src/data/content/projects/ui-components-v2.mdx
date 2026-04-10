@@ -71,8 +71,14 @@ A dismissible alert component with four variants: info, success, warning, and er
 
 <InteractiveDemo
   story='feedback-alert--default'
-  title='Alert — Default'
+  title='Alert — Variants'
   height={150}
+  controls={[
+    { label: 'Info', args: { variant: 'info' } },
+    { label: 'Success', args: { variant: 'success' } },
+    { label: 'Warning', args: { variant: 'warning' } },
+    { label: 'Error', args: { variant: 'error' } },
+  ]}
 />
 
 ### Badge
