@@ -33,7 +33,6 @@ describe('Services Page', () => {
 
   it('renders services grid', () => {
     render(<Page />);
-    expect(screen.getByText(/services/i)).toBeInTheDocument();
     expect(
       screen.getByText(/Performance Audits & Optimization/i)
     ).toBeInTheDocument();
@@ -61,6 +60,40 @@ describe('Services Page', () => {
         name: /let's figure out how i can help/i,
       })
     ).toBeInTheDocument();
+  });
+
+  it('renders service selection guide', () => {
+    render(<Page />);
+    expect(
+      screen.getByRole('heading', {
+        name: /not sure which service/i,
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('renders all pain point matcher cards', () => {
+    render(<Page />);
+    expect(
+      screen.getByText(/my site is slow and we're losing conversions/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /our team rebuilds the same components on every project/i
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /marketing depends on engineering for every content change/i
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/we have a product idea but no frontend team/i)
+    ).toBeInTheDocument();
+  });
+
+  it('renders comparison table section', () => {
+    render(<Page />);
+    expect(screen.getByText(/compare services/i)).toBeInTheDocument();
   });
 
   it('renders structured data script', () => {

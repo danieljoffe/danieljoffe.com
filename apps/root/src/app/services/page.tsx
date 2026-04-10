@@ -11,8 +11,16 @@ import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
+import type { Column } from '@danieljoffe.com/shared-ui/Table';
+import { Table } from '@danieljoffe.com/shared-ui/Table';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
-import { services, servicesAudience, howItWorks } from '@/data/services';
+import {
+  services,
+  servicesAudience,
+  howItWorks,
+  painPointMatchers,
+  serviceComparisons,
+} from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
@@ -48,6 +56,33 @@ export default function Services() {
               <ChevronDown className='h-4 w-4' />
             </a>
           </div>
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          SERVICE SELECTION GUIDE
+          ══════════════════════════════════ */}
+      <Section>
+        <Heading variant='section'>Not sure which service?</Heading>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6'>
+          {painPointMatchers.map(matcher => (
+            <a
+              key={matcher.anchor}
+              href={matcher.anchor}
+              className={cn(
+                cardBase,
+                'p-5 flex flex-col gap-3 transition-colors hover:border-brand-500'
+              )}
+            >
+              <Text variant='body'>{matcher.problem}</Text>
+              <div className='flex items-center justify-between mt-auto pt-2 border-t border-border'>
+                <Badge variant='brand'>{matcher.service}</Badge>
+                <Text variant='meta' as='span'>
+                  From {matcher.price}
+                </Text>
+              </div>
+            </a>
+          ))}
         </div>
       </Section>
 
@@ -174,6 +209,86 @@ export default function Services() {
                 </span>{' '}
                 {audience.description}
               </Text>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          COMPARE SERVICES
+          ══════════════════════════════════ */}
+      <Section>
+        <SectionLabel
+          icon={<Layers className='h-3.5 w-3.5' />}
+          label='Compare Services'
+        />
+
+        {/* Desktop: table */}
+        <div className='hidden md:block'>
+          <Table
+            columns={
+              [
+                { key: 'attribute', header: '', width: '20%' },
+                {
+                  key: 'performanceAudit',
+                  header: 'Performance Audit',
+                },
+                {
+                  key: 'componentLibrary',
+                  header: 'Component Library',
+                },
+                { key: 'cmsTooling', header: 'CMS & Tooling' },
+                { key: 'mvpBuild', header: 'MVP Build' },
+              ] as Column<(typeof serviceComparisons)[number]>[]
+            }
+            data={serviceComparisons}
+            striped
+            ariaLabel='Service comparison table'
+            rowKey={row => row.attribute}
+          />
+        </div>
+
+        {/* Mobile: stacked cards */}
+        <div className='md:hidden space-y-4'>
+          {serviceComparisons.map(row => (
+            <div key={row.attribute} className={cn(cardBase, 'p-4')}>
+              <Text variant='label' as='p' className='mb-2 text-text-primary'>
+                {row.attribute}
+              </Text>
+              <div className='grid grid-cols-2 gap-2'>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    Performance Audit
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.performanceAudit}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    Component Library
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.componentLibrary}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    CMS & Tooling
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.cmsTooling}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    MVP Build
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.mvpBuild}
+                  </Text>
+                </div>
+              </div>
             </div>
           ))}
         </div>
