@@ -46,6 +46,7 @@ export default function HowItWorks() {
                 number={step.number}
                 title={step.title}
                 description={step.description}
+                titleAs='h3'
                 className='flex-col gap-2 items-start'
               />
             </li>
