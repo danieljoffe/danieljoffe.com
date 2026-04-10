@@ -15,7 +15,6 @@ import {
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
@@ -29,6 +28,7 @@ import { expertiseCategories } from '@/data/about';
 import { experienceFull, experiencePageSlugs } from '@/data/experience';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
+import Button from '@/components/Button';
 import SocialLinks from './SocialLinks';
 import ContactForm from './ContactForm';
 
@@ -73,46 +73,56 @@ export default function About() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
+      <Section padding='none'>
+        <div className='relative space-y-6'>
+          <div className='flex flex-col gap-x-5 gap-y-12'>
+            <Heading variant='hero' className='text-center md:text-left'>
+              Building Without Friction
+            </Heading>
+
+            <div className='flex flex-col sm:flex-row gap-8 items-center'>
+              <Image
+                src='/images/daniel-joffe-profile.webp'
+                alt={FULL_NAME}
+                title={FULL_NAME}
+                width={200}
+                height={200}
+                className='rounded-full size-40 object-cover border border-border self-center sm:self-start shrink-0'
+                sizes='200px'
+                priority
+                decoding='async'
+              />
+              <div className='space-y-4 text-center sm:text-left'>
+                <Heading as='h2' variant='section'>
+                  {FULL_NAME}
+                </Heading>
+                <Text as='p' variant='subtitle'>
+                  {JOB_TITLE}
+                </Text>
+                <SocialLinks />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       <Section>
         <SectionLabel icon={<User className='h-3.5 w-3.5' />} label='About' />
         <div className='space-y-6'>
-          <Heading variant='hero'>Building Without Friction</Heading>
-
-          <div className='flex flex-col sm:flex-row gap-6 sm:gap-8'>
-            <Image
-              src='/images/daniel-joffe-profile.webp'
-              alt={FULL_NAME}
-              title={FULL_NAME}
-              width={200}
-              height={200}
-              className='rounded-full size-[10rem] object-cover border border-border self-center sm:self-start shrink-0'
-              sizes='200px'
-              priority
-              decoding='async'
-            />
-            <div className='space-y-4 text-center sm:text-left'>
-              <p className='text-sm font-semibold uppercase tracking-wider text-text-secondary'>
-                {FULL_NAME}
-                <br />
-                <span className='text-text-tertiary'>{JOB_TITLE}</span>
-              </p>
-              <Text variant='bodyLg'>
-                I specialize in building fast, accessible interfaces and
-                scalable design systems that empower teams and delight users.
-              </Text>
-              <Text variant='bodyLg'>
-                For over 10 years, I&apos;ve focused on one thing: removing
-                friction. Simplifying complex systems, streamlining workflows,
-                and helping teams turn whiteboard ideas into real-world
-                solutions, faster, with less effort.
-              </Text>
-              <Text variant='bodyLg'>
-                Explore my journey below, and let&apos;s discuss how I can help
-                your team.
-              </Text>
-              <SocialLinks />
-            </div>
-          </div>
+          <Text variant='bodyLg'>
+            I specialize in building fast, accessible interfaces and scalable
+            design systems that empower teams and delight users.
+          </Text>
+          <Text variant='bodyLg'>
+            For over 10 years, I&apos;ve focused on one thing: removing
+            friction. Simplifying complex systems, streamlining workflows, and
+            helping teams turn whiteboard ideas into real-world solutions,
+            faster, with less effort.
+          </Text>
+          <Text variant='bodyLg'>
+            Explore my journey below, and let&apos;s discuss how I can help your
+            team.
+          </Text>
         </div>
       </Section>
 
@@ -131,11 +141,22 @@ export default function About() {
                 {category.label}
               </Heading>
               <div className='flex flex-wrap gap-1.5'>
-                {category.skills.map(skill => (
-                  <Badge key={skill} variant='info'>
-                    {skill}
-                  </Badge>
-                ))}
+                {category.skills.map(tag => {
+                  const slug = encodeURIComponent(
+                    tag.toLowerCase().replace(/\s+/g, '-')
+                  );
+                  return (
+                    <Button
+                      key={tag}
+                      href={`/blog/tags/${slug}`}
+                      as='link'
+                      variant='outline'
+                      size='sm'
+                    >
+                      {tag}
+                    </Button>
+                  );
+                })}
               </div>
             </div>
           ))}

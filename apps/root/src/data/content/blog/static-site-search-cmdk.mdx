@@ -39,8 +39,18 @@ export interface SearchEntry {
 
 export function buildSearchIndex(): SearchEntry[] {
   return [
-    ...buildContentEntries(projectHistory, 'project', projectsRecords, projectMdxMetadata),
-    ...buildContentEntries(experienceHistory, 'experience', experienceRecords, experienceMdxMetadata),
+    ...buildContentEntries(
+      projectHistory,
+      'project',
+      projectsRecords,
+      projectMdxMetadata
+    ),
+    ...buildContentEntries(
+      experienceHistory,
+      'experience',
+      experienceRecords,
+      experienceMdxMetadata
+    ),
     ...buildContentEntries(blogHistory, 'blog', blogRecords, blogMdxMetadata),
     ...serviceEntries,
     ...pageEntries,
