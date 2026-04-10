@@ -264,6 +264,12 @@ Chronological ordering arrays live in `data/contentOrder.ts`:
 5. Insert the slug into the correct position in `contentOrder.ts`.
 6. Add structured data in `data/structuredData/`. (Page metadata is auto-generated from the MDX `metadata` export.)
 
+### Thumbnail Images
+
+- **Every post must have a unique cover image.** No two posts across any content type (blog, project, experience) may share the same Unsplash `src` photo ID. Before adding a thumbnail, check all `*Thumbnails.ts` files for the image ID.
+- Images come from Unsplash. The `src` field is the CDN path (e.g. `/photo-1555066931-4365d14bab8c`), `origin` is the Unsplash page URL, and `creator` is the photographer's handle.
+- Choose images that visually relate to the post topic. Avoid generic "code on screen" images when a more specific visual is available.
+
 ## Coding Conventions
 
 ### Rule of Three

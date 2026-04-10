@@ -59,7 +59,7 @@ COPY --from=builder /app/apps/audit-scan-service/dist .
 
 # Bring in the package definitions and lockfile
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Run as non-root user with a writable home dir for Chromium temp/crash files
 RUN groupadd -r scanner && useradd -r -g scanner -m scanner \

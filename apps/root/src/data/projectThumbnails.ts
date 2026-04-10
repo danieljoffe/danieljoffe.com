@@ -137,10 +137,10 @@ export const projectsRecords: Record<AllowedProjectSlugs, PostThumbnail> = {
       href: `${PROJECTS_LINK.href}/${projectSlugs.csAppContext}`,
     },
     cover: {
-      alt: 'Abstract connected nodes forming a network',
-      src: '/photo-1558494949-ef010cbdcc31',
-      origin: `${UNSPLASH_URL}/photos/blue-and-red-light-illustration-FPNnKfjcbNU`,
-      creator: '@jjying',
+      alt: 'Tree branches with connected roots',
+      src: '/photo-1584257274862-42aa4f6e5f55',
+      origin: `${UNSPLASH_URL}/photos/tree-branches-connected-roots`,
+      creator: '@unsplash',
     },
   },
   [projectSlugs.uiV2]: {

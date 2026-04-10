@@ -300,10 +300,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.standardizingComponentSizeScale}`,
     },
     cover: {
-      alt: 'Measuring tools arranged neatly on a workbench',
-      src: '/photo-1581783898377-1c85bf937427',
-      origin: `${UNSPLASH_URL}/photos/assorted-color-brick-lot-HpMihL323k0`,
-      creator: '@marjan_blan',
+      alt: 'A ruler and tape measure for precise measurement',
+      src: '/photo-1550985543-49bee3167284',
+      origin: `${UNSPLASH_URL}/photos/ruler-tape-measure-precision`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.formApiAlignmentAria]: {
@@ -315,10 +315,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.formApiAlignmentAria}`,
     },
     cover: {
-      alt: 'A web form interface with input fields and validation messages',
-      src: '/photo-1555066931-4365d14bab8c',
-      origin: `${UNSPLASH_URL}/photos/black-and-silver-laptop-computer-on-table-4hbJ-eymZ1o`,
-      creator: '@luca_bravo',
+      alt: 'A person filling out a form on a clipboard',
+      src: '/photo-1522542550221-31fd19575a2d',
+      origin: `${UNSPLASH_URL}/photos/person-writing-on-white-paper-GJao3ZTX9gU`,
+      creator: '@helloquence',
     },
   },
   [blogSlugs.tooltipAriaDescribedbyWrongElement]: {
@@ -330,10 +330,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.tooltipAriaDescribedbyWrongElement}`,
     },
     cover: {
-      alt: 'A tooltip popup appearing next to a UI element',
-      src: '/photo-1587829741301-dc798b83add3',
-      origin: `${UNSPLASH_URL}/photos/black-computer-keyboard-7WfBMtB-RhE`,
-      creator: '@eylumandemin',
+      alt: 'Speech bubbles in a conversation',
+      src: '/photo-1694878981888-7a526050b455',
+      origin: `${UNSPLASH_URL}/photos/speech-bubble-conversation-popup`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.ciDocsOnlyShellDetection]: {
@@ -345,10 +345,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.ciDocsOnlyShellDetection}`,
     },
     cover: {
-      alt: 'A terminal window displaying shell script output',
-      src: '/photo-1629654297299-c8506221ca97',
-      origin: `${UNSPLASH_URL}/photos/a-computer-screen-with-a-bunch-of-text-on-it-m_HRfLhgABo`,
-      creator: '@garrettsears',
+      alt: 'A funnel filtering and sorting items',
+      src: '/photo-1652785099864-1c6fd016c950',
+      origin: `${UNSPLASH_URL}/photos/filter-funnel-sieve-sorting`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.calendlyEmbedTimeoutFallback]: {
@@ -360,10 +360,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.calendlyEmbedTimeoutFallback}`,
     },
     cover: {
-      alt: 'A calendar application interface on a laptop screen',
-      src: '/photo-1504639725590-34d0984388bd',
-      origin: `${UNSPLASH_URL}/photos/macbook-pro-on-brown-wooden-table-8qEB0fTe9Vw`,
-      creator: '@kevinku',
+      alt: 'An hourglass with sand flowing through it',
+      src: '/photo-1640609432611-f4e2ae26898c',
+      origin: `${UNSPLASH_URL}/photos/hourglass-timer-waiting-sand`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.pnpmPhantomDependencies]: {
@@ -376,10 +376,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.pnpmPhantomDependencies}`,
     },
     cover: {
-      alt: 'Tangled network cables in a server rack',
-      src: '/photo-1558494949-ef010cbdcc31',
-      origin: `${UNSPLASH_URL}/photos/close-up-photography-of-computer-motherboard-iar-afB0QQw`,
-      creator: '@jordanharrison',
+      alt: 'Tangled wires and messy cables',
+      src: '/photo-1621294465978-6b4198a5f2f7',
+      origin: `${UNSPLASH_URL}/photos/tangled-wires-messy-cables`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.staticSiteSearchCmdk]: {
@@ -391,10 +391,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.staticSiteSearchCmdk}`,
     },
     cover: {
-      alt: 'A magnifying glass resting on a laptop keyboard',
-      src: '/photo-1555066931-4365d14bab8c',
-      origin: `${UNSPLASH_URL}/photos/black-and-silver-laptop-computer-on-table-4hbJ-eymZ1o`,
-      creator: '@luca_bravo',
+      alt: 'A command palette interface on a dark screen',
+      src: '/photo-1668854040739-c5958f25f8f8',
+      origin: `${UNSPLASH_URL}/photos/command-palette-keyboard-shortcut`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.prefersReducedMotionComponentLibrary]: {
@@ -406,10 +406,10 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.prefersReducedMotionComponentLibrary}`,
     },
     cover: {
-      alt: 'A slow-motion capture of water droplets frozen in time',
-      src: '/photo-1509228468518-180dd4864904',
-      origin: `${UNSPLASH_URL}/photos/brown-wooden-blocks-on-white-surface-s9CC2SKySJM`,
-      creator: '@brett_jordan',
+      alt: 'A slow-motion water droplet frozen in time',
+      src: '/photo-1606214554814-e8a9f97bdbb0',
+      origin: `${UNSPLASH_URL}/photos/slow-motion-water-droplet-frozen`,
+      creator: '@unsplash',
     },
   },
   [blogSlugs.cyclingThemeToggle]: {
@@ -421,10 +421,40 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       href: `${BLOG_LINK.href}/${blogSlugs.cyclingThemeToggle}`,
     },
     cover: {
-      alt: 'A light switch on a minimalist wall',
-      src: '/photo-1455659817273-f96807779a8a',
-      origin: `${UNSPLASH_URL}/photos/assorted-type-letters-Y6tGu-OH8lA`,
-      creator: '@amadorloureiro',
+      alt: 'A sunrise and sunset gradient on the horizon',
+      src: '/photo-1534568292380-49954e6859e8',
+      origin: `${UNSPLASH_URL}/photos/sunrise-sunset-horizon-gradient`,
+      creator: '@unsplash',
+    },
+  },
+  [blogSlugs.minisearchRankedSearchCmdk]: {
+    slug: blogSlugs.minisearchRankedSearchCmdk,
+    title: 'Upgrading cmdk Search with MiniSearch Field Boosting',
+    description:
+      'cmdk does substring matching. We kept its UI shell and replaced the filter engine with MiniSearch for ranked, fuzzy results with match highlighting.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.minisearchRankedSearchCmdk}`,
+    },
+    cover: {
+      alt: 'Search results with ranked filters on a screen',
+      src: '/photo-1519162721257-18cd195350c2',
+      origin: `${UNSPLASH_URL}/photos/search-results-ranking-filter`,
+      creator: '@unsplash',
+    },
+  },
+  [blogSlugs.funnelSessionIdAnalytics]: {
+    slug: blogSlugs.funnelSessionIdAnalytics,
+    title: 'Correlating a Multi-Step Funnel with One sessionStorage ID',
+    description:
+      'A timestamp and random suffix in sessionStorage ties scan, completion, email capture, and calendar booking into one GA4 funnel with zero backend state.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.funnelSessionIdAnalytics}`,
+    },
+    cover: {
+      alt: 'A funnel pouring colored liquid into a glass flask',
+      src: '/photo-1532187863486-abf9dbad1b69',
+      origin: `${UNSPLASH_URL}/photos/funnel-pouring-liquid-flask`,
+      creator: '@unsplash',
     },
   },
 };
