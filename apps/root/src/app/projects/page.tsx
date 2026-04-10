@@ -30,11 +30,10 @@ export default function Projects() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <Heading variant='hero'>Projects</Heading>
+          <Heading variant='hero'>Case studies from the field</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
-            Case studies and projects spanning full-stack development, backend
-            architecture, and frontend systems. Each project includes the
-            challenge, my approach, and measurable outcomes.
+            The problems I&apos;ve solved and how I solved them. Every study has
+            the challenge, the approach, and the measurable outcome.
           </Text>
         </div>
       </Section>
