@@ -26,18 +26,14 @@ describe('buildSearchIndex', () => {
     expect(firstEntry).toHaveProperty('body');
   });
 
-  it('includes static service entries', () => {
-    const index = buildSearchIndex();
-    const services = index.filter(e => e.type === 'service');
-    expect(services.length).toBe(1);
-    expect(services[0]?.url).toBe('/services');
-  });
-
   it('includes static page entries', () => {
     const index = buildSearchIndex();
     const pages = index.filter(e => e.type === 'page');
-    expect(pages.length).toBe(1);
-    expect(pages[0]?.slug).toBe('about');
+    expect(pages.length).toBe(3);
+    const slugs = pages.map(p => p.slug);
+    expect(slugs).toContain('about');
+    expect(slugs).toContain('services');
+    expect(slugs).toContain('audit');
   });
 
   it('has body text for content entries', () => {

@@ -3,14 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
-import {
-  Search,
-  FileText,
-  Briefcase,
-  BookOpen,
-  Wrench,
-  Globe,
-} from 'lucide-react';
+import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
 import { buildSearchIndex, type SearchIndexItem } from '@/lib/searchIndex';
@@ -21,7 +14,6 @@ const TYPE_ICONS: Record<SearchIndexItem['type'], typeof Search> = {
   project: FileText,
   experience: Briefcase,
   blog: BookOpen,
-  service: Wrench,
   page: Globe,
 };
 
@@ -29,7 +21,6 @@ const TYPE_LABELS: Record<SearchIndexItem['type'], string> = {
   project: 'Projects',
   experience: 'Experience',
   blog: 'Blog',
-  service: 'Services',
   page: 'Pages',
 };
 
@@ -118,7 +109,9 @@ export default function CommandPalette() {
   );
 
   // Get matched terms from the matches object
-  const getMatchedTerms = (result: any): string[] => {
+  const getMatchedTerms = (result: {
+    matches?: Record<string, string[]>;
+  }): string[] => {
     const terms = new Set<string>();
 
     if (result.matches && typeof result.matches === 'object') {
