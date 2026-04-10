@@ -188,4 +188,87 @@ export const servicesFAQs = [
   },
 ];
 
+export const cmsToolingSection: ServiceSectionData = {
+  id: 'cms-tooling',
+  painPoint: {
+    headline:
+      'Your marketing team files an engineering ticket every time they need a landing page changed.',
+    subtext: undefined,
+  },
+  description:
+    'I build tooling that gives non-technical teams full autonomy over content and landing pages — without risking broken layouts or needing a developer on call.',
+  questions: [
+    {
+      question:
+        'We already have a CMS. Can you improve it instead of replacing it?',
+      answer:
+        'Absolutely. Most of my work is improving what you already have — better content models, composable page sections, and guardrails that prevent accidental breakage.',
+    },
+    {
+      question: 'What CMS platforms do you work with?',
+      answer:
+        "Contentful, Storyblok, Sanity, headless WordPress, and custom admin panels. I pick what fits your team's workflow and technical constraints.",
+    },
+    {
+      question: 'Will non-technical people actually be able to use it?',
+      answer:
+        "That's the whole point. I design the editing interface for marketers, not developers. I include training, documentation, and guardrails so your team can't accidentally break the layout.",
+    },
+    {
+      question: 'What if we only need landing pages for now?',
+      answer:
+        "That's the best place to start. Landing pages are high-impact and low-risk — perfect for proving out self-serve tooling before expanding to other content types.",
+    },
+    {
+      question: 'How do you prevent accidental layout breaks?',
+      answer:
+        "Composable components with constrained options. Your team picks from pre-built sections and fills in content — they can't accidentally break the grid or mess up spacing.",
+    },
+  ],
+  deliverables: [
+    'CMS architecture and implementation',
+    'Composable page builder components',
+    'Content editing guardrails',
+    'Team training and documentation',
+  ],
+  proof: {
+    title: 'Winc Landing Page Engine',
+    metrics: [
+      {
+        label: 'Landing Pages/Month',
+        before: '12',
+        after: '200+',
+        improvement: '1,600% increase',
+        delta: 'positive',
+      },
+      {
+        label: 'Weekly Velocity',
+        before: '3–4 pages',
+        after: '8–12 pages',
+        improvement: '3× throughput',
+        delta: 'positive',
+      },
+      {
+        label: 'Engineering Time Saved',
+        before: '12+ hrs/week',
+        after: '0',
+        improvement: 'Full autonomy',
+        delta: 'positive',
+      },
+      {
+        label: 'Conversion Rate',
+        before: '1.4%',
+        after: '2.0%',
+        improvement: '+43% lift',
+        delta: 'positive',
+      },
+    ],
+    caseStudySlug: 'cms-tooling-case-study',
+  },
+  timeline: '3–6 weeks',
+  price: '$8,000',
+  ctaLabel: undefined,
+  ctaHref: undefined,
+};
+
 export const serviceSections: ServiceSectionData[] = [];

@@ -54,6 +54,15 @@ describe('Services Page', () => {
     expect(screen.getByTestId('faq')).toBeInTheDocument();
   });
 
+  it('renders CMS & Tooling section', () => {
+    render(<Page />);
+    expect(
+      screen.getByText(
+        /your marketing team files an engineering ticket every time they need a landing page changed/i
+      )
+    ).toBeInTheDocument();
+  });
+
   it('renders CTA section', () => {
     render(<Page />);
     expect(
