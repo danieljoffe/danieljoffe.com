@@ -8,6 +8,7 @@ import {
   Building2,
   Target,
 } from 'lucide-react';
+import type { Metric } from '@/components/kit/MetricsDashboard';
 
 interface Service {
   Icon: LucideIcon;
@@ -24,6 +25,19 @@ interface Audience {
   Icon: LucideIcon;
   label: string;
   description: string;
+}
+
+export interface ServiceSectionData {
+  id: string;
+  painPoint: { headline: string; subtext: string | undefined };
+  description: string;
+  questions: Array<{ question: string; answer: string }>;
+  deliverables: string[];
+  proof: { title: string; metrics: Metric[]; caseStudySlug: string };
+  timeline: string;
+  price: string;
+  ctaLabel: string | undefined;
+  ctaHref: string | undefined;
 }
 
 export const services: Service[] = [
@@ -173,3 +187,5 @@ export const servicesFAQs = [
       'I offer monthly retainer packages for teams that need continued engineering support after the initial build.',
   },
 ];
+
+export const serviceSections: ServiceSectionData[] = [];
