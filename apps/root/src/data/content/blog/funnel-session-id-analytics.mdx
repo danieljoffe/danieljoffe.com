@@ -1,0 +1,90 @@
+export const metadata = {
+  title: 'Correlating a Multi-Step Funnel with One sessionStorage ID',
+  date: '2026-04-10',
+  excerpt:
+    'A timestamp and random suffix in sessionStorage ties scan, completion, email capture, and calendar booking into one GA4 funnel with zero backend state.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['Analytics', 'React', 'Next.js', 'TypeScript'],
+  slug: 'funnel-session-id-analytics',
+  type: 'blog',
+  topic: 'Architecture',
+};
+
+## The Problem
+
+Our audit tool has a four-step conversion funnel: a user scans a URL, reviews results, enters their email for the full report, and books a call via Calendly. GA4 tracks each step as a separate event. The question we could not answer: how many users who start a scan actually book a call?
+
+GA4 has no built-in mechanism for correlating events across a multi-step flow. Each `gtag('event', ...)` call fires independently. Without a shared identifier, the events are four disconnected data points. We needed a thread to tie them together, and we did not want a backend to hold it.
+
+## The Session ID
+
+The correlation key is a string generated once, at scan start, and attached to every subsequent funnel event:
+
+```ts
+const FUNNEL_SESSION_KEY = 'audit_funnel_session_id';
+
+function generateFunnelSessionId(): string {
+  const id = `fs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  sessionStorage.setItem(FUNNEL_SESSION_KEY, id);
+  return id;
+}
+```
+
+`fs_` is a namespace prefix. `Date.now()` provides temporal ordering. The six random characters prevent collisions when two tabs scan simultaneously. The ID lives in `sessionStorage` because the funnel is meaningful only within a single browser session; if the user closes the tab and returns tomorrow, that is a new funnel.
+
+## The Helper
+
+A `funnelParams()` helper spreads the ID into any event that belongs to the funnel:
+
+```ts
+function getFunnelSessionId(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return sessionStorage.getItem(FUNNEL_SESSION_KEY) ?? undefined;
+}
+
+function funnelParams(): EventParams {
+  const id = getFunnelSessionId();
+  return id ? { funnel_session_id: id } : {};
+}
+```
+
+The SSR guard matters. Next.js pre-renders pages on the server where `sessionStorage` does not exist. Without the `typeof window` check, the build crashes.
+
+## Wiring It Up
+
+The first event generates the ID. Every subsequent event reads it:
+
+```ts
+auditScanStarted: (url: string) => {
+  const funnel_session_id = generateFunnelSessionId();
+  trackEvent('audit_scan_started', { url, funnel_session_id });
+},
+auditScanCompleted: (scanId: string, grade: string) =>
+  trackEvent('audit_scan_completed', {
+    scan_id: scanId,
+    grade,
+    ...funnelParams(),
+  }),
+auditEmailCaptured: (scanId: string) =>
+  trackEvent('audit_email_captured', {
+    scan_id: scanId,
+    ...funnelParams(),
+  }),
+auditCalendlyClicked: () =>
+  trackEvent('audit_calendly_clicked', {
+    ...funnelParams(),
+  }),
+```
+
+The spread pattern keeps each event definition flat. Adding a new funnel step means adding one line with `...funnelParams()`. The ID generation is deliberately coupled to `auditScanStarted` and not to page load, because the funnel begins when the user acts, not when they visit.
+
+## What GA4 Sees
+
+Every event in the funnel carries the same `funnel_session_id` custom parameter. In GA4 Explorations, we build a funnel report filtering by this parameter. The query answers: of users who triggered `audit_scan_started` with a given session ID, how many reached `audit_calendly_clicked` with the same ID?
+
+The same parameter works in BigQuery exports. A single `GROUP BY funnel_session_id` joins all events in a funnel instance.
+
+## The Takeaway
+
+Cross-event correlation does not require a backend, a database, or a session management library. One generated string in `sessionStorage`, created at the moment the user commits to the flow, threaded through every subsequent event via a two-line helper. The constraint that makes it work: generate the ID on user action, not on page load, so the funnel starts when intent starts.
