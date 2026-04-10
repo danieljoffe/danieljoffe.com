@@ -134,25 +134,61 @@ export default function Services() {
           icon={<Layers className='h-3.5 w-3.5' />}
           label='How I Work'
         />
-        <div className='space-y-3'>
-          {howItWorks.map(step => (
-            <div
-              key={step.number}
-              className='flex items-start gap-4 p-4 rounded-xl border border-border'
-            >
-              <span className='inline-flex items-center justify-center h-9 w-9 rounded-full bg-brand-600 text-white text-sm font-bold shrink-0'>
-                {step.number}
-              </span>
-              <div>
-                <Heading variant='cardTitle' as='p'>
-                  {step.title}
-                </Heading>
-                <Text variant='body' className='mt-1'>
-                  {step.description}
-                </Text>
+        {/* Mobile: vertical timeline / Desktop: horizontal 4-column grid */}
+        <div className='grid grid-cols-1 md:grid-cols-4 gap-0'>
+          {howItWorks.map((step, i) => {
+            const isLast = i === howItWorks.length - 1;
+            return (
+              <div
+                key={step.number}
+                className={cn(
+                  'relative flex items-start gap-4 py-4 pl-0 pr-0',
+                  'md:flex-col md:items-center md:text-center md:px-3 md:py-0'
+                )}
+              >
+                {/* ── Circle ── */}
+                <div className='relative z-10 shrink-0'>
+                  <span className='inline-flex items-center justify-center h-9 w-9 rounded-full bg-brand-600 text-white text-sm font-bold'>
+                    {step.number}
+                  </span>
+                </div>
+
+                {/* ── Mobile vertical connector (below circle) ── */}
+                {!isLast && (
+                  <span
+                    aria-hidden='true'
+                    className={cn(
+                      'absolute left-[calc(1.125rem-1px)] top-[calc(2.25rem+0.5rem)] bottom-0',
+                      'w-0.5 bg-brand-200',
+                      'md:hidden'
+                    )}
+                  />
+                )}
+
+                {/* ── Desktop horizontal connector (right of circle) ── */}
+                {!isLast && (
+                  <span
+                    aria-hidden='true'
+                    className={cn(
+                      'hidden md:block absolute',
+                      'top-[calc(1.125rem-1px)] left-[calc(50%+1.125rem)] right-0',
+                      'h-0.5 bg-brand-200'
+                    )}
+                  />
+                )}
+
+                {/* ── Content ── */}
+                <div className='min-w-0 md:mt-4'>
+                  <Heading variant='cardTitle' as='p'>
+                    {step.title}
+                  </Heading>
+                  <Text variant='body' className='mt-1'>
+                    {step.description}
+                  </Text>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Section>
 
