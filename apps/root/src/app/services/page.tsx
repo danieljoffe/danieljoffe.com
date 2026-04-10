@@ -293,7 +293,6 @@ export default function Services() {
             data={serviceComparisons}
             striped
             ariaLabel='Service comparison table'
-            rowKey={row => row.attribute}
           />
         </div>
 
