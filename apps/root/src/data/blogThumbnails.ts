@@ -442,4 +442,19 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       creator: '@unsplash',
     },
   },
+  [blogSlugs.funnelSessionIdAnalytics]: {
+    slug: blogSlugs.funnelSessionIdAnalytics,
+    title: 'Correlating a Multi-Step Funnel with One sessionStorage ID',
+    description:
+      'A timestamp and random suffix in sessionStorage ties scan, completion, email capture, and calendar booking into one GA4 funnel with zero backend state.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.funnelSessionIdAnalytics}`,
+    },
+    cover: {
+      alt: 'A funnel pouring colored liquid into a glass flask',
+      src: '/photo-1532187863486-abf9dbad1b69',
+      origin: `${UNSPLASH_URL}/photos/funnel-pouring-liquid-flask`,
+      creator: '@unsplash',
+    },
+  },
 };
