@@ -188,4 +188,77 @@ export const servicesFAQs = [
   },
 ];
 
+export interface PainPointMatcher {
+  problem: string;
+  service: string;
+  price: string;
+  anchor: string;
+}
+
+export const painPointMatchers: PainPointMatcher[] = [
+  {
+    problem: "My site is slow and we're losing conversions",
+    service: 'Performance Audit',
+    price: '$5,000',
+    anchor: '#performance-audits',
+  },
+  {
+    problem: 'Our team rebuilds the same components on every project',
+    service: 'Component Library',
+    price: '$10,000',
+    anchor: '#component-libraries',
+  },
+  {
+    problem: 'Marketing depends on engineering for every content change',
+    service: 'CMS & Tooling',
+    price: '$8,000',
+    anchor: '#cms-tooling',
+  },
+  {
+    problem: 'We have a product idea but no frontend team',
+    service: 'MVP Build',
+    price: '$12,000',
+    anchor: '#mvp-builds',
+  },
+];
+
+export interface ServiceComparisonRow {
+  attribute: string;
+  performanceAudit: string;
+  componentLibrary: string;
+  cmsTooling: string;
+  mvpBuild: string;
+}
+
+export const serviceComparisons: ServiceComparisonRow[] = [
+  {
+    attribute: 'Timeline',
+    performanceAudit: '2–4 weeks',
+    componentLibrary: '4–8 weeks',
+    cmsTooling: '3–6 weeks',
+    mvpBuild: '4–12 weeks',
+  },
+  {
+    attribute: 'Starting Price',
+    performanceAudit: '$5,000',
+    componentLibrary: '$10,000',
+    cmsTooling: '$8,000',
+    mvpBuild: '$12,000',
+  },
+  {
+    attribute: 'Best For',
+    performanceAudit: 'Slow sites losing users',
+    componentLibrary: 'Teams with inconsistent UI',
+    cmsTooling: 'Marketing bottlenecked by eng',
+    mvpBuild: 'New products or rescues',
+  },
+  {
+    attribute: 'Key Deliverable',
+    performanceAudit: 'Performance metrics report',
+    componentLibrary: 'Documented component library',
+    cmsTooling: 'Self-serve page builder',
+    mvpBuild: 'Production-ready application',
+  },
+];
+
 export const serviceSections: ServiceSectionData[] = [];
