@@ -548,6 +548,7 @@ export const painPointMatchers: PainPointMatcher[] = [
 ];
 
 export interface ServiceComparisonRow {
+  [key: string]: string;
   attribute: string;
   performanceAudit: string;
   componentLibrary: string;
