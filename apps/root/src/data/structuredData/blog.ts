@@ -277,6 +277,16 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
       datePublished: blogMdxMetadata[blogSlugs.cyclingThemeToggle]?.date ?? '',
       author,
     },
+    [blogSlugs.minisearchRankedSearchCmdk]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.minisearchRankedSearchCmdk].title,
+      description:
+        blogRecords[blogSlugs.minisearchRankedSearchCmdk].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.minisearchRankedSearchCmdk]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
