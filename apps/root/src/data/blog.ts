@@ -29,6 +29,7 @@ export const blogSlugs = {
   prefersReducedMotionComponentLibrary:
     'prefers-reduced-motion-component-library',
   cyclingThemeToggle: 'cycling-theme-toggle',
+  minisearchRankedSearchCmdk: 'minisearch-ranked-search-cmdk',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
