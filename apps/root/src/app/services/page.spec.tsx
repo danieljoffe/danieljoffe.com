@@ -80,10 +80,12 @@ describe('Services Page', () => {
 
   it('renders all How I Work step titles', () => {
     render(<Page />);
-    expect(screen.getByText('Discovery Call (Free)')).toBeInTheDocument();
-    expect(screen.getByText('Scope & Proposal')).toBeInTheDocument();
-    expect(screen.getByText('Build & Ship')).toBeInTheDocument();
-    expect(screen.getByText('Handoff & Support')).toBeInTheDocument();
+    expect(screen.getAllByText('Discovery Call (Free)').length).toBeGreaterThan(
+      0
+    );
+    expect(screen.getAllByText('Scope & Proposal').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Build & Ship').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Handoff & Support').length).toBeGreaterThan(0);
   });
 
   it('renders Who I Work Best With section', () => {

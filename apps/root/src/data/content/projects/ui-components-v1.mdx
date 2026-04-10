@@ -35,8 +35,14 @@ A flexible button with three variants (primary, secondary, icon) and three sizes
 
 <InteractiveDemo
   story='forms-button--default'
-  title='Button — Default variant'
+  title='Button — Variants'
   height={120}
+  controls={[
+    { label: 'Primary', args: { variant: 'primary' } },
+    { label: 'Secondary', args: { variant: 'secondary' } },
+    { label: 'Outline', args: { variant: 'outline' } },
+    { label: 'Bare', args: { variant: 'bare' } },
+  ]}
 />
 
 ### Input
