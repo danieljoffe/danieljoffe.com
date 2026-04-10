@@ -1,5 +1,5 @@
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Step } from '@/components/kit';
 
 const steps = [
   {
@@ -42,15 +42,13 @@ export default function HowItWorks() {
               key={step.number}
               className='rounded-lg border border-border bg-surface-elevated flex w-full h-full py-6 px-5'
             >
-              <div className='flex flex-col gap-2 items-start'>
-                <span className='inline-flex items-center justify-center size-10 rounded-full bg-brand-500 text-text-inverse font-bold'>
-                  {step.number}
-                </span>
-                <Heading variant='component' as='h3'>
-                  {step.title}
-                </Heading>
-                <Text variant='body'>{step.description}</Text>
-              </div>
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+                titleAs='h3'
+                className='flex-col gap-2 items-start'
+              />
             </li>
           ))}
         </ol>
