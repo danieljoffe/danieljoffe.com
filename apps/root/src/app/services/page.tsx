@@ -19,6 +19,7 @@ import {
   servicesAudience,
   howItWorks,
   performanceAuditsSection,
+  componentLibrariesSection,
   painPointMatchers,
   serviceComparisons,
 } from '@/data/services';
@@ -168,6 +169,13 @@ export default function Services() {
           ══════════════════════════════════ */}
       <Section>
         <ServiceSection {...performanceAuditsSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
+          COMPONENT LIBRARIES
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...componentLibrariesSection} />
       </Section>
 
       {/* ══════════════════════════════════
