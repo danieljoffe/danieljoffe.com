@@ -6,18 +6,18 @@ import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
-import { buildSearchIndex, type SearchIndexItem } from '@/lib/searchIndex';
+import { buildSearchIndex, type SearchEntry } from '@/lib/searchIndex';
 import { Z_INDEX } from '@/utils/constants';
 import { createSearchEngine, searchWithHighlights } from '@/lib/search';
 
-const TYPE_ICONS: Record<SearchIndexItem['type'], typeof Search> = {
+const TYPE_ICONS: Record<SearchEntry['type'], typeof Search> = {
   project: FileText,
   experience: Briefcase,
   blog: BookOpen,
   page: Globe,
 };
 
-const TYPE_LABELS: Record<SearchIndexItem['type'], string> = {
+const TYPE_LABELS: Record<SearchEntry['type'], string> = {
   project: 'Projects',
   experience: 'Experience',
   blog: 'Blog',
@@ -47,9 +47,7 @@ export default function CommandPalette() {
     }
 
     if (!search.trim()) {
-      const grouped: Partial<
-        Record<SearchIndexItem['type'], SearchIndexItem[]>
-      > = {};
+      const grouped: Partial<Record<SearchEntry['type'], SearchEntry[]>> = {};
       for (const entry of entries) {
         if (!grouped[entry.type]) grouped[entry.type] = [];
         grouped[entry.type]?.push(entry);
@@ -236,7 +234,7 @@ export default function CommandPalette() {
             {hasGroupedResults && (
               <>
                 {Object.entries(results.grouped).map(([type, items]) => {
-                  const Icon = TYPE_ICONS[type as SearchIndexItem['type']];
+                  const Icon = TYPE_ICONS[type as SearchEntry['type']];
 
                   return (
                     <Command.Group key={type} className='relative'>
@@ -247,7 +245,7 @@ export default function CommandPalette() {
 
                         <div className='min-w-0 flex-1'>
                           <Text as='p' variant='label'>
-                            {TYPE_LABELS[type as SearchIndexItem['type']]}
+                            {TYPE_LABELS[type as SearchEntry['type']]}
                           </Text>
                         </div>
                       </Command.Item>
@@ -290,8 +288,7 @@ export default function CommandPalette() {
               <div>
                 {results.results.map(result => {
                   const matchedTerms = getMatchedTerms(result);
-                  const Icon =
-                    TYPE_ICONS[result.type as SearchIndexItem['type']];
+                  const Icon = TYPE_ICONS[result.type as SearchEntry['type']];
 
                   return (
                     <Command.Item
@@ -309,7 +306,7 @@ export default function CommandPalette() {
 
                       <div className='min-w-0 flex-1'>
                         <Text as='p' variant='label'>
-                          {TYPE_LABELS[result.type as SearchIndexItem['type']]}
+                          {TYPE_LABELS[result.type as SearchEntry['type']]}
                         </Text>
                         <Text
                           as='p'

@@ -1,18 +1,13 @@
+import type { SearchEntry } from './searchIndex';
 import { buildSearchIndex } from './searchIndex';
 
-export interface ContentEntry {
-  slug: string;
-  title: string;
-  excerpt: string;
-  tags: string[];
-  type: string;
-  url: string;
-  date?: string;
-}
+export type TagContentEntry = Pick<
+  SearchEntry,
+  'slug' | 'title' | 'excerpt' | 'tags' | 'type' | 'url'
+>;
 
-export function getAllContent(): ContentEntry[] {
-  const allEntries = buildSearchIndex();
-  return allEntries
+export function getAllContent(): TagContentEntry[] {
+  return buildSearchIndex()
     .filter(entry => ['blog', 'project', 'experience'].includes(entry.type))
     .map(({ slug, title, excerpt, tags, type, url }) => ({
       slug,
@@ -25,29 +20,26 @@ export function getAllContent(): ContentEntry[] {
 }
 
 export function getAllTags(): string[] {
-  const allContent = getAllContent();
   const tagSet = new Set<string>();
-  allContent.forEach(content => {
-    content.tags.forEach(tag => tagSet.add(tag));
-  });
+  for (const { tags } of getAllContent()) {
+    for (const tag of tags) tagSet.add(tag);
+  }
   return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
 }
 
-export function getContentByTag(tag: string): ContentEntry[] {
-  const allContent = getAllContent();
-  return allContent
-    .filter(content => content.tags.includes(tag))
+export function getContentByTag(tag: string): TagContentEntry[] {
+  return getAllContent()
+    .filter(entry => entry.tags.includes(tag))
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export function getTagCounts(): Map<string, number> {
-  const allContent = getAllContent();
   const counts = new Map<string, number>();
-  allContent.forEach(content => {
-    content.tags.forEach(tag => {
+  for (const { tags } of getAllContent()) {
+    for (const tag of tags) {
       counts.set(tag, (counts.get(tag) || 0) + 1);
-    });
-  });
+    }
+  }
   return counts;
 }
 

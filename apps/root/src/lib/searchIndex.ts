@@ -1,6 +1,7 @@
 import generatedIndex from '@/data/generated/searchIndex.json';
 
-type EntryType = 'blog' | 'project' | 'experience' | 'page';
+export type EntryType = 'blog' | 'project' | 'experience' | 'page';
+
 export interface SearchEntry {
   id: string;
   title: string;
@@ -11,16 +12,11 @@ export interface SearchEntry {
   slug: string;
   url: string;
   body: string;
+  date: string | null;
+  author: string | null;
 }
 
-// TODO: SearchEntry should have date and author fields, but they are currently missing from the generated index.
-// TODO: ... Need to update the generator script to include them.
-export interface SearchIndexItem extends SearchEntry {
-  date: string;
-  author: string;
-}
-
-const staticEntries: SearchIndexItem[] = [
+const staticEntries: SearchEntry[] = [
   {
     id: 'page:about',
     slug: 'about',
@@ -31,7 +27,7 @@ const staticEntries: SearchIndexItem[] = [
     category: 'page',
     body: '',
     url: '/about',
-    date: '',
+    date: null,
     author: 'Daniel Joffe',
   },
   {
@@ -44,7 +40,7 @@ const staticEntries: SearchIndexItem[] = [
     category: 'page',
     body: '',
     url: '/services',
-    date: '',
+    date: null,
     author: 'Daniel Joffe',
   },
   {
@@ -58,14 +54,11 @@ const staticEntries: SearchIndexItem[] = [
     category: 'page',
     body: '',
     url: '/audit',
-    date: '',
+    date: null,
     author: 'Daniel Joffe',
   },
 ];
 
-export function buildSearchIndex(): SearchIndexItem[] {
-  return [
-    ...(generatedIndex as unknown as SearchIndexItem[]),
-    ...staticEntries,
-  ];
+export function buildSearchIndex(): SearchEntry[] {
+  return [...(generatedIndex as SearchEntry[]), ...staticEntries];
 }
