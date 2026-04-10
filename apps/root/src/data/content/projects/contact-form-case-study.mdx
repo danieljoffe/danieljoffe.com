@@ -35,6 +35,12 @@ export const metadata = {
 
 **Purpose:** Ship a production-ready contact form with layered security — not just "a form that sends email"
 
+## Business Impact
+
+- Implemented spam prevention (hCaptcha) that blocks automated submissions while maintaining user experience
+- Added rate limiting and input sanitization to protect against abuse
+- Reduced spam submissions to near-zero without adding friction for legitimate users
+
 ## The Challenge
 
 A contact form on a public portfolio site is an open invitation for abuse. Bots scrape forms constantly, and a naive implementation would be drowning in spam within days. The goal was to build something that felt effortless for real visitors but hostile to automated submissions — and to do it properly from the start rather than patching holes later.
