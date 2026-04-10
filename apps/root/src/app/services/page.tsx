@@ -11,7 +11,6 @@ import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
-import type { Column } from '@danieljoffe.com/shared-ui/Table';
 import { Table } from '@danieljoffe.com/shared-ui/Table';
 import { Step } from '@/components/kit';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
@@ -25,6 +24,7 @@ import {
   mvpBuildsSection,
   painPointMatchers,
   serviceComparisons,
+  type ServiceComparisonRow,
 } from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
 import { cardBase } from '@/lib/layoutStyles';
@@ -274,22 +274,20 @@ export default function Services() {
 
         {/* Desktop: table */}
         <div className='hidden md:block'>
-          <Table
-            columns={
-              [
-                { key: 'attribute', header: '', width: '20%' },
-                {
-                  key: 'performanceAudit',
-                  header: 'Performance Audit',
-                },
-                {
-                  key: 'componentLibrary',
-                  header: 'Component Library',
-                },
-                { key: 'cmsTooling', header: 'CMS & Tooling' },
-                { key: 'mvpBuild', header: 'MVP Build' },
-              ] as Column<(typeof serviceComparisons)[number]>[]
-            }
+          <Table<ServiceComparisonRow>
+            columns={[
+              { key: 'attribute', header: '', width: '20%' },
+              {
+                key: 'performanceAudit',
+                header: 'Performance Audit',
+              },
+              {
+                key: 'componentLibrary',
+                header: 'Component Library',
+              },
+              { key: 'cmsTooling', header: 'CMS & Tooling' },
+              { key: 'mvpBuild', header: 'MVP Build' },
+            ]}
             data={serviceComparisons}
             striped
             ariaLabel='Service comparison table'
