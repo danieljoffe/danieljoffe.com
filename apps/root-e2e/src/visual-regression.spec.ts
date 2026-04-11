@@ -21,23 +21,106 @@ import { INVALID_UUID } from './fixtures/audit-mock-data';
 // DO NOT commit darwin/macOS snapshots - they will not match in CI.
 const fontsAreMocked = !!process.env.CI || process.env.MOCK_FONTS === 'true';
 
-test.describe('visual regression', () => {
-  test.skip(
-    !fontsAreMocked,
-    'VR tests require mocked fonts (set MOCK_FONTS=true or run in CI)'
-  );
+/**
+ * Pages tested for visual regression, shared between desktop and mobile.
+ */
+const pages = [
+  {
+    name: 'homepage',
+    path: '/',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.05,
+    waitForStableHeight: true,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'about',
+    path: '/about',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: true,
+  },
+  {
+    name: 'experience-listing',
+    path: '/experience',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'experience-detail',
+    path: '/experience/fightcamp',
+    headingSelector: 'h2',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'projects-listing',
+    path: '/projects',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'project-detail',
+    path: '/projects/performance-case-study',
+    headingSelector: 'h1, h2',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'services',
+    path: '/services',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'audit-scan',
+    path: '/audit',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'audit-report-not-found',
+    path: `/audit/r/${INVALID_UUID}`,
+    headingSelector: undefined,
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: false,
+  },
+] as const;
 
-  test.beforeEach(async ({ page }) => {
-    // Use consistent desktop viewport for screenshot comparisons
-    await page.setViewportSize({ width: 1280, height: 720 });
-  });
+/**
+ * Wait for the page to load and heading to be visible.
+ */
+async function waitForPageReady(
+  page: import('@playwright/test').Page,
+  entry: (typeof pages)[number]
+) {
+  await page.goto(entry.path, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('load');
 
-  test('homepage visual regression', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h1').first().waitFor({ state: 'visible' });
-    // Wait for GSAP animations to settle — they affect layout height.
-    // Poll until document height stabilises (two consecutive reads match).
+  if (entry.name === 'audit-report-not-found') {
+    await page
+      .getByRole('heading', { name: 'Report Not Found' })
+      .waitFor({ state: 'visible' });
+  } else {
+    await page
+      .locator(entry.headingSelector!)
+      .first()
+      .waitFor({ state: 'visible' });
+  }
+
+  if (entry.waitForStableHeight) {
     await expect
       .poll(
         async () => {
@@ -49,118 +132,60 @@ test.describe('visual regression', () => {
         { timeout: 5000 }
       )
       .toBeTruthy();
+  }
+}
 
-    await expect(page).toHaveScreenshot('homepage.png', {
-      fullPage: true,
-      // Homepage has GSAP animations that cause layout height variance
-      maxDiffPixelRatio: 0.05,
-      mask: [page.locator('[data-gsap]')],
+/**
+ * Build the mask locators for a page.
+ */
+function getMasks(
+  page: import('@playwright/test').Page,
+  entry: (typeof pages)[number]
+) {
+  const masks = [page.locator('[data-gsap]')];
+  if (entry.maskHCaptcha) {
+    masks.push(page.locator('.min-h-\\[78px\\]'));
+  }
+  return masks;
+}
+
+test.describe('visual regression', () => {
+  test.skip(
+    !fontsAreMocked,
+    'VR tests require mocked fonts (set MOCK_FONTS=true or run in CI)'
+  );
+
+  test.describe('desktop (1280x720)', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 720 });
     });
+
+    for (const entry of pages) {
+      test(`${entry.name} visual regression`, async ({ page }) => {
+        await waitForPageReady(page, entry);
+        await expect(page).toHaveScreenshot(`${entry.name}.png`, {
+          fullPage: true,
+          maxDiffPixelRatio: entry.maxDiffPixelRatio,
+          mask: getMasks(page, entry),
+        });
+      });
+    }
   });
 
-  test('about page visual regression', async ({ page }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h1').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('about.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [
-        // Mask hCaptcha widget which loads dynamically
-        page.locator('.min-h-\\[78px\\]'),
-        page.locator('[data-gsap]'),
-      ],
+  test.describe('mobile (390x844)', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
     });
-  });
 
-  test('experience listing visual regression', async ({ page }) => {
-    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h1').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('experience-listing.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
-  });
-
-  test('experience detail visual regression', async ({ page }) => {
-    await page.goto('/experience/fightcamp', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h2').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('experience-detail.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
-  });
-
-  test('projects listing visual regression', async ({ page }) => {
-    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h1').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('projects-listing.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
-  });
-
-  test('project detail visual regression', async ({ page }) => {
-    await page.goto('/projects/performance-case-study', {
-      waitUntil: 'domcontentloaded',
-    });
-    await page.waitForLoadState('load');
-    await page.locator('h1, h2').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('project-detail.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
-  });
-
-  test('services page visual regression', async ({ page }) => {
-    await page.goto('/services', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h1').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('services.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
-  });
-
-  test('audit scan page visual regression', async ({ page }) => {
-    await page.goto('/audit', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('load');
-    await page.locator('h1').first().waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('audit-scan.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
-  });
-
-  test('audit report not-found visual regression', async ({ page }) => {
-    await page.goto(`/audit/r/${INVALID_UUID}`, {
-      waitUntil: 'domcontentloaded',
-    });
-    await page.waitForLoadState('load');
-    await page
-      .getByRole('heading', { name: 'Report Not Found' })
-      .waitFor({ state: 'visible' });
-
-    await expect(page).toHaveScreenshot('audit-report-not-found.png', {
-      fullPage: true,
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-gsap]')],
-    });
+    for (const entry of pages) {
+      test(`${entry.name} mobile visual regression`, async ({ page }) => {
+        await waitForPageReady(page, entry);
+        await expect(page).toHaveScreenshot(`${entry.name}-mobile.png`, {
+          fullPage: true,
+          maxDiffPixelRatio: entry.maxDiffPixelRatio,
+          mask: getMasks(page, entry),
+        });
+      });
+    }
   });
 });
