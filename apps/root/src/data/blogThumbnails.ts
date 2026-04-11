@@ -457,4 +457,34 @@ export const blogRecords: Record<AllowedBlogSlugs, PostThumbnail> = {
       creator: '@unsplash',
     },
   },
+  [blogSlugs.mobileVrDataDrivenPlaywright]: {
+    slug: blogSlugs.mobileVrDataDrivenPlaywright,
+    title: 'Mobile Visual Regression Without Doubling Your Test Count',
+    description:
+      'A typed page config array turns 9 copy-pasted Playwright tests into a loop that runs at two viewports with zero duplication.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.mobileVrDataDrivenPlaywright}`,
+    },
+    cover: {
+      alt: 'A grid of device screens showing the same interface at different sizes',
+      src: '/photo-1512758017271-d7b84c2113f1',
+      origin: `${UNSPLASH_URL}/photos/multiple-device-screens-responsive-design-dC6Pb2JdAqs`,
+      creator: '@halgatewood',
+    },
+  },
+  [blogSlugs.sentrySkipWithoutDsn]: {
+    slug: blogSlugs.sentrySkipWithoutDsn,
+    title: 'Sentry Should Be Optional in Your Next.js App',
+    description:
+      'A single boolean guard across three runtimes keeps Sentry from crashing local dev when the DSN is missing.',
+    link: {
+      href: `${BLOG_LINK.href}/${blogSlugs.sentrySkipWithoutDsn}`,
+    },
+    cover: {
+      alt: 'A shield icon protecting a circuit board',
+      src: '/photo-1563986768609-322da13575f2',
+      origin: `${UNSPLASH_URL}/photos/shield-protection-security-circuit-LKN76gpQ3Fo`,
+      creator: '@markusspiske',
+    },
+  },
 };

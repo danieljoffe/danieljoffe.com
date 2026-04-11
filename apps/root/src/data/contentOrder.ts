@@ -93,4 +93,6 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.cyclingThemeToggle, // 2026-04-08
   blogSlugs.minisearchRankedSearchCmdk, // 2026-04-10
   blogSlugs.funnelSessionIdAnalytics, // 2026-04-10
+  blogSlugs.mobileVrDataDrivenPlaywright, // 2026-04-10
+  blogSlugs.sentrySkipWithoutDsn, // 2026-04-10
 ];

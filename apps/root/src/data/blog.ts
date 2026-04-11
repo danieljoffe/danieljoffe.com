@@ -31,6 +31,8 @@ export const blogSlugs = {
   cyclingThemeToggle: 'cycling-theme-toggle',
   minisearchRankedSearchCmdk: 'minisearch-ranked-search-cmdk',
   funnelSessionIdAnalytics: 'funnel-session-id-analytics',
+  mobileVrDataDrivenPlaywright: 'mobile-vr-data-driven-playwright',
+  sentrySkipWithoutDsn: 'sentry-skip-without-dsn',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
