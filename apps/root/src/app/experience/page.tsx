@@ -9,16 +9,15 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
 import { experienceRootStructuredData } from '@/data/structuredData/experience';
-import { experienceFull } from '@/data/experience';
 import { CompanyLogo } from '@/components/kit';
 import ExperienceCardLink from './ExperienceCardLink';
 
 const experienceEntries = getContentByType('experience');
 const experienceList = experienceEntries.reverse().map(entry => ({
   ...entry.thumbnail,
+  logo: entry.metadata.logo,
   readingTime: entry.readingTime,
 }));
-const experienceFullList = Object.values(experienceFull);
 
 export const metadata: Metadata = experienceRootMetadata;
 
@@ -52,7 +51,6 @@ export default function ExperiencePage() {
               .slice()
               .reverse()
               .map((exp, i) => {
-                const full = experienceFullList.find(f => f.slug === exp.slug);
                 return (
                   <ExperienceCardLink
                     key={exp.slug}
@@ -60,9 +58,9 @@ export default function ExperiencePage() {
                     slug={exp.slug}
                   >
                     {/* Company logo */}
-                    {full?.logo ? (
+                    {exp.logo ? (
                       <CompanyLogo
-                        src={full.logo}
+                        src={exp.logo}
                         alt={`${exp.title} logo`}
                         highlight={i === experienceList.length - 1}
                       />

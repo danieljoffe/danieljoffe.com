@@ -5,7 +5,7 @@ import Image, { ImageProps } from 'next/image';
 import unsplashLoader from '@/utils/unsplashLoader';
 
 export interface UnsplashImgProps {
-  src: `/photo-${string}`;
+  src: string;
   alt: string;
   width?: number;
   height?: number;

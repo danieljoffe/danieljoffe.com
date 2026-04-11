@@ -19,7 +19,9 @@ import { cn } from '@/lib/cn';
 import { cardBase } from '@/lib/layoutStyles';
 import { aboutMetadata } from '@/data/metadata/about';
 import { expertiseCategories } from '@/data/about';
-import { experienceFull, experiencePageSlugs } from '@/data/experience';
+import { experiencePageSlugs } from '@/data/experience';
+import { getContentBySlug } from '@/data/contentRegistry';
+import { AllowedExperienceSlugs } from '@/types/base';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
 import Button from '@/components/Button';
@@ -178,25 +180,26 @@ export default function About() {
           {/* Experience cards */}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {experiencePageSlugs.map(slug => {
-              const company = experienceFull[slug];
-              if (!company) return null;
+              const entry = getContentBySlug(
+                'experience',
+                slug as AllowedExperienceSlugs
+              );
+              if (!entry) return null;
+              const { company, role, logo } = entry.metadata;
+              if (!company || !logo) return null;
               return (
                 <Link
-                  key={company.slug}
-                  href={`${EXPERIENCE_LINK.href}/${company.slug}`}
+                  key={slug}
+                  href={`${EXPERIENCE_LINK.href}/${slug}`}
                   className='group flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-surface-secondary transition-colors'
                 >
-                  <CompanyLogo
-                    src={company.logo}
-                    alt={company.company}
-                    size='lg'
-                  />
+                  <CompanyLogo src={logo} alt={company} size='lg' />
                   <div className='flex-1 min-w-0'>
                     <Heading variant='cardTitle' as='p'>
-                      {company.company}
+                      {company}
                     </Heading>
                     <Text variant='detail' className='mt-0.5'>
-                      {company.role}
+                      {role}
                     </Text>
                   </div>
                   <ChevronRight className='h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors shrink-0' />
