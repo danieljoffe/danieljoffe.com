@@ -95,4 +95,5 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.funnelSessionIdAnalytics, // 2026-04-10
   blogSlugs.mobileVrDataDrivenPlaywright, // 2026-04-10
   blogSlugs.sentrySkipWithoutDsn, // 2026-04-10
+  blogSlugs.mdxSingleSourceOfTruth, // 2026-04-11
 ];

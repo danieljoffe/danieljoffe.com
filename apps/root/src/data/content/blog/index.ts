@@ -97,6 +97,9 @@ import MobileVrDataDrivenPlaywright, {
 import SentrySkipWithoutDsn, {
   metadata as sentrySkipWithoutDsnMeta,
 } from './sentry-skip-without-dsn.mdx';
+import MdxSingleSourceOfTruth, {
+  metadata as mdxSingleSourceOfTruthMeta,
+} from './mdx-single-source-of-truth.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -133,6 +136,7 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'funnel-session-id-analytics': FunnelSessionIdAnalytics,
   'mobile-vr-data-driven-playwright': MobileVrDataDrivenPlaywright,
   'sentry-skip-without-dsn': SentrySkipWithoutDsn,
+  'mdx-single-source-of-truth': MdxSingleSourceOfTruth,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -168,4 +172,5 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'funnel-session-id-analytics': funnelSessionIdAnalyticsMeta,
   'mobile-vr-data-driven-playwright': mobileVrDataDrivenPlaywrightMeta,
   'sentry-skip-without-dsn': sentrySkipWithoutDsnMeta,
+  'mdx-single-source-of-truth': mdxSingleSourceOfTruthMeta,
 };
