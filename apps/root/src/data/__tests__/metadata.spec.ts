@@ -321,7 +321,6 @@ describe('buildPostMetadata', () => {
       tags: ['React'],
       slug: 'test-blog-post',
       type: 'blog',
-      topic: 'Performance',
       cover: {
         alt: 'Test cover',
         src: '/photo-test',

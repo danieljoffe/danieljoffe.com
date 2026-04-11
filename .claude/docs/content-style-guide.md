@@ -78,6 +78,49 @@ Blog body copy has no hard budget but aim for ≤ 800 words. Project case studie
 - **Commas for parenthetical asides in flowing prose.** "When the logo changes, and it will, I run one command."
 - **Scare quotes for irony only.** Use them when a word means the opposite ("free" web tool, "invisible" sheet). Don't use them for technical terms.
 
+## Canonical Category & Tag Vocabulary
+
+Every MDX entry's `category` field must be exactly one of the values below. New categories require a style guide update, not a silent drift — if the right bucket doesn't exist, pitch a new one in a PR against this file before using it in a draft.
+
+### Categories
+
+| Category                 | Applies to      | What belongs here                                                                                                                                                                                                                            |
+| ------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Frontend Engineering`   | blog, projects  | User-facing behaviour: components, hooks, CSS, interaction patterns, state on the client. Not architecture, not accessibility.                                                                                                               |
+| `Design Systems`         | blog, projects  | Tokens, typography, component library consistency, variant APIs, documentation for system users.                                                                                                                                             |
+| `Accessibility`          | blog, projects  | ARIA, keyboard navigation, screen readers, focus management, WCAG. Even when the post is technically about a React component, if the point is a11y, it goes here.                                                                            |
+| `Performance`            | blog, projects  | Load time, Core Web Vitals, bundle size, rendering cost, memoization, dependency weight. Both ship-improvements and measurement posts.                                                                                                       |
+| `Full-Stack Development` | projects        | End-to-end features that span client + server: API routes, auth, form handling, server actions, persistence. Blog posts about server work are rare enough to fit under `Architecture` or `Tooling & CI`.                                     |
+| `Tooling & CI`           | blog, projects  | Build tools, package managers, lint configs, GitHub Actions, deploy pipelines, monorepo tooling, error monitoring setup. Replaces the former `Developer Experience`, `Developer Tooling`, `DevOps`, `CI/CD`, and `Observability` categories. |
+| `Architecture`           | blog, projects  | System design, module boundaries, composition patterns, state management shape, content pipelines, debugging that reveals a structural issue. Not component-level frontend work.                                                             |
+| `Testing`                | blog, projects  | Unit, integration, visual regression, E2E. Testing philosophy and test-design posts.                                                                                                                                                         |
+| `Career Experience`      | experience only | Every experience entry uses this category. Blog posts and projects should never.                                                                                                                                                             |
+
+**Nine categories total.** Eight for blog + projects, plus `Career Experience` reserved for experience entries.
+
+### Tag rules
+
+Tags are free-form drill-downs (technologies, patterns, specific tools). Follow these rules:
+
+- **Cap:** at most **8 tags per entry.** If an entry has more, cut the least-discriminating ones.
+- **No category duplicates:** if an entry's category is `Accessibility`, don't also tag it `Accessibility`. The category is already the coarse bucket; tags should be narrower than the category.
+- **Use the canonical forms below** for anything that has a canonical form. If a tag isn't in the canonical list, use common sense (`React`, `TypeScript`, `Next.js`, `Tailwind CSS` are obvious).
+- **Drop marketing noise.** `SPA`, `Modern`, `Cutting-edge`, `Enterprise` and similar don't add discovery value.
+
+**Canonical merges (enforced on every entry):**
+
+| Canonical           | Do NOT use                                         |
+| ------------------- | -------------------------------------------------- |
+| `Accessibility`     | `Accessibility (a11y)`, `a11y`                     |
+| `Performance`       | `Performance Optimization`, `Perf`                 |
+| `Component Library` | `Component Libraries` (plural)                     |
+| `Mobile`            | `Mobile Optimization`, `Mobile UX`                 |
+| `E2E Testing`       | _(kept as legitimate specialization of `Testing`)_ |
+
+### The deprecated `topic` field
+
+Earlier blog MDX files had a `topic?: string` field on `PostMetadata`. It was a second coarse label that duplicated `category` without any consumer reading it. **The field was removed in #336.** Do not add it back. Use `category` for the single bucket and `tags` for the drill-downs.
+
 ## Anti-patterns
 
 Don't use any of these. Ever.
