@@ -78,6 +78,72 @@ Blog body copy has no hard budget but aim for ≤ 800 words. Project case studie
 - **Commas for parenthetical asides in flowing prose.** "When the logo changes, and it will, I run one command."
 - **Scare quotes for irony only.** Use them when a word means the opposite ("free" web tool, "invisible" sheet). Don't use them for technical terms.
 
+## Canonical Category & Tag Vocabulary
+
+Every MDX entry's `category` field must be exactly one of the values below. New categories require a style guide update, not a silent drift — if the right bucket doesn't exist, pitch a new one in a PR against this file before using it in a draft.
+
+### Categories
+
+| Category                 | Applies to      | What belongs here                                                                                                                                                                                                                            |
+| ------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Frontend Engineering`   | blog, projects  | User-facing behaviour: components, hooks, CSS, interaction patterns, state on the client. Not architecture, not accessibility.                                                                                                               |
+| `Design Systems`         | blog, projects  | Tokens, typography, component library consistency, variant APIs, documentation for system users.                                                                                                                                             |
+| `Accessibility`          | blog, projects  | ARIA, keyboard navigation, screen readers, focus management, WCAG. Even when the post is technically about a React component, if the point is a11y, it goes here.                                                                            |
+| `Performance`            | blog, projects  | Load time, Core Web Vitals, bundle size, rendering cost, memoization, dependency weight. Both ship-improvements and measurement posts.                                                                                                       |
+| `Full-Stack Development` | projects        | End-to-end features that span client + server: API routes, auth, form handling, server actions, persistence. Blog posts about server work are rare enough to fit under `Architecture` or `Tooling & CI`.                                     |
+| `Tooling & CI`           | blog, projects  | Build tools, package managers, lint configs, GitHub Actions, deploy pipelines, monorepo tooling, error monitoring setup. Replaces the former `Developer Experience`, `Developer Tooling`, `DevOps`, `CI/CD`, and `Observability` categories. |
+| `Architecture`           | blog, projects  | System design, module boundaries, composition patterns, state management shape, content pipelines, debugging that reveals a structural issue. Not component-level frontend work.                                                             |
+| `Testing`                | blog, projects  | Unit, integration, visual regression, E2E. Testing philosophy and test-design posts.                                                                                                                                                         |
+| `Career Experience`      | experience only | Every experience entry uses this category. Blog posts and projects should never.                                                                                                                                                             |
+
+**Nine categories total.** Eight for blog + projects, plus `Career Experience` reserved for experience entries.
+
+### Tags: the canonical vocabulary
+
+**Every MDX entry's `tags` array must contain only values from the canonical list below.** New tags require a style guide update, not a silent drift. The same rule that governs categories applies here: if the right drill-down doesn't exist, pitch a new one in a PR against this file before using it in a draft.
+
+**Rules:**
+
+- **Cap:** at most **8 tags per entry, at least 3.** If an entry has more, cut the least-discriminating ones. If it has fewer, the content probably needs a tag from an adjacent facet.
+- **No category duplicates:** if an entry's category is `Accessibility`, don't also tag it `Accessibility`. The category is the coarse bucket; tags should be narrower.
+- **Canonical only.** Industry tags (Healthcare, HIPAA, Wine, Library Software, etc.) and vague concept tags (Refactoring, Design Patterns, Team Leadership, State Management, etc.) are intentionally excluded. Industry context belongs in body prose, not tag metadata. Vague concepts don't help discovery.
+- **No marketing noise.** `SPA`, `Modern`, `Cutting-edge`, `Enterprise` and similar don't add discovery value.
+
+**Canonical tag set (53 tags, organized by facet):**
+
+| Facet                      | Tags                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Frameworks & libraries** | React, Next.js, Vue.js, Nuxt.js, Angular, AngularJS, Redux, GraphQL, Storybook, Express, MDX, GSAP |
+| **Languages & runtimes**   | TypeScript, Node.js, Java, Bash                                                                    |
+| **Styling**                | Tailwind CSS, Styled Components, CSS, HTML5                                                        |
+| **Monorepo & build**       | Nx, pnpm, Monorepo, Webpack                                                                        |
+| **Testing & CI**           | Jest, Playwright, E2E Testing, Visual Regression, CI/CD, GitHub Actions                            |
+| **Observability**          | Sentry, Lighthouse                                                                                 |
+| **Web APIs & standards**   | ARIA, WCAG, SSR, SSG, PWA, SVG                                                                     |
+| **Cloud & services**       | Vercel, AWS Cognito, S3, CDN                                                                       |
+| **Cross-reference tags**   | Accessibility, Performance, Design Systems, Component Library, Testing, Architecture               |
+| **Specializations**        | Forms, Search, Security, Mobile, UX, REST APIs                                                     |
+
+**Cross-reference tags** are category names that double as tags when a post isn't already in that category. Example: a `Frontend Engineering` blog post about keyboard navigation may legitimately tag `Accessibility`. The no-duplicates rule still applies — an entry already in category `Accessibility` must not also tag it.
+
+**Canonical merges (applied automatically during normalization):**
+
+| Canonical           | Merged from                        |
+| ------------------- | ---------------------------------- |
+| `Accessibility`     | `Accessibility (a11y)`, `a11y`     |
+| `Performance`       | `Performance Optimization`, `Perf` |
+| `Component Library` | `Component Libraries`              |
+| `Mobile`            | `Mobile Optimization`, `Mobile UX` |
+| `AWS Cognito`       | `Cognito`                          |
+| `PWA`               | `PWAs`                             |
+| `CSS`               | `CSS3`                             |
+| `HTML5`             | `HTML`                             |
+| `CI/CD`             | `CI`                               |
+
+### The deprecated `topic` field
+
+Earlier blog MDX files had a `topic?: string` field on `PostMetadata`. It was a second coarse label that duplicated `category` without any consumer reading it. **The field was removed in #336.** Do not add it back. Use `category` for the single bucket and `tags` for the drill-downs.
+
 ## Anti-patterns
 
 Don't use any of these. Ever.
