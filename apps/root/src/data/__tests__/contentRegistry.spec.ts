@@ -26,7 +26,7 @@ describe('contentRegistry', () => {
 
     it('returns all blog entries in order', () => {
       const blogs = getContentByType('blog');
-      expect(blogs.length).toBe(30);
+      expect(blogs.length).toBe(32);
       expect(blogs[0].type).toBe('blog');
       expect(blogs[0].slug).toBe('unified-content-pipeline');
       expect(blogs[1].slug).toBe('auto-generated-toc-scroll-spy');
@@ -97,7 +97,7 @@ describe('contentRegistry', () => {
       expect(slugs).toContain('accessible-dropdown-keyboard-nav');
       expect(slugs).toContain('toast-pause-on-hover');
       expect(slugs).toContain('keyboard-navigable-data-tables');
-      expect(slugs.length).toBe(30);
+      expect(slugs.length).toBe(32);
     });
   });
 
@@ -145,7 +145,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(45); // 10 projects + 5 experiences + 30 blogs
+      expect(all.length).toBe(47); // 10 projects + 5 experiences + 32 blogs
     });
 
     it('contains entries of all types', () => {

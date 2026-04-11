@@ -1,0 +1,56 @@
+export const metadata = {
+  title: 'Sentry Should Be Optional in Your Next.js App',
+  date: '2026-04-10',
+  excerpt:
+    'A single boolean guard across three runtimes keeps Sentry from crashing local dev when the DSN is missing.',
+  author: 'Daniel Joffe',
+  category: 'Observability',
+  tags: ['Sentry', 'Next.js', 'TypeScript', 'DX'],
+  slug: 'sentry-skip-without-dsn',
+  type: 'blog',
+  topic: 'Observability',
+};
+
+## The Problem
+
+Sentry's Next.js SDK initializes in three places: `instrumentation-client.ts` (browser), `sentry.server.config.ts` (Node), and `sentry.edge.config.ts` (edge runtime). Each calls `Sentry.init()` at module scope. When the DSN environment variable is missing, the SDK throws, polluting the console with errors on every request.
+
+That is fine in production where the DSN is always set. In local development, on a fresh clone, or in CI jobs that do not need error monitoring, it makes the terminal unreadable.
+
+## One Boolean, Three Files
+
+The fix is a single exported constant in the shared config:
+
+```ts
+// lib/sentry.config.ts
+export const sentryEnabled = !!publicEnv.NEXT_PUBLIC_SENTRY_CONFIG_ID;
+```
+
+Each initialization file wraps its `Sentry.init()` call in the guard:
+
+```ts
+// sentry.server.config.ts
+import { sentryEnabled, sharedSentryConfig } from '@/lib/sentry.config';
+
+if (sentryEnabled) {
+  Sentry.init({ ...sharedSentryConfig });
+}
+```
+
+The edge config is identical. The client config follows the same pattern but has additional work inside the guard: deferred integration loading via `requestIdleCallback` to avoid blocking LCP.
+
+## The Router Transition Export
+
+Next.js 16 expects `instrumentation-client.ts` to export `onRouterTransitionStart` for Sentry's router instrumentation. When Sentry is disabled, the export should be `undefined` so Next.js skips it:
+
+```ts
+export const onRouterTransitionStart = sentryEnabled
+  ? Sentry.captureRouterTransitionStart
+  : undefined;
+```
+
+This avoids a runtime error from calling `Sentry.captureRouterTransitionStart` when the SDK was never initialized.
+
+## The Takeaway
+
+SDKs that initialize at module scope should always be guarded by the presence of their configuration. One boolean in a shared config file is cheaper than debugging why local dev is spewing errors, and it keeps the "works on a fresh clone" contract honest.

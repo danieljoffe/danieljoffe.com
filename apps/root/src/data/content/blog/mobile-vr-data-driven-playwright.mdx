@@ -1,0 +1,138 @@
+export const metadata = {
+  title: 'Mobile Visual Regression Without Doubling Your Test Count',
+  date: '2026-04-10',
+  excerpt:
+    'A typed page config array turns 9 copy-pasted Playwright tests into a loop that runs at two viewports with zero duplication.',
+  author: 'Daniel Joffe',
+  category: 'Testing',
+  tags: ['Playwright', 'Testing', 'CI', 'TypeScript'],
+  slug: 'mobile-vr-data-driven-playwright',
+  type: 'blog',
+  topic: 'Testing',
+};
+
+## Nine Tests, Copied Twice
+
+We had nine visual regression tests in Playwright, one per page. Each test navigated to a URL, waited for load, and called `toHaveScreenshot`. They were nearly identical except for three things: the URL, the snapshot name, and a few per-page quirks (the homepage needs a stable-height poll for GSAP animations; the about page masks the hCaptcha widget).
+
+When we needed mobile screenshots at 390×844 alongside the existing 1280×720 desktops, the obvious approach was to duplicate all nine tests with a different viewport. That would have taken us from 9 tests to 18, with every line of navigation and wait logic copied.
+
+## The Page Config
+
+Instead of duplicating tests, we described what varies in a typed array:
+
+```ts
+const pages = [
+  {
+    name: 'homepage',
+    path: '/',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.05,
+    waitForStableHeight: true,
+    maskHCaptcha: false,
+  },
+  {
+    name: 'about',
+    path: '/about',
+    headingSelector: 'h1',
+    maxDiffPixelRatio: 0.02,
+    waitForStableHeight: false,
+    maskHCaptcha: true,
+  },
+  // ... 7 more entries
+] as const;
+```
+
+Each entry captures the decisions that were previously buried in test bodies. The homepage gets a 5% diff threshold because GSAP animations cause layout height variance. The about page masks hCaptcha because the widget loads dynamically. Every other page uses the same 2% threshold with no masks beyond `[data-gsap]`.
+
+## Two Helpers, Two Loops
+
+The shared logic lives in two functions. `waitForPageReady` handles navigation, heading visibility, and the optional stable-height poll:
+
+```ts
+async function waitForPageReady(page: Page, entry: (typeof pages)[number]) {
+  await page.goto(entry.path, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('load');
+
+  if (entry.name === 'audit-report-not-found') {
+    await page
+      .getByRole('heading', { name: 'Report Not Found' })
+      .waitFor({ state: 'visible' });
+  } else {
+    await page
+      .locator(entry.headingSelector!)
+      .first()
+      .waitFor({ state: 'visible' });
+  }
+
+  if (entry.waitForStableHeight) {
+    await expect
+      .poll(
+        async () => {
+          const h1 = await page.evaluate(() => document.body.scrollHeight);
+          await new Promise(r => setTimeout(r, 250));
+          const h2 = await page.evaluate(() => document.body.scrollHeight);
+          return h1 === h2;
+        },
+        { timeout: 5000 }
+      )
+      .toBeTruthy();
+  }
+}
+```
+
+`getMasks` builds the locator array from the config flags:
+
+```ts
+function getMasks(page: Page, entry: (typeof pages)[number]) {
+  const masks = [page.locator('[data-gsap]')];
+  if (entry.maskHCaptcha) masks.push(page.locator('.min-h-\\[78px\\]'));
+  return masks;
+}
+```
+
+The test blocks are two `test.describe` wrappers that loop over the same array at different viewport sizes. The only difference is the `beforeEach` viewport and the snapshot filename suffix:
+
+```ts
+test.describe('desktop (1280x720)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+  });
+
+  for (const entry of pages) {
+    test(`${entry.name} visual regression`, async ({ page }) => {
+      await waitForPageReady(page, entry);
+      await expect(page).toHaveScreenshot(`${entry.name}.png`, {
+        fullPage: true,
+        maxDiffPixelRatio: entry.maxDiffPixelRatio,
+        mask: getMasks(page, entry),
+      });
+    });
+  }
+});
+
+test.describe('mobile (390x844)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+  });
+
+  for (const entry of pages) {
+    test(`${entry.name} mobile visual regression`, async ({ page }) => {
+      await waitForPageReady(page, entry);
+      await expect(page).toHaveScreenshot(`${entry.name}-mobile.png`, {
+        fullPage: true,
+        maxDiffPixelRatio: entry.maxDiffPixelRatio,
+        mask: getMasks(page, entry),
+      });
+    });
+  }
+});
+```
+
+## CI Got It for Free
+
+The existing `update-snapshots` workflow dispatch runs `playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium`. Because both viewport blocks live in the same spec file, the workflow regenerates desktop and mobile baselines in one pass. No workflow changes needed.
+
+## The Takeaway
+
+When tests differ only in data, not in logic, the test itself should be a loop over that data. A nine-element config array gave us 18 visual regression tests across two viewports at 180 lines, down from what would have been 300+ lines of copy-paste. Adding a third viewport, say tablet at 768×1024, is three lines: one `test.describe`, one `setViewportSize`, one filename suffix.

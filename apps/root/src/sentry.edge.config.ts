@@ -4,17 +4,19 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
-import { sharedSentryConfig } from '@/lib/sentry.config';
+import { sentryEnabled, sharedSentryConfig } from '@/lib/sentry.config';
 
-Sentry.init({
-  ...sharedSentryConfig,
+if (sentryEnabled) {
+  Sentry.init({
+    ...sharedSentryConfig,
 
-  // Add edge runtime context to all events
-  beforeSend(event) {
-    event.tags = {
-      ...event.tags,
-      runtime: 'edge',
-    };
-    return event;
-  },
-});
+    // Add edge runtime context to all events
+    beforeSend(event) {
+      event.tags = {
+        ...event.tags,
+        runtime: 'edge',
+      };
+      return event;
+    },
+  });
+}
