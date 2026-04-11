@@ -26,6 +26,13 @@ jest.mock('next/link', () => {
   return MockLink;
 });
 
+jest.mock('next/image', () => {
+  return function MockImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    return <img {...props} />;
+  };
+});
+
 jest.mock('./DarkModeToggle', () => {
   return function MockDarkModeToggle() {
     return <button data-testid='dark-mode-toggle'>Toggle</button>;
@@ -38,12 +45,6 @@ jest.mock('./SearchTrigger', () => {
   };
 });
 
-jest.mock('./Logo', () => {
-  return function MockLogo() {
-    return <div data-testid='logo'>Logo</div>;
-  };
-});
-
 jest.mock('@/lib/analytics', () => ({
   analytics: { navClick: jest.fn() },
 }));
@@ -51,7 +52,7 @@ jest.mock('@/lib/analytics', () => ({
 describe('TabletUpNav', () => {
   test('renders logo, primary links, More dropdown, Free Audit CTA, search, and theme toggle', () => {
     render(<TabletUpNav pathname='/' />);
-    expect(screen.getByTestId('logo')).toBeInTheDocument();
+    expect(screen.getByAltText('Home')).toBeInTheDocument();
     expect(screen.getByText('Services')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
     expect(screen.getByText('Experience')).toBeInTheDocument();
