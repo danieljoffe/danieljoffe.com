@@ -9,11 +9,17 @@ export const metadata = {
   slug: 'hydration-mismatch-use-synced-state',
   type: 'blog',
   topic: 'React Patterns',
+  cover: {
+    alt: 'Two puzzle pieces fitting together on a clean surface',
+    src: '/photo-1494412574643-ff11b0a5eb95',
+    origin: 'https://unsplash.com/photos/two-white-and-red-dices-FO7bKvgETgQ',
+    creator: '@brett_jordan',
+  },
 };
 
 ## The Mismatch
 
-Our mobile navigation uses `aria-current="page"` to mark the active link.
+The mobile navigation uses `aria-current="page"` to mark the active link.
 The value comes from `usePathname()`, which returns the current URL on the
 client, but during server-side rendering, every page's nav gets the same
 initial pathname. The result: the server marks "Home" as the active link, the client
@@ -34,12 +40,12 @@ hydration.
 
 ## The Right Fix
 
-The actual problem is narrow: we're rendering a _value_ that differs
-between server and client. We don't need to skip SSR entirely; we just
+The actual problem is narrow: I're rendering a _value_ that differs
+between server and client. I don't need to skip SSR entirely; I just
 need to render a neutral value during SSR and switch to the real one after
 hydration.
 
-`useSyncExternalStore` gives us exactly that. Its third argument,
+`useSyncExternalStore` gives me exactly that. Its third argument,
 `getServerSnapshot`, runs only during SSR:
 
 ```tsx
@@ -58,7 +64,7 @@ mechanism for declaring "this value differs between environments."
 
 ## Applying It
 
-In the nav component, we defer the active link state until after hydration:
+In the nav component, I defer the active link state until after hydration:
 
 ```tsx
 export default function Nav() {
@@ -84,7 +90,7 @@ lights up. Server and client agree on the initial render. No mismatch.
 ## The Bonus: Skeleton Loading
 
 Since the desktop nav uses `dynamic(() => import('./TabletUpNav'), { ssr: false })`
-for code splitting, it already has a loading state. We replaced the generic
+for code splitting, it already has a loading state. I replaced the generic
 `Spinner` with a `NavSkeleton` that mirrors the actual nav layout: a logo
 placeholder, four link-shaped rectangles, and three right-side elements.
 
@@ -110,6 +116,6 @@ that gives no spatial information about what's loading.
 ## The Takeaway
 
 When server and client disagree on a value, the fix isn't to skip SSR or
-suppress the warning. We find the narrowest possible and acceptable neutral state
-that both environments can agree on. Then, we upgrade to the real value after
+suppress the warning. I find the narrowest possible and acceptable neutral state
+that both environments can agree on. Then, I upgrade to the real value after
 hydration. React's `useSyncExternalStore` makes that an easy three-line hook.

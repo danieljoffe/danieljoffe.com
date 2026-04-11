@@ -5,7 +5,7 @@ export function CoverImage({
   alt,
   priority = false,
 }: {
-  src: `/photo-${string}`;
+  src: string;
   alt: string;
   priority?: boolean;
 }) {

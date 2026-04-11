@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Designing a Mobile Bottom Nav That Plays Nice with FABs and Sheets',
+  title: 'Z-Index Choreography for a Mobile Bottom Nav',
   date: '2026-04-06',
   excerpt:
     'The z-index choreography behind adding a fixed bottom bar without breaking scroll-to-top, table-of-contents, and bottom sheet overlays.',
@@ -9,6 +9,12 @@ export const metadata = {
   slug: 'mobile-bottom-nav-z-index',
   type: 'blog',
   topic: 'CSS Architecture',
+  cover: {
+    alt: 'A layered architectural structure showing different levels',
+    src: '/photo-1486406146926-c627a92ad1ab',
+    origin: 'https://unsplash.com/photos/low-angle-photography-of-gray-building-at-daytime-yEauzeZU6xo',
+    creator: '@aronvisuals',
+  },
 };
 
 ## The Layering Problem
@@ -25,7 +31,7 @@ you're hitting the nav bar instead.
 ## The Z-Index Stack
 
 The fix required defining a deliberate stacking order, not just "make it
-higher." We settled on three layers:
+higher." I settled on three layers:
 
 | Layer      | z-index | Elements                          |
 | ---------- | ------- | --------------------------------- |

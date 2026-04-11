@@ -9,6 +9,12 @@ export const metadata = {
   slug: 'unified-content-pipeline',
   type: 'blog',
   topic: 'Content Architecture',
+  cover: {
+    alt: 'An abstract network of connected nodes glowing in blue',
+    src: '/photo-1558494949-ef010cbdcc31',
+    origin: 'https://unsplash.com/photos/close-up-photography-of-computer-motherboard-iar-afB0QQw',
+    creator: '@jordanharrison',
+  },
 };
 
 ## The Problem
@@ -21,7 +27,7 @@ the duplication.
 
 ## The Solution: A Content Registry
 
-Instead of maintaining parallel data pipelines, we created a **single content
+Instead of maintaining parallel data pipelines, I created a **single content
 registry** that serves as the source of truth for all content queries:
 
 - `getContentByType('project')`: ordered array for listing pages

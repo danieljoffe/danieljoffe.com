@@ -2,18 +2,24 @@ export const metadata = {
   title: 'Aligning Five Form Components Around aria-describedby',
   date: '2026-04-07',
   excerpt:
-    'Five form components, five approaches to displaying errors. Aligning them around a single aria-describedby pattern turns inconsistency into a consistent accessibility contract.',
+    'Five form components, five approaches to displaying errors. One aria-describedby pattern turns inconsistency into a shared accessibility contract.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
   tags: ['React', 'Accessibility', 'Design Systems', 'Forms', 'REST APIs'],
   slug: 'form-api-alignment-aria',
   type: 'blog',
   topic: 'Accessibility',
+  cover: {
+    alt: 'A person filling out a form on a clipboard',
+    src: '/photo-1522542550221-31fd19575a2d',
+    origin: 'https://unsplash.com/photos/person-writing-on-white-paper-GJao3ZTX9gU',
+    creator: '@helloquence',
+  },
 };
 
 ## Five Components, Five APIs
 
-Our shared-ui library has five form components: Input, Textarea, Select,
+The shared-ui library has five form components: Input, Textarea, Select,
 Checkbox, and Switch. Input and Textarea were the most mature: they had
 `error`, `helperText`, and `success` props, `aria-describedby` linking
 the input to its error message, `aria-required` on required fields, and
@@ -116,5 +122,5 @@ controls that rarely need supplementary text.
 API consistency in a form library isn't ergonomics. It's accessibility.
 When one component has `aria-describedby` and another doesn't, the
 inconsistency is invisible to sighted users and impassable for screen
-reader users. We've aligned our API around the accessibility requirement
+reader users. I've aligned the API around the accessibility requirement
 first, and the developer experience follows.

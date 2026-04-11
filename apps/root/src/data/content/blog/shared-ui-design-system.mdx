@@ -1,15 +1,20 @@
 export const metadata = {
-  title:
-    'From Wrapper Hell to a Single Source of Truth: Consolidating a Design System',
+  title: 'From Wrapper Hell to One Source of Truth',
   date: '2026-04-04',
   excerpt:
-    'How promoting kit wrappers into a shared-ui component library, enforcing typography variants, and establishing layout primitives with sensible defaults eliminates 2,000 lines of duplication.',
+    'Promoting kit wrappers into a shared-ui library with typography variants and layout primitives eliminates 2,000 lines of duplication.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: ['React', 'Design Systems', 'TypeScript', 'Tailwind CSS', 'Monorepo'],
   slug: 'shared-ui-design-system',
   type: 'blog',
   topic: 'Design Systems',
+  cover: {
+    alt: 'Neatly organized colorful building blocks arranged in a grid pattern',
+    src: '/photo-1581783898377-1c85bf937427',
+    origin: 'https://unsplash.com/photos/assorted-color-brick-lot-HpMihL323k0',
+    creator: '@marjan_blan',
+  },
 };
 
 ## The Problem
@@ -36,7 +41,7 @@ had to know which layer owned which variant. Pages mixed `@/components/kit` and
 
 ## The Principles
 
-Before writing any code, we established three rules:
+Before writing any code, I established three rules:
 
 1. **shared-ui is the single source of truth** for all reusable UI primitives:
    typography, layout, and generic components. It depends only on React and
@@ -142,7 +147,7 @@ for data-heavy pages. Custom `className` merges with the defaults via `cn()`.
 ### Section
 
 The shared-ui Section had defaults that didn't match reality: `center=true`
-and `overflow='hidden'`. Every page overrode both. We flipped the defaults
+and `overflow='hidden'`. Every page overrode both. I flipped the defaults
 and added the base horizontal padding that every section needed:
 
 ```tsx
@@ -202,7 +207,7 @@ what kit is for.
 
 ## Enforcement
 
-A design system without enforcement is just a suggestion. We added a custom
+A design system without enforcement is just a suggestion. I added a custom
 ESLint rule that bans raw `<h1>` through `<h6>` elements in JSX, directing
 developers to use the `Heading` component instead. The rule catches violations
 at lint time, not in code review.

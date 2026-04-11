@@ -2,13 +2,19 @@ export const metadata = {
   title: 'The Rule of Three in Design Systems',
   date: '2026-04-05',
   excerpt:
-    'When to extract a repeated pattern into a shared abstraction, and when to leave it inline. A practical framework from auditing typography across a portfolio site.',
+    'When to extract a repeated pattern into a shared abstraction, and when to leave it inline. A framework from auditing portfolio typography.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: ['Design Systems', 'Architecture', 'React', 'Refactoring'],
   slug: 'rule-of-three-design-systems',
   type: 'blog',
   topic: 'Architecture',
+  cover: {
+    alt: 'Three identical geometric shapes casting different shadows',
+    src: '/photo-1509228468518-180dd4864904',
+    origin: 'https://unsplash.com/photos/brown-wooden-blocks-on-white-surface-s9CC2SKySJM',
+    creator: '@brett_jordan',
+  },
 };
 
 ## The Temptation to Abstract Early
@@ -29,7 +35,7 @@ the cost of duplication.
 
 ## The Typography Audit
 
-We audited every heading and text pattern across a 20-page portfolio site.
+I audited every heading and text pattern across a 20-page portfolio site.
 The findings split cleanly into two categories:
 
 ### Patterns that repeated 3+ times (extract)
@@ -62,7 +68,7 @@ There are cases where extracting before three occurrences makes sense:
 
 1. **Safety-critical patterns**: Form error messages (`text-sm text-error`)
    appeared twice but serve a clear a11y contract. Consistent error display
-   matters. We extracted `<Text variant="error">`.
+   matters. I extracted `<Text variant="error">`.
 
 2. **Cross-boundary patterns**: A pattern used once in the app and once in
    shared-ui justifies extraction because the cost of divergence is higher

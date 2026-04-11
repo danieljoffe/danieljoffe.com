@@ -9,6 +9,12 @@ export const metadata = {
   slug: 'toast-pause-on-hover',
   type: 'blog',
   topic: 'Accessibility',
+  cover: {
+    alt: 'A notification bell icon on a blurred background',
+    src: '/photo-1514464750060-00e6e34c8b8c',
+    origin: 'https://unsplash.com/photos/white-and-brown-round-frame-dMeEJRE18VI',
+    creator: '@joshcala',
+  },
 };
 
 ## The Timing Conflict
@@ -19,13 +25,13 @@ screen reader users, `aria-live="polite"` means the announcement waits
 until the user finishes their current task, but if the toast has already
 been removed from the DOM by then, there's nothing left to announce.
 
-Our Toast component had neither. No ARIA roles, no auto-dismiss strategy,
+The Toast component had neither. No ARIA roles, no auto-dismiss strategy,
 and a close button with no accessible label. It was a styled `<div>` that
 appeared and vanished.
 
 ## role="alert" vs role="status"
 
-Not all toasts deserve the same urgency. The ARIA spec gives us two options:
+Not all toasts deserve the same urgency. The ARIA spec gives me two options:
 
 - **`role="status"`** with `aria-live="polite"`: for success and info
   toasts. The screen reader waits for a natural pause before announcing.
@@ -53,7 +59,7 @@ Auto-dismiss solves the sighted user's problem: toasts go away on their
 own. But a 4-second timer is hostile if the user is still reading. The fix:
 pause the timer when the user is engaged.
 
-We extracted a `ToastCard` component that manages its own lifecycle with
+I extracted a `ToastCard` component that manages its own lifecycle with
 three refs:
 
 ```tsx
@@ -112,14 +118,14 @@ notification, button" and knows exactly what the control does.
 ## Testing Async Behavior
 
 Auto-dismiss and pause-on-hover are time-dependent, which makes tests
-inherently flaky if done wrong. We used `jest.useFakeTimers()` and
+inherently flaky if done wrong. I used `jest.useFakeTimers()` and
 `act()` to control the clock:
 
 - Verify the toast exists at `t=0`
 - Advance timers past `AUTO_DISMISS_MS`
 - Verify the toast is removed
 
-For pause-on-hover, we fire `mouseEnter` mid-timer, advance past the
+For pause-on-hover, I fire `mouseEnter` mid-timer, advance past the
 original deadline, verify the toast survives, then fire `mouseLeave` and
 advance through the remaining time.
 

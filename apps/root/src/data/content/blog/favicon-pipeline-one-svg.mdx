@@ -2,24 +2,30 @@ export const metadata = {
   title: 'A Favicon Pipeline from One SVG',
   date: '2026-04-06',
   excerpt:
-    'A 64-line bash script generates 11 SEO-ready images from a single SVG: favicon.ico, apple-touch-icon, android-chrome, and mstile, using rsvg-convert and ImageMagick.',
+    'A 64-line bash script turns one SVG into 11 SEO-ready images: favicon.ico, apple-touch-icon, android-chrome, and mstile via rsvg-convert.',
   author: 'Daniel Joffe',
   category: 'Developer Tooling',
   tags: ['Tooling', 'SEO', 'Bash', 'DevOps', 'SVG', 'PWA'],
   slug: 'favicon-pipeline-one-svg',
   type: 'blog',
   topic: 'Developer Tooling',
+  cover: {
+    alt: 'A terminal window showing command-line output',
+    src: '/photo-1629654297299-c8506221ca97',
+    origin: 'https://unsplash.com/photos/a-computer-screen-with-a-bunch-of-text-on-it-m_HRfLhgABo',
+    creator: '@garrettsears',
+  },
 };
 
 ## The Problem with Favicon Generators
 
-Every time we updated the site logo, regenerating favicons meant uploading
+Every time I updated the site logo, regenerating favicons meant uploading
 an SVG to a "free" web tool, downloading a zip, extracting it, and manually
 copying files into `public/`. The output was inconsistent: different tools
 produce different compression, different background handling, different
 size matrices. And none of them lived in version control.
 
-We needed a deterministic, local pipeline: one SVG in, all the meta images
+I needed a deterministic, local pipeline: one SVG in, all the meta images
 out.
 
 ## What Browsers Actually Need
@@ -63,7 +69,7 @@ for size in "${SIZES[@]}"; do
 done
 ```
 
-Then we map the temporary files to their final names:
+Then I map the temporary files to their final names:
 
 ```bash
 cp "${TMPDIR}/16.png"  "${OUTPUT}/favicon-16x16.png"
@@ -81,7 +87,7 @@ magick "${TMPDIR}/16.png" "${TMPDIR}/32.png" "${TMPDIR}/48.png" \
   "${OUTPUT}/favicon.ico"
 ```
 
-Finally, we copy the source SVG as `favicon.svg` for browsers that
+Finally, I copy the source SVG as `favicon.svg` for browsers that
 support it. Modern browsers prefer the SVG when both are available: it
 scales perfectly at any resolution and supports dark mode via
 `prefers-color-scheme` media queries in the SVG itself.
@@ -89,7 +95,7 @@ scales perfectly at any resolution and supports dark mode via
 ## Making It Reusable
 
 The script takes two arguments. The source SVG and an optional output
-directory (we defaulted our script to `apps/root/public/`):
+directory (I defaulted the script to `apps/root/public/`):
 
 ```bash
 ./scripts/generate-favicons.sh ~/Downloads/logo.svg
@@ -143,7 +149,7 @@ magick "$TMPDIR/icon-16.png" "$TMPDIR/icon-32.png" "$TMPDIR/icon-48.png" \
   "$OUT/favicon.ico"
 ```
 
-We also wired it up as a Claude Code skill, so regenerating favicons
+I also wired it up as a Claude Code skill, so regenerating favicons
 after a logo change is a one-command operation. The skill validates that
 `rsvg-convert` and `magick` are installed, runs the script, and reports
 which files were generated.
@@ -154,4 +160,4 @@ Favicon generation is a solved problem that doesn't need a web service.
 Two CLI tools, 64 lines of bash, and a clear mapping from sizes to
 filenames. The script lives in version control alongside the source SVG,
 so the pipeline is reproducible and the output is auditable. When the logo
-changes, and it will, we run one command on our machine instead of visiting a website.
+changes, and it will, I run one command on the machine instead of visiting a website.

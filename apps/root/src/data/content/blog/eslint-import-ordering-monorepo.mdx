@@ -16,6 +16,12 @@ export const metadata = {
   slug: 'eslint-import-ordering-monorepo',
   type: 'blog',
   topic: 'Tooling',
+  cover: {
+    alt: 'Neatly organized files in a filing cabinet',
+    src: '/photo-1544396821-4dd40b938ad3',
+    origin: 'https://unsplash.com/photos/assorted-files-Q9y3LRuuxmg',
+    creator: '@samuelzeller',
+  },
 };
 
 ## Why Import Order Matters
@@ -50,8 +56,8 @@ then app internals. You know at a glance where each import comes from.
 
 ## The Configuration
 
-We use `eslint-plugin-import`'s `import/order` rule with custom `pathGroups`
-to handle our monorepo aliases:
+I use `eslint-plugin-import`'s `import/order` rule with custom `pathGroups`
+to handle the monorepo aliases:
 
 ```js
 'import/order': [
@@ -88,7 +94,7 @@ other external packages but before `@/` app-internal imports. This creates
 a clear visual hierarchy: node → npm packages → monorepo libraries → app code
 → local files.
 
-We intentionally omit `alphabetize`. Forcing alphabetical order within groups
+I intentionally omit `alphabetize`. Forcing alphabetical order within groups
 adds friction without meaningful readability gains.
 
 ## The ESLint 10 Compatibility Problem
@@ -151,7 +157,7 @@ jest.mock('@/lib/analytics');
 
 ## Circular Dependency Prevention
 
-Alongside `import/order`, we added `import/no-cycle` as an error. This
+Alongside `import/order`, I added `import/no-cycle` as an error. This
 catches circular imports at lint time rather than at runtime (where they
 cause mysterious `undefined` values).
 

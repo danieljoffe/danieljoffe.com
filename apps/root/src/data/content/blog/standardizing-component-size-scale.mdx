@@ -1,19 +1,25 @@
 export const metadata = {
-  title: 'Standardizing a Component Size Scale Across Component Library',
+  title: 'Standardizing a Component Size Scale',
   date: '2026-04-07',
   excerpt:
-    'A design system with five avatar sizes, no badge size, and three spinner sizes is a design system arguing with itself. We standardized the scale.',
+    'A design system with five avatar sizes, no badge size, and three spinner sizes is a design system arguing with itself.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
   tags: ['React', 'Design Systems', 'TypeScript', 'Component Architecture'],
   slug: 'standardizing-component-size-scale',
   type: 'blog',
   topic: 'Design Systems',
+  cover: {
+    alt: 'A ruler and tape measure for precise measurement',
+    src: '/photo-1550985543-49bee3167284',
+    origin: 'https://unsplash.com/photos/ruler-tape-measure-precision',
+    creator: '@unsplash',
+  },
 };
 
 ## The Inconsistency
 
-Our shared-ui library had grown to 20+ components, and each one had
+The shared-ui library had grown to 20+ components, and each one had
 invented its own size scale. Avatar offered five sizes (`xs` through
 `xl`). Badge had no size prop at all. Button, Spinner, and ProgressBar
 each defined their own `sm | md | lg` type locally. Nothing was shared,
@@ -27,7 +33,7 @@ design system becomes a suggestion.
 
 ## The Audit
 
-We listed every component with a size or variant prop and asked two
+I listed every component with a size or variant prop and asked two
 questions: how many options does it offer, and does anyone actually _use_
 them all?
 
@@ -77,7 +83,7 @@ type makes the decision for you.
 Removing unused variants is straightforward: delete the option, run the
 type checker, fix anything red. But Avatar's trim from five sizes to three
 required checking that no call site relied on `xs` or `xl`. A quick
-grep confirmed they were Storybook-only, so we updated the stories
+grep confirmed they were Storybook-only, so I updated the stories
 and removed the sizes.
 
 The riskier trim was Spinner. Six color variants collapsed to one. But
@@ -87,12 +93,12 @@ while adding no value to consumers.
 
 ## The Radius Token
 
-While auditing sizes, we found a related inconsistency in border radius.
+While auditing sizes, I found a related inconsistency in border radius.
 Checkbox, Kbd, and Skeleton text lines all needed a radius smaller than
 `--radius-sm` (0.375rem), but it didn't exist. Each component
 improvised: `rounded`, `rounded-sm`, or a raw pixel value.
 
-We added `--radius-xs` (0.25rem) to the theme and pointed all three
+I added `--radius-xs` (0.25rem) to the theme and pointed all three
 components at it. Same pattern as the size scale: name the thing, put
 it in one place, reference it everywhere.
 
