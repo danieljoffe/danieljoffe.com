@@ -98,24 +98,47 @@ Every MDX entry's `category` field must be exactly one of the values below. New 
 
 **Nine categories total.** Eight for blog + projects, plus `Career Experience` reserved for experience entries.
 
-### Tag rules
+### Tags: the canonical vocabulary
 
-Tags are free-form drill-downs (technologies, patterns, specific tools). Follow these rules:
+**Every MDX entry's `tags` array must contain only values from the canonical list below.** New tags require a style guide update, not a silent drift. The same rule that governs categories applies here: if the right drill-down doesn't exist, pitch a new one in a PR against this file before using it in a draft.
 
-- **Cap:** at most **8 tags per entry.** If an entry has more, cut the least-discriminating ones.
-- **No category duplicates:** if an entry's category is `Accessibility`, don't also tag it `Accessibility`. The category is already the coarse bucket; tags should be narrower than the category.
-- **Use the canonical forms below** for anything that has a canonical form. If a tag isn't in the canonical list, use common sense (`React`, `TypeScript`, `Next.js`, `Tailwind CSS` are obvious).
-- **Drop marketing noise.** `SPA`, `Modern`, `Cutting-edge`, `Enterprise` and similar don't add discovery value.
+**Rules:**
 
-**Canonical merges (enforced on every entry):**
+- **Cap:** at most **8 tags per entry, at least 3.** If an entry has more, cut the least-discriminating ones. If it has fewer, the content probably needs a tag from an adjacent facet.
+- **No category duplicates:** if an entry's category is `Accessibility`, don't also tag it `Accessibility`. The category is the coarse bucket; tags should be narrower.
+- **Canonical only.** Industry tags (Healthcare, HIPAA, Wine, Library Software, etc.) and vague concept tags (Refactoring, Design Patterns, Team Leadership, State Management, etc.) are intentionally excluded. Industry context belongs in body prose, not tag metadata. Vague concepts don't help discovery.
+- **No marketing noise.** `SPA`, `Modern`, `Cutting-edge`, `Enterprise` and similar don't add discovery value.
 
-| Canonical           | Do NOT use                                         |
-| ------------------- | -------------------------------------------------- |
-| `Accessibility`     | `Accessibility (a11y)`, `a11y`                     |
-| `Performance`       | `Performance Optimization`, `Perf`                 |
-| `Component Library` | `Component Libraries` (plural)                     |
-| `Mobile`            | `Mobile Optimization`, `Mobile UX`                 |
-| `E2E Testing`       | _(kept as legitimate specialization of `Testing`)_ |
+**Canonical tag set (53 tags, organized by facet):**
+
+| Facet                      | Tags                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Frameworks & libraries** | React, Next.js, Vue.js, Nuxt.js, Angular, AngularJS, Redux, GraphQL, Storybook, Express, MDX, GSAP |
+| **Languages & runtimes**   | TypeScript, Node.js, Java, Bash                                                                    |
+| **Styling**                | Tailwind CSS, Styled Components, CSS, HTML5                                                        |
+| **Monorepo & build**       | Nx, pnpm, Monorepo, Webpack                                                                        |
+| **Testing & CI**           | Jest, Playwright, E2E Testing, Visual Regression, CI/CD, GitHub Actions                            |
+| **Observability**          | Sentry, Lighthouse                                                                                 |
+| **Web APIs & standards**   | ARIA, WCAG, SSR, SSG, PWA, SVG                                                                     |
+| **Cloud & services**       | Vercel, AWS Cognito, S3, CDN                                                                       |
+| **Cross-reference tags**   | Accessibility, Performance, Design Systems, Component Library, Testing, Architecture               |
+| **Specializations**        | Forms, Search, Security, Mobile, UX, REST APIs                                                     |
+
+**Cross-reference tags** are category names that double as tags when a post isn't already in that category. Example: a `Frontend Engineering` blog post about keyboard navigation may legitimately tag `Accessibility`. The no-duplicates rule still applies — an entry already in category `Accessibility` must not also tag it.
+
+**Canonical merges (applied automatically during normalization):**
+
+| Canonical           | Merged from                        |
+| ------------------- | ---------------------------------- |
+| `Accessibility`     | `Accessibility (a11y)`, `a11y`     |
+| `Performance`       | `Performance Optimization`, `Perf` |
+| `Component Library` | `Component Libraries`              |
+| `Mobile`            | `Mobile Optimization`, `Mobile UX` |
+| `AWS Cognito`       | `Cognito`                          |
+| `PWA`               | `PWAs`                             |
+| `CSS`               | `CSS3`                             |
+| `HTML5`             | `HTML`                             |
+| `CI/CD`             | `CI`                               |
 
 ### The deprecated `topic` field
 

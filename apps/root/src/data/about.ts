@@ -11,7 +11,7 @@ export const expertiseCategories = [
       'Next.js',
       'Angular',
       'HTML5',
-      'CSS3',
+      'CSS',
       'Tailwind CSS',
       'Sass',
       'Styled Components',
@@ -24,7 +24,7 @@ export const expertiseCategories = [
     label: 'Backend',
     description:
       'Enough backend depth to own the full stack: auth, APIs, cloud infrastructure.',
-    skills: ['Node.js', 'Express', 'REST APIs', 'S3', 'Cognito', 'OAuth'],
+    skills: ['Node.js', 'Express', 'REST APIs', 'S3', 'AWS Cognito', 'OAuth'],
   },
   {
     label: 'Tools',
@@ -54,7 +54,7 @@ export const expertiseCategories = [
       'Performance',
       'Accessibility',
       'Component Library',
-      'PWAs',
+      'PWA',
       'SSR',
       'SSG',
     ],
