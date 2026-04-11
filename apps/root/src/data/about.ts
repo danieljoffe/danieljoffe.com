@@ -51,13 +51,12 @@ export const expertiseCategories = [
     label: 'Specializations',
     description: 'The deeper disciplines I bring to every project.',
     skills: [
-      'Performance Optimization',
-      'Accessibility (a11y)',
-      'Component Libraries',
+      'Performance',
+      'Accessibility',
+      'Component Library',
       'PWAs',
       'SSR',
       'SSG',
-      'SPA',
     ],
   },
 ];

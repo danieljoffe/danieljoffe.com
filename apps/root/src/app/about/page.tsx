@@ -9,6 +9,7 @@ import {
   MessageCircle,
   ChevronRight,
 } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
@@ -21,6 +22,7 @@ import { aboutMetadata } from '@/data/metadata/about';
 import { expertiseCategories } from '@/data/about';
 import { experiencePageSlugs } from '@/data/experience';
 import { getContentBySlug } from '@/data/contentRegistry';
+import { getContentByTag, tagToSlug } from '@/lib/tags';
 import { AllowedExperienceSlugs } from '@/types/base';
 import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
@@ -229,9 +231,20 @@ export default function About() {
               </Text>
               <div className='flex flex-wrap gap-1.5'>
                 {category.skills.map(tag => {
-                  const slug = encodeURIComponent(
-                    tag.toLowerCase().replace(/\s+/g, '-')
-                  );
+                  const slug = tagToSlug(tag);
+                  const hasContent = getContentByTag(tag).length > 0;
+                  if (!hasContent) {
+                    return (
+                      <Badge
+                        key={tag}
+                        variant='default'
+                        size='md'
+                        className='font-normal'
+                      >
+                        {tag}
+                      </Badge>
+                    );
+                  }
                   return (
                     <Button
                       key={tag}
