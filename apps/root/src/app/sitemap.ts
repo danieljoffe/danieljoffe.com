@@ -4,6 +4,7 @@ import {
   ABOUT_LINK,
   AUDIT_LINK,
   BLOG_LINK,
+  BLOG_TAGS_LINK,
   EXPERIENCE_LINK,
   POSTS_PER_PAGE,
   PROJECTS_LINK,
@@ -12,6 +13,7 @@ import {
 import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';
 import { blogPageSlugs } from '@/data/blog';
+import { getAllTags, tagToSlug } from '@/lib/tags';
 
 // Stable build-time date so sitemap doesn't change on every deployment
 const BUILD_DATE = new Date('2026-03-05');
@@ -103,11 +105,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
 
+  // Blog tag discovery routes. Index at /blog/tags plus one detail page
+  // per blog tag.
+  const blogTagsIndexRoute = {
+    url: `${DOMAIN_URL}${BLOG_TAGS_LINK.href}`,
+    lastModified: BUILD_DATE,
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  };
+  const blogTagRoutes = getAllTags('blog').map(tag => ({
+    url: `${DOMAIN_URL}${BLOG_TAGS_LINK.href}/${tagToSlug(tag)}`,
+    lastModified: BUILD_DATE,
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  }));
+
   return [
     ...staticRoutes,
     ...experienceRoutes,
     ...projectRoutes,
     ...blogRoutes,
     ...blogPaginationRoutes,
+    blogTagsIndexRoute,
+    ...blogTagRoutes,
   ];
 }

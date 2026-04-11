@@ -10,3 +10,5 @@ export { PostPagination } from './PostPagination';
 export { ScrollToTop } from './ScrollToTop';
 export { Step } from './Step';
 export { TableOfContents } from './TableOfContents';
+export { TagChipStrip } from './TagChipStrip';
+export type { TagChip, TagChipStripProps } from './TagChipStrip';

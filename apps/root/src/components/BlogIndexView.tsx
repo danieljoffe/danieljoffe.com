@@ -8,9 +8,13 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { blogRootStructuredData } from '@/data/structuredData/blog';
 import { getContentByType } from '@/data/contentRegistry';
 import { getPaginatedContent } from '@/lib/pagination';
-import { BLOG_LINK, POSTS_PER_PAGE } from '@/utils/constants';
+import { getTopTags, tagToSlug } from '@/lib/tags';
+import { BLOG_LINK, BLOG_TAGS_LINK, POSTS_PER_PAGE } from '@/utils/constants';
 import type { PostThumbnail } from '@/types/postTypes';
+import { TagChipStrip } from '@/components/kit';
 import { BlogSearchAndList } from './BlogSearchAndList';
+
+const TOP_TAG_LIMIT = 8;
 
 interface BlogIndexViewProps {
   currentPage: number;
@@ -37,6 +41,11 @@ export function BlogIndexView({ currentPage }: BlogIndexViewProps) {
   const pagePosts = items.map(toThumbnail);
   const allPosts = getContentByType('blog').slice().reverse().map(toThumbnail);
 
+  const topTags = getTopTags('blog', TOP_TAG_LIMIT).map(tag => ({
+    ...tag,
+    href: `${BLOG_TAGS_LINK.href}/${tagToSlug(tag.name)}`,
+  }));
+
   return (
     <PageLayout>
       <Section>
@@ -54,6 +63,12 @@ export function BlogIndexView({ currentPage }: BlogIndexViewProps) {
         <SectionLabel
           icon={<PenLine className='h-3.5 w-3.5' />}
           label='Posts'
+        />
+        <TagChipStrip
+          tags={topTags}
+          viewAllHref={BLOG_TAGS_LINK.href}
+          ariaLabel='Filter blog posts by tag'
+          className='mb-6'
         />
         <BlogSearchAndList
           pagePosts={pagePosts}
