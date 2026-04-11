@@ -19,11 +19,11 @@ export const metadata = {
 
 ## The Problem
 
-Every content type on this portfolio — projects and experience — had its own
+Every content type on this portfolio (projects and experience) had its own
 slug file, thumbnail file, MDX import index, content ordering array, reading
 time map, and structured data file. Adding a single project meant touching six
 files with overlapping data. Adding a _third_ content type (blog) would triple
-the duplication.
+the duplication and make every future content addition cost 18+ file touches.
 
 ## The Solution: A Content Registry
 
@@ -65,3 +65,11 @@ simple config lookup, making the system extensible without code changes.
 - Zero runtime changes to existing pages
 - 18 new registry tests covering all query paths
 - Type-safe throughout: `ContentType` union prevents typos
+
+## The Lesson
+
+The cost of adding a new content type is a signal. If it takes six files, the
+architecture is paying taxes on every addition, and every addition compounds
+the next one's cost. A single registry with a typed config flips the math:
+adding a content type is three files, and the existing query API already works
+on day one. Design for the access pattern, not for the first type that shipped.

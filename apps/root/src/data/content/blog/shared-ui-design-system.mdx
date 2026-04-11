@@ -57,7 +57,7 @@ Before writing any code, I established three rules:
 
 The first target was the Heading/Text split. The kit wrappers maintained a
 `sharedVariants` set to decide whether to delegate to shared-ui or render
-locally — a runtime check for a compile-time concern.
+locally: a runtime check for a compile-time concern.
 
 The fix was simple: move every variant into shared-ui.
 
@@ -112,7 +112,7 @@ No kit layer. No delegation. No variant sets to keep in sync.
 
 The second insight came from looking at the 15 pages that all repeated
 `className='py-16 lg:py-24 space-y-24'` on their PageLayout. If every
-consumer passes the same props, those aren't options — they're the default.
+consumer passes the same props, those aren't options. They're the default.
 
 ### PageLayout
 
