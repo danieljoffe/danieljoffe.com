@@ -47,10 +47,12 @@ export default function Services() {
           <Badge variant='brand-solid'>
             Currently available for new projects
           </Badge>
-          <Heading variant='hero'>Your frontend is costing you users.</Heading>
+          <Heading variant='hero'>
+            Your engineering bottleneck has a fix.
+          </Heading>
           <Text variant='subtitle' className='max-w-lg mx-auto'>
             I help startups and growing teams ship faster, load faster, and stop
-            depending on engineering for everything.
+            depending on engineering for content changes.
           </Text>
           <div className='flex flex-col items-center gap-4 pt-2'>
             <HeroCTA />
@@ -168,17 +170,17 @@ export default function Services() {
       </Section>
 
       {/* ══════════════════════════════════
+          MVP BUILDS
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...mvpBuildsSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
           PERFORMANCE AUDITS
           ══════════════════════════════════ */}
       <Section>
         <ServiceSection {...performanceAuditsSection} />
-      </Section>
-
-      {/* ══════════════════════════════════
-          COMPONENT LIBRARIES
-          ══════════════════════════════════ */}
-      <Section>
-        <ServiceSection {...componentLibrariesSection} />
       </Section>
 
       {/* ══════════════════════════════════
@@ -189,10 +191,10 @@ export default function Services() {
       </Section>
 
       {/* ══════════════════════════════════
-          MVP BUILDS
+          COMPONENT LIBRARIES
           ══════════════════════════════════ */}
       <Section>
-        <ServiceSection {...mvpBuildsSection} />
+        <ServiceSection {...componentLibrariesSection} />
       </Section>
 
       {/* ══════════════════════════════════
@@ -277,16 +279,16 @@ export default function Services() {
           <Table<ServiceComparisonRow>
             columns={[
               { key: 'attribute', header: '', width: '20%' },
+              { key: 'mvpBuild', header: 'MVP Build' },
               {
                 key: 'performanceAudit',
                 header: 'Performance Audit',
               },
+              { key: 'cmsTooling', header: 'CMS & Tooling' },
               {
                 key: 'componentLibrary',
                 header: 'Component Library',
               },
-              { key: 'cmsTooling', header: 'CMS & Tooling' },
-              { key: 'mvpBuild', header: 'MVP Build' },
             ]}
             data={serviceComparisons}
             striped
@@ -304,18 +306,18 @@ export default function Services() {
               <div className='grid grid-cols-2 gap-2'>
                 <div>
                   <Text variant='meta' as='p' className='text-text-tertiary'>
-                    Performance Audit
+                    MVP Build
                   </Text>
                   <Text variant='body' as='p'>
-                    {row.performanceAudit}
+                    {row.mvpBuild}
                   </Text>
                 </div>
                 <div>
                   <Text variant='meta' as='p' className='text-text-tertiary'>
-                    Component Library
+                    Performance Audit
                   </Text>
                   <Text variant='body' as='p'>
-                    {row.componentLibrary}
+                    {row.performanceAudit}
                   </Text>
                 </div>
                 <div>
@@ -328,10 +330,10 @@ export default function Services() {
                 </div>
                 <div>
                   <Text variant='meta' as='p' className='text-text-tertiary'>
-                    MVP Build
+                    Component Library
                   </Text>
                   <Text variant='body' as='p'>
-                    {row.mvpBuild}
+                    {row.componentLibrary}
                   </Text>
                 </div>
               </div>

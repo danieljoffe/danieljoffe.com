@@ -296,6 +296,25 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.funnelSessionIdAnalytics]?.date ?? '',
       author,
     },
+    [blogSlugs.mobileVrDataDrivenPlaywright]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.mobileVrDataDrivenPlaywright].title,
+      description:
+        blogRecords[blogSlugs.mobileVrDataDrivenPlaywright].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.mobileVrDataDrivenPlaywright]?.date ?? '',
+      author,
+    },
+    [blogSlugs.sentrySkipWithoutDsn]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.sentrySkipWithoutDsn].title,
+      description: blogRecords[blogSlugs.sentrySkipWithoutDsn].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.sentrySkipWithoutDsn]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
@@ -303,7 +322,7 @@ export const blogRootStructuredData: CollectionPageStructuredData = {
   '@type': 'CollectionPage',
   name: `Blog | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned from a full-stack engineer.',
+    "Notes from shipping code. Deep-dives on the problems I've debugged, the patterns I've extracted, and the decisions I'd make differently next time.",
   url: `${DOMAIN_URL}${BLOG_LINK.href}`,
   author,
   mainEntity: {

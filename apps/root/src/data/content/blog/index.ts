@@ -91,6 +91,12 @@ import MinisearchRankedSearchCmdk, {
 import FunnelSessionIdAnalytics, {
   metadata as funnelSessionIdAnalyticsMeta,
 } from './funnel-session-id-analytics.mdx';
+import MobileVrDataDrivenPlaywright, {
+  metadata as mobileVrDataDrivenPlaywrightMeta,
+} from './mobile-vr-data-driven-playwright.mdx';
+import SentrySkipWithoutDsn, {
+  metadata as sentrySkipWithoutDsnMeta,
+} from './sentry-skip-without-dsn.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -125,6 +131,8 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'cycling-theme-toggle': CyclingThemeToggle,
   'minisearch-ranked-search-cmdk': MinisearchRankedSearchCmdk,
   'funnel-session-id-analytics': FunnelSessionIdAnalytics,
+  'mobile-vr-data-driven-playwright': MobileVrDataDrivenPlaywright,
+  'sentry-skip-without-dsn': SentrySkipWithoutDsn,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -158,4 +166,6 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'cycling-theme-toggle': cyclingThemeToggleMeta,
   'minisearch-ranked-search-cmdk': minisearchRankedSearchCmdkMeta,
   'funnel-session-id-analytics': funnelSessionIdAnalyticsMeta,
+  'mobile-vr-data-driven-playwright': mobileVrDataDrivenPlaywrightMeta,
+  'sentry-skip-without-dsn': sentrySkipWithoutDsnMeta,
 };
