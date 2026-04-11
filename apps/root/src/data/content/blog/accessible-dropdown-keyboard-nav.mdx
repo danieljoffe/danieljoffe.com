@@ -5,10 +5,16 @@ export const metadata = {
     'Full ARIA menu semantics and keyboard navigation in ~150 lines of React, no Radix, no Headless UI, just the spec.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
-  tags: ['React', 'Accessibility', 'Design Systems', 'ARIA'],
+  tags: ['React', 'Design Systems', 'ARIA'],
   slug: 'accessible-dropdown-keyboard-nav',
   type: 'blog',
-  topic: 'Accessibility',
+  cover: {
+    alt: 'A keyboard with illuminated keys in a dark environment',
+    src: '/photo-1541140532154-b024d6e1841f',
+    origin:
+      'https://unsplash.com/photos/black-computer-keyboard-in-close-up-photography-mP7aPSUm7aE',
+    creator: '@nubelson',
+  },
 };
 
 ## The Default Move
@@ -19,7 +25,7 @@ already has a custom Dropdown — one that works, is styled, and is used
 everywhere — pulling in a new dependency just for ARIA attributes feels
 backwards.
 
-We had that exact Dropdown. It opened on click, closed on outside click, and
+I had that exact Dropdown. It opened on click, closed on outside click, and
 rendered items. No ARIA roles, no keyboard navigation, no focus management.
 Screen readers saw a `<button>` that spawned some `<div>`s.
 
@@ -59,7 +65,7 @@ focus target:
 </button>
 ```
 
-When the active index changes, we call `.focus()` on the new target:
+When the active index changes, I call `.focus()` on the new target:
 
 ```tsx
 const focusItem = useCallback((index: number) => {
@@ -75,7 +81,7 @@ per spec.
 ## Skipping Non-Actionable Items
 
 Dropdown items aren't always clickable. Dividers and disabled items should
-be skipped during keyboard navigation. We pre-compute the actionable
+be skipped during keyboard navigation. I pre-compute the actionable
 indices once:
 
 ```tsx
@@ -138,7 +144,7 @@ multiple Dropdowns on the same page.
 ## Testing the Invisible
 
 Accessibility features are invisible to sighted users, which makes testing
-non-negotiable. We added 22 tests covering:
+non-negotiable. I added 22 tests covering:
 
 - ARIA attributes render correctly on trigger, menu, and items
 - Arrow keys cycle through actionable items and wrap

@@ -5,22 +5,27 @@ export const metadata = {
     'Auditing every animated component for motion sensitivity reveals which animations are decorative and which need static alternatives.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
-  tags: ['Accessibility', 'Tailwind CSS', 'Design Systems', 'CSS'],
+  tags: ['Tailwind CSS', 'Design Systems', 'CSS'],
   slug: 'prefers-reduced-motion-component-library',
   type: 'blog',
-  topic: 'Accessibility',
+  cover: {
+    alt: 'A slow-motion water droplet frozen in time',
+    src: '/photo-1606214554814-e8a9f97bdbb0',
+    origin: 'https://unsplash.com/photos/slow-motion-water-droplet-frozen',
+    creator: '@unsplash',
+  },
 };
 
 ## The Audit
 
-Our shared-ui library had 30+ components. Twelve of them used CSS animations
+The shared-ui library had 30+ components. Twelve of them used CSS animations
 or transitions: Spinner, Loading, ProgressBar, Switch, Sidebar, ThemeToggle,
 Button, Skeleton, Dropdown, Toast, Modal, and Tooltip. None of them respected
 `prefers-reduced-motion`.
 
 A global CSS rule like `@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }` would have been a one-line fix. But it's a
 blunt instrument. It removes all animation indiscriminately, including
-transitions that communicate state changes. We needed a component-level
+transitions that communicate state changes. I needed a component-level
 approach.
 
 ## Decorative vs. Functional
@@ -54,7 +59,7 @@ its final state instantly.
 ## The Tailwind Pattern
 
 Tailwind CSS 4's `motion-reduce:` variant maps directly to
-`@media (prefers-reduced-motion: reduce)`. We applied it at the component
+`@media (prefers-reduced-motion: reduce)`. I applied it at the component
 level, next to the animation it modifies:
 
 ```tsx
@@ -71,7 +76,7 @@ level, next to the animation it modifies:
 <div className='size-2 bg-brand-500 rounded-full animate-[bounceSubtle_0.6s_ease-in-out_infinite] motion-reduce:animate-none' />
 ```
 
-For functional transitions, we paired `motion-reduce:transition-none` with the
+For functional transitions, I paired `motion-reduce:transition-none` with the
 existing transition class. The Switch thumb, for example, still moves to the
 correct position; it just snaps there instead of sliding:
 
@@ -108,6 +113,6 @@ failing test that makes the intent explicit.
 ## The Takeaway
 
 A global `animation: none` rule treats all motion the same. Component-level
-`motion-reduce:` utilities let us distinguish between motion that's decorative
+`motion-reduce:` utilities let me distinguish between motion that's decorative
 and motion that communicates state. Twelve components, twelve decisions, twelve
 lines of Tailwind. The audit is the work; the implementation is trivial.

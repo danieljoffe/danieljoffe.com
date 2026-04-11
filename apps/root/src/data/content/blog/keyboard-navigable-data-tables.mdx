@@ -5,16 +5,22 @@ export const metadata = {
     'Adding scope, caption, clickable row keyboard support, and focus-visible to a Table component. The accessibility basics HTML tables need but rarely get.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
-  tags: ['React', 'Accessibility', 'Design Systems', 'HTML'],
+  tags: ['React', 'Design Systems', 'HTML5'],
   slug: 'keyboard-navigable-data-tables',
   type: 'blog',
-  topic: 'Accessibility',
+  cover: {
+    alt: 'A spreadsheet displayed on a monitor screen',
+    src: '/photo-1460925895917-afdab827c52f',
+    origin:
+      'https://unsplash.com/photos/laptop-computer-on-glass-top-table-hpjSkU2UYSU',
+    creator: '@carlheyerdahl',
+  },
 };
 
 ## The Problem with Styled Tables
 
 Custom table components tend to inherit all of HTML's visual structure and
-none of its semantic structure. Our shared-ui `Table` had `<thead>`,
+none of its semantic structure. The shared-ui `Table` had `<thead>`,
 `<tbody>`, `<th>`, and `<td>` — correct markup. But it was missing the
 attributes that tell assistive technology how to interpret that markup.
 
@@ -39,14 +45,14 @@ ambiguity about the header-to-data relationship.
 
 ## Caption vs aria-label
 
-A table should identify itself. HTML gives us two options:
+A table should identify itself. HTML gives me two options:
 
 - **`<caption>`**: visible, rendered inside the table. Best when the label
   should be visible to all users.
 - **`aria-label`**: invisible, read only by screen readers. Best when the
   surrounding context already provides a visible heading.
 
-We support both, with `caption` taking precedence:
+I support both, with `caption` taking precedence:
 
 ```tsx
 <table aria-label={!caption ? ariaLabel : undefined}>

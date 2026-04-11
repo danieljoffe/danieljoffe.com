@@ -4,16 +4,21 @@ export const metadata = {
   excerpt:
     'Replacing a 15KB focus-trap dependency with native dialog behavior and manual focus management drops bundle size and simplifies the shared-ui library.',
   author: 'Daniel Joffe',
-  category: 'Performance Engineering',
-  tags: ['React', 'Accessibility', 'Performance', 'Design Systems', 'Jest'],
+  category: 'Performance',
+  tags: ['React', 'Accessibility', 'Design Systems', 'Jest'],
   slug: 'removing-focus-trap-react',
   type: 'blog',
-  topic: 'Accessibility',
+  cover: {
+    alt: 'A close-up of a keyboard with a glowing focus indicator',
+    src: '/photo-1587829741301-dc798b83add3',
+    origin: 'https://unsplash.com/photos/black-computer-keyboard-7WfBMtB-RhE',
+    creator: '@eylumandemin',
+  },
 };
 
 ## The Dependency Problem
 
-Our shared-ui library had a single external runtime dependency beyond React:
+The shared-ui library had a single external runtime dependency beyond React:
 `focus-trap-react`. It was used in exactly one component, the `Modal`. And
 it brought baggage:
 
@@ -28,7 +33,7 @@ CSS," this was a violation hiding in plain sight.
 
 ## The Native Alternative
 
-Modern browsers give us everything we need for focus trapping. The HTML
+Modern browsers give me everything I need for focus trapping. The HTML
 `<dialog>` element, when opened with `showModal()`, provides:
 
 - **Built-in focus trapping**: Tab cycles within the dialog automatically
@@ -36,7 +41,7 @@ Modern browsers give us everything we need for focus trapping. The HTML
 - **Escape key handling**: The `cancel` event fires on Escape
 - **Focus restoration**: Focus returns to the trigger element on close
 
-For our React component, the refactored Modal stores a ref to the triggering
+For the React component, the refactored Modal stores a ref to the triggering
 element, manages `document.body.style.overflow` for scroll lock, and uses
 keyboard event listeners for Escape:
 
@@ -66,7 +71,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 }
 ```
 
-## What We Gained
+## What I Gained
 
 1. **Zero runtime dependencies** in shared-ui (beyond React peer dep)
 2. **Deleted** the mock file. One less testing workaround
@@ -77,7 +82,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 ## Accessibility Testing
 
 The critical question: does it still work for keyboard and screen reader users?
-We verified:
+I verified:
 
 - **Tab cycling** stays within the modal when open
 - **Shift+Tab** wraps correctly at the first focusable element
@@ -93,7 +98,7 @@ modification. The behavioral contract is identical.
 
 Before adding a dependency, check what the platform already provides. Focus
 trapping was a solved problem in 2020 when `<dialog>` shipped in all major
-browsers. Three years later, we were still bundling a polyfill-style library
+browsers. Three years later, the shared-ui library was still bundling a polyfill-style library
 for something the browser does natively.
 
 The shared-ui library now has a clean dependency story: React, Tailwind CSS,

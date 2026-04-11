@@ -236,6 +236,12 @@ describe('buildPostMetadata', () => {
     tags: ['React', 'TypeScript'],
     slug: 'test-project',
     type: 'project',
+    cover: {
+      alt: 'Test cover',
+      src: '/photo-test',
+      origin: 'https://unsplash.com/photos/test',
+      creator: '@test',
+    },
   };
 
   const experienceMeta: PostMetadata = {
@@ -251,6 +257,12 @@ describe('buildPostMetadata', () => {
     role: 'Engineer',
     duration: 'Jan 2020 - Dec 2021',
     industry: 'Tech',
+    cover: {
+      alt: 'Test cover',
+      src: '/photo-test',
+      origin: 'https://unsplash.com/photos/test',
+      creator: '@test',
+    },
   };
 
   it('returns metadata with correct title for projects', () => {
@@ -309,7 +321,12 @@ describe('buildPostMetadata', () => {
       tags: ['React'],
       slug: 'test-blog-post',
       type: 'blog',
-      topic: 'Performance',
+      cover: {
+        alt: 'Test cover',
+        src: '/photo-test',
+        origin: 'https://unsplash.com/photos/test',
+        creator: '@test',
+      },
     };
     const result = buildPostMetadata(blogMeta);
     expect(result.title).toBe('Blog | Test Blog Post');
@@ -325,6 +342,12 @@ describe('buildPostMetadata', () => {
       tags: ['React'],
       slug: 'test-blog-post',
       type: 'blog',
+      cover: {
+        alt: 'Test cover',
+        src: '/photo-test',
+        origin: 'https://unsplash.com/photos/test',
+        creator: '@test',
+      },
     };
     const result = buildPostMetadata(blogMeta);
     expect((result.alternates as { canonical: string }).canonical).toBe(

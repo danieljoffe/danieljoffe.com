@@ -1,15 +1,19 @@
 export const metadata = {
-  title:
-    'Phantom Dependencies: What pnpm Strict Mode Reveals About Your Monorepo',
+  title: 'Phantom Dependencies: What pnpm Strict Mode Reveals',
   date: '2026-04-08',
   excerpt:
     'Migrating from Yarn Classic to pnpm exposes dependencies that worked by accident, not by declaration.',
   author: 'Daniel Joffe',
-  category: 'DevOps',
-  tags: ['pnpm', 'Monorepo', 'Nx', 'DevOps', 'Node.js'],
+  category: 'Tooling & CI',
+  tags: ['pnpm', 'Monorepo', 'Nx', 'Node.js'],
   slug: 'pnpm-phantom-dependencies',
   type: 'blog',
-  topic: 'Tooling',
+  cover: {
+    alt: 'Tangled wires and messy cables',
+    src: '/photo-1621294465978-6b4198a5f2f7',
+    origin: 'https://unsplash.com/photos/tangled-wires-messy-cables',
+    creator: '@unsplash',
+  },
 };
 
 ## The Accidental Dependency
@@ -19,9 +23,9 @@ code can import anything any package depends on, whether you declared it or not.
 You don't notice until you switch to a package manager that enforces what you
 actually wrote in `package.json`.
 
-We migrated this Nx monorepo from Yarn Classic to pnpm v10. The command itself
+I migrated this Nx monorepo from Yarn Classic to pnpm v10. The command itself
 was uneventful: `corepack enable pnpm && pnpm import` converts `yarn.lock`
-to `pnpm-lock.yaml`. What happened next was an audit we didn't plan for.
+to `pnpm-lock.yaml`. What happened next was an audit I didn't plan for.
 
 ## The First Failure
 
@@ -92,11 +96,11 @@ system traversal. pnpm requires explicit subpath exports in `package.json`:
 ```
 
 The `./*` wildcard initially used `*.tsx`, which couldn't match `.ts` files in
-the `styles/` directory. We added explicit `./styles/*` and `./types` entries
+the `styles/` directory. I added explicit `./styles/*` and `./types` entries
 to cover both extensions. Without pnpm's strictness, this mismatch would have
 surfaced only after a consumer tried tree-shaking and got an empty module.
 
-## What We Gained
+## What I Gained
 
 The migration touched 4 CI workflow files, 1 Dockerfile, and the root
 `package.json` (converting Yarn `resolutions` to pnpm `pnpm.overrides`). In

@@ -1,87 +1,27 @@
 import { AllowedProjectSlugs, ProjectStructuredData } from '@/types/base';
-import { projectSlugs, projectPageSlugs } from '@/data/project';
-import { projectsRecords } from '@/data/projectThumbnails';
+import { projectPageSlugs } from '@/data/project';
+import { projectMdxMetadata } from '@/data/content/projects';
 import { DOMAIN_URL, PROJECTS_LINK } from '@/utils/constants';
 import {
   personStructuredData as author,
   CollectionPageStructuredData,
 } from './base';
 
-export const projectStructuredData: Record<
-  AllowedProjectSlugs,
-  ProjectStructuredData
-> = {
-  [projectSlugs.uiV1]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.uiV1].description,
-    headline: projectsRecords[projectSlugs.uiV1].title,
-    author,
-  },
-  [projectSlugs.uiV2]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.uiV2].description,
-    headline: projectsRecords[projectSlugs.uiV2].title,
-    author,
-  },
-  [projectSlugs.csPerformance]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csPerformance].description,
-    headline: projectsRecords[projectSlugs.csPerformance].title,
-    author,
-  },
-  [projectSlugs.csCLibrary]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csCLibrary].description,
-    headline: projectsRecords[projectSlugs.csCLibrary].title,
-    author,
-  },
-  [projectSlugs.csCMSTooling]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csCMSTooling].description,
-    headline: projectsRecords[projectSlugs.csCMSTooling].title,
-    author,
-  },
-  [projectSlugs.csModernPractice]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csModernPractice].description,
-    headline: projectsRecords[projectSlugs.csModernPractice].title,
-    author,
-  },
-  [projectSlugs.csA11y]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csA11y].description,
-    headline: projectsRecords[projectSlugs.csA11y].title,
-    author,
-  },
-  [projectSlugs.csLogisticsDashboard]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csLogisticsDashboard].description,
-    headline: projectsRecords[projectSlugs.csLogisticsDashboard].title,
-    author,
-  },
-  [projectSlugs.csContactForm]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csContactForm].description,
-    headline: projectsRecords[projectSlugs.csContactForm].title,
-    author,
-  },
-  [projectSlugs.csAppContext]: {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    about: projectsRecords[projectSlugs.csAppContext].description,
-    headline: projectsRecords[projectSlugs.csAppContext].title,
-    author,
-  },
-};
+export const projectStructuredData = Object.fromEntries(
+  projectPageSlugs.map(slug => {
+    const meta = projectMdxMetadata[slug];
+    return [
+      slug,
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Blog',
+        about: meta.excerpt,
+        headline: meta.title,
+        author,
+      },
+    ];
+  })
+) as Record<AllowedProjectSlugs, ProjectStructuredData>;
 
 export const projectsRootStructuredData: CollectionPageStructuredData = {
   '@context': 'https://schema.org',
@@ -96,9 +36,9 @@ export const projectsRootStructuredData: CollectionPageStructuredData = {
     itemListElement: projectPageSlugs.map((slug, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      name: projectsRecords[slug].title,
+      name: projectMdxMetadata[slug].title,
       url: `${DOMAIN_URL}${PROJECTS_LINK.href}/${slug}`,
-      description: projectsRecords[slug].description as string,
+      description: projectMdxMetadata[slug].excerpt,
     })),
   },
 };

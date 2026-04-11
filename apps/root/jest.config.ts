@@ -16,9 +16,12 @@ const config = {
   bail: isCI ? 1 : 0,
   preset: '../../jest.preset.js',
   transform: {
+    // Custom MDX transform — extracts `export const metadata` and stubs the
+    // default React component. See __mocks__/mdxTransform.js for the why.
+    '\\.mdx$': '<rootDir>/__mocks__/mdxTransform.js',
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'mdx'],
   coverageDirectory: '../../coverage/apps/root',
   testEnvironment: 'jsdom',
   collectCoverageFrom: [

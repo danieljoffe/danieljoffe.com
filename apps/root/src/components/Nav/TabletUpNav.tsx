@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, User, BookOpen } from 'lucide-react';
+import Image from 'next/image';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
@@ -10,8 +11,8 @@ import {
   PRIMARY_NAV_LINKS,
   MORE_NAV_LINKS,
   AUDIT_LINK,
+  HOME_LINK,
 } from '@/utils/constants';
-import Logo from './Logo';
 import SearchTrigger from './SearchTrigger';
 import DarkModeToggle from './DarkModeToggle';
 
@@ -36,7 +37,13 @@ export default function TabletUpNav({ pathname }: { pathname: string }) {
 
   return (
     <div className='hidden md:flex max-w-4xl mx-auto px-6 lg:px-0 h-14 items-center gap-1'>
-      <Logo />
+      <Link
+        href={HOME_LINK.href}
+        aria-label={HOME_LINK.label}
+        className='flex items-center'
+      >
+        <Image src='/logo.svg' alt={HOME_LINK.label} width={32} height={32} />
+      </Link>
 
       <nav className='flex items-center gap-1 ml-6' aria-label='Primary'>
         {PRIMARY_NAV_LINKS.map(link => (

@@ -6,6 +6,7 @@ import {
 } from '@/types/base';
 import { ContentType, PostMetadata, PostThumbnail } from '@/types/postTypes';
 import { contentTypeConfigs } from '@/data/contentTypeConfig';
+import { buildThumbnail } from '@/data/buildThumbnail';
 import {
   projectMdxComponents,
   projectMdxMetadata,
@@ -15,9 +16,6 @@ import {
   experienceMdxMetadata,
 } from '@/data/content/experience';
 import { blogMdxComponents, blogMdxMetadata } from '@/data/content/blog';
-import { projectsRecords } from '@/data/projectThumbnails';
-import { experienceRecords } from '@/data/experienceThumbnails';
-import { blogRecords } from '@/data/blogThumbnails';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { experienceStructuredData } from '@/data/structuredData/experience';
 import { blogStructuredData } from '@/data/structuredData/blog';
@@ -49,43 +47,55 @@ export interface ContentEntry {
 }
 
 // ---------------------------------------------------------------------------
-// Build the registry from existing per-type data (Phase 1 facade)
+// Build the registry from MDX metadata (the single source of truth)
 // ---------------------------------------------------------------------------
 
 function buildProjectEntries(): ContentEntry[] {
-  return projectHistory.map(slug => ({
-    slug,
-    type: 'project' as const,
-    thumbnail: projectsRecords[slug],
-    component: projectMdxComponents[slug],
-    metadata: projectMdxMetadata[slug],
-    structuredData: projectStructuredData[slug],
-    readingTime: projectReadingTimes[slug],
-  }));
+  return projectHistory.map(slug => {
+    const metadata = projectMdxMetadata[slug];
+    const readingTime = projectReadingTimes[slug];
+    return {
+      slug,
+      type: 'project' as const,
+      thumbnail: buildThumbnail(metadata, readingTime),
+      component: projectMdxComponents[slug],
+      metadata,
+      structuredData: projectStructuredData[slug],
+      readingTime,
+    };
+  });
 }
 
 function buildExperienceEntries(): ContentEntry[] {
-  return experienceHistory.map(slug => ({
-    slug,
-    type: 'experience' as const,
-    thumbnail: experienceRecords[slug],
-    component: experienceMdxComponents[slug],
-    metadata: experienceMdxMetadata[slug],
-    structuredData: experienceStructuredData[slug],
-    readingTime: experienceReadingTimes[slug],
-  }));
+  return experienceHistory.map(slug => {
+    const metadata = experienceMdxMetadata[slug];
+    const readingTime = experienceReadingTimes[slug];
+    return {
+      slug,
+      type: 'experience' as const,
+      thumbnail: buildThumbnail(metadata, readingTime),
+      component: experienceMdxComponents[slug],
+      metadata,
+      structuredData: experienceStructuredData[slug],
+      readingTime,
+    };
+  });
 }
 
 function buildBlogEntries(): ContentEntry[] {
-  return blogHistory.map(slug => ({
-    slug,
-    type: 'blog' as const,
-    thumbnail: blogRecords[slug],
-    component: blogMdxComponents[slug],
-    metadata: blogMdxMetadata[slug],
-    structuredData: blogStructuredData[slug],
-    readingTime: blogReadingTimes[slug],
-  }));
+  return blogHistory.map(slug => {
+    const metadata = blogMdxMetadata[slug];
+    const readingTime = blogReadingTimes[slug];
+    return {
+      slug,
+      type: 'blog' as const,
+      thumbnail: buildThumbnail(metadata, readingTime),
+      component: blogMdxComponents[slug],
+      metadata,
+      structuredData: blogStructuredData[slug],
+      readingTime,
+    };
+  });
 }
 
 const entries: ContentEntry[] = [

@@ -2,19 +2,19 @@ export const metadata = {
   title: 'Building an Auto-Generated Table of Contents with Scroll Spy',
   date: '2026-04-04',
   excerpt:
-    'A responsive, accessible table of contents that extracts headings from rendered MDX, tracks reading position with IntersectionObserver, and adapts between a sticky sidebar and a mobile bottom sheet.',
+    'Extracting headings from rendered MDX, tracking reading position with IntersectionObserver, and adapting between a sticky sidebar and a mobile bottom sheet.',
   author: 'Daniel Joffe',
   category: 'Frontend Engineering',
-  tags: [
-    'React',
-    'IntersectionObserver',
-    'Accessibility',
-    'Responsive Design',
-    'MDX',
-  ],
+  tags: ['React', 'Accessibility', 'MDX'],
   slug: 'auto-generated-toc-scroll-spy',
   type: 'blog',
-  topic: 'Frontend Engineering',
+  cover: {
+    alt: 'A clean desk with an open notebook showing a table of contents',
+    src: '/photo-1456324504439-367cee3b3c32',
+    origin:
+      'https://unsplash.com/photos/white-book-page-on-white-textile-MldQeWmF2_g',
+    creator: '@aaronburden',
+  },
 };
 
 ## The Problem
@@ -24,7 +24,7 @@ multiple sections, had no way for readers to see where they were or jump to a
 specific section. The browser's native scroll position was the only indicator of
 progress.
 
-We needed a table of contents that:
+I needed a table of contents that:
 
 1. **Self-generates** from the MDX content (no manual configuration per post)
 2. **Tracks reading position** in real time
@@ -70,7 +70,7 @@ Key decisions here:
 ## Scroll Spy with IntersectionObserver
 
 Instead of a scroll event listener polling `getBoundingClientRect()` on every
-frame, we used IntersectionObserver to let the browser tell us when headings enter
+frame, I used IntersectionObserver to let the browser tell me when headings enter
 or leave the viewport:
 
 ```typescript
@@ -214,3 +214,12 @@ FAB was hidden on mobile, exactly when it was needed most.
 - **Self-maintaining**: authors write MDX with headings, TOC generates itself
 - Works across all content types (projects, experience, blog) automatically
   through the shared `PostBody` component
+
+## The Lesson
+
+The best UI affordances are the ones the browser already gives you.
+IntersectionObserver, `prefers-reduced-motion`, native `scrollIntoView`,
+and auto-generated heading IDs from the MDX plugin meant I wrote 149 lines
+of glue code and got an accessible, zero-cost TOC with scroll spy. Before
+adding a throttled scroll listener or a custom animation timing function,
+check whether the platform already solved it. Usually it did.

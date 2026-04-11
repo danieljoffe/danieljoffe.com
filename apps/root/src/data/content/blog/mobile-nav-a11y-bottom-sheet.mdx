@@ -5,15 +5,21 @@ export const metadata = {
     "A nav redesign passes code review but fails E2E tests on mobile. Here's what axe caught and how aria-hidden, inert, and proper dialog semantics fixed it.",
   author: 'Daniel Joffe',
   category: 'Accessibility',
-  tags: ['Accessibility', 'React', 'Mobile', 'ARIA', 'Testing'],
+  tags: ['React', 'Mobile', 'ARIA', 'Testing'],
   slug: 'mobile-nav-a11y-bottom-sheet',
   type: 'blog',
-  topic: 'Accessibility',
+  cover: {
+    alt: 'A smartphone displaying a mobile application interface',
+    src: '/photo-1512941937669-90a1b58e7e9c',
+    origin:
+      'https://unsplash.com/photos/person-holding-space-gray-iphone-6-B5PBTIg1wts',
+    creator: '@freestocks',
+  },
 };
 
 ## The Redesign That Broke Things
 
-We shipped a mobile bottom navigation bar with much excitement. The iOS-style pattern with
+I shipped a mobile bottom navigation bar with much excitement. The iOS-style pattern with
 Home, Services, Projects, Experience across the bottom of the screen, plus
 a "More" button that opens a bottom sheet with secondary links. It's UI ergonomics. It looked
 great. It passed unit tests. Then Playwright's axe integration flagged 6
@@ -102,18 +108,18 @@ renders its own fixed-position elements (the bottom bar, the backdrop,
 the sheet). Nesting fixed elements inside a fixed container with
 `overflow` handling creates unpredictable stacking behavior.
 
-We split them: `<header>` should wrap only the desktop nav (`hidden md:block`),
+I split them: `<header>` should wrap only the desktop nav (`hidden md:block`),
 and `MobileNav` should render independently at the top level.
 
 ## One More Thing: Layout-Matched Skeletons
 
-While fixing the nav, we noticed the desktop nav's loading state was a
+While fixing the nav, I noticed the desktop nav's loading state was a
 centered `Spinner`. When the real nav loaded, everything shifted. The
 logo appeared on the left, links spread across the middle, CTAs landed on
 the right. Classic layout shift from a loading state that doesn't match
 the final layout.
 
-We replaced it with a `NavSkeleton` component using the shared-ui
+I replaced it with a `NavSkeleton` component using the shared-ui
 `Skeleton` primitive. Each skeleton element matches the dimensions of the
 real element it represents: 32x32 for the logo, 68px for "Services,"
 82px for "Experience." The nav loads in place without anything jumping.

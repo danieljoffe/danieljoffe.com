@@ -48,7 +48,8 @@ export default function Projects() {
         />
         <div className={`${cardBase} p-5 space-y-3`}>
           <Text variant='body'>
-            Explore the source code or browse the component library.
+            The source for this site and its design system is public. Read the
+            code on GitHub or browse the components in Storybook.
           </Text>
           <div className='flex flex-wrap gap-2'>
             <Button
@@ -61,7 +62,7 @@ export default function Projects() {
               size='sm'
             >
               <Github className='h-3.5 w-3.5' aria-hidden='true' />
-              View Source
+              View on GitHub
             </Button>
             <Button
               as='link'
@@ -73,7 +74,7 @@ export default function Projects() {
               size='sm'
             >
               <BookOpen className='h-3.5 w-3.5' aria-hidden='true' />
-              Component Library
+              Open Storybook
             </Button>
           </div>
         </div>
