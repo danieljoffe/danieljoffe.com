@@ -8,7 +8,7 @@ const theme = create({
   // Brand
   brandTitle: 'danieljoffe/ui',
   brandUrl: 'https://danieljoffe.com',
-  brandTarget: '_blank',
+  brandTarget: 'https://danieljoffe.com/logo.svg',
   brandImage: logo,
 
   // UI chrome — matches .dark token values
