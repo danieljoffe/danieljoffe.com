@@ -20,13 +20,13 @@ export const metadata = {
 
 ## Nine Tests, Copied Twice
 
-We had nine visual regression tests in Playwright, one per page. Each test navigated to a URL, waited for load, and called `toHaveScreenshot`. They were nearly identical except for three things: the URL, the snapshot name, and a few per-page quirks (the homepage needs a stable-height poll for GSAP animations; the about page masks the hCaptcha widget).
+I had nine visual regression tests in Playwright, one per page. Each test navigated to a URL, waited for load, and called `toHaveScreenshot`. They were nearly identical except for three things: the URL, the snapshot name, and a few per-page quirks (the homepage needs a stable-height poll for GSAP animations; the about page masks the hCaptcha widget).
 
-When we needed mobile screenshots at 390×844 alongside the existing 1280×720 desktops, the obvious approach was to duplicate all nine tests with a different viewport. That would have taken us from 9 tests to 18, with every line of navigation and wait logic copied.
+When I needed mobile screenshots at 390×844 alongside the existing 1280×720 desktops, the obvious approach was to duplicate all nine tests with a different viewport. That would have taken me from 9 tests to 18, with every line of navigation and wait logic copied.
 
 ## The Page Config
 
-Instead of duplicating tests, we described what varies in a typed array:
+Instead of duplicating tests, I described what varies in a typed array:
 
 ```ts
 const pages = [
@@ -142,4 +142,4 @@ The existing `update-snapshots` workflow dispatch runs `playwright test src/visu
 
 ## The Takeaway
 
-When tests differ only in data, not in logic, the test itself should be a loop over that data. A nine-element config array gave us 18 visual regression tests across two viewports at 180 lines, down from what would have been 300+ lines of copy-paste. Adding a third viewport, say tablet at 768×1024, is three lines: one `test.describe`, one `setViewportSize`, one filename suffix.
+When tests differ only in data, not in logic, the test itself should be a loop over that data. A nine-element config array gave me 18 visual regression tests across two viewports at 180 lines, down from what would have been 300+ lines of copy-paste. Adding a third viewport, say tablet at 768×1024, is three lines: one `test.describe`, one `setViewportSize`, one filename suffix.

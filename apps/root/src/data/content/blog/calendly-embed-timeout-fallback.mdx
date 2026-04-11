@@ -2,7 +2,7 @@ export const metadata = {
   title: 'An 8-Second Timeout for Third-Party Iframes',
   date: '2026-04-07',
   excerpt:
-    'An iframe that never loads looks like a broken page leaving users staring and waiting. We added a timeout and predictability.',
+    'An iframe that never loads looks like a broken page. An 8-second timeout and a direct booking link keep users moving instead of staring.',
   author: 'Daniel Joffe',
   category: 'Frontend Engineering',
   tags: ['React', 'UX', 'Third-Party Embeds', 'Resilience'],
@@ -19,7 +19,7 @@ export const metadata = {
 
 ## The Invisible Failure
 
-Our services page embeds a Calendly scheduling widget in an iframe. It
+The services page embeds a Calendly scheduling widget in an iframe. It
 loads lazily via IntersectionObserver and shows a spinner until the
 iframe fires `onLoad`. Clean pattern, _should_ work well,
 until it does not load at all.
@@ -87,7 +87,7 @@ if (timedOut && !isLoaded) {
 }
 ```
 
-The fallback click is tracked with analytics so we can see how often
+The fallback click is tracked with analytics so I can see how often
 users hit this path. If the number is high, there is a conversation to
 have about whether an iframe embed is the right approach at all.
 
@@ -96,7 +96,7 @@ have about whether an iframe embed is the right approach at all.
 The timeout needs to be long enough that slow connections can still
 load the embed, and short enough that users do not leave. Calendly's
 embed is heavy: it loads its own JavaScript, CSS, and API calls. On a
-3G connection, 4-5 seconds is realistic. We chose 8 seconds as a
+3G connection, 4-5 seconds is realistic. I chose 8 seconds as a
 buffer above that, which means a user on a working but slow connection
 will never see the fallback, but a user whose ad blocker killed the
 request will see it within a reasonable wait.

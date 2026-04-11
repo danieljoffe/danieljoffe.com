@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Replacing a GitHub Action with 15 Lines of Shell',
   date: '2026-04-07',
   excerpt:
-    'The dorny/paths-filter GitHub Action silently ignores our config, so we replace it with a shell case statement that actually works.',
+    'dorny/paths-filter silently ignored its own config. A 15-line shell case statement replaces it and actually works.',
   author: 'Daniel Joffe',
   category: 'CI/CD',
   tags: ['GitHub Actions', 'CI/CD', 'Shell', 'DevOps'],
@@ -19,21 +19,21 @@ export const metadata = {
 
 ## The Silent Failure
 
-We wanted a simple optimization: skip CI when a pull request only
+I wanted a simple optimization: skip CI when a pull request only
 touches documentation files (`.md`, `.claude/*`, `.vscode/*`, workflow
 files). The standard approach is `dorny/paths-filter`, a GitHub Action
 that checks changed files against glob patterns.
 
-We configured it, tested it, and it never worked. Docs-only PRs ran
+I configured it, tested it, and it never worked. Docs-only PRs ran
 the full CI suite every time. No error, no warning, no indication that
 anything was wrong.
 
 The cause was two bugs compounding. First, `paths-filter` does not
-support the `predicate-quantifier` option we set. It silently ignores
+support the `predicate-quantifier` option I set. It silently ignores
 it. Second, its glob matching failed to match `.claude/**` files, so
-our Claude Code config changes were never classified as docs-only.
+the Claude Code config changes were never classified as docs-only.
 
-We spent three commits trying to fix the configuration: adjusting globs,
+I spent three commits trying to fix the configuration: adjusting globs,
 adding `predicate-quantifier`, inverting the pattern logic. None of it
 worked because the underlying Action was not behaving as documented.
 
