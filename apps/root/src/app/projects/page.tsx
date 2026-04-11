@@ -9,8 +9,13 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
-import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import { PostCard } from '@/components/kit';
+import { getTopTags, tagToSlug } from '@/lib/tags';
+import {
+  GITHUB_REPO_URL,
+  PROJECTS_TAGS_LINK,
+  STORYBOOK_URL,
+} from '@/utils/constants';
+import { PostCard, TagChipStrip } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import Button from '@/components/Button';
 
@@ -20,6 +25,13 @@ const projectsList = getContentByType('project')
     ...entry.thumbnail,
     readingTime: entry.readingTime,
   }));
+
+const TOP_TAG_LIMIT = 8;
+const topProjectTags = getTopTags('project', TOP_TAG_LIMIT).map(tag => ({
+  ...tag,
+  href: `${PROJECTS_TAGS_LINK.href}/${tagToSlug(tag.name)}`,
+}));
+
 export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {
@@ -87,6 +99,12 @@ export default function Projects() {
         <SectionLabel
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'
+        />
+        <TagChipStrip
+          tags={topProjectTags}
+          viewAllHref={PROJECTS_TAGS_LINK.href}
+          ariaLabel='Filter projects by tag'
+          className='mb-6'
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {projectsList.map((project, i) => (

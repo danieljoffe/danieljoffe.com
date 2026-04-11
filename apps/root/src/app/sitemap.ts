@@ -8,6 +8,7 @@ import {
   EXPERIENCE_LINK,
   POSTS_PER_PAGE,
   PROJECTS_LINK,
+  PROJECTS_TAGS_LINK,
   SERVICES_LINK,
 } from '@/utils/constants';
 import { experiencePageSlugs } from '@/data/experience';
@@ -120,6 +121,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  // Project tag discovery routes (parity with blog tag routes).
+  const projectTagsIndexRoute = {
+    url: `${DOMAIN_URL}${PROJECTS_TAGS_LINK.href}`,
+    lastModified: BUILD_DATE,
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  };
+  const projectTagRoutes = getAllTags('project').map(tag => ({
+    url: `${DOMAIN_URL}${PROJECTS_TAGS_LINK.href}/${tagToSlug(tag)}`,
+    lastModified: BUILD_DATE,
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  }));
+
   return [
     ...staticRoutes,
     ...experienceRoutes,
@@ -128,5 +143,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...blogPaginationRoutes,
     blogTagsIndexRoute,
     ...blogTagRoutes,
+    projectTagsIndexRoute,
+    ...projectTagRoutes,
   ];
 }
