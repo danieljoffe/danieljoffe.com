@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Upgrading cmdk Search with MiniSearch Field Boosting',
   date: '2026-04-10',
   excerpt:
-    'cmdk does substring matching. We kept its UI shell and replaced the filter engine with MiniSearch for ranked, fuzzy results with match highlighting.',
+    'cmdk does substring matching. Keeping its UI shell and swapping the filter engine for MiniSearch gives ranked, fuzzy results with match highlighting.',
   author: 'Daniel Joffe',
   category: 'Frontend Engineering',
   tags: ['React', 'Next.js', 'Search', 'Performance', 'TypeScript'],
@@ -21,9 +21,9 @@ export const metadata = {
 
 The [previous search implementation](/blog/static-site-search-cmdk) worked: a flat array, cmdk's built-in filter, and substring matching across title, excerpt, and tags concatenated into a single `value` string. It covered 47 pages with zero API calls.
 
-The problem surfaced when we added tag discovery. Searching "React" matched every entry that mentioned React anywhere in its excerpt. A blog post titled "React" and a logistics case study that happened to mention React in passing ranked identically. cmdk's filter treats all text as one opaque string; it has no concept of fields or weights.
+The problem surfaced when I added tag discovery. Searching "React" matched every entry that mentioned React anywhere in its excerpt. A blog post titled "React" and a logistics case study that happened to mention React in passing ranked identically. cmdk's filter treats all text as one opaque string; it has no concept of fields or weights.
 
-We needed ranked results without replacing cmdk's keyboard navigation, grouping, or accessibility. The fix was surgical: keep cmdk as the UI shell, swap out its search brain.
+I needed ranked results without replacing cmdk's keyboard navigation, grouping, or accessibility. The fix was surgical: keep cmdk as the UI shell, swap out its search brain.
 
 ## MiniSearch as a Ranking Policy
 
@@ -47,23 +47,23 @@ const ms = new MiniSearch<SearchEntry>({
 });
 ```
 
-The boost map is an explicit content strategy. Title gets 5x weight because a post called "Removing focus-trap-react" should rank first when someone searches "focus trap." Tags get 3.5x because they represent deliberate categorization: if we tagged something "React," we meant it. Body text gets 1x; it's signal, but noisy signal.
+The boost map is an explicit content strategy. Title gets 5x weight because a post called "Removing focus-trap-react" should rank first when someone searches "focus trap." Tags get 3.5x because they represent deliberate categorization: if I tagged something "React," I meant it. Body text gets 1x; it's signal, but noisy signal.
 
-`extractField` handles the type mismatch between MiniSearch (expects strings) and our data (tags is `string[]`). Joining tags with spaces turns `['React', 'TypeScript']` into a single searchable field.
+`extractField` handles the type mismatch between MiniSearch (expects strings) and the data (tags is `string[]`). Joining tags with spaces turns `['React', 'TypeScript']` into a single searchable field.
 
 ## Disabling cmdk's Filter
 
-cmdk filters results internally by default. With MiniSearch handling ranking, we needed cmdk to display results in the order we provide them:
+cmdk filters results internally by default. With MiniSearch handling ranking, I needed cmdk to display results in the order I provide them:
 
 ```tsx
 <Command filter={() => 1} shouldFilter={false}>
 ```
 
-Returning `1` from the filter function tells cmdk every item matches. `shouldFilter={false}` would also work, but the explicit filter return makes the intent clearer in code review: we are deliberately bypassing filtering, not accidentally omitting it.
+Returning `1` from the filter function tells cmdk every item matches. `shouldFilter={false}` would also work, but the explicit filter return makes the intent clearer in code review: I am deliberately bypassing filtering, not accidentally omitting it.
 
 ## Match Highlighting
 
-MiniSearch returns a `match` object per result that maps fields to the terms that matched. We extract these into a simpler structure and use them for highlighting:
+MiniSearch returns a `match` object per result that maps fields to the terms that matched. I extract these into a simpler structure and use them for highlighting:
 
 ```ts
 function searchWithHighlights(
@@ -90,7 +90,7 @@ The component splits text on matched terms and wraps hits in `<mark>` elements. 
 
 ## The Build-Time Index
 
-MiniSearch benefits from a `body` field for full-text search, but MDX content isn't available at runtime without rendering it. We added a build-time generator that parses MDX files, strips markup, and produces a static JSON index:
+MiniSearch benefits from a `body` field for full-text search, but MDX content isn't available at runtime without rendering it. I added a build-time generator that parses MDX files, strips markup, and produces a static JSON index:
 
 ```bash
 pnpm prebuild  # runs scripts/generate-search-index.ts
@@ -108,4 +108,4 @@ The script walks `data/content/`, reads each `.mdx` file, extracts the `metadata
 
 ## The Principle
 
-We didn't think of the boost map as tuning; it was a statement about what matters. `title: 5` says "what we named it matters more than where we mentioned it." That paid off when we added tag discovery pages. Because tags already carried 3.5x weight, search was surfacing the right results before we even built the routes. The ranking policy came first; the feature just followed it.
+I didn't think of the boost map as tuning; it was a statement about what matters. `title: 5` says "what I named it matters more than where I mentioned it." That paid off when I added tag discovery pages. Because tags already carried 3.5x weight, search was surfacing the right results before I even built the routes. The ranking policy came first; the feature just followed it.
