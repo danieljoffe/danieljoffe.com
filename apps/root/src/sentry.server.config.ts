@@ -3,17 +3,19 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
-import { sharedSentryConfig } from '@/lib/sentry.config';
+import { sentryEnabled, sharedSentryConfig } from '@/lib/sentry.config';
 
-Sentry.init({
-  ...sharedSentryConfig,
+if (sentryEnabled) {
+  Sentry.init({
+    ...sharedSentryConfig,
 
-  // Add server-side context to all events
-  beforeSend(event) {
-    event.tags = {
-      ...event.tags,
-      runtime: 'nodejs',
-    };
-    return event;
-  },
-});
+    // Add server-side context to all events
+    beforeSend(event) {
+      event.tags = {
+        ...event.tags,
+        runtime: 'nodejs',
+      };
+      return event;
+    },
+  });
+}

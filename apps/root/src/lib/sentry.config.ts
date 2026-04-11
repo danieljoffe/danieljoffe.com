@@ -6,6 +6,8 @@ import type * as Sentry from '@sentry/nextjs';
 import { publicEnv } from '@/lib/public.env';
 import { isProduction } from '@/utils/helpers';
 
+export const sentryEnabled = !!publicEnv.NEXT_PUBLIC_SENTRY_CONFIG_ID;
+
 export const sharedSentryConfig: Parameters<typeof Sentry.init>[0] = {
   dsn: publicEnv.NEXT_PUBLIC_SENTRY_CONFIG_ID as string,
 
