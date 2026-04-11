@@ -111,6 +111,42 @@ describe('Pagination', () => {
     expect(nav).toHaveClass('custom-class');
   });
 
+  describe('sizes', () => {
+    it('applies md size by default', () => {
+      render(
+        <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
+      );
+      const pageButton = screen.getByText('1');
+      expect(pageButton).toHaveClass('h-8', 'min-w-8');
+    });
+
+    it('applies sm size styles', () => {
+      render(
+        <Pagination
+          currentPage={1}
+          totalPages={5}
+          onPageChange={jest.fn()}
+          size='sm'
+        />
+      );
+      const pageButton = screen.getByText('1');
+      expect(pageButton).toHaveClass('h-6', 'min-w-6');
+    });
+
+    it('applies lg size styles', () => {
+      render(
+        <Pagination
+          currentPage={1}
+          totalPages={5}
+          onPageChange={jest.fn()}
+          size='lg'
+        />
+      );
+      const pageButton = screen.getByText('1');
+      expect(pageButton).toHaveClass('h-10', 'min-w-10');
+    });
+  });
+
   describe('aria attributes', () => {
     it('adds aria-label to nav element', () => {
       render(

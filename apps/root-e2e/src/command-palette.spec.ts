@@ -38,8 +38,10 @@ async function openPaletteViaKeyboard(page: import('@playwright/test').Page) {
 /** Open the command palette by clicking the visible search trigger in the nav. */
 async function openPaletteViaClick(page: import('@playwright/test').Page) {
   await waitForCommandPalette(page);
-  const trigger = page.locator('[data-testid="search-trigger"]').first();
-  await trigger.click();
+  const triggers = page.locator('[data-testid="search-trigger"]');
+  // Use the visible trigger (desktop vs mobile nav have different elements)
+  const visibleTrigger = triggers.and(page.locator(':visible'));
+  await visibleTrigger.first().click();
   const overlay = page.locator('[data-testid="command-palette-overlay"]');
   await expect(overlay).toBeVisible();
   return overlay;
@@ -84,8 +86,8 @@ test.describe('command palette', () => {
   test('displays grouped search results', async ({ page }) => {
     await openPaletteViaKeyboard(page);
 
-    // Check that group headings are visible
-    await expect(page.locator('[cmdk-group-heading]').first()).toBeVisible();
+    // Check that group containers are visible (groups render without heading prop)
+    await expect(page.locator('[cmdk-group]').first()).toBeVisible();
 
     // Check that items are present
     const items = page.locator('[cmdk-item]');
@@ -133,10 +135,20 @@ test.describe('command palette', () => {
   test('navigates on click of an item', async ({ page }) => {
     await openPaletteViaClick(page);
 
-    // Wait for items to render, then click the About entry
-    const aboutItem = page.locator('[cmdk-item]', { hasText: 'About' });
-    await expect(aboutItem).toBeVisible();
-    await aboutItem.click();
+    // Wait for items to render
+    const items = page.locator('[cmdk-item]');
+    await expect(items.first()).toBeVisible();
+
+    // Type "About" to filter down to the About page entry
+    await page.keyboard.type('About');
+    await expect(async () => {
+      const count = await items.count();
+      expect(count).toBeGreaterThan(0);
+      expect(count).toBeLessThan(50);
+    }).toPass({ timeout: 5000 });
+
+    // Click the first result
+    await items.first().click();
     await page.waitForURL('**/about');
     expect(page.url()).toContain('/about');
   });

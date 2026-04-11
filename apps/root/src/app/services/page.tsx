@@ -7,11 +7,29 @@ import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import {
+  FOCUS_RING,
+  FOCUS_RING_OFFSET,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
+import { Table } from '@danieljoffe.com/shared-ui/Table';
+import { Step } from '@/components/kit';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
-import { services, servicesAudience, howItWorks } from '@/data/services';
+import {
+  services,
+  servicesAudience,
+  howItWorks,
+  performanceAuditsSection,
+  componentLibrariesSection,
+  cmsToolingSection,
+  mvpBuildsSection,
+  painPointMatchers,
+  serviceComparisons,
+  type ServiceComparisonRow,
+} from '@/data/services';
 import { servicesMetadata } from '@/data/metadata/services';
-import { cardBase, focusRing } from '@/lib/layoutStyles';
+import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
+import { ServiceSection } from './ServiceSection';
 import HeroCTA from './HeroCTA';
 import CalendlyEmbed from './CalendlyEmbed';
 import FAQ from './FAQ';
@@ -29,21 +47,50 @@ export default function Services() {
           <Badge variant='brand-solid'>
             Currently available for new projects
           </Badge>
-          <Heading variant='hero'>Your frontend is costing you users.</Heading>
+          <Heading variant='hero'>
+            Your engineering bottleneck has a fix.
+          </Heading>
           <Text variant='subtitle' className='max-w-lg mx-auto'>
             I help startups and growing teams ship faster, load faster, and stop
-            depending on engineering for everything.
+            depending on engineering for content changes.
           </Text>
           <div className='flex flex-col items-center gap-4 pt-2'>
             <HeroCTA />
             <a
               href='#services-grid'
-              className={`inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm ${focusRing}`}
+              className={`inline-flex items-center gap-1 text-sm text-text-tertiary hover:text-text-primary transition-colors rounded-sm ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
             >
               See what I offer
               <ChevronDown className='h-4 w-4' />
             </a>
           </div>
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          SERVICE SELECTION GUIDE
+          ══════════════════════════════════ */}
+      <Section>
+        <Heading variant='section'>Not sure which service?</Heading>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6'>
+          {painPointMatchers.map(matcher => (
+            <a
+              key={matcher.anchor}
+              href={matcher.anchor}
+              className={cn(
+                cardBase,
+                'p-5 flex flex-col gap-3 transition-colors hover:border-brand-500'
+              )}
+            >
+              <Text variant='body'>{matcher.problem}</Text>
+              <div className='flex items-center justify-between mt-auto pt-2 border-t border-border'>
+                <Badge variant='brand'>{matcher.service}</Badge>
+                <Text variant='meta' as='span'>
+                  From {matcher.price}
+                </Text>
+              </div>
+            </a>
+          ))}
         </div>
       </Section>
 
@@ -123,6 +170,34 @@ export default function Services() {
       </Section>
 
       {/* ══════════════════════════════════
+          MVP BUILDS
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...mvpBuildsSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
+          PERFORMANCE AUDITS
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...performanceAuditsSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
+          CMS & TOOLING
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...cmsToolingSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
+          COMPONENT LIBRARIES
+          ══════════════════════════════════ */}
+      <Section>
+        <ServiceSection {...componentLibrariesSection} />
+      </Section>
+
+      {/* ══════════════════════════════════
           HOW I WORK
           ══════════════════════════════════ */}
       <Section>
@@ -130,23 +205,38 @@ export default function Services() {
           icon={<Layers className='h-3.5 w-3.5' />}
           label='How I Work'
         />
-        <div className='space-y-3'>
-          {howItWorks.map(step => (
-            <div
-              key={step.number}
-              className='flex items-start gap-4 p-4 rounded-xl border border-border'
-            >
-              <span className='inline-flex items-center justify-center h-9 w-9 rounded-full bg-brand-600 text-white text-sm font-bold shrink-0'>
-                {step.number}
-              </span>
-              <div>
-                <Heading variant='cardTitle' as='p'>
-                  {step.title}
-                </Heading>
-                <Text variant='body' className='mt-1'>
-                  {step.description}
-                </Text>
-              </div>
+
+        {/* Desktop: horizontal stepper */}
+        <div className='hidden md:grid md:grid-cols-4 gap-6'>
+          {howItWorks.map((step, i) => (
+            <div key={step.number} className='relative text-center'>
+              {/* Connecting line */}
+              {i < howItWorks.length - 1 && (
+                <div className='absolute top-4.5 left-[calc(50%+1.125rem)] right-[calc(-50%+1.125rem)] h-px bg-border' />
+              )}
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+                className='flex-col items-center text-center'
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile: connected vertical timeline */}
+        <div className='md:hidden space-y-0'>
+          {howItWorks.map((step, i) => (
+            <div key={step.number} className='relative pb-6 last:pb-0'>
+              {/* Vertical connecting line */}
+              {i < howItWorks.length - 1 && (
+                <div className='absolute left-4.5 top-9 bottom-0 w-px bg-border' />
+              )}
+              <Step
+                number={step.number}
+                title={step.title}
+                description={step.description}
+              />
             </div>
           ))}
         </div>
@@ -170,6 +260,83 @@ export default function Services() {
                 </span>{' '}
                 {audience.description}
               </Text>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          COMPARE SERVICES
+          ══════════════════════════════════ */}
+      <Section>
+        <SectionLabel
+          icon={<Layers className='h-3.5 w-3.5' />}
+          label='Compare Services'
+        />
+
+        {/* Desktop: table */}
+        <div className='hidden md:block'>
+          <Table<ServiceComparisonRow>
+            columns={[
+              { key: 'attribute', header: '', width: '20%' },
+              { key: 'mvpBuild', header: 'MVP Build' },
+              {
+                key: 'performanceAudit',
+                header: 'Performance Audit',
+              },
+              { key: 'cmsTooling', header: 'CMS & Tooling' },
+              {
+                key: 'componentLibrary',
+                header: 'Component Library',
+              },
+            ]}
+            data={serviceComparisons}
+            striped
+            ariaLabel='Service comparison table'
+          />
+        </div>
+
+        {/* Mobile: stacked cards */}
+        <div className='md:hidden space-y-4'>
+          {serviceComparisons.map(row => (
+            <div key={row.attribute} className={cn(cardBase, 'p-4')}>
+              <Text variant='label' as='p' className='mb-2 text-text-primary'>
+                {row.attribute}
+              </Text>
+              <div className='grid grid-cols-2 gap-2'>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    MVP Build
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.mvpBuild}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    Performance Audit
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.performanceAudit}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    CMS & Tooling
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.cmsTooling}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant='meta' as='p' className='text-text-tertiary'>
+                    Component Library
+                  </Text>
+                  <Text variant='body' as='p'>
+                    {row.componentLibrary}
+                  </Text>
+                </div>
+              </div>
             </div>
           ))}
         </div>

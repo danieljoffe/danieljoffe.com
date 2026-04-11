@@ -1,0 +1,102 @@
+export const metadata = {
+  title: 'Cycling Theme Toggle: From Radio Group to Single Button',
+  date: '2026-04-08',
+  excerpt:
+    'Replacing a three-button theme picker with a single cycling button and a keyboard shortcut reclaims nav space without losing discoverability.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['React', 'UX', 'Accessibility', 'Dark Mode'],
+  slug: 'cycling-theme-toggle',
+  type: 'blog',
+  topic: 'UX Engineering',
+};
+
+## Three Buttons, No Room
+
+The site's theme toggle was a three-button radio group: Light, Dark, System.
+Each option rendered as an icon button with an active indicator. On desktop,
+it occupied ~120px of horizontal space in the top nav. Workable.
+
+Then we added a mobile bottom navigation bar. Five slots: Home, Services,
+Projects, Experience, and a More menu. The theme toggle needed to fit inside
+the More sheet alongside secondary links. A three-button radio group with
+padding, active states, and a keyboard hint took more horizontal space than
+the sheet could spare.
+
+## The Cycle Pattern
+
+We replaced the radio group with a single button that cycles through the three
+states on each press:
+
+```tsx
+const cycleOrder: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
+
+const cycleTheme = useCallback(() => {
+  const currentIndex = cycleOrder.indexOf(theme);
+  const next = cycleOrder[(currentIndex + 1) % cycleOrder.length];
+  analytics.themeToggle(next);
+  setTheme(next);
+}, [theme, setTheme]);
+```
+
+The button displays the icon for the current theme. One tap advances to the
+next. Three states, one button, ~40px of space.
+
+## The Accessibility Trade-off
+
+A radio group communicates all available options at once. A cycling button
+hides two of the three states. For sighted users, the icon (sun, moon,
+monitor) signals the current mode. For screen reader users, we label the
+button with the next state, not the current one:
+
+```tsx
+const nextLabel =
+  cycleOrder[(cycleOrder.indexOf(theme) + 1) % cycleOrder.length];
+
+<button
+  onClick={cycleTheme}
+  title={`Theme: ${theme}`}
+  aria-label={`Switch to ${nextLabel} mode`}
+>
+  <Icon className='h-4 w-4' aria-hidden='true' />
+  <Kbd>D</Kbd>
+</button>;
+```
+
+`aria-label="Switch to dark mode"` tells a screen reader user what will happen
+on activation. The `title` attribute shows the current state on hover for
+sighted users who need confirmation.
+
+## The Keyboard Shortcut
+
+The radio group had a built-in advantage: arrow keys moved between options. The
+cycling button loses that. We compensated with a global keyboard shortcut:
+
+```tsx
+useKeyboardShortcut('d', cycleTheme);
+```
+
+Pressing `D` anywhere on the page cycles the theme. A `<Kbd>D</Kbd>` badge
+next to the button advertises the shortcut. Power users get faster theme
+switching than the radio group ever offered; casual users tap the button.
+
+## What We Lost, What We Gained
+
+**Lost:** At-a-glance visibility of all three options. A user who doesn't know
+System mode exists won't discover it until they cycle past Dark.
+
+**Gained:** 80px of horizontal space. A toggle that fits in a bottom nav sheet,
+a desktop nav bar, and a mobile More menu without layout changes. A keyboard
+shortcut that's faster than clicking any of the three radio buttons.
+
+For a portfolio site where theme preference is a secondary concern, the compact
+cycling button is the right trade-off. If this were a settings page where users
+configure preferences they'll keep for months, the radio group would be worth
+the space.
+
+## The Principle
+
+UI controls should match the frequency and importance of the action. A
+three-state preference used once per session doesn't need three persistent
+buttons. A single cycling button with a keyboard shortcut gives the same
+functionality in a fraction of the space.

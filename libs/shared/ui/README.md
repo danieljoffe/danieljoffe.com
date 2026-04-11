@@ -351,13 +351,13 @@ function MyForm() {
 
 ```bash
 # Run unit tests
-npx nx test @danieljoffe.com/shared-ui
+pnpm nx test @danieljoffe.com/shared-ui
 
 # Start Storybook
-npx nx storybook @danieljoffe.com/shared-ui
+pnpm nx storybook @danieljoffe.com/shared-ui
 
 # Build library
-npx nx build @danieljoffe.com/shared-ui
+pnpm nx build @danieljoffe.com/shared-ui
 ```
 
 ## Contributing

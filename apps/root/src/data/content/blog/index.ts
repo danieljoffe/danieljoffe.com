@@ -73,6 +73,24 @@ import CiDocsOnlyShellDetection, {
 import CalendlyEmbedTimeoutFallback, {
   metadata as calendlyEmbedTimeoutMeta,
 } from './calendly-embed-timeout-fallback.mdx';
+import PnpmPhantomDependencies, {
+  metadata as pnpmPhantomDependenciesMeta,
+} from './pnpm-phantom-dependencies.mdx';
+import StaticSiteSearchCmdk, {
+  metadata as staticSiteSearchCmdkMeta,
+} from './static-site-search-cmdk.mdx';
+import PrefersReducedMotionComponentLibrary, {
+  metadata as prefersReducedMotionMeta,
+} from './prefers-reduced-motion-component-library.mdx';
+import CyclingThemeToggle, {
+  metadata as cyclingThemeToggleMeta,
+} from './cycling-theme-toggle.mdx';
+import MinisearchRankedSearchCmdk, {
+  metadata as minisearchRankedSearchCmdkMeta,
+} from './minisearch-ranked-search-cmdk.mdx';
+import FunnelSessionIdAnalytics, {
+  metadata as funnelSessionIdAnalyticsMeta,
+} from './funnel-session-id-analytics.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -100,6 +118,13 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'tooltip-aria-describedby-wrong-element': TooltipAriaDescribedbyWrongElement,
   'ci-docs-only-shell-detection': CiDocsOnlyShellDetection,
   'calendly-embed-timeout-fallback': CalendlyEmbedTimeoutFallback,
+  'pnpm-phantom-dependencies': PnpmPhantomDependencies,
+  'static-site-search-cmdk': StaticSiteSearchCmdk,
+  'prefers-reduced-motion-component-library':
+    PrefersReducedMotionComponentLibrary,
+  'cycling-theme-toggle': CyclingThemeToggle,
+  'minisearch-ranked-search-cmdk': MinisearchRankedSearchCmdk,
+  'funnel-session-id-analytics': FunnelSessionIdAnalytics,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -127,4 +152,10 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'tooltip-aria-describedby-wrong-element': tooltipAriaDescribedbyMeta,
   'ci-docs-only-shell-detection': ciDocsOnlyShellMeta,
   'calendly-embed-timeout-fallback': calendlyEmbedTimeoutMeta,
+  'pnpm-phantom-dependencies': pnpmPhantomDependenciesMeta,
+  'static-site-search-cmdk': staticSiteSearchCmdkMeta,
+  'prefers-reduced-motion-component-library': prefersReducedMotionMeta,
+  'cycling-theme-toggle': cyclingThemeToggleMeta,
+  'minisearch-ranked-search-cmdk': minisearchRankedSearchCmdkMeta,
+  'funnel-session-id-analytics': funnelSessionIdAnalyticsMeta,
 };

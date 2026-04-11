@@ -87,4 +87,10 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.tooltipAriaDescribedbyWrongElement, // 2026-04-07
   blogSlugs.ciDocsOnlyShellDetection, // 2026-04-07
   blogSlugs.calendlyEmbedTimeoutFallback, // 2026-04-07
+  blogSlugs.pnpmPhantomDependencies, // 2026-04-08
+  blogSlugs.staticSiteSearchCmdk, // 2026-04-08
+  blogSlugs.prefersReducedMotionComponentLibrary, // 2026-04-08
+  blogSlugs.cyclingThemeToggle, // 2026-04-08
+  blogSlugs.minisearchRankedSearchCmdk, // 2026-04-10
+  blogSlugs.funnelSessionIdAnalytics, // 2026-04-10
 ];

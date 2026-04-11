@@ -88,7 +88,7 @@ export const projectsRootStructuredData: CollectionPageStructuredData = {
   '@type': 'CollectionPage',
   name: 'Projects | Daniel Joffe - Full-Stack Engineer',
   description:
-    'Case studies and projects spanning full-stack development, backend architecture, and frontend systems. Each project includes the challenge, my approach, and measurable outcomes.',
+    "The problems I've solved and how I solved them. Every case study has the challenge, the approach, and the measurable outcome.",
   url: `${DOMAIN_URL}${PROJECTS_LINK.href}`,
   author,
   mainEntity: {

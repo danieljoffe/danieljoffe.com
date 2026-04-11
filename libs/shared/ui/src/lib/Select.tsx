@@ -1,5 +1,14 @@
 import { ChevronDown } from 'lucide-react';
 import { useId, type SelectHTMLAttributes, type Ref } from 'react';
+import {
+  BASE_FIELD,
+  DISABLED,
+  FIELD_ERROR,
+  FIELD_PADDING,
+  FIELD_SUCCESS,
+  FORM_LABEL,
+  REQUIRED_MARK,
+} from './styles/formStyles';
 import { Text } from './Text';
 import { cn } from './utils';
 
@@ -36,17 +45,17 @@ export function Select({
   const describedBy = errorId || helperId;
 
   const getStateClasses = () => {
-    if (error) return 'border-error focus-visible:ring-error';
-    if (success) return 'border-success focus-visible:ring-success';
+    if (error) return FIELD_ERROR;
+    if (success) return FIELD_SUCCESS;
     return '';
   };
 
   return (
     <div className='w-full'>
       {label && (
-        <label htmlFor={selectId} className='block text-text-primary mb-2'>
+        <label htmlFor={selectId} className={FORM_LABEL}>
           {label}
-          {required && <span className='text-error ml-1'>*</span>}
+          {required && <span className={REQUIRED_MARK}>*</span>}
         </label>
       )}
       <div className='relative'>
@@ -58,10 +67,10 @@ export function Select({
           aria-describedby={describedBy}
           required={required}
           className={cn(
-            'w-full px-4 py-2.5 bg-surface border border-border rounded-md text-text-primary',
-            'appearance-none focus-visible:outline-none focus-visible:ring-2',
-            'focus-visible:ring-brand-500 focus-visible:border-transparent transition-all',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
+            BASE_FIELD,
+            FIELD_PADDING,
+            'appearance-none',
+            DISABLED,
             getStateClasses(),
             className
           )}

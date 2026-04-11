@@ -1,7 +1,7 @@
-npx lint-staged
+pnpm exec lint-staged
 
 # Run type checking when TypeScript files are staged
 if git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx)$'; then
   echo "TypeScript files changed — running type check..."
-  npx nx run-many --target=typecheck --all
+  pnpm typecheck
 fi

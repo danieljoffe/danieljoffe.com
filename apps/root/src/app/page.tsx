@@ -21,7 +21,6 @@ import { experienceFull } from '@/data/experience';
 import { getContentByType } from '@/data/contentRegistry';
 import {
   FULL_NAME,
-  JOB_TITLE,
   PROJECTS_LINK,
   ABOUT_LINK,
   CONTACT_FORM_ID,
@@ -62,9 +61,9 @@ export default function Index() {
 
           <Heading variant='hero'>{FULL_NAME}</Heading>
           <Text variant='subtitle' className='max-w-lg'>
-            {JOB_TITLE} who builds products end-to-end, from backend systems to
-            polished UIs. I ship fast, architect for scale, and eliminate the
-            bottlenecks that slow teams down.
+            I&apos;ve spent 10 years helping startups ship faster, building the
+            frontends, design systems, and developer tooling that let teams move
+            without friction.
           </Text>
 
           <HeroActions />
@@ -160,7 +159,7 @@ export default function Index() {
       <Section>
         <SectionLabel
           icon={<Heart className='h-3.5 w-3.5' />}
-          label='How I Work'
+          label='How I Think'
         />
         <div className='grid gap-4 sm:grid-cols-2'>
           {offerings.methodology.map((methodology, i) => (
@@ -190,11 +189,11 @@ export default function Index() {
           ══════════════════════════════════ */}
       <Section>
         <CTACard
-          heading="Let's Build Something Great Together"
+          heading='Got a project that needs senior engineering?'
           description={
             <>
-              Available for full-stack engineering roles. Let&apos;s talk about
-              your project.
+              I take on 1&ndash;2 engagements at a time. If you&apos;re building
+              something that matters, let&apos;s talk.
             </>
           }
         >

@@ -1,4 +1,5 @@
 import { useId, type Ref } from 'react';
+import { DISABLED, FOCUS_RING, FOCUS_RING_OFFSET } from './styles/formStyles';
 import { Text } from './Text';
 import { cn } from './utils';
 
@@ -44,9 +45,9 @@ export function Switch({
           onClick={() => onChange(!checked)}
           className={cn(
             'relative inline-flex h-6 w-11 items-center rounded-full transition-colors motion-reduce:transition-none',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
-            'focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
+            FOCUS_RING,
+            FOCUS_RING_OFFSET,
+            DISABLED,
             checked ? 'bg-brand-500' : 'bg-border-strong',
             error && 'ring-1 ring-error',
             className
@@ -60,7 +61,13 @@ export function Switch({
           />
         </button>
         {label && (
-          <span id={labelId} className='text-text-primary select-none'>
+          <span
+            id={labelId}
+            className={cn(
+              'text-text-primary select-none',
+              disabled && 'opacity-50 cursor-not-allowed'
+            )}
+          >
             {label}
           </span>
         )}

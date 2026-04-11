@@ -239,6 +239,63 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.calendlyEmbedTimeoutFallback]?.date ?? '',
       author,
     },
+    [blogSlugs.pnpmPhantomDependencies]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.pnpmPhantomDependencies].title,
+      description: blogRecords[blogSlugs.pnpmPhantomDependencies].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.pnpmPhantomDependencies]?.date ?? '',
+      author,
+    },
+    [blogSlugs.staticSiteSearchCmdk]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.staticSiteSearchCmdk].title,
+      description: blogRecords[blogSlugs.staticSiteSearchCmdk].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.staticSiteSearchCmdk]?.date ?? '',
+      author,
+    },
+    [blogSlugs.prefersReducedMotionComponentLibrary]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline:
+        blogRecords[blogSlugs.prefersReducedMotionComponentLibrary].title,
+      description:
+        blogRecords[blogSlugs.prefersReducedMotionComponentLibrary].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.prefersReducedMotionComponentLibrary]?.date ??
+        '',
+      author,
+    },
+    [blogSlugs.cyclingThemeToggle]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.cyclingThemeToggle].title,
+      description: blogRecords[blogSlugs.cyclingThemeToggle].description,
+      datePublished: blogMdxMetadata[blogSlugs.cyclingThemeToggle]?.date ?? '',
+      author,
+    },
+    [blogSlugs.minisearchRankedSearchCmdk]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.minisearchRankedSearchCmdk].title,
+      description:
+        blogRecords[blogSlugs.minisearchRankedSearchCmdk].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.minisearchRankedSearchCmdk]?.date ?? '',
+      author,
+    },
+    [blogSlugs.funnelSessionIdAnalytics]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.funnelSessionIdAnalytics].title,
+      description: blogRecords[blogSlugs.funnelSessionIdAnalytics].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.funnelSessionIdAnalytics]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
@@ -246,7 +303,7 @@ export const blogRootStructuredData: CollectionPageStructuredData = {
   '@type': 'CollectionPage',
   name: `Blog | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned from a full-stack engineer.',
+    "Notes from shipping code. Deep-dives on the problems I've debugged, the patterns I've extracted, and the decisions I'd make differently next time.",
   url: `${DOMAIN_URL}${BLOG_LINK.href}`,
   author,
   mainEntity: {

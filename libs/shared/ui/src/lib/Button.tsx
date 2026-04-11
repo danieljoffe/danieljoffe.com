@@ -5,6 +5,7 @@ import {
   type Ref,
 } from 'react';
 import { Spinner } from './Spinner';
+import { DISABLED, FOCUS_RING, FOCUS_RING_OFFSET } from './styles/formStyles';
 import { cn } from './utils';
 
 export type ButtonVariant = 'bare' | 'primary' | 'secondary' | 'outline';
@@ -22,6 +23,7 @@ export interface ButtonProps
     Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   ref?: Ref<HTMLButtonElement> | undefined;
   loading?: boolean;
+  iconOnly?: boolean;
   as?: ElementType;
   href?: string;
   target?: string;
@@ -30,8 +32,8 @@ export interface ButtonProps
 
 export const baseButtonStyles = [
   'inline-flex items-center justify-center gap-2 rounded-md transition',
-  'duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-  'focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed',
+  `duration-200 ${FOCUS_RING} ${FOCUS_RING_OFFSET}`,
+  DISABLED,
   'hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none',
 ].join(' ');
 
@@ -64,6 +66,12 @@ export const sizeButtonStyles: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-lg hover:scale-[1.025]',
 };
 
+const iconOnlySizeStyles: Record<ButtonSize, string> = {
+  sm: 'p-1.5 text-sm hover:scale-[1.1]',
+  md: 'p-2.5 hover:scale-[1.05]',
+  lg: 'p-3 text-lg hover:scale-[1.025]',
+};
+
 const spinnerSizeStyles: Record<ButtonSize, string> = {
   sm: 'size-3.5',
   md: 'size-4',
@@ -74,6 +82,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
+  iconOnly = false,
   as: Component = 'button',
   children,
   className,
@@ -87,7 +96,7 @@ export function Button({
       className={cn(
         baseButtonStyles,
         variantButtonStyles[variant],
-        sizeButtonStyles[size],
+        iconOnly ? iconOnlySizeStyles[size] : sizeButtonStyles[size],
         className
       )}
       disabled={disabled || loading}

@@ -16,12 +16,15 @@ export interface Tab {
   content: ReactNode;
 }
 
+export type TabsVariant = 'underline' | 'pill';
+
 export interface TabsProps {
   ref?: Ref<HTMLDivElement> | undefined;
   tabs: Tab[];
   defaultTab?: string | undefined;
   onChange?: (tabId: string) => void;
   className?: string | undefined;
+  variant?: TabsVariant;
 }
 
 export function Tabs({
@@ -29,6 +32,7 @@ export function Tabs({
   defaultTab,
   onChange,
   className,
+  variant = 'underline',
   ref,
 }: TabsProps) {
   const firstTab = tabs[0];
@@ -90,8 +94,16 @@ export function Tabs({
 
   return (
     <div ref={ref} className={cn('w-full', className)}>
-      <div className='border-b border-border'>
-        <div role='tablist' className='flex gap-1 flex-wrap'>
+      <div className={variant === 'underline' ? 'border-b border-border' : ''}>
+        <div
+          role='tablist'
+          className={cn(
+            'flex flex-wrap',
+            variant === 'underline'
+              ? 'gap-1'
+              : 'gap-1 p-1 bg-surface-tertiary rounded-lg'
+          )}
+        >
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -103,11 +115,21 @@ export function Tabs({
               onClick={() => handleTabChange(tab.id)}
               onKeyDown={e => handleKeyDown(e, tab.id)}
               className={cn(
-                'px-4 py-2.5 border-b-2 transition-colors focus-visible:outline-none',
+                'px-4 py-2.5 transition-colors focus-visible:outline-none',
                 'focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-                activeTab === tab.id
-                  ? 'border-brand-500 text-brand-500'
-                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
+                variant === 'underline'
+                  ? cn(
+                      'border-b-2',
+                      activeTab === tab.id
+                        ? 'border-brand-500 text-brand-500'
+                        : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
+                    )
+                  : cn(
+                      'rounded-md text-sm font-medium',
+                      activeTab === tab.id
+                        ? 'bg-surface text-text-primary shadow-sm'
+                        : 'text-text-secondary hover:text-text-primary'
+                    )
               )}
             >
               {tab.label}

@@ -60,6 +60,24 @@ describe('Alert', () => {
     expect(container.firstChild).toHaveClass('custom-class');
   });
 
+  it('calls onDismiss when Escape is pressed and dismissible', () => {
+    const onDismiss = jest.fn();
+    render(
+      <Alert dismissible onDismiss={onDismiss}>
+        Content
+      </Alert>
+    );
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not call onDismiss on Escape when not dismissible', () => {
+    const onDismiss = jest.fn();
+    render(<Alert onDismiss={onDismiss}>Content</Alert>);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
+
   describe('accessibility', () => {
     it('has role="status" for info variant', () => {
       render(<Alert variant='info'>Info message</Alert>);

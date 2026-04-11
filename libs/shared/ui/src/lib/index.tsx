@@ -100,8 +100,17 @@ export type { StructuredDataProps } from './StructuredData';
 export type { StatsCardProps } from './StatsCard';
 export type { SwitchProps } from './Switch';
 export type { Column, TableProps } from './Table';
-export type { TabsProps, Tab } from './Tabs';
+export type { TabsProps, Tab, TabsVariant } from './Tabs';
 export type { TextareaProps } from './Textarea';
 export type { Theme, ThemeContextType } from './ThemeProvider';
 export type { ToastVariant, ToastItem, ToastContextType } from './Toast';
 export type { TooltipProps } from './Tooltip';
+
+// Semantic variant system
+export type { SemanticVariant } from './styles/semanticVariants';
+export {
+  SEMANTIC_TEXT,
+  SEMANTIC_BG_LIGHT,
+  SEMANTIC_BORDER,
+  SEMANTIC_SPINNER,
+} from './styles/semanticVariants';

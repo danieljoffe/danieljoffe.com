@@ -2,6 +2,7 @@
   "name": "@danieljoffe.com/source",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": "24.x"
   },
@@ -17,7 +18,7 @@
     "test:lighthouse:collect": "lhci collect",
     "test:lighthouse:assert": "lhci assert",
     "typecheck": "nx run-many --target=typecheck --all",
-    "pom": "yarn typecheck && yarn lint:fix && yarn format && yarn test && yarn test:coverage && yarn test:e2e && yarn test:lighthouse",
+    "pom": "pnpm typecheck && pnpm lint:fix && pnpm format && pnpm test && pnpm test:coverage && pnpm test:e2e && pnpm test:lighthouse",
     "affected": "nx affected -t lint test build typecheck e2e",
     "dev": "nx run-many --target=dev --all",
     "postinstall": "command -v uv >/dev/null && uv sync || echo 'uv not found — skipping Python deps (install: https://docs.astral.sh/uv/)'",
@@ -26,7 +27,8 @@
     "db:reset": "supabase db reset",
     "db:gen-types": "supabase gen types typescript --linked > libs/shared/audit/src/lib/database.types.ts",
     "build-storybook:ui": "nx build-storybook @danieljoffe.com/shared-ui",
-    "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui"
+    "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui",
+    "prebuild": "tsx scripts/generate-search-index.ts"
   },
   "private": true,
   "browserslist": [
@@ -64,6 +66,7 @@
     "isomorphic-dompurify": "2.26.0",
     "lighthouse": "^13.0.3",
     "lucide-react": "0.577.0",
+    "minisearch": "^7.2.0",
     "next": "16.1.6",
     "puppeteer": "24.38.0",
     "react": "19.2.4",
@@ -128,6 +131,7 @@
     "@types/jest": "^30.0.0",
     "@types/jest-axe": "^3.5.9",
     "@types/node": "25.3.3",
+    "@types/prompts": "^2.4.9",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.4",
@@ -152,11 +156,13 @@
     "jest-environment-jsdom": "30.2.0",
     "jest-environment-node": "^30.0.2",
     "jest-util": "30.2.0",
+    "jsdom": "^29.0.2",
     "lint-staged": "16.3.2",
     "nx": "22.5.4",
     "playwright": "^1.58.2",
     "postcss": "8.5.8",
     "prettier": "^3.8.1",
+    "prompts": "^2.4.2",
     "storybook": "10.2.15",
     "storybook-react-context": "^0.10.0",
     "supabase": "2.76.16",
@@ -164,31 +170,41 @@
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "tslib": "^2.3.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "8.56.1",
     "vite": "7.3.1",
     "vite-plugin-dts": "4.5.4",
     "vitest": "4.0.18"
   },
-  "workspaces": [
-    "apps/*",
-    "libs/*",
-    "libs/shared/*"
-  ],
-  "resolutions": {
-    "axios": "1.13.6",
-    "tmp": "^0.2.4",
-    "@opentelemetry/core": "2.6.0",
-    "@opentelemetry/resources": "2.6.0",
-    "@opentelemetry/sdk-trace-base": "2.6.0",
-    "@typescript-eslint/utils": "8.56.1",
-    "@typescript-eslint/type-utils": "8.56.1",
-    "@typescript-eslint/eslint-plugin": "8.56.1",
-    "@typescript-eslint/parser": "8.56.1",
-    "@typescript-eslint/types": "8.56.1",
-    "@typescript-eslint/typescript-estree": "8.56.1",
-    "@typescript-eslint/visitor-keys": "8.56.1",
-    "@typescript-eslint/scope-manager": "8.56.1"
+  "pnpm": {
+    "overrides": {
+      "axios": "1.13.6",
+      "tmp": "^0.2.4",
+      "@opentelemetry/core": "2.6.0",
+      "@opentelemetry/resources": "2.6.0",
+      "@opentelemetry/sdk-trace-base": "2.6.0",
+      "@typescript-eslint/utils": "8.56.1",
+      "@typescript-eslint/type-utils": "8.56.1",
+      "@typescript-eslint/eslint-plugin": "8.56.1",
+      "@typescript-eslint/parser": "8.56.1",
+      "@typescript-eslint/types": "8.56.1",
+      "@typescript-eslint/typescript-estree": "8.56.1",
+      "@typescript-eslint/visitor-keys": "8.56.1",
+      "@typescript-eslint/scope-manager": "8.56.1"
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@sentry/cli",
+      "@swc/core",
+      "esbuild",
+      "nx",
+      "oxc-resolver",
+      "puppeteer",
+      "sharp",
+      "supabase",
+      "unrs-resolver"
+    ]
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { Button } from './Button';
 import { Heading } from './Heading';
+import { DISMISS_BUTTON } from './styles/formStyles';
 import { cn } from './utils';
 
 const FOCUSABLE_SELECTOR =
@@ -29,6 +30,7 @@ export interface ModalProps {
   footer?: ReactNode;
   variant?: ModalVariant;
   className?: string | undefined;
+  closeOnBackdropClick?: boolean;
 }
 
 const sizeStyles: Record<ModalSize, string> = {
@@ -51,6 +53,7 @@ export function Modal({
   footer,
   variant = 'default',
   className,
+  closeOnBackdropClick = true,
   ref,
 }: ModalProps) {
   const triggerRef = useRef<Element | null>(null);
@@ -128,7 +131,7 @@ export function Modal({
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div
         className='absolute inset-0 bg-surface/80 backdrop-blur-sm'
-        onClick={handleClose}
+        onClick={closeOnBackdropClick ? handleClose : undefined}
         aria-hidden='true'
       />
       <div
@@ -161,7 +164,7 @@ export function Modal({
               size='sm'
               onClick={handleClose}
               aria-label='Close dialog'
-              className='text-text-tertiary hover:text-text-primary transition-colors'
+              className={DISMISS_BUTTON}
             >
               <X className='size-5' aria-hidden='true' />
             </Button>
@@ -173,7 +176,7 @@ export function Modal({
             size='sm'
             onClick={handleClose}
             aria-label='Close dialog'
-            className='absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition-colors'
+            className={cn('absolute top-4 right-4', DISMISS_BUTTON)}
           >
             <X className='size-5' aria-hidden='true' />
           </Button>
