@@ -5,6 +5,7 @@ import {
   AUDIT_LINK,
   BLOG_LINK,
   EXPERIENCE_LINK,
+  POSTS_PER_PAGE,
   PROJECTS_LINK,
   SERVICES_LINK,
 } from '@/utils/constants';
@@ -86,10 +87,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  // Paginated blog index routes (page 1 lives at /blog and is already in
+  // staticRoutes above; only emit pages 2..N here).
+  const totalBlogPages = Math.max(
+    1,
+    Math.ceil(blogPageSlugs.length / POSTS_PER_PAGE)
+  );
+  const blogPaginationRoutes = Array.from(
+    { length: Math.max(0, totalBlogPages - 1) },
+    (_, i) => ({
+      url: `${DOMAIN_URL}${BLOG_LINK.href}/page/${i + 2}`,
+      lastModified: BUILD_DATE,
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    })
+  );
+
   return [
     ...staticRoutes,
     ...experienceRoutes,
     ...projectRoutes,
     ...blogRoutes,
+    ...blogPaginationRoutes,
   ];
 }

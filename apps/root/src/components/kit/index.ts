@@ -3,6 +3,8 @@ export { InteractiveDemo } from './InteractiveDemo';
 export { MetricsDashboard } from './MetricsDashboard';
 export { PostCard } from './PostCard';
 export { CompanyLogo } from './CompanyLogo';
+export { ListPagination } from './ListPagination';
+export type { ListPaginationProps } from './ListPagination';
 export { Pagination } from './Pagination';
 export { PostPagination } from './PostPagination';
 export { ScrollToTop } from './ScrollToTop';
