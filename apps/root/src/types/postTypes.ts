@@ -61,7 +61,6 @@ export interface PostMetadata {
   role?: string;
   duration?: string;
   industry?: string;
-  topic?: string;
   featured?: boolean;
   logo?: string;
   invert?: boolean;
