@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const blogRootMetadata: Metadata = {
   title: 'Blog | Daniel Joffe - Full-Stack Engineer',
   description:
-    'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned from a full-stack engineer.',
+    "Notes from shipping code. Deep-dives on the problems I've debugged, the patterns I've extracted, and the decisions I'd make differently next time.",
   keywords: [
     'Daniel Joffe',
     'Blog',
@@ -22,7 +22,7 @@ export const blogRootMetadata: Metadata = {
   openGraph: {
     title: 'Daniel Joffe - Blog',
     description:
-      'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned.',
+      "Notes from shipping code. Deep-dives on the problems I've debugged, the patterns I've extracted, and the decisions I'd make differently next time.",
     url: 'https://danieljoffe.com/blog',
     type: 'website',
     siteName: 'Daniel Joffe',
@@ -30,7 +30,7 @@ export const blogRootMetadata: Metadata = {
   twitter: {
     title: 'Daniel Joffe - Blog',
     description:
-      'Technical deep-dives, opinions on frontend trends, tutorials, and lessons learned.',
+      'Notes from shipping code. Debugging, patterns, and lessons learned.',
     card: 'summary_large_image',
   },
 };

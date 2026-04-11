@@ -25,10 +25,11 @@ export default function Blog() {
     <PageLayout>
       <Section>
         <div className='text-center space-y-4'>
-          <Heading variant='hero'>Blog</Heading>
+          <Heading variant='hero'>Notes from shipping code</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
-            Technical deep-dives, opinions on frontend trends, tutorials, and
-            lessons learned.
+            Deep-dives on the problems I&apos;ve debugged, the patterns
+            I&apos;ve extracted, and the decisions I&apos;d make differently
+            next time.
           </Text>
         </div>
       </Section>

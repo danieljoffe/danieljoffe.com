@@ -3,11 +3,7 @@ import {
   Rocket,
   BarChart3,
   Zap,
-  Accessibility,
-  Target,
-  LayoutTemplate,
   Wrench,
-  UserCheck,
   Search,
   Layers,
 } from 'lucide-react';
@@ -32,54 +28,34 @@ export const offerings: {
     {
       Icon: Rocket,
       text: 'Reduced mobile load time from 10s to 2s at FightCamp.',
-      metric: 'Lightning Fast',
+      metric: '10s → 2s Load Time',
     },
     {
       Icon: BarChart3,
       text: "Decreased Content team's developer dependency by 80% at FightCamp.",
-      metric: 'Empowered Teams',
+      metric: '80% Fewer Eng Requests',
     },
     {
       Icon: Zap,
       text: 'Increased campaign page launches to 200+ in 2 months at Winc.',
-      metric: 'Explosive Growth',
-    },
-    {
-      Icon: Accessibility,
-      text: 'Achieved WCAG compliance across legacy systems at The Library Corporation.',
-      metric: 'Accessible for All',
-    },
-    {
-      Icon: Target,
-      text: 'Mentored junior developers: one promoted to Senior, another went to JPL.',
-      metric: 'Talent Unlocked',
-    },
-    {
-      Icon: LayoutTemplate,
-      text: 'Built a self-serve CMS enabling 200+ landing pages at Winc.',
-      metric: 'Frictionless Launches',
+      metric: '200+ Pages in 2 Months',
     },
     {
       Icon: Wrench,
       text: 'Built React component library adopted by 80% of apps at Internet Brands.',
-      metric: 'Rock-Solid Delivery',
-    },
-    {
-      Icon: UserCheck,
-      text: 'Interviewed 13 candidates, hired key Senior Developer at Internet Brands.',
-      metric: 'Leadership Secured',
+      metric: '80% Component Adoption',
     },
   ],
   methodology: [
     {
       Icon: Search,
       title: 'I Audit Before I Build',
-      text: 'At FightCamp, I found HD images and 800MB videos loading on every page. Lazy loading, srcset optimization, and bundle analysis cut bundle size by 62% and improved load times by 80%.',
+      text: 'At FightCamp, I found HD images and 800MB videos loading on every page. Lazy loading, srcset optimization, and bundle analysis cut bundle size by 62% and eliminated render-blocking on every page.',
     },
     {
       Icon: Rocket,
       title: 'I Build for Autonomy',
-      text: "Marketing teams shouldn't wait on engineering to ship a landing page. I built CMS tooling at Winc and FightCamp that let non-technical teams publish independently. The result: 200+ pages launched, 80% fewer engineering requests. I invest in people the same way. Five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
+      text: "The best thing I can leave behind is a team that doesn't need me. I build CMS tooling that gets marketing off the engineering backlog, component libraries that new hires learn in a day, and documentation that outlives the person who wrote it. I invest in people the same way. Five developers I've mentored have gone on to promotions and dream jobs, including one now at JPL.",
     },
     {
       Icon: BarChart3,

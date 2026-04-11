@@ -43,11 +43,28 @@ export interface ServiceSectionData {
 
 export const services: Service[] = [
   {
+    Icon: Monitor,
+    title: 'MVP & Product Frontend Builds',
+    highlighted: false,
+    description:
+      "You've validated the idea. Now you need a frontend that's production-ready, not a prototype you'll have to rebuild in six months.",
+    deliverables: [
+      'Frontend architecture (Next.js, React, TypeScript)',
+      'Responsive, accessible UI implementation',
+      'Authentication, state management, API integration',
+      'Deployment and handoff documentation',
+    ],
+    proof:
+      'Built a logistics dashboard MVP with Next.js and AWS Cognito auth for a seed-stage venture in 3 months.',
+    timeline: '4-12 weeks',
+    price: '$12,000',
+  },
+  {
     Icon: Rocket,
     title: 'Performance Audits & Optimization',
     highlighted: true,
     description:
-      'Your site is slow and users are bouncing. I diagnose the root causes (bloated bundles, unoptimized assets, layout shifts) and fix them systematically.',
+      "Slow load times cost you conversions you'll never know about. I find the root causes and fix them, systematically, not cosmetically.",
     deliverables: [
       'Lighthouse & Core Web Vitals audit with prioritized action plan',
       'Implementation of fixes (lazy loading, image/video optimization, bundle analysis)',
@@ -59,27 +76,11 @@ export const services: Service[] = [
     price: '$5,000',
   },
   {
-    Icon: Wrench,
-    title: 'Component Libraries & Design Systems',
-    highlighted: false,
-    description:
-      'Your codebase has inconsistent UI, duplicated components, and no documentation. I build shared component systems that scale.',
-    deliverables: [
-      'Audit of existing components for consolidation',
-      'Documented component library in Storybook',
-      'Contribution guidelines so your team can maintain it',
-    ],
-    proof:
-      'Built a React component library adopted by 80% of applications at Internet Brands, then trained 7 developers to contribute.',
-    timeline: '4-8 weeks',
-    price: '$10,000',
-  },
-  {
     Icon: FileText,
     title: 'CMS & Self-Serve Tooling',
     highlighted: false,
     description:
-      'Your marketing team submits engineering tickets to change a headline. I build tooling that gives non-technical teams full autonomy.',
+      'Every time marketing needs a headline changed, engineering gets pulled off the roadmap. I build the tooling that makes that a self-serve task.',
     deliverables: [
       'CMS architecture and implementation (Storyblok, Contentful, or custom)',
       'Composable page builder components',
@@ -91,21 +92,20 @@ export const services: Service[] = [
     price: '$8,000',
   },
   {
-    Icon: Monitor,
-    title: 'MVP & Product Frontend Builds',
+    Icon: Wrench,
+    title: 'Component Libraries & Design Systems',
     highlighted: false,
     description:
-      'You have a backend or an idea and need a production-quality frontend, fast. I architect and build complete frontend applications.',
+      'Inconsistent UI slows down every new feature. I consolidate what you have into a documented, shared component system your whole team can use.',
     deliverables: [
-      'Frontend architecture (Next.js, React, TypeScript)',
-      'Responsive, accessible UI implementation',
-      'Authentication, state management, API integration',
-      'Deployment and handoff documentation',
+      'Audit of existing components for consolidation',
+      'Documented component library in Storybook',
+      'Contribution guidelines so your team can maintain it',
     ],
     proof:
-      'Built a logistics dashboard MVP with Next.js and AWS Cognito auth for a seed-stage venture in 3 months.',
-    timeline: '4-12 weeks',
-    price: '$12,000',
+      'Built a React component library adopted by 80% of applications at Internet Brands, then trained 7 developers to contribute.',
+    timeline: '4-8 weeks',
+    price: '$10,000',
   },
 ];
 
@@ -165,7 +165,7 @@ export const servicesFAQs = [
   {
     question: "What's your availability?",
     answer:
-      "I take on 1-2 projects at a time to ensure quality. I'm currently available — reach out to discuss your timeline.",
+      "I take on 1-2 projects at a time to ensure quality. I'm currently available. Reach out to discuss your timeline.",
   },
   {
     question: 'Do you do hourly work?',
@@ -173,9 +173,14 @@ export const servicesFAQs = [
       "I prefer project-based pricing so we're both aligned on outcomes, not hours. For ongoing partnerships, I offer monthly retainers.",
   },
   {
+    question: 'Why not just hire a full-time frontend engineer?',
+    answer:
+      "For a 2-6 week engagement, a consultant gives you senior-level execution without the overhead of recruiting, onboarding, and a long-term commitment. I've been through the problem you're facing before, so you get that experience from day one.",
+  },
+  {
     question: "What's your tech stack?",
     answer:
-      "React, Next.js, TypeScript, Vue/Nuxt, Tailwind CSS. I'm framework-flexible—I pick whatever solves your problem best.",
+      "React, Next.js, TypeScript, Vue/Nuxt, Tailwind CSS. I'm framework-flexible: I pick whatever solves your problem best.",
   },
   {
     question: 'Can you work with my existing team?',
@@ -522,16 +527,16 @@ export interface PainPointMatcher {
 
 export const painPointMatchers: PainPointMatcher[] = [
   {
+    problem: 'We have a product idea but no frontend team',
+    service: 'MVP Build',
+    price: '$12,000',
+    anchor: '#mvp-builds',
+  },
+  {
     problem: "My site is slow and we're losing conversions",
     service: 'Performance Audit',
     price: '$5,000',
     anchor: '#performance-audits',
-  },
-  {
-    problem: 'Our team rebuilds the same components on every project',
-    service: 'Component Library',
-    price: '$10,000',
-    anchor: '#component-libraries',
   },
   {
     problem: 'Marketing depends on engineering for every content change',
@@ -540,50 +545,50 @@ export const painPointMatchers: PainPointMatcher[] = [
     anchor: '#cms-tooling',
   },
   {
-    problem: 'We have a product idea but no frontend team',
-    service: 'MVP Build',
-    price: '$12,000',
-    anchor: '#mvp-builds',
+    problem: 'Our team rebuilds the same components on every project',
+    service: 'Component Library',
+    price: '$10,000',
+    anchor: '#component-libraries',
   },
 ];
 
 export interface ServiceComparisonRow {
   [key: string]: string;
   attribute: string;
-  performanceAudit: string;
-  componentLibrary: string;
-  cmsTooling: string;
   mvpBuild: string;
+  performanceAudit: string;
+  cmsTooling: string;
+  componentLibrary: string;
 }
 
 export const serviceComparisons: ServiceComparisonRow[] = [
   {
     attribute: 'Timeline',
-    performanceAudit: '2–4 weeks',
-    componentLibrary: '4–8 weeks',
-    cmsTooling: '3–6 weeks',
     mvpBuild: '4–12 weeks',
+    performanceAudit: '2–4 weeks',
+    cmsTooling: '3–6 weeks',
+    componentLibrary: '4–8 weeks',
   },
   {
     attribute: 'Starting Price',
-    performanceAudit: '$5,000',
-    componentLibrary: '$10,000',
-    cmsTooling: '$8,000',
     mvpBuild: '$12,000',
+    performanceAudit: '$5,000',
+    cmsTooling: '$8,000',
+    componentLibrary: '$10,000',
   },
   {
     attribute: 'Best For',
-    performanceAudit: 'Slow sites losing users',
-    componentLibrary: 'Teams with inconsistent UI',
-    cmsTooling: 'Marketing bottlenecked by eng',
     mvpBuild: 'New products or rescues',
+    performanceAudit: 'Slow sites losing users',
+    cmsTooling: 'Marketing bottlenecked by eng',
+    componentLibrary: 'Teams with inconsistent UI',
   },
   {
     attribute: 'Key Deliverable',
-    performanceAudit: 'Performance metrics report',
-    componentLibrary: 'Documented component library',
-    cmsTooling: 'Self-serve page builder',
     mvpBuild: 'Production-ready application',
+    performanceAudit: 'Performance metrics report',
+    cmsTooling: 'Self-serve page builder',
+    componentLibrary: 'Documented component library',
   },
 ];
 

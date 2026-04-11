@@ -4,7 +4,7 @@ import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 export const experienceRootMetadata: Metadata = {
   title: `Experience | ${FULL_NAME} - Full-Stack Engineer`,
   description:
-    'My professional journey as a full-stack engineer: key roles, impactful projects, and the technical expertise behind performant, user-focused web applications.',
+    'Five companies, ten years. Every engagement left the team faster and more autonomous than I found them.',
   keywords: [
     FULL_NAME,
     'Portfolio',
@@ -26,7 +26,7 @@ export const experienceRootMetadata: Metadata = {
   openGraph: {
     title: `${FULL_NAME} - Professional Experience & Work History`,
     description:
-      'My professional journey as a full-stack engineer: key roles, impactful projects, and the technical expertise behind performant, user-focused web applications.',
+      'Five companies, ten years. Every engagement left the team faster and more autonomous than I found them.',
     url: `${DOMAIN_URL}${EXPERIENCE_LINK.href}`,
     type: 'website',
     siteName: FULL_NAME,
@@ -34,7 +34,7 @@ export const experienceRootMetadata: Metadata = {
   twitter: {
     title: `${FULL_NAME} - Professional Experience & Work History`,
     description:
-      'My professional journey as a full-stack engineer: key roles, impactful projects, and technical expertise.',
+      'Five companies, ten years. Every engagement left the team faster and more autonomous.',
     card: 'summary_large_image',
   },
 };

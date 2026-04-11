@@ -30,11 +30,10 @@ export default function ExperiencePage() {
           ══════════════════════════════════ */}
       <Section>
         <div className='text-center space-y-4'>
-          <Heading variant='hero'>Experience</Heading>
+          <Heading variant='hero'>Where I&apos;ve worked, what I built</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
-            My professional journey as a full-stack engineer: key roles,
-            impactful projects, and the technical expertise behind performant,
-            user-focused web applications.
+            Five companies, ten years. Each engagement left the team faster and
+            more autonomous than I found them.
           </Text>
         </div>
       </Section>

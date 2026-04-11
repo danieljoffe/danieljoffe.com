@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const projectRootMetadata: Metadata = {
   title: 'Projects | Daniel Joffe - Full-Stack Engineer',
   description:
-    'Case studies spanning full-stack development, backend architecture, and frontend systems. Each project includes the challenge, approach, and measurable outcomes.',
+    'Case studies from the field. Every study has the challenge, the approach, and the measurable outcome.',
   keywords: [
     'Daniel Joffe',
     'Portfolio',
@@ -25,14 +25,14 @@ export const projectRootMetadata: Metadata = {
   },
   openGraph: {
     title: `Daniel Joffe - Portfolio & Projects`,
-    description: `A curated portfolio of case studies detailing goals, approach, and measurable outcomes.`,
+    description: `The problems I've solved and how I solved them. Every case study has the challenge, the approach, and the measurable outcome.`,
     url: `https://danieljoffe.com/projects`,
     type: 'website',
     siteName: 'Daniel Joffe',
   },
   twitter: {
     title: `Daniel Joffe - Portfolio & Projects`,
-    description: `Case studies highlighting goals, approach, and results across platforms and industries.`,
+    description: `Case studies from the field. Challenge, approach, outcome.`,
     card: 'summary_large_image',
     creator: '@danieljoffe',
   },
