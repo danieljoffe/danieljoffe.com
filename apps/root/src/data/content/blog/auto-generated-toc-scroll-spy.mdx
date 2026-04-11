@@ -220,3 +220,12 @@ FAB was hidden on mobile, exactly when it was needed most.
 - **Self-maintaining**: authors write MDX with headings, TOC generates itself
 - Works across all content types (projects, experience, blog) automatically
   through the shared `PostBody` component
+
+## The Lesson
+
+The best UI affordances are the ones the browser already gives you.
+IntersectionObserver, `prefers-reduced-motion`, native `scrollIntoView`,
+and auto-generated heading IDs from the MDX plugin meant I wrote 149 lines
+of glue code and got an accessible, zero-cost TOC with scroll spy. Before
+adding a throttled scroll listener or a custom animation timing function,
+check whether the platform already solved it. Usually it did.
