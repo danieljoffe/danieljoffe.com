@@ -99,8 +99,8 @@ data/                   # Content data and metadata
 ├── contentTypeConfig.ts # Per-type config (basePath, label, contentDir)
 ├── contentOrder.ts     # Chronological ordering arrays per content type
 ├── metadata/           # Page metadata (SEO, OpenGraph)
-├── structuredData/     # JSON-LD structured data
-├── *Thumbnails.ts      # Thumbnail/cover records for content pages
+├── structuredData/     # JSON-LD structured data (blog + project auto-derived from MDX)
+├── buildThumbnail.ts   # Derives PostThumbnail shape from MDX metadata
 └── *.ts                # Slug constants, profile data, services, etc.
 hooks/                  # Custom React hooks (useTableSort, useFocusTrap)
 lib/                    # Utility libraries and configurations (cn, formStyles, badgeStyles)
@@ -257,18 +257,44 @@ Chronological ordering arrays live in `data/contentOrder.ts`:
 
 ### Adding a New Post
 
-1. Create the `.mdx` file with an `export const metadata` block (see format above).
+MDX is the single source of truth for every content field that appears on the site — thumbnail title, excerpt, cover image, SEO, OG images, and structured data all derive from the same `export const metadata` block.
+
+1. Create the `.mdx` file with an `export const metadata` block including the `cover` field (see format below).
 2. Add the slug constant to `data/project.ts`, `data/experience.ts`, or `data/blog.ts`.
-3. Add the thumbnail record to `projectThumbnails.ts`, `experienceThumbnails.ts`, or `blogThumbnails.ts`.
-4. Import the MDX component **and metadata** in the corresponding `data/content/*/index.ts`.
-5. Insert the slug into the correct position in `contentOrder.ts`.
-6. Add structured data in `data/structuredData/`. (Page metadata is auto-generated from the MDX `metadata` export.)
+3. Import the MDX component **and metadata** in the corresponding `data/content/*/index.ts`.
+4. Insert the slug into the correct position in `contentOrder.ts`.
+5. For **experience** entries only: also add a hand-authored `ExperienceStructuredData` entry in `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata — no manual step.
+
+The MDX `metadata` block must include at minimum:
+
+```mdx
+export const metadata = {
+  title: 'Specific, outcome-driven title',
+  date: 'YYYY-MM-DD',
+  excerpt: 'One compelling sentence, ≤ 160 chars, no em dashes',
+  author: 'Daniel Joffe',
+  category: 'Category Name',
+  tags: ['Tag1', 'Tag2'],
+  slug: 'url-slug',
+  type: 'blog', // or 'project' or 'experience'
+  cover: {
+    alt: 'Short accessible description of the image',
+    src: '/photo-xxxxx',
+    origin: 'https://unsplash.com/photos/<photo-permalink>',
+    creator: '@unsplashHandle',
+  },
+  // Projects can also include: featured: true
+  // Experience entries also require: company, role, duration, industry,
+  //   logo, invert, and (optional) domain
+};
+```
 
 ### Thumbnail Images
 
-- **Every post must have a unique cover image.** No two posts across any content type (blog, project, experience) may share the same Unsplash `src` photo ID. Before adding a thumbnail, check all `*Thumbnails.ts` files for the image ID.
+- **Every post must have a unique cover image.** No two posts across any content type (blog, project, experience) may share the same Unsplash `src` photo ID. Before adding a thumbnail, grep the `data/content/` directory for the image ID (`rg "photo-<id>" apps/root/src/data/content`).
 - Images come from Unsplash. The `src` field is the CDN path (e.g. `/photo-1555066931-4365d14bab8c`), `origin` is the Unsplash page URL, and `creator` is the photographer's handle.
 - Choose images that visually relate to the post topic. Avoid generic "code on screen" images when a more specific visual is available.
+- `cover` lives inside the MDX `metadata` export. There is no separate `*Thumbnails.ts` file — the `PostThumbnail` shape is derived at runtime via `data/buildThumbnail.ts`.
 
 ## Coding Conventions
 
