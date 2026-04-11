@@ -1,6 +1,5 @@
 import { addons } from 'storybook/manager-api';
 import { create } from 'storybook/theming/create';
-import logo from './logo.svg';
 
 const theme = create({
   base: 'dark',
@@ -8,8 +7,8 @@ const theme = create({
   // Brand
   brandTitle: 'danieljoffe/ui',
   brandUrl: 'https://danieljoffe.com',
-  brandTarget: 'https://danieljoffe.com/logo.svg',
-  brandImage: logo,
+  brandTarget: '_blank',
+  brandImage: 'https://danieljoffe.com/logo.svg',
 
   // UI chrome — matches .dark token values
   colorPrimary: '#3aada2', // --accent (dark)
