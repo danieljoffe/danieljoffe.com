@@ -296,6 +296,25 @@ export const blogStructuredData: Record<AllowedBlogSlugs, BlogStructuredData> =
         blogMdxMetadata[blogSlugs.funnelSessionIdAnalytics]?.date ?? '',
       author,
     },
+    [blogSlugs.mobileVrDataDrivenPlaywright]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.mobileVrDataDrivenPlaywright].title,
+      description:
+        blogRecords[blogSlugs.mobileVrDataDrivenPlaywright].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.mobileVrDataDrivenPlaywright]?.date ?? '',
+      author,
+    },
+    [blogSlugs.sentrySkipWithoutDsn]: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: blogRecords[blogSlugs.sentrySkipWithoutDsn].title,
+      description: blogRecords[blogSlugs.sentrySkipWithoutDsn].description,
+      datePublished:
+        blogMdxMetadata[blogSlugs.sentrySkipWithoutDsn]?.date ?? '',
+      author,
+    },
   };
 
 export const blogRootStructuredData: CollectionPageStructuredData = {
