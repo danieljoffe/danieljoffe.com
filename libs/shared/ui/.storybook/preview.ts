@@ -23,6 +23,12 @@ const preview: Preview = {
       },
     },
 
+    options: {
+      storySort: {
+        order: ['Introduction', '*'],
+      },
+    },
+
     a11y: {
       test: 'todo',
     },

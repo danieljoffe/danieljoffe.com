@@ -17,9 +17,14 @@ const theme = create({
   // App background
   appBg: '#0f1117', // --surface (dark)
   appContentBg: '#161922', // --surface-secondary (dark)
-  appPreviewBg: '#0f1117', // --surface (dark)
+  appPreviewBg: 'transparent', // inherits from story's own body background
+  appHoverBg: '#1e2130', // --surface-tertiary (dark)
   appBorderColor: '#2a2d3a', // --border (dark)
   appBorderRadius: 4, // --radius-xs
+
+  // Typography
+  fontBase: 'ui-sans-serif, system-ui, sans-serif', // --font-sans
+  fontCode: 'ui-monospace, monospace', // --font-mono
 
   // Text
   textColor: '#f1f5f9', // --text-primary (dark)
@@ -32,13 +37,27 @@ const theme = create({
   barSelectedColor: '#006fd7', // brand-500
   barBg: '#161922', // --surface-secondary (dark)
 
+  // Buttons
+  buttonBg: '#1e2130', // --surface-tertiary (dark)
+  buttonBorder: '#3a3d4a', // --border-secondary (dark)
+
+  // Boolean controls
+  booleanBg: '#1e2130', // --surface-tertiary (dark)
+  booleanSelectedBg: '#006fd7', // brand-500
+
   // Inputs
   inputBg: '#1a1d2b', // --surface-elevated (dark)
   inputBorder: '#3a3d4a', // --border-secondary (dark)
   inputTextColor: '#f1f5f9', // --text-primary (dark)
   inputBorderRadius: 4,
+  gridCellSize: 8,
 });
 
 addons.setConfig({
   theme,
+  initialActive: 'sidebar',
+  sidebar: {
+    showRoots: true,
+    collapsedRoots: [],
+  },
 });
