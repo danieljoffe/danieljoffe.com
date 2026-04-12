@@ -18,6 +18,11 @@ const meta = {
       description: 'Callback when active tab changes',
       action: 'onChange executed!',
     },
+    variant: {
+      description: 'Visual style variant for the tabs',
+      control: 'radio',
+      options: ['underline', 'pill'],
+    },
   },
 } satisfies Meta<typeof Tabs>;
 
@@ -109,6 +114,13 @@ export const KeyboardNavigation: Story = {
       await userEvent.tab();
       await expect(canvas.getByRole('tabpanel')).toHaveFocus();
     });
+  },
+};
+
+export const PillVariant: Story = {
+  args: {
+    tabs: sampleTabs,
+    variant: 'pill',
   },
 };
 

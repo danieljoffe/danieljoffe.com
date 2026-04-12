@@ -7,12 +7,11 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
     .intro-title {
       font-family: var(--font-sans);
-      font-size: var(--font-size-h1);
+      font-size: 2.25rem;
       font-weight: 400;
       letter-spacing: -0.015em;
       margin: 0 0 0.5rem !important;
       color: var(--color-text-primary);
-      font-variation-settings: 'opsz' 144, 'WONK' 1;
       border: none !important;
       padding: 0 !important;
     }
@@ -26,24 +25,22 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
     .intro-section-heading {
       font-family: var(--font-sans);
-      font-size: var(--font-size-h3);
+      font-size: 1.375rem;
       font-weight: 400;
       color: var(--color-text-primary);
       margin: 2.5rem 0 1rem !important;
       padding-bottom: 0.5rem !important;
       border-bottom: 1px solid var(--color-border) !important;
-      font-variation-settings: 'opsz' 36, 'WONK' 0;
     }
 
     .intro-sub-heading {
       font-family: var(--font-sans);
-      font-size: var(--font-size-h4);
+      font-size: 1.125rem;
       font-weight: 400;
       color: var(--color-text-primary);
       margin: 1.5rem 0 0.75rem !important;
       border: none !important;
       padding: 0 !important;
-      font-variation-settings: 'opsz' 24, 'WONK' 0;
     }
 
     .swatch-grid {
@@ -54,7 +51,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     }
 
     .swatch {
-      border-radius: var(--radius);
+      border-radius: var(--radius-md);
       overflow: hidden;
       border: 1px solid var(--color-border);
     }
@@ -65,7 +62,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
     .swatch-label {
       padding: 0.5rem 0.75rem;
-      background: var(--background-elevated);
+      background: var(--color-surface-elevated);
       border-top: 1px solid var(--color-border);
     }
 
@@ -146,7 +143,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     .radius-box {
       width: 64px;
       height: 64px;
-      background: var(--accent-muted);
+      background: var(--color-brand-100);
       border: 2px solid var(--color-brand-500);
     }
 
@@ -168,7 +165,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     .font-item {
       padding: 1rem 1.25rem;
       background: var(--color-surface-secondary);
-      border-radius: var(--radius);
+      border-radius: var(--radius-md);
       border: 1px solid var(--color-border);
     }
 
@@ -186,6 +183,34 @@ import { Meta } from '@storybook/addon-docs/blocks';
       line-height: 1.4;
     }
 
+    .shadow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .shadow-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .shadow-box {
+      width: 80px;
+      height: 80px;
+      background: var(--color-surface-elevated);
+      border-radius: var(--radius-md);
+    }
+
+    .shadow-label {
+      font-size: 0.6875rem;
+      font-family: var(--font-mono);
+      color: var(--color-text-secondary);
+      text-align: center;
+    }
+
     .principles {
       display: flex;
       flex-direction: column;
@@ -195,7 +220,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     .principle {
       padding: 1rem 1.25rem;
       background: var(--color-surface-secondary);
-      border-radius: var(--radius);
+      border-radius: var(--radius-md);
       border: 1px solid var(--color-border);
       border-left: 3px solid var(--color-brand-500);
     }
@@ -226,39 +251,124 @@ import { Meta } from '@storybook/addon-docs/blocks';
   accessibility-first, and opinionated about the details that matter.
 </p>
 
-<h2 className='intro-section-heading'>Colors — Brand & Neutral</h2>
+<h2 className='intro-section-heading'>Colors — Brand</h2>
 
 <div className='swatch-grid'>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-50)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 50</div>
+      <div className='swatch-value'>--color-brand-50</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-100)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 100</div>
+      <div className='swatch-value'>--color-brand-100</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-200)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 200</div>
+      <div className='swatch-value'>--color-brand-200</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-300)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 300</div>
+      <div className='swatch-value'>--color-brand-300</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-400)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 400</div>
+      <div className='swatch-value'>--color-brand-400</div>
+    </div>
+  </div>
   <div className='swatch'>
     <div
       className='swatch-color'
       style={{ background: 'var(--color-brand-500)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Accent</div>
-      <div className='swatch-value'>--accent</div>
+      <div className='swatch-name'>Brand 500</div>
+      <div className='swatch-value'>--color-brand-500</div>
     </div>
   </div>
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--accent-hover)' }}
+      style={{ background: 'var(--color-brand-600)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Accent Hover</div>
-      <div className='swatch-value'>--accent-hover</div>
+      <div className='swatch-name'>Brand 600</div>
+      <div className='swatch-value'>--color-brand-600</div>
     </div>
   </div>
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--accent-muted)' }}
+      style={{ background: 'var(--color-brand-700)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Accent Muted</div>
-      <div className='swatch-value'>--accent-muted</div>
+      <div className='swatch-name'>Brand 700</div>
+      <div className='swatch-value'>--color-brand-700</div>
     </div>
   </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-800)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 800</div>
+      <div className='swatch-value'>--color-brand-800</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-900)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 900</div>
+      <div className='swatch-value'>--color-brand-900</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-brand-950)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Brand 950</div>
+      <div className='swatch-value'>--color-brand-950</div>
+    </div>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Colors — Surface & Text</h2>
+
+<div className='swatch-grid'>
   <div className='swatch'>
     <div
       className='swatch-color'
@@ -269,8 +379,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
       }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Background</div>
-      <div className='swatch-value'>--background</div>
+      <div className='swatch-name'>Surface</div>
+      <div className='swatch-value'>--color-surface</div>
     </div>
   </div>
   <div className='swatch'>
@@ -279,22 +389,32 @@ import { Meta } from '@storybook/addon-docs/blocks';
       style={{ background: 'var(--color-surface-secondary)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Background Alt</div>
-      <div className='swatch-value'>--background-alt</div>
+      <div className='swatch-name'>Surface Secondary</div>
+      <div className='swatch-value'>--color-surface-secondary</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-surface-tertiary)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Surface Tertiary</div>
+      <div className='swatch-value'>--color-surface-tertiary</div>
     </div>
   </div>
   <div className='swatch'>
     <div
       className='swatch-color'
       style={{
-        background: 'var(--background-elevated)',
+        background: 'var(--color-surface-elevated)',
         outline: '1px solid var(--color-border)',
         outlineOffset: '-1px',
       }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Elevated</div>
-      <div className='swatch-value'>--background-elevated</div>
+      <div className='swatch-name'>Surface Elevated</div>
+      <div className='swatch-value'>--color-surface-elevated</div>
     </div>
   </div>
   <div className='swatch'>
@@ -303,8 +423,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
       style={{ background: 'var(--color-text-primary)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Foreground</div>
-      <div className='swatch-value'>--foreground</div>
+      <div className='swatch-name'>Text Primary</div>
+      <div className='swatch-value'>--color-text-primary</div>
     </div>
   </div>
   <div className='swatch'>
@@ -313,8 +433,63 @@ import { Meta } from '@storybook/addon-docs/blocks';
       style={{ background: 'var(--color-text-secondary)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Foreground Muted</div>
-      <div className='swatch-value'>--foreground-muted</div>
+      <div className='swatch-name'>Text Secondary</div>
+      <div className='swatch-value'>--color-text-secondary</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-text-tertiary)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Text Tertiary</div>
+      <div className='swatch-value'>--color-text-tertiary</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-text-brand)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Text Brand</div>
+      <div className='swatch-value'>--color-text-brand</div>
+    </div>
+  </div>
+</div>
+
+<h2 className='intro-section-heading'>Colors — Border</h2>
+
+<div className='swatch-grid'>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-border)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Border</div>
+      <div className='swatch-value'>--color-border</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-border-secondary)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Border Secondary</div>
+      <div className='swatch-value'>--color-border-secondary</div>
+    </div>
+  </div>
+  <div className='swatch'>
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-border-focus)' }}
+    />
+    <div className='swatch-label'>
+      <div className='swatch-name'>Border Focus</div>
+      <div className='swatch-value'>--color-border-focus</div>
     </div>
   </div>
 </div>
@@ -329,34 +504,37 @@ import { Meta } from '@storybook/addon-docs/blocks';
     />
     <div className='swatch-label'>
       <div className='swatch-name'>Success</div>
-      <div className='swatch-value'>--success</div>
+      <div className='swatch-value'>--color-success</div>
     </div>
   </div>
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--success-muted)' }}
+      style={{ background: 'var(--color-success-light)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Success Muted</div>
-      <div className='swatch-value'>--success-muted</div>
+      <div className='swatch-name'>Success Light</div>
+      <div className='swatch-value'>--color-success-light</div>
     </div>
   </div>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--warning)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-warning)' }}
+    />
     <div className='swatch-label'>
       <div className='swatch-name'>Warning</div>
-      <div className='swatch-value'>--warning</div>
+      <div className='swatch-value'>--color-warning</div>
     </div>
   </div>
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--warning-muted)' }}
+      style={{ background: 'var(--color-warning-light)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Warning Muted</div>
-      <div className='swatch-value'>--warning-muted</div>
+      <div className='swatch-name'>Warning Light</div>
+      <div className='swatch-value'>--color-warning-light</div>
     </div>
   </div>
   <div className='swatch'>
@@ -366,31 +544,34 @@ import { Meta } from '@storybook/addon-docs/blocks';
     />
     <div className='swatch-label'>
       <div className='swatch-name'>Error</div>
-      <div className='swatch-value'>--error</div>
+      <div className='swatch-value'>--color-error</div>
     </div>
   </div>
   <div className='swatch'>
     <div
       className='swatch-color'
-      style={{ background: 'var(--error-muted)' }}
+      style={{ background: 'var(--color-error-light)' }}
     />
     <div className='swatch-label'>
-      <div className='swatch-name'>Error Muted</div>
-      <div className='swatch-value'>--error-muted</div>
+      <div className='swatch-name'>Error Light</div>
+      <div className='swatch-value'>--color-error-light</div>
     </div>
   </div>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--info)' }} />
+    <div className='swatch-color' style={{ background: 'var(--color-info)' }} />
     <div className='swatch-label'>
       <div className='swatch-name'>Info</div>
-      <div className='swatch-value'>--info</div>
+      <div className='swatch-value'>--color-info</div>
     </div>
   </div>
   <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--info-muted)' }} />
+    <div
+      className='swatch-color'
+      style={{ background: 'var(--color-info-light)' }}
+    />
     <div className='swatch-label'>
-      <div className='swatch-name'>Info Muted</div>
-      <div className='swatch-value'>--info-muted</div>
+      <div className='swatch-name'>Info Light</div>
+      <div className='swatch-value'>--color-info-light</div>
     </div>
   </div>
 </div>
@@ -401,7 +582,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className='font-stack'>
   <div className='font-item'>
-    <div className='font-item-name'>--font-sans · Fraunces</div>
+    <div className='font-item-name'>--font-sans · Fraunces (display)</div>
     <p
       className='font-item-sample'
       style={{
@@ -413,7 +594,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     </p>
   </div>
   <div className='font-item'>
-    <div className='font-item-name'>--font-sans · Inter</div>
+    <div className='font-item-name'>--font-sans · Inter (body)</div>
     <p className='font-item-sample' style={{ fontFamily: 'var(--font-sans)' }}>
       The quick brown fox jumps over the lazy dog
     </p>
@@ -424,7 +605,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
       className='font-item-sample'
       style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem' }}
     >
-      const value = tokens['--accent'];
+      const accent = tokens['--color-brand-500'];
     </p>
   </div>
 </div>
@@ -436,7 +617,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='type-meta'>
       h1
       <br />
-      clamp(2-2.441rem)
+      2.25rem
     </div>
     <h1>Heading One</h1>
   </div>
@@ -444,7 +625,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='type-meta'>
       h2
       <br />
-      1.953rem
+      1.75rem
     </div>
     <h2>Heading Two</h2>
   </div>
@@ -452,7 +633,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='type-meta'>
       h3
       <br />
-      1.563rem
+      1.375rem
     </div>
     <h3>Heading Three</h3>
   </div>
@@ -460,7 +641,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='type-meta'>
       h4
       <br />
-      1.25rem
+      1.125rem
     </div>
     <h4>Heading Four</h4>
   </div>
@@ -468,14 +649,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='type-meta'>
       body
       <br />
-      1rem
+      1rem / 1.65
     </div>
     <p
       className='type-sample-p'
       style={{ fontFamily: 'var(--font-sans)', fontSize: '1rem' }}
     >
-      Body text — Inter 300. Used for paragraphs, descriptions, and general UI
-      copy.
+      Body text. Used for paragraphs, descriptions, and general UI copy.
     </p>
   </div>
   <div className='type-row'>
@@ -499,9 +679,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='type-meta'>
       code
       <br />
-      0.9375rem
+      0.875rem
     </div>
-    <code>const accent = '#0d7377'</code>
+    <code>const accent = '#006fd7'</code>
   </div>
 </div>
 
@@ -509,11 +689,11 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className='radius-grid'>
   <div className='radius-item'>
-    <div className='radius-box' style={{ borderRadius: 0 }} />
+    <div className='radius-box' style={{ borderRadius: 'var(--radius-xs)' }} />
     <div className='radius-label'>
-      none
+      xs
       <br />
-      0px
+      0.25rem
     </div>
   </div>
   <div className='radius-item'>
@@ -521,15 +701,15 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='radius-label'>
       sm
       <br />
-      --radius-sm
+      0.375rem
     </div>
   </div>
   <div className='radius-item'>
     <div className='radius-box' style={{ borderRadius: 'var(--radius-md)' }} />
     <div className='radius-label'>
-      md (base)
+      md
       <br />
-      --radius-md
+      0.5rem
     </div>
   </div>
   <div className='radius-item'>
@@ -537,7 +717,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='radius-label'>
       lg
       <br />
-      --radius-lg
+      0.75rem
     </div>
   </div>
   <div className='radius-item'>
@@ -545,11 +725,14 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='radius-label'>
       xl
       <br />
-      --radius-xl
+      1rem
     </div>
   </div>
   <div className='radius-item'>
-    <div className='radius-box' style={{ borderRadius: '9999px' }} />
+    <div
+      className='radius-box'
+      style={{ borderRadius: 'var(--radius-full)' }}
+    />
     <div className='radius-label'>
       full
       <br />
@@ -558,35 +741,28 @@ import { Meta } from '@storybook/addon-docs/blocks';
   </div>
 </div>
 
-<h2 className='intro-section-heading'>Borders</h2>
+<h2 className='intro-section-heading'>Shadows</h2>
 
-<div className='swatch-grid'>
-  <div className='swatch'>
-    <div
-      className='swatch-color'
-      style={{ background: 'var(--color-border)' }}
-    />
-    <div className='swatch-label'>
-      <div className='swatch-name'>Border</div>
-      <div className='swatch-value'>--border</div>
-    </div>
+<div className='shadow-grid'>
+  <div className='shadow-item'>
+    <div className='shadow-box' style={{ boxShadow: 'var(--shadow-xs)' }} />
+    <div className='shadow-label'>--shadow-xs</div>
   </div>
-  <div className='swatch'>
-    <div
-      className='swatch-color'
-      style={{ background: 'var(--border-strong)' }}
-    />
-    <div className='swatch-label'>
-      <div className='swatch-name'>Border Strong</div>
-      <div className='swatch-value'>--border-strong</div>
-    </div>
+  <div className='shadow-item'>
+    <div className='shadow-box' style={{ boxShadow: 'var(--shadow-sm)' }} />
+    <div className='shadow-label'>--shadow-sm</div>
   </div>
-  <div className='swatch'>
-    <div className='swatch-color' style={{ background: 'var(--ring)' }} />
-    <div className='swatch-label'>
-      <div className='swatch-name'>Focus Ring</div>
-      <div className='swatch-value'>--ring</div>
-    </div>
+  <div className='shadow-item'>
+    <div className='shadow-box' style={{ boxShadow: 'var(--shadow-md)' }} />
+    <div className='shadow-label'>--shadow-md</div>
+  </div>
+  <div className='shadow-item'>
+    <div className='shadow-box' style={{ boxShadow: 'var(--shadow-lg)' }} />
+    <div className='shadow-label'>--shadow-lg</div>
+  </div>
+  <div className='shadow-item'>
+    <div className='shadow-box' style={{ boxShadow: 'var(--shadow-xl)' }} />
+    <div className='shadow-label'>--shadow-xl</div>
   </div>
 </div>
 
@@ -597,7 +773,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className='principle-title'>Dark-first</div>
     <p className='principle-body'>
       All components are designed in dark mode first, then verified in light.
-      Toggle the background in the toolbar above to switch contexts.
+      Toggle the theme in the toolbar above to switch contexts.
     </p>
   </div>
   <div className='principle'>

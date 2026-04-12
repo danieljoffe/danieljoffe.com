@@ -55,6 +55,15 @@ export const Disabled: Story = {
   },
 };
 
+export const WithError: Story = {
+  args: {
+    error: 'This setting is required',
+    label: 'Enable notifications',
+    checked: false,
+    onChange: fn(),
+  },
+};
+
 export const ClickInteraction: Story = {
   args: {
     checked: false,

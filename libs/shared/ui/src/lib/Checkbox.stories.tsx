@@ -47,6 +47,13 @@ export const Disabled: Story = {
   },
 };
 
+export const WithError: Story = {
+  args: {
+    error: 'You must accept the terms',
+    label: 'I agree to the terms',
+  },
+};
+
 export const ClickInteraction: Story = {
   args: {
     label: 'Click to toggle',

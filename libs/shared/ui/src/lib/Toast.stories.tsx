@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ToastProvider, useToast } from './Toast';
+import { ToastProvider, useToast, type ToastItem } from './Toast';
 
 function ToastDemo() {
   const { toast } = useToast();
@@ -61,6 +61,102 @@ export const Default: Story = {
   render: () => (
     <ToastProvider>
       <ToastDemo />
+    </ToastProvider>
+  ),
+};
+
+function ToastTrigger({
+  variant,
+  title,
+  description,
+  label,
+}: {
+  variant: ToastItem['variant'];
+  title: string;
+  description?: string;
+  label: string;
+}) {
+  const { toast } = useToast();
+  return (
+    <button
+      className='px-3 py-1.5 border rounded-md text-sm'
+      onClick={() =>
+        toast(
+          description ? { variant, title, description } : { variant, title }
+        )
+      }
+    >
+      {label}
+    </button>
+  );
+}
+
+export const SuccessToast: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='success'
+        title='Success'
+        description='Operation completed.'
+        label='Show Success Toast'
+      />
+    </ToastProvider>
+  ),
+};
+
+export const ErrorToast: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='error'
+        title='Error'
+        description='Something went wrong.'
+        label='Show Error Toast'
+      />
+    </ToastProvider>
+  ),
+};
+
+export const WarningToast: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='warning'
+        title='Warning'
+        description='Please review your input.'
+        label='Show Warning Toast'
+      />
+    </ToastProvider>
+  ),
+};
+
+export const InfoToast: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='info'
+        title='Info'
+        description='New updates available.'
+        label='Show Info Toast'
+      />
+    </ToastProvider>
+  ),
+};
+
+export const WithDescription: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='success'
+        title='Saved'
+        description='Your changes have been saved successfully.'
+        label='Show Toast with Description'
+      />
     </ToastProvider>
   ),
 };
