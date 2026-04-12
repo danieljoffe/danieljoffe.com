@@ -30,7 +30,10 @@ const preview: Preview = {
     },
 
     a11y: {
-      test: 'todo',
+      test: 'error',
+      config: {
+        rules: [{ id: 'aria-hidden-body', enabled: false }],
+      },
     },
   },
 };
