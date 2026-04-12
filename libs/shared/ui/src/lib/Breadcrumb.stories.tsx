@@ -52,8 +52,9 @@ export const LinksAreClickable: Story = {
     await expect(projectsLink).toHaveAttribute('href', '/projects');
 
     // Last item should not be a link
-    const currentPage = canvas.getByText('Current Page');
-    await expect(currentPage.tagName).toBe('SPAN');
+    await expect(
+      canvas.queryByRole('link', { name: 'Current Page' })
+    ).not.toBeInTheDocument();
   },
 };
 

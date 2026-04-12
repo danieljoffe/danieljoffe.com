@@ -20,6 +20,7 @@ export function ThemeToggle() {
           key={value}
           onClick={() => setTheme(value)}
           title={label}
+          aria-pressed={theme === value}
           className={cn(
             'p-1.5 rounded-md transition-all duration-150 cursor-pointer motion-reduce:transition-none',
             theme === value

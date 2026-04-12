@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { ThemeProvider } from './ThemeProvider';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -26,7 +26,9 @@ export const ClickLight: Story = {
     const canvas = within(canvasElement);
     const lightButton = canvas.getByTitle('Light');
     await userEvent.click(lightButton);
-    await expect(lightButton).toHaveClass('bg-surface');
+    await waitFor(() =>
+      expect(lightButton).toHaveAttribute('aria-pressed', 'true')
+    );
   },
 };
 
@@ -35,7 +37,9 @@ export const ClickDark: Story = {
     const canvas = within(canvasElement);
     const darkButton = canvas.getByTitle('Dark');
     await userEvent.click(darkButton);
-    await expect(darkButton).toHaveClass('bg-surface');
+    await waitFor(() =>
+      expect(darkButton).toHaveAttribute('aria-pressed', 'true')
+    );
   },
 };
 
@@ -44,7 +48,9 @@ export const ClickSystem: Story = {
     const canvas = within(canvasElement);
     const systemButton = canvas.getByTitle('System');
     await userEvent.click(systemButton);
-    await expect(systemButton).toHaveClass('bg-surface');
+    await waitFor(() =>
+      expect(systemButton).toHaveAttribute('aria-pressed', 'true')
+    );
   },
 };
 

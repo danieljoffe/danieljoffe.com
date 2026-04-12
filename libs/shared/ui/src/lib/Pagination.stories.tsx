@@ -70,12 +70,13 @@ export const NextPrevious: Story = {
 
 export const DisabledAtBounds: Story = {
   args: { currentPage: 1, totalPages: 5, onPageChange: fn() },
-  play: async ({ canvasElement }) => {
+  play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
 
     // Previous button should be disabled on first page
     const prevButton = canvas.getByRole('button', { name: 'Previous page' });
     await expect(prevButton).toBeDisabled();
+    await expect(args.onPageChange).not.toHaveBeenCalled();
   },
 };
 

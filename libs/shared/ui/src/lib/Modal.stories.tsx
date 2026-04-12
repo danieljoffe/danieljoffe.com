@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from './Button';
 import { Modal } from './Modal';
 
@@ -212,18 +212,27 @@ export const Controlled: Story = {
       </>
     );
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    // Modal should not be visible initially
-    await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+    await step('Verify modal is closed initially', async () => {
+      await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+    });
 
-    // Open modal
-    await userEvent.click(canvas.getByRole('button', { name: 'Open Modal' }));
-    await expect(canvas.getByRole('dialog')).toBeInTheDocument();
+    await step('Open modal', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Open Modal' }));
+      await waitFor(() =>
+        expect(canvas.getByRole('dialog')).toBeInTheDocument()
+      );
+    });
 
-    // Close modal
-    await userEvent.click(canvas.getByRole('button', { name: 'Close dialog' }));
-    await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+    await step('Close modal', async () => {
+      await userEvent.click(
+        canvas.getByRole('button', { name: 'Close dialog' })
+      );
+      await waitFor(() =>
+        expect(canvas.queryByRole('dialog')).not.toBeInTheDocument()
+      );
+    });
   },
 };

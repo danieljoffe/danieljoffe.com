@@ -79,20 +79,22 @@ export const RowKeyboardInteraction: Story = {
     rowKey: (row: User) => row.email,
     getRowAriaLabel: (row: User) => `View ${row.name}`,
   },
-  play: async ({ args, canvasElement }) => {
+  play: async ({ args, canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    // Focus a row and press Enter
-    const row = canvas.getByRole('button', { name: 'View Alice' });
-    row.focus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onRowClick).toHaveBeenCalledWith(sampleData[0]);
+    await step('Enter key triggers row click', async () => {
+      const row = canvas.getByRole('button', { name: 'View Alice' });
+      row.focus();
+      await userEvent.keyboard('{Enter}');
+      await expect(args.onRowClick).toHaveBeenCalledWith(sampleData[0]);
+    });
 
-    // Press Space on another row
-    const bobRow = canvas.getByRole('button', { name: 'View Bob' });
-    bobRow.focus();
-    await userEvent.keyboard(' ');
-    await expect(args.onRowClick).toHaveBeenCalledWith(sampleData[1]);
+    await step('Space key triggers row click', async () => {
+      const bobRow = canvas.getByRole('button', { name: 'View Bob' });
+      bobRow.focus();
+      await userEvent.keyboard(' ');
+      await expect(args.onRowClick).toHaveBeenCalledWith(sampleData[1]);
+    });
   },
 };
 

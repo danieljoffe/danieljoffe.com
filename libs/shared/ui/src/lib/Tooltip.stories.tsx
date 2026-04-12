@@ -86,18 +86,20 @@ export const HoverInteraction: Story = {
     // Tooltip starts with aria-hidden="true", so include hidden elements
     const tooltip = canvas.getByRole('tooltip', { hidden: true });
 
-    // Tooltip should be visually hidden initially
-    await expect(tooltip).toHaveClass('opacity-0');
+    // Tooltip should be hidden initially
+    await expect(tooltip).toHaveAttribute('aria-hidden', 'true');
 
     // Hover to show tooltip
     await userEvent.hover(trigger);
 
-    // Wait for tooltip to appear
-    await waitFor(() => expect(tooltip).toHaveClass('opacity-100'));
+    // Wait for tooltip to become visible
+    await waitFor(() =>
+      expect(tooltip).toHaveAttribute('aria-hidden', 'false')
+    );
 
     // Unhover to hide tooltip
     await userEvent.unhover(trigger);
-    await waitFor(() => expect(tooltip).toHaveClass('opacity-0'));
+    await waitFor(() => expect(tooltip).toHaveAttribute('aria-hidden', 'true'));
   },
 };
 

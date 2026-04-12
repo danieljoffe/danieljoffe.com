@@ -122,7 +122,7 @@ export const SelectItem: Story = {
     const canvas = within(canvasElement);
 
     // Click a sidebar item
-    await userEvent.click(canvas.getByText('Analytics'));
+    await userEvent.click(canvas.getByRole('button', { name: 'Analytics' }));
     await expect(args.onSelect).toHaveBeenCalledWith('analytics');
   },
 };
@@ -131,23 +131,24 @@ export const ExpandChildren: Story = {
   args: {
     items: sampleItems,
     activeId: 'dashboard',
-    onSelect: fn(),
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    // Click to expand the "Projects" group
-    await userEvent.click(canvas.getByText('Projects'));
+    await step('Expand Projects group', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Projects' }));
+      await waitFor(() => {
+        expect(canvas.getByText('Active')).toBeInTheDocument();
+        expect(canvas.getByText('Archived')).toBeInTheDocument();
+      });
+    });
 
-    // Children should now be visible
-    await waitFor(() => expect(canvas.getByText('Active')).toBeInTheDocument());
-    await expect(canvas.getByText('Archived')).toBeInTheDocument();
-
-    // Click to collapse
-    await userEvent.click(canvas.getByText('Projects'));
-    await waitFor(() =>
-      expect(canvas.queryByText('Active')).not.toBeInTheDocument()
-    );
+    await step('Collapse Projects group', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Projects' }));
+      await waitFor(() =>
+        expect(canvas.queryByText('Active')).not.toBeInTheDocument()
+      );
+    });
   },
 };
 
@@ -155,7 +156,6 @@ export const ChildNavigation: Story = {
   args: {
     items: sampleItems,
     activeId: 'active',
-    onSelect: fn(),
   },
   render: function ChildNav() {
     const [activeId, setActiveId] = useState('active');
@@ -163,16 +163,18 @@ export const ChildNavigation: Story = {
       <Sidebar items={sampleItems} activeId={activeId} onSelect={setActiveId} />
     );
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    // Expand "Projects"
-    await userEvent.click(canvas.getByText('Projects'));
-    await waitFor(() =>
-      expect(canvas.getByText('Archived')).toBeInTheDocument()
-    );
+    await step('Expand Projects', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Projects' }));
+      await waitFor(() =>
+        expect(canvas.getByText('Archived')).toBeInTheDocument()
+      );
+    });
 
-    // Click a child item
-    await userEvent.click(canvas.getByText('Archived'));
+    await step('Select child item', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Archived' }));
+    });
   },
 };
