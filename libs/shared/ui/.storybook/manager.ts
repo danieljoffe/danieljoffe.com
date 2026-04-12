@@ -10,32 +10,32 @@ const theme = create({
   brandTarget: '_blank',
   brandImage: 'https://danieljoffe.com/logo.svg',
 
-  // UI chrome — matches .dark token values
-  colorPrimary: '#3aada2', // --accent (dark)
-  colorSecondary: '#3aada2', // --accent (dark)
+  // UI chrome — matches .dark token values from theme.css
+  colorPrimary: '#006fd7', // brand-500: oklch(0.54 0.19 250)
+  colorSecondary: '#006fd7', // brand-500
 
   // App background
-  appBg: '#1c1917', // --background (dark)
-  appContentBg: '#231f1d', // --background-alt (dark)
-  appPreviewBg: '#1c1917', // --background (dark)
-  appBorderColor: '#33302e', // --border (dark)
-  appBorderRadius: 4, // --radius: 0.25rem = 4px
+  appBg: '#0f1117', // --surface (dark)
+  appContentBg: '#161922', // --surface-secondary (dark)
+  appPreviewBg: '#0f1117', // --surface (dark)
+  appBorderColor: '#2a2d3a', // --border (dark)
+  appBorderRadius: 4, // --radius-xs
 
   // Text
-  textColor: '#ece8e1', // --foreground (dark)
-  textMutedColor: '#a8a29e', // --foreground-muted (dark)
-  textInverseColor: '#1c1917',
+  textColor: '#f1f5f9', // --text-primary (dark)
+  textMutedColor: '#94a3b8', // --text-secondary (dark)
+  textInverseColor: '#0f1117', // --text-inverse (dark)
 
   // Toolbar
-  barTextColor: '#a8a29e', // --foreground-muted
-  barHoverColor: '#ece8e1', // --foreground
-  barSelectedColor: '#3aada2', // --accent
-  barBg: '#231f1d', // --background-alt
+  barTextColor: '#94a3b8', // --text-secondary (dark)
+  barHoverColor: '#f1f5f9', // --text-primary (dark)
+  barSelectedColor: '#006fd7', // brand-500
+  barBg: '#161922', // --surface-secondary (dark)
 
   // Inputs
-  inputBg: '#231f1d', // --input (dark)
-  inputBorder: '#44403c', // --input-border (dark)
-  inputTextColor: '#ece8e1', // --foreground
+  inputBg: '#1a1d2b', // --surface-elevated (dark)
+  inputBorder: '#3a3d4a', // --border-secondary (dark)
+  inputTextColor: '#f1f5f9', // --text-primary (dark)
   inputBorderRadius: 4,
 });
 
