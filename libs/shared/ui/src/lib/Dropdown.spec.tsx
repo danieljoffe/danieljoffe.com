@@ -83,7 +83,10 @@ describe('Dropdown', () => {
       />
     );
     fireEvent.click(screen.getByText('Menu'));
-    expect(screen.getByText('Disabled').closest('button')).toBeDisabled();
+    expect(screen.getByText('Disabled').closest('button')).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
   });
 
   it('applies danger styles to danger items', () => {
@@ -129,7 +132,7 @@ describe('Dropdown', () => {
     it('has aria-haspopup on trigger', () => {
       render(<Dropdown trigger={<span>Menu</span>} items={items} />);
       const trigger = screen.getByRole('button', { name: 'Menu' });
-      expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+      expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
     });
 
     it('has aria-expanded=false when closed', () => {

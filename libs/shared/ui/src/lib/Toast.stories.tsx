@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { ToastProvider, useToast, type ToastItem } from './Toast';
 
 function ToastDemo() {
@@ -103,6 +104,15 @@ export const SuccessToast: Story = {
       />
     </ToastProvider>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Success Toast' })
+    );
+    await waitFor(() =>
+      expect(canvas.getByText('Operation completed.')).toBeInTheDocument()
+    );
+  },
 };
 
 export const ErrorToast: Story = {
@@ -117,6 +127,13 @@ export const ErrorToast: Story = {
       />
     </ToastProvider>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Error Toast' })
+    );
+    await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
+  },
 };
 
 export const WarningToast: Story = {
@@ -131,6 +148,13 @@ export const WarningToast: Story = {
       />
     </ToastProvider>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Warning Toast' })
+    );
+    await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
+  },
 };
 
 export const InfoToast: Story = {
@@ -145,6 +169,13 @@ export const InfoToast: Story = {
       />
     </ToastProvider>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Info Toast' })
+    );
+    await waitFor(() => expect(canvas.getByRole('status')).toBeInTheDocument());
+  },
 };
 
 export const WithDescription: Story = {
@@ -159,4 +190,76 @@ export const WithDescription: Story = {
       />
     </ToastProvider>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Toast with Description' })
+    );
+    await waitFor(() =>
+      expect(
+        canvas.getByText('Your changes have been saved successfully.')
+      ).toBeInTheDocument()
+    );
+  },
+};
+
+export const DismissToast: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='info'
+        title='Dismissable'
+        description='Click X to dismiss.'
+        label='Show Dismissable Toast'
+      />
+    </ToastProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Dismissable Toast' })
+    );
+    await waitFor(() =>
+      expect(canvas.getByText('Dismissable')).toBeInTheDocument()
+    );
+
+    // Dismiss the toast
+    const dismissButton = canvas.getByRole('button', {
+      name: 'Dismiss notification',
+    });
+    await userEvent.click(dismissButton);
+
+    await waitFor(() =>
+      expect(canvas.queryByText('Dismissable')).not.toBeInTheDocument()
+    );
+  },
+};
+
+export const PauseOnHover: Story = {
+  args: { children: null },
+  render: () => (
+    <ToastProvider>
+      <ToastTrigger
+        variant='success'
+        title='Hover to pause'
+        label='Show Hover Toast'
+      />
+    </ToastProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Show Hover Toast' })
+    );
+
+    await waitFor(() =>
+      expect(canvas.getByText('Hover to pause')).toBeInTheDocument()
+    );
+
+    // Hover over the toast to pause the timer
+    const toast = canvas.getByRole('status');
+    await userEvent.hover(toast);
+    await userEvent.unhover(toast);
+  },
 };

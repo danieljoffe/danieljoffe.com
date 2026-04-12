@@ -83,7 +83,8 @@ export const HoverInteraction: Story = {
     const trigger = canvas.getByRole('button', {
       name: 'Hover to show tooltip',
     });
-    const tooltip = canvas.getByRole('tooltip');
+    // Tooltip starts with aria-hidden="true", so include hidden elements
+    const tooltip = canvas.getByRole('tooltip', { hidden: true });
 
     // Tooltip should be visually hidden initially
     await expect(tooltip).toHaveClass('opacity-0');
@@ -96,7 +97,7 @@ export const HoverInteraction: Story = {
 
     // Unhover to hide tooltip
     await userEvent.unhover(trigger);
-    await expect(tooltip).toHaveClass('opacity-0');
+    await waitFor(() => expect(tooltip).toHaveClass('opacity-0'));
   },
 };
 
@@ -107,9 +108,10 @@ export const TooltipAccessibility: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const tooltip = canvas.getByRole('tooltip');
+    // Tooltip starts with aria-hidden="true", so include hidden elements
+    const tooltip = canvas.getByRole('tooltip', { hidden: true });
 
-    // Check tooltip role exists and is always in the accessibility tree
+    // Check tooltip role exists and is always in the DOM
     await expect(tooltip).toBeInTheDocument();
     await expect(tooltip).toHaveAttribute('id');
   },

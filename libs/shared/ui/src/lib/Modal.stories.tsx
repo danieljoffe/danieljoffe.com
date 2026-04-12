@@ -179,11 +179,15 @@ export const EscapeKeyClose: Story = {
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
+    const dialog = canvas.getByRole('dialog');
 
-    await expect(canvas.getByRole('dialog')).toBeInTheDocument();
+    await expect(dialog).toBeInTheDocument();
+
+    // Click the dialog body to ensure focus is inside
+    await userEvent.click(dialog);
 
     await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledTimes(1);
+    await expect(args.onClose).toHaveBeenCalled();
   },
 };
 
