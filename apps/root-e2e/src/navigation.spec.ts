@@ -75,7 +75,7 @@ test.describe('desktop navigation', () => {
     // wrapper <button> around the trigger content
     const moreTrigger = page
       .locator('nav[aria-label="Primary"]')
-      .locator('button[aria-haspopup="true"]');
+      .locator('button[aria-haspopup="menu"]');
     await expect(moreTrigger).toBeVisible();
     await moreTrigger.click();
 
