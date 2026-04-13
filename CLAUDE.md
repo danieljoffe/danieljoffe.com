@@ -58,11 +58,27 @@ pnpm format                        # Format with Prettier
 pnpm typecheck                     # TypeScript type checking
 ```
 
+### Quality Gate
+
+```bash
+pnpm pom                           # Full pipeline: typecheck → lint → format → test → coverage → e2e → Lighthouse
+pnpm affected                      # Run lint, test, build, typecheck, e2e on affected projects only
+```
+
 ### Storybook
 
 ```bash
 pnpm nx storybook root             # Start Storybook for root app
 pnpm nx storybook @danieljoffe.com/shared-ui  # Start Storybook for UI library
+pnpm chromatic:ui                  # Push shared-ui Storybook to Chromatic
+```
+
+### Database (Supabase)
+
+```bash
+pnpm db:push                       # Push migrations to linked Supabase project
+pnpm db:reset                      # Reset database to clean state
+pnpm db:gen-types                  # Regenerate TypeScript types from schema
 ```
 
 ## Architecture
@@ -101,7 +117,11 @@ data/                   # Content data and metadata
 ├── metadata/           # Page metadata (SEO, OpenGraph)
 ├── structuredData/     # JSON-LD structured data (blog + project auto-derived from MDX)
 ├── buildThumbnail.ts   # Derives PostThumbnail shape from MDX metadata
-└── *.ts                # Slug constants, profile data, services, etc.
+├── readingTimes.ts     # Pre-computed reading times per post
+├── blog.ts, project.ts, experience.ts  # Slug constants per content type
+├── profileData.ts      # Author profile data
+├── services.ts, offerings.ts, about.ts # Page-specific data
+└── __tests__/          # Data layer test fixtures
 hooks/                  # Custom React hooks (useTableSort, useFocusTrap)
 lib/                    # Utility libraries and configurations (cn, formStyles, badgeStyles)
 state/                  # Global state management
@@ -111,7 +131,7 @@ utils/                  # Helper functions and constants
 
 ### UI Library (libs/shared/ui/src/lib/)
 
-Shared components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Container, Divider, Dropdown, Grid, Input, Loading, Modal, PageContainer, Pagination, ProgressBar, Section, Select, Sidebar, Skeleton, Spacer, Spinner, Stack, StatsCard, Switch, Table, Tabs, Textarea, ThemeProvider, ThemeToggle, Toast, Tooltip
+Shared components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Container, CTACard, Divider, Dropdown, FormFieldError, Grid, GridBg, Heading, Input, Kbd, Loading, Modal, PageContainer, PageLayout, Pagination, ProgressBar, Section, SectionLabel, Select, Sidebar, Skeleton, Spacer, Spinner, Stack, StatsCard, StructuredData, Switch, Table, Tabs, Text, Textarea, ThemeProvider, ThemeToggle, Toast, Tooltip
 
 ### Key Technologies
 
@@ -126,16 +146,20 @@ Shared components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, 
 ### Path Aliases
 
 - `@/` maps to `apps/root/src/` in the root app
+- `@danieljoffe.com/shared-audit` maps to `libs/shared/audit/src/index.ts`
 
 ## Nx Plugins
 
 The workspace uses Nx plugins for automatic target inference:
 
+- @nx/js/typescript (typecheck, build)
 - @nx/next/plugin (build, dev, start)
 - @nx/jest/plugin (test)
 - @nx/playwright/plugin (e2e)
 - @nx/eslint/plugin (lint)
 - @nx/storybook/plugin (storybook, build-storybook)
+- @nx/vite/plugin (vitest)
+- @nx/docker (docker-build)
 
 ## Testing Notes
 
@@ -144,7 +168,7 @@ The workspace uses Nx plugins for automatic target inference:
 - Jest config: `apps/root/jest.config.ts`
 - Setup file: `apps/root/src/test-setup.ts`
 - GSAP plugins are mocked in `apps/root/__mocks__/`
-- Coverage threshold: 25% minimum (branches, functions, lines, statements)
+- Coverage threshold: 50% minimum (branches, functions, lines, statements)
 
 ### E2E Tests
 
@@ -308,6 +332,15 @@ export const metadata = {
 - Choose images that visually relate to the post topic. Avoid generic "code on screen" images when a more specific visual is available.
 - `cover` lives inside the MDX `metadata` export. There is no separate `*Thumbnails.ts` file — the `PostThumbnail` shape is derived at runtime via `data/buildThumbnail.ts`.
 
+## ESLint
+
+The workspace uses ESLint 10 with flat config (`apps/root/eslint.config.mjs`):
+
+- **Custom rules**: `require-button-name` (enforces `name` prop on `<Button>`) and `no-raw-headings` (enforces heading components from kit instead of raw `<h1>`–`<h6>`)
+- **Import ordering**: builtin → external → `@danieljoffe.com/*` → `@/*` → local (enforced by `import/order`)
+- **Cycle detection**: `import/no-cycle` is enabled — circular imports are errors
+- **Module boundaries**: `@nx/enforce-module-boundaries` restricts cross-project imports by project type/scope tags
+
 ## Coding Conventions
 
 ### Rule of Three
@@ -349,7 +382,15 @@ Test abstractions that contain logic. Pure style extractions don't need tests.
 - `exactOptionalPropertyTypes` is enabled. When a prop can receive `undefined` from an expression (e.g., `errors?.name?.message`), declare it as `prop: string | undefined`, not `prop?: string`.
 - Pre-commit hooks run lint-staged (ESLint + Prettier) then full typecheck. Both must pass.
 
-## General Guidelings for working with NextJS
+## Skills & Agents
+
+The workspace includes Claude Code skills and agents for common workflows:
+
+- **Skills** (`.claude/skills/`): Task-specific workflows invocable via `/skill-name` — includes `verify`, `gen-test`, `coverage-gaps`, `pr-review`, `write-content`, `security-review`, `storybook-check`, `batch-commit`, `deploy-preview`, `release-notes`, and more
+- **Agents** (`.claude/agents/`): Focused review checklists spawned by skills like `pr-review` — includes `a11y-reviewer`, `content-reviewer`, `perf-reviewer`, `nx-reviewer`, `e2e-reviewer`
+- **Docs** (`.claude/docs/`): Reference documentation like `content-style-guide.md`
+
+## General Guidelines for working with NextJS
 
 **When starting work on a Next.js project, ALWAYS call the `init` tool from
 next-devtools-mcp FIRST to set up proper context and establish documentation
