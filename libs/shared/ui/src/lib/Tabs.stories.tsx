@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Tabs } from './Tabs';
 
 const meta = {
@@ -17,6 +17,11 @@ const meta = {
     onChange: {
       description: 'Callback when active tab changes',
       action: 'onChange executed!',
+    },
+    variant: {
+      description: 'Visual style variant for the tabs',
+      control: 'radio',
+      options: ['underline', 'pill'],
     },
   },
 } satisfies Meta<typeof Tabs>;
@@ -48,29 +53,36 @@ export const TabSwitchInteraction: Story = {
     tabs: sampleTabs,
     onChange: fn(),
   },
-  play: async ({ args, canvasElement }) => {
+  play: async ({ args, canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    // First tab should be active by default
-    await expect(canvas.getByText('Content for Tab 1')).toBeInTheDocument();
-    await expect(canvas.getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
+    await step('Verify initial state', async () => {
+      await expect(canvas.getByText('Content for Tab 1')).toBeInTheDocument();
+      await expect(canvas.getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+    });
 
-    // Click second tab
-    await userEvent.click(canvas.getByRole('tab', { name: 'Tab 2' }));
-    await expect(args.onChange).toHaveBeenCalledWith('tab2');
-    await expect(canvas.getByText('Content for Tab 2')).toBeInTheDocument();
-    await expect(canvas.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
+    await step('Switch to Tab 2', async () => {
+      await userEvent.click(canvas.getByRole('tab', { name: 'Tab 2' }));
+      await expect(args.onChange).toHaveBeenCalledWith('tab2');
+      await waitFor(() => {
+        expect(canvas.getByText('Content for Tab 2')).toBeInTheDocument();
+        expect(canvas.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+          'aria-selected',
+          'true'
+        );
+      });
+    });
 
-    // Click third tab
-    await userEvent.click(canvas.getByRole('tab', { name: 'Tab 3' }));
-    await expect(args.onChange).toHaveBeenCalledWith('tab3');
-    await expect(canvas.getByText('Content for Tab 3')).toBeInTheDocument();
+    await step('Switch to Tab 3', async () => {
+      await userEvent.click(canvas.getByRole('tab', { name: 'Tab 3' }));
+      await expect(args.onChange).toHaveBeenCalledWith('tab3');
+      await waitFor(() =>
+        expect(canvas.getByText('Content for Tab 3')).toBeInTheDocument()
+      );
+    });
   },
 };
 
@@ -109,6 +121,13 @@ export const KeyboardNavigation: Story = {
       await userEvent.tab();
       await expect(canvas.getByRole('tabpanel')).toHaveFocus();
     });
+  },
+};
+
+export const PillVariant: Story = {
+  args: {
+    tabs: sampleTabs,
+    variant: 'pill',
   },
 };
 

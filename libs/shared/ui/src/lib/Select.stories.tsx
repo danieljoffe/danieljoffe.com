@@ -60,6 +60,34 @@ export const WithError: Story = {
   },
 };
 
+export const Success: Story = {
+  args: {
+    success: true,
+    label: 'Country',
+    options: [
+      { value: 'us', label: 'United States' },
+      { value: 'uk', label: 'United Kingdom' },
+      { value: 'ca', label: 'Canada' },
+    ],
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    label: 'Disabled',
+    options: sampleOptions,
+  },
+};
+
+export const WithHelperText: Story = {
+  args: {
+    helperText: 'Choose your preferred option',
+    label: 'Preference',
+    options: sampleOptions,
+  },
+};
+
 export const SelectInteraction: Story = {
   args: {
     label: 'Choose an option',

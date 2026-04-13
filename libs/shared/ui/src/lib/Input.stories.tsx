@@ -109,6 +109,36 @@ export const LabelClickFocuses: Story = {
   },
 };
 
+export const Success: Story = {
+  args: {
+    success: true,
+    label: 'Email',
+    defaultValue: 'user@example.com',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    label: 'Disabled',
+    defaultValue: 'Cannot edit',
+  },
+};
+
+export const Small: Story = {
+  args: {
+    size: 'sm',
+    label: 'Small input',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    size: 'lg',
+    label: 'Large input',
+  },
+};
+
 export const ErrorAccessibility: Story = {
   args: {
     label: 'Invalid Field',

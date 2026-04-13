@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Switch } from './Switch';
 
 const meta = {
@@ -51,6 +51,15 @@ export const Disabled: Story = {
     checked: false,
     label: 'Disabled switch',
     disabled: true,
+    onChange: fn(),
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    error: 'This setting is required',
+    label: 'Enable notifications',
+    checked: false,
     onChange: fn(),
   },
 };
@@ -113,7 +122,9 @@ export const Controlled: Story = {
     await expect(canvas.getByText('Switch is off')).toBeInTheDocument();
 
     await userEvent.click(switchEl);
-    await expect(switchEl).toHaveAttribute('aria-checked', 'true');
-    await expect(canvas.getByText('Switch is on')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(switchEl).toHaveAttribute('aria-checked', 'true');
+      expect(canvas.getByText('Switch is on')).toBeInTheDocument();
+    });
   },
 };

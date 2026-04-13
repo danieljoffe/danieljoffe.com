@@ -91,7 +91,7 @@ export function Alert({
               {title}
             </Heading>
           )}
-          <div className='text-sm text-text-secondary'>{children}</div>
+          <div className='text-sm text-text-primary'>{children}</div>
         </div>
         {dismissible && (
           <button

@@ -152,6 +152,18 @@ The workspace uses Nx plugins for automatic target inference:
 - Tests: accessibility, navigation, contact-form, performance, dynamic-routes, error-handling
 - CI runs only Chromium; local runs all browsers + mobile
 
+### Storybook Interaction Tests
+
+Stories with `play` functions are tested in-browser via Storybook's Vitest integration. Follow these rules when writing or modifying play functions:
+
+- **Query by role first.** Use `getByRole('button', { name: 'Label' })` — never `getByText` for interactive elements (buttons, links, tabs, menuitems). `getByText` is only appropriate for non-interactive content (headings, paragraphs, empty-state messages). Reference the [Testing Library query priority](https://testing-library.com/docs/queries/about#priority).
+- **Always `waitFor` after state changes.** Any `userEvent` that triggers React state (`click`, `hover`, `keyboard`) needs `waitFor` on subsequent DOM assertions. Assertions without `waitFor` are a CI flake waiting to happen.
+- **Never assert CSS classes.** Don't use `toHaveClass('opacity-0')`, `toHaveClass('bg-surface')`, or check `.className`. Assert ARIA attributes (`aria-hidden`, `aria-pressed`, `aria-expanded`, `aria-current`), DOM state (`toBeDisabled()`, `toBeChecked()`), or presence/absence (`toBeInTheDocument()`). If the component doesn't expose a semantic attribute for the state you need to test, fix the component first.
+- **No `.tagName` checks.** Instead of `expect(el.tagName).toBe('SPAN')`, assert the absence of a role: `expect(queryByRole('link', { name })).not.toBeInTheDocument()`.
+- **Use `step()` for 3+ sequential interactions.** Group related phases (e.g., "Open menu", "Navigate items", "Close menu") so the Interactions panel is self-documenting.
+- **Every `fn()` spy must be asserted.** If you define `onClick: fn()` in args, the play function must call `expect(args.onClick).toHaveBeenCalledWith(...)` or `.not.toHaveBeenCalled()`. Dead spies are noise — remove them or assert them.
+- **Use `{ hidden: true }` for `aria-hidden` elements.** Elements with `aria-hidden="true"` (like tooltips before reveal) are excluded from default queries. Use `getByRole('tooltip', { hidden: true })`.
+
 ### CI Pipelines
 
 - `ci.yml`: Runs on push to `develop` and PRs (except to `main`). Runs lint, typecheck, test, build, e2e (PR only), Chromatic, Lighthouse.
