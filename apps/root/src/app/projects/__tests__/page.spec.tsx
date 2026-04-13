@@ -37,15 +37,31 @@ jest.mock('@/data/structuredData/project', () => ({
 jest.mock('@/utils/constants', () => ({
   GITHUB_REPO_URL: 'https://github.com/test',
   STORYBOOK_URL: 'https://storybook.test',
+  PROJECTS_TAGS_LINK: { href: '/projects/tags' },
+}));
+
+jest.mock('@/lib/tags', () => ({
+  getTopTags: () => [{ name: 'React', count: 5 }],
+  tagToSlug: (tag: string) => tag.toLowerCase(),
 }));
 
 jest.mock('@/lib/layoutStyles', () => ({
   cardBase: 'mock-card-base',
 }));
 
-jest.mock('@/components/kit', () => ({
-  PostCard: ({ post }: { post: { title: string; slug: string } }) => (
-    <div data-testid={`post-card-${post.slug}`}>{post.title}</div>
+jest.mock('@/components/ProjectsGridWithTags', () => ({
+  ProjectsGridWithTags: ({
+    allProjects,
+  }: {
+    allProjects: { title: string; slug: string }[];
+  }) => (
+    <div data-testid='projects-grid'>
+      {allProjects.map(p => (
+        <div key={p.slug} data-testid={`post-card-${p.slug}`}>
+          {p.title}
+        </div>
+      ))}
+    </div>
   ),
 }));
 

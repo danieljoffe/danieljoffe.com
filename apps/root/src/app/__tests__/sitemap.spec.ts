@@ -5,9 +5,18 @@ jest.mock('@/utils/constants', () => ({
   ABOUT_LINK: { href: '/about' },
   AUDIT_LINK: { href: '/audit' },
   BLOG_LINK: { href: '/blog' },
+  BLOG_TAGS_LINK: { href: '/blog/tags' },
   EXPERIENCE_LINK: { href: '/experience' },
+  POSTS_PER_PAGE: 12,
   PROJECTS_LINK: { href: '/projects' },
+  PROJECTS_TAGS_LINK: { href: '/projects/tags' },
   SERVICES_LINK: { href: '/services' },
+}));
+
+jest.mock('@/lib/tags', () => ({
+  getAllTags: (type: string) =>
+    type === 'blog' ? ['React', 'TypeScript'] : ['React'],
+  tagToSlug: (tag: string) => tag.toLowerCase().replace(/\s+/g, '-'),
 }));
 
 jest.mock('@/data/experience', () => ({
