@@ -164,3 +164,8 @@ nx run-many -t build,lint,test,typecheck
 These targets are common examples used across many workspaces. You should do research into other targets available for this workspace and its projects. CI configuration is usually a good guide for what the critical targets are that have to pass.
 
 If verification fails with manageable issues (a few lint errors, minor type issues), fix them. If issues are extensive, attempt obvious fixes first, then escalate to the user with details about what was generated, what's failing, and what you've attempted.
+
+## Finding and Installing Plugins
+
+- List available plugins: `pnpm nx list`
+- Install a plugin: `pnpm nx add <plugin>` (e.g., `pnpm nx add @nx/react`)
