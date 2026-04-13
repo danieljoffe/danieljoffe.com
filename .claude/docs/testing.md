@@ -5,7 +5,7 @@
 - Jest config: `apps/root/jest.config.ts`
 - Setup file: `apps/root/src/test-setup.ts`
 - GSAP plugins are mocked in `apps/root/__mocks__/`
-- Coverage threshold: 50% minimum (branches, functions, lines, statements)
+- Coverage threshold: 65% minimum (branches, functions, lines, statements)
 
 ## E2E Tests
 
