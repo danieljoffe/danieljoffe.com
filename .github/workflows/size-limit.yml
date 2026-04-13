@@ -39,4 +39,4 @@ jobs:
 
       # Fallback: run size-limit directly if the action comparison fails
       - name: Size check (standalone)
-        run: pnpm size
+        run: pnpm run size
