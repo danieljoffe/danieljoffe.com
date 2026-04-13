@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import type { InferType } from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+import type { z } from 'zod/v4';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
@@ -54,7 +54,7 @@ const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), {
   ),
 });
 
-type ContactFormData = InferType<typeof formSchema>;
+type ContactFormData = z.infer<typeof formSchema>;
 
 export default function Form() {
   const router = useRouter();
@@ -69,7 +69,7 @@ export default function Form() {
     setError,
     setValue,
   } = useForm<ContactFormData>({
-    resolver: yupResolver(formSchema),
+    resolver: zodResolver(formSchema),
   });
 
   // Lazy load hCaptcha only when the form section is visible

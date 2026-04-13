@@ -1,5 +1,4 @@
-import * as yup from 'yup';
-import { ValidationError } from 'yup';
+import { z } from 'zod/v4';
 import { NextRequest } from 'next/server';
 import DOMPurify from 'isomorphic-dompurify';
 import ContactNotification from '@/components/emails/ContactNotification';
@@ -13,17 +12,16 @@ const RATE_LIMIT_WINDOW_MS = FORM_LIMITS.RATE_LIMIT_WINDOW_MS;
 const RATE_LIMIT_MAX = FORM_LIMITS.RATE_LIMIT_REQUESTS;
 
 /**
- * Validates and sanitizes form data against the provided Yup schema
+ * Validates and sanitizes form data against the provided Zod schema
  *
  * Performs comprehensive validation including:
  * - Honeypot field detection (hidden address field)
  * - Input sanitization using DOMPurify
- * - Schema validation using Yup
+ * - Schema validation using Zod
  * - Anti-spam protection
  *
- * @template T - The Yup schema object type
  * @param data - Raw form data to validate
- * @param schema - Yup validation schema to apply
+ * @param schema - Zod validation schema to apply
  * @returns Promise that resolves to null on success
  * @throws {ErrorResponse} When validation fails or spam is detected
  *
@@ -33,9 +31,9 @@ const RATE_LIMIT_MAX = FORM_LIMITS.RATE_LIMIT_REQUESTS;
  * // Returns null on success, throws ErrorResponse on failure
  * ```
  */
-export const validateFormData = async <T extends yup.AnyObject>(
+export const validateFormData = async (
   data: RawFormData,
-  schema: yup.ObjectSchema<T>
+  schema: z.ZodType
 ): Promise<ErrorResponse | null> => {
   // Honeypot check — outside try/catch so the 403 status code is not
   // overwritten by the generic validation error handler below.
@@ -59,16 +57,23 @@ export const validateFormData = async <T extends yup.AnyObject>(
       address: data.address,
     };
 
-    await schema.validate(sanitized, {
-      stripUnknown: true,
-    });
+    schema.parse(sanitized);
     return null;
   } catch (e: unknown) {
-    const error = e as ValidationError;
+    if (e instanceof z.ZodError) {
+      const issue = e.issues[0];
+      throw {
+        error: {
+          path: (issue?.path[0] as string) ?? 'root.unknownError',
+          message: issue?.message ?? 'Validation failed',
+        },
+        statusCode: 400,
+      } as ErrorResponse;
+    }
     throw {
       error: {
-        path: error.path ?? 'root.unknownError',
-        message: error.message,
+        path: 'root.unknownError',
+        message: 'Validation failed',
       },
       statusCode: 400,
     } as ErrorResponse;
