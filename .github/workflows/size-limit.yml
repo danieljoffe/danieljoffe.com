@@ -37,6 +37,11 @@ jobs:
         # After this PR merges, all subsequent PRs will work correctly.
         continue-on-error: true
 
-      # Fallback: run size-limit directly if the action comparison fails
+      # The action leaves the working tree on develop after comparison.
+      # Checkout the PR branch before running the standalone fallback.
+      - uses: actions/checkout@v5
+
+      - run: pnpm install --frozen-lockfile
+
       - name: Size check (standalone)
         run: pnpm run size
