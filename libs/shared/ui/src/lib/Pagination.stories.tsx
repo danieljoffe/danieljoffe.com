@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { Pagination } from './Pagination';
 
 const meta = {
@@ -36,5 +37,60 @@ export const Interactive: Story = {
     return (
       <Pagination currentPage={page} totalPages={20} onPageChange={setPage} />
     );
+  },
+};
+
+export const ClickPage: Story = {
+  args: { currentPage: 1, totalPages: 5, onPageChange: fn() },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Click page 3
+    await userEvent.click(canvas.getByRole('button', { name: 'Go to page 3' }));
+    await expect(args.onPageChange).toHaveBeenCalledWith(3);
+  },
+};
+
+export const NextPrevious: Story = {
+  args: { currentPage: 3, totalPages: 5, onPageChange: fn() },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Click next
+    await userEvent.click(canvas.getByRole('button', { name: 'Next page' }));
+    await expect(args.onPageChange).toHaveBeenCalledWith(4);
+
+    // Click previous
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Previous page' })
+    );
+    await expect(args.onPageChange).toHaveBeenCalledWith(2);
+  },
+};
+
+export const DisabledAtBounds: Story = {
+  args: { currentPage: 1, totalPages: 5, onPageChange: fn() },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Previous button should be disabled on first page
+    const prevButton = canvas.getByRole('button', { name: 'Previous page' });
+    await expect(prevButton).toBeDisabled();
+    await expect(args.onPageChange).not.toHaveBeenCalled();
+  },
+};
+
+export const CurrentPageIndicator: Story = {
+  args: { currentPage: 3, totalPages: 5, onPageChange: noop },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Current page should have aria-current="page"
+    const currentButton = canvas.getByRole('button', { name: 'Page 3' });
+    await expect(currentButton).toHaveAttribute('aria-current', 'page');
+
+    // Other pages should not
+    const otherButton = canvas.getByRole('button', { name: 'Go to page 2' });
+    await expect(otherButton).not.toHaveAttribute('aria-current');
   },
 };

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Sidebar } from './Sidebar';
 
 const meta = {
@@ -32,6 +33,45 @@ const sampleItems = [
   { id: 'settings', label: 'Settings' },
 ];
 
+const iconItems = [
+  {
+    id: 'home',
+    label: 'Home',
+    icon: (
+      <svg
+        viewBox='0 0 16 16'
+        fill='currentColor'
+        className='h-4 w-4'
+        aria-hidden='true'
+      >
+        <path d='M8 1l7 6v8H1V7z' />
+      </svg>
+    ),
+  },
+  {
+    id: 'search',
+    label: 'Search',
+    icon: (
+      <svg
+        viewBox='0 0 16 16'
+        fill='currentColor'
+        className='h-4 w-4'
+        aria-hidden='true'
+      >
+        <circle cx='6' cy='6' r='5' fill='none' stroke='currentColor' />
+        <line
+          x1='10'
+          y1='10'
+          x2='15'
+          y2='15'
+          stroke='currentColor'
+          strokeWidth='2'
+        />
+      </svg>
+    ),
+  },
+];
+
 export const Default: Story = {
   args: {
     items: sampleItems,
@@ -55,6 +95,13 @@ export const Collapsed: Story = {
   },
 };
 
+export const WithIcons: Story = {
+  args: {
+    items: iconItems,
+    activeId: 'home',
+  },
+};
+
 export const Interactive: Story = {
   args: { items: sampleItems, activeId: 'dashboard' },
   render: () => {
@@ -62,5 +109,72 @@ export const Interactive: Story = {
     return (
       <Sidebar items={sampleItems} activeId={activeId} onSelect={setActiveId} />
     );
+  },
+};
+
+export const SelectItem: Story = {
+  args: {
+    items: sampleItems,
+    activeId: 'dashboard',
+    onSelect: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // Click a sidebar item
+    await userEvent.click(canvas.getByRole('button', { name: 'Analytics' }));
+    await expect(args.onSelect).toHaveBeenCalledWith('analytics');
+  },
+};
+
+export const ExpandChildren: Story = {
+  args: {
+    items: sampleItems,
+    activeId: 'dashboard',
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Expand Projects group', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Projects' }));
+      await waitFor(() => {
+        expect(canvas.getByText('Active')).toBeInTheDocument();
+        expect(canvas.getByText('Archived')).toBeInTheDocument();
+      });
+    });
+
+    await step('Collapse Projects group', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Projects' }));
+      await waitFor(() =>
+        expect(canvas.queryByText('Active')).not.toBeInTheDocument()
+      );
+    });
+  },
+};
+
+export const ChildNavigation: Story = {
+  args: {
+    items: sampleItems,
+    activeId: 'active',
+  },
+  render: function ChildNav() {
+    const [activeId, setActiveId] = useState('active');
+    return (
+      <Sidebar items={sampleItems} activeId={activeId} onSelect={setActiveId} />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Expand Projects', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Projects' }));
+      await waitFor(() =>
+        expect(canvas.getByText('Archived')).toBeInTheDocument()
+      );
+    });
+
+    await step('Select child item', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Archived' }));
+    });
   },
 };

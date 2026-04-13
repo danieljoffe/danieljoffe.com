@@ -27,8 +27,18 @@ Perform a security-focused code review of the changes on the current branch comp
    - SSRF in scan service URL handling
    - Insecure cryptographic patterns
    - Missing rate limiting on new endpoints
-4. Report only HIGH-CONFIDENCE findings (>80% exploitable)
-5. Skip: DoS, rate limiting, test files, theoretical issues, dependency vulnerabilities
+   - XSS: components must use `isomorphic-dompurify` for user-generated HTML; no `dangerouslySetInnerHTML` without sanitization
+   - PII masking: form inputs collecting PII must have `data-sentry-mask` attribute
+   - hCaptcha: form submissions must validate captcha tokens server-side
+4. **Project-specific concerns:**
+   - `@supabase/supabase-js` — browser client must only use anon key, never service role key
+   - `resend` — email sending must validate recipient addresses and sanitize content
+   - `apps/audit-scan-service` — Puppeteer/Lighthouse scans must not allow arbitrary URL scanning without auth
+   - `botid` — bot detection should not be the sole security layer
+   - Contact form and lead capture endpoints are public-facing attack surface
+   - CSP headers in `next.config.mjs` must not be weakened by changes
+5. Report only HIGH-CONFIDENCE findings (>80% exploitable)
+6. Skip: DoS, test files, theoretical issues, dependency vulnerabilities
 
 ## Output Format
 

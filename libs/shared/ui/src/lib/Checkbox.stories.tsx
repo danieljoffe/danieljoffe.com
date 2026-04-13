@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Checkbox } from './Checkbox';
 
 const meta = {
@@ -44,6 +44,13 @@ export const Disabled: Story = {
   args: {
     label: 'Disabled option',
     disabled: true,
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    error: 'You must accept the terms',
+    label: 'I agree to the terms',
   },
 };
 
@@ -99,7 +106,9 @@ export const Controlled: Story = {
     await expect(canvas.getByText('Checkbox is unchecked')).toBeInTheDocument();
 
     await userEvent.click(checkbox);
-    await expect(checkbox).toBeChecked();
-    await expect(canvas.getByText('Checkbox is checked')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(checkbox).toBeChecked();
+      expect(canvas.getByText('Checkbox is checked')).toBeInTheDocument();
+    });
   },
 };
