@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { TagChipStrip } from './TagChipStrip';
 
 const tags = [
@@ -43,5 +44,51 @@ describe('TagChipStrip', () => {
     expect(
       screen.getByRole('navigation', { name: 'Filter projects by tag' })
     ).toBeInTheDocument();
+  });
+
+  it('renders buttons instead of links when onTagClick is provided', () => {
+    const handleClick = jest.fn();
+    render(<TagChipStrip tags={tags} onTagClick={handleClick} />);
+    const nav = screen.getByRole('navigation');
+    expect(within(nav).queryAllByRole('link')).toHaveLength(0);
+    expect(within(nav).getAllByRole('button')).toHaveLength(2);
+  });
+
+  it('calls onTagClick with the tag name when a chip is clicked', async () => {
+    const user = userEvent.setup();
+    const handleClick = jest.fn();
+    render(<TagChipStrip tags={tags} onTagClick={handleClick} />);
+
+    await user.click(screen.getByRole('button', { name: /React/ }));
+    expect(handleClick).toHaveBeenCalledWith('React');
+  });
+
+  it('marks the active tag with aria-pressed', () => {
+    const handleClick = jest.fn();
+    render(
+      <TagChipStrip tags={tags} onTagClick={handleClick} activeTag='React' />
+    );
+    expect(screen.getByRole('button', { name: /React/ })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: /TypeScript/ })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+  });
+
+  it('still renders "View all tags" as a link in interactive mode', () => {
+    const handleClick = jest.fn();
+    render(
+      <TagChipStrip
+        tags={tags}
+        onTagClick={handleClick}
+        viewAllHref='/blog/tags'
+      />
+    );
+    expect(
+      screen.getByRole('link', { name: /view all tags/i })
+    ).toHaveAttribute('href', '/blog/tags');
   });
 });

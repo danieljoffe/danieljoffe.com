@@ -7,7 +7,8 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { createSearchEngine, searchWithHighlights } from '@/lib/search';
 import { buildSearchIndex } from '@/lib/searchIndex';
 import type { PostThumbnail } from '@/types/postTypes';
-import { PostCard, ListPagination } from '@/components/kit';
+import { PostCard, ListPagination, TagChipStrip } from '@/components/kit';
+import type { TagChip } from '@/components/kit';
 
 interface BlogSearchAndListProps {
   /** Paginated slice of posts shown when the search query is empty. */
@@ -22,14 +23,19 @@ interface BlogSearchAndListProps {
    * it can cross the server/client boundary.
    */
   basePath: string;
+  /** Tag chips for client-side filtering. */
+  tags: TagChip[];
+  /** Href for the "View all tags" trailing link. */
+  viewAllTagsHref?: string;
 }
 
 /**
  * Client island that wraps the blog index grid with an inline MiniSearch
- * input. When the search query is empty, it renders the paginated `pagePosts`
- * grid plus a `<ListPagination>` control. When the query is non-empty, it
- * runs the query against the full blog corpus, hides the pagination, and
- * renders the flat result list.
+ * input and tag chip filtering. When neither search nor tag filter is active,
+ * it renders the paginated `pagePosts` grid plus a `<ListPagination>` control.
+ * When a search query is entered or a tag is selected, it filters the full
+ * blog corpus client-side and hides the pagination. Selecting a tag clears
+ * the search query and vice versa.
  */
 export function BlogSearchAndList({
   pagePosts,
@@ -37,8 +43,11 @@ export function BlogSearchAndList({
   currentPage,
   totalPages,
   basePath,
+  tags,
+  viewAllTagsHref,
 }: BlogSearchAndListProps) {
   const [query, setQuery] = useState('');
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(query);
 
   const hrefFor = (page: number): string =>
@@ -62,6 +71,7 @@ export function BlogSearchAndList({
 
   const trimmedQuery = deferredQuery.trim();
   const isSearching = trimmedQuery.length > 0;
+  const isFiltering = activeTag !== null;
 
   const searchResults = useMemo(() => {
     if (!isSearching || !engine) return [];
@@ -75,18 +85,48 @@ export function BlogSearchAndList({
     }
   }, [isSearching, engine, trimmedQuery, blogEntries, bySlug]);
 
-  const visiblePosts = isSearching ? searchResults : pagePosts;
+  const tagResults = useMemo(() => {
+    if (!isFiltering) return [];
+    return allPosts.filter(post => post.tags && post.tags.includes(activeTag));
+  }, [isFiltering, allPosts, activeTag]);
+
+  const handleTagClick = (tagName: string) => {
+    setActiveTag(prev => (prev === tagName ? null : tagName));
+    setQuery('');
+  };
+
+  const handleSearchChange = (value: string) => {
+    setQuery(value);
+    if (value.trim().length > 0) setActiveTag(null);
+  };
+
+  const visiblePosts = isSearching
+    ? searchResults
+    : isFiltering
+      ? tagResults
+      : pagePosts;
+
+  const showPagination = !isSearching && !isFiltering;
 
   return (
     <div className='space-y-6'>
-      <div className='relative max-w-md'>
+      <TagChipStrip
+        tags={tags}
+        viewAllHref={viewAllTagsHref}
+        ariaLabel='Filter blog posts by tag'
+        onTagClick={handleTagClick}
+        activeTag={activeTag}
+        className='mb-2'
+      />
+
+      <div className='relative'>
         <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none text-text-tertiary'>
           <Search className='h-4 w-4' aria-hidden='true' />
         </div>
         <Input
           type='search'
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={e => handleSearchChange(e.target.value)}
           placeholder='Search posts…'
           aria-label='Search blog posts'
           className='pl-9'
@@ -101,11 +141,21 @@ export function BlogSearchAndList({
         </Text>
       )}
 
+      {isFiltering && !isSearching && (
+        <Text variant='meta' as='p' aria-live='polite'>
+          {tagResults.length} {tagResults.length === 1 ? 'post' : 'posts'}{' '}
+          tagged &quot;
+          {activeTag}&quot;
+        </Text>
+      )}
+
       {visiblePosts.length === 0 ? (
         <Text variant='body' as='p' className='text-text-secondary'>
           {isSearching
             ? 'No posts match your search. Try a different term.'
-            : 'No posts yet.'}
+            : isFiltering
+              ? `No posts tagged "${activeTag}".`
+              : 'No posts yet.'}
         </Text>
       ) : (
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -113,14 +163,14 @@ export function BlogSearchAndList({
             <PostCard
               key={post.slug}
               post={post}
-              priority={!isSearching && currentPage === 1 && i < 2}
+              priority={showPagination && currentPage === 1 && i < 2}
               analyticsType='blog'
             />
           ))}
         </div>
       )}
 
-      {!isSearching && (
+      {showPagination && (
         <ListPagination
           currentPage={currentPage}
           totalPages={totalPages}

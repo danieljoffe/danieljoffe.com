@@ -23,5 +23,6 @@ export function buildThumbnail(
   if (metadata.role !== undefined) thumbnail.role = metadata.role;
   if (metadata.duration !== undefined) thumbnail.duration = metadata.duration;
   if (metadata.featured !== undefined) thumbnail.featured = metadata.featured;
+  if (metadata.tags.length > 0) thumbnail.tags = metadata.tags;
   return thumbnail;
 }

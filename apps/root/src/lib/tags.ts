@@ -3,7 +3,7 @@ import { buildSearchIndex } from './searchIndex';
 
 export type TagContentEntry = Pick<
   SearchEntry,
-  'slug' | 'title' | 'excerpt' | 'tags' | 'type' | 'url'
+  'slug' | 'title' | 'excerpt' | 'tags' | 'type' | 'url' | 'date'
 >;
 
 /** Scoped content type for tag helpers: blog, project, or experience. */
@@ -30,13 +30,14 @@ function isContentType(type: EntryType): type is TagEntryType {
 export function getAllContent(type?: TagEntryType): TagContentEntry[] {
   return buildSearchIndex()
     .filter(entry => (type ? entry.type === type : isContentType(entry.type)))
-    .map(({ slug, title, excerpt, tags, type: entryType, url }) => ({
+    .map(({ slug, title, excerpt, tags, type: entryType, url, date }) => ({
       slug,
       title,
       excerpt,
       tags,
       type: entryType,
       url,
+      date,
     }));
 }
 

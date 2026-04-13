@@ -67,6 +67,11 @@ const rsc = makePost('react-server-components', 'React Server Components');
 const tw = makePost('tailwind-theme', 'Tailwind Theme Tokens');
 const allPosts = [rsc, tw];
 
+const defaultTags = [
+  { name: 'react', count: 1, href: '/blog/tags/react' },
+  { name: 'tailwind', count: 1, href: '/blog/tags/tailwind' },
+];
+
 describe('BlogSearchAndList', () => {
   it('renders the pagination control and paginated grid when the query is empty', () => {
     render(
@@ -76,6 +81,7 @@ describe('BlogSearchAndList', () => {
         currentPage={1}
         totalPages={2}
         basePath='/blog'
+        tags={defaultTags}
       />
     );
     expect(
@@ -94,6 +100,7 @@ describe('BlogSearchAndList', () => {
         currentPage={1}
         totalPages={2}
         basePath='/blog'
+        tags={defaultTags}
       />
     );
 
@@ -123,6 +130,7 @@ describe('BlogSearchAndList', () => {
         currentPage={1}
         totalPages={2}
         basePath='/blog'
+        tags={defaultTags}
       />
     );
 
@@ -141,6 +149,7 @@ describe('BlogSearchAndList', () => {
         currentPage={1}
         totalPages={2}
         basePath='/blog'
+        tags={defaultTags}
       />
     );
 

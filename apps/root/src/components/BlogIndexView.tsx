@@ -11,7 +11,6 @@ import { getPaginatedContent } from '@/lib/pagination';
 import { getTopTags, tagToSlug } from '@/lib/tags';
 import { BLOG_LINK, BLOG_TAGS_LINK, POSTS_PER_PAGE } from '@/utils/constants';
 import type { PostThumbnail } from '@/types/postTypes';
-import { TagChipStrip } from '@/components/kit';
 import { BlogSearchAndList } from './BlogSearchAndList';
 
 const TOP_TAG_LIMIT = 8;
@@ -64,18 +63,14 @@ export function BlogIndexView({ currentPage }: BlogIndexViewProps) {
           icon={<PenLine className='h-3.5 w-3.5' />}
           label='Posts'
         />
-        <TagChipStrip
-          tags={topTags}
-          viewAllHref={BLOG_TAGS_LINK.href}
-          ariaLabel='Filter blog posts by tag'
-          className='mb-6'
-        />
         <BlogSearchAndList
           pagePosts={pagePosts}
           allPosts={allPosts}
           currentPage={currentPage}
           totalPages={totalPages}
           basePath={BLOG_LINK.href}
+          tags={topTags}
+          viewAllTagsHref={BLOG_TAGS_LINK.href}
         />
       </Section>
 

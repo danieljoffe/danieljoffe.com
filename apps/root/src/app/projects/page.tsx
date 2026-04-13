@@ -15,9 +15,9 @@ import {
   PROJECTS_TAGS_LINK,
   STORYBOOK_URL,
 } from '@/utils/constants';
-import { PostCard, TagChipStrip } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import Button from '@/components/Button';
+import { ProjectsGridWithTags } from '@/components/ProjectsGridWithTags';
 
 const projectsList = getContentByType('project')
   .reverse()
@@ -100,17 +100,11 @@ export default function Projects() {
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'
         />
-        <TagChipStrip
+        <ProjectsGridWithTags
+          allProjects={projectsList}
           tags={topProjectTags}
-          viewAllHref={PROJECTS_TAGS_LINK.href}
-          ariaLabel='Filter projects by tag'
-          className='mb-6'
+          viewAllTagsHref={PROJECTS_TAGS_LINK.href}
         />
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {projectsList.map((project, i) => (
-            <PostCard key={project.slug} post={project} priority={i < 3} />
-          ))}
-        </div>
       </Section>
 
       <StructuredData data={projectsRootStructuredData} />
