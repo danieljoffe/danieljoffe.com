@@ -12,14 +12,23 @@ const meta = {
       options: [
         undefined,
         'default',
-        'accent',
         'success',
         'warning',
         'error',
         'info',
+        'brand',
+        'brand-solid',
       ],
       table: {
         defaultValue: { summary: 'default' },
+      },
+    },
+    size: {
+      description: 'Size of the badge',
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+      table: {
+        defaultValue: { summary: 'md' },
       },
     },
     children: {
@@ -64,4 +73,49 @@ export const Info: Story = {
     children: 'Info',
     variant: 'info',
   },
+};
+
+export const Brand: Story = {
+  args: {
+    children: 'Brand',
+    variant: 'brand',
+  },
+};
+
+export const BrandSolid: Story = {
+  args: {
+    children: 'Brand Solid',
+    variant: 'brand-solid',
+  },
+};
+
+export const Small: Story = {
+  args: {
+    children: 'Small',
+    size: 'sm',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    children: 'Large',
+    size: 'lg',
+  },
+};
+
+export const AllVariants: Story = {
+  args: {
+    children: '',
+  },
+  render: () => (
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <Badge>Default</Badge>
+      <Badge variant='success'>Success</Badge>
+      <Badge variant='warning'>Warning</Badge>
+      <Badge variant='error'>Error</Badge>
+      <Badge variant='info'>Info</Badge>
+      <Badge variant='brand'>Brand</Badge>
+      <Badge variant='brand-solid'>Brand Solid</Badge>
+    </div>
+  ),
 };

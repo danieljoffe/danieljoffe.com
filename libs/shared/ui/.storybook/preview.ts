@@ -23,8 +23,17 @@ const preview: Preview = {
       },
     },
 
+    options: {
+      storySort: {
+        order: ['Introduction', '*'],
+      },
+    },
+
     a11y: {
-      test: 'todo',
+      test: 'error',
+      config: {
+        rules: [{ id: 'aria-hidden-body', enabled: false }],
+      },
     },
   },
 };

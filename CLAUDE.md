@@ -178,9 +178,15 @@ The workspace uses Nx plugins for automatic target inference:
 
 ### Storybook Interaction Tests
 
-- Stories with user interaction (dropdowns, modals, toggles, form inputs) should include a `play()` function using `@storybook/test` utilities (`userEvent`, `within`, `expect`, `waitFor`)
-- Interaction tests verify accessibility contracts: focus management, ARIA state changes, keyboard navigation
-- Run with `pnpm nx storybook @danieljoffe.com/shared-ui` — interaction tests execute in the browser panel
+Stories with `play` functions are tested in-browser via Storybook's Vitest integration. Follow these rules when writing or modifying play functions:
+
+- **Query by role first.** Use `getByRole('button', { name: 'Label' })` — never `getByText` for interactive elements (buttons, links, tabs, menuitems). `getByText` is only appropriate for non-interactive content (headings, paragraphs, empty-state messages). Reference the [Testing Library query priority](https://testing-library.com/docs/queries/about#priority).
+- **Always `waitFor` after state changes.** Any `userEvent` that triggers React state (`click`, `hover`, `keyboard`) needs `waitFor` on subsequent DOM assertions. Assertions without `waitFor` are a CI flake waiting to happen.
+- **Never assert CSS classes.** Don't use `toHaveClass('opacity-0')`, `toHaveClass('bg-surface')`, or check `.className`. Assert ARIA attributes (`aria-hidden`, `aria-pressed`, `aria-expanded`, `aria-current`), DOM state (`toBeDisabled()`, `toBeChecked()`), or presence/absence (`toBeInTheDocument()`). If the component doesn't expose a semantic attribute for the state you need to test, fix the component first.
+- **No `.tagName` checks.** Instead of `expect(el.tagName).toBe('SPAN')`, assert the absence of a role: `expect(queryByRole('link', { name })).not.toBeInTheDocument()`.
+- **Use `step()` for 3+ sequential interactions.** Group related phases (e.g., "Open menu", "Navigate items", "Close menu") so the Interactions panel is self-documenting.
+- **Every `fn()` spy must be asserted.** If you define `onClick: fn()` in args, the play function must call `expect(args.onClick).toHaveBeenCalledWith(...)` or `.not.toHaveBeenCalled()`. Dead spies are noise — remove them or assert them.
+- **Use `{ hidden: true }` for `aria-hidden` elements.** Elements with `aria-hidden="true"` (like tooltips before reveal) are excluded from default queries. Use `getByRole('tooltip', { hidden: true })`.
 
 ### CI Pipelines
 

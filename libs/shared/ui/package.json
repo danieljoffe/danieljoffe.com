@@ -29,7 +29,7 @@
       "types": "./dist/lib/types.d.ts",
       "default": "./src/lib/types.ts"
     },
-    "./styles/theme.css": "./src/styles/theme.css"
+    "./styles/indigo-theme.css": "./src/styles/indigo-theme.css"
   },
   "dependencies": {
     "clsx": "^2.1.0",
