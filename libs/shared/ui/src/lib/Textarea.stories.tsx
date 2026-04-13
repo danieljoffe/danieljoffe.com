@@ -68,6 +68,24 @@ export const WithError: Story = {
   },
 };
 
+export const Success: Story = {
+  args: {
+    success: true,
+    label: 'Bio',
+    defaultValue: 'This looks good!',
+    rows: 4,
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    label: 'Disabled',
+    defaultValue: 'Cannot edit',
+    rows: 4,
+  },
+};
+
 export const TypingInteraction: Story = {
   args: {
     label: 'Your message',

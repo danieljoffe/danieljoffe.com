@@ -114,7 +114,17 @@ export const BLOG_TAGS_LINK: NavLink = {
   href: '/blog/tags',
   label: 'Tags',
 };
+export const PROJECTS_TAGS_LINK: NavLink = {
+  href: '/projects/tags',
+  label: 'Tags',
+};
 export const AUDIT_LINK: NavLink = { href: '/audit', label: 'Free Audit' };
+
+// ============================================================================
+// CONTENT LISTING CONSTANTS
+// ============================================================================
+/** Number of blog posts per paginated index page. */
+export const POSTS_PER_PAGE = 12;
 
 /** Primary nav links — always visible in desktop and mobile bottom bar */
 export const PRIMARY_NAV_LINKS: NavLink[] = [

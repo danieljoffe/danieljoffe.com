@@ -34,6 +34,8 @@ export const blogSlugs = {
   mobileVrDataDrivenPlaywright: 'mobile-vr-data-driven-playwright',
   sentrySkipWithoutDsn: 'sentry-skip-without-dsn',
   mdxSingleSourceOfTruth: 'mdx-single-source-of-truth',
+  clientSideTagFilteringSeo: 'client-side-tag-filtering-seo',
+  storybookInteractionTestsAria: 'storybook-interaction-tests-aria',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

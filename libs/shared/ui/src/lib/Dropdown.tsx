@@ -167,7 +167,7 @@ export function Dropdown({
         ref={triggerRef}
         id={triggerId}
         type='button'
-        aria-haspopup='true'
+        aria-haspopup='menu'
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => (open ? closeMenu() : openMenu())}
@@ -205,8 +205,9 @@ export function Dropdown({
                 }}
                 role='menuitem'
                 tabIndex={i === activeIndex ? 0 : -1}
-                disabled={item.disabled}
+                aria-disabled={item.disabled || undefined}
                 onClick={() => {
+                  if (item.disabled) return;
                   item.onClick?.();
                   setOpen(false);
                   setActiveIndex(-1);
@@ -217,14 +218,16 @@ export function Dropdown({
                   'transition-colors duration-100 cursor-pointer',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
                   'focus-visible:ring-offset-surface',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  item.disabled && 'opacity-50 cursor-not-allowed',
                   item.danger
                     ? 'text-error hover:bg-error-light'
                     : 'text-text-primary hover:bg-surface-tertiary'
                 )}
               >
                 {item.icon && (
-                  <span className='h-4 w-4 shrink-0'>{item.icon}</span>
+                  <span className='h-4 w-4 shrink-0' aria-hidden='true'>
+                    {item.icon}
+                  </span>
                 )}
                 {item.label}
               </button>
