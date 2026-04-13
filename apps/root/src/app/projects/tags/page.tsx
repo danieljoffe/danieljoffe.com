@@ -7,29 +7,29 @@ import { getAllTags, getTagCounts, tagToSlug } from '@/lib/tags';
 import Button from '@/components/Button';
 
 export const metadata: Metadata = {
-  title: 'Tags | Blog',
-  description: 'Browse blog posts by topic',
+  title: 'Tags | Projects',
+  description: 'Browse project case studies by topic',
 };
 
-export default function TagsIndexPage() {
-  const allTags = getAllTags('blog');
-  const tagCounts = getTagCounts('blog');
+export default function ProjectTagsIndexPage() {
+  const allTags = getAllTags('project');
+  const tagCounts = getTagCounts('project');
 
   return (
     <PageLayout>
       <Section>
-        <Button as='link' variant='bare' size='sm' href={'/blog'}>
-          ← Back to Blog
+        <Button as='link' variant='bare' size='sm' href='/projects'>
+          ← Back to Projects
         </Button>
       </Section>
 
       <Section>
         <Heading as='h1' variant='hero'>
-          All Topics
+          Project Topics
         </Heading>
-
         <Text as='p' variant='body'>
-          Browse posts by tag — {allTags.length} topics in total
+          Browse case studies by tag — {allTags.length}{' '}
+          {allTags.length === 1 ? 'topic' : 'topics'} in total
         </Text>
       </Section>
 
@@ -37,14 +37,13 @@ export default function TagsIndexPage() {
         <div className='flex flex-wrap gap-3'>
           {allTags.map(tag => {
             const count = tagCounts.get(tag) || 0;
-            const slug = tagToSlug(tag);
             return (
               <Button
                 key={tag}
-                href={`/blog/tags/${slug}`}
                 as='link'
                 variant='outline'
                 size='sm'
+                href={`/projects/tags/${tagToSlug(tag)}`}
               >
                 {tag}
                 <span className='text-gray-500'>({count})</span>

@@ -9,10 +9,15 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
-import { GITHUB_REPO_URL, STORYBOOK_URL } from '@/utils/constants';
-import { PostCard } from '@/components/kit';
+import { getTopTags, tagToSlug } from '@/lib/tags';
+import {
+  GITHUB_REPO_URL,
+  PROJECTS_TAGS_LINK,
+  STORYBOOK_URL,
+} from '@/utils/constants';
 import { cardBase } from '@/lib/layoutStyles';
 import Button from '@/components/Button';
+import { ProjectsGridWithTags } from '@/components/ProjectsGridWithTags';
 
 const projectsList = getContentByType('project')
   .reverse()
@@ -20,6 +25,13 @@ const projectsList = getContentByType('project')
     ...entry.thumbnail,
     readingTime: entry.readingTime,
   }));
+
+const TOP_TAG_LIMIT = 8;
+const topProjectTags = getTopTags('project', TOP_TAG_LIMIT).map(tag => ({
+  ...tag,
+  href: `${PROJECTS_TAGS_LINK.href}/${tagToSlug(tag.name)}`,
+}));
+
 export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {
@@ -88,11 +100,11 @@ export default function Projects() {
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'
         />
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {projectsList.map((project, i) => (
-            <PostCard key={project.slug} post={project} priority={i < 3} />
-          ))}
-        </div>
+        <ProjectsGridWithTags
+          allProjects={projectsList}
+          tags={topProjectTags}
+          viewAllTagsHref={PROJECTS_TAGS_LINK.href}
+        />
       </Section>
 
       <StructuredData data={projectsRootStructuredData} />

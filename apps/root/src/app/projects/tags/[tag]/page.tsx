@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { PenLine } from 'lucide-react';
+import { notFound } from 'next/navigation';
+import { FolderOpen } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
@@ -10,7 +10,7 @@ import { getContentByType } from '@/data/contentRegistry';
 import { getAllTags, slugToTag, tagToSlug } from '@/lib/tags';
 import BreadCrumbs from '@/components/BreadCrumbs';
 import { PostCard } from '@/components/kit';
-import { BLOG_LINK, BLOG_TAGS_LINK } from '@/utils/constants';
+import { PROJECTS_LINK, PROJECTS_TAGS_LINK } from '@/utils/constants';
 import type { PostThumbnail } from '@/types/postTypes';
 
 interface TagPageProps {
@@ -18,22 +18,22 @@ interface TagPageProps {
 }
 
 export async function generateStaticParams() {
-  return getAllTags('blog').map(tag => ({ tag: tagToSlug(tag) }));
+  return getAllTags('project').map(tag => ({ tag: tagToSlug(tag) }));
 }
 
 export async function generateMetadata({
   params,
 }: TagPageProps): Promise<Metadata> {
   const { tag: tagSlug } = await params;
-  const allTags = getAllTags('blog');
+  const allTags = getAllTags('project');
   const tagName = slugToTag(tagSlug, allTags);
   if (!tagName) return { title: 'Tag Not Found' };
-  const count = getContentByType('blog').filter(entry =>
+  const count = getContentByType('project').filter(entry =>
     entry.metadata.tags.includes(tagName)
   ).length;
   return {
-    title: `${tagName} | Blog Tag`,
-    description: `${count} ${count === 1 ? 'post' : 'posts'} tagged with "${tagName}"`,
+    title: `${tagName} | Project Tag`,
+    description: `${count} case ${count === 1 ? 'study' : 'studies'} tagged with "${tagName}"`,
   };
 }
 
@@ -44,26 +44,26 @@ function toThumbnail(entry: {
   return { ...entry.thumbnail, readingTime: entry.readingTime };
 }
 
-export default async function TagDetailPage({ params }: TagPageProps) {
+export default async function ProjectTagDetailPage({ params }: TagPageProps) {
   const { tag: tagSlug } = await params;
-  const allTags = getAllTags('blog');
+  const allTags = getAllTags('project');
   const tagName = slugToTag(tagSlug, allTags);
   if (!tagName) notFound();
 
-  const posts = getContentByType('blog')
+  const projects = getContentByType('project')
     .filter(entry => entry.metadata.tags.includes(tagName))
     .slice()
     .reverse()
     .map(toThumbnail);
 
   return (
-    <PageLayout>
+    <PageLayout wide>
       <Section>
         <BreadCrumbs
           items={[
-            BLOG_LINK,
-            BLOG_TAGS_LINK,
-            { label: tagName, href: `/blog/tags/${tagSlug}` },
+            PROJECTS_LINK,
+            PROJECTS_TAGS_LINK,
+            { label: tagName, href: `/projects/tags/${tagSlug}` },
           ]}
         />
       </Section>
@@ -73,27 +73,28 @@ export default async function TagDetailPage({ params }: TagPageProps) {
           Tag: {tagName}
         </Heading>
         <Text as='p' variant='body'>
-          {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+          {projects.length}{' '}
+          {projects.length === 1 ? 'case study' : 'case studies'}
         </Text>
       </Section>
 
       <Section>
         <SectionLabel
-          icon={<PenLine className='h-3.5 w-3.5' />}
-          label='Posts'
+          icon={<FolderOpen className='h-3.5 w-3.5' />}
+          label='Case Studies'
         />
-        {posts.length === 0 ? (
+        {projects.length === 0 ? (
           <Text as='p' variant='body'>
-            No posts tagged with {tagName} yet.
+            No case studies tagged with {tagName} yet.
           </Text>
         ) : (
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-            {posts.map((post, i) => (
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {projects.map((project, i) => (
               <PostCard
-                key={post.slug}
-                post={post}
-                priority={i < 2}
-                analyticsType='blog'
+                key={project.slug}
+                post={project}
+                priority={i < 3}
+                analyticsType='project'
               />
             ))}
           </div>
