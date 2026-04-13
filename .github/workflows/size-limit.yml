@@ -31,4 +31,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           skip_step: build
-          build_script: size:noop
+          build_script: 'size:noop'
+        # Note: The first PR adding size-limit will fail the base branch
+        # comparison because develop doesn't have the size:noop script yet.
+        # After this PR merges, all subsequent PRs will work correctly.
+        continue-on-error: true
+
+      # Fallback: run size-limit directly if the action comparison fails
+      - name: Size check (standalone)
+        run: pnpm size
