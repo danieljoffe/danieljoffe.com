@@ -11,8 +11,14 @@
         "cwd": "{workspaceRoot}"
       }
     },
+    "validate-content": {
+      "command": "tsx scripts/validate-content.ts",
+      "options": {
+        "cwd": "{workspaceRoot}"
+      }
+    },
     "build": {
-      "dependsOn": ["generate-search-index"],
+      "dependsOn": ["generate-search-index", "validate-content"],
       "options": {
         "command": "next build --webpack"
       }
