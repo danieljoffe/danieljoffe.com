@@ -22,6 +22,7 @@
     "knip:fix": "knip --fix",
     "size": "size-limit",
     "size:why": "size-limit --why",
+    "size:noop": "true",
     "pom": "pnpm typecheck && pnpm lint:fix && pnpm format && pnpm test && pnpm test:coverage && pnpm test:e2e && pnpm test:lighthouse",
     "affected": "nx affected -t lint test build typecheck e2e",
     "dev": "nx run-many --target=dev --all",
