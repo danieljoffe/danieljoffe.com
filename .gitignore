@@ -43,6 +43,11 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 .claude/worktrees/
+.claude/sessions/archive/
+.claude-flow/
+.swarm/
+.claude/memory.db
+ruvector.db
 
 # Next.js
 .next
