@@ -31,4 +31,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           skip_step: build
-          install_script: pnpm install --no-frozen-lockfile
