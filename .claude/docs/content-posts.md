@@ -51,7 +51,7 @@ Each entry contains: `slug`, `type`, `thumbnail`, `component`, `metadata`, `stru
 
 **Detail pages** use `getPostDetailProps(type, slug)` from `lib/getPostDetailProps.ts` + `PostDetailLayout` — a ~35-line pattern shared by all content types.
 
-**Listing pages** use `getContentByType(type)` and map entries to `PostCard` props.
+**Listing pages** use `getContentByType(type)` and map entries to `PostCard` props. Blog and projects listing pages wrap the grid in client islands (`BlogSearchAndList`, `ProjectsGridWithTags`) that support client-side tag filtering. Tag chips toggle an inline filter (with `aria-pressed` state); selecting a tag clears search and vice versa. Pagination hides while a filter is active. The existing `/blog/tags/{slug}` and `/projects/tags/{slug}` server routes remain as canonical SEO URLs.
 
 ## Content Ordering
 

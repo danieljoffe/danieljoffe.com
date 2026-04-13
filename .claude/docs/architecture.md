@@ -20,12 +20,19 @@ app/                    # Next.js App Router pages
 ├── about/              # About page
 ├── audit/              # Audit tool page
 ├── blog/               # Blog pages with dynamic [slug] routes
+│   ├── [slug]/         # Blog detail pages
+│   ├── page/[page]/    # Paginated blog index (page 2..N)
+│   └── tags/           # Tag index + tags/[tag] detail routes
 ├── experience/         # Experience pages with dynamic [slug] routes
 ├── projects/           # Projects pages with dynamic [slug] routes
+│   ├── [slug]/         # Project detail pages
+│   └── tags/           # Tag index + tags/[tag] detail routes
 ├── services/           # Services page
 └── thank-you/          # Thank you pages
 components/             # App-specific React components
-├── kit/                # Shared UI primitives (Spinner, ErrorAlert, PostPagination, etc.)
+├── kit/                # Shared UI primitives (Spinner, ErrorAlert, PostPagination, ListPagination, TagChipStrip, etc.)
+├── BlogSearchAndList   # Client island: blog search + tag filtering
+├── ProjectsGridWithTags # Client island: projects tag filtering
 data/                   # Content data and metadata
 ├── content/            # MDX content files (projects/, experience/, blog/)
 ├── contentRegistry.ts  # Unified content registry (single data access layer)
@@ -52,9 +59,11 @@ Shared components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, 
 
 ## Key Technologies
 
+- **Monorepo**: Nx with pnpm workspaces
 - **Framework**: Next.js 16 with App Router
 - **Styling**: Tailwind CSS 4
 - **Animations**: GSAP
+- **Search**: MiniSearch (client-side full-text search on blog index)
 - **Forms**: react-hook-form with yup validation
 - **Error Tracking**: Sentry (client: instrumentation-client.ts, server: sentry.server.config.ts, edge: sentry.edge.config.ts)
 - **Analytics**: Vercel Analytics, Google Analytics
