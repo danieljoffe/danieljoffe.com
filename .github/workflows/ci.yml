@@ -58,7 +58,7 @@ jobs:
               .vscode/*) ;;
               .github/ISSUE_TEMPLATE/*|.github/workflows/*) ;;
               .husky/*) ;;
-              .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE) ;;
+              .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE|renovate.json) ;;
               *) DOCS_ONLY=false; break ;;
             esac
           done <<< "$CHANGED"
