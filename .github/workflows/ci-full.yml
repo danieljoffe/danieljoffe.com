@@ -18,8 +18,6 @@ on:
         required: false
       CHROMATIC_PROJECT_TOKEN:
         required: false
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   e2e:
@@ -74,7 +72,7 @@ jobs:
       - name: Run Lighthouse CI
         run: pnpm test:lighthouse
         env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
 
   storybook-and-chromatic:
     runs-on: ubuntu-latest
