@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import {
   getOgFonts,
   getProfileImageBase64,
-  getUnsplashImageBase64,
+  getCoverImageBase64,
 } from '@/lib/og';
 import { getContentBySlug } from '@/data/contentRegistry';
 import { experiencePageSlugs } from '@/data/experience';
@@ -30,7 +30,7 @@ export default async function OgImage({
   const [fonts, profileSrc, coverSrc] = await Promise.all([
     getOgFonts(),
     getProfileImageBase64(),
-    getUnsplashImageBase64(experience.cover.src, 600, 630),
+    getCoverImageBase64(experience.cover.src),
   ]);
 
   return new ImageResponse(
