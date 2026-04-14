@@ -116,9 +116,12 @@ const canonicalTagSet = new Set<string>(CANONICAL_TAGS);
 
 const coverSchema = z.object({
   alt: z.string().min(1, 'Cover alt text is required'),
-  src: z.string().regex(/^\/photo-/, 'Cover src must start with /photo-'),
-  origin: z.string().url('Cover origin must be a valid URL'),
-  creator: z.string().regex(/^@/, 'Cover creator must start with @'),
+  src: z
+    .string()
+    .regex(
+      /^\/images\/covers\/[a-z0-9-]+\.webp$/,
+      'Cover src must match /images/covers/{slug}.webp'
+    ),
 });
 
 // ---------------------------------------------------------------------------
