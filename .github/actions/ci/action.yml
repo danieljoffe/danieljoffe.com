@@ -17,6 +17,9 @@ inputs:
   nx-cloud-token:
     description: Nx Cloud access token for remote caching
     default: ''
+  nx-cloud-id:
+    description: Nx Cloud workspace ID
+    default: ''
 
 runs:
   using: composite
@@ -50,6 +53,7 @@ runs:
       run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail
       env:
         NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
+        NX_CLOUD_ID: ${{ inputs.nx-cloud-id }}
 
     - name: Get Playwright version
       if: ${{ inputs.run-e2e == 'true' }}
@@ -75,6 +79,7 @@ runs:
       run: pnpm nx affected -t e2e --nxBail
       env:
         NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
+        NX_CLOUD_ID: ${{ inputs.nx-cloud-id }}
 
     - name: Run Chromatic visual tests
       if: ${{ inputs.chromatic-project-token != '' }}
@@ -89,6 +94,7 @@ runs:
       run: pnpm nx build root
       env:
         NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
+        NX_CLOUD_ID: ${{ inputs.nx-cloud-id }}
 
     - name: Run Lighthouse CI
       if: ${{ inputs.run-e2e == 'true' }}

@@ -14,6 +14,8 @@ on:
     secrets:
       NX_CLOUD_ACCESS_TOKEN:
         required: false
+      NX_CLOUD_ID:
+        required: false
 
 jobs:
   lint:
@@ -33,6 +35,7 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
   typecheck:
     runs-on: ubuntu-latest
@@ -51,6 +54,7 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
   test:
     runs-on: ubuntu-latest
@@ -69,6 +73,7 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
   build:
     runs-on: ubuntu-latest
@@ -87,6 +92,7 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
   gate:
     if: always()

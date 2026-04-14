@@ -14,6 +14,8 @@ on:
     secrets:
       NX_CLOUD_ACCESS_TOKEN:
         required: false
+      NX_CLOUD_ID:
+        required: false
       CHROMATIC_PROJECT_TOKEN:
         required: false
       GITHUB_TOKEN:
@@ -50,6 +52,7 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
   lighthouse:
     runs-on: ubuntu-latest
@@ -66,6 +69,7 @@ jobs:
         run: pnpm nx build root
         env:
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Lighthouse CI
         run: pnpm test:lighthouse
@@ -89,6 +93,7 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Chromatic visual tests
         if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
