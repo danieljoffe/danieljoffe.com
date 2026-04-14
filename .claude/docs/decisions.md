@@ -39,3 +39,11 @@ Format: newest entries at the bottom.
 **Decision:** Adopt Renovate (not Dependabot) with `minimumReleaseAge: "3 days"` for devDeps, 7 days for production deps, 14 days for majors. Pair with Socket.dev for behavioral analysis.
 
 **Consequence:** Dependency updates happen automatically with a safety buffer. A 3-day cooldown would have prevented most 2025 supply chain attacks. Tightly coupled packages (Nx, Storybook, TypeScript-ESLint) are grouped into single PRs.
+
+## 2026-04-14: Replace markdown session persistence with context-mode plugin
+
+**Context:** The initial session persistence system (latest.md + archive + PreCompact/SessionEnd hooks from PR #368) required manual markdown updates by Claude during sessions. This was fragile: if Claude forgot to update latest.md before compaction, context was lost. Evaluated mksglu/context-mode as an automatic alternative.
+
+**Decision:** Adopt the context-mode marketplace plugin which provides automatic SQLite-backed session persistence with FTS5 search, priority-tiered compaction snapshots, and sandbox execution. Remove manual markdown lifecycle hooks (PreCompact, SessionEnd). Keep a slim SessionStart hook for decisions.md injection only.
+
+**Consequence:** Session state survives compaction automatically without manual intervention. The decisions.md log remains the human-readable record of architectural choices. Trade-off: session history is now in SQLite (not grep-able markdown), and the plugin has an Elastic-2.0 license (fine for personal use).
