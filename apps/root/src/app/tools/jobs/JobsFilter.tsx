@@ -1,9 +1,15 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
+import {
+  BASE_FIELD,
+  FIELD_PADDING,
+  FIELD_PLACEHOLDER,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
-import { inputStyles } from '@/lib/formStyles';
 import type { JobsFilterState } from './JobsDashboard';
+
+const inputStyles = cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER);
 
 interface JobsFilterProps {
   filters: JobsFilterState;

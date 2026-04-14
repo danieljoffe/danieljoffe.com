@@ -5,8 +5,15 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import {
+  BASE_FIELD,
+  FIELD_PADDING,
+  FIELD_PLACEHOLDER,
+} from '@danieljoffe.com/shared-ui/styles/formStyles';
 import Button from '@/components/Button';
-import { inputStyles } from '@/lib/formStyles';
+import { cn } from '@/lib/cn';
+
+const inputStyles = cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER);
 
 interface Source {
   id: string;
