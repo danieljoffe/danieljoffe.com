@@ -17,6 +17,8 @@ export function CoverImage({
         fill
         sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
         priority={priority}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'low'}
         className='object-cover'
       />
       <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
