@@ -1,0 +1,94 @@
+export const metadata = {
+  title: 'Turning a Prose Style Guide into Zod Build Checks',
+  date: '2026-04-13',
+  excerpt:
+    'Character limits, canonical tags, and em dash rules encoded as a Zod discriminated union. The script caught a duplicate cover image on its first run.',
+  author: 'Daniel Joffe',
+  category: 'Tooling & CI',
+  tags: ['TypeScript', 'Nx', 'Monorepo', 'MDX', 'CI/CD', 'Architecture'],
+  slug: 'executable-style-guide-zod',
+  type: 'blog',
+  cover: {
+    alt: 'A ruler and measuring tools on a wooden surface',
+    src: '/photo-1502780809386-f4ed7a4a4c59',
+    origin: 'https://unsplash.com/photos/ruler-measuring-tools',
+    creator: '@williambout',
+  },
+};
+
+## The Problem: Rules Nobody Reads
+
+My content style guide defines 9 canonical categories, 53 canonical tags, character limits for titles and excerpts, an em dash ban on short-form surfaces, and a requirement that every post has a unique cover image. After 50 MDX files across three content types, the guide had drifted. Tags appeared in non-canonical forms. Two project case studies shared the same Unsplash photo. An excerpt crept past 160 characters. The rules existed; enforcement did not.
+
+The question was whether to check these rules with an LLM reviewer or with deterministic code. A language model can catch subjective tone issues, but character counts and enum membership are not subjective. They are boolean. I chose Zod.
+
+## The Schema
+
+The schema encodes every machine-checkable rule from the style guide as a type constraint. The core structure is a discriminated union on the `type` field:
+
+```ts
+const baseSchema = z.object({
+  title: z.string().min(1).max(60, 'Title must be ≤ 60 characters'),
+  excerpt: z
+    .string()
+    .max(160, 'Excerpt must be ≤ 160 characters')
+    .refine(
+      val => !val.includes('\u2014'),
+      'Excerpt must not contain em dashes (per style guide)'
+    ),
+  category: z.enum(CATEGORIES),
+  tags: z
+    .array(z.string())
+    .min(3)
+    .max(8)
+    .refine(
+      tags => tags.every(t => canonicalTagSet.has(t)),
+      'All tags must be from the canonical tag set'
+    ),
+  cover: coverSchema,
+  // ... date, author, slug, type
+});
+
+export const postMetadataSchema = z.discriminatedUnion('type', [
+  blogSchema,
+  projectSchema,
+  experienceSchema,
+]);
+```
+
+Blog entries need nothing beyond the base fields. Project entries accept optional `featured`, `company`, `role`, and `duration`. Experience entries require `company`, `role`, `duration`, `industry`, `logo`, and `invert`. The discriminated union means Zod selects the right branch based on `type` before validating the rest.
+
+The canonical vocabularies are literal arrays: 9 categories, 53 tags. A tag merge map handles known synonyms (`a11y` to `Accessibility`, `CSS3` to `CSS`). New categories or tags require updating the schema, which means updating the style guide first. That is the point: vocabulary changes are deliberate, not accidental.
+
+## The Runner
+
+The validation script discovers every `.mdx` file under `data/content/`, extracts the `export const metadata` block via regex, and feeds each one through `safeParse`:
+
+```ts
+function extractMetadata(filePath: string): unknown {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const match = content.match(
+    /export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});?/
+  );
+  if (!match) throw new Error(`No metadata export found in ${filePath}`);
+  return new Function(`return ${match[1]}`)();
+}
+```
+
+After schema validation, the runner performs cross-file checks that Zod cannot express: unique `cover.src` across all 50 files, unique slug within each content type, slug-filename match, and a warning when a category appears in the same entry's tags.
+
+The script wires into the Nx build pipeline as a `validate-content` target that runs before every `build`. A content error fails the build, not just the lint step.
+
+## What It Caught on Day One
+
+The first run surfaced a duplicate cover image: `ui-components-v1` and `ui-components-v2` shared the same Unsplash photo ID. Both posts had been reviewed individually. Neither review caught the cross-file collision because no human was comparing cover images across 50 files. The script compared them in a `Map` lookup.
+
+It also surfaced tag synonym warnings for entries using `a11y` instead of `Accessibility` and `CSS3` instead of `CSS`. These were not errors (the merge map handles them), but the warnings flag entries that should be updated to canonical forms.
+
+## The Decision Framework
+
+Not everything in the style guide belongs in a schema. "Lead with the problem, not preamble" is a judgment call. "Title must be ≤ 60 characters" is a boolean. The rule I follow: if a rule can be expressed as a type constraint, regex, or set membership check, encode it. If it requires reading comprehension, leave it to human review.
+
+The executable style guide now validates 12 distinct rules across 50 files in under a second. The prose guide still exists for tone, structure, and voice. They complement each other: the schema catches what machines check well, the prose guides what humans judge well.
+
+Rules that run on every build do not drift.
