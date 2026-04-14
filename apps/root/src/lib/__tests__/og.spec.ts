@@ -1,41 +1,19 @@
 import { readFile } from 'node:fs/promises';
-import {
-  getOgFonts,
-  getProfileImageBase64,
-  getUnsplashUrl,
-  getUnsplashImageBase64,
-} from '../og';
-
-jest.mock('@/utils/constants', () => ({
-  UNSPLASH_PHOTOS_URL: 'https://images.unsplash.com/photo-',
-}));
+import { getOgFonts, getProfileImageBase64, getCoverImageBase64 } from '../og';
 
 jest.mock('node:fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('mock-font-data')),
 }));
 
-const mockReadFile = readFile as jest.MockedFunction<typeof readFile>;
-
-// fetch mock for getUnsplashImageBase64 (which fetches external URLs)
-const mockFetch = jest.fn().mockImplementation(() =>
-  Promise.resolve({
-    ok: true,
-    arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
-    headers: new Map(),
-  })
-);
-global.fetch = mockFetch;
-
-beforeEach(() => {
-  mockFetch.mockClear();
-  mockFetch.mockImplementation(() =>
-    Promise.resolve({
-      ok: true,
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
-      headers: new Map(),
-    })
-  );
+jest.mock('sharp', () => {
+  return jest.fn().mockReturnValue({
+    png: jest.fn().mockReturnValue({
+      toBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-png-data')),
+    }),
+  });
 });
+
+const mockReadFile = readFile as jest.MockedFunction<typeof readFile>;
 
 describe('og', () => {
   describe('getOgFonts', () => {
@@ -98,74 +76,36 @@ describe('og', () => {
         expect.stringContaining('daniel-joffe-profile.webp')
       );
     });
-  });
 
-  describe('getUnsplashUrl', () => {
-    it('constructs the correct URL with all parameters', () => {
-      const result = getUnsplashUrl('abc123', 1200, 630);
+    it('caches the profile image on subsequent calls', async () => {
+      const callsBefore = mockReadFile.mock.calls.length;
+      const result = await getProfileImageBase64();
 
-      expect(result).toBe(
-        'https://images.unsplash.com/photo-abc123?w=1200&h=630&fit=crop&auto=format&q=80'
-      );
-    });
-
-    it('handles different dimensions', () => {
-      const result = getUnsplashUrl('xyz789', 800, 400);
-
-      expect(result).toBe(
-        'https://images.unsplash.com/photo-xyz789?w=800&h=400&fit=crop&auto=format&q=80'
-      );
+      // Should reuse cached promise — no additional readFile call
+      expect(mockReadFile.mock.calls.length).toBe(callsBefore);
+      expect(result).toMatch(/^data:image\/png;base64,.+/);
     });
   });
 
-  describe('getUnsplashImageBase64', () => {
-    it('returns a base64 data URL when fetch succeeds with content-type header', async () => {
-      const imageData = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        arrayBuffer: () => Promise.resolve(imageData.buffer),
-        headers: new Map([['content-type', 'image/webp']]),
-      });
+  describe('getCoverImageBase64', () => {
+    it('reads a local cover image and returns a PNG base64 data URL', async () => {
+      const imageData = Buffer.from([0x52, 0x49, 0x46, 0x46]);
+      mockReadFile.mockResolvedValueOnce(imageData);
 
-      const result = await getUnsplashImageBase64('abc123', 1200, 630);
+      const result = await getCoverImageBase64('/images/covers/test-post.webp');
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://images.unsplash.com/photo-abc123?w=1200&h=630&fit=crop&auto=format&q=80'
+      expect(mockReadFile).toHaveBeenCalledWith(
+        expect.stringContaining('public/images/covers/test-post.webp')
       );
-      const expectedBase64 = Buffer.from(imageData.buffer).toString('base64');
-      expect(result).toBe(`data:image/webp;base64,${expectedBase64}`);
+      // sharp converts to PNG for Satori compatibility
+      const expectedBase64 = Buffer.from('mock-png-data').toString('base64');
+      expect(result).toBe(`data:image/png;base64,${expectedBase64}`);
     });
 
-    it('falls back to image/jpeg when content-type header is null', async () => {
-      const imageData = new Uint8Array([0xff, 0xd8, 0xff]);
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        arrayBuffer: () => Promise.resolve(imageData.buffer),
-        headers: {
-          get: () => null,
-        },
-      });
+    it('returns null when readFile throws (file not found)', async () => {
+      mockReadFile.mockRejectedValueOnce(new Error('ENOENT'));
 
-      const result = await getUnsplashImageBase64('abc123', 1200, 630);
-
-      const expectedBase64 = Buffer.from(imageData.buffer).toString('base64');
-      expect(result).toBe(`data:image/jpeg;base64,${expectedBase64}`);
-    });
-
-    it('returns null when res.ok is false', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      });
-
-      const result = await getUnsplashImageBase64('abc123', 1200, 630);
-
-      expect(result).toBeNull();
-    });
-
-    it('returns null when fetch throws an error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      const result = await getUnsplashImageBase64('abc123', 1200, 630);
+      const result = await getCoverImageBase64('/images/covers/missing.webp');
 
       expect(result).toBeNull();
     });

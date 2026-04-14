@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { UNSPLASH_PHOTOS_URL } from '@/utils/constants';
 
 // Lazy-loaded font and image data, cached after first call.
 // Uses readFile + process.cwd() (the official Next.js pattern for OG fonts).
@@ -56,26 +55,23 @@ export async function getProfileImageBase64(): Promise<string> {
   return `data:image/png;base64,${buffer.toString('base64')}`;
 }
 
-export function getUnsplashUrl(
-  src: string,
-  width: number,
-  height: number
-): string {
-  return `${UNSPLASH_PHOTOS_URL}${src}?w=${width}&h=${height}&fit=crop&auto=format&q=80`;
-}
-
-export async function getUnsplashImageBase64(
-  src: string,
-  width: number,
-  height: number
-): Promise<string | null> {
-  const url = getUnsplashUrl(src, width, height);
+/**
+ * Read a local cover image from public/ and return it as a base64 data URL.
+ * Converts WebP to PNG because Satori/resvg (used by next/og) doesn't support WebP.
+ * @param src - The public path, e.g. `/images/covers/slug.webp`
+ */
+export async function getCoverImageBase64(src: string): Promise<string | null> {
   try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const buffer = await res.arrayBuffer();
-    const contentType = res.headers.get('content-type') ?? 'image/jpeg';
-    return `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
+    const filePath = join(process.cwd(), 'public', src.replace(/^\//, ''));
+    const raw = await readFile(filePath);
+    // Satori's resvg renderer only supports PNG/JPEG/GIF — convert WebP to PNG.
+    // sharp is a Next.js transitive dep with no direct type declarations in this project.
+
+    const sharp = require('sharp') as (input: Buffer) => {
+      png: () => { toBuffer: () => Promise<Buffer> };
+    };
+    const png = await sharp(raw).png().toBuffer();
+    return `data:image/png;base64,${png.toString('base64')}`;
   } catch {
     return null;
   }

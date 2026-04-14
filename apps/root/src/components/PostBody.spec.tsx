@@ -14,16 +14,6 @@ jest.mock('./BreadCrumbs', () => {
   };
 });
 
-jest.mock('./UnsplashImage', () => {
-  return function MockUnsplashImage({ alt }: { alt: string }) {
-    return (
-      <picture>
-        <img alt={alt} data-testid='unsplash-image' />
-      </picture>
-    );
-  };
-});
-
 jest.mock('@/components/kit', () => ({
   TableOfContents: function MockTableOfContents({
     mobile,
@@ -68,10 +58,8 @@ jest.mock('@/components/kit', () => ({
 describe('PostBody', () => {
   const defaultProps = {
     cover: {
-      src: '/photo-test-123' as const,
+      src: '/images/covers/test-post.webp',
       alt: 'Test image',
-      origin: 'https://unsplash.com/photos/test' as const,
-      creator: '@photographer' as const,
     },
     breadcrumbs: [
       { label: 'Home', href: '/' },
@@ -87,7 +75,7 @@ describe('PostBody', () => {
     render(<PostBody {...defaultProps}>Article body</PostBody>);
 
     expect(screen.getByTestId('breadcrumbs')).toBeInTheDocument();
-    expect(screen.getByTestId('unsplash-image')).toBeInTheDocument();
+    expect(screen.getByAltText('Test image')).toBeInTheDocument();
     expect(screen.getByText('Test Post Title')).toBeInTheDocument();
     expect(screen.getByText('Article body')).toBeInTheDocument();
   });
@@ -117,7 +105,7 @@ describe('PostBody', () => {
     expect(breadcrumbs).toHaveTextContent('Projects');
   });
 
-  it('passes alt text to UnsplashImage', () => {
+  it('passes alt text to cover image', () => {
     render(<PostBody {...defaultProps}>Content</PostBody>);
 
     expect(screen.getByAltText('Test image')).toBeInTheDocument();

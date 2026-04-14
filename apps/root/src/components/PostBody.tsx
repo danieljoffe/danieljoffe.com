@@ -1,8 +1,8 @@
 import { Calendar, Clock, Tag } from 'lucide-react';
+import Image from 'next/image';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PostBodyProps } from '@/types/postTypes';
 import { TableOfContents } from '@/components/kit';
-import UnsplashImage from './UnsplashImage';
 import BreadCrumbs from './BreadCrumbs';
 
 export default function PostBody({
@@ -30,15 +30,14 @@ export default function PostBody({
           {title}
         </Heading>
         <div className='lg:flex-1 lg:min-w-0'>
-          <UnsplashImage
+          <Image
             src={cover.src}
             alt={cover.alt}
-            origin={cover.origin}
-            creator={cover.creator}
             width={512}
             height={288}
-            preload={true}
+            priority
             sizes='(max-width: 1024px) calc(100vw - 2rem), 480px'
+            className='w-full h-auto object-cover rounded-lg'
           />
         </div>
       </div>
