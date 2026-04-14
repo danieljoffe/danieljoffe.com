@@ -79,6 +79,8 @@ jobs:
   storybook-and-chromatic:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -96,10 +98,8 @@ jobs:
           NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Chromatic visual tests
-        if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
+        if: env.CHROMATIC_PROJECT_TOKEN != ''
         run: pnpm chromatic:ui --exit-zero-on-changes --exit-once-sent
-        env:
-          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   gate:
     if: always()
