@@ -17,6 +17,9 @@
         "cwd": "{workspaceRoot}"
       }
     },
+    "test": {
+      "dependsOn": ["generate-search-index"]
+    },
     "build": {
       "dependsOn": ["generate-search-index", "validate-content"],
       "options": {
