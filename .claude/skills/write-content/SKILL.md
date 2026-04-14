@@ -52,7 +52,7 @@ Present proposals as a ranked list:
 ### 1. [blog/project] "Title" (from #PR, #PR)
 Type: blog | project
 One-line pitch: ...
-Angle: What makes this interesting beyond "we did X"
+Angle: What makes this interesting beyond "I did X"
 Key sections: ...
 
 ### 2. ...
@@ -68,21 +68,27 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
 
 2. **Read existing content** for voice and structure calibration:
    - Read 2-3 existing posts of the same type from `apps/root/src/data/content/{blog,projects}/`
-   - Match the tone: technical but conversational, first-person plural ("we"), concrete code examples, clear section progression
+   - Match the tone: technical but conversational, first-person singular ("I"), concrete code examples, clear section progression
    - Match the structure: problem → approach → implementation → result → takeaway
 
-3. **Draft the MDX file** with the required metadata export:
+3. **Draft the MDX file** with the required metadata export. MDX is the single source of truth — thumbnail title, excerpt, cover image, SEO, OG images, and structured data all derive from this one block.
 
    ```mdx
    export const metadata = {
-     title: 'Descriptive, specific title',
+     title: 'Specific, outcome-driven title (≤ 60 chars)',
      date: 'YYYY-MM-DD', // Today for blog; git creation date for projects
-     excerpt: 'One compelling sentence for previews and SEO',
+     excerpt: 'One compelling sentence, ≤ 160 chars, no em dashes',
      author: 'Daniel Joffe',
      category: 'Category Name',
      tags: ['Tag1', 'Tag2'],
      slug: 'url-slug',
      type: 'blog', // or 'project'
+     cover: {
+       alt: 'Short accessible description of the image',
+       src: '/photo-xxxxx',
+       origin: 'https://unsplash.com/photos/<photo-permalink>',
+       creator: '@unsplashHandle',
+     },
    };
 
    ## Section heading
@@ -90,7 +96,7 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
    Content...
    ```
 
-4. **Follow the style guide and tone** (see below).
+4. **Follow the style guide and tone.** Before drafting, read the full style guide at `.claude/docs/content-style-guide.md`. It has the canonical voice rules, per-surface calibration, length budgets, anti-patterns, and both short-form and long-form self-checks. Do not skip this step — short-form surfaces (thumbnail title, excerpt) have character budgets and voice rules that differ from long-form body prose.
 
 5. **Content guidelines**:
    - Lead with the problem or tension. Why should the reader care?
@@ -103,12 +109,11 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
    - When a post is about a script or tool, include the complete version in a dedicated section. Readers should be able to copy-paste and use it
 
 6. **Complete the post checklist** (from CLAUDE.md "Adding a New Post"):
-   - Create the `.mdx` file in the correct `data/content/{type}/` directory
+   - Create the `.mdx` file in the correct `data/content/{type}/` directory with the full `metadata` block including `cover`
    - Add the slug constant to `data/blog.ts`, `data/project.ts`, or `data/experience.ts`
-   - Add the thumbnail record to `{type}Thumbnails.ts`
    - Import the MDX component **and metadata** in the corresponding `data/content/{type}/index.ts`
    - Insert the slug into the correct position in `contentOrder.ts`
-   - Add structured data in `data/structuredData/`
+   - For **experience** entries only: add a hand-authored entry to `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata.
 
 7. **Verify**: Run `yarn tsc --noEmit` and `npx nx test root` to ensure the new content integrates cleanly.
 
@@ -116,52 +121,21 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
 
 - Never fabricate technical details — all code examples and claims must come from the actual diff.
 - Never propose content for work that isn't meaningfully complete (WIP branches, half-merged features).
-- Blog posts are about the _technique or lesson_, not a changelog entry. "We added ARIA attributes to Dropdown" is a changelog; "Building keyboard navigation that doesn't fight the browser" is a blog post.
+- Blog posts are about the _technique or lesson_, not a changelog entry. "I added ARIA attributes to Dropdown" is a changelog; "Building keyboard navigation that doesn't fight the browser" is a blog post.
 - Project case studies are about the _outcome and craft_, not the implementation diary.
 - If there's genuinely nothing content-worthy in the diff, say so and stop.
 - When reading code for examples, use the version on `develop` (the completed work), not `main`.
 
 ## Style Guide & Tone
 
-### Voice
+The canonical style guide lives at **`.claude/docs/content-style-guide.md`**. Read it before drafting — it covers:
 
-- **First-person plural.** Use "we" and "our." You're a peer sharing what you learned, not a teacher.
-- **Open with the problem.** No preamble. Jump straight into the tension.
-- **Short concept headings.** Name the thing, not the action: "The Z-Index Stack" not "How We Fixed Z-Index Issues."
-- **Show real code.** The prose explains the _why_, the code shows the _what_. Minimal inline comments. If a code block already demonstrates something (e.g., an `aria-hidden` attribute), don't create a separate section to explain it. Fold the explanation into a sentence near the code.
-- **Close with a principle, grounded in specifics.** Active voice, first-person plural. Don't restate what the post already said. Name concrete alternatives, scope the principle ("Reserve Actions for caching, deployment orchestration, multi-platform matrices"), or reframe the topic ("API consistency in a form library isn't ergonomics. It's accessibility."). The last line should land with punch.
+- **Voice pillars** (direct, evidence-backed, calm confidence, builder's mindset)
+- **Per-surface calibration** (home hero, about, services, blog body, thumbnail title/excerpt, CTA)
+- **Tense rules** (blog = present, project/experience = past, hero/about/services = present)
+- **Length budgets** for short-form surfaces (title ≤ 60, excerpt ≤ 160, headline ≤ 60, subtitle ≤ 180, CTA ≤ 50)
+- **Anti-patterns** (filler verbs, marketing clichés, journey metaphors, first-person plural for solo work, em dashes in short-form)
+- **Long-form structure** (problem → approach → implementation → result → takeaway)
+- **Short-form self-check** and **long-form self-check**
 
-### Punctuation
-
-- **Periods, colons, and semicolons for clause breaks. Em dashes sparingly.** Em dashes create choppiness when overused. Reserve them for true parenthetical asides.
-  - Period for independent clauses: "The negative assertion matters. It documents that the wrapper should not have the attribute."
-  - Colon to introduce a consequence or list: "the actual interactive element: the `<button>`, `<a>`, or whatever the child is."
-  - Semicolon to link related clauses: "A reasonable constraint; a tooltip without an interactive trigger element isn't useful."
-  - NO: "The error itself is harmless — React recovers by re-rendering."
-- **Commas for parenthetical asides in flowing prose.** "When the logo changes, and it will, we run one command."
-- **Scare quotes for irony only.** Use them when a word means the opposite ("free" web tool, "invisible" sheet). Don't use them for technical terms.
-
-### Tone
-
-- **Add human color and context.** Show the team's reaction or the stakes. "We shipped a mobile bottom navigation bar with much excitement" not just "We shipped a mobile bottom navigation bar."
-- **Explain the _why_ in the same sentence as the _what_.** "You couldn't tap it because it was inaccessible" is better than leaving the reader to infer.
-- **Use "should" for prescriptive architecture decisions.** "`<header>` should wrap only the desktop nav" reads as guidance. "`<header>` wraps only the desktop nav" reads as description.
-- **Present tense for excerpts and descriptions.** "A nav redesign passes code review but fails E2E tests" is more immediate than past tense.
-
-### Structure
-
-1. **The problem** — what was broken, wrong, or missing (1-2 paragraphs)
-2. **The approach** — what the spec/platform/pattern says (1-2 paragraphs + optional code)
-3. **The implementation** — real code with prose explaining decisions (1-3 sections)
-4. **The result** — what changed, what was gained (short list or paragraph)
-5. **The takeaway** — one generalizable principle, active voice, first-person plural (1-2 sentences)
-
-**Section economy:** Every section should advance the reader's understanding. If a code block already shows a detail (an attribute, a pattern), don't create a dedicated section to re-explain it. Fold it into a sentence near the code. Five tight sections beat seven with redundancy.
-
-### Self-check before finalizing
-
-1. **Em dash audit.** Replace most with periods, colons, or semicolons.
-2. **Consequence check.** Every "X happened" should have a "because Y" or "which meant Z."
-3. **Takeaway voice.** Does it end with a concrete, punchy line? Not a restatement of the post, but a principle with teeth.
-4. **Redundancy check.** Does any section just re-explain what a code block already shows? Fold it or cut it.
-5. **Full artifacts.** If the post is about a script or config, is the complete version included?
+When drafting anything, run the appropriate self-check before finalizing. Do not skip — short-form surfaces (thumbnail title, excerpt, hero copy) have character budgets and voice rules that differ from long-form body prose.

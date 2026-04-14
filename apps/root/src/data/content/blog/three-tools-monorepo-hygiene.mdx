@@ -1,0 +1,145 @@
+export const metadata = {
+  title: 'Three Tools I Add to Every Monorepo Now',
+  date: '2026-04-13',
+  excerpt:
+    'Knip finds dead code, Renovate updates dependencies with cooldowns, and size-limit tracks bundle cost. Each took under an hour to configure for Nx.',
+  author: 'Daniel Joffe',
+  category: 'Tooling & CI',
+  tags: ['Nx', 'Monorepo', 'pnpm', 'CI/CD', 'GitHub Actions', 'TypeScript'],
+  slug: 'three-tools-monorepo-hygiene',
+  type: 'blog',
+  cover: {
+    alt: 'Organized tools hanging on a workshop pegboard',
+    src: '/images/covers/three-tools-monorepo-hygiene.webp',
+  },
+};
+
+## The Trigger
+
+After 375 pull requests, my Nx monorepo had six workspaces, 50 MDX content files, and a shared component library shipping to production. I had no way to know if an exported type was still consumed, whether a dependency had a known vulnerability, or how much a new component would cost in bundle size. These are three different failure modes. Each has a dedicated tool.
+
+## Knip: Dead Code Detection
+
+Knip v6 uses oxc for fast AST parsing and ships with plugins for Nx, Next.js, Jest, Storybook, and Playwright. The configuration is a single `knip.ts` file with per-workspace entry points:
+
+```ts
+const config: KnipConfig = {
+  workspaces: {
+    '.': {
+      entry: ['scripts/*.ts'],
+      jest: false, // root jest.config delegates to Nx projects
+      ignoreDependencies: ['tailwindcss', 'caniuse-lite'],
+    },
+    'apps/root': {
+      entry: [
+        'src/app/**/page.tsx',
+        'src/app/**/layout.tsx',
+        'src/app/**/route.ts',
+      ],
+      ignoreDependencies: ['gsap', '@gsap/react'],
+    },
+    'libs/shared/ui': {
+      project: ['src/**/*.{ts,tsx}'],
+    },
+  },
+};
+```
+
+The first scan surfaced 6 unused files, 10 unused dependencies, 33 unused exports, and 26 unused exported types. Some are false positives: `test-setup.ts` is referenced by Jest config, not by imports. GSAP loads dynamically. But several were real: dead components from a refactor, a `focus-trap-react` dependency I removed the code for but forgot to uninstall.
+
+The key configuration decisions: disable the Jest plugin at root (it tries to read Next.js pages-dir config and errors), ignore CSS-only dependencies like Tailwind (no JS import to trace), and set explicit entry points for App Router (pages, layouts, routes, error boundaries).
+
+I run `pnpm knip --no-exit-code` for now. The plan is to phase into CI: report-only first, then fail on unused dependencies, then full enforcement.
+
+## Renovate: Dependency Updates with Cooldowns
+
+Renovate runs as a GitHub App and opens PRs for outdated dependencies. The configuration I care about most is `minimumReleaseAge`: a cooling period before Renovate proposes an update.
+
+```json
+{
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "minimumReleaseAge": "7 days",
+      "automerge": true,
+      "platformAutomerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "14 days",
+      "automerge": false
+    }
+  ]
+}
+```
+
+Three days for devDependencies, seven for production, fourteen for majors. Most malicious npm packages get reported and yanked within 72 hours. A three-day cooldown would have caught the majority of 2025 supply chain attacks. It is not a security guarantee; it is a probability filter.
+
+The other critical setting is package grouping. Nx has eight packages that must stay in lockstep. Storybook has eight. TypeScript and ESLint are pinned together via overrides. Without grouping, Renovate opens eight separate PRs for one Nx version bump, each of which breaks until all eight merge. Grouping collapses them into one PR:
+
+```json
+{
+  "matchPackagePatterns": ["^@nx/", "^nx$"],
+  "groupName": "Nx",
+  "automerge": false
+}
+```
+
+GitHub Actions get pinned to digest hashes, not version tags. A compromised tag can be force-pushed; a digest cannot.
+
+## Size-Limit: Bundle Cost Tracking
+
+Size-limit measures the minified-and-compressed cost of specific imports. I track five entry points in the shared-ui library:
+
+```json
+[
+  {
+    "name": "shared-ui (all exports)",
+    "path": "libs/shared/ui/src/index.ts",
+    "import": "*",
+    "limit": "25 kB"
+  },
+  {
+    "name": "Button",
+    "path": "libs/shared/ui/src/lib/Button.tsx",
+    "import": "{ Button }",
+    "limit": "10 kB"
+  },
+  {
+    "name": "Modal",
+    "path": "libs/shared/ui/src/lib/Modal.tsx",
+    "import": "{ Modal }",
+    "limit": "15 kB"
+  },
+  {
+    "name": "Toast",
+    "path": "libs/shared/ui/src/lib/Toast.tsx",
+    "import": "{ ToastProvider, useToast }",
+    "limit": "15 kB"
+  },
+  {
+    "name": "Dropdown",
+    "path": "libs/shared/ui/src/lib/Dropdown.tsx",
+    "import": "{ Dropdown }",
+    "limit": "13 kB"
+  }
+]
+```
+
+Budgets sit about 15% above current sizes. The `@size-limit/preset-small-lib` preset uses esbuild for fast bundling. On PRs, a GitHub Action compares sizes against the base branch and posts a table comment showing deltas. Locally, `pnpm size` checks budgets and `pnpm size:why` opens a treemap.
+
+The entry-point approach matters. Tracking only the barrel export hides component-level bloat. If `Modal` gains a heavy dependency, the "all exports" number might grow 3% (within budget), but the `Modal` entry jumps 40% (over budget). Per-component budgets catch regressions that aggregate budgets mask.
+
+## The Pattern
+
+Each tool addresses a specific failure mode that compounds over time:
+
+- **Knip**: dead code accumulates silently after refactors
+- **Renovate**: dependencies go stale, then vulnerable, then breaking
+- **Size-limit**: bundle size creeps one import at a time
+
+None required more than an hour to configure. All three run without ongoing attention. The cost of adding them is a config file; the cost of skipping them is eventual cleanup sprints that take days.
+
+Tools that run automatically find problems that code reviews miss.

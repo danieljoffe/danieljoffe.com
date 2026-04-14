@@ -26,7 +26,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v5
 
     - uses: actions/setup-node@v5
       with:
@@ -40,8 +40,6 @@ runs:
     - name: Build Storybook
       shell: bash
       run: pnpm nx build-storybook @danieljoffe.com/shared-ui
-      env:
-        NX_NO_CLOUD: 'true'
 
     - name: Install Vercel CLI
       shell: bash

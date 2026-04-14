@@ -2,18 +2,21 @@ export const metadata = {
   title: 'Tooltip aria-describedby Was on the Wrong Element',
   date: '2026-04-07',
   excerpt:
-    'Our Tooltip passed every test but put aria-describedby on a wrapper div instead of the trigger. Screen readers never announced it.',
+    'A Tooltip component passed every test but put aria-describedby on a wrapper div instead of the trigger. Screen readers never announced it.',
   author: 'Daniel Joffe',
   category: 'Accessibility',
-  tags: ['React', 'Accessibility', 'ARIA', 'Design Systems'],
+  tags: ['React', 'ARIA', 'Design Systems'],
   slug: 'tooltip-aria-describedby-wrong-element',
   type: 'blog',
-  topic: 'Accessibility',
+  cover: {
+    alt: 'Speech bubbles in a conversation',
+    src: '/images/covers/tooltip-aria-describedby-wrong-element.webp',
+  },
 };
 
 ## The Bug
 
-Our Tooltip component wrapped its children in a `div[role="presentation"]`
+The Tooltip component wrapped its children in a `div[role="presentation"]`
 that handled mouse and focus events. The `aria-describedby` attribute
 lived on that wrapper, pointing at the tooltip's `id`. Everything looked
 correct in the DOM inspector.

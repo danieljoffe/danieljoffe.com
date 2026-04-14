@@ -9,5 +9,5 @@ module.exports = async () => ({
     'global.window': '<rootDir>/__mocks__/window.js',
   },
   verbose: true,
-  transformIgnorePatterns: ['node_modules/(?!(gsap)/)'],
+  transformIgnorePatterns: [],
 });

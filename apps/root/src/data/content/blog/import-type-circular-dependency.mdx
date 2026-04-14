@@ -1,14 +1,17 @@
 export const metadata = {
-  title: "When import type Isn't Optional: Fixing a Circular Dependency Crash",
+  title: "Why import type Isn't Optional: A Circular Dependency Crash",
   date: '2026-04-06',
   excerpt:
     'How a subtle difference between import and import type causes a circular dependency crash in a Turbopack-bundled Next.js app.',
   author: 'Daniel Joffe',
-  category: 'Debugging',
-  tags: ['TypeScript', 'Next.js', 'Turbopack', 'Debugging', 'Webpack'],
+  category: 'Architecture',
+  tags: ['TypeScript', 'Next.js', 'Webpack'],
   slug: 'import-type-circular-dependency',
   type: 'blog',
-  topic: 'TypeScript',
+  cover: {
+    alt: 'Tangled cables forming a circular loop',
+    src: '/images/covers/import-type-circular-dependency.webp',
+  },
 };
 
 ## The Crash
@@ -61,7 +64,7 @@ early enough to trigger the cycle. Every other page hit it immediately.
 ```
 
 `import type` is guaranteed to be erased by TypeScript before the bundler
-sees it. No module evaluation, no dependency edge, no cycle. We applied
+sees it. No module evaluation, no dependency edge, no cycle. I applied
 the same fix to the two other files that imported types from `types/base.ts`
 using value imports:
 
@@ -82,7 +85,7 @@ Three lines changed. Every page renders.
 Webpack resolved the cycle differently. It happened to evaluate modules
 in an order that worked. Turbopack (used in Next.js dev mode) evaluates
 more eagerly, exposing cycles that webpack silently tolerated. The ESLint
-`import/no-cycle` rule we added later would have caught this, but it
+`import/no-cycle` rule I added later would have caught this, but it
 wasn't enabled at the time.
 
 ## The Rule

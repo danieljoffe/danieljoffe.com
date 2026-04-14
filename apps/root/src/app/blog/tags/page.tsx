@@ -3,7 +3,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { getAllTags, getTagCounts } from '@/lib/tags';
+import { getAllTags, getTagCounts, tagToSlug } from '@/lib/tags';
 import Button from '@/components/Button';
 
 export const metadata: Metadata = {
@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default function TagsIndexPage() {
-  const allTags = getAllTags();
-  const tagCounts = getTagCounts();
+  const allTags = getAllTags('blog');
+  const tagCounts = getTagCounts('blog');
 
   return (
     <PageLayout>
@@ -37,9 +37,7 @@ export default function TagsIndexPage() {
         <div className='flex flex-wrap gap-3'>
           {allTags.map(tag => {
             const count = tagCounts.get(tag) || 0;
-            const slug = encodeURIComponent(
-              tag.toLowerCase().replace(/\s+/g, '-')
-            );
+            const slug = tagToSlug(tag);
             return (
               <Button
                 key={tag}

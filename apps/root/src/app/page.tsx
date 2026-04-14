@@ -17,7 +17,6 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
-import { experienceFull } from '@/data/experience';
 import { getContentByType } from '@/data/contentRegistry';
 import {
   FULL_NAME,
@@ -34,7 +33,11 @@ import HeroActions from './home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
 
-const companies = Object.values(experienceFull);
+const companies = getContentByType('experience').map(e => ({
+  slug: e.slug,
+  company: e.metadata.company ?? e.metadata.title,
+  logo: e.metadata.logo,
+}));
 const featuredProjects = getContentByType('project')
   .filter(e => e.thumbnail.featured)
   .map(e => e.thumbnail);
@@ -90,11 +93,13 @@ export default function Index() {
                 className='flex justify-center opacity-70 hover:opacity-100 transition-opacity'
               >
                 <a href={`${EXPERIENCE_LINK.href}/${company.slug}`}>
-                  <CompanyLogo
-                    src={company.logo}
-                    alt={company.company}
-                    size='lg'
-                  />
+                  {company.logo && (
+                    <CompanyLogo
+                      src={company.logo}
+                      alt={company.company}
+                      size='lg'
+                    />
+                  )}
                 </a>
               </li>
             ))}

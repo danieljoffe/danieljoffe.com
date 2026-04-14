@@ -1,46 +1,60 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { PenLine } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Grid, GridItem } from '@danieljoffe.com/shared-ui/Grid';
-import { getAllTags, getContentByTag, slugToTag } from '@/lib/tags';
+import { getContentByType } from '@/data/contentRegistry';
+import { getAllTags, slugToTag, tagToSlug } from '@/lib/tags';
 import BreadCrumbs from '@/components/BreadCrumbs';
+import { PostCard } from '@/components/kit';
 import { BLOG_LINK, BLOG_TAGS_LINK } from '@/utils/constants';
+import type { PostThumbnail } from '@/types/postTypes';
 
 interface TagPageProps {
   params: Promise<{ tag: string }>;
 }
 
 export async function generateStaticParams() {
-  const allTags = getAllTags();
-  return allTags.map(tag => ({
-    tag: encodeURIComponent(tag.toLowerCase().replace(/\s+/g, '-')),
-  }));
+  return getAllTags('blog').map(tag => ({ tag: tagToSlug(tag) }));
 }
 
 export async function generateMetadata({
   params,
 }: TagPageProps): Promise<Metadata> {
   const { tag: tagSlug } = await params;
-  const allTags = getAllTags();
+  const allTags = getAllTags('blog');
   const tagName = slugToTag(tagSlug, allTags);
   if (!tagName) return { title: 'Tag Not Found' };
-  const content = getContentByTag(tagName);
+  const count = getContentByType('blog').filter(entry =>
+    entry.metadata.tags.includes(tagName)
+  ).length;
   return {
     title: `${tagName} | Blog Tag`,
-    description: `${content.length} post${content.length === 1 ? '' : 's'} tagged with &quot;${tagName}&quot;`,
+    description: `${count} ${count === 1 ? 'post' : 'posts'} tagged with "${tagName}"`,
   };
+}
+
+function toThumbnail(entry: {
+  thumbnail: PostThumbnail;
+  readingTime: number;
+}): PostThumbnail {
+  return { ...entry.thumbnail, readingTime: entry.readingTime };
 }
 
 export default async function TagDetailPage({ params }: TagPageProps) {
   const { tag: tagSlug } = await params;
-  const allTags = getAllTags();
+  const allTags = getAllTags('blog');
   const tagName = slugToTag(tagSlug, allTags);
   if (!tagName) notFound();
-  const content = getContentByTag(tagName);
+
+  const posts = getContentByType('blog')
+    .filter(entry => entry.metadata.tags.includes(tagName))
+    .slice()
+    .reverse()
+    .map(toThumbnail);
 
   return (
     <PageLayout>
@@ -59,39 +73,31 @@ export default async function TagDetailPage({ params }: TagPageProps) {
           Tag: {tagName}
         </Heading>
         <Text as='p' variant='body'>
-          Total — {content.length} {content.length === 1 ? 'post' : 'posts'}
+          {posts.length} {posts.length === 1 ? 'post' : 'posts'}
         </Text>
       </Section>
 
       <Section>
-        <Grid cols={1} gap='lg' as='div'>
-          {content.map(post => (
-            <GridItem colSpan={1} key={post.slug}>
-              <article key={post.slug}>
-                <Link href={post.url} className='hover:underline'>
-                  <Heading as='h2' variant='subtitle'>
-                    {post.title}
-                  </Heading>
-                </Link>
-
-                <Text as='p' variant='body'>
-                  {post.excerpt}
-                </Text>
-
-                <div className='flex items-center gap-2 text-sm'>
-                  <span className='text-gray-500 capitalize'>{post.type}</span>
-                  <span className='text-gray-300'>•</span>
-                  <Link
-                    href='/blog/tags'
-                    className='text-blue-600 hover:underline'
-                  >
-                    View all tags →
-                  </Link>
-                </div>
-              </article>
-            </GridItem>
-          ))}
-        </Grid>
+        <SectionLabel
+          icon={<PenLine className='h-3.5 w-3.5' />}
+          label='Posts'
+        />
+        {posts.length === 0 ? (
+          <Text as='p' variant='body'>
+            No posts tagged with {tagName} yet.
+          </Text>
+        ) : (
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            {posts.map((post, i) => (
+              <PostCard
+                key={post.slug}
+                post={post}
+                priority={i < 2}
+                analyticsType='blog'
+              />
+            ))}
+          </div>
+        )}
       </Section>
     </PageLayout>
   );

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "shared-ui (all exports)",
+    "path": "libs/shared/ui/src/index.ts",
+    "import": "*",
+    "limit": "25 kB"
+  },
+  {
+    "name": "Button",
+    "path": "libs/shared/ui/src/lib/Button.tsx",
+    "import": "{ Button }",
+    "limit": "10 kB"
+  },
+  {
+    "name": "Modal",
+    "path": "libs/shared/ui/src/lib/Modal.tsx",
+    "import": "{ Modal }",
+    "limit": "15 kB"
+  },
+  {
+    "name": "Toast",
+    "path": "libs/shared/ui/src/lib/Toast.tsx",
+    "import": "{ ToastProvider, useToast }",
+    "limit": "15 kB"
+  },
+  {
+    "name": "Dropdown",
+    "path": "libs/shared/ui/src/lib/Dropdown.tsx",
+    "import": "{ Dropdown }",
+    "limit": "13 kB"
+  }
+]

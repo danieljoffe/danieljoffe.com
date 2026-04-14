@@ -1,18 +1,19 @@
-import { UNSPLASH_URL } from '@/utils/constants';
 import { NavLink, WithChildren } from './base';
 
-export interface UnsplashImageMeta {
+/**
+ * Cover image metadata. Authored inside each MDX file's
+ * `export const metadata` block — see {@link PostMetadata.cover}.
+ */
+export interface CoverImageMeta {
   alt: string;
-  src: `/photo-${string}`;
-  origin: `${typeof UNSPLASH_URL}/photos${string}`;
-  creator: `@${string}`;
+  src: string;
 }
 
 export interface PostBase {
   slug: string;
   title: string;
   description: string;
-  cover: UnsplashImageMeta;
+  cover: CoverImageMeta;
   link: Pick<NavLink, 'href'>;
 }
 
@@ -21,11 +22,12 @@ export interface PostThumbnail extends PostBase {
   role?: string;
   readingTime?: number;
   featured?: boolean;
+  tags?: string[];
 }
 
 export interface PostBodyProps extends WithChildren {
   breadcrumbs: NavLink[];
-  cover: UnsplashImageMeta;
+  cover: CoverImageMeta;
   title: string;
   date: string;
   tags: string[];
@@ -53,9 +55,13 @@ export interface PostMetadata {
   tags: string[];
   slug: string;
   type: ContentType | (string & {});
+  cover: CoverImageMeta;
   company?: string;
   role?: string;
   duration?: string;
   industry?: string;
-  topic?: string;
+  featured?: boolean;
+  logo?: string;
+  invert?: boolean;
+  domain?: string;
 }

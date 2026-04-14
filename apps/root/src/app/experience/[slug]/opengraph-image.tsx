@@ -2,11 +2,10 @@ import { ImageResponse } from 'next/og';
 import {
   getOgFonts,
   getProfileImageBase64,
-  getUnsplashImageBase64,
+  getCoverImageBase64,
 } from '@/lib/og';
-import { experienceRecords } from '@/data/experienceThumbnails';
+import { getContentBySlug } from '@/data/contentRegistry';
 import { experiencePageSlugs } from '@/data/experience';
-import { AllowedExperienceSlugs } from '@/types/base';
 
 export const alt = 'Daniel Joffe - Experience';
 export const size = { width: 1200, height: 630 };
@@ -22,12 +21,16 @@ export default async function OgImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const experience = experienceRecords[slug as AllowedExperienceSlugs];
+  const entry = getContentBySlug('experience', slug);
+  if (!entry) {
+    throw new Error(`Experience entry not found: ${slug}`);
+  }
+  const experience = entry.metadata;
 
   const [fonts, profileSrc, coverSrc] = await Promise.all([
     getOgFonts(),
     getProfileImageBase64(),
-    getUnsplashImageBase64(experience.cover.src, 600, 630),
+    getCoverImageBase64(experience.cover.src),
   ]);
 
   return new ImageResponse(

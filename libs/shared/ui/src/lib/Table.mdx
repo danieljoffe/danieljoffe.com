@@ -1,0 +1,525 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Table } from './Table';
+
+<Meta title='Data Display/Table/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-sans);
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--color-text-primary);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--color-text-secondary);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--color-border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-sub {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--color-border);
+      color: var(--color-text-primary);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+    }
+
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--color-success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--color-error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--color-success); }
+    .doc-dont-label { color: var(--color-error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-kbd {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-text-primary);
+      background: var(--color-surface-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Table</h1>
+<p className='doc-lead'>
+  Renders tabular data with optional row clicks, striping, sorting support, and
+  custom cell rendering. Built on semantic HTML with proper column scoping.
+</p>
+
+<h2 className='doc-section'>When to Use</h2>
+
+<p className='doc-p'>
+  Use Table for structured data with multiple fields per record. If each item
+  has only one or two fields, a list or grid is probably a better fit.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Use Table for</th>
+      <th>Use something else for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Multi-column data with clear headers</td>
+      <td>Single-value lists (use a list or grid)</td>
+    </tr>
+    <tr>
+      <td>Sortable or filterable datasets</td>
+      <td>Key-value pairs (use a description list)</td>
+    </tr>
+    <tr>
+      <td>Admin dashboards and data views</td>
+      <td>Card layouts with mixed content types</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Props</h2>
+
+<h3 className='doc-sub'>TableProps</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>columns</code>
+      </td>
+      <td>
+        <code>Column&lt;T&gt;[]</code>
+      </td>
+      <td>—</td>
+      <td>Column definitions (see below).</td>
+    </tr>
+    <tr>
+      <td>
+        <code>data</code>
+      </td>
+      <td>
+        <code>T[]</code>
+      </td>
+      <td>—</td>
+      <td>Array of row data objects.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onRowClick</code>
+      </td>
+      <td>
+        <code>(row: T) =&gt; void</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Makes rows clickable. Adds hover styles and keyboard activation.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>striped</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Applies alternating row backgrounds for readability.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>caption</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Visible caption above the table. Preferred over <code>ariaLabel</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>ariaLabel</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Invisible label for the table. Used when <code>caption</code> is not
+        provided.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>rowKey</code>
+      </td>
+      <td>
+        <code>(row: T) =&gt; string | number</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Derives a stable React key from each row. Falls back to array index.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>getRowAriaLabel</code>
+      </td>
+      <td>
+        <code>(row: T) =&gt; string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Generates an accessible label for clickable rows.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Additional classes on the outer container.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 className='doc-sub'>Column&lt;T&gt;</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>key</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        Property name on the data object, or a unique identifier when using{' '}
+        <code>render</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>header</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        Column header text. Rendered in a <code>&lt;th scope="col"&gt;</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>render</code>
+      </td>
+      <td>
+        <code>(row: T) =&gt; ReactNode</code>
+      </td>
+      <td>Custom cell renderer. Overrides default property lookup.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>align</code>
+      </td>
+      <td>
+        <code>'left' | 'center' | 'right'</code>
+      </td>
+      <td>
+        Text alignment for header and cells. Default: <code>'left'</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>width</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        Fixed column width (e.g. <code>'120px'</code>, <code>'20%'</code>).
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Common Patterns</h2>
+
+<h3 className='doc-sub'>Clickable Rows</h3>
+
+<p className='doc-p'>
+  When <code>onRowClick</code> is provided, each row becomes interactive: it
+  gets hover styles, a pointer cursor, <code>role="button"</code>, and{' '}
+  <code>tabIndex=&#123;0&#125;</code>. Always pair with{' '}
+  <code>getRowAriaLabel</code> so screen readers announce what each row does.
+</p>
+
+```jsx
+<Table
+  columns={columns}
+  data={users}
+  onRowClick={user => router.push(`/users/${user.id}`)}
+  rowKey={user => user.id}
+  getRowAriaLabel={user => `View profile for ${user.name}`}
+  ariaLabel='User directory'
+/>
+```
+
+<h3 className='doc-sub'>Custom Cell Rendering</h3>
+
+<p className='doc-p'>
+  Use the <code>render</code> function on a column to display badges, icons, or
+  formatted values instead of raw strings.
+</p>
+
+```jsx
+const columns = [
+  { key: 'name', header: 'Name' },
+  {
+    key: 'status',
+    header: 'Status',
+    render: row => <Badge>{row.status}</Badge>,
+  },
+  {
+    key: 'score',
+    header: 'Score',
+    align: 'right',
+    render: row => `${row.score}%`,
+  },
+];
+```
+
+<h2 className='doc-section'>Accessibility</h2>
+
+<p className='doc-p'>
+  The table uses semantic HTML: <code>&lt;table&gt;</code>,{' '}
+  <code>&lt;thead&gt;</code>,<code>&lt;th scope="col"&gt;</code>. Provide either
+  a visible <code>caption</code> (preferred) or an <code>ariaLabel</code> so
+  screen readers can identify the table.
+</p>
+
+<h3 className='doc-sub'>Clickable Row Behavior</h3>
+
+<p className='doc-p'>
+  Clickable rows receive <code>role="button"</code> and respond to{' '}
+  <span className='doc-kbd'>Enter</span> and{' '}
+  <span className='doc-kbd'>Space</span> key presses. Provide{' '}
+  <code>getRowAriaLabel</code> to give each row a meaningful accessible name;
+  without it, screen reader users hear "button" with no context.
+</p>
+
+<h3 className='doc-sub'>Keyboard</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Context</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Tab</span>
+      </td>
+      <td>Page</td>
+      <td>
+        Moves focus to clickable rows (when <code>onRowClick</code> is set)
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Enter</span> /{' '}
+        <span className='doc-kbd'>Space</span>
+      </td>
+      <td>Row focused</td>
+      <td>Activates the row click handler</td>
+    </tr>
+  </tbody>
+</table>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Always provide <code>rowKey</code> when data has a natural unique
+      identifier. This prevents React reconciliation bugs when rows are
+      reordered or filtered.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't rely on array indices for row identity. If data can be sorted,
+      filtered, or paginated, index-based keys cause incorrect UI state.
+    </p>
+  </div>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Use <code>caption</code> for visible table descriptions. Use{' '}
+      <code>ariaLabel</code> only when a visible caption would be redundant with
+      surrounding headings.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't omit both <code>caption</code> and <code>ariaLabel</code>. Screen
+      readers need at least one to identify the table's purpose.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

@@ -1,0 +1,500 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Tabs } from './Tabs';
+
+<Meta title='Navigation/Tabs/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-sans);
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--color-text-primary);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--color-text-secondary);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--color-border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-sub {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-grid {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--color-border);
+      color: var(--color-text-primary);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+    }
+
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--color-success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--color-error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--color-success); }
+    .doc-dont-label { color: var(--color-error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-kbd {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-text-primary);
+      background: var(--color-surface-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Tabs</h1>
+<p className='doc-lead'>
+  Switch between related content panels. Implements the WAI-ARIA Tabs pattern
+  with arrow key navigation, two visual variants, and controlled or uncontrolled
+  state.
+</p>
+
+<h2 className='doc-section'>When to Use</h2>
+
+<p className='doc-p'>
+  Use Tabs when content naturally divides into parallel categories that share
+  the same context. Each tab should make sense on its own; if a user needs to
+  see multiple panels at once, consider an accordion or a single scrollable
+  page.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Use Tabs for</th>
+      <th>Use something else for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Switching between related views (Overview, Details, History)</td>
+      <td>Step-by-step flows (use a stepper or wizard)</td>
+    </tr>
+    <tr>
+      <td>Filtering content by category on a single page</td>
+      <td>Navigation between separate pages (use links or Nav)</td>
+    </tr>
+    <tr>
+      <td>Settings organized by section</td>
+      <td>Content that should all be visible (use sections or accordion)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Variants</h2>
+
+<p className='doc-p'>
+  Choose the variant that fits the surrounding UI density. Both variants behave
+  identically; only the visual treatment differs.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Appearance</th>
+      <th>Use when</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>underline</code>
+      </td>
+      <td>Bottom border highlight on the active tab</td>
+      <td>Page-level sections, content-heavy layouts (default)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>pill</code>
+      </td>
+      <td>Filled background on the active tab, set in a tinted track</td>
+      <td>Compact areas, toolbars, card headers</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Props</h2>
+
+<h3 className='doc-sub'>TabsProps</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>tabs</code>
+      </td>
+      <td>
+        <code>Tab[]</code>
+      </td>
+      <td>—</td>
+      <td>Array of tab definitions (see below).</td>
+    </tr>
+    <tr>
+      <td>
+        <code>defaultTab</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        First tab's <code>id</code>
+      </td>
+      <td>Initially active tab. Component is uncontrolled by default.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onChange</code>
+      </td>
+      <td>
+        <code>(tabId: string) =&gt; void</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Called when the active tab changes. Use to sync external state.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>variant</code>
+      </td>
+      <td>
+        <code>'underline' | 'pill'</code>
+      </td>
+      <td>
+        <code>'underline'</code>
+      </td>
+      <td>Visual style of the tab bar.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Additional classes on the outer wrapper.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 className='doc-sub'>Tab</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>id</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        Unique identifier. Used for <code>defaultTab</code> and{' '}
+        <code>onChange</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>Visible text on the tab button.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>content</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
+      <td>Panel content rendered when the tab is active.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Common Patterns</h2>
+
+<h3 className='doc-sub'>Basic Usage</h3>
+
+```jsx
+<Tabs
+  tabs={[
+    { id: 'overview', label: 'Overview', content: <OverviewPanel /> },
+    { id: 'details', label: 'Details', content: <DetailsPanel /> },
+    { id: 'history', label: 'History', content: <HistoryPanel /> },
+  ]}
+/>
+```
+
+<h3 className='doc-sub'>Controlled with External State</h3>
+
+<p className='doc-p'>
+  Use <code>defaultTab</code> and <code>onChange</code> together when you need
+  to sync the active tab with URL params, analytics, or other state.
+</p>
+
+```jsx
+const [activeTab, setActiveTab] = useState('overview');
+
+<Tabs
+  tabs={tabs}
+  defaultTab={activeTab}
+  onChange={tabId => {
+    setActiveTab(tabId);
+    trackEvent('tab_change', { tab: tabId });
+  }}
+/>;
+```
+
+<h3 className='doc-sub'>Pill Variant in a Card Header</h3>
+
+```jsx
+<Card>
+  <Tabs variant='pill' tabs={settingsTabs} />
+</Card>
+```
+
+<h2 className='doc-section'>Accessibility</h2>
+
+<p className='doc-p'>
+  The tab list uses <code>role="tablist"</code>. Each tab button has{' '}
+  <code>role="tab"</code> with <code>aria-selected</code> and{' '}
+  <code>aria-controls</code> pointing to its panel. The active panel has{' '}
+  <code>role="tabpanel"</code> with <code>aria-labelledby</code> linking back to
+  its tab. Only the active tab is in the tab order (<code>tabIndex=0</code>);
+  inactive tabs use <code>tabIndex=-1</code> and are reached via arrow keys.
+</p>
+
+<h3 className='doc-sub'>Keyboard</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <span className='doc-kbd'>→</span>
+      </td>
+      <td>Moves focus and activation to the next tab (wraps to first)</td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>←</span>
+      </td>
+      <td>Moves focus and activation to the previous tab (wraps to last)</td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Home</span>
+      </td>
+      <td>Moves focus and activation to the first tab</td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>End</span>
+      </td>
+      <td>Moves focus and activation to the last tab</td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Tab</span>
+      </td>
+      <td>Moves focus into the active tab panel</td>
+    </tr>
+  </tbody>
+</table>
+
+<p className='doc-p'>
+  This component uses <strong>automatic activation</strong>: arrow keys both
+  move focus and activate the tab immediately. This is the recommended WAI-ARIA
+  pattern when panel content loads instantly (no async fetch).
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Give each tab a unique <code>id</code>. The component generates ARIA
+      relationships from these IDs. Duplicate IDs break the{' '}
+      <code>aria-controls</code> / <code>aria-labelledby</code> link between tab
+      and panel.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't use Tabs for sequential steps or wizards. Tabs imply independent
+      panels; users expect to jump to any tab in any order. Steppers enforce
+      order.
+    </p>
+  </div>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Keep tab labels short (one or two words). Long labels cause the tab bar to
+      wrap awkwardly on mobile. If labels are sentences, the content probably
+      belongs on separate pages.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't exceed 5-6 tabs. Beyond that, discoverability drops and the tab bar
+      becomes hard to navigate. Consider a different pattern for large sets.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

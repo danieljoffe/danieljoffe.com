@@ -16,9 +16,12 @@ const config = {
   bail: isCI ? 1 : 0,
   preset: '../../jest.preset.js',
   transform: {
+    // Custom MDX transform — extracts `export const metadata` and stubs the
+    // default React component. See __mocks__/mdxTransform.js for the why.
+    '\\.mdx$': '<rootDir>/__mocks__/mdxTransform.js',
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
   },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'mdx'],
   coverageDirectory: '../../coverage/apps/root',
   testEnvironment: 'jsdom',
   collectCoverageFrom: [
@@ -30,10 +33,10 @@ const config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50,
+      branches: 65,
+      functions: 65,
+      lines: 65,
+      statements: 65,
     },
   },
   // Ensure Jest exits cleanly in Nx/Next test envs
@@ -47,10 +50,6 @@ const config = {
     '^@danieljoffe\\.com/shared-ui/(.*)$':
       '<rootDir>/../../libs/shared/ui/src/lib/$1.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^gsap/MorphSVGPlugin$': '<rootDir>/__mocks__/gsap.morphSVGPlugin.js',
-    '^gsap/CustomEase$': '<rootDir>/__mocks__/gsap.customEase.js',
-    '^gsap/CustomWiggle$': '<rootDir>/__mocks__/gsap.customWiggle.js',
-    '^gsap/MotionPathPlugin$': '<rootDir>/__mocks__/gsap.motionPathPlugin.js',
   },
 };
 

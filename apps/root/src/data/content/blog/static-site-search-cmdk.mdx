@@ -8,7 +8,10 @@ export const metadata = {
   tags: ['React', 'Next.js', 'Search', 'Performance'],
   slug: 'static-site-search-cmdk',
   type: 'blog',
-  topic: 'Architecture',
+  cover: {
+    alt: 'A command palette interface on a dark screen',
+    src: '/images/covers/static-site-search-cmdk.webp',
+  },
 };
 
 ## The Problem
@@ -18,13 +21,13 @@ Adding search to a content site usually means choosing between a hosted service
 Both require a backend, API keys, and sync logic to keep the index current.
 
 This site has 10 projects, 5 experience entries, 24 blog posts, 4 services, and
-4 static pages. That's 47 searchable items. A server for 47 items is overhead we
+4 static pages. That's 47 searchable items. A server for 47 items is overhead I
 don't need.
 
 ## The Search Index
 
 The site already has a content registry that provides metadata for every page.
-We built a `buildSearchIndex()` function that aggregates it into a flat array:
+I built a `buildSearchIndex()` function that aggregates it into a flat array:
 
 ```tsx
 export interface SearchEntry {
@@ -60,14 +63,14 @@ export function buildSearchIndex(): SearchEntry[] {
 
 Each content type pulls from existing data files: thumbnails for title and
 description, MDX metadata for tags and category, content order for the slug
-list. No separate index to maintain; when we add a blog post, search updates
+list. No separate index to maintain; when I add a blog post, search updates
 automatically because it reads from the same source of truth.
 
 ## The Command Palette
 
 [cmdk](https://cmdk.paco.me) is a headless command menu component. It provides
 fuzzy filtering, keyboard navigation, and grouped results with zero styling
-opinions. We feed it the search index and let it handle matching:
+opinions. I feed it the search index and let it handle matching:
 
 ```tsx
 const index = useMemo(() => buildSearchIndex(), []);

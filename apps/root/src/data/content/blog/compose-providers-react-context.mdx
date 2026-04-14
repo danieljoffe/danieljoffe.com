@@ -4,17 +4,14 @@ export const metadata = {
   excerpt:
     'A functional composition pattern that turns deeply nested provider trees into a flat, readable list. Includes automatic React DevTools display names.',
   author: 'Daniel Joffe',
-  category: 'React Patterns',
-  tags: [
-    'React',
-    'Context API',
-    'TypeScript',
-    'State Management',
-    'Performance',
-    'Design Patterns',
-  ],
+  category: 'Architecture',
+  tags: ['React', 'TypeScript', 'Performance'],
   slug: 'compose-providers-react-context',
   type: 'blog',
+  cover: {
+    alt: 'Colorful interlocking puzzle pieces on a white surface',
+    src: '/images/covers/compose-providers-react-context.webp',
+  },
 };
 
 ## Composing React Providers Without the Nesting Nightmare
@@ -139,7 +136,7 @@ This pattern pairs naturally with **splitting a monolithic provider into focused
 
 The composition pattern makes this split painless to manage. Without it, going from 1 provider to 5 means adding 4 levels of nesting. With it, you add 4 lines to an array.
 
-We documented the full refactor, splitting a 153-line `GlobalProvider` into three focused providers, in the [AppContext simplification case study](/projects/appcontext-simplification-case-study). The `composeProviders` utility was the finishing touch that made the split maintainable.
+I documented the full refactor, splitting a 153-line `GlobalProvider` into three focused providers, in the [AppContext simplification case study](/projects/appcontext-simplification-case-study). The `composeProviders` utility was the finishing touch that made the split maintainable.
 
 ## TypeScript Details
 

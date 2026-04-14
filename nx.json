@@ -131,7 +131,6 @@
       }
     }
   },
-  "neverConnectToCloud": true,
   "sync": {
     "applyChanges": true
   }

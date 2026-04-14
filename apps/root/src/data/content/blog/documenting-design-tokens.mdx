@@ -5,20 +5,18 @@ export const metadata = {
     'Documenting 100+ theme tokens for a Tailwind CSS 4 component library so developers pick semantic names instead of guessing gray values.',
   author: 'Daniel Joffe',
   category: 'Design Systems',
-  tags: [
-    'Design Systems',
-    'Documentation',
-    'Tailwind CSS',
-    'Developer Experience',
-  ],
+  tags: ['Tailwind CSS', 'CSS', 'UX'],
   slug: 'documenting-design-tokens',
   type: 'blog',
-  topic: 'Developer Experience',
+  cover: {
+    alt: 'An open style guide book with color swatches and typography samples',
+    src: '/images/covers/documenting-design-tokens.webp',
+  },
 };
 
 ## The Documentation Gap
 
-Our shared-ui library had 37 components, a `cn()` utility, error boundaries,
+The shared-ui library had 37 components, a `cn()` utility, error boundaries,
 and a theme with 100+ design tokens defined in CSS custom properties. It also
 had a README that said:
 
@@ -47,7 +45,7 @@ Documentation captures three things code alone cannot:
 
 ## The Token Reference Structure
 
-We organized the theme documentation around usage categories, not
+I organized the theme documentation around usage categories, not
 implementation details. Developers think "I need a muted text color," not
 "I need an oklch value":
 
@@ -76,7 +74,7 @@ remember oklch values. They pick the semantic token that matches their intent.
 
 ### Typography Tokens
 
-Rather than listing font sizes, we documented the **variant components**:
+Rather than listing font sizes, I documented the **variant components**:
 
 | Use case   | Component                       | Output                       |
 | ---------- | ------------------------------- | ---------------------------- |
@@ -120,7 +118,7 @@ The README includes rules for adding new components:
 5. **Export types alongside components** from the barrel index
 
 These rules prevent the library from drifting back toward the inconsistent
-state we started in.
+state I started in.
 
 ## The Impact
 

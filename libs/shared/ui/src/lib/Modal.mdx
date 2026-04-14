@@ -1,0 +1,482 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Modal } from './Modal';
+import { Button } from './Button';
+
+<Meta title='Overlays/Modal/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-sans);
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--color-text-primary);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--color-text-secondary);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--color-border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-sub {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--color-border);
+      color: var(--color-text-primary);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+    }
+
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--color-success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--color-error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--color-success); }
+    .doc-dont-label { color: var(--color-error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-kbd {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-text-primary);
+      background: var(--color-surface-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Modal</h1>
+<p className='doc-lead'>
+  A dialog overlay for focused tasks. Blocks interaction with the page behind
+  it, traps focus, and returns it to the trigger on close.
+</p>
+
+<h2 className='doc-section'>When to Use</h2>
+
+<p className='doc-p'>
+  Use Modal when the user needs to complete a task or acknowledge information
+  before continuing. Modals interrupt flow by design; only use them when that
+  interruption is justified.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Use Modal for</th>
+      <th>Use something else for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Confirmation dialogs (delete, discard)</td>
+      <td>Inline warnings or undo patterns</td>
+    </tr>
+    <tr>
+      <td>Forms that need focus isolation</td>
+      <td>Simple inline forms</td>
+    </tr>
+    <tr>
+      <td>Content previews or detail views</td>
+      <td>Expandable rows or side panels</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Sizes</h2>
+
+<p className='doc-p'>
+  Choose a size based on content width, not importance. <code>sm</code> for
+  confirmations, <code>md</code> for short forms, <code>lg</code> for
+  content-heavy dialogs, <code>xl</code> for data tables or multi-column
+  layouts.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Size</th>
+      <th>Max width</th>
+      <th>Use when</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>sm</code>
+      </td>
+      <td>28rem (448px)</td>
+      <td>Confirmation dialogs, simple alerts</td>
+    </tr>
+    <tr>
+      <td>
+        <code>md</code>
+      </td>
+      <td>32rem (512px)</td>
+      <td>Short forms, detail previews (default)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>lg</code>
+      </td>
+      <td>42rem (672px)</td>
+      <td>Multi-field forms, content previews</td>
+    </tr>
+    <tr>
+      <td>
+        <code>xl</code>
+      </td>
+      <td>56rem (896px)</td>
+      <td>Data tables, multi-column layouts</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Props</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>isOpen</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>—</td>
+      <td>Controls visibility. Modal is always controlled.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onClose</code>
+      </td>
+      <td>
+        <code>() =&gt; void</code>
+      </td>
+      <td>—</td>
+      <td>Called on Escape, backdrop click, or close button.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>title</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Rendered as a heading. Sets <code>aria-labelledby</code> automatically.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>children</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
+      <td>—</td>
+      <td>Modal body content.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>size</code>
+      </td>
+      <td>
+        <code>'sm' | 'md' | 'lg' | 'xl'</code>
+      </td>
+      <td>
+        <code>'md'</code>
+      </td>
+      <td>Controls maximum width of the dialog.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>footer</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Rendered in a right-aligned footer bar with a top border.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>closeOnBackdropClick</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>
+        Set to <code>false</code> for forms with unsaved state.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Additional classes on the dialog container.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Common Patterns</h2>
+
+<h3 className='doc-sub'>Confirmation Dialog</h3>
+
+<p className='doc-p'>
+  Use <code>size="sm"</code> with a footer containing a primary destructive
+  action and a secondary cancel. Keep the body to one or two sentences.
+</p>
+
+```jsx
+<Modal
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  title='Delete project?'
+  size='sm'
+  footer={
+    <>
+      <Button variant='secondary' onClick={() => setOpen(false)}>
+        Cancel
+      </Button>
+      <Button variant='error' onClick={handleDelete}>
+        Delete
+      </Button>
+    </>
+  }
+>
+  <p>This action cannot be undone. All data will be permanently removed.</p>
+</Modal>
+```
+
+<h3 className='doc-sub'>Form Modal</h3>
+
+<p className='doc-p'>
+  Disable backdrop click with{' '}
+  <code>closeOnBackdropClick=&#123;false&#125;</code> to prevent accidental
+  dismissal when users have entered data.
+</p>
+
+<h2 className='doc-section'>Accessibility</h2>
+
+<p className='doc-p'>
+  Modal sets <code>role="dialog"</code> and <code>aria-modal="true"</code>
+  automatically. When <code>title</code> is provided, it generates a unique ID
+  and wires <code>aria-labelledby</code>. Without a title, it falls back to{' '}
+  <code>aria-label="Dialog"</code>.
+</p>
+
+<h3 className='doc-sub'>Focus Management</h3>
+
+<p className='doc-p'>
+  On open, focus moves to the first focusable element inside the dialog. Tab and
+  Shift+Tab cycle within the dialog (focus trap). On close, focus returns to the
+  element that triggered the modal.
+</p>
+
+<h3 className='doc-sub'>Keyboard</h3>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Esc</span>
+      </td>
+      <td>Closes the modal and returns focus to the trigger</td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Tab</span>
+      </td>
+      <td>Moves focus to the next focusable element (trapped within dialog)</td>
+    </tr>
+    <tr>
+      <td>
+        <span className='doc-kbd'>Shift</span> +{' '}
+        <span className='doc-kbd'>Tab</span>
+      </td>
+      <td>
+        Moves focus to the previous focusable element (trapped within dialog)
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Always provide a <code>title</code> or <code>aria-label</code> so screen
+      readers announce the dialog purpose. Use the <code>footer</code> prop for
+      action buttons to maintain consistent layout.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't nest modals. Don't use modals for content that should live on its
+      own page. Don't disable Escape key handling; users expect it to close the
+      dialog.
+    </p>
+  </div>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Use <code>closeOnBackdropClick=&#123;false&#125;</code> for modals with
+      unsaved form state. This prevents accidental data loss.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't put long scrollable content in a modal. If the content needs
+      scrolling, consider a dedicated page or a side panel instead.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

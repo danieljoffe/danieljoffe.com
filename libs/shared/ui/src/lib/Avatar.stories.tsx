@@ -50,3 +50,19 @@ export const AllSizes: Story = {
 export const Fallback: Story = {
   args: { alt: 'Daniel' },
 };
+
+export const Online: Story = {
+  args: { initials: 'ON', status: 'online', size: 'md' },
+};
+
+export const Offline: Story = {
+  args: { initials: 'OF', status: 'offline', size: 'md' },
+};
+
+export const Away: Story = {
+  args: { initials: 'AW', status: 'away', size: 'md' },
+};
+
+export const Busy: Story = {
+  args: { initials: 'BS', status: 'busy', size: 'md' },
+};

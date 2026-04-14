@@ -52,13 +52,7 @@ const nextConfig = {
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
-    optimizePackageImports: [
-      '@gsap/react',
-      'gsap',
-      '@sentry/nextjs',
-      'yup',
-      'schema-dts',
-    ],
+    optimizePackageImports: ['@sentry/nextjs', 'yup', 'schema-dts'],
     // Disable in CI/test
     webpackBuildWorker: !isTest && !isCI,
   },
@@ -81,6 +75,7 @@ const nextConfig = {
     '/experience/[slug]/opengraph-image': [
       './assets/fonts/og/*',
       './public/images/daniel-joffe-profile.webp',
+      './public/images/covers/*',
     ],
     '/projects/opengraph-image': [
       './assets/fonts/og/*',
@@ -89,6 +84,12 @@ const nextConfig = {
     '/projects/[slug]/opengraph-image': [
       './assets/fonts/og/*',
       './public/images/daniel-joffe-profile.webp',
+      './public/images/covers/*',
+    ],
+    '/blog/[slug]/opengraph-image': [
+      './assets/fonts/og/*',
+      './public/images/daniel-joffe-profile.webp',
+      './public/images/covers/*',
     ],
     '/services/opengraph-image': [
       './assets/fonts/og/*',
@@ -103,14 +104,6 @@ const nextConfig = {
   // Image optimization
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
       {
         protocol: 'https',
         hostname: 'grwmzluuqyczatkxorfa.supabase.co',

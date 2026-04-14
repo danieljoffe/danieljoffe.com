@@ -1,0 +1,412 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title='Feedback/Toast/Guide' />
+
+<style>
+  {`
+    .doc-wrap {
+      max-width: 860px;
+      margin: -1rem auto 0;
+      padding: 2rem 2rem 4rem;
+      font-family: var(--font-sans);
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      border-radius: var(--radius);
+    }
+
+    .doc-title {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h2);
+      font-weight: 400;
+      margin: 0 0 0.5rem !important;
+      color: var(--color-text-primary);
+      font-variation-settings: 'opsz' 72, 'WONK' 1;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .doc-lead {
+      font-size: 1.125rem;
+      color: var(--color-text-secondary);
+      margin: 0 0 2.5rem !important;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h3);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 2.5rem 0 1rem !important;
+      padding-bottom: 0.5rem !important;
+      border-bottom: 1px solid var(--color-border) !important;
+      font-variation-settings: 'opsz' 36, 'WONK' 0;
+    }
+
+    .doc-sub {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-h4);
+      font-weight: 400;
+      color: var(--color-text-primary);
+      margin: 1.5rem 0 0.75rem !important;
+      border: none !important;
+      padding: 0 !important;
+      font-variation-settings: 'opsz' 24, 'WONK' 0;
+    }
+
+    .doc-p {
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--color-border);
+      color: var(--color-text-primary);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+    }
+
+    .doc-table code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .doc-do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .doc-do, .doc-dont {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+    }
+
+    .doc-do {
+      border-left: 3px solid var(--color-success);
+    }
+
+    .doc-dont {
+      border-left: 3px solid var(--color-error);
+    }
+
+    .doc-do-label, .doc-dont-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-do-label { color: var(--color-success); }
+    .doc-dont-label { color: var(--color-error); }
+
+    .doc-do-body, .doc-dont-body {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .doc-do-body code, .doc-dont-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--color-brand-500);
+      background: var(--color-surface-secondary);
+      padding: 0.125rem 0.375rem;
+      border-radius: var(--radius-sm);
+    }
+  `}
+</style>
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Toast</h1>
+<p className='doc-lead'>
+  Temporary, non-blocking notifications for async feedback. Auto-dismiss after 4
+  seconds, pause on hover, and stack in the bottom-right corner.
+</p>
+
+<h2 className='doc-section'>When to Use</h2>
+
+<p className='doc-p'>
+  Use Toast for transient feedback that doesn't require user action: a form
+  submitted successfully, a network error occurred, or a background task
+  completed. Toasts disappear on their own; they should never carry critical
+  information that the user must act on.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Use Toast for</th>
+      <th>Use something else for</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Success confirmation after a save or submit</td>
+      <td>Inline validation errors (use FormFieldError)</td>
+    </tr>
+    <tr>
+      <td>Network or server error notifications</td>
+      <td>Blocking confirmations (use Modal)</td>
+    </tr>
+    <tr>
+      <td>Background task completion</td>
+      <td>Persistent alerts or banners (use Alert)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Setup</h2>
+
+<p className='doc-p'>
+  Toast requires <code>ToastProvider</code> to be mounted in the component tree.
+  Place it near the root of your app, above any component that needs to trigger
+  toasts.
+</p>
+
+```jsx
+import { ToastProvider } from '@danieljoffe.com/shared-ui';
+
+function App({ children }) {
+  return <ToastProvider>{children}</ToastProvider>;
+}
+```
+
+<h2 className='doc-section'>Usage</h2>
+
+<p className='doc-p'>
+  Call <code>toast()</code> from the <code>useToast()</code> hook. Every toast
+  needs a <code>variant</code> and a <code>title</code>. The{' '}
+  <code>description</code> and <code>duration</code> are optional.
+</p>
+
+```jsx
+import { useToast } from '@danieljoffe.com/shared-ui';
+
+function SaveButton() {
+  const { toast } = useToast();
+
+  const handleSave = async () => {
+    try {
+      await saveData();
+      toast({ variant: 'success', title: 'Changes saved' });
+    } catch {
+      toast({
+        variant: 'error',
+        title: 'Save failed',
+        description: 'Check your connection and try again.',
+      });
+    }
+  };
+
+  return <Button onClick={handleSave}>Save</Button>;
+}
+```
+
+<h2 className='doc-section'>Variants</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>ARIA role</th>
+      <th>Use when</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>success</code>
+      </td>
+      <td>
+        <code>status</code>
+      </td>
+      <td>Action completed successfully.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>error</code>
+      </td>
+      <td>
+        <code>alert</code>
+      </td>
+      <td>An operation failed. Keep the message actionable.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>warning</code>
+      </td>
+      <td>
+        <code>alert</code>
+      </td>
+      <td>Something needs attention but isn't blocking.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>info</code>
+      </td>
+      <td>
+        <code>status</code>
+      </td>
+      <td>Neutral informational feedback.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Toast Parameters</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>variant</code>
+      </td>
+      <td>
+        <code>'info' | 'success' | 'warning' | 'error'</code>
+      </td>
+      <td>—</td>
+      <td>Determines icon, color, and ARIA role.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>title</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>—</td>
+      <td>Primary message. Keep it short (under 60 characters).</td>
+    </tr>
+    <tr>
+      <td>
+        <code>description</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Secondary detail. Use for actionable guidance on errors.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>duration</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>4000</code>
+      </td>
+      <td>Auto-dismiss time in milliseconds.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Behavior</h2>
+
+<h3 className='doc-sub'>Auto-Dismiss</h3>
+
+<p className='doc-p'>
+  Toasts dismiss after 4 seconds by default. Override with the{' '}
+  <code>duration</code> parameter. The timer pauses when the user hovers over or
+  focuses the toast, then resumes with the remaining time.
+</p>
+
+<h3 className='doc-sub'>Stacking</h3>
+
+<p className='doc-p'>
+  Multiple toasts stack vertically in the bottom-right corner. Newest toasts
+  appear at the bottom. Each has its own dismiss timer.
+</p>
+
+<h3 className='doc-sub'>Manual Dismiss</h3>
+
+<p className='doc-p'>
+  Every toast has a close button labeled "Dismiss notification" for screen
+  readers. Users can dismiss toasts before the timer expires.
+</p>
+
+<h2 className='doc-section'>Accessibility</h2>
+
+<p className='doc-p'>
+  The toast container uses <code>aria-live="polite"</code> with{' '}
+  <code>aria-atomic="true"</code> so screen readers announce new toasts. Error
+  and warning toasts use <code>role="alert"</code> for immediate announcement;
+  success and info toasts use <code>role="status"</code> which announces at the
+  next pause.
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Write toast titles that stand alone. "Changes saved" is better than
+      "Success!" because it tells the user what happened without needing the
+      description.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't use toasts for information that requires user action. If the user
+      needs to fix something, use inline validation or a modal.
+    </p>
+  </div>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Increase <code>duration</code> for error toasts with longer descriptions
+      so users have time to read the guidance before the toast disappears.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't fire multiple toasts for a single action. One save should produce
+      one toast, not a success toast followed by an info toast.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

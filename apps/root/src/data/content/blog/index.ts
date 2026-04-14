@@ -97,6 +97,21 @@ import MobileVrDataDrivenPlaywright, {
 import SentrySkipWithoutDsn, {
   metadata as sentrySkipWithoutDsnMeta,
 } from './sentry-skip-without-dsn.mdx';
+import MdxSingleSourceOfTruth, {
+  metadata as mdxSingleSourceOfTruthMeta,
+} from './mdx-single-source-of-truth.mdx';
+import ClientSideTagFilteringSeo, {
+  metadata as clientSideTagFilteringSeoMeta,
+} from './client-side-tag-filtering-seo.mdx';
+import StorybookInteractionTestsAria, {
+  metadata as storybookInteractionTestsAriaMeta,
+} from './storybook-interaction-tests-aria.mdx';
+import ExecutableStyleGuideZod, {
+  metadata as executableStyleGuideZodMeta,
+} from './executable-style-guide-zod.mdx';
+import ThreeToolsMonorepoHygiene, {
+  metadata as threeToolsMonorepoHygieneMeta,
+} from './three-tools-monorepo-hygiene.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -133,6 +148,11 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'funnel-session-id-analytics': FunnelSessionIdAnalytics,
   'mobile-vr-data-driven-playwright': MobileVrDataDrivenPlaywright,
   'sentry-skip-without-dsn': SentrySkipWithoutDsn,
+  'mdx-single-source-of-truth': MdxSingleSourceOfTruth,
+  'client-side-tag-filtering-seo': ClientSideTagFilteringSeo,
+  'storybook-interaction-tests-aria': StorybookInteractionTestsAria,
+  'executable-style-guide-zod': ExecutableStyleGuideZod,
+  'three-tools-monorepo-hygiene': ThreeToolsMonorepoHygiene,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -168,4 +188,9 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'funnel-session-id-analytics': funnelSessionIdAnalyticsMeta,
   'mobile-vr-data-driven-playwright': mobileVrDataDrivenPlaywrightMeta,
   'sentry-skip-without-dsn': sentrySkipWithoutDsnMeta,
+  'mdx-single-source-of-truth': mdxSingleSourceOfTruthMeta,
+  'client-side-tag-filtering-seo': clientSideTagFilteringSeoMeta,
+  'storybook-interaction-tests-aria': storybookInteractionTestsAriaMeta,
+  'executable-style-guide-zod': executableStyleGuideZodMeta,
+  'three-tools-monorepo-hygiene': threeToolsMonorepoHygieneMeta,
 };

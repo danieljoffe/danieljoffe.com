@@ -1,0 +1,121 @@
+export const metadata = {
+  title: 'Client-Side Tag Filtering Without Losing SEO URLs',
+  date: '2026-04-13',
+  excerpt:
+    'One component renders Link for crawlable tag pages or button for instant client filtering. The same TagChipStrip serves both without duplicating code.',
+  author: 'Daniel Joffe',
+  category: 'Frontend Engineering',
+  tags: ['React', 'Next.js', 'TypeScript', 'Search', 'SSR', 'Architecture'],
+  slug: 'client-side-tag-filtering-seo',
+  type: 'blog',
+  cover: {
+    alt: 'Colorful tags and labels sorted into rows',
+    src: '/images/covers/client-side-tag-filtering-seo.webp',
+  },
+};
+
+## The Problem: Tags That Navigate Away
+
+My blog and projects pages had tag routes: `/blog/tags/react`, `/projects/tags/next-js`. Server-rendered, crawlable, good for SEO. The problem was UX. Clicking a tag on the listing page navigated away, loaded a new page, and lost your scroll position. For a portfolio site with 33 blog posts and 10 projects, that round-trip felt heavy.
+
+I wanted instant filtering on the listing page while keeping the server-rendered tag routes as canonical URLs for search engines. The naive fix is two components: one with `<Link>` for the tag index pages, one with `<button>` for the listing pages. That doubles the surface area for every style change, accessibility fix, and new badge variant.
+
+## One Component, Two Modes
+
+`TagChipStrip` accepts optional `onTagClick` and `activeTag` props. When `onTagClick` is present, chips render as buttons with `aria-pressed`. When absent, they render as Next.js `<Link>` elements.
+
+```tsx
+{
+  tags.map(tag => {
+    const isActive = activeTag === tag.name;
+    const badgeVariant = isActive ? 'info' : 'default';
+
+    return onTagClick ? (
+      <button
+        key={tag.name}
+        onClick={() => onTagClick(tag.name)}
+        aria-pressed={isActive}
+      >
+        <Badge variant={badgeVariant}>{tag.name}</Badge>
+      </button>
+    ) : (
+      <Link key={tag.name} href={tag.href}>
+        <Badge variant={badgeVariant}>{tag.name}</Badge>
+      </Link>
+    );
+  });
+}
+```
+
+The tag detail pages (`/blog/tags/[tag]`) use `TagChipStrip` without the callback. The listing pages (`/blog`, `/projects`) pass `onTagClick` and `activeTag` to get client-side filtering. Same component, same styles, same accessibility attributes. The rendering mode is a function of the props, not a separate component.
+
+## The Client Island
+
+In App Router, the listing page is a server component. Tag filtering needs state. The solution is a client island that wraps the grid.
+
+`BlogSearchAndList` manages three view states: paginated default, search results (from the existing MiniSearch integration), and tag-filtered results. The key constraint is mutual exclusivity: selecting a tag clears the search query, and typing a search query clears the active tag.
+
+```tsx
+const handleTagClick = (tagName: string) => {
+  setActiveTag(prev => (prev === tagName ? null : tagName));
+  setQuery('');
+};
+
+const handleSearch = (value: string) => {
+  setQuery(value);
+  setActiveTag(null);
+};
+```
+
+When either filter is active, pagination hides. The `showPagination` flag is a single expression:
+
+```tsx
+const showPagination = !query && !activeTag;
+```
+
+`ProjectsGridWithTags` follows the same pattern but without search, since the projects page has 10 entries and no MiniSearch integration.
+
+## Server-Routed Pagination
+
+The blog listing splits into pages at 12 posts per page: `/blog`, `/blog/page/2`, `/blog/page/3`. Each page is a server component with a `ListPagination` kit component rendering real `<Link>`-backed page numbers.
+
+Next.js metadata API supports `alternates.canonical` but has no first-class shape for `rel=prev` and `rel=next`. React 19 solves this: bare `<link>` elements rendered in server components hoist into the document `<head>` automatically.
+
+```tsx
+{
+  /* React 19 hoists bare <link> into <head> */
+}
+<link rel='prev' href={prevHref} />;
+{
+  nextHref && <link rel='next' href={nextHref} />;
+}
+```
+
+No `next/head`, no metadata API workaround. The link element renders in JSX and ends up in the right place.
+
+## Scoping Tags to Content Type
+
+The tag routes had a quiet bug. `/blog/tags` listed tags from all content types: blog, projects, and experience. The page called `getAllTags()` without a type parameter, then linked each tag to `/blog/tags/{slug}`. Tags like "Angular" existed on experience entries but not blog posts, so `/blog/tags/angular` returned zero results.
+
+The fix was a type parameter on every tag helper:
+
+```ts
+export function getAllTags(type?: TagEntryType): string[] {
+  const entries = type ? getContentByType(type) : getAllContent();
+  const tagSet = new Set<string>();
+  for (const entry of entries) {
+    entry.metadata.tags?.forEach(t => tagSet.add(t));
+  }
+  return [...tagSet].sort();
+}
+```
+
+Every route-level caller now scopes explicitly: `getAllTags('blog')` on blog routes, `getAllTags('project')` on project routes. The parameter is optional for backward compatibility, but the convention is clear: if you are rendering a route, scope the query.
+
+## The Result
+
+Tag chips on `/blog` and `/projects` filter content instantly. The existing `/blog/tags/{slug}` and `/projects/tags/{slug}` routes remain as canonical SEO URLs. `TagChipStrip` handles both modes from one component. Pagination appears when no filter is active and hides when one is, with `rel=prev/next` hoisted via React 19 for crawlers.
+
+The scoping fix eliminated the cross-type tag leakage and the zero-result pages it produced. The type parameter on tag helpers now enforces that at the function signature level rather than relying on callers to filter after the fact.
+
+One component, two rendering modes, zero duplicated code. The server routes exist for search engines; the client filtering exists for humans browsing the page.

@@ -2,11 +2,10 @@ import { ImageResponse } from 'next/og';
 import {
   getOgFonts,
   getProfileImageBase64,
-  getUnsplashImageBase64,
+  getCoverImageBase64,
 } from '@/lib/og';
-import { projectsRecords } from '@/data/projectThumbnails';
+import { getContentBySlug } from '@/data/contentRegistry';
 import { projectPageSlugs } from '@/data/project';
-import { AllowedProjectSlugs } from '@/types/base';
 
 export const alt = 'Daniel Joffe - Project';
 export const size = { width: 1200, height: 630 };
@@ -22,12 +21,16 @@ export default async function OgImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = projectsRecords[slug as AllowedProjectSlugs];
+  const entry = getContentBySlug('project', slug);
+  if (!entry) {
+    throw new Error(`Project entry not found: ${slug}`);
+  }
+  const project = entry.metadata;
 
   const [fonts, profileSrc, coverSrc] = await Promise.all([
     getOgFonts(),
     getProfileImageBase64(),
-    getUnsplashImageBase64(project.cover.src, 600, 630),
+    getCoverImageBase64(project.cover.src),
   ]);
 
   return new ImageResponse(
@@ -105,7 +108,7 @@ export default async function OgImage({
             overflow: 'hidden',
           }}
         >
-          {project.description}
+          {project.excerpt}
         </span>
 
         <span

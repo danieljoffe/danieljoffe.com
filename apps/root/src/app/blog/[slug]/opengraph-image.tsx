@@ -2,11 +2,10 @@ import { ImageResponse } from 'next/og';
 import {
   getOgFonts,
   getProfileImageBase64,
-  getUnsplashImageBase64,
+  getCoverImageBase64,
 } from '@/lib/og';
-import { blogRecords } from '@/data/blogThumbnails';
+import { getContentBySlug } from '@/data/contentRegistry';
 import { blogPageSlugs } from '@/data/blog';
-import { AllowedBlogSlugs } from '@/types/base';
 
 export const alt = 'Daniel Joffe - Blog';
 export const size = { width: 1200, height: 630 };
@@ -22,12 +21,16 @@ export default async function OgImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = blogRecords[slug as AllowedBlogSlugs];
+  const entry = getContentBySlug('blog', slug);
+  if (!entry) {
+    throw new Error(`Blog entry not found: ${slug}`);
+  }
+  const post = entry.metadata;
 
   const [fonts, profileSrc, coverSrc] = await Promise.all([
     getOgFonts(),
     getProfileImageBase64(),
-    getUnsplashImageBase64(post.cover.src, 600, 630),
+    getCoverImageBase64(post.cover.src),
   ]);
 
   return new ImageResponse(
@@ -105,7 +108,7 @@ export default async function OgImage({
             overflow: 'hidden',
           }}
         >
-          {post.description}
+          {post.excerpt}
         </span>
 
         <span

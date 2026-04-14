@@ -1,5 +1,0 @@
-@use './tw-inline.scss';
-@use './typography.scss';
-@use './base.scss';
-
-@custom-variant dark (&:is(.dark *));
