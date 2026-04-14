@@ -43,6 +43,7 @@
     "not kaios > 0"
   ],
   "dependencies": {
+    "@axe-core/puppeteer": "^4.11.1",
     "@hcaptcha/react-hcaptcha": "^2.0.2",
     "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^5.2.2",
@@ -59,10 +60,14 @@
     "caniuse-lite": "1.0.30001776",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
     "isomorphic-dompurify": "2.26.0",
+    "lighthouse": "^13.0.3",
     "lucide-react": "0.577.0",
     "minisearch": "^7.2.0",
     "next": "16.1.6",
+    "puppeteer": "^24.38.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "7.71.2",
