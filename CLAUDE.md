@@ -92,6 +92,20 @@ The workspace includes Claude Code skills and agents for common workflows:
 
 - **Docs** (`.claude/docs/`): Reference documentation loaded via `@import`
 
+## Session Persistence (context-mode plugin)
+
+Session state is managed by the [context-mode](https://github.com/mksglu/context-mode) plugin.
+
+- **Automatic**: File edits, git ops, tasks, and errors are tracked in SQLite. No manual markdown updates needed.
+- **Compaction-safe**: PreCompact builds priority-tiered snapshots (2KB budget). SessionStart restores from snapshots.
+- **Searchable knowledge**: Project docs can be indexed via `ctx_index` and queried via `ctx_search`.
+- **Sandbox execution**: Use `ctx_execute` for operations that produce large output; only stdout enters the context window.
+
+### What the plugin does NOT manage
+
+- **decisions.md** (`.claude/docs/decisions.md`) — still a manually-maintained append-only ADR log. Injected on SessionStart via hook.
+- **Curated docs** (`.claude/docs/`) — still maintained by hand. Can be indexed into context-mode's FTS5 database for search.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
