@@ -9,6 +9,7 @@ on:
         required: true
 
 permissions:
+  actions: read
   contents: read
   statuses: write
 
@@ -17,11 +18,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  ci:
-    name: CI Checks
+  preflight:
+    name: Preflight
     if: github.ref == 'refs/heads/main' && github.event.inputs.confirm == 'deploy'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
+    outputs:
+      nx-base: ${{ steps.shas.outputs.base }}
+      nx-head: ${{ steps.shas.outputs.head }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -29,13 +33,32 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - uses: ./.github/actions/ci
+      - uses: nrwl/nx-set-shas@v5
+        id: shas
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          main-branch-name: main
+
+  fast:
+    name: CI Fast
+    needs: preflight
+    uses: ./.github/workflows/ci-fast.yml
+    with:
+      nx-base: ${{ needs.preflight.outputs.nx-base }}
+      nx-head: ${{ needs.preflight.outputs.nx-head }}
+    secrets: inherit
+
+  full:
+    name: CI Full
+    needs: [preflight, fast]
+    uses: ./.github/workflows/ci-full.yml
+    with:
+      nx-base: ${{ needs.preflight.outputs.nx-base }}
+      nx-head: ${{ needs.preflight.outputs.nx-head }}
+    secrets: inherit
 
   deploy:
     name: Production Deploy
-    needs: ci
+    needs: [fast, full]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
@@ -63,7 +86,7 @@ jobs:
 
   deploy-storybook:
     name: Storybook Production Deploy
-    needs: ci
+    needs: [fast, full]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

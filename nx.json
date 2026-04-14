@@ -131,7 +131,7 @@
       }
     }
   },
-  "neverConnectToCloud": true,
+  "nxCloudId": "REPLACE_WITH_NX_CLOUD_ID",
   "sync": {
     "applyChanges": true
   }

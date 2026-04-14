@@ -1,0 +1,110 @@
+name: CI Fast
+
+on:
+  workflow_call:
+    inputs:
+      nx-base:
+        description: NX_BASE SHA for affected detection
+        type: string
+        required: true
+      nx-head:
+        description: NX_HEAD SHA for affected detection
+        type: string
+        required: true
+    secrets:
+      NX_CLOUD_ACCESS_TOKEN:
+        required: false
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Lint affected
+        run: pnpm nx affected -t lint --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Typecheck affected
+        run: pnpm nx affected -t typecheck --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Test affected
+        run: pnpm nx affected -t test --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Build affected
+        run: pnpm nx affected -t build --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+  gate:
+    if: always()
+    needs: [lint, typecheck, test, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.lint.result }}" = "failure" ] || \
+             [ "${{ needs.typecheck.result }}" = "failure" ] || \
+             [ "${{ needs.test.result }}" = "failure" ] || \
+             [ "${{ needs.build.result }}" = "failure" ]; then
+            echo "CI fast checks failed"
+            echo "  lint: ${{ needs.lint.result }}"
+            echo "  typecheck: ${{ needs.typecheck.result }}"
+            echo "  test: ${{ needs.test.result }}"
+            echo "  build: ${{ needs.build.result }}"
+            exit 1
+          fi
+          echo "All CI fast checks passed"

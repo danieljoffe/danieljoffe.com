@@ -14,6 +14,9 @@ inputs:
   chromatic-project-token:
     description: Chromatic project token for visual regression testing
     default: ''
+  nx-cloud-token:
+    description: Nx Cloud access token for remote caching
+    default: ''
 
 runs:
   using: composite
@@ -29,6 +32,15 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile
 
+    - name: Cache Nx
+      uses: actions/cache@v4
+      with:
+        path: .nx/cache
+        key: ${{ runner.os }}-nx-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-nx-${{ hashFiles('**/pnpm-lock.yaml') }}-
+          ${{ runner.os }}-nx-
+
     - uses: nrwl/nx-set-shas@v5
       with:
         main-branch-name: ${{ inputs.base-branch }}
@@ -37,7 +49,20 @@ runs:
       shell: bash
       run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail
       env:
-        NX_NO_CLOUD: 'true'
+        NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
+
+    - name: Get Playwright version
+      if: ${{ inputs.run-e2e == 'true' }}
+      id: playwright-version
+      shell: bash
+      run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Playwright browsers
+      if: ${{ inputs.run-e2e == 'true' }}
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
     - name: Install Playwright
       if: ${{ inputs.run-e2e == 'true' }}
@@ -49,7 +74,7 @@ runs:
       shell: bash
       run: pnpm nx affected -t e2e --nxBail
       env:
-        NX_NO_CLOUD: 'true'
+        NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
 
     - name: Run Chromatic visual tests
       if: ${{ inputs.chromatic-project-token != '' }}
@@ -63,7 +88,7 @@ runs:
       shell: bash
       run: pnpm nx build root
       env:
-        NX_NO_CLOUD: 'true'
+        NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
 
     - name: Run Lighthouse CI
       if: ${{ inputs.run-e2e == 'true' }}

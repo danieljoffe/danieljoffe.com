@@ -1,0 +1,116 @@
+name: CI Full
+
+on:
+  workflow_call:
+    inputs:
+      nx-base:
+        description: NX_BASE SHA for affected detection
+        type: string
+        required: true
+      nx-head:
+        description: NX_HEAD SHA for affected detection
+        type: string
+        required: true
+    secrets:
+      NX_CLOUD_ACCESS_TOKEN:
+        required: false
+      CHROMATIC_PROJECT_TOKEN:
+        required: false
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: pnpm nx affected -t e2e --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Build app (remote cache hit from ci-fast)
+        run: pnpm nx build root
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+      - name: Run Lighthouse CI
+        run: pnpm test:lighthouse
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  storybook-and-chromatic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Build Storybook affected
+        run: pnpm nx affected -t build-storybook --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+      - name: Run Chromatic visual tests
+        if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
+        run: pnpm chromatic:ui --exit-zero-on-changes --exit-once-sent
+        env:
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+  gate:
+    if: always()
+    needs: [e2e, lighthouse, storybook-and-chromatic]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.e2e.result }}" = "failure" ] || \
+             [ "${{ needs.lighthouse.result }}" = "failure" ] || \
+             [ "${{ needs.storybook-and-chromatic.result }}" = "failure" ]; then
+            echo "CI full checks failed"
+            echo "  e2e: ${{ needs.e2e.result }}"
+            echo "  lighthouse: ${{ needs.lighthouse.result }}"
+            echo "  storybook-and-chromatic: ${{ needs.storybook-and-chromatic.result }}"
+            exit 1
+          fi
+          echo "All CI full checks passed"
