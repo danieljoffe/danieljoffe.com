@@ -4,8 +4,6 @@
 export const DOMAIN_URL = 'https://danieljoffe.com';
 const LINKEDIN_URL = 'https://www.linkedin.com';
 const GITHUB_URL = 'https://github.com';
-export const UNSPLASH_URL = 'https://unsplash.com';
-export const UNSPLASH_PHOTOS_URL = 'https://images.unsplash.com';
 export const GOOGLE_DOCS_URL = 'https://docs.google.com';
 export const EXAMPLE_URL = 'https://example.com';
 export const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
@@ -34,8 +32,6 @@ export const GITHUB_REPO_URL = 'https://github.com/danieljoffe/danieljoffe.com';
 // SECURITY & CSP CONFIGURATION
 // ============================================================================
 export const allowedImageOrigins = [
-  UNSPLASH_URL,
-  UNSPLASH_PHOTOS_URL,
   GOOGLE_DOCS_URL,
   EXAMPLE_URL,
   GOOGLE_ANALYTICS_URL,
