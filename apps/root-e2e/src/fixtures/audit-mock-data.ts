@@ -20,9 +20,6 @@ export const MOCK_SCAN_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 export const INVALID_UUID = 'not-a-uuid';
 export const NONEXISTENT_UUID = '00000000-0000-0000-0000-000000000000';
 
-export const VALID_TEST_URL = 'example.com';
-export const INVALID_URLS = ['no-tld', 'localhost', '192.168.1.1', '10.0.0.1'];
-
 // ---------------------------------------------------------------------------
 // Scan API factories (POST /api/audit/scan)
 // ---------------------------------------------------------------------------
@@ -84,7 +81,7 @@ export function makeStatusFailed(
 
 let issueCounter = 0;
 
-export function makeIssue(overrides: Partial<ScanIssue> = {}): ScanIssue {
+function makeIssue(overrides: Partial<ScanIssue> = {}): ScanIssue {
   const id = `issue-${++issueCounter}`;
   return {
     id,
