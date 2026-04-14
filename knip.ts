@@ -38,6 +38,10 @@ const config: KnipConfig = {
         'src/test-setup.ts',
       ],
       project: ['src/**/*.{ts,tsx}'],
+      ignoreDependencies: [
+        // webpack is a Next.js transitive dep, referenced in next.config.mjs
+        'webpack',
+      ],
     },
 
     // -----------------------------------------------------------------
