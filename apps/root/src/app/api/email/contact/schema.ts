@@ -57,12 +57,12 @@ export type SuccessResponse = {
 };
 
 /** Validation length constraints */
-export const NAME_MIN_LENGTH = 5;
-export const NAME_MAX_LENGTH = FORM_LIMITS.NAME_MAX_LENGTH;
-export const EMAIL_MIN_LENGTH = 3;
-export const EMAIL_MAX_LENGTH = FORM_LIMITS.EMAIL_MAX_LENGTH;
-export const MESSAGE_MIN_LENGTH = 30;
-export const MESSAGE_MAX_LENGTH = FORM_LIMITS.MESSAGE_MAX_LENGTH;
+const NAME_MIN_LENGTH = 5;
+const NAME_MAX_LENGTH = FORM_LIMITS.NAME_MAX_LENGTH;
+const EMAIL_MIN_LENGTH = 3;
+const EMAIL_MAX_LENGTH = FORM_LIMITS.EMAIL_MAX_LENGTH;
+const MESSAGE_MIN_LENGTH = 30;
+const MESSAGE_MAX_LENGTH = FORM_LIMITS.MESSAGE_MAX_LENGTH;
 
 /** Helper functions for generating consistent validation messages */
 export const minLengthMessage = (label: string, min: number) =>
