@@ -40,6 +40,8 @@ const config: KnipConfig = {
         // GSAP loaded dynamically and via useGSAP hook
         'gsap',
         '@gsap/react',
+        // webpack is a Next.js transitive dep, referenced in next.config.mjs
+        'webpack',
       ],
     },
 
