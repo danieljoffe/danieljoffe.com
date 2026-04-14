@@ -1,0 +1,125 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "group:monorepos",
+    "group:recommended",
+    ":timezone(America/Los_Angeles)",
+    "schedule:weekdays"
+  ],
+  "baseBranches": ["develop"],
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "prConcurrentLimit": 10,
+  "branchConcurrentLimit": 15,
+  "minimumReleaseAge": "3 days",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 4am on monday"],
+    "postUpdateOptions": ["pnpmDedupe"],
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Group Nx packages (must stay in lockstep)",
+      "matchPackagePatterns": ["^@nx/", "^nx$"],
+      "groupName": "Nx",
+      "automerge": false
+    },
+    {
+      "description": "Group Storybook packages",
+      "matchPackagePatterns": [
+        "^@storybook/",
+        "^storybook$",
+        "^@chromatic-com/"
+      ],
+      "groupName": "Storybook",
+      "automerge": false
+    },
+    {
+      "description": "Group Sentry packages",
+      "matchPackagePatterns": ["^@sentry/"],
+      "groupName": "Sentry"
+    },
+    {
+      "description": "Group testing packages",
+      "matchPackagePatterns": [
+        "^@testing-library/",
+        "^jest",
+        "^@types/jest",
+        "^ts-jest",
+        "^jest-axe",
+        "^@playwright/",
+        "^playwright$"
+      ],
+      "groupName": "Testing"
+    },
+    {
+      "description": "Group TypeScript/ESLint toolchain",
+      "matchPackagePatterns": [
+        "^typescript",
+        "^@typescript-eslint/",
+        "^eslint",
+        "^prettier"
+      ],
+      "groupName": "Lint and TypeScript",
+      "automerge": false
+    },
+    {
+      "description": "Group SWC packages",
+      "matchPackagePatterns": ["^@swc/"],
+      "groupName": "SWC"
+    },
+    {
+      "description": "Group Tailwind packages",
+      "matchPackagePatterns": ["^tailwindcss", "^@tailwindcss/"],
+      "groupName": "Tailwind CSS"
+    },
+    {
+      "description": "Group Next.js packages",
+      "matchPackagePatterns": ["^next$", "^@next/", "^eslint-config-next"],
+      "groupName": "Next.js",
+      "automerge": false
+    },
+    {
+      "description": "Group React packages",
+      "matchPackagePatterns": ["^react$", "^react-dom$", "^@types/react"],
+      "groupName": "React",
+      "automerge": false
+    },
+    {
+      "description": "Group Vite/Vitest packages",
+      "matchPackagePatterns": ["^vitest", "^@vitest/", "^vite$", "^@vitejs/"],
+      "groupName": "Vite and Vitest"
+    },
+    {
+      "description": "Auto-merge patch devDependencies (branch merge, no PR)",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Auto-merge patch production deps (via PR for audit trail)",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Never auto-merge major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "minimumReleaseAge": "14 days"
+    },
+    {
+      "description": "Pin GitHub Actions digests for supply chain safety",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    }
+  ]
+}

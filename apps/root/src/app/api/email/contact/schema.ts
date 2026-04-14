@@ -1,10 +1,10 @@
-import * as yup from 'yup';
+import { z } from 'zod/v4';
 import { FORM_LIMITS, VALIDATION_PATTERNS } from '@/utils/constants';
 
 /**
  * Contact Form API Schema and Type Definitions
  *
- * This module defines all TypeScript types and Yup validation schemas
+ * This module defines all TypeScript types and Zod validation schemas
  * used by the contact form API endpoint.
  */
 
@@ -71,7 +71,7 @@ export const maxLengthMessage = (label: string, max: number) =>
   `${label} must be at most ${max} characters`;
 
 /**
- * Yup validation schema for contact form data
+ * Zod validation schema for contact form data
  *
  * Comprehensive validation including:
  * - Input sanitization (trim whitespace)
@@ -82,7 +82,7 @@ export const maxLengthMessage = (label: string, max: number) =>
  *
  * @example
  * ```typescript
- * const validData = await formSchema.validate({
+ * const validData = formSchema.parse({
  *   name: "John Doe",
  *   email: "john@example.com",
  *   message: "Hello, I'd like to get in touch about...",
@@ -90,37 +90,49 @@ export const maxLengthMessage = (label: string, max: number) =>
  * });
  * ```
  */
-export const formSchema = yup
-  .object()
-  .shape({
-    /** Full name field with character validation */
-    name: yup
-      .string()
-      .transform(value => (value ? value.trim() : value))
-      .matches(VALIDATION_PATTERNS.NAME, 'Name contains invalid characters')
-      .min(NAME_MIN_LENGTH, minLengthMessage('Name', NAME_MIN_LENGTH))
-      .max(NAME_MAX_LENGTH, maxLengthMessage('Name', NAME_MAX_LENGTH))
-      .required('Name is required'),
-    /** Email address with format and deliverability validation */
-    email: yup
-      .string()
-      .transform(value => (value ? value.trim() : value))
-      .email('Invalid email address')
-      .min(EMAIL_MIN_LENGTH, minLengthMessage('Email', EMAIL_MIN_LENGTH))
-      .max(EMAIL_MAX_LENGTH, maxLengthMessage('Email', EMAIL_MAX_LENGTH))
-      .required('Email is required'),
-    /** Message content with anti-spam URL detection */
-    message: yup
-      .string()
-      .transform(value => (value ? value.trim() : value))
-      .test('no-urls', 'Please remove links from your message', val =>
-        val ? !/https?:\/\//i.test(val) : true
-      )
-      .min(MESSAGE_MIN_LENGTH, minLengthMessage('Message', MESSAGE_MIN_LENGTH))
-      .max(MESSAGE_MAX_LENGTH, maxLengthMessage('Message', MESSAGE_MAX_LENGTH))
-      .required('Message is required'),
-    /** hCaptcha token for bot protection */
-    hcaptcha: yup.string().required('Please verify you are human'),
-  })
-  .label('Contact Form')
-  .required();
+export const formSchema = z.object({
+  /** Full name field with character validation */
+  name: z
+    .string()
+    .transform(value => value.trim())
+    .pipe(
+      z
+        .string()
+        .regex(VALIDATION_PATTERNS.NAME, 'Name contains invalid characters')
+        .min(NAME_MIN_LENGTH, minLengthMessage('Name', NAME_MIN_LENGTH))
+        .max(NAME_MAX_LENGTH, maxLengthMessage('Name', NAME_MAX_LENGTH))
+    ),
+  /** Email address with format and deliverability validation */
+  email: z
+    .string()
+    .transform(value => value.trim())
+    .pipe(
+      z
+        .string()
+        .email('Invalid email address')
+        .min(EMAIL_MIN_LENGTH, minLengthMessage('Email', EMAIL_MIN_LENGTH))
+        .max(EMAIL_MAX_LENGTH, maxLengthMessage('Email', EMAIL_MAX_LENGTH))
+    ),
+  /** Message content with anti-spam URL detection */
+  message: z
+    .string()
+    .transform(value => value.trim())
+    .pipe(
+      z
+        .string()
+        .min(
+          MESSAGE_MIN_LENGTH,
+          minLengthMessage('Message', MESSAGE_MIN_LENGTH)
+        )
+        .max(
+          MESSAGE_MAX_LENGTH,
+          maxLengthMessage('Message', MESSAGE_MAX_LENGTH)
+        )
+        .refine(
+          val => !/https?:\/\//i.test(val),
+          'Please remove links from your message'
+        )
+    ),
+  /** hCaptcha token for bot protection */
+  hcaptcha: z.string().min(1, 'Please verify you are human'),
+});

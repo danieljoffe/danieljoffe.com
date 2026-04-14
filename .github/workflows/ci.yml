@@ -28,13 +28,19 @@ permissions:
   statuses: write
 
 jobs:
-  changes:
+  preflight:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       docs-only: ${{ steps.check.outputs.docs-only }}
+      nx-base: ${{ steps.shas.outputs.base }}
+      nx-head: ${{ steps.shas.outputs.head }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
       - name: Check for docs-only changes
         id: check
         env:
@@ -58,43 +64,64 @@ jobs:
               .vscode/*) ;;
               .github/ISSUE_TEMPLATE/*|.github/workflows/*) ;;
               .husky/*) ;;
-              .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE) ;;
+              .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE|renovate.json|opencode.json) ;;
+              .size-limit.json|knip.ts) ;;
               *) DOCS_ONLY=false; break ;;
             esac
           done <<< "$CHANGED"
 
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
 
-  ci:
-    needs: changes
-    if: ${{ needs.changes.outputs.docs-only != 'true' && !inputs.update-snapshots }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v5
+      - uses: nrwl/nx-set-shas@v5
+        id: shas
+        if: steps.check.outputs.docs-only != 'true'
         with:
-          filter: tree:0
-          fetch-depth: 0
+          main-branch-name: ${{ github.base_ref || 'main' }}
 
-      - uses: ./.github/actions/ci
-        with:
-          run-e2e: ${{ github.event_name != 'push' }}
-          base-branch: ${{ github.base_ref || 'main' }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          chromatic-project-token: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+  fast:
+    needs: preflight
+    if: ${{ needs.preflight.outputs.docs-only != 'true' && !inputs.update-snapshots }}
+    uses: ./.github/workflows/ci-fast.yml
+    with:
+      nx-base: ${{ needs.preflight.outputs.nx-base }}
+      nx-head: ${{ needs.preflight.outputs.nx-head }}
+    secrets: inherit
+
+  full:
+    needs: [preflight, fast]
+    if: ${{ needs.preflight.outputs.docs-only != 'true' && !inputs.update-snapshots && github.event_name == 'push' }}
+    uses: ./.github/workflows/ci-full.yml
+    with:
+      nx-base: ${{ needs.preflight.outputs.nx-base }}
+      nx-head: ${{ needs.preflight.outputs.nx-head }}
+    secrets: inherit
 
   ci-status:
     if: always()
-    needs: [changes, ci]
+    needs: [preflight, fast, full]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: CI succeeded or was skipped
+      - name: CI gate
         run: |
-          if [ "${{ needs.ci.result }}" = "failure" ] || [ "${{ needs.ci.result }}" = "cancelled" ]; then
-            echo "CI failed"
+          echo "preflight: ${{ needs.preflight.result }}"
+          echo "fast: ${{ needs.fast.result }}"
+          echo "full: ${{ needs.full.result }}"
+
+          # fast is required when it runs (non-docs PRs and pushes)
+          if [ "${{ needs.fast.result }}" = "failure" ] || [ "${{ needs.fast.result }}" = "cancelled" ]; then
+            echo "CI fast failed"
             exit 1
           fi
+
+          # full is required on push to develop
+          if [ "${{ github.event_name }}" = "push" ]; then
+            if [ "${{ needs.full.result }}" = "failure" ] || [ "${{ needs.full.result }}" = "cancelled" ]; then
+              echo "CI full failed"
+              exit 1
+            fi
+          fi
+
           echo "CI passed or was skipped (docs-only change)"
 
   update-snapshots:
@@ -111,15 +138,32 @@ jobs:
           ref: ${{ inputs.snapshot-branch || github.ref }}
           token: ${{ secrets.PAT_TOKEN }}
 
-      - uses: ./.github/actions/ci
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Run affected tasks
+        run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
         with:
-          run-e2e: 'false'
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Build app for snapshot generation
         run: pnpm nx build root
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Regenerate VR snapshots
         working-directory: apps/root-e2e
