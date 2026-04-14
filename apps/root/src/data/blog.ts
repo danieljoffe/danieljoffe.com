@@ -36,6 +36,8 @@ export const blogSlugs = {
   mdxSingleSourceOfTruth: 'mdx-single-source-of-truth',
   clientSideTagFilteringSeo: 'client-side-tag-filtering-seo',
   storybookInteractionTestsAria: 'storybook-interaction-tests-aria',
+  executableStyleGuideZod: 'executable-style-guide-zod',
+  threeToolsMonorepoHygiene: 'three-tools-monorepo-hygiene',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
