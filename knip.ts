@@ -34,13 +34,10 @@ const config: KnipConfig = {
         'src/app/**/route.ts',
         'src/app/api/**/route.ts',
         'src/app/**/opengraph-image.tsx',
+        // Jest setup file referenced via config, not imports
+        'src/test-setup.ts',
       ],
       project: ['src/**/*.{ts,tsx}'],
-      ignoreDependencies: [
-        // GSAP loaded dynamically and via useGSAP hook
-        'gsap',
-        '@gsap/react',
-      ],
     },
 
     // -----------------------------------------------------------------
@@ -63,6 +60,10 @@ const config: KnipConfig = {
     // libs/shared/ui — React component library
     // -----------------------------------------------------------------
     'libs/shared/ui': {
+      entry: [
+        // Jest setup file referenced via config, not imports
+        'src/test-setup.ts',
+      ],
       project: ['src/**/*.{ts,tsx}'],
     },
 
@@ -70,6 +71,10 @@ const config: KnipConfig = {
     // libs/shared/audit — Shared audit types
     // -----------------------------------------------------------------
     'libs/shared/audit': {
+      entry: [
+        // Generated Supabase types, not imported but kept for reference
+        'src/lib/database.types.ts',
+      ],
       project: ['src/**/*.ts'],
     },
   },
