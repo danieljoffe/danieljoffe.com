@@ -76,3 +76,6 @@ supabase/.temp/
 .vercel
 .env*.local
 apps/root/src/data/generated/
+
+.claude/worktrees
+.claude/settings.local.json
