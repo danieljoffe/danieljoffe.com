@@ -50,10 +50,6 @@ const config = {
     '^@danieljoffe\\.com/shared-ui/(.*)$':
       '<rootDir>/../../libs/shared/ui/src/lib/$1.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^gsap/MorphSVGPlugin$': '<rootDir>/__mocks__/gsap.morphSVGPlugin.js',
-    '^gsap/CustomEase$': '<rootDir>/__mocks__/gsap.customEase.js',
-    '^gsap/CustomWiggle$': '<rootDir>/__mocks__/gsap.customWiggle.js',
-    '^gsap/MotionPathPlugin$': '<rootDir>/__mocks__/gsap.motionPathPlugin.js',
   },
 };
 

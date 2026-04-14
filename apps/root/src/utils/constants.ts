@@ -2,18 +2,18 @@
 // EXTERNAL URLS
 // ============================================================================
 export const DOMAIN_URL = 'https://danieljoffe.com';
-export const LINKEDIN_URL = 'https://www.linkedin.com';
-export const GITHUB_URL = 'https://github.com';
+const LINKEDIN_URL = 'https://www.linkedin.com';
+const GITHUB_URL = 'https://github.com';
 export const UNSPLASH_URL = 'https://unsplash.com';
 export const UNSPLASH_PHOTOS_URL = 'https://images.unsplash.com';
 export const GOOGLE_DOCS_URL = 'https://docs.google.com';
 export const EXAMPLE_URL = 'https://example.com';
 export const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
 export const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
-export const SENTRY_URL = 'https://www.sentry.io';
-export const SCHEMA_ORG_URL = 'https://schema.org';
+const SENTRY_URL = 'https://www.sentry.io';
+const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
-export const SUPABASE_STORAGE_URL = 'https://grwmzluuqyczatkxorfa.supabase.co';
+const SUPABASE_STORAGE_URL = 'https://grwmzluuqyczatkxorfa.supabase.co';
 export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
 export const CALENDLY_EMBED_URL = 'https://calendly.com';
 
