@@ -52,13 +52,7 @@ const nextConfig = {
   experimental: {
     // Disable fetch caching across HMR refreshes so dev always shows fresh data
     serverComponentsHmrCache: false,
-    optimizePackageImports: [
-      '@gsap/react',
-      'gsap',
-      '@sentry/nextjs',
-      'yup',
-      'schema-dts',
-    ],
+    optimizePackageImports: ['@sentry/nextjs', 'yup', 'schema-dts'],
     // Disable in CI/test
     webpackBuildWorker: !isTest && !isCI,
   },

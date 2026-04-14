@@ -142,7 +142,7 @@ function getMasks(
   page: import('@playwright/test').Page,
   entry: (typeof pages)[number]
 ) {
-  const masks = [page.locator('[data-gsap]')];
+  const masks: import('@playwright/test').Locator[] = [];
   if (entry.maskHCaptcha) {
     masks.push(page.locator('.min-h-\\[78px\\]'));
   }
