@@ -5,6 +5,14 @@ jest.mock('node:fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('mock-font-data')),
 }));
 
+jest.mock('sharp', () => {
+  return jest.fn().mockReturnValue({
+    png: jest.fn().mockReturnValue({
+      toBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-png-data')),
+    }),
+  });
+});
+
 const mockReadFile = readFile as jest.MockedFunction<typeof readFile>;
 
 describe('og', () => {
@@ -68,10 +76,19 @@ describe('og', () => {
         expect.stringContaining('daniel-joffe-profile.webp')
       );
     });
+
+    it('caches the profile image on subsequent calls', async () => {
+      const callsBefore = mockReadFile.mock.calls.length;
+      const result = await getProfileImageBase64();
+
+      // Should reuse cached promise — no additional readFile call
+      expect(mockReadFile.mock.calls.length).toBe(callsBefore);
+      expect(result).toMatch(/^data:image\/png;base64,.+/);
+    });
   });
 
   describe('getCoverImageBase64', () => {
-    it('reads a local webp cover image and returns a base64 data URL', async () => {
+    it('reads a local cover image and returns a PNG base64 data URL', async () => {
       const imageData = Buffer.from([0x52, 0x49, 0x46, 0x46]);
       mockReadFile.mockResolvedValueOnce(imageData);
 
@@ -80,18 +97,9 @@ describe('og', () => {
       expect(mockReadFile).toHaveBeenCalledWith(
         expect.stringContaining('public/images/covers/test-post.webp')
       );
-      const expectedBase64 = imageData.toString('base64');
-      expect(result).toBe(`data:image/webp;base64,${expectedBase64}`);
-    });
-
-    it('returns image/jpeg content type for non-webp files', async () => {
-      const imageData = Buffer.from([0xff, 0xd8, 0xff]);
-      mockReadFile.mockResolvedValueOnce(imageData);
-
-      const result = await getCoverImageBase64('/images/covers/test-post.jpg');
-
-      const expectedBase64 = imageData.toString('base64');
-      expect(result).toBe(`data:image/jpeg;base64,${expectedBase64}`);
+      // sharp converts to PNG for Satori compatibility
+      const expectedBase64 = Buffer.from('mock-png-data').toString('base64');
+      expect(result).toBe(`data:image/png;base64,${expectedBase64}`);
     });
 
     it('returns null when readFile throws (file not found)', async () => {
