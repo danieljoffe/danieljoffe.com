@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import sharp from 'sharp';
 
 // Lazy-loaded font and image data, cached after first call.
 // Uses readFile + process.cwd() (the official Next.js pattern for OG fonts).
@@ -65,7 +64,12 @@ export async function getCoverImageBase64(src: string): Promise<string | null> {
   try {
     const filePath = join(process.cwd(), 'public', src.replace(/^\//, ''));
     const raw = await readFile(filePath);
-    // Satori's resvg renderer only supports PNG/JPEG/GIF — convert WebP to PNG
+    // Satori's resvg renderer only supports PNG/JPEG/GIF — convert WebP to PNG.
+    // sharp is a Next.js transitive dep with no direct type declarations in this project.
+
+    const sharp = require('sharp') as (input: Buffer) => {
+      png: () => { toBuffer: () => Promise<Buffer> };
+    };
     const png = await sharp(raw).png().toBuffer();
     return `data:image/png;base64,${png.toString('base64')}`;
   } catch {
