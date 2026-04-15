@@ -37,10 +37,11 @@ ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
 def sanitize_html(raw: str) -> str:
     if not raw:
         return ""
-    return bleach.clean(
+    cleaned: str = bleach.clean(
         raw,
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRS,
         protocols=ALLOWED_PROTOCOLS,
         strip=True,
     )
+    return cleaned
