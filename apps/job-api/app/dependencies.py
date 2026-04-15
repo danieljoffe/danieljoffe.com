@@ -15,9 +15,9 @@ def get_settings() -> Settings:
 
 
 def get_supabase(s: Settings = Depends(get_settings)) -> Client:
-    if not s.supabase_url or not s.supabase_service_key:
+    if not s.supabase_url or not s.supabase_service_role_key:
         raise HTTPException(status_code=503, detail="Supabase not configured")
-    return create_client(s.supabase_url, s.supabase_service_key)
+    return create_client(s.supabase_url, s.supabase_service_role_key)
 
 
 def _api_key_matches(presented: str | None, expected: str) -> bool:

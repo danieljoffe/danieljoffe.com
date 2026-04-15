@@ -17,10 +17,12 @@ router = APIRouter(
 async def list_jobs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    sort: str = Query("score", regex="^(score|created_at|company_name|title)$"),
-    order: str = Query("desc", regex="^(asc|desc)$"),
+    sort: str = Query("score", pattern="^(score|created_at|company_name|title)$"),
+    order: str = Query("desc", pattern="^(asc|desc)$"),
     min_score: int | None = Query(None, ge=0, le=100),
-    status: str | None = Query(None, regex="^(new|saved|applied|rejected|archived)$"),
+    status: str | None = Query(
+        None, pattern="^(new|saved|applied|rejected|archived)$"
+    ),
     company: str | None = Query(None, max_length=200),
     search: str | None = Query(None, max_length=200),
     supabase: Client = Depends(get_supabase),

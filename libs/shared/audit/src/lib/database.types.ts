@@ -71,6 +71,136 @@ export type Database = {
           },
         ];
       };
+      job_postings: {
+        Row: {
+          absolute_url: string | null;
+          company_name: string;
+          created_at: string | null;
+          department: string | null;
+          description_html: string | null;
+          first_seen_at: string | null;
+          greenhouse_id: number;
+          greenhouse_updated_at: string | null;
+          id: string;
+          location: string | null;
+          score: number;
+          score_breakdown: Json | null;
+          source_id: string;
+          status: string;
+          title: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          absolute_url?: string | null;
+          company_name: string;
+          created_at?: string | null;
+          department?: string | null;
+          description_html?: string | null;
+          first_seen_at?: string | null;
+          greenhouse_id: number;
+          greenhouse_updated_at?: string | null;
+          id?: string;
+          location?: string | null;
+          score?: number;
+          score_breakdown?: Json | null;
+          source_id: string;
+          status?: string;
+          title: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          absolute_url?: string | null;
+          company_name?: string;
+          created_at?: string | null;
+          department?: string | null;
+          description_html?: string | null;
+          first_seen_at?: string | null;
+          greenhouse_id?: number;
+          greenhouse_updated_at?: string | null;
+          id?: string;
+          location?: string | null;
+          score?: number;
+          score_breakdown?: Json | null;
+          source_id?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'job_postings_source_id_fkey';
+            columns: ['source_id'];
+            isOneToOne: false;
+            referencedRelation: 'job_sources';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      job_sources: {
+        Row: {
+          board_token: string;
+          company_name: string;
+          created_at: string | null;
+          enabled: boolean | null;
+          id: string;
+          job_count: number | null;
+          last_polled_at: string | null;
+        };
+        Insert: {
+          board_token: string;
+          company_name: string;
+          created_at?: string | null;
+          enabled?: boolean | null;
+          id?: string;
+          job_count?: number | null;
+          last_polled_at?: string | null;
+        };
+        Update: {
+          board_token?: string;
+          company_name?: string;
+          created_at?: string | null;
+          enabled?: boolean | null;
+          id?: string;
+          job_count?: number | null;
+          last_polled_at?: string | null;
+        };
+        Relationships: [];
+      };
+      job_status_log: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          new_status: string;
+          note: string | null;
+          old_status: string | null;
+          posting_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          new_status: string;
+          note?: string | null;
+          old_status?: string | null;
+          posting_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          new_status?: string;
+          note?: string | null;
+          old_status?: string | null;
+          posting_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'job_status_log_posting_id_fkey';
+            columns: ['posting_id'];
+            isOneToOne: false;
+            referencedRelation: 'job_postings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       leads: {
         Row: {
           company: string | null;
@@ -256,7 +386,15 @@ export type Database = {
           tbt_ms?: number | null;
           url?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'scans_paired_scan_id_fkey';
+            columns: ['paired_scan_id'];
+            isOneToOne: false;
+            referencedRelation: 'scans';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {
