@@ -96,9 +96,42 @@ jobs:
       nx-head: ${{ needs.preflight.outputs.nx-head }}
     secrets: inherit
 
+  ci-python:
+    needs: preflight
+    if: ${{ needs.preflight.outputs.docs-only != 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Run Python tasks
+        run: pnpm nx run-many -t lint test mypy --nxBail -p job-api
+
   ci-status:
     if: always()
-    needs: [preflight, fast, full]
+    needs: [preflight, fast, full, ci-python]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -107,10 +140,16 @@ jobs:
           echo "preflight: ${{ needs.preflight.result }}"
           echo "fast: ${{ needs.fast.result }}"
           echo "full: ${{ needs.full.result }}"
+          echo "ci-python: ${{ needs.ci-python.result }}"
 
           # fast is required when it runs (non-docs PRs and pushes)
           if [ "${{ needs.fast.result }}" = "failure" ] || [ "${{ needs.fast.result }}" = "cancelled" ]; then
             echo "CI fast failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.ci-python.result }}" = "failure" ] || [ "${{ needs.ci-python.result }}" = "cancelled" ]; then
+            echo "CI Python failed"
             exit 1
           fi
 

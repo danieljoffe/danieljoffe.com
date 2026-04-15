@@ -154,10 +154,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 <h2 className='doc-section'>When to Use</h2>
 
 <p className='doc-p'>
-  Use Toast for transient feedback that doesn't require user action: a form submitted
-  successfully, a network error occurred, or a background task completed. Toasts
-  disappear on their own; they should never carry critical information that the user
-  must act on.
+  Use Toast for transient feedback that doesn't require user action: a form
+  submitted successfully, a network error occurred, or a background task
+  completed. Toasts disappear on their own; they should never carry critical
+  information that the user must act on.
 </p>
 
 <table className='doc-table'>
@@ -195,20 +195,16 @@ import { Meta } from '@storybook/addon-docs/blocks';
 import { ToastProvider } from '@danieljoffe.com/shared-ui';
 
 function App({ children }) {
-  return (
-    <ToastProvider>
-      {children}
-    </ToastProvider>
-  );
+  return <ToastProvider>{children}</ToastProvider>;
 }
 ```
 
 <h2 className='doc-section'>Usage</h2>
 
 <p className='doc-p'>
-  Call <code>toast()</code> from the <code>useToast()</code> hook. Every toast needs
-  a <code>variant</code> and a <code>title</code>. The <code>description</code> and{' '}
-  <code>duration</code> are optional.
+  Call <code>toast()</code> from the <code>useToast()</code> hook. Every toast
+  needs a <code>variant</code> and a <code>title</code>. The{' '}
+  <code>description</code> and <code>duration</code> are optional.
 </p>
 
 ```jsx
@@ -246,23 +242,39 @@ function SaveButton() {
   </thead>
   <tbody>
     <tr>
-      <td><code>success</code></td>
-      <td><code>status</code></td>
+      <td>
+        <code>success</code>
+      </td>
+      <td>
+        <code>status</code>
+      </td>
       <td>Action completed successfully.</td>
     </tr>
     <tr>
-      <td><code>error</code></td>
-      <td><code>alert</code></td>
+      <td>
+        <code>error</code>
+      </td>
+      <td>
+        <code>alert</code>
+      </td>
       <td>An operation failed. Keep the message actionable.</td>
     </tr>
     <tr>
-      <td><code>warning</code></td>
-      <td><code>alert</code></td>
+      <td>
+        <code>warning</code>
+      </td>
+      <td>
+        <code>alert</code>
+      </td>
       <td>Something needs attention but isn't blocking.</td>
     </tr>
     <tr>
-      <td><code>info</code></td>
-      <td><code>status</code></td>
+      <td>
+        <code>info</code>
+      </td>
+      <td>
+        <code>status</code>
+      </td>
       <td>Neutral informational feedback.</td>
     </tr>
   </tbody>
@@ -281,27 +293,47 @@ function SaveButton() {
   </thead>
   <tbody>
     <tr>
-      <td><code>variant</code></td>
-      <td><code>'info' | 'success' | 'warning' | 'error'</code></td>
+      <td>
+        <code>variant</code>
+      </td>
+      <td>
+        <code>'info' | 'success' | 'warning' | 'error'</code>
+      </td>
       <td>—</td>
       <td>Determines icon, color, and ARIA role.</td>
     </tr>
     <tr>
-      <td><code>title</code></td>
-      <td><code>string</code></td>
+      <td>
+        <code>title</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
       <td>—</td>
       <td>Primary message. Keep it short (under 60 characters).</td>
     </tr>
     <tr>
-      <td><code>description</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
+      <td>
+        <code>description</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
       <td>Secondary detail. Use for actionable guidance on errors.</td>
     </tr>
     <tr>
-      <td><code>duration</code></td>
-      <td><code>number</code></td>
-      <td><code>4000</code></td>
+      <td>
+        <code>duration</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>4000</code>
+      </td>
       <td>Auto-dismiss time in milliseconds.</td>
     </tr>
   </tbody>
@@ -312,47 +344,49 @@ function SaveButton() {
 <h3 className='doc-sub'>Auto-Dismiss</h3>
 
 <p className='doc-p'>
-  Toasts dismiss after 4 seconds by default. Override with the <code>duration</code>{' '}
-  parameter. The timer pauses when the user hovers over or focuses the toast, then
-  resumes with the remaining time.
+  Toasts dismiss after 4 seconds by default. Override with the{' '}
+  <code>duration</code> parameter. The timer pauses when the user hovers over or
+  focuses the toast, then resumes with the remaining time.
 </p>
 
 <h3 className='doc-sub'>Stacking</h3>
 
 <p className='doc-p'>
-  Multiple toasts stack vertically in the bottom-right corner. Newest toasts appear
-  at the bottom. Each has its own dismiss timer.
+  Multiple toasts stack vertically in the bottom-right corner. Newest toasts
+  appear at the bottom. Each has its own dismiss timer.
 </p>
 
 <h3 className='doc-sub'>Manual Dismiss</h3>
 
 <p className='doc-p'>
-  Every toast has a close button labeled "Dismiss notification" for screen readers.
-  Users can dismiss toasts before the timer expires.
+  Every toast has a close button labeled "Dismiss notification" for screen
+  readers. Users can dismiss toasts before the timer expires.
 </p>
 
 <h2 className='doc-section'>Accessibility</h2>
 
 <p className='doc-p'>
   The toast container uses <code>aria-live="polite"</code> with{' '}
-  <code>aria-atomic="true"</code> so screen readers announce new toasts. Error and
-  warning toasts use <code>role="alert"</code> for immediate announcement; success
-  and info toasts use <code>role="status"</code> which announces at the next pause.
+  <code>aria-atomic="true"</code> so screen readers announce new toasts. Error
+  and warning toasts use <code>role="alert"</code> for immediate announcement;
+  success and info toasts use <code>role="status"</code> which announces at the
+  next pause.
 </p>
 
 <div className='doc-do-dont'>
   <div className='doc-do'>
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
-      Write toast titles that stand alone. "Changes saved" is better than "Success!"
-      because it tells the user what happened without needing the description.
+      Write toast titles that stand alone. "Changes saved" is better than
+      "Success!" because it tells the user what happened without needing the
+      description.
     </p>
   </div>
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
-      Don't use toasts for information that requires user action. If the user needs
-      to fix something, use inline validation or a modal.
+      Don't use toasts for information that requires user action. If the user
+      needs to fix something, use inline validation or a modal.
     </p>
   </div>
 </div>
@@ -361,15 +395,15 @@ function SaveButton() {
   <div className='doc-do'>
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
-      Increase <code>duration</code> for error toasts with longer descriptions so
-      users have time to read the guidance before the toast disappears.
+      Increase <code>duration</code> for error toasts with longer descriptions
+      so users have time to read the guidance before the toast disappears.
     </p>
   </div>
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
-      Don't fire multiple toasts for a single action. One save should produce one
-      toast, not a success toast followed by an info toast.
+      Don't fire multiple toasts for a single action. One save should produce
+      one toast, not a success toast followed by an info toast.
     </p>
   </div>
 </div>

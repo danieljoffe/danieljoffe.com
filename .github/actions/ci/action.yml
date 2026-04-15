@@ -50,7 +50,7 @@ runs:
 
     - name: Run affected tasks
       shell: bash
-      run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail
+      run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail --exclude=job-api
       env:
         NX_CLOUD_ACCESS_TOKEN: ${{ inputs.nx-cloud-token }}
         NX_CLOUD_ID: ${{ inputs.nx-cloud-id }}

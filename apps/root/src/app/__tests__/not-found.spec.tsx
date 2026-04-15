@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import NotFound from '../not-found';
+import NotFound from '../(public)/not-found';
 
 jest.mock('@/utils/constants', () => ({
   HOME_LINK: { href: '/' },

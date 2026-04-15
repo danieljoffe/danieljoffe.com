@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
 import {
   allowedOrigins,
   allowedImageOrigins,
@@ -9,7 +10,41 @@ import {
 } from '@/utils/constants';
 import { isProduction } from '@/utils/helpers';
 
-export function proxy(request: NextRequest) {
+const ADMIN_SESSION_COOKIE = 'admin_session';
+
+function getAdminSecret(): Uint8Array | null {
+  const secret = process.env['ADMIN_SESSION_SECRET'];
+  if (!secret || secret.length < 32) return null;
+  return new TextEncoder().encode(secret);
+}
+
+async function isValidAdminSession(
+  token: string | undefined
+): Promise<boolean> {
+  if (!token) return false;
+  const secret = getAdminSecret();
+  if (!secret) return false;
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    return payload.sub === 'tools-admin';
+  } catch {
+    return false;
+  }
+}
+
+export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/tools/admin')) {
+    const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    if (!(await isValidAdminSession(token))) {
+      const loginUrl = new URL('/tools/login', request.url);
+      loginUrl.searchParams.set(
+        'next',
+        request.nextUrl.pathname + request.nextUrl.search
+      );
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
     default-src 'self';
@@ -30,7 +65,6 @@ export function proxy(request: NextRequest) {
     connect-src 'self' ${allowedOrigins.join(' ')};
     img-src 'self' blob: data: ${allowedImageOrigins.join(' ')};
 `;
-  // Replace newline characters and spaces
   const contentSecurityPolicyHeaderValue = cspHeader
     .replace(/\s{2,}/g, ' ')
     .trim();
@@ -58,13 +92,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     {
       source:
         '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',

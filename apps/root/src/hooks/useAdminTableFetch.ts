@@ -4,22 +4,22 @@ import { useTableSort } from './useTableSort';
 interface UseAdminTableFetchOptions<S extends string> {
   /** API endpoint path (e.g. '/api/audit/admin/scans') */
   endpoint: string;
-  /** Admin password for auth header */
-  password: string;
   /** Default sort column */
   defaultSort: S;
   /** Number of items per page */
   pageSize?: number;
   /** Key in the API response that holds the data array (e.g. 'scans', 'leads') */
   dataKey: string;
+  /** Additional query params to include (e.g. filters) */
+  extraParams?: Record<string, string>;
 }
 
 export function useAdminTableFetch<T, S extends string>({
   endpoint,
-  password,
   defaultSort,
   pageSize = 20,
   dataKey,
+  extraParams,
 }: UseAdminTableFetchOptions<S>) {
   const [data, setData] = useState<T[]>([]);
   const [total, setTotal] = useState(0);
@@ -39,10 +39,9 @@ export function useAdminTableFetch<T, S extends string>({
         pageSize: String(pageSize),
         sort,
         order,
+        ...extraParams,
       });
-      const res = await fetch(`${endpoint}?${params}`, {
-        headers: { 'x-admin-password': password },
-      });
+      const res = await fetch(`${endpoint}?${params}`);
       if (res.ok) {
         const json = await res.json();
         setData(json[dataKey]);
@@ -51,7 +50,7 @@ export function useAdminTableFetch<T, S extends string>({
     } finally {
       setLoading(false);
     }
-  }, [endpoint, password, page, pageSize, sort, order, dataKey]);
+  }, [endpoint, page, pageSize, sort, order, dataKey, extraParams]);
 
   useEffect(() => {
     fetchData();

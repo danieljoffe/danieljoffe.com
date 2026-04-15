@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
+import { readAdminSession } from '@/lib/adminSession';
 import { GET } from './route';
 
 const mockSelect = jest.fn();
@@ -15,18 +16,20 @@ jest.mock('@/lib/errorTracking', () => ({
   captureApiError: jest.fn(),
 }));
 
-function createRequest(
-  params: Record<string, string> = {},
-  password = 'test-admin-pass'
-) {
+jest.mock('@/lib/adminSession', () => ({
+  readAdminSession: jest.fn(),
+}));
+
+const mockedReadAdminSession = readAdminSession as jest.MockedFunction<
+  typeof readAdminSession
+>;
+
+function createRequest(params: Record<string, string> = {}) {
   const url = new URL('http://localhost/api/audit/admin/leads');
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
-  return new NextRequest(url, {
-    method: 'GET',
-    headers: { 'x-admin-password': password },
-  });
+  return new NextRequest(url, { method: 'GET' });
 }
 
 const mockLeads = [
@@ -45,16 +48,12 @@ const mockLeads = [
 describe('GET /api/audit/admin/leads', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env['AUDIT_ADMIN_PASSWORD'] = 'test-admin-pass';
+    mockedReadAdminSession.mockResolvedValue({ sub: 'tools-admin' });
   });
 
-  afterEach(() => {
-    delete process.env['AUDIT_ADMIN_PASSWORD'];
-  });
-
-  it('returns 401 without password', async () => {
-    const req = new NextRequest('http://localhost/api/audit/admin/leads');
-    const res = await GET(req);
+  it('returns 401 without a valid session', async () => {
+    mockedReadAdminSession.mockResolvedValueOnce(null);
+    const res = await GET(createRequest());
     expect(res.status).toBe(401);
   });
 

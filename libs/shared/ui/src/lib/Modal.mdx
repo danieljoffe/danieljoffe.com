@@ -160,16 +160,16 @@ import { Button } from './Button';
 
 <h1 className='doc-title'>Modal</h1>
 <p className='doc-lead'>
-  A dialog overlay for focused tasks. Blocks interaction with the page behind it,
-  traps focus, and returns it to the trigger on close.
+  A dialog overlay for focused tasks. Blocks interaction with the page behind
+  it, traps focus, and returns it to the trigger on close.
 </p>
 
 <h2 className='doc-section'>When to Use</h2>
 
 <p className='doc-p'>
-  Use Modal when the user needs to complete a task or acknowledge information before
-  continuing. Modals interrupt flow by design; only use them when that interruption
-  is justified.
+  Use Modal when the user needs to complete a task or acknowledge information
+  before continuing. Modals interrupt flow by design; only use them when that
+  interruption is justified.
 </p>
 
 <table className='doc-table'>
@@ -199,8 +199,9 @@ import { Button } from './Button';
 
 <p className='doc-p'>
   Choose a size based on content width, not importance. <code>sm</code> for
-  confirmations, <code>md</code> for short forms, <code>lg</code> for content-heavy
-  dialogs, <code>xl</code> for data tables or multi-column layouts.
+  confirmations, <code>md</code> for short forms, <code>lg</code> for
+  content-heavy dialogs, <code>xl</code> for data tables or multi-column
+  layouts.
 </p>
 
 <table className='doc-table'>
@@ -213,22 +214,30 @@ import { Button } from './Button';
   </thead>
   <tbody>
     <tr>
-      <td><code>sm</code></td>
+      <td>
+        <code>sm</code>
+      </td>
       <td>28rem (448px)</td>
       <td>Confirmation dialogs, simple alerts</td>
     </tr>
     <tr>
-      <td><code>md</code></td>
+      <td>
+        <code>md</code>
+      </td>
       <td>32rem (512px)</td>
       <td>Short forms, detail previews (default)</td>
     </tr>
     <tr>
-      <td><code>lg</code></td>
+      <td>
+        <code>lg</code>
+      </td>
       <td>42rem (672px)</td>
       <td>Multi-field forms, content previews</td>
     </tr>
     <tr>
-      <td><code>xl</code></td>
+      <td>
+        <code>xl</code>
+      </td>
       <td>56rem (896px)</td>
       <td>Data tables, multi-column layouts</td>
     </tr>
@@ -248,51 +257,97 @@ import { Button } from './Button';
   </thead>
   <tbody>
     <tr>
-      <td><code>isOpen</code></td>
-      <td><code>boolean</code></td>
+      <td>
+        <code>isOpen</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
       <td>—</td>
       <td>Controls visibility. Modal is always controlled.</td>
     </tr>
     <tr>
-      <td><code>onClose</code></td>
-      <td><code>() =&gt; void</code></td>
+      <td>
+        <code>onClose</code>
+      </td>
+      <td>
+        <code>() =&gt; void</code>
+      </td>
       <td>—</td>
       <td>Called on Escape, backdrop click, or close button.</td>
     </tr>
     <tr>
-      <td><code>title</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
-      <td>Rendered as a heading. Sets <code>aria-labelledby</code> automatically.</td>
+      <td>
+        <code>title</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Rendered as a heading. Sets <code>aria-labelledby</code> automatically.
+      </td>
     </tr>
     <tr>
-      <td><code>children</code></td>
-      <td><code>ReactNode</code></td>
+      <td>
+        <code>children</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
       <td>—</td>
       <td>Modal body content.</td>
     </tr>
     <tr>
-      <td><code>size</code></td>
-      <td><code>'sm' | 'md' | 'lg' | 'xl'</code></td>
-      <td><code>'md'</code></td>
+      <td>
+        <code>size</code>
+      </td>
+      <td>
+        <code>'sm' | 'md' | 'lg' | 'xl'</code>
+      </td>
+      <td>
+        <code>'md'</code>
+      </td>
       <td>Controls maximum width of the dialog.</td>
     </tr>
     <tr>
-      <td><code>footer</code></td>
-      <td><code>ReactNode</code></td>
-      <td><code>undefined</code></td>
+      <td>
+        <code>footer</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
       <td>Rendered in a right-aligned footer bar with a top border.</td>
     </tr>
     <tr>
-      <td><code>closeOnBackdropClick</code></td>
-      <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>Set to <code>false</code> for forms with unsaved state.</td>
+      <td>
+        <code>closeOnBackdropClick</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>
+        Set to <code>false</code> for forms with unsaved state.
+      </td>
     </tr>
     <tr>
-      <td><code>className</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
       <td>Additional classes on the dialog container.</td>
     </tr>
   </tbody>
@@ -303,22 +358,22 @@ import { Button } from './Button';
 <h3 className='doc-sub'>Confirmation Dialog</h3>
 
 <p className='doc-p'>
-  Use <code>size="sm"</code> with a footer containing a primary destructive action
-  and a secondary cancel. Keep the body to one or two sentences.
+  Use <code>size="sm"</code> with a footer containing a primary destructive
+  action and a secondary cancel. Keep the body to one or two sentences.
 </p>
 
 ```jsx
 <Modal
   isOpen={open}
   onClose={() => setOpen(false)}
-  title="Delete project?"
-  size="sm"
+  title='Delete project?'
+  size='sm'
   footer={
     <>
-      <Button variant="secondary" onClick={() => setOpen(false)}>
+      <Button variant='secondary' onClick={() => setOpen(false)}>
         Cancel
       </Button>
-      <Button variant="error" onClick={handleDelete}>
+      <Button variant='error' onClick={handleDelete}>
         Delete
       </Button>
     </>
@@ -331,16 +386,17 @@ import { Button } from './Button';
 <h3 className='doc-sub'>Form Modal</h3>
 
 <p className='doc-p'>
-  Disable backdrop click with <code>closeOnBackdropClick=&#123;false&#125;</code> to
-  prevent accidental dismissal when users have entered data.
+  Disable backdrop click with{' '}
+  <code>closeOnBackdropClick=&#123;false&#125;</code> to prevent accidental
+  dismissal when users have entered data.
 </p>
 
 <h2 className='doc-section'>Accessibility</h2>
 
 <p className='doc-p'>
   Modal sets <code>role="dialog"</code> and <code>aria-modal="true"</code>
-  automatically. When <code>title</code> is provided, it generates a unique ID and
-  wires <code>aria-labelledby</code>. Without a title, it falls back to{' '}
+  automatically. When <code>title</code> is provided, it generates a unique ID
+  and wires <code>aria-labelledby</code>. Without a title, it falls back to{' '}
   <code>aria-label="Dialog"</code>.
 </p>
 
@@ -363,16 +419,25 @@ import { Button } from './Button';
   </thead>
   <tbody>
     <tr>
-      <td><span className='doc-kbd'>Esc</span></td>
+      <td>
+        <span className='doc-kbd'>Esc</span>
+      </td>
       <td>Closes the modal and returns focus to the trigger</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Tab</span></td>
+      <td>
+        <span className='doc-kbd'>Tab</span>
+      </td>
       <td>Moves focus to the next focusable element (trapped within dialog)</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Shift</span> + <span className='doc-kbd'>Tab</span></td>
-      <td>Moves focus to the previous focusable element (trapped within dialog)</td>
+      <td>
+        <span className='doc-kbd'>Shift</span> +{' '}
+        <span className='doc-kbd'>Tab</span>
+      </td>
+      <td>
+        Moves focus to the previous focusable element (trapped within dialog)
+      </td>
     </tr>
   </tbody>
 </table>
@@ -389,8 +454,9 @@ import { Button } from './Button';
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
-      Don't nest modals. Don't use modals for content that should live on its own
-      page. Don't disable Escape key handling; users expect it to close the dialog.
+      Don't nest modals. Don't use modals for content that should live on its
+      own page. Don't disable Escape key handling; users expect it to close the
+      dialog.
     </p>
   </div>
 </div>
@@ -406,8 +472,8 @@ import { Button } from './Button';
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
-      Don't put long scrollable content in a modal. If the content needs scrolling,
-      consider a dedicated page or a side panel instead.
+      Don't put long scrollable content in a modal. If the content needs
+      scrolling, consider a dedicated page or a side panel instead.
     </p>
   </div>
 </div>

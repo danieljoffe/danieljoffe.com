@@ -1,0 +1,42 @@
+[project]
+name = "job-api"
+version = "0.1.0"
+description = "Job application pipeline API — polls Greenhouse boards, scores postings, serves results"
+authors = [{ name = "Daniel Joffe" }]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.34",
+  "httpx>=0.28",
+  "supabase>=2.13",
+  "pydantic-settings>=2.7",
+  "beautifulsoup4>=4.13",
+  "bleach>=6.2",
+  "pyjwt>=2.10",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.25",
+  "ruff>=0.11",
+  "mypy>=1.15",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
