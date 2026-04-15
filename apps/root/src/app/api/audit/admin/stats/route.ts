@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { captureApiError } from '@/lib/errorTracking';
 import { verifyAdminAuth } from '../auth';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const authError = verifyAdminAuth(request);
+    const authError = await verifyAdminAuth();
     if (authError) return authError;
 
     const supabase = createServerSupabaseClient();

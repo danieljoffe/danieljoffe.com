@@ -3,7 +3,7 @@ import { verifyJobsAdmin, proxyToFastAPI, IS_MOCK_MODE } from './proxy';
 import { queryMockPostings } from './mockData';
 
 export async function GET(request: NextRequest) {
-  if (!verifyJobsAdmin(request)) {
+  if (!(await verifyJobsAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

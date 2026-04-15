@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
-  if (!isCron && !verifyJobsAdmin(request)) {
+  if (!isCron && !(await verifyJobsAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

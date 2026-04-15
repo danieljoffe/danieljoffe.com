@@ -15,7 +15,6 @@ interface JobDetailProps {
     score_breakdown: Record<string, number> | null;
     status: string;
   };
-  password: string;
 }
 
 const STATUS_OPTIONS = [
@@ -26,7 +25,7 @@ const STATUS_OPTIONS = [
   'archived',
 ] as const;
 
-export default function JobDetail({ posting, password }: JobDetailProps) {
+export default function JobDetail({ posting }: JobDetailProps) {
   const [status, setStatus] = useState(posting.status);
   const [updating, setUpdating] = useState(false);
 
@@ -35,10 +34,7 @@ export default function JobDetail({ posting, password }: JobDetailProps) {
     try {
       const res = await fetch(`/api/jobs/${posting.id}/status`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-password': password,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) setStatus(newStatus);

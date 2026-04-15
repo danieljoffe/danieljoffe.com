@@ -64,6 +64,7 @@
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "isomorphic-dompurify": "2.26.0",
+    "jose": "^6.2.2",
     "lighthouse": "^13.1.0",
     "lucide-react": "0.577.0",
     "minisearch": "^7.2.0",

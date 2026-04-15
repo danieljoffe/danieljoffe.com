@@ -133,5 +133,6 @@
   },
   "sync": {
     "applyChanges": true
-  }
+  },
+  "analytics": false
 }

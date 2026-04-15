@@ -6,7 +6,6 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 
 interface ScanButtonProps {
-  password: string;
   onComplete: () => void;
 }
 
@@ -17,7 +16,7 @@ interface PollResult {
   errors: string[];
 }
 
-export default function ScanButton({ password, onComplete }: ScanButtonProps) {
+export default function ScanButton({ onComplete }: ScanButtonProps) {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<PollResult | null>(null);
 
@@ -27,7 +26,6 @@ export default function ScanButton({ password, onComplete }: ScanButtonProps) {
     try {
       const res = await fetch('/api/jobs/poll', {
         method: 'POST',
-        headers: { 'x-admin-password': password },
       });
       if (res.ok) {
         const data = await res.json();

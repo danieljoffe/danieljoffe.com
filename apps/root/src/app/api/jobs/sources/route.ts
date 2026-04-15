@@ -2,8 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { verifyJobsAdmin, proxyToFastAPI, IS_MOCK_MODE } from '../proxy';
 import { MOCK_SOURCES } from '../mockData';
 
-export async function GET(request: NextRequest) {
-  if (!verifyJobsAdmin(request)) {
+export async function GET() {
+  if (!(await verifyJobsAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!verifyJobsAdmin(request)) {
+  if (!(await verifyJobsAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

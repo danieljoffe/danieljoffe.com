@@ -15,7 +15,7 @@ const MAX_PAGE_SIZE = 100;
 
 export async function GET(request: NextRequest) {
   try {
-    const authError = verifyAdminAuth(request);
+    const authError = await verifyAdminAuth();
     if (authError) return authError;
 
     const supabase = createServerSupabaseClient();

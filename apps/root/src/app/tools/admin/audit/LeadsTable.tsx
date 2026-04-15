@@ -19,13 +19,9 @@ interface AdminLead {
   email_sequence_step: number;
 }
 
-interface LeadsTableProps {
-  password: string;
-}
-
 type SortColumn = 'created_at' | 'email' | 'source' | 'email_sequence_step';
 
-export default function LeadsTable({ password }: LeadsTableProps) {
+export default function LeadsTable() {
   const {
     data: leads,
     loading,
@@ -36,7 +32,6 @@ export default function LeadsTable({ password }: LeadsTableProps) {
     sortIndicator,
   } = useAdminTableFetch<AdminLead, SortColumn>({
     endpoint: '/api/audit/admin/leads',
-    password,
     defaultSort: 'created_at',
     dataKey: 'leads',
   });

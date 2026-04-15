@@ -83,7 +83,7 @@ describe('ScansTable', () => {
         Promise.resolve({ scans: mockScans, total: 5, page: 1, pageSize: 20 }),
     });
 
-    render(<ScansTable password='test' />);
+    render(<ScansTable />);
 
     await waitFor(() => {
       expect(screen.getByText('https://example.com')).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe('ScansTable', () => {
         }),
     });
 
-    render(<ScansTable password='test' />);
+    render(<ScansTable />);
 
     await waitFor(() => {
       expect(screen.getByText('No scans yet')).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('ScansTable', () => {
         }),
     });
 
-    render(<ScansTable password='test' />);
+    render(<ScansTable />);
 
     await waitFor(() => {
       expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
@@ -168,7 +168,7 @@ describe('ScansTable', () => {
     const mockOpen = jest.fn();
     window.open = mockOpen;
 
-    render(<ScansTable password='test' />);
+    render(<ScansTable />);
 
     await waitFor(() => {
       expect(screen.getByText('https://example.com')).toBeInTheDocument();

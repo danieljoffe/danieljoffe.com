@@ -24,11 +24,7 @@ interface Source {
   job_count: number;
 }
 
-interface SourcesPanelProps {
-  password: string;
-}
-
-export default function SourcesPanel({ password }: SourcesPanelProps) {
+export default function SourcesPanel() {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [newToken, setNewToken] = useState('');
@@ -39,10 +35,7 @@ export default function SourcesPanel({ password }: SourcesPanelProps) {
     setLoading(true);
     try {
       const res = await fetch('/api/jobs/sources', {
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-password': password,
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
       if (res.ok) {
         const data = await res.json();
@@ -51,16 +44,13 @@ export default function SourcesPanel({ password }: SourcesPanelProps) {
     } finally {
       setLoading(false);
     }
-  }, [password]);
+  }, []);
 
   useEffect(() => {
     fetchSources();
   }, [fetchSources]);
 
-  const authHeaders = {
-    'Content-Type': 'application/json',
-    'x-admin-password': password,
-  };
+  const authHeaders = { 'Content-Type': 'application/json' };
 
   async function handleAdd() {
     if (!newToken || !newName) return;
