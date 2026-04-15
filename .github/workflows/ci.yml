@@ -107,12 +107,14 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v5
+
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
-          cache: yarn
+          cache: pnpm
 
-      - run: yarn install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
       - uses: actions/setup-python@v5
         with:
@@ -125,7 +127,7 @@ jobs:
         run: uv sync --frozen
 
       - name: Run Python tasks
-        run: yarn nx run-many -t lint test mypy --nxBail -p job-api
+        run: pnpm nx run-many -t lint test mypy --nxBail -p job-api
 
   ci-status:
     if: always()
