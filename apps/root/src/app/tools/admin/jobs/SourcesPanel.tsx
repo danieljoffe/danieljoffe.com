@@ -12,6 +12,7 @@ import {
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
+import { useToast } from '@/state/Toast/ToastProvider';
 
 const inputStyles = cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER);
 
@@ -30,6 +31,7 @@ export default function SourcesPanel() {
   const [newToken, setNewToken] = useState('');
   const [newName, setNewName] = useState('');
   const [seeding, setSeeding] = useState(false);
+  const { toast } = useToast();
 
   const fetchSources = useCallback(async () => {
     setLoading(true);
@@ -40,61 +42,89 @@ export default function SourcesPanel() {
       if (res.ok) {
         const data = await res.json();
         setSources(data.sources ?? []);
+      } else {
+        toast({ variant: 'error', title: 'Failed to load sources' });
       }
+    } catch {
+      toast({ variant: 'error', title: 'Failed to load sources' });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchSources();
   }, [fetchSources]);
 
-  const authHeaders = { 'Content-Type': 'application/json' };
+  const runAction = useCallback(
+    async (
+      body: Record<string, string>,
+      successTitle: string
+    ): Promise<boolean> => {
+      try {
+        const res = await fetch('/api/jobs/sources', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          toast({
+            variant: 'error',
+            title: 'Action failed',
+            description:
+              data?.error ?? `Request failed with status ${res.status}`,
+          });
+          return false;
+        }
+        toast({ variant: 'success', title: successTitle });
+        return true;
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title: 'Action failed',
+          description: err instanceof Error ? err.message : 'Network error',
+        });
+        return false;
+      }
+    },
+    [toast]
+  );
 
   async function handleAdd() {
     if (!newToken || !newName) return;
-    await fetch('/api/jobs/sources', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        action: 'add',
-        board_token: newToken,
-        company_name: newName,
-      }),
-    });
-    setNewToken('');
-    setNewName('');
-    fetchSources();
+    const ok = await runAction(
+      { action: 'add', board_token: newToken, company_name: newName },
+      `Added ${newName}`
+    );
+    if (ok) {
+      setNewToken('');
+      setNewName('');
+      fetchSources();
+    }
   }
 
-  async function handleToggle(boardToken: string) {
-    await fetch('/api/jobs/sources', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({ action: 'toggle', board_token: boardToken }),
-    });
-    fetchSources();
+  async function handleToggle(boardToken: string, enabled: boolean) {
+    const ok = await runAction(
+      { action: 'toggle', board_token: boardToken },
+      enabled ? 'Source disabled' : 'Source enabled'
+    );
+    if (ok) fetchSources();
   }
 
   async function handleRemove(boardToken: string) {
-    await fetch('/api/jobs/sources', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({ action: 'remove', board_token: boardToken }),
-    });
-    fetchSources();
+    const ok = await runAction(
+      { action: 'remove', board_token: boardToken },
+      'Source removed'
+    );
+    if (ok) fetchSources();
   }
 
   async function handleSeed() {
     setSeeding(true);
     try {
-      await fetch('/api/jobs/sources', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({ action: 'seed' }),
-      });
-      fetchSources();
+      const ok = await runAction({ action: 'seed' }, 'Seeded defaults');
+      if (ok) fetchSources();
     } finally {
       setSeeding(false);
     }
@@ -222,15 +252,17 @@ export default function SourcesPanel() {
                   <div className='flex gap-2'>
                     <Button
                       name={`toggle-${source.board_token}`}
-                      variant='outline'
+                      variant={source.enabled ? 'warning' : 'primary'}
                       size='sm'
-                      onClick={() => handleToggle(source.board_token)}
+                      onClick={() =>
+                        handleToggle(source.board_token, source.enabled)
+                      }
                     >
                       {source.enabled ? 'Disable' : 'Enable'}
                     </Button>
                     <Button
                       name={`remove-${source.board_token}`}
-                      variant='outline'
+                      variant='error'
                       size='sm'
                       onClick={() => handleRemove(source.board_token)}
                     >
