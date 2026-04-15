@@ -1,6 +1,9 @@
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+BOARD_TOKEN_PATTERN = r"^[a-z0-9][a-z0-9-]{1,80}$"
 
 
 class ScoreBreakdown(BaseModel):
@@ -51,14 +54,14 @@ class PollResult(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    status: str
-    note: str | None = None
+    status: Literal["new", "saved", "applied", "rejected", "archived"]
+    note: str | None = Field(default=None, max_length=1000)
 
 
 class SourceAction(BaseModel):
-    action: str  # "add", "remove", "toggle"
-    board_token: str
-    company_name: str | None = None
+    action: Literal["add", "remove", "toggle"]
+    board_token: str = Field(pattern=BOARD_TOKEN_PATTERN, max_length=80)
+    company_name: str | None = Field(default=None, max_length=200)
 
 
 class PaginatedResponse(BaseModel):

@@ -7,8 +7,6 @@ from supabase import Client
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import StatusUpdate
 
-VALID_STATUSES = {"new", "saved", "applied", "rejected", "archived"}
-
 router = APIRouter(
     prefix="/jobs",
     tags=["status"],
@@ -22,12 +20,6 @@ async def update_status(
     body: StatusUpdate,
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
-    if body.status not in VALID_STATUSES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid status. Must be one of: {VALID_STATUSES}",
-        )
-
     current = (
         supabase.table("job_postings")
         .select("status")

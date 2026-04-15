@@ -1,3 +1,5 @@
+import hmac
+
 import jwt
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
@@ -18,13 +20,19 @@ def get_supabase(s: Settings = Depends(get_settings)) -> Client:
     return create_client(s.supabase_url, s.supabase_service_key)
 
 
+def _api_key_matches(presented: str | None, expected: str) -> bool:
+    if not expected or not presented:
+        return False
+    return hmac.compare_digest(presented, expected)
+
+
 def verify_api_key(
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
-    if not s.job_api_key or not key or key != s.job_api_key:
+    if not _api_key_matches(key, s.job_api_key):
         raise HTTPException(status_code=401, detail="Invalid API key")
-    return key
+    return key or ""
 
 
 def _extract_bearer_token(request: Request) -> str | None:
@@ -61,7 +69,7 @@ def verify_api_key_or_session(
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
-    if s.job_api_key and key == s.job_api_key:
+    if _api_key_matches(key, s.job_api_key):
         return "api-key"
     if s.admin_session_secret and len(s.admin_session_secret) >= 32:
         token = _extract_bearer_token(request)

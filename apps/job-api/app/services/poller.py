@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import UTC, datetime
 from typing import Any, cast
 
@@ -8,7 +9,10 @@ from app.config import settings
 from app.models.schemas import PollResult
 from app.seed.keyword_config import keyword_config
 from app.services.greenhouse import fetch_board_jobs
+from app.services.sanitize import sanitize_html
 from app.services.scoring import score_job
+
+logger = logging.getLogger(__name__)
 
 
 def _title_matches_any_role(title: str) -> bool:
@@ -50,7 +54,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
                     "company_name": company_name,
                     "location": job.location_name,
                     "department": job.department,
-                    "description_html": job.content,
+                    "description_html": sanitize_html(job.content),
                     "absolute_url": job.absolute_url,
                     "score": score_result.score,
                     "score_breakdown": score_result.breakdown.model_dump(),
@@ -79,7 +83,9 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 
             await asyncio.sleep(settings.greenhouse_delay_ms / 1000)
 
-        except Exception as e:
-            result.errors.append(f"{source.get('company_name', '?')}: {e!s}")
+        except Exception:
+            company = source.get("company_name", "?")
+            logger.exception("Poll failed for %s", company)
+            result.errors.append(f"{company}: poll failed")
 
     return result

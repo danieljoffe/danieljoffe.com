@@ -12,6 +12,7 @@ dependencies = [
   "supabase>=2.13",
   "pydantic-settings>=2.7",
   "beautifulsoup4>=4.13",
+  "bleach>=6.2",
   "pyjwt>=2.10",
 ]
 

@@ -1,11 +1,18 @@
 from fastapi import FastAPI
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from app.config import settings
 from app.routers import jobs, poll, sources, status
 
 app = FastAPI(
     title="Job Pipeline API",
     description="Polls Greenhouse job boards, scores postings, serves results",
     version="0.1.0",
+)
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.allowed_hosts_list or ["*"],
 )
 
 app.include_router(jobs.router)
