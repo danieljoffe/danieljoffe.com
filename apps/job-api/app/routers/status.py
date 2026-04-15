@@ -4,12 +4,16 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key
+from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import StatusUpdate
 
 VALID_STATUSES = {"new", "saved", "applied", "rejected", "archived"}
 
-router = APIRouter(prefix="/jobs", tags=["status"], dependencies=[Depends(verify_api_key)])
+router = APIRouter(
+    prefix="/jobs",
+    tags=["status"],
+    dependencies=[Depends(verify_api_key_or_session)],
+)
 
 
 @router.post("/{posting_id}/status")

@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import { NextRequest } from 'next/server';
+import { readAdminSession } from '@/lib/adminSession';
 import { GET } from './route';
 
 const mockSelect = jest.fn();
@@ -15,44 +16,38 @@ jest.mock('@/lib/errorTracking', () => ({
   captureApiError: jest.fn(),
 }));
 
-function createRequest(password = 'test-admin-pass') {
+jest.mock('@/lib/adminSession', () => ({
+  readAdminSession: jest.fn(),
+}));
+
+const mockedReadAdminSession = readAdminSession as jest.MockedFunction<
+  typeof readAdminSession
+>;
+
+function createRequest() {
   return new NextRequest('http://localhost/api/audit/admin/stats', {
     method: 'GET',
-    headers: { 'x-admin-password': password },
   });
 }
 
 describe('GET /api/audit/admin/stats', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env['AUDIT_ADMIN_PASSWORD'] = 'test-admin-pass';
+    mockedReadAdminSession.mockResolvedValue({ sub: 'tools-admin' });
   });
 
-  afterEach(() => {
-    delete process.env['AUDIT_ADMIN_PASSWORD'];
-  });
-
-  it('returns 401 without password', async () => {
-    const req = new NextRequest('http://localhost/api/audit/admin/stats');
-    const res = await GET(req);
-    expect(res.status).toBe(401);
-  });
-
-  it('returns 401 with wrong password', async () => {
-    const res = await GET(createRequest('wrong'));
+  it('returns 401 without a valid session', async () => {
+    mockedReadAdminSession.mockResolvedValueOnce(null);
+    const res = await GET(createRequest());
     expect(res.status).toBe(401);
   });
 
   it('returns aggregate stats', async () => {
-    // Total scans
     mockSelect.mockReturnValueOnce(Promise.resolve({ count: 42, error: null }));
-    // Scans today
     const todayChain = { gte: jest.fn() };
     mockSelect.mockReturnValueOnce(todayChain);
     todayChain.gte.mockResolvedValueOnce({ count: 5, error: null });
-    // Total leads
     mockSelect.mockReturnValueOnce(Promise.resolve({ count: 10, error: null }));
-    // Completed scans
     const completedChain = { eq: jest.fn() };
     mockSelect.mockReturnValueOnce(completedChain);
     completedChain.eq.mockResolvedValueOnce({ count: 40, error: null });

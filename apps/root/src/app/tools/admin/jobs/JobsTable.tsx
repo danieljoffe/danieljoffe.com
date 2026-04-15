@@ -27,7 +27,6 @@ interface JobPosting {
 }
 
 interface JobsTableProps {
-  password: string;
   filters: JobsFilterState;
   refreshKey: number;
 }
@@ -57,11 +56,7 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-export default function JobsTable({
-  password,
-  filters,
-  refreshKey,
-}: JobsTableProps) {
+export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const extraParams = useMemo(() => {
@@ -85,7 +80,6 @@ export default function JobsTable({
     sortIndicator,
   } = useAdminTableFetch<JobPosting, SortColumn>({
     endpoint: '/api/jobs',
-    password,
     defaultSort: 'score',
     pageSize: 20,
     dataKey: 'postings',
@@ -188,7 +182,7 @@ export default function JobsTable({
                 {expandedId === job.id && (
                   <tr key={`${job.id}-detail`}>
                     <td colSpan={6} className='p-0'>
-                      <JobDetail posting={job} password={password} />
+                      <JobDetail posting={job} />
                     </td>
                   </tr>
                 )}

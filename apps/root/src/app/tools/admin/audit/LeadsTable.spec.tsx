@@ -75,7 +75,7 @@ describe('LeadsTable', () => {
         Promise.resolve({ leads: mockLeads, total: 5, page: 1, pageSize: 20 }),
     });
 
-    render(<LeadsTable password='test' />);
+    render(<LeadsTable />);
 
     await waitFor(() => {
       expect(screen.getByText('cto@enterprise-corp.com')).toBeInTheDocument();
@@ -116,7 +116,7 @@ describe('LeadsTable', () => {
         }),
     });
 
-    render(<LeadsTable password='test' />);
+    render(<LeadsTable />);
 
     await waitFor(() => {
       expect(screen.getByText('No leads yet')).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe('LeadsTable', () => {
       clipboard: { writeText: mockWriteText },
     });
 
-    render(<LeadsTable password='test' />);
+    render(<LeadsTable />);
 
     await waitFor(() => {
       expect(screen.getByText('cto@enterprise-corp.com')).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('LeadsTable', () => {
         }),
     });
 
-    render(<LeadsTable password='test' />);
+    render(<LeadsTable />);
 
     await waitFor(() => {
       expect(screen.getByText('jane@test.com')).toBeInTheDocument();

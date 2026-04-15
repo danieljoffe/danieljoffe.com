@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_key: str = ""
     job_api_key: str = ""
+    admin_session_secret: str = ""
     greenhouse_delay_ms: int = 200
     score_normalizer: int = 30
 

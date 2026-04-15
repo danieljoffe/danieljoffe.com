@@ -3,11 +3,15 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key
+from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
 
-router = APIRouter(prefix="/sources", tags=["sources"], dependencies=[Depends(verify_api_key)])
+router = APIRouter(
+    prefix="/sources",
+    tags=["sources"],
+    dependencies=[Depends(verify_api_key_or_session)],
+)
 
 
 @router.get("")

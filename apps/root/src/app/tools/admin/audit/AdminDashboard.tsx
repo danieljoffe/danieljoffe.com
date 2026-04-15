@@ -1,14 +1,12 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
-import Button from '@/components/Button';
-import PasswordGate from './PasswordGate';
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';
 import LeadsTable from './LeadsTable';
@@ -21,34 +19,29 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
-  const [password, setPassword] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsError, setStatsError] = useState('');
   const [activeTab, setActiveTab] = useState<'scans' | 'leads'>('scans');
 
-  const fetchStats = useCallback(async (pw: string) => {
-    try {
-      const res = await fetch('/api/audit/admin/stats', {
-        headers: { 'x-admin-password': pw },
-      });
-      if (res.ok) {
-        setStats(await res.json());
-      } else {
-        setStatsError('Failed to load stats');
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/audit/admin/stats');
+        if (!res.ok) {
+          if (!cancelled) setStatsError('Failed to load stats');
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) setStats(data);
+      } catch {
+        if (!cancelled) setStatsError('Failed to load stats');
       }
-    } catch {
-      setStatsError('Failed to load stats');
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  function handleAuthenticated(pw: string) {
-    setPassword(pw);
-    fetchStats(pw);
-  }
-
-  if (!password) {
-    return <PasswordGate onAuthenticated={handleAuthenticated} />;
-  }
 
   const tabs = [
     { id: 'scans' as const, label: 'Scans' },
@@ -58,19 +51,9 @@ export default function AdminDashboard() {
   return (
     <div className='max-w-3xl mx-auto w-full px-4 sm:px-6'>
       <div className='flex flex-col gap-6 py-8'>
-        <div className='flex flex-row justify-between items-start'>
-          <Heading variant='section' as='h1'>
-            Audit Admin
-          </Heading>
-          <Button
-            variant='bare'
-            name='admin-sign-out'
-            className='text-sm text-text-secondary hover:text-text-primary'
-            onClick={() => setPassword(null)}
-          >
-            Sign out
-          </Button>
-        </div>
+        <Heading variant='section' as='h1'>
+          Audit Admin
+        </Heading>
 
         {statsError ? (
           <Text variant='error'>{statsError}</Text>
@@ -119,11 +102,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div role='tabpanel' className='mt-4'>
-            {activeTab === 'scans' ? (
-              <ScansTable password={password} />
-            ) : (
-              <LeadsTable password={password} />
-            )}
+            {activeTab === 'scans' ? <ScansTable /> : <LeadsTable />}
           </div>
         </div>
       </div>

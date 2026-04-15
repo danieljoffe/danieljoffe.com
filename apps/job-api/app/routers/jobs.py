@@ -4,9 +4,13 @@ from fastapi import APIRouter, Depends, Query
 from postgrest.types import CountMethod
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key
+from app.dependencies import get_supabase, verify_api_key_or_session
 
-router = APIRouter(prefix="/jobs", tags=["jobs"], dependencies=[Depends(verify_api_key)])
+router = APIRouter(
+    prefix="/jobs",
+    tags=["jobs"],
+    dependencies=[Depends(verify_api_key_or_session)],
+)
 
 
 @router.get("")

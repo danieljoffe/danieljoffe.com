@@ -9,7 +9,7 @@ export default function Error(props: {
   return (
     <RouteError
       {...props}
-      route='/audit/admin'
+      route='/tools/admin/audit'
       description='There was an error loading the admin dashboard. Please try again.'
     />
   );

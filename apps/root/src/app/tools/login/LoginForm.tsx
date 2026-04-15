@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import {
@@ -11,25 +12,24 @@ import {
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
 
-interface PasswordGateProps {
-  onAuthenticated: (password: string) => void;
-  /** API endpoint to verify the password. Defaults to /api/audit/admin/verify */
-  verifyEndpoint?: string;
-  /** Heading shown in the gate form */
-  title?: string;
-}
-
 function formatCountdown(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function PasswordGate({
-  onAuthenticated,
-  verifyEndpoint = '/api/audit/admin/verify',
-  title = 'Admin Dashboard',
-}: PasswordGateProps) {
+function sanitizeNext(next: string | null): string {
+  if (!next) return '/tools/admin';
+  if (!next.startsWith('/')) return '/tools/admin';
+  if (next.startsWith('//')) return '/tools/admin';
+  return next;
+}
+
+export default function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = sanitizeNext(searchParams.get('next'));
+
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,9 +46,7 @@ export default function PasswordGate({
 
   function startCountdown(seconds: number) {
     setLockoutSeconds(seconds);
-
     if (timerRef.current) clearInterval(timerRef.current);
-
     timerRef.current = setInterval(() => {
       setLockoutSeconds(prev => {
         if (prev <= 1) {
@@ -65,26 +63,25 @@ export default function PasswordGate({
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      const res = await fetch(verifyEndpoint, {
+      const res = await fetch('/api/tools/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
-
       if (res.ok) {
-        onAuthenticated(password);
+        router.replace(next);
+        router.refresh();
       } else if (res.status === 429) {
         const data = await res.json();
-        startCountdown(data.retryAfter ?? 60);
+        startCountdown(data.retryAfterSeconds ?? 60);
         setError('');
       } else {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         setError(data.error ?? 'Invalid password');
       }
     } catch {
-      setError('Failed to verify password');
+      setError('Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -97,7 +94,7 @@ export default function PasswordGate({
           <form onSubmit={handleSubmit}>
             <div className='flex flex-col gap-4'>
               <Heading variant='component' as='h2' className='text-center'>
-                {title}
+                Tools Admin
               </Heading>
               <Text variant='body' className='text-center'>
                 Enter the admin password to continue.
@@ -126,10 +123,10 @@ export default function PasswordGate({
               )}
               <Button
                 type='submit'
-                name='admin-sign-in'
+                name='tools-sign-in'
                 disabled={loading || !password || isLockedOut}
               >
-                {loading ? 'Verifying...' : 'Sign in'}
+                {loading ? 'Signing in...' : 'Sign in'}
               </Button>
             </div>
           </form>

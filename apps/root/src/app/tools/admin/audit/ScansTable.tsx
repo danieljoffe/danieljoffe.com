@@ -19,10 +19,6 @@ interface AdminScan {
   has_lead: boolean;
 }
 
-interface ScansTableProps {
-  password: string;
-}
-
 type SortColumn =
   | 'created_at'
   | 'url'
@@ -37,7 +33,7 @@ const statusVariants: Record<string, BadgeVariant> = {
   default: 'default',
 };
 
-export default function ScansTable({ password }: ScansTableProps) {
+export default function ScansTable() {
   const {
     data: scans,
     loading,
@@ -48,7 +44,6 @@ export default function ScansTable({ password }: ScansTableProps) {
     sortIndicator,
   } = useAdminTableFetch<AdminScan, SortColumn>({
     endpoint: '/api/audit/admin/scans',
-    password,
     defaultSort: 'created_at',
     dataKey: 'scans',
   });
