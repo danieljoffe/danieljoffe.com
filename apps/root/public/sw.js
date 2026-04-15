@@ -5,13 +5,7 @@ const IMAGE_CACHE = `danieljoffe-images-${CACHE_VERSION}`;
 const FONT_CACHE = `danieljoffe-fonts-${CACHE_VERSION}`;
 
 // Static assets to precache
-const PRECACHE_URLS = [
-  '/',
-  '/about',
-  '/projects',
-  '/logo.svg',
-  '/favicon.ico',
-];
+const PRECACHE_URLS = ['/', '/about', '/projects', '/logo.svg', '/favicon.ico'];
 
 // Cache size limits
 const IMAGE_CACHE_LIMIT = 50;
