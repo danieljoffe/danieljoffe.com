@@ -1,7 +1,7 @@
+import jwt
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
 from supabase import Client, create_client
-import jwt
 
 from app.config import Settings, settings
 
