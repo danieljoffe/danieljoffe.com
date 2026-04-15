@@ -9,7 +9,7 @@ export default function ToolsAdminLayout({
   children: ReactNode;
 }) {
   return (
-    <div className='flex min-h-[calc(100vh-4rem)]'>
+    <div className='flex min-h-screen'>
       <AdminSidebar />
       <main className='flex-1 overflow-x-hidden p-6'>{children}</main>
     </div>

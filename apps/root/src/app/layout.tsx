@@ -3,7 +3,6 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import { rootMetadata } from '@/data/metadata/root';
 import { WithChildren } from '@/types/base';
 import '@/styles/global.css';
-import Footer from '@/components/Footer';
 import AppContext from './home/AppContext';
 import Scripts from './home/Scripts';
 import Head from './home/Head';
@@ -58,10 +57,6 @@ export default async function RootLayout({ children }: WithChildren) {
           Skip to main content
         </a>
         <AppContext>{children}</AppContext>
-        {/* pb-16 compensates for the fixed mobile bottom nav bar */}
-        <div className='pb-16 md:pb-0'>
-          <Footer />
-        </div>
         <Scripts />
         <TestingOnly />
       </body>

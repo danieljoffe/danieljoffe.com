@@ -6,9 +6,9 @@ import { AlertTriangle } from 'lucide-react';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import ScanProgress from '@/app/audit/ScanProgress';
 import Button from '@/components/Button';
 import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
+import ScanProgress from '../../ScanProgress';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 const POLL_INTERVAL_MS = 2000;

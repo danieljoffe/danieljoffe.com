@@ -11,7 +11,7 @@ jest.mock('next/image', () => {
   };
 });
 
-jest.mock('./home/HeroActions', () => ({
+jest.mock('../home/HeroActions', () => ({
   __esModule: true,
   default: function HeroActions() {
     return <div data-testid='hero-actions' />;

@@ -6,7 +6,6 @@ import { WithChildren } from '@/types/base';
 import { ThemeProvider } from '@/state/Theme/ThemeProvider';
 import { ToastProvider } from '@/state/Toast/ToastProvider';
 import ModalProvider from '@/state/Modal/ModalProvider';
-import Nav from '@/components/Nav';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ScrollToTop } from '@/components/kit';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
@@ -39,7 +38,6 @@ const Providers = composeProviders([
 export default function AppContext({ children }: WithChildren) {
   return (
     <Providers>
-      <Nav />
       <ErrorBoundary>{children}</ErrorBoundary>
       <Modal />
       <ScrollToTop />
