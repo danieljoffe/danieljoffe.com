@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import NotFound from '../(public)/not-found';
+import NotFound from '../not-found';
 
 jest.mock('@/utils/constants', () => ({
   HOME_LINK: { href: '/' },
@@ -7,6 +7,16 @@ jest.mock('@/utils/constants', () => ({
 
 jest.mock('@/data/metadata/notFound', () => ({
   notFoundMetadata: { title: '404' },
+}));
+
+jest.mock('@/components/Nav', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+jest.mock('@/components/Footer', () => ({
+  __esModule: true,
+  default: () => null,
 }));
 
 describe('NotFound', () => {
