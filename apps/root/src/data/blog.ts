@@ -38,6 +38,9 @@ export const blogSlugs = {
   storybookInteractionTestsAria: 'storybook-interaction-tests-aria',
   executableStyleGuideZod: 'executable-style-guide-zod',
   threeToolsMonorepoHygiene: 'three-tools-monorepo-hygiene',
+  publicRouteGroupChromeSplit: 'public-route-group-chrome-split',
+  uvPythonWorkspaceNxMonorepo: 'uv-python-workspace-nx-monorepo',
+  adminLoginHardeningJwtCookie: 'admin-login-hardening-jwt-cookie',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

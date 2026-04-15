@@ -1,0 +1,110 @@
+export const metadata = {
+  title: 'A (public) Route Group So Admin Pages Render Bare',
+  date: '2026-04-15',
+  excerpt:
+    'Lifting Nav and Footer into a Next.js route group so every /tools/admin route inherits none of the public chrome, and the one broken 404 that followed.',
+  author: 'Daniel Joffe',
+  category: 'Architecture',
+  tags: ['Next.js', 'React', 'TypeScript', 'Testing', 'Tailwind CSS'],
+  slug: 'public-route-group-chrome-split',
+  type: 'blog',
+  cover: {
+    alt: 'A clean architectural doorway dividing two rooms',
+    src: '/images/covers/public-route-group-chrome-split.webp',
+  },
+};
+
+## The problem
+
+The portfolio has two audiences now. Everything under `/` is for visitors: Nav, Footer, mobile bottom-nav, the lot. Everything under `/tools/admin/*` is for me: a sidebar, a table, no reason to ship the marketing chrome. Both trees share one root layout.
+
+The old shape rendered Nav and Footer inside `AppContext`, which wrapped every page. Admin routes inherited them. The options looked bad on paper:
+
+- Gate the chrome with `usePathname()` checks. Fragile, and every admin page still paid the JavaScript cost.
+- Render a conditional server component off the URL. Same cost, more branching.
+- Duplicate the root layout for admin. Two trees to maintain, two places to forget a provider.
+
+## The approach
+
+App Router route groups are the right tool. A folder named `(public)` is treated as a path segment at the filesystem level but contributes nothing to the URL. Which means I can move every public route into `app/(public)/` and lift Nav and Footer out of the root layout into a `(public)/layout.tsx` that only that subtree uses.
+
+Admin pages stay outside the group. They walk up to the root layout, which only composes providers and global UI. No Nav. No Footer. No conditional rendering.
+
+## The layout
+
+```tsx title="apps/root/src/app/(public)/layout.tsx"
+import type { ReactNode } from 'react';
+import Footer from '@/components/Footer';
+import Nav from '@/components/Nav';
+
+export default function PublicLayout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Nav />
+      {children}
+      {/* pb-16 compensates for the fixed mobile bottom nav bar */}
+      <div className='pb-16 md:pb-0'>
+        <Footer />
+      </div>
+    </>
+  );
+}
+```
+
+The tree now looks like this:
+
+```
+app/
+├── layout.tsx            // html, body, providers, Scripts, skip link
+├── (public)/
+│   ├── layout.tsx        // Nav + children + Footer
+│   ├── page.tsx          // home
+│   ├── about/
+│   ├── blog/
+│   ├── projects/
+│   └── ...
+├── tools/
+│   ├── login/
+│   └── admin/            // Sidebar layout, no Nav, no Footer
+```
+
+URLs are unchanged because route groups do not contribute path segments. `/about` still resolves to `(public)/about/page.tsx`. `/tools/admin/jobs` still resolves to `tools/admin/jobs/page.tsx`. One tree renders with marketing chrome, the other renders with none, and the only thing that changed is where files live.
+
+A few knock-on cleanups fell out of the split:
+
+- The admin layout was using `min-h-[calc(100vh-4rem)]` to compensate for a 4rem global Nav. With the Nav gone, `min-h-screen` is correct.
+- `AppContext` used to import `Nav` alongside providers. Now it only composes providers, `Modal`, `ScrollToTop`, and `KeyboardShortcuts`. The component finally does the one thing its name promises.
+- Two absolute `@/app/*` imports that crossed into moved folders were rewritten as relative paths so later moves do not break them.
+
+## The 404 problem
+
+The split broke one thing in an unexpected way: the 404 page.
+
+I had `app/(public)/not-found.tsx` handling unmatched routes. After the split, it stopped firing for URLs that did not match any file. The reason is documented but easy to miss: App Router only uses `app/not-found.tsx` for globally unmatched routes. A `not-found.tsx` inside a route group scopes only to that group's matched routes, not to arbitrary URLs the router cannot resolve at all.
+
+Unmatched URLs rendered the stripped root layout with no Nav, no Footer, and an e2e test that asserts a `Back to Home` link inside `<main>` started failing.
+
+The fix is to move the 404 to the root and inline the chrome the route group would have supplied:
+
+```tsx title="apps/root/src/app/not-found.tsx"
+import Nav from '@/components/Nav';
+import Footer from '@/components/Footer';
+
+export default function NotFound() {
+  return (
+    <>
+      <Nav />
+      <main>{/* 404 content */}</main>
+      <Footer />
+    </>
+  );
+}
+```
+
+Inlining feels like a regression, but it is not. The root `not-found.tsx` is the only file App Router reaches for unmatched URLs; it has to carry its own chrome because no layout above it renders any.
+
+## The takeaway
+
+Route groups are usually introduced as a filesystem organization trick. The real value is conditional layout composition. One subtree gets the marketing chrome, another gets an admin shell, and nothing in either tree needs a `usePathname()` branch.
+
+The caveat worth remembering: `app/not-found.tsx` is special. It handles every unmatched route, ignores groups, and has to render whatever chrome you want on 404 pages itself.

@@ -112,6 +112,15 @@ import ExecutableStyleGuideZod, {
 import ThreeToolsMonorepoHygiene, {
   metadata as threeToolsMonorepoHygieneMeta,
 } from './three-tools-monorepo-hygiene.mdx';
+import PublicRouteGroupChromeSplit, {
+  metadata as publicRouteGroupChromeSplitMeta,
+} from './public-route-group-chrome-split.mdx';
+import UvPythonWorkspaceNxMonorepo, {
+  metadata as uvPythonWorkspaceNxMonorepoMeta,
+} from './uv-python-workspace-nx-monorepo.mdx';
+import AdminLoginHardeningJwtCookie, {
+  metadata as adminLoginHardeningJwtCookieMeta,
+} from './admin-login-hardening-jwt-cookie.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -153,6 +162,9 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'storybook-interaction-tests-aria': StorybookInteractionTestsAria,
   'executable-style-guide-zod': ExecutableStyleGuideZod,
   'three-tools-monorepo-hygiene': ThreeToolsMonorepoHygiene,
+  'public-route-group-chrome-split': PublicRouteGroupChromeSplit,
+  'uv-python-workspace-nx-monorepo': UvPythonWorkspaceNxMonorepo,
+  'admin-login-hardening-jwt-cookie': AdminLoginHardeningJwtCookie,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -193,4 +205,7 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'storybook-interaction-tests-aria': storybookInteractionTestsAriaMeta,
   'executable-style-guide-zod': executableStyleGuideZodMeta,
   'three-tools-monorepo-hygiene': threeToolsMonorepoHygieneMeta,
+  'public-route-group-chrome-split': publicRouteGroupChromeSplitMeta,
+  'uv-python-workspace-nx-monorepo': uvPythonWorkspaceNxMonorepoMeta,
+  'admin-login-hardening-jwt-cookie': adminLoginHardeningJwtCookieMeta,
 };
