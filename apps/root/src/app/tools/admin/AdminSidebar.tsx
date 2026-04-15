@@ -28,7 +28,7 @@ function activeIdFrom(pathname: string): string | undefined {
 export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const activeId = activeIdFrom(pathname ?? '');
+  const activeId = activeIdFrom(pathname ?? '') ?? '';
 
   async function handleLogout() {
     await fetch('/api/tools/logout', { method: 'POST' });
