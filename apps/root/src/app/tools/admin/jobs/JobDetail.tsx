@@ -4,26 +4,20 @@ import { useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { JOB_STATUSES, type JobPosting } from './types';
 
 interface JobDetailProps {
-  posting: {
-    id: string;
-    title: string;
-    company_name: string;
-    absolute_url: string | null;
-    score: number;
-    score_breakdown: Record<string, number> | null;
-    status: string;
-  };
+  posting: Pick<
+    JobPosting,
+    | 'id'
+    | 'title'
+    | 'company_name'
+    | 'absolute_url'
+    | 'score'
+    | 'score_breakdown'
+    | 'status'
+  >;
 }
-
-const STATUS_OPTIONS = [
-  'new',
-  'saved',
-  'applied',
-  'rejected',
-  'archived',
-] as const;
 
 export default function JobDetail({ posting }: JobDetailProps) {
   const [status, setStatus] = useState(posting.status);
@@ -73,7 +67,7 @@ export default function JobDetail({ posting }: JobDetailProps) {
             Status
           </Text>
           <div className='flex gap-2'>
-            {STATUS_OPTIONS.map(s => (
+            {JOB_STATUSES.map(s => (
               <Button
                 key={s}
                 name={`status-${s}`}

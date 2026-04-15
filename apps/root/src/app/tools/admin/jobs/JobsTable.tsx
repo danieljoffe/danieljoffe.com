@@ -1,30 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
-import type { JobsFilterState } from './JobsDashboard';
 import JobDetail from './JobDetail';
-
-type SortColumn = 'score' | 'created_at' | 'company_name' | 'title';
-
-interface JobPosting {
-  id: string;
-  greenhouse_id: number;
-  title: string;
-  company_name: string;
-  location: string | null;
-  absolute_url: string | null;
-  score: number;
-  score_breakdown: Record<string, number> | null;
-  status: string;
-  first_seen_at: string;
-  created_at: string;
-}
+import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
 
 interface JobsTableProps {
   filters: JobsFilterState;
@@ -78,7 +62,7 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
     totalPages,
     handleSort,
     sortIndicator,
-  } = useAdminTableFetch<JobPosting, SortColumn>({
+  } = useAdminTableFetch<JobPosting, JobsSortColumn>({
     endpoint: '/api/jobs',
     defaultSort: 'score',
     pageSize: 20,
@@ -109,10 +93,10 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
           <thead>
             <tr className='border-b border-border text-left'>
               {[
-                { key: 'score' as SortColumn, label: 'Score' },
-                { key: 'title' as SortColumn, label: 'Title' },
-                { key: 'company_name' as SortColumn, label: 'Company' },
-                { key: 'created_at' as SortColumn, label: 'Date' },
+                { key: 'score' as JobsSortColumn, label: 'Score' },
+                { key: 'title' as JobsSortColumn, label: 'Title' },
+                { key: 'company_name' as JobsSortColumn, label: 'Company' },
+                { key: 'created_at' as JobsSortColumn, label: 'Date' },
               ].map(col => (
                 <th
                   key={col.key}
@@ -139,9 +123,8 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
           </thead>
           <tbody>
             {postings.map(job => (
-              <>
+              <Fragment key={job.id}>
                 <tr
-                  key={job.id}
                   className={cn(
                     'border-b border-border hover:bg-surface-secondary cursor-pointer transition-colors',
                     expandedId === job.id && 'bg-surface-secondary'
@@ -180,13 +163,13 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
                   </td>
                 </tr>
                 {expandedId === job.id && (
-                  <tr key={`${job.id}-detail`}>
+                  <tr>
                     <td colSpan={6} className='p-0'>
                       <JobDetail posting={job} />
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>

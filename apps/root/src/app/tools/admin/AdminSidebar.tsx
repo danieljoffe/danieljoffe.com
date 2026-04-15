@@ -10,13 +10,13 @@ const NAV_ITEMS: (SidebarItem & { href: string })[] = [
     id: 'jobs',
     label: 'Jobs',
     href: '/tools/admin/jobs',
-    icon: <Briefcase aria-hidden />,
+    icon: <Briefcase className='size-4' aria-hidden />,
   },
   {
     id: 'audit',
     label: 'Site Audits',
     href: '/tools/admin/audit',
-    icon: <Gauge aria-hidden />,
+    icon: <Gauge className='size-4' aria-hidden />,
   },
 ];
 
@@ -55,7 +55,7 @@ export default function AdminSidebar() {
           onClick={handleLogout}
           className='w-full justify-center'
         >
-          <LogOut className='h-4 w-4' aria-hidden />
+          <LogOut className='size-4' aria-hidden />
           <span>Sign out</span>
         </Button>
       }

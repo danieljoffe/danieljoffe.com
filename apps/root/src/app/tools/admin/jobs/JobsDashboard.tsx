@@ -7,13 +7,7 @@ import JobsTable from './JobsTable';
 import JobsFilter from './JobsFilter';
 import ScanButton from './ScanButton';
 import SourcesPanel from './SourcesPanel';
-
-export interface JobsFilterState {
-  minScore: string;
-  status: string;
-  company: string;
-  search: string;
-}
+import type { JobsFilterState } from './types';
 
 const INITIAL_FILTERS: JobsFilterState = {
   minScore: '30',

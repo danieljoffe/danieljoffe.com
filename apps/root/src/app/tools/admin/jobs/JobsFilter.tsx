@@ -7,7 +7,7 @@ import {
   FIELD_PLACEHOLDER,
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
-import type { JobsFilterState } from './JobsDashboard';
+import { JOB_STATUSES, type JobsFilterState } from './types';
 
 const inputStyles = cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER);
 
@@ -57,11 +57,11 @@ export default function JobsFilter({ filters, onChange }: JobsFilterProps) {
           className={cn(inputStyles, 'w-32')}
         >
           <option value=''>All</option>
-          <option value='new'>New</option>
-          <option value='saved'>Saved</option>
-          <option value='applied'>Applied</option>
-          <option value='rejected'>Rejected</option>
-          <option value='archived'>Archived</option>
+          {JOB_STATUSES.map(status => (
+            <option key={status} value={status}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </option>
+          ))}
         </select>
       </div>
       <div className='flex flex-col gap-1'>
