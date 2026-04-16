@@ -2,6 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { Button } from './Button';
 import { cn } from './utils/cn';
 
 export interface SidebarItem {
@@ -42,21 +43,22 @@ function SidebarItemComponent({
 
   return (
     <div>
-      <button
+      <Button
+        variant='bare'
+        size='sm'
         onClick={() => {
           if (hasChildren) setExpanded(!expanded);
           onSelect?.(item.id);
         }}
         className={cn(
-          'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-all duration-150 cursor-pointer motion-reduce:transition-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'w-full justify-start',
           depth > 0 && 'ml-6 w-[calc(100%-1.5rem)]',
           isActive
             ? 'bg-brand-50 text-brand-700 font-medium'
             : 'text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
         )}
       >
-        {item.icon && <span className='h-4 w-4 shrink-0'>{item.icon}</span>}
+        {item.icon}
         {!collapsed && (
           <>
             <span className='flex-1 text-left truncate'>{item.label}</span>
@@ -75,7 +77,7 @@ function SidebarItemComponent({
             )}
           </>
         )}
-      </button>
+      </Button>
       {hasChildren && expanded && !collapsed && (
         <div className='mt-0.5'>
           {item.children?.map(child => (

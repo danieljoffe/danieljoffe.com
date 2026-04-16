@@ -28,7 +28,6 @@ afterEach(() => {
 describe('useAdminTableFetch', () => {
   const defaultOptions = {
     endpoint: '/api/test',
-    password: 'secret',
     defaultSort: 'created_at' as const,
     dataKey: 'items',
   };
@@ -42,10 +41,7 @@ describe('useAdminTableFetch', () => {
 
     expect(result.current.data).toEqual(mockResponse.items);
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/test?'),
-      expect.objectContaining({
-        headers: { 'x-admin-password': 'secret' },
-      })
+      expect.stringContaining('/api/test?')
     );
   });
 

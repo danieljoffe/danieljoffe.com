@@ -1,0 +1,42 @@
+{
+  "name": "job-api",
+  "sourceRoot": "apps/job-api",
+  "projectType": "application",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api uvicorn app.main:app --reload --port 8000",
+        "cwd": "apps/job-api"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api uvicorn app.main:app --reload --port 8000",
+        "cwd": "apps/job-api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api pytest -v",
+        "cwd": "apps/job-api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api ruff check .",
+        "cwd": "apps/job-api"
+      }
+    },
+    "mypy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api mypy app/",
+        "cwd": "apps/job-api"
+      }
+    }
+  }
+}

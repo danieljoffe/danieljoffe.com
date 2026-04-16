@@ -9,6 +9,16 @@ jest.mock('@/data/metadata/notFound', () => ({
   notFoundMetadata: { title: '404' },
 }));
 
+jest.mock('@/components/Nav', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+jest.mock('@/components/Footer', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 describe('NotFound', () => {
   it('renders the 404 heading', () => {
     render(<NotFound />);

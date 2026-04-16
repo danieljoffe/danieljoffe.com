@@ -166,9 +166,9 @@ import { Dropdown } from './Dropdown';
 <h2 className='doc-section'>When to Use</h2>
 
 <p className='doc-p'>
-  Use Dropdown for a set of actions that share a common context but don't need to be
-  visible at all times. The trigger should describe what the menu contains, not just
-  say "menu."
+  Use Dropdown for a set of actions that share a common context but don't need
+  to be visible at all times. The trigger should describe what the menu
+  contains, not just say "menu."
 </p>
 
 <table className='doc-table'>
@@ -209,27 +209,47 @@ import { Dropdown } from './Dropdown';
   </thead>
   <tbody>
     <tr>
-      <td><code>trigger</code></td>
-      <td><code>ReactNode</code></td>
+      <td>
+        <code>trigger</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
       <td>—</td>
       <td>Content rendered inside the trigger button.</td>
     </tr>
     <tr>
-      <td><code>items</code></td>
-      <td><code>DropdownItem[]</code></td>
+      <td>
+        <code>items</code>
+      </td>
+      <td>
+        <code>DropdownItem[]</code>
+      </td>
       <td>—</td>
       <td>Array of menu items (see below).</td>
     </tr>
     <tr>
-      <td><code>align</code></td>
-      <td><code>'left' | 'right'</code></td>
-      <td><code>'left'</code></td>
+      <td>
+        <code>align</code>
+      </td>
+      <td>
+        <code>'left' | 'right'</code>
+      </td>
+      <td>
+        <code>'left'</code>
+      </td>
       <td>Which edge the menu aligns to.</td>
     </tr>
     <tr>
-      <td><code>className</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
       <td>Additional classes on the wrapper div.</td>
     </tr>
   </tbody>
@@ -247,33 +267,57 @@ import { Dropdown } from './Dropdown';
   </thead>
   <tbody>
     <tr>
-      <td><code>label</code></td>
-      <td><code>string</code></td>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
       <td>Visible text of the menu item.</td>
     </tr>
     <tr>
-      <td><code>icon</code></td>
-      <td><code>ReactNode</code></td>
+      <td>
+        <code>icon</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
       <td>Optional leading icon (rendered at 16x16).</td>
     </tr>
     <tr>
-      <td><code>onClick</code></td>
-      <td><code>() =&gt; void</code></td>
+      <td>
+        <code>onClick</code>
+      </td>
+      <td>
+        <code>() =&gt; void</code>
+      </td>
       <td>Action triggered on activation.</td>
     </tr>
     <tr>
-      <td><code>danger</code></td>
-      <td><code>boolean</code></td>
+      <td>
+        <code>danger</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
       <td>Renders the item in error color.</td>
     </tr>
     <tr>
-      <td><code>divider</code></td>
-      <td><code>boolean</code></td>
+      <td>
+        <code>divider</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
       <td>Renders a visual separator instead of a menu item.</td>
     </tr>
     <tr>
-      <td><code>disabled</code></td>
-      <td><code>boolean</code></td>
+      <td>
+        <code>disabled</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
       <td>Prevents activation and skips during keyboard navigation.</td>
     </tr>
   </tbody>
@@ -294,7 +338,12 @@ import { Dropdown } from './Dropdown';
     { label: 'Edit', icon: <PencilIcon />, onClick: handleEdit },
     { label: 'Duplicate', icon: <CopyIcon />, onClick: handleDuplicate },
     { divider: true, label: '' },
-    { label: 'Delete', icon: <TrashIcon />, danger: true, onClick: handleDelete },
+    {
+      label: 'Delete',
+      icon: <TrashIcon />,
+      danger: true,
+      onClick: handleDelete,
+    },
   ]}
 />
 ```
@@ -302,18 +351,18 @@ import { Dropdown } from './Dropdown';
 <h3 className='doc-sub'>Right-Aligned Menu</h3>
 
 <p className='doc-p'>
-  Use <code>align="right"</code> when the trigger is positioned near the right edge
-  of the viewport to prevent the menu from overflowing.
+  Use <code>align="right"</code> when the trigger is positioned near the right
+  edge of the viewport to prevent the menu from overflowing.
 </p>
 
 <h2 className='doc-section'>Accessibility</h2>
 
 <p className='doc-p'>
   The trigger renders with <code>aria-haspopup="menu"</code> and toggles{' '}
-  <code>aria-expanded</code>. The menu panel has <code>role="menu"</code> with items
-  using <code>role="menuitem"</code>. Dividers use <code>role="separator"</code>.
-  Disabled items set <code>aria-disabled</code> and are skipped during keyboard
-  navigation.
+  <code>aria-expanded</code>. The menu panel has <code>role="menu"</code> with
+  items using <code>role="menuitem"</code>. Dividers use{' '}
+  <code>role="separator"</code>. Disabled items set <code>aria-disabled</code>{' '}
+  and are skipped during keyboard navigation.
 </p>
 
 <h3 className='doc-sub'>Keyboard</h3>
@@ -328,37 +377,54 @@ import { Dropdown } from './Dropdown';
   </thead>
   <tbody>
     <tr>
-      <td><span className='doc-kbd'>Enter</span> / <span className='doc-kbd'>Space</span></td>
+      <td>
+        <span className='doc-kbd'>Enter</span> /{' '}
+        <span className='doc-kbd'>Space</span>
+      </td>
       <td>Trigger focused</td>
       <td>Toggles the menu open/closed</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>↓</span></td>
+      <td>
+        <span className='doc-kbd'>↓</span>
+      </td>
       <td>Trigger focused</td>
       <td>Opens menu and focuses first item</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>↓</span> / <span className='doc-kbd'>↑</span></td>
+      <td>
+        <span className='doc-kbd'>↓</span> / <span className='doc-kbd'>↑</span>
+      </td>
       <td>Menu open</td>
       <td>Moves focus between items (wraps around)</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Home</span> / <span className='doc-kbd'>End</span></td>
+      <td>
+        <span className='doc-kbd'>Home</span> /{' '}
+        <span className='doc-kbd'>End</span>
+      </td>
       <td>Menu open</td>
       <td>Jumps to first / last item</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Enter</span> / <span className='doc-kbd'>Space</span></td>
+      <td>
+        <span className='doc-kbd'>Enter</span> /{' '}
+        <span className='doc-kbd'>Space</span>
+      </td>
       <td>Item focused</td>
       <td>Activates the item and closes the menu</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Esc</span></td>
+      <td>
+        <span className='doc-kbd'>Esc</span>
+      </td>
       <td>Menu open</td>
       <td>Closes menu and returns focus to trigger</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Tab</span></td>
+      <td>
+        <span className='doc-kbd'>Tab</span>
+      </td>
       <td>Menu open</td>
       <td>Closes menu and moves focus naturally</td>
     </tr>
@@ -370,16 +436,16 @@ import { Dropdown } from './Dropdown';
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
       Pass descriptive content as the <code>trigger</code>, like a label with an
-      icon. The trigger renders inside a <code>&lt;button&gt;</code> automatically,
-      so pass inline content, not another button.
+      icon. The trigger renders inside a <code>&lt;button&gt;</code>{' '}
+      automatically, so pass inline content, not another button.
     </p>
   </div>
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
       Don't pass a <code>&lt;Button&gt;</code> component as the trigger. The
-      Dropdown already wraps the trigger in a native button element. Nesting buttons
-      is invalid HTML and breaks accessibility.
+      Dropdown already wraps the trigger in a native button element. Nesting
+      buttons is invalid HTML and breaks accessibility.
     </p>
   </div>
 </div>
@@ -388,8 +454,9 @@ import { Dropdown } from './Dropdown';
   <div className='doc-do'>
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
-      Place destructive actions (delete, remove) last, separated by a divider, and
-      mark them with <code>danger: true</code> so users can distinguish them.
+      Place destructive actions (delete, remove) last, separated by a divider,
+      and mark them with <code>danger: true</code> so users can distinguish
+      them.
     </p>
   </div>
   <div className='doc-dont'>

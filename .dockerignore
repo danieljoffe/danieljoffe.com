@@ -1,0 +1,15 @@
+node_modules
+.next
+.nx
+dist
+coverage
+.venv
+__pycache__
+*.pyc
+.git
+.env
+.env.local
+.DS_Store
+playwright-report
+test-results
+storybook-static

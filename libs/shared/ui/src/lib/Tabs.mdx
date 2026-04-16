@@ -167,16 +167,18 @@ import { Tabs } from './Tabs';
 
 <h1 className='doc-title'>Tabs</h1>
 <p className='doc-lead'>
-  Switch between related content panels. Implements the WAI-ARIA Tabs pattern with
-  arrow key navigation, two visual variants, and controlled or uncontrolled state.
+  Switch between related content panels. Implements the WAI-ARIA Tabs pattern
+  with arrow key navigation, two visual variants, and controlled or uncontrolled
+  state.
 </p>
 
 <h2 className='doc-section'>When to Use</h2>
 
 <p className='doc-p'>
-  Use Tabs when content naturally divides into parallel categories that share the same
-  context. Each tab should make sense on its own; if a user needs to see multiple
-  panels at once, consider an accordion or a single scrollable page.
+  Use Tabs when content naturally divides into parallel categories that share
+  the same context. Each tab should make sense on its own; if a user needs to
+  see multiple panels at once, consider an accordion or a single scrollable
+  page.
 </p>
 
 <table className='doc-table'>
@@ -219,12 +221,16 @@ import { Tabs } from './Tabs';
   </thead>
   <tbody>
     <tr>
-      <td><code>underline</code></td>
+      <td>
+        <code>underline</code>
+      </td>
       <td>Bottom border highlight on the active tab</td>
       <td>Page-level sections, content-heavy layouts (default)</td>
     </tr>
     <tr>
-      <td><code>pill</code></td>
+      <td>
+        <code>pill</code>
+      </td>
       <td>Filled background on the active tab, set in a tinted track</td>
       <td>Compact areas, toolbars, card headers</td>
     </tr>
@@ -246,33 +252,61 @@ import { Tabs } from './Tabs';
   </thead>
   <tbody>
     <tr>
-      <td><code>tabs</code></td>
-      <td><code>Tab[]</code></td>
+      <td>
+        <code>tabs</code>
+      </td>
+      <td>
+        <code>Tab[]</code>
+      </td>
       <td>—</td>
       <td>Array of tab definitions (see below).</td>
     </tr>
     <tr>
-      <td><code>defaultTab</code></td>
-      <td><code>string</code></td>
-      <td>First tab's <code>id</code></td>
+      <td>
+        <code>defaultTab</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        First tab's <code>id</code>
+      </td>
       <td>Initially active tab. Component is uncontrolled by default.</td>
     </tr>
     <tr>
-      <td><code>onChange</code></td>
-      <td><code>(tabId: string) =&gt; void</code></td>
-      <td><code>undefined</code></td>
+      <td>
+        <code>onChange</code>
+      </td>
+      <td>
+        <code>(tabId: string) =&gt; void</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
       <td>Called when the active tab changes. Use to sync external state.</td>
     </tr>
     <tr>
-      <td><code>variant</code></td>
-      <td><code>'underline' | 'pill'</code></td>
-      <td><code>'underline'</code></td>
+      <td>
+        <code>variant</code>
+      </td>
+      <td>
+        <code>'underline' | 'pill'</code>
+      </td>
+      <td>
+        <code>'underline'</code>
+      </td>
       <td>Visual style of the tab bar.</td>
     </tr>
     <tr>
-      <td><code>className</code></td>
-      <td><code>string</code></td>
-      <td><code>undefined</code></td>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
       <td>Additional classes on the outer wrapper.</td>
     </tr>
   </tbody>
@@ -290,18 +324,33 @@ import { Tabs } from './Tabs';
   </thead>
   <tbody>
     <tr>
-      <td><code>id</code></td>
-      <td><code>string</code></td>
-      <td>Unique identifier. Used for <code>defaultTab</code> and <code>onChange</code>.</td>
+      <td>
+        <code>id</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        Unique identifier. Used for <code>defaultTab</code> and{' '}
+        <code>onChange</code>.
+      </td>
     </tr>
     <tr>
-      <td><code>label</code></td>
-      <td><code>string</code></td>
+      <td>
+        <code>label</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
       <td>Visible text on the tab button.</td>
     </tr>
     <tr>
-      <td><code>content</code></td>
-      <td><code>ReactNode</code></td>
+      <td>
+        <code>content</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
       <td>Panel content rendered when the tab is active.</td>
     </tr>
   </tbody>
@@ -324,8 +373,8 @@ import { Tabs } from './Tabs';
 <h3 className='doc-sub'>Controlled with External State</h3>
 
 <p className='doc-p'>
-  Use <code>defaultTab</code> and <code>onChange</code> together when you need to
-  sync the active tab with URL params, analytics, or other state.
+  Use <code>defaultTab</code> and <code>onChange</code> together when you need
+  to sync the active tab with URL params, analytics, or other state.
 </p>
 
 ```jsx
@@ -334,18 +383,18 @@ const [activeTab, setActiveTab] = useState('overview');
 <Tabs
   tabs={tabs}
   defaultTab={activeTab}
-  onChange={(tabId) => {
+  onChange={tabId => {
     setActiveTab(tabId);
     trackEvent('tab_change', { tab: tabId });
   }}
-/>
+/>;
 ```
 
 <h3 className='doc-sub'>Pill Variant in a Card Header</h3>
 
 ```jsx
 <Card>
-  <Tabs variant="pill" tabs={settingsTabs} />
+  <Tabs variant='pill' tabs={settingsTabs} />
 </Card>
 ```
 
@@ -356,8 +405,8 @@ const [activeTab, setActiveTab] = useState('overview');
   <code>role="tab"</code> with <code>aria-selected</code> and{' '}
   <code>aria-controls</code> pointing to its panel. The active panel has{' '}
   <code>role="tabpanel"</code> with <code>aria-labelledby</code> linking back to
-  its tab. Only the active tab is in the tab order (<code>tabIndex=0</code>); inactive
-  tabs use <code>tabIndex=-1</code> and are reached via arrow keys.
+  its tab. Only the active tab is in the tab order (<code>tabIndex=0</code>);
+  inactive tabs use <code>tabIndex=-1</code> and are reached via arrow keys.
 </p>
 
 <h3 className='doc-sub'>Keyboard</h3>
@@ -371,32 +420,42 @@ const [activeTab, setActiveTab] = useState('overview');
   </thead>
   <tbody>
     <tr>
-      <td><span className='doc-kbd'>→</span></td>
+      <td>
+        <span className='doc-kbd'>→</span>
+      </td>
       <td>Moves focus and activation to the next tab (wraps to first)</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>←</span></td>
+      <td>
+        <span className='doc-kbd'>←</span>
+      </td>
       <td>Moves focus and activation to the previous tab (wraps to last)</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Home</span></td>
+      <td>
+        <span className='doc-kbd'>Home</span>
+      </td>
       <td>Moves focus and activation to the first tab</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>End</span></td>
+      <td>
+        <span className='doc-kbd'>End</span>
+      </td>
       <td>Moves focus and activation to the last tab</td>
     </tr>
     <tr>
-      <td><span className='doc-kbd'>Tab</span></td>
+      <td>
+        <span className='doc-kbd'>Tab</span>
+      </td>
       <td>Moves focus into the active tab panel</td>
     </tr>
   </tbody>
 </table>
 
 <p className='doc-p'>
-  This component uses <strong>automatic activation</strong>: arrow keys both move
-  focus and activate the tab immediately. This is the recommended WAI-ARIA pattern
-  when panel content loads instantly (no async fetch).
+  This component uses <strong>automatic activation</strong>: arrow keys both
+  move focus and activate the tab immediately. This is the recommended WAI-ARIA
+  pattern when panel content loads instantly (no async fetch).
 </p>
 
 <div className='doc-do-dont'>
@@ -404,15 +463,17 @@ const [activeTab, setActiveTab] = useState('overview');
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
       Give each tab a unique <code>id</code>. The component generates ARIA
-      relationships from these IDs. Duplicate IDs break the <code>aria-controls</code>{' '}
-      / <code>aria-labelledby</code> link between tab and panel.
+      relationships from these IDs. Duplicate IDs break the{' '}
+      <code>aria-controls</code> / <code>aria-labelledby</code> link between tab
+      and panel.
     </p>
   </div>
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
-      Don't use Tabs for sequential steps or wizards. Tabs imply independent panels;
-      users expect to jump to any tab in any order. Steppers enforce order.
+      Don't use Tabs for sequential steps or wizards. Tabs imply independent
+      panels; users expect to jump to any tab in any order. Steppers enforce
+      order.
     </p>
   </div>
 </div>
@@ -422,8 +483,8 @@ const [activeTab, setActiveTab] = useState('overview');
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
       Keep tab labels short (one or two words). Long labels cause the tab bar to
-      wrap awkwardly on mobile. If labels are sentences, the content probably belongs
-      on separate pages.
+      wrap awkwardly on mobile. If labels are sentences, the content probably
+      belongs on separate pages.
     </p>
   </div>
   <div className='doc-dont'>
