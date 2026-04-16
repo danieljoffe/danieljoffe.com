@@ -27,6 +27,9 @@ import ContactFormCaseStudy, {
 import AppContextCaseStudy, {
   metadata as appContextMeta,
 } from './appcontext-simplification-case-study.mdx';
+import JobPipelineCaseStudy, {
+  metadata as jobPipelineMeta,
+} from './job-pipeline-case-study.mdx';
 
 export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
   {
@@ -40,6 +43,7 @@ export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
     'logistics-dashboard-study-case': LogisticsDashboardStudyCase,
     'contact-form-case-study': ContactFormCaseStudy,
     'appcontext-simplification-case-study': AppContextCaseStudy,
+    'job-pipeline-case-study': JobPipelineCaseStudy,
   };
 
 export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
@@ -53,4 +57,5 @@ export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
   'logistics-dashboard-study-case': logisticsMeta,
   'contact-form-case-study': contactFormMeta,
   'appcontext-simplification-case-study': appContextMeta,
+  'job-pipeline-case-study': jobPipelineMeta,
 };

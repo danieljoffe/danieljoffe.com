@@ -1,0 +1,181 @@
+export const metadata = {
+  title: 'Greenhouse Job Pipeline: FastAPI Behind Next.js',
+  date: '2026-04-15',
+  excerpt:
+    'Built a full job-search pipeline: Python/FastAPI scraper, weighted scoring engine, Next.js admin dashboard, JWT-cookie auth, and a Railway deploy.',
+  author: 'Daniel Joffe',
+  category: 'Full-Stack Development',
+  tags: [
+    'Next.js',
+    'TypeScript',
+    'Nx',
+    'Monorepo',
+    'Security',
+    'REST APIs',
+    'CI/CD',
+  ],
+  slug: 'job-pipeline-case-study',
+  type: 'project',
+  role: 'Solo Developer',
+  duration: 'April 2026',
+  cover: {
+    alt: 'Organized filing cards in a wooden tray',
+    src: '/images/covers/job-pipeline-case-study.webp',
+  },
+};
+
+## Overview
+
+**Project:** Greenhouse job scraper, scoring engine, and admin dashboard for my active job search
+
+**Role:** Solo Developer
+
+**Duration:** April 2026
+
+**Purpose:** Replace daily manual scanning of a dozen company career pages with a single ranked list of relevant postings, refreshed automatically, hosted under a password-protected admin route on the portfolio
+
+## Business impact
+
+- Polls ten Greenhouse boards daily and stores every posting with a score
+- Cut the time to triage a day's new listings from about 40 minutes to under 5
+- Filtered roughly 300 noisy postings per week down to a ranked top 20
+- Gave me one authenticated surface for every job-search tool instead of separate password prompts per dashboard
+
+## The challenge
+
+The Greenhouse Job Board API is free, unauthenticated, and returns every posting a company has ever listed as JSON. Ten companies, polled daily, is not a technical challenge; it is a schema and scoring problem. The hard parts were:
+
+- Scoring postings against my actual target profile without hand-curating each one
+- Storing enough history to notice new postings versus re-polled ones
+- Authenticating a Next.js admin dashboard against a Python service without stuffing an API key into the browser
+- Running a Python service inside a JavaScript monorepo without duct tape
+
+## Architecture
+
+The pipeline has three services cooperating through Supabase:
+
+```
+Greenhouse API
+     │
+     ▼
+┌──────────────────────┐         ┌─────────────────────────┐
+│ FastAPI (job-api)    │  writes │ Supabase (Postgres)     │
+│  poller  → score     │────────▶│  job_sources            │
+│  sanitize HTML       │         │  job_postings           │
+└──────────┬───────────┘         │  job_status_log         │
+           ▲                     └────────────┬────────────┘
+           │ x-api-key (cron)                  │
+           │ JWT bearer (dashboard)            │ reads
+┌──────────┴───────────┐                       ▼
+│ Next.js proxy routes │                 ┌──────────────────┐
+│ /api/jobs/*          │────────────────▶│ /tools/admin/jobs│
+│ verifies admin cookie│                 │ dashboard        │
+└──────────────────────┘                 └──────────────────┘
+```
+
+The admin browser only ever talks to the Next.js app. Next.js verifies the admin JWT cookie in `proxy.ts`, then forwards the session token to FastAPI as a bearer credential. The scraper itself runs from a Vercel cron that authenticates with `x-api-key`. One backend, two valid credentials, one source of truth for sessions.
+
+## The scraper
+
+The Greenhouse client and poller live in `apps/job-api/app/services/`. The loop is small: list sources, fetch each board, diff against stored postings, score the new ones, write them back.
+
+The scoring engine is a weighted keyword config with five tiers: role titles, core technologies, domain skills, seniority signals, and negative keywords. A senior React/Next.js role scores high; a junior PHP contract lands in the negative zone and never surfaces. The weights live in version control, so recalibrating the filter is a PR, not a UI toggle.
+
+HTML descriptions get sanitized on write with `bleach` and a tag allowlist. The assumption that a third-party API returns safe HTML is the wrong one; stripping tags before the row lands in Postgres means every consumer (dashboard, email, backup export) inherits the safety without having to remember it.
+
+## Auth across two runtimes
+
+The scraper runs unattended on a cron schedule, so it needs a credential that does not expire. The dashboard runs in a browser, so it should not hold a long-lived API key.
+
+The FastAPI service accepts either, and both paths are constant-time:
+
+```python title="apps/job-api/app/dependencies.py"
+def verify_api_key_or_session(
+    request: Request,
+    key: str | None = Security(api_key_header),
+    s: Settings = Depends(get_settings),
+) -> str:
+    if _api_key_matches(key, s.job_api_key):
+        return "api-key"
+    token = _extract_bearer_token(request)
+    if token:
+        try:
+            payload = jwt.decode(token, s.admin_session_secret, algorithms=["HS256"])
+        except jwt.PyJWTError:
+            pass
+        else:
+            if payload.get("sub") == "tools-admin":
+                return "session"
+    raise HTTPException(status_code=401, detail="Unauthorized")
+```
+
+The Next.js app mints the JWT on `/tools/login` with `jose`, stores it as an httpOnly cookie, and verifies it in `proxy.ts` for every `/tools/admin/*` request. The Python service verifies the same HS256 signature with `pyjwt`. One shared secret, two runtimes, zero cross-origin quirks because the browser only ever hits same-origin Next.js proxy routes.
+
+The poll endpoint deliberately stays API-key-only. A session cookie is not a thing cron has.
+
+## Running Python inside Nx
+
+The service lives in `apps/job-api/` next to the Next.js and Playwright workspaces. Nx has no Python integration, which is fine because Nx only needs to dispatch commands:
+
+```json title="apps/job-api/project.json"
+{
+  "name": "job-api",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api uvicorn app.main:app --reload --port 8000",
+        "cwd": "apps/job-api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api pytest -v",
+        "cwd": "apps/job-api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api ruff check .",
+        "cwd": "apps/job-api"
+      }
+    },
+    "mypy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package job-api mypy app/",
+        "cwd": "apps/job-api"
+      }
+    }
+  }
+}
+```
+
+A single uv workspace at the repo root locks every Python dependency. A dedicated `ci-python` GitHub Actions job runs `pnpm nx run-many -t lint test mypy -p job-api` on every non-docs PR, gated by `ci-status` alongside the Node checks. Mypy runs in strict mode; ruff runs with an opinionated `select` list; pytest covers 46 tests across sanitize, scoring, dependencies, schemas, Greenhouse client, poller, and both routers.
+
+(The uv-in-Nx plumbing got its own blog post: [Running a uv Python workspace inside an Nx monorepo](/blog/uv-python-workspace-nx-monorepo).)
+
+## The deploy
+
+FastAPI runs on Railway. The Docker build uses the monorepo root as the build context so it can see the workspace lockfile:
+
+```dockerfile
+COPY pyproject.toml uv.lock ./
+COPY apps/job-api/pyproject.toml ./apps/job-api/pyproject.toml
+RUN uv sync --frozen --no-dev --no-editable --package job-api
+COPY apps/job-api/app ./apps/job-api/app
+```
+
+`railway.toml` binds the container to `$PORT` and points Railway's healthcheck at `/health`. A `TrustedHostMiddleware` wired off an `ALLOWED_HOSTS` env var refuses requests with forged `Host` headers. The only public endpoint is `/health`; everything else sits behind `verify_api_key` or `verify_api_key_or_session`.
+
+## The result
+
+The dashboard shows a ranked table of everything the poller has found in the last 30 days, with a detail view that renders the sanitized description and a status column I can flip to `applied`, `interviewing`, or `rejected`. Each status change appends a row to `job_status_log`, so the history is immutable and exportable.
+
+What this replaced: a folder of browser tabs and a Notion page I updated by hand. What it enabled: actually knowing, at any moment, which postings are new and which are worth the next round of applications. Every piece of the system is small; the value is in having them all talking to each other behind one login.
+
+## Takeaway
+
+Full-stack projects across two languages are easier than they sound if each tool owns its job. uv owns Python dependency resolution; Nx owns task dispatch; Next.js owns the browser boundary; FastAPI owns the database. Pick a shared JWT secret, put constant-time comparisons on both sides, and the rest is plumbing.
