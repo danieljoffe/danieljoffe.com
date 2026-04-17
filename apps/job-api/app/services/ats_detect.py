@@ -8,6 +8,7 @@ import httpx
 from app.services.ashby import ASHBY_BASE
 from app.services.greenhouse import GREENHOUSE_BASE
 from app.services.lever import LEVER_BASE
+from app.services.smartrecruiters import SMARTRECRUITERS_BASE
 
 REQUEST_TIMEOUT = 8.0
 PROBE_DELAY = 0.1
@@ -29,6 +30,11 @@ _URL_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"api\.lever\.co/v[01]/postings/([a-z0-9][a-z0-9-]+)", re.I), "lever"),
     (re.compile(r"jobs\.ashbyhq\.com/([a-z0-9][a-z0-9._-]+)", re.I), "ashby"),
     (re.compile(r"api\.ashbyhq\.com/posting-api/job-board/([a-z0-9][a-z0-9._-]+)", re.I), "ashby"),
+    (re.compile(r"([a-z0-9-]+)\.wd\d+\.myworkdayjobs\.com", re.I), "workday"),
+    (
+        re.compile(r"api\.smartrecruiters\.com/v1/companies/([a-zA-Z0-9-]+)", re.I),
+        "smartrecruiters",
+    ),
 ]
 
 # Slug must be URL-safe, lowercase, 2-80 chars
@@ -123,13 +129,37 @@ async def _probe_ashby(slug: str, client: httpx.AsyncClient) -> DetectResult | N
     )
 
 
+async def _probe_smartrecruiters(
+    slug: str, client: httpx.AsyncClient
+) -> DetectResult | None:
+    url = f"{SMARTRECRUITERS_BASE}/{slug}/postings?limit=1"
+    try:
+        resp = await client.get(url)
+    except httpx.HTTPError:
+        return None
+    if resp.status_code != 200:
+        return None
+    data = resp.json()
+    content = data.get("content", [])
+    if not isinstance(content, list) or len(content) == 0:
+        return None
+    total = data.get("totalFound", len(content))
+    return DetectResult(
+        provider="smartrecruiters",
+        board_token=slug,
+        company_name=slug.replace("-", " ").title(),
+        job_count=total,
+    )
+
+
 _PROBERS = {
     "greenhouse": _probe_greenhouse,
     "lever": _probe_lever,
     "ashby": _probe_ashby,
+    "smartrecruiters": _probe_smartrecruiters,
 }
 
-_PROBE_ORDER = ["greenhouse", "lever", "ashby"]
+_PROBE_ORDER = ["greenhouse", "lever", "ashby", "smartrecruiters"]
 
 
 async def detect_ats(raw_input: str) -> DetectResult | None:

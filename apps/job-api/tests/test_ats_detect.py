@@ -57,6 +57,20 @@ class TestParseInput:
         assert provider == "lever"
         assert slug == "netlify"
 
+    def test_workday_url(self):
+        provider, slug = _parse_input(
+            "https://salesforce.wd12.myworkdayjobs.com/en-US/External"
+        )
+        assert provider == "workday"
+        assert slug == "salesforce"
+
+    def test_smartrecruiters_api_url(self):
+        provider, slug = _parse_input(
+            "https://api.smartrecruiters.com/v1/companies/VISA"
+        )
+        assert provider == "smartrecruiters"
+        assert slug == "visa"
+
 
 # --- detect_ats tests ---
 
@@ -191,3 +205,30 @@ async def test_detect_careers_page_url_probes_all():
     assert result is not None
     assert result.provider == "greenhouse"
     assert result.board_token == "notion"
+
+
+@pytest.mark.asyncio
+async def test_detect_smartrecruiters_from_api_url():
+    mock_client = AsyncMock()
+    mock_client.get.return_value = _make_http_response(
+        200,
+        {
+            "content": [{"id": "1", "name": "Engineer"}],
+            "totalFound": 42,
+        },
+    )
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch(
+        "app.services.ats_detect.httpx.AsyncClient",
+        return_value=mock_client,
+    ):
+        result = await detect_ats(
+            "https://api.smartrecruiters.com/v1/companies/VISA"
+        )
+
+    assert result is not None
+    assert result.provider == "smartrecruiters"
+    assert result.board_token == "visa"
+    assert result.job_count == 42

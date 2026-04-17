@@ -23,7 +23,7 @@ def test_source_action_bad_token_path_traversal():
 
 def test_source_action_token_too_long():
     with pytest.raises(ValidationError):
-        SourceAction(action="add", board_token="a" * 100, company_name="Foo")
+        SourceAction(action="add", board_token="a" * 260, company_name="Foo")
 
 
 def test_status_update_new_valid():

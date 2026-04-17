@@ -8,7 +8,14 @@ export const JOB_STATUSES = [
 
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
-export const PROVIDERS = ['greenhouse', 'lever', 'ashby'] as const;
+export const PROVIDERS = [
+  'greenhouse',
+  'lever',
+  'ashby',
+  'workday',
+  'smartrecruiters',
+  'jsonld',
+] as const;
 
 export type Provider = (typeof PROVIDERS)[number];
 
