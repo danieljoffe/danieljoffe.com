@@ -1,18 +1,20 @@
 /**
  * @jest-environment node
  */
-import { NextRequest } from 'next/server';
-import { verifyJobsAdmin } from '../../proxy';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyJobsAdmin, proxyToFastAPI } from '../../proxy';
 import { POST } from './route';
 
 jest.mock('../../proxy', () => ({
   verifyJobsAdmin: jest.fn(),
   proxyToFastAPI: jest.fn(),
-  IS_MOCK_MODE: true,
 }));
 
 const mockedVerify = verifyJobsAdmin as jest.MockedFunction<
   typeof verifyJobsAdmin
+>;
+const mockedProxy = proxyToFastAPI as jest.MockedFunction<
+  typeof proxyToFastAPI
 >;
 
 function createRequest(body: unknown): NextRequest {
@@ -34,16 +36,26 @@ describe('POST /api/jobs/[id]/status', () => {
       params: Promise.resolve({ id: 'job-123' }),
     });
     expect(res.status).toBe(401);
+    expect(mockedProxy).not.toHaveBeenCalled();
   });
 
-  it('returns 200 and echoes new status in mock mode', async () => {
+  it('proxies status update to FastAPI', async () => {
     mockedVerify.mockResolvedValueOnce(true);
-    const res = await POST(createRequest({ status: 'applied' }), {
+    mockedProxy.mockResolvedValueOnce(
+      NextResponse.json({
+        success: true,
+        old_status: 'new',
+        new_status: 'applied',
+      })
+    );
+    const body = { status: 'applied' };
+    const res = await POST(createRequest(body), {
       params: Promise.resolve({ id: 'job-123' }),
     });
     expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.success).toBe(true);
-    expect(json.new_status).toBe('applied');
+    expect(mockedProxy).toHaveBeenCalledWith('/jobs/job-123/status', {
+      method: 'POST',
+      body,
+    });
   });
 });

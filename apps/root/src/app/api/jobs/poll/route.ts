@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI, IS_MOCK_MODE } from '../proxy';
+import { verifyJobsAdmin, proxyToFastAPI } from '../proxy';
 
 function constantTimeEqual(a: string, b: string): boolean {
   const aBuf = Buffer.from(a, 'utf8');
@@ -19,15 +19,6 @@ export async function POST(request: NextRequest) {
 
   if (!isCron && !(await verifyJobsAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (IS_MOCK_MODE) {
-    return NextResponse.json({
-      sources_polled: 15,
-      new_jobs: 3,
-      updated_jobs: 7,
-      errors: [],
-    });
   }
 
   return proxyToFastAPI('/poll', { method: 'POST' });

@@ -1,14 +1,13 @@
 /**
  * @jest-environment node
  */
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { verifyJobsAdmin, proxyToFastAPI } from '../proxy';
 import { POST } from './route';
 
 jest.mock('../proxy', () => ({
   verifyJobsAdmin: jest.fn(),
   proxyToFastAPI: jest.fn(),
-  IS_MOCK_MODE: true,
 }));
 
 const mockedVerify = verifyJobsAdmin as jest.MockedFunction<
@@ -45,18 +44,20 @@ describe('POST /api/jobs/poll', () => {
     mockedVerify.mockResolvedValueOnce(false);
     const res = await POST(createRequest());
     expect(res.status).toBe(401);
+    expect(mockedProxy).not.toHaveBeenCalled();
   });
 
-  it('returns 200 with a matching cron bearer token', async () => {
+  it('proxies to FastAPI with a matching cron bearer token', async () => {
     process.env['CRON_SECRET'] = 'cron-token-abc';
-    // Verify should not be called when cron matches.
+    mockedProxy.mockResolvedValueOnce(
+      NextResponse.json({ sources_polled: 5, new_jobs: 2 })
+    );
     const res = await POST(
       createRequest({ authorization: 'Bearer cron-token-abc' })
     );
     expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.sources_polled).toBeDefined();
     expect(mockedVerify).not.toHaveBeenCalled();
+    expect(mockedProxy).toHaveBeenCalledWith('/poll', { method: 'POST' });
   });
 
   it('returns 401 when cron bearer token is wrong length (constant-time compare)', async () => {
@@ -75,11 +76,14 @@ describe('POST /api/jobs/poll', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 200 for authenticated admin session (no cron)', async () => {
+  it('proxies to FastAPI for authenticated admin session (no cron)', async () => {
     delete process.env['CRON_SECRET'];
     mockedVerify.mockResolvedValueOnce(true);
+    mockedProxy.mockResolvedValueOnce(
+      NextResponse.json({ sources_polled: 5, new_jobs: 2 })
+    );
     const res = await POST(createRequest());
     expect(res.status).toBe(200);
-    expect(mockedProxy).not.toHaveBeenCalled();
+    expect(mockedProxy).toHaveBeenCalledWith('/poll', { method: 'POST' });
   });
 });
