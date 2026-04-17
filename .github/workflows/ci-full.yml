@@ -19,6 +19,10 @@ on:
       CHROMATIC_PROJECT_TOKEN:
         required: false
 
+env:
+  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
+  NX_NO_CLOUD: 'true'
+
 jobs:
   filter:
     runs-on: ubuntu-latest
