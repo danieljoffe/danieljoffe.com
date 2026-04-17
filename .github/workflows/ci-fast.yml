@@ -30,7 +30,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - name: Lint affected
-        run: pnpm nx affected -t lint --exclude=job-api --nxBail
+        run: pnpm nx affected -t lint --exclude=job-api,audit-api --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
@@ -49,7 +49,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - name: Typecheck affected
-        run: pnpm nx affected -t typecheck --exclude=job-api --nxBail
+        run: pnpm nx affected -t typecheck --exclude=job-api,audit-api --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
@@ -68,7 +68,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - name: Test affected
-        run: pnpm nx affected -t test --exclude=job-api --nxBail
+        run: pnpm nx affected -t test --exclude=job-api,audit-api --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
@@ -87,7 +87,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - name: Build affected
-        run: pnpm nx affected -t build --exclude=job-api --nxBail
+        run: pnpm nx affected -t build --exclude=job-api,audit-api --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
