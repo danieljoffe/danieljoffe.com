@@ -14,14 +14,46 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 import sys
 import time
 import uuid
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 import httpx
 from supabase import create_client
+
+
+def normalize_url(url: str) -> str:
+    """Port of libs/shared/audit/src/lib/validation.ts::normalizeUrl.
+
+    Must produce byte-identical output to the JS version so parity scans
+    don't hit a uniqueness constraint mismatch against existing rows.
+    """
+    raw = url.strip().lower()
+    if not raw.startswith(("http://", "https://")):
+        raw = "https://" + raw
+    parsed = urlparse(raw)
+    host = re.sub(r"^www\.", "", parsed.hostname or "")
+    port = parsed.port
+    if (parsed.scheme == "https" and port == 443) or (
+        parsed.scheme == "http" and port == 80
+    ):
+        port = None
+    path = re.sub(r"/{2,}", "/", parsed.path)
+    if len(path) > 1:
+        path = path.rstrip("/")
+    query = ""
+    if parsed.query:
+        params = parse_qsl(parsed.query, keep_blank_values=True)
+        params.sort()
+        query = urlencode(params)
+    netloc = host if port is None else f"{host}:{port}"
+    pathname = "" if path in ("", "/") else path
+    tail = f"?{query}" if query else ""
+    return f"{parsed.scheme}://{netloc}{pathname}{tail}"
 
 TEST_URLS = [
     "https://example.com",
@@ -103,9 +135,14 @@ async def _post_scan(
     response.raise_for_status()
 
 
-def _insert_queued(supabase: Any, scan_id: str, url: str) -> None:
+def _insert_pending(supabase: Any, scan_id: str, url: str) -> None:
     supabase.table("scans").insert(
-        {"id": scan_id, "url": url, "status": "queued"}
+        {
+            "id": scan_id,
+            "url": url,
+            "normalized_url": normalize_url(url),
+            "status": "pending",
+        }
     ).execute()
 
 
@@ -218,8 +255,8 @@ async def run_one(
     print(f"  node_id   = {node_id}")
     print(f"  python_id = {python_id}")
 
-    _insert_queued(supabase, node_id, url)
-    _insert_queued(supabase, python_id, url)
+    _insert_pending(supabase, node_id, url)
+    _insert_pending(supabase, python_id, url)
 
     await asyncio.gather(
         _post_scan(client, node, node_id, url),
