@@ -1,8 +1,8 @@
 export const metadata = {
-  title: 'Greenhouse Job Pipeline: FastAPI Behind Next.js',
+  title: 'Multi-ATS Job Pipeline: FastAPI Behind Next.js',
   date: '2026-04-15',
   excerpt:
-    'Built a full job-search pipeline: Python/FastAPI scraper, weighted scoring engine, Next.js admin dashboard, JWT-cookie auth, and a Railway deploy.',
+    'Six-ATS job pipeline: FastAPI scraper, weighted scoring, Next.js admin dashboard, JWT cookie auth, auto-detect input, and 8-second scans.',
   author: 'Daniel Joffe',
   category: 'Full-Stack Development',
   tags: [
@@ -24,29 +24,35 @@ export const metadata = {
   },
 };
 
+_Updated 2026-04-17: expanded from a single-ATS Greenhouse poller to six providers (Lever, Ashby, Workday, SmartRecruiters, JSON-LD), added one-input ATS auto-detection, and cut scan time from 48 seconds to 8._
+
 ## Overview
 
-**Project:** Greenhouse job scraper, scoring engine, and admin dashboard for my active job search
+**Project:** Multi-ATS job scraper, scoring engine, and admin dashboard for my active job search
 
 **Role:** Solo Developer
 
 **Duration:** April 2026
 
-**Purpose:** Replace daily manual scanning of a dozen company career pages with a single ranked list of relevant postings, refreshed automatically, hosted under a password-protected admin route on the portfolio
+**Purpose:** Replace daily manual scanning of dozens of company career pages with a single ranked list of relevant postings, refreshed automatically, hosted under a password-protected admin route on the portfolio
 
 ## Business impact
 
-- Polls ten Greenhouse boards daily and stores every posting with a score
+- Polls 49 career boards across six ATS providers (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, and a JSON-LD fallback) and stores every posting with a score
 - Cut the time to triage a day's new listings from about 40 minutes to under 5
-- Filtered roughly 300 noisy postings per week down to a ranked top 20
+- Filtered thousands of raw postings per scan down to a US-only, role-matched top 20
+- Cut scan runtime from 48 seconds to 8 across three performance passes, well under Vercel's 60-second function ceiling
 - Gave me one authenticated surface for every job-search tool instead of separate password prompts per dashboard
 
 ## The challenge
 
-The Greenhouse Job Board API is free, unauthenticated, and returns every posting a company has ever listed as JSON. Ten companies, polled daily, is not a technical challenge; it is a schema and scoring problem. The hard parts were:
+The original pipeline spoke only Greenhouse. Ten hand-curated boards, one fetcher, a scoring engine, a dashboard. That worked for a week. Then I needed Lever, then Ashby, then a Workday instance, then two Workdays with different tenants, then a careers page that rendered through JavaScript and exposed nothing but JSON-LD in the HTML. The hard parts were:
 
+- Unifying five wildly different ATS APIs behind one fetcher contract
+- Detecting a provider automatically from either a careers URL or a plain company name, so adding a source is one input instead of three
+- Scraping JSON-LD job postings without pulling in a dependency for something Python's stdlib can do
+- Keeping the scan button under 10 seconds even with 49 sources fanning out concurrently
 - Scoring postings against my actual target profile without hand-curating each one
-- Storing enough history to notice new postings versus re-polled ones
 - Authenticating a Next.js admin dashboard against a Python service without stuffing an API key into the browser
 - Running a Python service inside a JavaScript monorepo without duct tape
 
@@ -77,11 +83,46 @@ The admin browser only ever talks to the Next.js app. Next.js verifies the admin
 
 ## The scraper
 
-The Greenhouse client and poller live in `apps/job-api/app/services/`. The loop is small: list sources, fetch each board, diff against stored postings, score the new ones, write them back.
+The ATS clients and poller live in `apps/job-api/app/services/`. The loop is small: list sources, fetch each board with the right fetcher, diff against stored postings, score the new ones, write them back.
+
+Each ATS has its own fetcher, but every fetcher returns the same `StandardJob` dataclass. The poller dispatches off the provider column on `job_sources`:
+
+```python
+FETCHERS: dict[str, Fetcher] = {
+    "greenhouse": fetch_board_jobs,
+    "lever": fetch_lever_jobs,
+    "ashby": fetch_ashby_jobs,
+    "workday": fetch_workday_jobs,
+    "smartrecruiters": fetch_smartrecruiters_jobs,
+    "jsonld": fetch_jsonld_jobs,
+}
+```
+
+Adding a new ATS means adding a fetcher and a row to that dict. The poller, scoring, sanitization, and dashboard do not change.
+
+The JSON-LD fetcher is the fallback for career pages with no public API. It reads the page, parses every `<script type="application/ld+json">` block with Python's stdlib `html.parser`, and normalizes the three shapes you find in the wild (single object, array, `@graph`) into `StandardJob` rows. Zero new dependencies for the scraping layer.
 
 The scoring engine is a weighted keyword config with five tiers: role titles, core technologies, domain skills, seniority signals, and negative keywords. A senior React/Next.js role scores high; a junior PHP contract lands in the negative zone and never surfaces. The weights live in version control, so recalibrating the filter is a PR, not a UI toggle.
 
 HTML descriptions get sanitized on write with `bleach` and a tag allowlist. The assumption that a third-party API returns safe HTML is the wrong one; stripping tags before the row lands in Postgres means every consumer (dashboard, email, backup export) inherits the safety without having to remember it.
+
+## Auto-detecting the provider
+
+Adding a source used to mean three decisions: provider dropdown, board token, company name. For every new company, I would open the careers page, identify the ATS, copy the right slug, paste. The dashboard now does it in one input:
+
+```
+Company name or careers URL: stripe
+                             ↓
+              Detected: Greenhouse (stripe), 142 jobs
+```
+
+The `detect_ats` service first tries to parse a known ATS URL pattern (`boards.greenhouse.io/*`, `jobs.lever.co/*`, `jobs.ashbyhq.com/*`, `*.myworkdayjobs.com/*`, `careers.smartrecruiters.com/*`). If the input is a bare slug, it probes each provider's public API and keeps the first one that responds with a non-empty board. One input, five providers covered, a collapsible "Advanced" pane preserves manual entry for the edge cases.
+
+## Making the scan button fast
+
+Fanning out across 49 sources exposed a chain of bottlenecks none of which were visible with ten Greenhouse boards. A single scan started the day at 48 seconds and ended at 8, through three targeted fixes: concurrent polling with `asyncio.gather`, batched Supabase writes to collapse the N+1 round-trip pattern, and `asyncio.to_thread` on every `.execute()` so `supabase-py`'s sync client stops blocking the event loop.
+
+The first fix did nothing on its own, which is the most instructive part of the story. That walk-through lives in its own blog post: [asyncio.gather is not enough for a sync client](/blog/asyncio-gather-sync-client).
 
 ## Auth across two runtimes
 
@@ -153,7 +194,7 @@ The service lives in `apps/job-api/` next to the Next.js and Playwright workspac
 }
 ```
 
-A single uv workspace at the repo root locks every Python dependency. A dedicated `ci-python` GitHub Actions job runs `pnpm nx run-many -t lint test mypy -p job-api` on every non-docs PR, gated by `ci-status` alongside the Node checks. Mypy runs in strict mode; ruff runs with an opinionated `select` list; pytest covers 46 tests across sanitize, scoring, dependencies, schemas, Greenhouse client, poller, and both routers.
+A single uv workspace at the repo root locks every Python dependency. A dedicated `ci-python` GitHub Actions job runs `pnpm nx run-many -t lint test mypy -p job-api` on every non-docs PR, gated by `ci-status` alongside the Node checks. Mypy runs in strict mode; ruff runs with an opinionated `select` list; pytest covers 129 tests across sanitize, scoring, dependencies, schemas, every ATS fetcher, the ATS detector, the poller, and all three routers.
 
 (The uv-in-Nx plumbing got its own blog post: [Running a uv Python workspace inside an Nx monorepo](/blog/uv-python-workspace-nx-monorepo).)
 

@@ -31,6 +31,7 @@ const OUTPUT_DIR = resolve(__dirname, '../apps/root/public/images/covers');
 const EXPECTED_SLUGS = [
   // Blog (36)
   'accessible-dropdown-keyboard-nav',
+  'asyncio-gather-sync-client',
   'auto-generated-toc-scroll-spy',
   'calendly-embed-timeout-fallback',
   'ci-docs-only-shell-detection',

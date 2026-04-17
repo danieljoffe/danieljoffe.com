@@ -41,6 +41,7 @@ export const blogSlugs = {
   publicRouteGroupChromeSplit: 'public-route-group-chrome-split',
   uvPythonWorkspaceNxMonorepo: 'uv-python-workspace-nx-monorepo',
   adminLoginHardeningJwtCookie: 'admin-login-hardening-jwt-cookie',
+  asyncioGatherSyncClient: 'asyncio-gather-sync-client',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

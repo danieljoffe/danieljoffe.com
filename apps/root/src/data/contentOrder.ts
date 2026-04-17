@@ -104,4 +104,5 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.publicRouteGroupChromeSplit, // 2026-04-15
   blogSlugs.uvPythonWorkspaceNxMonorepo, // 2026-04-15
   blogSlugs.adminLoginHardeningJwtCookie, // 2026-04-15
+  blogSlugs.asyncioGatherSyncClient, // 2026-04-17
 ];
