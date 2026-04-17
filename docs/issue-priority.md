@@ -14,13 +14,13 @@ Updated: 2026-04-10
 
 ### Open issues
 
-| Order | #       | Issue                             | Status                                  |
-| ----- | ------- | --------------------------------- | --------------------------------------- |
-| 1     | **183** | Python/FastAPI scan engine        | open — replaces Node audit-scan-service |
-| 2     | **81**  | Comparison reports (before/after) | depends on #183 step 5                  |
-| 3     | **104** | Insights aggregation API          | depends on #183 step 4                  |
-| 4     | **105** | Public-facing insights page       | depends on #104                         |
-| 5     | **93**  | Admin dashboard charts            | depends on #104                         |
+| Order | #       | Issue                             | Status                                                 |
+| ----- | ------- | --------------------------------- | ------------------------------------------------------ |
+| 1     | **183** | Python/FastAPI scan engine        | done — Node service retired in favor of apps/audit-api |
+| 2     | **81**  | Comparison reports (before/after) | depends on #183 step 5                                 |
+| 3     | **104** | Insights aggregation API          | depends on #183 step 4                                 |
+| 4     | **105** | Public-facing insights page       | depends on #104                                        |
+| 5     | **93**  | Admin dashboard charts            | depends on #104                                        |
 
 ## Trackers
 

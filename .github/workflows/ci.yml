@@ -127,7 +127,7 @@ jobs:
         run: uv sync --frozen
 
       - name: Run Python tasks
-        run: pnpm nx run-many -t lint test mypy --nxBail -p job-api
+        run: pnpm nx run-many -t lint test typecheck --nxBail -p job-api,audit-api
 
   ci-status:
     if: always()
