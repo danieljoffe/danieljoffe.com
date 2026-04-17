@@ -65,7 +65,13 @@ async def _run_axe_and_capture(
     cfg = config_for(device)
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(
-            args=["--no-sandbox", "--disable-dev-shm-usage"]
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-software-rasterizer",
+                "--disable-setuid-sandbox",
+            ]
         )
         try:
             context = await browser.new_context(
