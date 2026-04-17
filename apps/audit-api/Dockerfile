@@ -30,7 +30,11 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY apps/audit-api/pyproject.toml ./apps/audit-api/pyproject.toml
 
-RUN uv sync --frozen --no-dev --no-editable --package audit-api
+# Pin Python 3.11. Without this, uv picks the newest available (3.14 at time
+# of writing), which has no prebuilt wheels for supabase's pyiceberg dep and
+# would trigger a source build that requires a C toolchain we don't install.
+RUN uv python install 3.11 \
+    && uv sync --frozen --no-dev --no-editable --package audit-api --python 3.11
 
 # Playwright browsers are pre-installed at /ms-playwright. No re-download needed.
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
