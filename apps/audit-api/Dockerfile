@@ -9,7 +9,15 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 RUN groupadd --system --gid 1001 app \
     && useradd --system --uid 1001 --gid app --home-dir /app --shell /sbin/nologin app
 
-# Lighthouse CLI + axe-core. Node.js is already present in the Playwright image.
+# Node.js (for Lighthouse CLI). The playwright/python image ships Python-only;
+# Node only comes with the playwright (node) variant. Install via NodeSource.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Lighthouse CLI + axe-core.
 RUN npm install -g lighthouse@12.8.0 \
     && mkdir -p /app/vendor \
     && npm pack axe-core@4.11.3 --pack-destination=/tmp \
