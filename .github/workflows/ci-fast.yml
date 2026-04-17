@@ -17,6 +17,10 @@ on:
       NX_CLOUD_ID:
         required: false
 
+env:
+  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
+  NX_NO_CLOUD: 'true'
+
 jobs:
   checks:
     runs-on: ubuntu-latest

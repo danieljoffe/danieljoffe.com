@@ -27,6 +27,10 @@ permissions:
   contents: read
   statuses: write
 
+env:
+  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
+  NX_NO_CLOUD: 'true'
+
 jobs:
   preflight:
     runs-on: ubuntu-latest
