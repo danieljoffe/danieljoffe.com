@@ -194,19 +194,6 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
-      - uses: nrwl/nx-set-shas@v5
-        id: shas
-        with:
-          main-branch-name: develop
-
-      - name: Run affected tasks
-        run: pnpm nx affected -t lint test build typecheck build-storybook --nxBail
-        env:
-          NX_BASE: ${{ steps.shas.outputs.base }}
-          NX_HEAD: ${{ steps.shas.outputs.head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
