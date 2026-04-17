@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
     audit_api_key: str = ""
     admin_session_secret: str = ""
-    allowed_hosts: str = "*"
+    allowed_hosts: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
