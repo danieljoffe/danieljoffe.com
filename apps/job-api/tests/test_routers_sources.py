@@ -162,3 +162,53 @@ def test_verify_rejects_invalid_format(client_factory):
     client = client_factory(sb)
     r = client.get("/sources/verify", params={"board_token": "INVALID TOKEN!!"})
     assert r.status_code == 422
+
+
+# --- GET /sources/detect ---
+
+
+def test_detect_unauth_returns_401():
+    client = TestClient(app)
+    r = client.get("/sources/detect", params={"q": "stripe"})
+    assert r.status_code == 401
+
+
+def test_detect_found(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+
+    from app.services.ats_detect import DetectResult
+
+    mock_result = DetectResult(
+        provider="greenhouse", board_token="stripe", company_name="Stripe", job_count=42
+    )
+
+    with patch("app.routers.sources.detect_ats", return_value=mock_result):
+        r = client.get("/sources/detect", params={"q": "stripe"})
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["found"] is True
+    assert body["provider"] == "greenhouse"
+    assert body["board_token"] == "stripe"
+    assert body["company_name"] == "Stripe"
+    assert body["job_count"] == 42
+
+
+def test_detect_not_found(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+
+    with patch("app.routers.sources.detect_ats", return_value=None):
+        r = client.get("/sources/detect", params={"q": "nonexistent-xyz"})
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["found"] is False
+
+
+def test_detect_rejects_empty_query(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+    r = client.get("/sources/detect", params={"q": ""})
+    assert r.status_code == 422
