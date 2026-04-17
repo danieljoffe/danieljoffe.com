@@ -33,6 +33,12 @@ COPY apps/audit-api/pyproject.toml ./apps/audit-api/pyproject.toml
 # Pin Python 3.11. Without this, uv picks the newest available (3.14 at time
 # of writing), which has no prebuilt wheels for supabase's pyiceberg dep and
 # would trigger a source build that requires a C toolchain we don't install.
+#
+# UV_PYTHON_INSTALL_DIR redirects the managed Python under /app so the later
+# `chown -R app:app /app` covers it. The default (/root/.local/share/uv/python)
+# is unreadable by the non-root `app` user, which makes the venv's uvicorn
+# shebang fail with "exec: Permission denied" at container start.
+ENV UV_PYTHON_INSTALL_DIR=/app/.uv-python
 RUN uv python install 3.11 \
     && uv sync --frozen --no-dev --no-editable --package audit-api --python 3.11
 
