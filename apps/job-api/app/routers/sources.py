@@ -1,11 +1,13 @@
 from typing import Any, cast
 
-from fastapi import APIRouter, Depends
+import httpx
+from fastapi import APIRouter, Depends, Query
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
+from app.services.greenhouse import GREENHOUSE_BASE, REQUEST_TIMEOUT
 
 router = APIRouter(
     prefix="/sources",
@@ -60,6 +62,25 @@ async def manage_source(
         return {"error": "Source not found"}
 
     return {"error": f"Unknown action: {body.action}"}
+
+
+@router.get("/verify")
+async def verify_board_token(
+    board_token: str = Query(pattern=r"^[a-z0-9][a-z0-9-]{1,80}$"),
+) -> dict[str, Any]:
+    url = f"{GREENHOUSE_BASE}/{board_token}"
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        try:
+            resp = await client.get(url)
+        except httpx.HTTPError:
+            return {"valid": False}
+    if resp.status_code != 200:
+        return {"valid": False}
+    data = resp.json()
+    return {
+        "valid": True,
+        "company_name": data.get("name", ""),
+    }
 
 
 @router.post("/seed")

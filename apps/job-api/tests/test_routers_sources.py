@@ -1,6 +1,7 @@
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -86,3 +87,78 @@ def test_sources_seed_inserts_all(client_factory):
     assert body["success"] is True
     assert body["seeded"] == len(COMPANY_SEED)
     assert sb.table.return_value.upsert.call_count == len(COMPANY_SEED)
+
+
+# --- GET /sources/verify ---
+
+
+def test_verify_unauth_returns_401():
+    client = TestClient(app)
+    r = client.get("/sources/verify", params={"board_token": "stripe"})
+    assert r.status_code == 401
+
+
+def test_verify_valid_token(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {"name": "Stripe"}
+
+    mock_http = AsyncMock()
+    mock_http.get.return_value = mock_resp
+    mock_http.__aenter__ = AsyncMock(return_value=mock_http)
+    mock_http.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.routers.sources.httpx.AsyncClient", return_value=mock_http):
+        r = client.get("/sources/verify", params={"board_token": "stripe"})
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["valid"] is True
+    assert body["company_name"] == "Stripe"
+
+
+def test_verify_invalid_token(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 404
+
+    mock_http = AsyncMock()
+    mock_http.get.return_value = mock_resp
+    mock_http.__aenter__ = AsyncMock(return_value=mock_http)
+    mock_http.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.routers.sources.httpx.AsyncClient", return_value=mock_http):
+        r = client.get("/sources/verify", params={"board_token": "nonexistent"})
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["valid"] is False
+
+
+def test_verify_network_error(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+
+    mock_http = AsyncMock()
+    mock_http.get.side_effect = httpx.HTTPError("Connection failed")
+    mock_http.__aenter__ = AsyncMock(return_value=mock_http)
+    mock_http.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.routers.sources.httpx.AsyncClient", return_value=mock_http):
+        r = client.get("/sources/verify", params={"board_token": "stripe"})
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["valid"] is False
+
+
+def test_verify_rejects_invalid_format(client_factory):
+    sb = MagicMock()
+    client = client_factory(sb)
+    r = client.get("/sources/verify", params={"board_token": "INVALID TOKEN!!"})
+    assert r.status_code == 422
