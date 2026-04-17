@@ -10,9 +10,9 @@ LIGHTHOUSE_CATEGORIES = ["performance", "accessibility", "best-practices", "seo"
 # (non-root uid, no host mounts). Do not relax container isolation without
 # re-enabling --sandbox or introducing an out-of-process browser jail.
 #
-# Flag set intentionally matches apps/audit-scan-service/src/config/lighthouse.ts
-# so Node and Python services produce comparable scan output during parity
-# testing. Notably absent: --single-process / --no-zygote (they crash modern
+# Flag set was matched to the retired Node audit-scan-service during the parity
+# window; keep it stable to avoid score drift on scans already in the database.
+# Notably absent: --single-process / --no-zygote (they crash modern
 # Chromium at launch when Lighthouse's CLI spawns Chrome), and --headless=new
 # (stick to --headless to match the Node service's flag set).
 CHROME_FLAGS = [
