@@ -86,7 +86,10 @@ def test_sources_seed_inserts_all(client_factory):
     body = r.json()
     assert body["success"] is True
     assert body["seeded"] == len(COMPANY_SEED)
-    assert sb.table.return_value.upsert.call_count == len(COMPANY_SEED)
+    assert sb.table.return_value.upsert.call_count == 1
+    call_args, call_kwargs = sb.table.return_value.upsert.call_args
+    assert len(call_args[0]) == len(COMPANY_SEED)
+    assert call_kwargs["on_conflict"] == "board_token"
 
 
 # --- GET /sources/verify ---

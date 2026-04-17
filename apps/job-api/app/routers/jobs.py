@@ -61,16 +61,13 @@ async def delete_job(
     posting_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
-    current = (
+    resp = (
         supabase.table("job_postings")
-        .select("id")
+        .delete()
         .eq("id", posting_id)
-        .single()
         .execute()
     )
-    if not current.data:
+    if not resp.data:
         raise HTTPException(status_code=404, detail="Posting not found")
-
-    supabase.table("job_postings").delete().eq("id", posting_id).execute()
 
     return {"success": True, "deleted_id": posting_id}

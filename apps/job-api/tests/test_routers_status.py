@@ -21,7 +21,9 @@ def _build_supabase(posting_data: dict[str, Any] | None) -> MagicMock:
     # insert, update, and delete are chain-called; default MagicMock return is fine
     sb.table.return_value.insert.return_value.execute.return_value = _Resp(None)
     sb.table.return_value.update.return_value.eq.return_value.execute.return_value = _Resp(None)
-    sb.table.return_value.delete.return_value.eq.return_value.execute.return_value = _Resp(None)
+    delete_data = [posting_data] if posting_data else None
+    delete_chain = sb.table.return_value.delete.return_value.eq.return_value
+    delete_chain.execute.return_value = _Resp(delete_data)
     return sb
 
 

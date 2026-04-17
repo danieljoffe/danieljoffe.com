@@ -106,8 +106,7 @@ async def detect_provider(
 
 @router.post("/seed")
 async def seed_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
-    inserted = 0
-    for company in COMPANY_SEED:
-        supabase.table("job_sources").upsert(company, on_conflict="board_token").execute()
-        inserted += 1
-    return {"success": True, "seeded": inserted}
+    supabase.table("job_sources").upsert(
+        list(COMPANY_SEED), on_conflict="board_token"
+    ).execute()
+    return {"success": True, "seeded": len(COMPANY_SEED)}

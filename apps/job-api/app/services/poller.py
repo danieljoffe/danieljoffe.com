@@ -180,6 +180,7 @@ async def _poll_one_source(
         # so we don't archive jobs that exist on the board but don't match filters.
         all_external_ids: set[str] = {job.external_id for job in jobs}
 
+        rows_to_upsert: list[dict[str, Any]] = []
         for job in jobs:
             if not _title_matches_any_role(job.title):
                 continue
@@ -188,28 +189,30 @@ async def _poll_one_source(
 
             score_result = score_job(job.title, job.content, keyword_config)
 
-            row: dict[str, Any] = {
-                "external_id": job.external_id,
-                "source_id": source_id,
-                "title": job.title,
-                "company_name": company_name,
-                "location": job.location_name,
-                "department": job.department,
-                "description_html": sanitize_html(job.content),
-                "absolute_url": job.absolute_url,
-                "score": score_result.score,
-                "score_breakdown": score_result.breakdown.model_dump(),
-                "greenhouse_updated_at": job.updated_at,
-            }
-
-            upsert_resp = (
-                supabase.table("job_postings")
-                .upsert(row, on_conflict="source_id,external_id")
-                .execute()
+            rows_to_upsert.append(
+                {
+                    "external_id": job.external_id,
+                    "source_id": source_id,
+                    "title": job.title,
+                    "company_name": company_name,
+                    "location": job.location_name,
+                    "department": job.department,
+                    "description_html": sanitize_html(job.content),
+                    "absolute_url": job.absolute_url,
+                    "score": score_result.score,
+                    "score_breakdown": score_result.breakdown.model_dump(),
+                    "greenhouse_updated_at": job.updated_at,
+                }
             )
 
-            if upsert_resp.data:
-                data = cast(dict[str, Any], upsert_resp.data[0])
+        if rows_to_upsert:
+            upsert_resp = (
+                supabase.table("job_postings")
+                .upsert(rows_to_upsert, on_conflict="source_id,external_id")
+                .execute()
+            )
+            for raw_row in upsert_resp.data or []:
+                data = cast(dict[str, Any], raw_row)
                 if data.get("created_at") == data.get("updated_at"):
                     summary["new"] += 1
                 else:
@@ -224,14 +227,17 @@ async def _poll_one_source(
             .not_.in_("status", ["saved", "applied", "archived"])
             .execute()
         )
-        now_iso = datetime.now(UTC).isoformat()
+        stale_ids: list[str] = []
         for existing_job in existing_resp.data or []:
             row_data = cast(dict[str, Any], existing_job)
             if row_data["external_id"] not in all_external_ids:
-                supabase.table("job_postings").update(
-                    {"status": "archived", "updated_at": now_iso}
-                ).eq("id", row_data["id"]).execute()
-                summary["archived"] += 1
+                stale_ids.append(row_data["id"])
+
+        if stale_ids:
+            supabase.table("job_postings").update(
+                {"status": "archived", "updated_at": datetime.now(UTC).isoformat()}
+            ).in_("id", stale_ids).execute()
+            summary["archived"] = len(stale_ids)
 
         supabase.table("job_sources").update(
             {
