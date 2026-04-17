@@ -21,9 +21,12 @@ class ScoreResult(BaseModel):
     excluded: bool
 
 
+Provider = Literal["greenhouse", "lever", "ashby"]
+
+
 class JobPosting(BaseModel):
     id: str
-    greenhouse_id: int
+    external_id: str
     source_id: str
     title: str
     company_name: str
@@ -41,6 +44,7 @@ class JobSource(BaseModel):
     id: str
     board_token: str
     company_name: str
+    provider: Provider = "greenhouse"
     enabled: bool
     last_polled_at: datetime | None
     job_count: int
@@ -63,6 +67,7 @@ class SourceAction(BaseModel):
     action: Literal["add", "remove", "toggle"]
     board_token: str = Field(pattern=BOARD_TOKEN_PATTERN, max_length=80)
     company_name: str | None = Field(default=None, max_length=200)
+    provider: Provider = "greenhouse"
 
 
 class PaginatedResponse(BaseModel):
