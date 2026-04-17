@@ -18,9 +18,12 @@ def _build_supabase(posting_data: dict[str, Any] | None) -> MagicMock:
     # .table("job_postings").select("status").eq("id", id).single().execute()
     select_chain = sb.table.return_value.select.return_value.eq.return_value.single
     select_chain.return_value.execute.return_value = _Resp(posting_data)
-    # insert and update are chain-called; default MagicMock return is fine
+    # insert, update, and delete are chain-called; default MagicMock return is fine
     sb.table.return_value.insert.return_value.execute.return_value = _Resp(None)
     sb.table.return_value.update.return_value.eq.return_value.execute.return_value = _Resp(None)
+    delete_data = [posting_data] if posting_data else None
+    delete_chain = sb.table.return_value.delete.return_value.eq.return_value
+    delete_chain.execute.return_value = _Resp(delete_data)
     return sb
 
 
@@ -67,3 +70,29 @@ def test_status_422_on_invalid_status(client_factory):
     client = client_factory(sb)
     r = client.post("/jobs/abc/status", json={"status": "bogus"})
     assert r.status_code == 422
+
+
+# --- DELETE /jobs/{posting_id} ---
+
+
+def test_delete_unauth_returns_401():
+    client = TestClient(app)
+    r = client.delete("/jobs/abc")
+    assert r.status_code == 401
+
+
+def test_delete_404_when_posting_missing(client_factory):
+    sb = _build_supabase(posting_data=None)
+    client = client_factory(sb)
+    r = client.delete("/jobs/abc")
+    assert r.status_code == 404
+
+
+def test_delete_200_on_valid_delete(client_factory):
+    sb = _build_supabase(posting_data={"id": "abc"})
+    client = client_factory(sb)
+    r = client.delete("/jobs/abc")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["success"] is True
+    assert body["deleted_id"] == "abc"

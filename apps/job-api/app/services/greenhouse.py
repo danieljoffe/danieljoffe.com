@@ -1,23 +1,12 @@
-from dataclasses import dataclass
-
 import httpx
+
+from app.services.standard_job import StandardJob
 
 GREENHOUSE_BASE = "https://boards-api.greenhouse.io/v1/boards"
 REQUEST_TIMEOUT = 10.0
 
 
-@dataclass
-class GreenhouseJob:
-    id: int
-    title: str
-    location_name: str | None
-    department: str | None
-    content: str
-    updated_at: str
-    absolute_url: str
-
-
-async def fetch_board_jobs(board_token: str) -> list[GreenhouseJob]:
+async def fetch_board_jobs(board_token: str) -> list[StandardJob]:
     url = f"{GREENHOUSE_BASE}/{board_token}/jobs?content=true"
     async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
         try:
@@ -29,13 +18,13 @@ async def fetch_board_jobs(board_token: str) -> list[GreenhouseJob]:
             return []
 
     data = resp.json()
-    jobs: list[GreenhouseJob] = []
+    jobs: list[StandardJob] = []
     for item in data.get("jobs", []):
         location = item.get("location", {})
         departments = item.get("departments", [])
         jobs.append(
-            GreenhouseJob(
-                id=item["id"],
+            StandardJob(
+                external_id=str(item["id"]),
                 title=item.get("title", ""),
                 location_name=location.get("name") if location else None,
                 department=departments[0]["name"] if departments else None,

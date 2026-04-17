@@ -13,24 +13,49 @@ import {
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { PROVIDERS, type Provider } from './types';
 
 const inputStyles = cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER);
+const selectStyles = cn(BASE_FIELD, FIELD_PADDING);
 
 interface Source {
   id: string;
   board_token: string;
   company_name: string;
+  provider: Provider;
   enabled: boolean;
   last_polled_at: string | null;
   job_count: number;
 }
 
+interface DetectResultData {
+  provider: Provider;
+  board_token: string;
+  company_name: string;
+  job_count: number;
+}
+
+type DetectState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'found'; data: DetectResultData }
+  | { status: 'not_found' };
+
 export default function SourcesPanel() {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+
+  // Detect flow
+  const [detectInput, setDetectInput] = useState('');
+  const [detect, setDetect] = useState<DetectState>({ status: 'idle' });
+
+  // Advanced manual flow
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [newToken, setNewToken] = useState('');
   const [newName, setNewName] = useState('');
-  const [seeding, setSeeding] = useState(false);
+  const [newProvider, setNewProvider] = useState<Provider>('greenhouse');
+
   const { toast } = useToast();
 
   const fetchSources = useCallback(async () => {
@@ -91,15 +116,70 @@ export default function SourcesPanel() {
     [toast]
   );
 
-  async function handleAdd() {
+  // --- Detect flow ---
+
+  async function handleDetect() {
+    if (!detectInput.trim()) return;
+    setDetect({ status: 'loading' });
+    try {
+      const res = await fetch(
+        `/api/jobs/sources/detect?q=${encodeURIComponent(detectInput.trim())}`
+      );
+      const data = await res.json();
+      if (data.found) {
+        setDetect({
+          status: 'found',
+          data: {
+            provider: data.provider,
+            board_token: data.board_token,
+            company_name: data.company_name,
+            job_count: data.job_count,
+          },
+        });
+      } else {
+        setDetect({ status: 'not_found' });
+      }
+    } catch {
+      setDetect({ status: 'not_found' });
+    }
+  }
+
+  function handleDetectInputChange(value: string) {
+    setDetectInput(value);
+    if (detect.status !== 'idle') setDetect({ status: 'idle' });
+  }
+
+  async function handleAddDetected() {
+    if (detect.status !== 'found') return;
+    const { provider, board_token, company_name } = detect.data;
+    const ok = await runAction(
+      { action: 'add', board_token, company_name, provider },
+      `Added ${company_name}`
+    );
+    if (ok) {
+      setDetectInput('');
+      setDetect({ status: 'idle' });
+      fetchSources();
+    }
+  }
+
+  // --- Manual add flow ---
+
+  async function handleManualAdd() {
     if (!newToken || !newName) return;
     const ok = await runAction(
-      { action: 'add', board_token: newToken, company_name: newName },
+      {
+        action: 'add',
+        board_token: newToken,
+        company_name: newName,
+        provider: newProvider,
+      },
       `Added ${newName}`
     );
     if (ok) {
       setNewToken('');
       setNewName('');
+      setNewProvider('greenhouse');
       fetchSources();
     }
   }
@@ -155,34 +235,120 @@ export default function SourcesPanel() {
         </Button>
       </div>
 
-      <div className='flex gap-2 items-end'>
-        <div className='flex flex-col gap-1'>
-          <label className='text-xs text-text-secondary'>Board Token</label>
-          <input
-            value={newToken}
-            onChange={e => setNewToken(e.target.value)}
-            placeholder='stripe'
-            className={inputStyles}
-          />
+      {/* Detect flow */}
+      <div className='space-y-3'>
+        <div className='flex gap-2 items-end'>
+          <div className='flex flex-col gap-1 flex-1'>
+            <label className='text-xs text-text-secondary'>
+              Company name or careers URL
+            </label>
+            <input
+              value={detectInput}
+              onChange={e => handleDetectInputChange(e.target.value)}
+              placeholder='stripe, jobs.lever.co/netlify, notion.so/careers'
+              className={inputStyles}
+            />
+          </div>
+          <Button
+            name='detect-ats'
+            variant='primary'
+            size='sm'
+            onClick={handleDetect}
+            disabled={!detectInput.trim() || detect.status === 'loading'}
+          >
+            {detect.status === 'loading' ? 'Detecting...' : 'Detect'}
+          </Button>
         </div>
-        <div className='flex flex-col gap-1'>
-          <label className='text-xs text-text-secondary'>Company Name</label>
-          <input
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            placeholder='Stripe'
-            className={inputStyles}
-          />
-        </div>
-        <Button
-          name='add-source'
-          variant='primary'
-          size='sm'
-          onClick={handleAdd}
-          disabled={!newToken || !newName}
+
+        {detect.status === 'found' && (
+          <div className='flex items-center gap-3 p-3 rounded-lg border border-border bg-surface-secondary'>
+            <div className='flex-1 flex items-center gap-3'>
+              <Badge variant='info' size='sm'>
+                {detect.data.provider}
+              </Badge>
+              <span className='font-medium'>{detect.data.company_name}</span>
+              <span className='text-text-tertiary font-mono text-xs'>
+                {detect.data.board_token}
+              </span>
+              <span className='text-text-tertiary text-sm'>
+                {detect.data.job_count} jobs
+              </span>
+            </div>
+            <Button
+              name='add-detected-source'
+              variant='primary'
+              size='sm'
+              onClick={handleAddDetected}
+            >
+              Add
+            </Button>
+          </div>
+        )}
+
+        {detect.status === 'not_found' && (
+          <Text variant='body' className='text-text-tertiary text-sm'>
+            No ATS provider detected. Try the manual form below.
+          </Text>
+        )}
+      </div>
+
+      {/* Advanced manual add */}
+      <div>
+        <button
+          type='button'
+          className='text-xs text-text-tertiary hover:text-text-secondary transition-colors'
+          onClick={() => setShowAdvanced(!showAdvanced)}
         >
-          Add
-        </Button>
+          {showAdvanced ? 'Hide' : 'Show'} manual entry
+        </button>
+
+        {showAdvanced && (
+          <div className='flex gap-2 items-end mt-2'>
+            <div className='flex flex-col gap-1'>
+              <label className='text-xs text-text-secondary'>Provider</label>
+              <select
+                value={newProvider}
+                onChange={e => setNewProvider(e.target.value as Provider)}
+                className={selectStyles}
+              >
+                {PROVIDERS.map(p => (
+                  <option key={p} value={p}>
+                    {p.charAt(0).toUpperCase() + p.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='flex flex-col gap-1'>
+              <label className='text-xs text-text-secondary'>Board Token</label>
+              <input
+                value={newToken}
+                onChange={e => setNewToken(e.target.value)}
+                placeholder='stripe'
+                className={inputStyles}
+              />
+            </div>
+            <div className='flex flex-col gap-1'>
+              <label className='text-xs text-text-secondary'>
+                Company Name
+              </label>
+              <input
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                placeholder='Stripe'
+                className={inputStyles}
+              />
+            </div>
+            <Button
+              name='add-source-manual'
+              variant='primary'
+              size='sm'
+              onClick={handleManualAdd}
+              disabled={!newToken || !newName}
+            >
+              Add
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className='overflow-x-auto'>
@@ -194,6 +360,12 @@ export default function SourcesPanel() {
                 className='px-3 py-2 font-medium text-text-secondary'
               >
                 Company
+              </th>
+              <th
+                scope='col'
+                className='px-3 py-2 font-medium text-text-secondary'
+              >
+                Provider
               </th>
               <th
                 scope='col'
@@ -231,6 +403,11 @@ export default function SourcesPanel() {
             {sources.map(source => (
               <tr key={source.id} className='border-b border-border'>
                 <td className='px-3 py-2 font-medium'>{source.company_name}</td>
+                <td className='px-3 py-2'>
+                  <Badge variant='info' size='sm'>
+                    {source.provider ?? 'greenhouse'}
+                  </Badge>
+                </td>
                 <td className='px-3 py-2 text-text-tertiary font-mono text-xs'>
                   {source.board_token}
                 </td>

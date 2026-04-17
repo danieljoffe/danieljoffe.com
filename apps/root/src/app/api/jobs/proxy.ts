@@ -4,9 +4,6 @@ import { readAdminSession, readAdminSessionToken } from '@/lib/adminSession';
 const JOB_API_URL = process.env['JOB_API_URL'] ?? '';
 const JOB_API_KEY = process.env['JOB_API_KEY'] ?? '';
 
-/** True when no FastAPI backend is configured — serves mock data instead */
-export const IS_MOCK_MODE = !JOB_API_URL;
-
 export async function verifyJobsAdmin(): Promise<boolean> {
   const session = await readAdminSession();
   return session !== null;

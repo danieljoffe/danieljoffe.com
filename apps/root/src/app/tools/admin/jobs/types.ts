@@ -8,9 +8,20 @@ export const JOB_STATUSES = [
 
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
+export const PROVIDERS = [
+  'greenhouse',
+  'lever',
+  'ashby',
+  'workday',
+  'smartrecruiters',
+  'jsonld',
+] as const;
+
+export type Provider = (typeof PROVIDERS)[number];
+
 export interface JobPosting {
   id: string;
-  greenhouse_id: number;
+  external_id: string;
   title: string;
   company_name: string;
   location: string | null;

@@ -1,11 +1,14 @@
 from typing import Any, cast
 
-from fastapi import APIRouter, Depends
+import httpx
+from fastapi import APIRouter, Depends, Query
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
+from app.services.ats_detect import detect_ats
+from app.services.greenhouse import GREENHOUSE_BASE, REQUEST_TIMEOUT
 
 router = APIRouter(
     prefix="/sources",
@@ -31,7 +34,11 @@ async def manage_source(
         resp = (
             supabase.table("job_sources")
             .upsert(
-                {"board_token": body.board_token, "company_name": body.company_name},
+                {
+                    "board_token": body.board_token,
+                    "company_name": body.company_name,
+                    "provider": body.provider,
+                },
                 on_conflict="board_token",
             )
             .execute()
@@ -62,10 +69,44 @@ async def manage_source(
     return {"error": f"Unknown action: {body.action}"}
 
 
+@router.get("/verify")
+async def verify_board_token(
+    board_token: str = Query(pattern=r"^[a-z0-9][a-z0-9-]{1,80}$"),
+) -> dict[str, Any]:
+    url = f"{GREENHOUSE_BASE}/{board_token}"
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        try:
+            resp = await client.get(url)
+        except httpx.HTTPError:
+            return {"valid": False}
+    if resp.status_code != 200:
+        return {"valid": False}
+    data = resp.json()
+    return {
+        "valid": True,
+        "company_name": data.get("name", ""),
+    }
+
+
+@router.get("/detect")
+async def detect_provider(
+    q: str = Query(min_length=1, max_length=200),
+) -> dict[str, Any]:
+    result = await detect_ats(q)
+    if not result:
+        return {"found": False}
+    return {
+        "found": True,
+        "provider": result.provider,
+        "board_token": result.board_token,
+        "company_name": result.company_name,
+        "job_count": result.job_count,
+    }
+
+
 @router.post("/seed")
 async def seed_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
-    inserted = 0
-    for company in COMPANY_SEED:
-        supabase.table("job_sources").upsert(company, on_conflict="board_token").execute()
-        inserted += 1
-    return {"success": True, "seeded": inserted}
+    supabase.table("job_sources").upsert(
+        list(COMPANY_SEED), on_conflict="board_token"
+    ).execute()
+    return {"success": True, "seeded": len(COMPANY_SEED)}

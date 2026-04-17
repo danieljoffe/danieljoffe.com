@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from app.services.greenhouse import fetch_board_jobs
+from app.services.ashby import fetch_ashby_jobs
 from app.services.standard_job import StandardJob
 
 
@@ -24,19 +24,19 @@ def _mock_response(status_code: int, json_data: dict[str, Any] | None = None) ->
 @pytest.mark.asyncio
 async def test_fetch_404_returns_empty():
     resp = _mock_response(404)
-    with patch("app.services.greenhouse.httpx.AsyncClient") as cm:
+    with patch("app.services.ashby.httpx.AsyncClient") as cm:
         client = cm.return_value.__aenter__.return_value
         client.get = AsyncMock(return_value=resp)
-        result = await fetch_board_jobs("missing")
+        result = await fetch_ashby_jobs("missing")
     assert result == []
 
 
 @pytest.mark.asyncio
 async def test_fetch_http_error_returns_empty():
-    with patch("app.services.greenhouse.httpx.AsyncClient") as cm:
+    with patch("app.services.ashby.httpx.AsyncClient") as cm:
         client = cm.return_value.__aenter__.return_value
         client.get = AsyncMock(side_effect=httpx.HTTPError("boom"))
-        result = await fetch_board_jobs("bad")
+        result = await fetch_ashby_jobs("bad")
     assert result == []
 
 
@@ -45,52 +45,46 @@ async def test_fetch_valid_json_maps_jobs():
     payload = {
         "jobs": [
             {
-                "id": 123,
+                "id": "ashby-001",
                 "title": "Senior Frontend Engineer",
-                "location": {"name": "Remote"},
-                "departments": [{"name": "Engineering"}],
-                "content": "<p>desc</p>",
-                "updated_at": "2024-01-01T00:00:00Z",
-                "absolute_url": "https://example.com/jobs/123",
+                "location": "Remote",
+                "department": "Engineering",
+                "descriptionHtml": "<p>desc</p>",
+                "publishedAt": "2024-01-01T00:00:00Z",
+                "jobUrl": "https://jobs.ashbyhq.com/acme/ashby-001",
             }
         ]
     }
     resp = _mock_response(200, payload)
-    with patch("app.services.greenhouse.httpx.AsyncClient") as cm:
+    with patch("app.services.ashby.httpx.AsyncClient") as cm:
         client = cm.return_value.__aenter__.return_value
         client.get = AsyncMock(return_value=resp)
-        result = await fetch_board_jobs("foo")
+        result = await fetch_ashby_jobs("acme")
     assert len(result) == 1
     job = result[0]
     assert isinstance(job, StandardJob)
-    assert job.external_id == "123"
+    assert job.external_id == "ashby-001"
     assert job.title == "Senior Frontend Engineer"
     assert job.location_name == "Remote"
     assert job.department == "Engineering"
-    assert job.content == "<p>desc</p>"
-    assert job.updated_at == "2024-01-01T00:00:00Z"
-    assert job.absolute_url == "https://example.com/jobs/123"
+    assert job.absolute_url == "https://jobs.ashbyhq.com/acme/ashby-001"
 
 
 @pytest.mark.asyncio
-async def test_fetch_missing_location_and_departments():
+async def test_fetch_missing_fields():
     payload = {
         "jobs": [
             {
-                "id": 1,
+                "id": "x",
                 "title": "Engineer",
-                "location": None,
-                "departments": [],
-                "content": "",
-                "updated_at": "",
-                "absolute_url": "",
             }
         ]
     }
     resp = _mock_response(200, payload)
-    with patch("app.services.greenhouse.httpx.AsyncClient") as cm:
+    with patch("app.services.ashby.httpx.AsyncClient") as cm:
         client = cm.return_value.__aenter__.return_value
         client.get = AsyncMock(return_value=resp)
-        result = await fetch_board_jobs("foo")
+        result = await fetch_ashby_jobs("co")
     assert result[0].location_name is None
     assert result[0].department is None
+    assert result[0].content == ""

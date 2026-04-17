@@ -121,6 +121,9 @@ import UvPythonWorkspaceNxMonorepo, {
 import AdminLoginHardeningJwtCookie, {
   metadata as adminLoginHardeningJwtCookieMeta,
 } from './admin-login-hardening-jwt-cookie.mdx';
+import AsyncioGatherSyncClient, {
+  metadata as asyncioGatherSyncClientMeta,
+} from './asyncio-gather-sync-client.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -165,6 +168,7 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'public-route-group-chrome-split': PublicRouteGroupChromeSplit,
   'uv-python-workspace-nx-monorepo': UvPythonWorkspaceNxMonorepo,
   'admin-login-hardening-jwt-cookie': AdminLoginHardeningJwtCookie,
+  'asyncio-gather-sync-client': AsyncioGatherSyncClient,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -208,4 +212,5 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'public-route-group-chrome-split': publicRouteGroupChromeSplitMeta,
   'uv-python-workspace-nx-monorepo': uvPythonWorkspaceNxMonorepoMeta,
   'admin-login-hardening-jwt-cookie': adminLoginHardeningJwtCookieMeta,
+  'asyncio-gather-sync-client': asyncioGatherSyncClientMeta,
 };

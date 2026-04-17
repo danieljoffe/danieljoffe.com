@@ -3,7 +3,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyJobsAdmin, proxyToFastAPI } from '../../proxy';
-import { POST } from './route';
+import { GET } from './route';
 
 jest.mock('../../proxy', () => ({
   verifyJobsAdmin: jest.fn(),
@@ -17,45 +17,43 @@ const mockedProxy = proxyToFastAPI as jest.MockedFunction<
   typeof proxyToFastAPI
 >;
 
-function createRequest(body: unknown): NextRequest {
-  return new NextRequest('http://localhost/api/jobs/job-123/status', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+function createRequest(query: string): NextRequest {
+  return new NextRequest(
+    `http://localhost/api/jobs/sources/detect?q=${encodeURIComponent(query)}`,
+    { method: 'GET' }
+  );
 }
 
-describe('POST /api/jobs/[id]/status', () => {
+describe('GET /api/jobs/sources/detect', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('returns 401 when unauthenticated', async () => {
     mockedVerify.mockResolvedValueOnce(false);
-    const res = await POST(createRequest({ status: 'saved' }), {
-      params: Promise.resolve({ id: 'job-123' }),
-    });
+    const res = await GET(createRequest('stripe'));
     expect(res.status).toBe(401);
     expect(mockedProxy).not.toHaveBeenCalled();
   });
 
-  it('proxies status update to FastAPI', async () => {
+  it('proxies to FastAPI /sources/detect with search params', async () => {
     mockedVerify.mockResolvedValueOnce(true);
     mockedProxy.mockResolvedValueOnce(
       NextResponse.json({
-        success: true,
-        old_status: 'new',
-        new_status: 'applied',
+        found: true,
+        provider: 'greenhouse',
+        board_token: 'stripe',
+        company_name: 'Stripe',
+        job_count: 42,
       })
     );
-    const body = { status: 'applied' };
-    const res = await POST(createRequest(body), {
-      params: Promise.resolve({ id: 'job-123' }),
-    });
+    const res = await GET(createRequest('stripe'));
     expect(res.status).toBe(200);
-    expect(mockedProxy).toHaveBeenCalledWith('/jobs/job-123/status', {
-      method: 'POST',
-      body,
-    });
+    expect(mockedProxy).toHaveBeenCalledWith(
+      '/sources/detect',
+      expect.objectContaining({
+        searchParams: expect.any(URLSearchParams),
+      })
+    );
   });
 });

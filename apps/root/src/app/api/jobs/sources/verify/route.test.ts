@@ -2,10 +2,10 @@
  * @jest-environment node
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI } from './proxy';
+import { verifyJobsAdmin, proxyToFastAPI } from '../../proxy';
 import { GET } from './route';
 
-jest.mock('./proxy', () => ({
+jest.mock('../../proxy', () => ({
   verifyJobsAdmin: jest.fn(),
   proxyToFastAPI: jest.fn(),
 }));
@@ -17,33 +17,34 @@ const mockedProxy = proxyToFastAPI as jest.MockedFunction<
   typeof proxyToFastAPI
 >;
 
-function createRequest(): NextRequest {
-  return new NextRequest('http://localhost/api/jobs?minScore=50', {
-    method: 'GET',
-  });
+function createRequest(token: string): NextRequest {
+  return new NextRequest(
+    `http://localhost/api/jobs/sources/verify?board_token=${token}`,
+    { method: 'GET' }
+  );
 }
 
-describe('GET /api/jobs', () => {
+describe('GET /api/jobs/sources/verify', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('returns 401 when unauthenticated', async () => {
     mockedVerify.mockResolvedValueOnce(false);
-    const res = await GET(createRequest());
+    const res = await GET(createRequest('stripe'));
     expect(res.status).toBe(401);
     expect(mockedProxy).not.toHaveBeenCalled();
   });
 
-  it('proxies to FastAPI with search params', async () => {
+  it('proxies to FastAPI /sources/verify with search params', async () => {
     mockedVerify.mockResolvedValueOnce(true);
     mockedProxy.mockResolvedValueOnce(
-      NextResponse.json({ postings: [], total: 0 })
+      NextResponse.json({ valid: true, company_name: 'Stripe' })
     );
-    const res = await GET(createRequest());
+    const res = await GET(createRequest('stripe'));
     expect(res.status).toBe(200);
     expect(mockedProxy).toHaveBeenCalledWith(
-      '/jobs',
+      '/sources/verify',
       expect.objectContaining({
         searchParams: expect.any(URLSearchParams),
       })

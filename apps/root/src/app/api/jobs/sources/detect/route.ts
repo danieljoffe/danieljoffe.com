@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI } from './proxy';
+import { verifyJobsAdmin, proxyToFastAPI } from '../../proxy';
 
 export async function GET(request: NextRequest) {
   if (!(await verifyJobsAdmin())) {
@@ -7,5 +7,5 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams;
-  return proxyToFastAPI('/jobs', { searchParams });
+  return proxyToFastAPI('/sources/detect', { searchParams });
 }
