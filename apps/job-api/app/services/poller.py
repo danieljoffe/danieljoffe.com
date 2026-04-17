@@ -206,11 +206,10 @@ async def _poll_one_source(
             )
 
         if rows_to_upsert:
-            upsert_resp = (
-                supabase.table("job_postings")
-                .upsert(rows_to_upsert, on_conflict="source_id,external_id")
-                .execute()
+            upsert_query = supabase.table("job_postings").upsert(
+                rows_to_upsert, on_conflict="source_id,external_id"
             )
+            upsert_resp = await asyncio.to_thread(upsert_query.execute)
             for raw_row in upsert_resp.data or []:
                 data = cast(dict[str, Any], raw_row)
                 if data.get("created_at") == data.get("updated_at"):
@@ -220,13 +219,13 @@ async def _poll_one_source(
 
         # Archive stale jobs: postings in the DB for this source that are
         # no longer returned by the ATS. Skip user-intent statuses.
-        existing_resp = (
+        existing_query = (
             supabase.table("job_postings")
             .select("id, external_id")
             .eq("source_id", source_id)
             .not_.in_("status", ["saved", "applied", "archived"])
-            .execute()
         )
+        existing_resp = await asyncio.to_thread(existing_query.execute)
         stale_ids: list[str] = []
         for existing_job in existing_resp.data or []:
             row_data = cast(dict[str, Any], existing_job)
@@ -234,17 +233,25 @@ async def _poll_one_source(
                 stale_ids.append(row_data["id"])
 
         if stale_ids:
-            supabase.table("job_postings").update(
-                {"status": "archived", "updated_at": datetime.now(UTC).isoformat()}
-            ).in_("id", stale_ids).execute()
+            archive_query = (
+                supabase.table("job_postings")
+                .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
+                .in_("id", stale_ids)
+            )
+            await asyncio.to_thread(archive_query.execute)
             summary["archived"] = len(stale_ids)
 
-        supabase.table("job_sources").update(
-            {
-                "last_polled_at": datetime.now(UTC).isoformat(),
-                "job_count": len(jobs),
-            }
-        ).eq("id", source_id).execute()
+        last_polled_query = (
+            supabase.table("job_sources")
+            .update(
+                {
+                    "last_polled_at": datetime.now(UTC).isoformat(),
+                    "job_count": len(jobs),
+                }
+            )
+            .eq("id", source_id)
+        )
+        await asyncio.to_thread(last_polled_query.execute)
 
     except Exception:
         logger.exception("Poll failed for %s", company_name)
@@ -254,7 +261,8 @@ async def _poll_one_source(
 
 
 async def poll_all_sources(supabase: Client) -> PollResult:
-    sources_resp = supabase.table("job_sources").select("*").eq("enabled", True).execute()
+    sources_query = supabase.table("job_sources").select("*").eq("enabled", True)
+    sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
