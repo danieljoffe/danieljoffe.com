@@ -7,6 +7,7 @@ from supabase import Client
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
+from app.services.ats_detect import detect_ats
 from app.services.greenhouse import GREENHOUSE_BASE, REQUEST_TIMEOUT
 
 router = APIRouter(
@@ -84,6 +85,22 @@ async def verify_board_token(
     return {
         "valid": True,
         "company_name": data.get("name", ""),
+    }
+
+
+@router.get("/detect")
+async def detect_provider(
+    q: str = Query(min_length=1, max_length=200),
+) -> dict[str, Any]:
+    result = await detect_ats(q)
+    if not result:
+        return {"found": False}
+    return {
+        "found": True,
+        "provider": result.provider,
+        "board_token": result.board_token,
+        "company_name": result.company_name,
+        "job_count": result.job_count,
     }
 
 

@@ -14,6 +14,7 @@ const mockSources = [
     id: 'src-1',
     board_token: 'stripe',
     company_name: 'Stripe',
+    provider: 'greenhouse',
     enabled: true,
     last_polled_at: '2026-04-10T12:00:00Z',
     job_count: 12,
@@ -22,6 +23,7 @@ const mockSources = [
     id: 'src-2',
     board_token: 'vercel',
     company_name: 'Vercel',
+    provider: 'greenhouse',
     enabled: false,
     last_polled_at: null,
     job_count: 0,
@@ -30,7 +32,20 @@ const mockSources = [
 
 function mockInitialFetch(sources: unknown[] = mockSources) {
   (global.fetch as jest.Mock).mockImplementation(
-    (_url: string, opts?: { method?: string }) => {
+    (url: string, opts?: { method?: string }) => {
+      if (typeof url === 'string' && url.includes('/detect')) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              found: true,
+              provider: 'greenhouse',
+              board_token: 'notion',
+              company_name: 'Notion',
+              job_count: 5,
+            }),
+        });
+      }
       if (!opts || opts.method !== 'POST') {
         return Promise.resolve({
           ok: true,
@@ -39,7 +54,7 @@ function mockInitialFetch(sources: unknown[] = mockSources) {
       }
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({}),
+        json: () => Promise.resolve({ success: true }),
       });
     }
   );
@@ -87,13 +102,65 @@ describe('SourcesPanel', () => {
     });
   });
 
-  it('disables Add button until both fields are filled', async () => {
+  it('disables Detect button until input is filled', async () => {
     mockInitialFetch();
     render(<SourcesPanel />);
 
     await waitFor(() => {
       expect(screen.getByText('Stripe')).toBeInTheDocument();
     });
+
+    const detectBtn = screen.getByRole('button', { name: 'Detect' });
+    expect(detectBtn).toBeDisabled();
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        'stripe, jobs.lever.co/netlify, notion.so/careers'
+      ),
+      { target: { value: 'notion' } }
+    );
+    expect(detectBtn).not.toBeDisabled();
+  });
+
+  it('shows detected result and allows adding', async () => {
+    mockInitialFetch();
+    render(<SourcesPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe')).toBeInTheDocument();
+    });
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        'stripe, jobs.lever.co/netlify, notion.so/careers'
+      ),
+      { target: { value: 'notion' } }
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Detect' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Notion')).toBeInTheDocument();
+    });
+    expect(screen.getByText('5 jobs')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: 'success' })
+      );
+    });
+  });
+
+  it('manual entry works when expanded', async () => {
+    mockInitialFetch();
+    render(<SourcesPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Show manual entry'));
 
     const addBtn = screen.getByRole('button', { name: 'Add' });
     expect(addBtn).toBeDisabled();
@@ -107,23 +174,8 @@ describe('SourcesPanel', () => {
       target: { value: 'Notion' },
     });
     expect(addBtn).not.toBeDisabled();
-  });
 
-  it('posts an add action and shows success toast', async () => {
-    mockInitialFetch();
-    render(<SourcesPanel />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Stripe')).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByPlaceholderText('stripe'), {
-      target: { value: 'notion' },
-    });
-    fireEvent.change(screen.getByPlaceholderText('Stripe'), {
-      target: { value: 'Notion' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    fireEvent.click(addBtn);
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
