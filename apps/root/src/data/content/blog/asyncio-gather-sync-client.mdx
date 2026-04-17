@@ -1,0 +1,143 @@
+export const metadata = {
+  title: 'asyncio.gather Is Not Enough for a Sync Client',
+  date: '2026-04-17',
+  excerpt:
+    'A job poller stuck at 48 seconds. asyncio.gather did nothing. Batching plus asyncio.to_thread cut it to 8 seconds without a new library.',
+  author: 'Daniel Joffe',
+  category: 'Performance',
+  tags: ['Architecture', 'REST APIs', 'Monorepo'],
+  slug: 'asyncio-gather-sync-client',
+  type: 'blog',
+  cover: {
+    alt: 'Stage curtains half-drawn over an empty rehearsal space',
+    src: '/images/covers/asyncio-gather-sync-client.webp',
+  },
+};
+
+## The problem
+
+A scan button in my jobs dashboard was hitting 48 seconds, and Vercel's Hobby tier kills functions at 60. The button triggers a FastAPI poller that fans out across 49 career boards across six ATS providers (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, and a JSON-LD fallback fetcher), pulls thousands of postings, filters them, and writes the survivors to Supabase. One button, one scan, the whole pipeline cost visible at the click.
+
+The poller was already async. `httpx` fetches in parallel, and a `for` loop iterated sources. Every real operation called `await`. It looked concurrent.
+
+## Fix 1: actually concurrent polling
+
+Kill the `for` loop, use `asyncio.gather` with a bounded semaphore:
+
+```python
+semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
+
+async def _worker(source):
+    async with semaphore:
+        return await _poll_one_source(source, supabase)
+
+summaries = await asyncio.gather(*(_worker(s) for s in sources))
+```
+
+Ran it. Still 48 seconds.
+
+`asyncio.gather` should have overlapped 49 sources across 10 concurrent workers. The HTTP fetches were clearly not the bottleneck; `httpx` does I/O asynchronously. So what was blocking?
+
+## Fix 2: batch the DB writes
+
+Per source, the old poller did one upsert per job:
+
+```python
+for job in jobs:
+    supabase.table("job_postings").upsert(row).execute()
+```
+
+Across 49 sources with a few hundred jobs each, that is on the order of thousands of round trips per scan. One bulk upsert per source collapses the fan-out, and a single `.in_()` archive call replaces the stale-job update loop:
+
+```python
+if rows_to_upsert:
+    supabase.table("job_postings").upsert(
+        rows_to_upsert, on_conflict="source_id,external_id"
+    ).execute()
+
+if stale_ids:
+    supabase.table("job_postings").update(
+        {"status": "archived"}
+    ).in_("id", stale_ids).execute()
+```
+
+Scan time: 48s → 22s. Half the runtime gone, still too slow for a button that fires synchronously from the browser.
+
+## Fix 3: offload the sync client to a thread pool
+
+Here is the thing I kept missing. `supabase-py` is a synchronous client. Every `.execute()` is a regular blocking call. Calling it from an `async` function does not make it non-blocking; it runs at the line where `await` would usually yield.
+
+When my ten workers each called `.execute()` inside their `async with semaphore`, they were not overlapping DB I/O. Each worker took the event loop, held it for a 30-100ms round trip, then released it. Ten workers "running concurrently" actually executed their DB calls one after another. Pure theater.
+
+`asyncio.to_thread` fixes this by handing the sync call to Python's default thread pool executor:
+
+```python
+upsert_query = supabase.table("job_postings").upsert(
+    rows_to_upsert, on_conflict="source_id,external_id"
+)
+upsert_resp = await asyncio.to_thread(upsert_query.execute)
+```
+
+Each worker now submits its blocking call to a thread, releases the event loop, and gets resumed when the thread returns. Ten workers, ten overlapping DB round trips, real concurrency.
+
+Scan time: 22s → 8s.
+
+## What the three fixes added up to
+
+| Change                                    | Runtime         |
+| ----------------------------------------- | --------------- |
+| Sequential for-loop                       | 48s             |
+| `asyncio.gather` + semaphore              | 48s (no change) |
+| Batched upsert and archive                | 22s             |
+| `asyncio.to_thread` on every `.execute()` | 8s              |
+
+Fix 1 on its own did nothing. If I had stopped at fix 2 and declared victory at 22s, I would have shipped theater as a win. The diagnosis that mattered was not "concurrency is broken." It was "I wrote `async` but my library still blocks, so `gather` is a shape, not a behavior."
+
+## The full poller
+
+```python
+async def _poll_one_source(source, supabase):
+    # fetch jobs, filter, score ...
+
+    if rows_to_upsert:
+        query = supabase.table("job_postings").upsert(
+            rows_to_upsert, on_conflict="source_id,external_id"
+        )
+        await asyncio.to_thread(query.execute)
+
+    existing_query = (
+        supabase.table("job_postings")
+        .select("id, external_id")
+        .eq("source_id", source_id)
+        .not_.in_("status", ["saved", "applied", "archived"])
+    )
+    existing_resp = await asyncio.to_thread(existing_query.execute)
+
+    if stale_ids:
+        archive_query = (
+            supabase.table("job_postings")
+            .update({"status": "archived"})
+            .in_("id", stale_ids)
+        )
+        await asyncio.to_thread(archive_query.execute)
+
+
+async def poll_all_sources(supabase):
+    sources_query = supabase.table("job_sources").select("*").eq("enabled", True)
+    sources_resp = await asyncio.to_thread(sources_query.execute)
+    sources = sources_resp.data or []
+
+    semaphore = asyncio.Semaphore(10)
+
+    async def _worker(source):
+        async with semaphore:
+            return await _poll_one_source(source, supabase)
+
+    return await asyncio.gather(*(_worker(s) for s in sources))
+```
+
+The same poller powers a JSON-LD fallback fetcher that extracts `schema.org/JobPosting` from any careers page with Python's stdlib `html.parser`, zero new dependencies. Small aside, but worth noting: once the concurrency model is honest, adding a slow fetcher does not compound into a slow scan.
+
+## Takeaway
+
+`async` is a shape you put on a function. Concurrency is whether the thing inside that function actually yields. A sync library wrapped in `async def` is still blocking; `asyncio.to_thread` is how you make it yield. Run the timer before and after every fix, and it will tell you which theater you bought.
