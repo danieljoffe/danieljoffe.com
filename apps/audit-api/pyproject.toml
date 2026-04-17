@@ -10,6 +10,8 @@ dependencies = [
   "uvicorn[standard]>=0.34",
   "pydantic-settings>=2.7",
   "pyjwt>=2.10",
+  "playwright>=1.48",
+  "supabase>=2.9",
 ]
 
 [dependency-groups]
