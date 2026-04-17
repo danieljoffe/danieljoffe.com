@@ -45,11 +45,12 @@ WORKDIR /app/apps/audit-api
 
 ENV PATH="/app/.venv/bin:$PATH" \
     LIGHTHOUSE_BIN=lighthouse \
-    AXE_SCRIPT_PATH=/app/vendor/axe.min.js
+    AXE_SCRIPT_PATH=/app/vendor/axe.min.js \
+    PORT=8001
 
 EXPOSE 8001
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=3).status == 200 else 1)"
+    CMD python -c "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{os.environ.get(\"PORT\", \"8001\")}/health', timeout=3).status == 200 else 1)"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--proxy-headers", "--forwarded-allow-ips=*"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips=*"]
