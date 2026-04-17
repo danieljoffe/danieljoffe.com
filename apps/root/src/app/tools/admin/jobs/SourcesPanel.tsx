@@ -28,12 +28,19 @@ interface Source {
   job_count: number;
 }
 
+type VerifyState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'valid'; company_name: string }
+  | { status: 'invalid' };
+
 export default function SourcesPanel() {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [newToken, setNewToken] = useState('');
   const [newName, setNewName] = useState('');
   const [newProvider, setNewProvider] = useState<Provider>('greenhouse');
+  const [verify, setVerify] = useState<VerifyState>({ status: 'idle' });
   const [seeding, setSeeding] = useState(false);
   const { toast } = useToast();
 
@@ -95,6 +102,30 @@ export default function SourcesPanel() {
     [toast]
   );
 
+  async function handleVerify() {
+    if (!newToken) return;
+    setVerify({ status: 'loading' });
+    try {
+      const res = await fetch(
+        `/api/jobs/sources/verify?board_token=${encodeURIComponent(newToken)}`
+      );
+      const data = await res.json();
+      if (data.valid) {
+        setVerify({ status: 'valid', company_name: data.company_name });
+        setNewName(data.company_name);
+      } else {
+        setVerify({ status: 'invalid' });
+      }
+    } catch {
+      setVerify({ status: 'invalid' });
+    }
+  }
+
+  function handleTokenChange(value: string) {
+    setNewToken(value);
+    if (verify.status !== 'idle') setVerify({ status: 'idle' });
+  }
+
   async function handleAdd() {
     if (!newToken || !newName) return;
     const ok = await runAction(
@@ -110,6 +141,7 @@ export default function SourcesPanel() {
       setNewToken('');
       setNewName('');
       setNewProvider('greenhouse');
+      setVerify({ status: 'idle' });
       fetchSources();
     }
   }
@@ -148,6 +180,8 @@ export default function SourcesPanel() {
     );
   }
 
+  const canAdd = !!newToken && !!newName && verify.status !== 'loading';
+
   return (
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
@@ -184,11 +218,20 @@ export default function SourcesPanel() {
           <label className='text-xs text-text-secondary'>Board Token</label>
           <input
             value={newToken}
-            onChange={e => setNewToken(e.target.value)}
+            onChange={e => handleTokenChange(e.target.value)}
             placeholder='stripe'
             className={inputStyles}
           />
         </div>
+        <Button
+          name='verify-token'
+          variant='outline'
+          size='sm'
+          onClick={handleVerify}
+          disabled={!newToken || verify.status === 'loading'}
+        >
+          {verify.status === 'loading' ? 'Verifying...' : 'Verify'}
+        </Button>
         <div className='flex flex-col gap-1'>
           <label className='text-xs text-text-secondary'>Company Name</label>
           <input
@@ -203,10 +246,20 @@ export default function SourcesPanel() {
           variant='primary'
           size='sm'
           onClick={handleAdd}
-          disabled={!newToken || !newName}
+          disabled={!canAdd}
         >
           Add
         </Button>
+        {verify.status === 'valid' && (
+          <Badge variant='success' size='sm'>
+            Valid
+          </Badge>
+        )}
+        {verify.status === 'invalid' && (
+          <Badge variant='error' size='sm'>
+            Invalid token
+          </Badge>
+        )}
       </div>
 
       <div className='overflow-x-auto'>
