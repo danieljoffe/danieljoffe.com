@@ -42,6 +42,7 @@ function timeAgo(dateStr: string): string {
 
 export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteKey, setDeleteKey] = useState(0);
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -50,9 +51,11 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
     if (filters.company) params.company = filters.company;
     if (filters.search) params.search = filters.search;
     // refreshKey triggers a refetch when scan completes
-    if (refreshKey) params._r = String(refreshKey);
+    // deleteKey triggers a refetch after a job is deleted
+    const combined = refreshKey + deleteKey;
+    if (combined) params._r = String(combined);
     return params;
-  }, [filters, refreshKey]);
+  }, [filters, refreshKey, deleteKey]);
 
   const {
     data: postings,
@@ -165,7 +168,13 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
                 {expandedId === job.id && (
                   <tr>
                     <td colSpan={6} className='p-0'>
-                      <JobDetail posting={job} />
+                      <JobDetail
+                        posting={job}
+                        onDelete={() => {
+                          setExpandedId(null);
+                          setDeleteKey(k => k + 1);
+                        }}
+                      />
                     </td>
                   </tr>
                 )}
