@@ -20,7 +20,52 @@ on:
         required: false
 
 jobs:
+  filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      e2e: ${{ steps.paths.outputs.e2e }}
+      lighthouse: ${{ steps.paths.outputs.lighthouse }}
+      storybook: ${{ steps.paths.outputs.storybook }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - name: Classify changed paths
+        id: paths
+        run: |
+          CHANGED=$(git diff --name-only "${{ inputs.nx-base }}" "${{ inputs.nx-head }}")
+          E2E=false
+          LH=false
+          SB=false
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              apps/root/*|apps/root-e2e/*|libs/*)
+                E2E=true
+                ;;
+            esac
+            case "$file" in
+              apps/root/*|libs/shared/*)
+                LH=true
+                ;;
+            esac
+            case "$file" in
+              libs/shared/ui/*|apps/root/.storybook/*|*.stories.ts|*.stories.tsx|*.stories.mdx|*.stories.js|*.stories.jsx)
+                SB=true
+                ;;
+            esac
+          done <<< "$CHANGED"
+          echo "e2e=$E2E" >> "$GITHUB_OUTPUT"
+          echo "lighthouse=$LH" >> "$GITHUB_OUTPUT"
+          echo "storybook=$SB" >> "$GITHUB_OUTPUT"
+          echo "Changed path flags: e2e=$E2E lighthouse=$LH storybook=$SB"
+
   e2e:
+    needs: filter
+    if: needs.filter.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -36,10 +81,19 @@ jobs:
         run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
+        id: playwright-cache
         uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Log Playwright cache status
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "::notice::Playwright cache HIT (version ${{ steps.playwright-version.outputs.version }})"
+          else
+            echo "::warning::Playwright cache MISS (version ${{ steps.playwright-version.outputs.version }}) — browsers will download"
+          fi
 
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
@@ -53,6 +107,8 @@ jobs:
           NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
   lighthouse:
+    needs: filter
+    if: needs.filter.outputs.lighthouse == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -75,6 +131,8 @@ jobs:
           LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
 
   storybook-and-chromatic:
+    needs: filter
+    if: needs.filter.outputs.storybook == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -101,19 +159,31 @@ jobs:
 
   gate:
     if: always()
-    needs: [e2e, lighthouse, storybook-and-chromatic]
+    needs: [filter, e2e, lighthouse, storybook-and-chromatic]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Check results
         run: |
-          if [ "${{ needs.e2e.result }}" = "failure" ] || \
-             [ "${{ needs.lighthouse.result }}" = "failure" ] || \
-             [ "${{ needs.storybook-and-chromatic.result }}" = "failure" ]; then
-            echo "CI full checks failed"
-            echo "  e2e: ${{ needs.e2e.result }}"
-            echo "  lighthouse: ${{ needs.lighthouse.result }}"
-            echo "  storybook-and-chromatic: ${{ needs.storybook-and-chromatic.result }}"
+          echo "  filter: ${{ needs.filter.result }}"
+          echo "  e2e: ${{ needs.e2e.result }}"
+          echo "  lighthouse: ${{ needs.lighthouse.result }}"
+          echo "  storybook-and-chromatic: ${{ needs.storybook-and-chromatic.result }}"
+
+          if [ "${{ needs.filter.result }}" = "failure" ] || [ "${{ needs.filter.result }}" = "cancelled" ]; then
+            echo "CI full filter failed"
             exit 1
           fi
-          echo "All CI full checks passed"
+          if [ "${{ needs.e2e.result }}" = "failure" ] || [ "${{ needs.e2e.result }}" = "cancelled" ]; then
+            echo "CI full e2e failed"
+            exit 1
+          fi
+          if [ "${{ needs.lighthouse.result }}" = "failure" ] || [ "${{ needs.lighthouse.result }}" = "cancelled" ]; then
+            echo "CI full lighthouse failed"
+            exit 1
+          fi
+          if [ "${{ needs.storybook-and-chromatic.result }}" = "failure" ] || [ "${{ needs.storybook-and-chromatic.result }}" = "cancelled" ]; then
+            echo "CI full storybook-and-chromatic failed"
+            exit 1
+          fi
+          echo "All CI full checks passed or were skipped"
