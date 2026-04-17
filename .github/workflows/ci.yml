@@ -33,6 +33,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       docs-only: ${{ steps.check.outputs.docs-only }}
+      python-changed: ${{ steps.check.outputs.python-changed }}
       nx-base: ${{ steps.shas.outputs.base }}
       nx-head: ${{ steps.shas.outputs.head }}
     steps:
@@ -41,7 +42,7 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - name: Check for docs-only changes
+      - name: Check for docs-only and Python changes
         id: check
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,12 +50,14 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
-            # Push to develop — always run CI
+            # Push to develop — always run full CI including Python
             echo "docs-only=false" >> "$GITHUB_OUTPUT"
+            echo "python-changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           DOCS_ONLY=true
+          PYTHON_CHANGED=false
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
@@ -66,11 +69,17 @@ jobs:
               .husky/*) ;;
               .prettierrc|.nvmrc|.sentryclirc|.editorconfig|.nxignore|LICENSE|renovate.json|opencode.json) ;;
               .size-limit.json|knip.ts) ;;
-              *) DOCS_ONLY=false; break ;;
+              *) DOCS_ONLY=false ;;
+            esac
+            case "$file" in
+              apps/job-api/*|apps/audit-api/*|pyproject.toml|uv.lock|.python-version)
+                PYTHON_CHANGED=true
+                ;;
             esac
           done <<< "$CHANGED"
 
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
+          echo "python-changed=$PYTHON_CHANGED" >> "$GITHUB_OUTPUT"
 
       - uses: nrwl/nx-set-shas@v5
         id: shas
@@ -98,7 +107,7 @@ jobs:
 
   ci-python:
     needs: preflight
-    if: ${{ needs.preflight.outputs.docs-only != 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
+    if: ${{ needs.preflight.outputs.docs-only != 'true' && needs.preflight.outputs.python-changed == 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -106,15 +115,6 @@ jobs:
         with:
           filter: tree:0
           fetch-depth: 0
-
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
 
       - uses: actions/setup-python@v5
         with:
@@ -126,8 +126,19 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --frozen
 
-      - name: Run Python tasks
-        run: pnpm nx run-many -t lint test typecheck --nxBail -p job-api,audit-api
+      - name: job-api — lint, typecheck, test
+        working-directory: apps/job-api
+        run: |
+          uv run --package job-api ruff check .
+          uv run --package job-api mypy app/
+          uv run --package job-api pytest -v
+
+      - name: audit-api — lint, typecheck, test
+        working-directory: apps/audit-api
+        run: |
+          uv run --package audit-api ruff check .
+          uv run --package audit-api mypy app/
+          uv run --package audit-api pytest -v
 
   ci-status:
     if: always()
