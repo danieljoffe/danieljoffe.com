@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.config import settings
+from app.observability import init_sentry
 from app.routers import run_scan as run_scan_router
 from app.schemas import HealthResponse
 from app.services.scan_queue import get_queue
@@ -14,6 +15,8 @@ if not settings.allowed_hosts_list:
         "ALLOWED_HOSTS must be set (comma-separated host allowlist). "
         "Use '*' only in local dev."
     )
+
+init_sentry()
 
 
 @asynccontextmanager

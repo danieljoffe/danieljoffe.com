@@ -2,6 +2,8 @@ import asyncio
 import logging
 from dataclasses import dataclass
 
+import sentry_sdk
+
 from app.services.issues import parse_issues
 from app.services.lighthouse_config import DeviceMode
 from app.services.persistence import (
@@ -66,6 +68,7 @@ class ScanQueue:
                 await self._execute(job)
             except Exception as exc:
                 logger.exception("Scan worker crashed on %s: %s", job.scan_id, exc)
+                sentry_sdk.capture_exception(exc)
             finally:
                 self._running = False
                 self._queue.task_done()
@@ -90,6 +93,7 @@ class ScanQueue:
             message = str(exc) or "Unknown scan error"
             await mark_scan_failed(supabase, job.scan_id, message)
             logger.exception("Scan errored: %s", job.scan_id)
+            sentry_sdk.capture_exception(exc)
 
 
 _queue: ScanQueue | None = None
