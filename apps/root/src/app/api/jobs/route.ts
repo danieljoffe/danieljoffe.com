@@ -1,14 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI, IS_MOCK_MODE } from './proxy';
-import { queryMockPostings } from './mockData';
+import { verifyJobsAdmin, proxyToFastAPI } from './proxy';
 
 export async function GET(request: NextRequest) {
   if (!(await verifyJobsAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (IS_MOCK_MODE) {
-    return NextResponse.json(queryMockPostings(request.nextUrl.searchParams));
   }
 
   const searchParams = request.nextUrl.searchParams;
