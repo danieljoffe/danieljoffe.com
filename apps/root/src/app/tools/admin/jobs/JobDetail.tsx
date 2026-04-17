@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { useToast } from '@/state/Toast/ToastProvider';
 import { JOB_STATUSES, type JobPosting } from './types';
 
 interface JobDetailProps {
@@ -17,11 +18,14 @@ interface JobDetailProps {
     | 'score_breakdown'
     | 'status'
   >;
+  onDelete: (() => void) | undefined;
 }
 
-export default function JobDetail({ posting }: JobDetailProps) {
+export default function JobDetail({ posting, onDelete }: JobDetailProps) {
   const [status, setStatus] = useState(posting.status);
   const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   async function updateStatus(newStatus: string) {
     setUpdating(true);
@@ -34,6 +38,29 @@ export default function JobDetail({ posting }: JobDetailProps) {
       if (res.ok) setStatus(newStatus);
     } finally {
       setUpdating(false);
+    }
+  }
+
+  async function handleDelete() {
+    /* eslint-disable no-alert -- admin-only tool, native confirm is sufficient */
+    if (
+      !window.confirm(`Delete "${posting.title}" from ${posting.company_name}?`)
+    )
+      /* eslint-enable no-alert */
+      return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/jobs/${posting.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast({ variant: 'success', title: 'Job deleted' });
+        onDelete?.();
+      } else {
+        toast({ variant: 'error', title: 'Failed to delete job' });
+      }
+    } catch {
+      toast({ variant: 'error', title: 'Failed to delete job' });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -82,19 +109,30 @@ export default function JobDetail({ posting }: JobDetailProps) {
           </div>
         </div>
       </div>
-      {posting.absolute_url && (
+      <div className='flex gap-2'>
+        {posting.absolute_url && (
+          <Button
+            as='link'
+            href={posting.absolute_url}
+            target='_blank'
+            rel='noopener noreferrer'
+            variant='secondary'
+            size='sm'
+            name='view-posting'
+          >
+            View on Greenhouse
+          </Button>
+        )}
         <Button
-          as='link'
-          href={posting.absolute_url}
-          target='_blank'
-          rel='noopener noreferrer'
-          variant='secondary'
+          name='delete-posting'
+          variant='error'
           size='sm'
-          name='view-posting'
+          onClick={handleDelete}
+          disabled={deleting}
         >
-          View on Greenhouse
+          {deleting ? 'Deleting...' : 'Delete'}
         </Button>
-      )}
+      </div>
     </div>
   );
 }

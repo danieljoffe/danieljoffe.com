@@ -14,6 +14,7 @@ interface PollResult {
   sources_polled: number;
   new_jobs: number;
   updated_jobs: number;
+  archived_jobs: number;
   errors: string[];
 }
 
@@ -63,6 +64,7 @@ export default function ScanButton({ onComplete }: ScanButtonProps) {
         <Text variant='meta'>
           {result.sources_polled} sources, {result.new_jobs} new,{' '}
           {result.updated_jobs} updated
+          {result.archived_jobs > 0 && `, ${result.archived_jobs} archived`}
           {result.errors.length > 0 && `, ${result.errors.length} errors`}
         </Text>
       )}

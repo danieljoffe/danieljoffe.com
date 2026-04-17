@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from postgrest.types import CountMethod
 from supabase import Client
 
@@ -54,3 +54,23 @@ async def list_jobs(
         "page": page,
         "page_size": page_size,
     }
+
+
+@router.delete("/{posting_id}")
+async def delete_job(
+    posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    current = (
+        supabase.table("job_postings")
+        .select("id")
+        .eq("id", posting_id)
+        .single()
+        .execute()
+    )
+    if not current.data:
+        raise HTTPException(status_code=404, detail="Posting not found")
+
+    supabase.table("job_postings").delete().eq("id", posting_id).execute()
+
+    return {"success": True, "deleted_id": posting_id}

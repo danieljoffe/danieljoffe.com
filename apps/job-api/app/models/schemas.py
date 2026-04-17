@@ -50,6 +50,7 @@ class PollResult(BaseModel):
     sources_polled: int
     new_jobs: int
     updated_jobs: int
+    archived_jobs: int = 0
     errors: list[str]
 
 

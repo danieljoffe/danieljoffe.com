@@ -476,6 +476,14 @@ export const MOCK_SOURCES: MockSource[] = [
   },
 ];
 
+/** Remove a mock posting by id. Returns true if found and removed. */
+export function deleteMockPosting(id: string): boolean {
+  const idx = MOCK_POSTINGS.findIndex(p => p.id === id);
+  if (idx < 0) return false;
+  MOCK_POSTINGS.splice(idx, 1);
+  return true;
+}
+
 /** Filter and paginate mock postings to mimic the FastAPI response */
 export function queryMockPostings(params: URLSearchParams) {
   let filtered = [...MOCK_POSTINGS];
