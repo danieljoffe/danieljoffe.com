@@ -13,13 +13,16 @@ import {
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { PROVIDERS, type Provider } from './types';
 
 const inputStyles = cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER);
+const selectStyles = cn(BASE_FIELD, FIELD_PADDING);
 
 interface Source {
   id: string;
   board_token: string;
   company_name: string;
+  provider: Provider;
   enabled: boolean;
   last_polled_at: string | null;
   job_count: number;
@@ -30,6 +33,7 @@ export default function SourcesPanel() {
   const [loading, setLoading] = useState(true);
   const [newToken, setNewToken] = useState('');
   const [newName, setNewName] = useState('');
+  const [newProvider, setNewProvider] = useState<Provider>('greenhouse');
   const [seeding, setSeeding] = useState(false);
   const { toast } = useToast();
 
@@ -94,12 +98,18 @@ export default function SourcesPanel() {
   async function handleAdd() {
     if (!newToken || !newName) return;
     const ok = await runAction(
-      { action: 'add', board_token: newToken, company_name: newName },
+      {
+        action: 'add',
+        board_token: newToken,
+        company_name: newName,
+        provider: newProvider,
+      },
       `Added ${newName}`
     );
     if (ok) {
       setNewToken('');
       setNewName('');
+      setNewProvider('greenhouse');
       fetchSources();
     }
   }
@@ -157,6 +167,20 @@ export default function SourcesPanel() {
 
       <div className='flex gap-2 items-end'>
         <div className='flex flex-col gap-1'>
+          <label className='text-xs text-text-secondary'>Provider</label>
+          <select
+            value={newProvider}
+            onChange={e => setNewProvider(e.target.value as Provider)}
+            className={selectStyles}
+          >
+            {PROVIDERS.map(p => (
+              <option key={p} value={p}>
+                {p.charAt(0).toUpperCase() + p.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className='flex flex-col gap-1'>
           <label className='text-xs text-text-secondary'>Board Token</label>
           <input
             value={newToken}
@@ -199,6 +223,12 @@ export default function SourcesPanel() {
                 scope='col'
                 className='px-3 py-2 font-medium text-text-secondary'
               >
+                Provider
+              </th>
+              <th
+                scope='col'
+                className='px-3 py-2 font-medium text-text-secondary'
+              >
                 Token
               </th>
               <th
@@ -231,6 +261,11 @@ export default function SourcesPanel() {
             {sources.map(source => (
               <tr key={source.id} className='border-b border-border'>
                 <td className='px-3 py-2 font-medium'>{source.company_name}</td>
+                <td className='px-3 py-2'>
+                  <Badge variant='info' size='sm'>
+                    {source.provider ?? 'greenhouse'}
+                  </Badge>
+                </td>
                 <td className='px-3 py-2 text-text-tertiary font-mono text-xs'>
                   {source.board_token}
                 </td>

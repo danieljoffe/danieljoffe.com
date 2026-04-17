@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from collections.abc import Callable, Coroutine
 from datetime import UTC, datetime
 from typing import Any, cast
 
@@ -8,11 +9,22 @@ from supabase import Client
 from app.config import settings
 from app.models.schemas import PollResult
 from app.seed.keyword_config import keyword_config
+from app.services.ashby import fetch_ashby_jobs
 from app.services.greenhouse import fetch_board_jobs
+from app.services.lever import fetch_lever_jobs
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_job
+from app.services.standard_job import StandardJob
 
 logger = logging.getLogger(__name__)
+
+Fetcher = Callable[[str], Coroutine[Any, Any, list[StandardJob]]]
+
+FETCHERS: dict[str, Fetcher] = {
+    "greenhouse": fetch_board_jobs,
+    "lever": fetch_lever_jobs,
+    "ashby": fetch_ashby_jobs,
+}
 
 
 def _title_matches_any_role(title: str) -> bool:
@@ -39,14 +51,20 @@ async def poll_all_sources(supabase: Client) -> PollResult:
             board_token: str = source["board_token"]
             company_name: str = source["company_name"]
             source_id: str = source["id"]
+            provider: str = source.get("provider", "greenhouse")
 
-            jobs = await fetch_board_jobs(board_token)
+            fetcher = FETCHERS.get(provider)
+            if not fetcher:
+                result.errors.append(f"{company_name}: unknown provider '{provider}'")
+                continue
+
+            jobs = await fetcher(board_token)
             result.sources_polled += 1
 
-            # Collect ALL greenhouse IDs from the API (before title filtering)
-            # so we don't archive jobs that exist on Greenhouse but don't match
+            # Collect ALL external IDs from the API (before title filtering)
+            # so we don't archive jobs that exist on the board but don't match
             # our role filter.
-            all_greenhouse_ids: set[int] = {job.id for job in jobs}
+            all_external_ids: set[str] = {job.external_id for job in jobs}
 
             for job in jobs:
                 if not _title_matches_any_role(job.title):
@@ -55,7 +73,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
                 score_result = score_job(job.title, job.content, keyword_config)
 
                 row: dict[str, Any] = {
-                    "greenhouse_id": job.id,
+                    "external_id": job.external_id,
                     "source_id": source_id,
                     "title": job.title,
                     "company_name": company_name,
@@ -70,7 +88,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 
                 upsert_resp = (
                     supabase.table("job_postings")
-                    .upsert(row, on_conflict="greenhouse_id")
+                    .upsert(row, on_conflict="source_id,external_id")
                     .execute()
                 )
 
@@ -82,10 +100,10 @@ async def poll_all_sources(supabase: Client) -> PollResult:
                         result.updated_jobs += 1
 
             # Archive stale jobs: postings in the DB for this source that are
-            # no longer returned by Greenhouse. Skip user-intent statuses.
+            # no longer returned by the ATS. Skip user-intent statuses.
             existing_resp = (
                 supabase.table("job_postings")
-                .select("id, greenhouse_id")
+                .select("id, external_id")
                 .eq("source_id", source_id)
                 .not_.in_("status", ["saved", "applied", "archived"])
                 .execute()
@@ -93,7 +111,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
             now_iso = datetime.now(UTC).isoformat()
             for existing_job in existing_resp.data or []:
                 row_data = cast(dict[str, Any], existing_job)
-                if row_data["greenhouse_id"] not in all_greenhouse_ids:
+                if row_data["external_id"] not in all_external_ids:
                     supabase.table("job_postings").update(
                         {"status": "archived", "updated_at": now_iso}
                     ).eq("id", row_data["id"]).execute()

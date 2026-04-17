@@ -47,7 +47,7 @@ def test_sources_add_calls_upsert(client_factory):
     sb.table.assert_any_call("job_sources")
     sb.table.return_value.upsert.assert_called_once()
     args, kwargs = sb.table.return_value.upsert.call_args
-    assert args[0] == {"board_token": "foo", "company_name": "Foo"}
+    assert args[0] == {"board_token": "foo", "company_name": "Foo", "provider": "greenhouse"}
     assert kwargs.get("on_conflict") == "board_token"
 
 

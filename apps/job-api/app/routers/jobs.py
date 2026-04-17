@@ -31,7 +31,7 @@ async def list_jobs(
     ascending = order == "asc"
 
     query = supabase.table("job_postings").select(
-        "id, greenhouse_id, source_id, title, company_name, location, department, "
+        "id, external_id, source_id, title, company_name, location, department, "
         "absolute_url, score, score_breakdown, status, first_seen_at, created_at",
         count=CountMethod.exact,
     )
