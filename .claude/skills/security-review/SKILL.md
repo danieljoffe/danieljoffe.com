@@ -33,7 +33,7 @@ Perform a security-focused code review of the changes on the current branch comp
 4. **Project-specific concerns:**
    - `@supabase/supabase-js` — browser client must only use anon key, never service role key
    - `resend` — email sending must validate recipient addresses and sanitize content
-   - `apps/audit-scan-service` — Puppeteer/Lighthouse scans must not allow arbitrary URL scanning without auth
+   - `apps/audit-api` — Lighthouse/axe scans must not allow arbitrary URL scanning without auth; SSRF defenses on `/run-scan` URL input
    - `botid` — bot detection should not be the sole security layer
    - Contact form and lead capture endpoints are public-facing attack surface
    - CSP headers in `next.config.mjs` must not be weakened by changes

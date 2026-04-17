@@ -1,6 +1,6 @@
 # audit-api
 
-FastAPI service that runs Lighthouse + axe-core scans, grades results, and serves reports to the Next.js `/audit` pages. Replaces the Node.js `audit-scan-service` once parity is confirmed (see #183).
+FastAPI service that runs Lighthouse + axe-core scans, grades results, and serves reports to the Next.js `/audit` pages. Replaced the retired Node.js scan service (see #183).
 
 ## Local
 

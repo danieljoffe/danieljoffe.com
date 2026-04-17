@@ -4,7 +4,8 @@
 
 - **apps/root**: Main Next.js 16 application (App Router)
 - **apps/root-e2e**: Playwright E2E tests
-- **apps/audit-scan-service**: Express service for Lighthouse/axe audits (Puppeteer)
+- **apps/audit-api**: FastAPI service for Lighthouse/axe audits (Playwright)
+- **apps/job-api**: FastAPI service for job posting CMS
 - **libs/shared/ui**: Shared React component library (@danieljoffe.com/shared-ui)
 - **libs/shared/audit**: Shared audit types and utilities
 
