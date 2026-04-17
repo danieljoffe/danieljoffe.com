@@ -33,7 +33,11 @@ async def manage_source(
         resp = (
             supabase.table("job_sources")
             .upsert(
-                {"board_token": body.board_token, "company_name": body.company_name},
+                {
+                    "board_token": body.board_token,
+                    "company_name": body.company_name,
+                    "provider": body.provider,
+                },
                 on_conflict="board_token",
             )
             .execute()

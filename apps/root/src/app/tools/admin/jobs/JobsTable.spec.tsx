@@ -18,7 +18,7 @@ const filters: JobsFilterState = {
 const mockJobs: JobPosting[] = [
   {
     id: 'job-1',
-    greenhouse_id: 1001,
+    external_id: '1001',
     title: 'Senior Frontend Engineer',
     company_name: 'Acme',
     location: 'Remote',
@@ -31,7 +31,7 @@ const mockJobs: JobPosting[] = [
   },
   {
     id: 'job-2',
-    greenhouse_id: 1002,
+    external_id: '1002',
     title: 'Staff Engineer',
     company_name: 'Beta',
     location: null,
