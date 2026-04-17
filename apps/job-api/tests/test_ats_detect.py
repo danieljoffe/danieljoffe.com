@@ -3,8 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from app.services.ats_detect import DetectResult, _parse_input, detect_ats
-
+from app.services.ats_detect import _parse_input, detect_ats
 
 # --- _parse_input tests ---
 
@@ -72,7 +71,9 @@ def _make_http_response(status: int, json_data: object) -> MagicMock:
 @pytest.mark.asyncio
 async def test_detect_greenhouse_from_url():
     mock_client = AsyncMock()
-    mock_client.get.return_value = _make_http_response(200, {"name": "Stripe", "departments": [{}, {}]})
+    mock_client.get.return_value = _make_http_response(
+        200, {"name": "Stripe", "departments": [{}, {}]}
+    )
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
