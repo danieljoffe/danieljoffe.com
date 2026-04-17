@@ -11,10 +11,13 @@ from app.models.schemas import PollResult
 from app.seed.keyword_config import keyword_config
 from app.services.ashby import fetch_ashby_jobs
 from app.services.greenhouse import fetch_board_jobs
+from app.services.jsonld import fetch_jsonld_jobs
 from app.services.lever import fetch_lever_jobs
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_job
+from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
+from app.services.workday import fetch_workday_jobs
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +27,9 @@ FETCHERS: dict[str, Fetcher] = {
     "greenhouse": fetch_board_jobs,
     "lever": fetch_lever_jobs,
     "ashby": fetch_ashby_jobs,
+    "workday": fetch_workday_jobs,
+    "smartrecruiters": fetch_smartrecruiters_jobs,
+    "jsonld": fetch_jsonld_jobs,
 }
 
 

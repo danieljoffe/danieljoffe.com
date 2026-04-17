@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-BOARD_TOKEN_PATTERN = r"^[a-z0-9][a-z0-9-]{1,80}$"
+BOARD_TOKEN_PATTERN = r"^[a-zA-Z0-9][a-zA-Z0-9_.:/|@-]{1,250}$"
 
 
 class ScoreBreakdown(BaseModel):
@@ -21,7 +21,7 @@ class ScoreResult(BaseModel):
     excluded: bool
 
 
-Provider = Literal["greenhouse", "lever", "ashby"]
+Provider = Literal["greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld"]
 
 
 class JobPosting(BaseModel):
@@ -65,7 +65,7 @@ class StatusUpdate(BaseModel):
 
 class SourceAction(BaseModel):
     action: Literal["add", "remove", "toggle"]
-    board_token: str = Field(pattern=BOARD_TOKEN_PATTERN, max_length=80)
+    board_token: str = Field(pattern=BOARD_TOKEN_PATTERN, max_length=250)
     company_name: str | None = Field(default=None, max_length=200)
     provider: Provider = "greenhouse"
 

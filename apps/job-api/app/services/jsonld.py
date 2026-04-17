@@ -1,0 +1,153 @@
+import json
+import re
+from html.parser import HTMLParser
+
+import httpx
+
+from app.services.standard_job import StandardJob
+
+REQUEST_TIMEOUT = 10.0
+
+
+class _JsonLdExtractor(HTMLParser):
+    """Extract JSON-LD script blocks from HTML."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._in_jsonld = False
+        self._buf = ""
+        self.blocks: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "script":
+            attr_dict = dict(attrs)
+            if attr_dict.get("type") == "application/ld+json":
+                self._in_jsonld = True
+                self._buf = ""
+
+    def handle_data(self, data: str) -> None:
+        if self._in_jsonld:
+            self._buf += data
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script" and self._in_jsonld:
+            self._in_jsonld = False
+            self.blocks.append(self._buf)
+
+
+def _extract_job_postings(html: str) -> list[dict[str, object]]:
+    """Parse HTML for JSON-LD blocks and return all JobPosting objects."""
+    parser = _JsonLdExtractor()
+    parser.feed(html)
+
+    postings: list[dict[str, object]] = []
+    for block in parser.blocks:
+        try:
+            data = json.loads(block)
+        except (json.JSONDecodeError, ValueError):
+            continue
+
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict) and _is_job_posting(item):
+                    postings.append(item)
+        elif isinstance(data, dict):
+            if _is_job_posting(data):
+                postings.append(data)
+            # Handle @graph arrays
+            graph = data.get("@graph")
+            if isinstance(graph, list):
+                for item in graph:
+                    if isinstance(item, dict) and _is_job_posting(item):
+                        postings.append(item)
+
+    return postings
+
+
+def _is_job_posting(obj: dict[str, object]) -> bool:
+    obj_type = obj.get("@type", "")
+    if isinstance(obj_type, list):
+        return "JobPosting" in obj_type
+    return obj_type == "JobPosting"
+
+
+def _get_location(posting: dict[str, object]) -> str | None:
+    loc = posting.get("jobLocation")
+    if isinstance(loc, dict):
+        address = loc.get("address")
+        if isinstance(address, dict):
+            parts = [
+                address.get("addressLocality", ""),
+                address.get("addressRegion", ""),
+            ]
+            return ", ".join(p for p in parts if p) or None
+        return loc.get("name") if isinstance(loc.get("name"), str) else None
+    if isinstance(loc, list) and loc:
+        first = loc[0]
+        if isinstance(first, dict):
+            address = first.get("address")
+            if isinstance(address, dict):
+                parts = [
+                    address.get("addressLocality", ""),
+                    address.get("addressRegion", ""),
+                ]
+                return ", ".join(p for p in parts if p) or None
+    return None
+
+
+def _get_str(obj: dict[str, object], key: str) -> str:
+    val = obj.get(key, "")
+    return str(val) if val else ""
+
+
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+async def fetch_jsonld_jobs(careers_url: str) -> list[StandardJob]:
+    """Fetch a careers page and extract jobs from JSON-LD markup."""
+    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+        try:
+            resp = await client.get(careers_url, follow_redirects=True)
+            if resp.status_code != 200:
+                return []
+        except httpx.HTTPError:
+            return []
+
+    postings = _extract_job_postings(resp.text)
+
+    jobs: list[StandardJob] = []
+    for posting in postings:
+        title = _get_str(posting, "title") or _get_str(posting, "jobTitle")
+        if not title:
+            continue
+
+        description = _get_str(posting, "description")
+        # Strip HTML from description if present
+        clean_desc = _HTML_TAG_RE.sub("", description) if "<" in description else description
+
+        url = _get_str(posting, "url") or _get_str(posting, "sameAs")
+
+        # Build a stable ID from URL or title hash
+        import hashlib
+
+        id_source = url or f"{title}|{_get_location(posting) or ''}"
+        external_id = hashlib.sha256(id_source.encode()).hexdigest()[:16]
+
+        org = posting.get("hiringOrganization")
+        dept = ""
+        if isinstance(org, dict):
+            dept = _get_str(org, "department")
+
+        jobs.append(
+            StandardJob(
+                external_id=external_id,
+                title=title,
+                location_name=_get_location(posting),
+                department=dept or None,
+                content=clean_desc,
+                updated_at=_get_str(posting, "datePosted"),
+                absolute_url=url,
+            )
+        )
+
+    return jobs
