@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 LIGHTHOUSE_BIN = os.environ.get("LIGHTHOUSE_BIN", "lighthouse")
 AXE_SCRIPT_PATH = os.environ.get("AXE_SCRIPT_PATH", "/app/vendor/axe.min.js")
 SCAN_TIMEOUT_SEC = int(os.environ.get("SCAN_TIMEOUT_SEC", "90"))
+AXE_TIMEOUT_SEC = int(os.environ.get("AXE_TIMEOUT_SEC", "30"))
 
 
 @dataclass(frozen=True)
@@ -75,6 +76,7 @@ async def _run_axe_and_capture(
                 device_scale_factor=cfg.screen_emulation.device_scale_factor,
                 is_mobile=cfg.screen_emulation.mobile,
             )
+            context.set_default_timeout(30_000)
             page = await context.new_page()
             await page.goto(url, wait_until="networkidle", timeout=30_000)
 
@@ -99,9 +101,17 @@ async def _run_axe_and_capture(
             axe_path = Path(AXE_SCRIPT_PATH)
             if axe_path.exists():
                 await page.add_script_tag(path=str(axe_path))
-                raw = await page.evaluate(
-                    "async () => await window.axe.run(document)"
-                )
+                try:
+                    raw = await asyncio.wait_for(
+                        page.evaluate("async () => await window.axe.run(document)"),
+                        timeout=AXE_TIMEOUT_SEC,
+                    )
+                except TimeoutError:
+                    logger.warning(
+                        "axe.run timed out after %ss; returning empty violations",
+                        AXE_TIMEOUT_SEC,
+                    )
+                    raw = None
                 if isinstance(raw, dict):
                     axe_result = raw
             else:

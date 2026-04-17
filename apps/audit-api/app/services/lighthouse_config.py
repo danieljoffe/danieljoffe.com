@@ -5,6 +5,10 @@ DeviceMode = Literal["mobile", "desktop"]
 
 LIGHTHOUSE_CATEGORIES = ["performance", "accessibility", "best-practices", "seo"]
 
+# Chromium sandbox is disabled because the service renders untrusted URLs
+# from inside an unprivileged container; the container itself is the sandbox
+# (non-root uid, no host mounts). Do not relax container isolation without
+# re-enabling --sandbox or introducing an out-of-process browser jail.
 CHROME_FLAGS = [
     "--headless=new",
     "--disable-gpu",

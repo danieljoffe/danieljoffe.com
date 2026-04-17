@@ -48,8 +48,10 @@ class ScanQueue:
             self._worker.cancel()
             try:
                 await self._worker
-            except (asyncio.CancelledError, Exception):
+            except asyncio.CancelledError:
                 pass
+            except Exception:
+                logger.exception("Scan worker raised during shutdown")
             self._worker = None
 
     async def enqueue(self, job: ScanJob) -> None:

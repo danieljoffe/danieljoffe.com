@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -12,10 +15,22 @@ if not settings.allowed_hosts_list:
         "Use '*' only in local dev."
     )
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    queue = get_queue()
+    queue.start()
+    try:
+        yield
+    finally:
+        await queue.stop()
+
+
 app = FastAPI(
     title="Audit Scan API",
     description="Runs Lighthouse + axe scans, grades results, serves reports",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

@@ -11,14 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         fonts-liberation \
         curl \
         gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Lighthouse CLI + axe-core globally
-RUN npm install -g lighthouse@12 \
+RUN npm install -g lighthouse@12.8.0 \
     && mkdir -p /app/vendor \
-    && npm pack axe-core@4 --pack-destination=/tmp \
+    && npm pack axe-core@4.11.3 --pack-destination=/tmp \
     && tar -xzf /tmp/axe-core-*.tgz -C /tmp \
     && cp /tmp/package/axe.min.js /app/vendor/axe.min.js \
     && rm -rf /tmp/package /tmp/axe-core-*.tgz

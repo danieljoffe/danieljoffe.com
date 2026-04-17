@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -23,6 +24,33 @@ def test_run_scan_rejects_invalid_device_mode() -> None:
             json={"scan_id": "s1", "url": "https://example.com", "device_mode": "tv"},
         )
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "bad_url",
+    [
+        "file:///etc/passwd",
+        "chrome://net-internals",
+        "javascript:alert(1)",
+        "http://localhost:8000",
+        "http://127.0.0.1",
+        "https://10.0.0.5",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://192.168.1.1",
+        "http://metadata.google.internal",
+        "http://[::1]",
+        "ftp://example.com",
+        "not-a-url",
+    ],
+)
+def test_run_scan_rejects_unsafe_url(bad_url: str) -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/run-scan",
+            headers={"x-api-key": "testkey"},
+            json={"scan_id": "s1", "url": bad_url},
+        )
+    assert response.status_code == 422, bad_url
 
 
 def test_run_scan_enqueues_job_and_returns_accepted() -> None:
