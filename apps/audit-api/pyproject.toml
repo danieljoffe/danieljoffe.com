@@ -12,6 +12,7 @@ dependencies = [
   "pyjwt>=2.10",
   "playwright>=1.48",
   "supabase>=2.9",
+  "sentry-sdk[fastapi]>=2.19",
 ]
 
 [dependency-groups]
