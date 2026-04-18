@@ -5,6 +5,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
 import { formatDate } from '@/lib/dateFormatting';
+import CompareWithPreviousButton from './CompareWithPreviousButton';
 import ExpandableScreenshot from './ExpandableScreenshot';
 import ShareButton from './ShareButton';
 
@@ -43,7 +44,10 @@ export default function ReportHeader({
             <ArrowLeft className='size-4' aria-hidden='true' />
             New audit
           </Link>
-          <ShareButton scanId={scanId} />
+          <div className='flex items-center gap-4'>
+            <CompareWithPreviousButton scanId={scanId} />
+            <ShareButton scanId={scanId} />
+          </div>
         </div>
 
         <div className='mt-6 flex flex-col gap-6 md:flex-row md:items-start'>
