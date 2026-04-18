@@ -36,16 +36,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           skip_step: build
           build_script: 'size:noop'
-        # Note: The first PR adding size-limit will fail the base branch
-        # comparison because develop doesn't have the size:noop script yet.
-        # After this PR merges, all subsequent PRs will work correctly.
-        continue-on-error: true
-
-      # The action leaves the working tree on develop after comparison.
-      # Checkout the PR branch before running the standalone fallback.
-      - uses: actions/checkout@v5
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Size check (standalone)
-        run: pnpm run size
