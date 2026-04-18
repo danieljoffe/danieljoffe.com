@@ -16,10 +16,6 @@ on:
         description: 'Regenerate VR baselines, commit to branch, and upload as artifact'
         type: boolean
         default: false
-      snapshot-branch:
-        description: 'Branch to update snapshots on (defaults to the branch selected above)'
-        type: string
-        required: false
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -229,7 +225,6 @@ jobs:
         with:
           filter: tree:0
           fetch-depth: 0
-          ref: ${{ inputs.snapshot-branch || github.ref }}
           token: ${{ secrets.PAT_TOKEN }}
 
       - uses: ./.github/actions/setup-workspace
