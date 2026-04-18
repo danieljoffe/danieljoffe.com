@@ -51,9 +51,12 @@ RUN uv python install 3.11 \
 # Playwright browsers are pre-installed at /ms-playwright. No re-download needed.
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Lighthouse's chrome-launcher follows CHROME_PATH. Point it at Playwright's
-# Chromium so both scans use the same validated binary.
-RUN CHROME_BIN="$(ls -1d /ms-playwright/chromium-*/chrome-linux/chrome 2>/dev/null | head -1)" \
+# Lighthouse's chrome-launcher follows CHROME_PATH. Point it at whichever
+# Chromium launcher binary the Playwright base image ships. The layout shifts
+# across versions (chrome-linux → chrome-linux64; some images only bundle
+# chrome-headless-shell), so probe with find instead of pinning a glob.
+RUN CHROME_BIN="$(find /ms-playwright -path '*chromium*' -type f \
+      \( -name chrome -o -name chrome-headless-shell \) -executable 2>/dev/null | head -1)" \
     && test -n "$CHROME_BIN" \
     && ln -sf "$CHROME_BIN" /usr/local/bin/chrome
 
