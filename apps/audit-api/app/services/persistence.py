@@ -10,6 +10,12 @@ from app.services.scanner import ScanResults
 logger = logging.getLogger(__name__)
 
 
+class ScanRowMissingError(RuntimeError):
+    """The `scans` row referenced by a job is not in this database. Usually
+    signals a config mismatch (e.g. SUPABASE_URL pointing at a different
+    project than the caller that enqueued the scan)."""
+
+
 def _extract_scores(lighthouse: dict[str, Any]) -> CategoryScores:
     categories = lighthouse.get("categories") or {}
 
@@ -44,12 +50,19 @@ def _extract_core_web_vitals(lighthouse: dict[str, Any]) -> dict[str, Any]:
 async def mark_scan_running(supabase: Any, scan_id: str) -> None:
     if supabase is None:
         return
-    await asyncio.to_thread(
+    response = await asyncio.to_thread(
         lambda: supabase.table("scans")
         .update({"status": "running"})
         .eq("id", scan_id)
         .execute()
     )
+    # postgrest UPDATEs silently affect 0 rows when the id isn't found.
+    # Without this check, the scan runs ~20s before failing at the
+    # scan_issues FK constraint with a confusing error.
+    if not getattr(response, "data", None):
+        raise ScanRowMissingError(
+            f"scans row {scan_id} not found — check SUPABASE_URL matches caller"
+        )
 
 
 async def persist_scan_completion(
