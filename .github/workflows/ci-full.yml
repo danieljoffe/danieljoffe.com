@@ -11,18 +11,24 @@ on:
         description: NX_HEAD SHA for affected detection
         type: string
         required: true
+      # Callers that pre-classify changes (ci.yml preflight) pass these
+      # to skip expensive step blocks. Defaults to 'true' so callers like
+      # deploy-production.yml that want the full suite can omit them.
       e2e-changed:
         description: Whether paths affecting e2e tests changed
         type: string
-        required: true
+        required: false
+        default: 'true'
       lighthouse-changed:
         description: Whether paths affecting Lighthouse CI changed
         type: string
-        required: true
+        required: false
+        default: 'true'
       storybook-changed:
         description: Whether paths affecting Storybook/Chromatic changed
         type: string
-        required: true
+        required: false
+        default: 'true'
     secrets:
       NX_CLOUD_ACCESS_TOKEN:
         required: false

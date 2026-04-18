@@ -3,6 +3,9 @@ name: Size Limit
 on:
   pull_request:
     branches: [develop]
+    # ready_for_review re-triggers when a draft is marked ready so size-limit
+    # runs before merge. Matches ci.yml's draft-gating pattern.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   pull-requests: write
@@ -13,6 +16,7 @@ concurrency:
 
 jobs:
   size:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
