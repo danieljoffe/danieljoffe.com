@@ -39,8 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      docs-only: ${{ steps.check.outputs.docs-only }}
-      python-changed: ${{ steps.check.outputs.python-changed }}
+      docs-only: ${{ steps.classify.outputs.docs-only }}
+      python-changed: ${{ steps.classify.outputs.python-changed }}
+      job-api-changed: ${{ steps.classify.outputs.job-api-changed }}
+      audit-api-changed: ${{ steps.classify.outputs.audit-api-changed }}
+      e2e-changed: ${{ steps.classify.outputs.e2e-changed }}
+      lighthouse-changed: ${{ steps.classify.outputs.lighthouse-changed }}
+      storybook-changed: ${{ steps.classify.outputs.storybook-changed }}
       nx-base: ${{ steps.shas.outputs.base }}
       nx-head: ${{ steps.shas.outputs.head }}
     steps:
@@ -49,22 +54,28 @@ jobs:
           filter: tree:0
           fetch-depth: 0
 
-      - name: Check for docs-only and Python changes
-        id: check
+      - uses: nrwl/nx-set-shas@v5
+        id: shas
+        with:
+          main-branch-name: ${{ github.base_ref || 'main' }}
+
+      - name: Classify changed paths
+        id: classify
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           else
-            # Push to develop — always run full CI including Python
-            echo "docs-only=false" >> "$GITHUB_OUTPUT"
-            echo "python-changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            CHANGED=$(git diff --name-only "${{ steps.shas.outputs.base }}" "${{ steps.shas.outputs.head }}")
           fi
 
           DOCS_ONLY=true
-          PYTHON_CHANGED=false
+          JOB_API=false
+          AUDIT_API=false
+          E2E=false
+          LH=false
+          SB=false
           while IFS= read -r file; do
             [ -z "$file" ] && continue
             case "$file" in
@@ -79,20 +90,41 @@ jobs:
               *) DOCS_ONLY=false ;;
             esac
             case "$file" in
-              apps/job-api/*|apps/audit-api/*|pyproject.toml|uv.lock|.python-version)
-                PYTHON_CHANGED=true
+              apps/job-api/*) JOB_API=true ;;
+            esac
+            case "$file" in
+              apps/audit-api/*) AUDIT_API=true ;;
+            esac
+            case "$file" in
+              pyproject.toml|uv.lock|.python-version)
+                JOB_API=true
+                AUDIT_API=true
                 ;;
+            esac
+            case "$file" in
+              apps/root/*|apps/root-e2e/*|libs/*) E2E=true ;;
+            esac
+            case "$file" in
+              apps/root/*|libs/shared/*) LH=true ;;
+            esac
+            case "$file" in
+              libs/shared/ui/*|apps/root/.storybook/*|*.stories.ts|*.stories.tsx|*.stories.mdx|*.stories.js|*.stories.jsx) SB=true ;;
             esac
           done <<< "$CHANGED"
 
+          PYTHON_CHANGED=false
+          if [ "$JOB_API" = "true" ] || [ "$AUDIT_API" = "true" ]; then
+            PYTHON_CHANGED=true
+          fi
+
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
           echo "python-changed=$PYTHON_CHANGED" >> "$GITHUB_OUTPUT"
-
-      - uses: nrwl/nx-set-shas@v5
-        id: shas
-        if: steps.check.outputs.docs-only != 'true'
-        with:
-          main-branch-name: ${{ github.base_ref || 'main' }}
+          echo "job-api-changed=$JOB_API" >> "$GITHUB_OUTPUT"
+          echo "audit-api-changed=$AUDIT_API" >> "$GITHUB_OUTPUT"
+          echo "e2e-changed=$E2E" >> "$GITHUB_OUTPUT"
+          echo "lighthouse-changed=$LH" >> "$GITHUB_OUTPUT"
+          echo "storybook-changed=$SB" >> "$GITHUB_OUTPUT"
+          echo "Flags: docs-only=$DOCS_ONLY job-api=$JOB_API audit-api=$AUDIT_API e2e=$E2E lighthouse=$LH storybook=$SB"
 
   fast:
     needs: preflight
@@ -110,6 +142,9 @@ jobs:
     with:
       nx-base: ${{ needs.preflight.outputs.nx-base }}
       nx-head: ${{ needs.preflight.outputs.nx-head }}
+      e2e-changed: ${{ needs.preflight.outputs.e2e-changed }}
+      lighthouse-changed: ${{ needs.preflight.outputs.lighthouse-changed }}
+      storybook-changed: ${{ needs.preflight.outputs.storybook-changed }}
     secrets: inherit
 
   ci-python:
@@ -134,6 +169,7 @@ jobs:
         run: uv sync --frozen
 
       - name: job-api — lint, typecheck, test
+        if: needs.preflight.outputs.job-api-changed == 'true'
         working-directory: apps/job-api
         run: |
           uv run --package job-api ruff check .
@@ -141,6 +177,7 @@ jobs:
           uv run --package job-api pytest -v
 
       - name: audit-api — lint, typecheck, test
+        if: needs.preflight.outputs.audit-api-changed == 'true'
         working-directory: apps/audit-api
         run: |
           uv run --package audit-api ruff check .
