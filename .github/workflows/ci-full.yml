@@ -11,6 +11,18 @@ on:
         description: NX_HEAD SHA for affected detection
         type: string
         required: true
+      e2e-changed:
+        description: Whether paths affecting e2e tests changed
+        type: string
+        required: true
+      lighthouse-changed:
+        description: Whether paths affecting Lighthouse CI changed
+        type: string
+        required: true
+      storybook-changed:
+        description: Whether paths affecting Storybook/Chromatic changed
+        type: string
+        required: true
     secrets:
       NX_CLOUD_ACCESS_TOKEN:
         required: false
@@ -24,121 +36,16 @@ env:
   NX_NO_CLOUD: 'true'
 
 jobs:
-  filter:
+  # Single consolidated job. Previously three parallel jobs (e2e, lighthouse,
+  # storybook-and-chromatic) each did their own checkout + pnpm install +
+  # Nx cache restore (~60s × 3). Collapsing into one job shares that setup,
+  # trading parallelism for credits. Only runs when at least one flag is set;
+  # individual step blocks are gated by their respective changed flags so we
+  # still skip the expensive work when it isn't needed.
+  full:
+    if: ${{ inputs.e2e-changed == 'true' || inputs.lighthouse-changed == 'true' || inputs.storybook-changed == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      e2e: ${{ steps.paths.outputs.e2e }}
-      lighthouse: ${{ steps.paths.outputs.lighthouse }}
-      storybook: ${{ steps.paths.outputs.storybook }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - name: Classify changed paths
-        id: paths
-        run: |
-          CHANGED=$(git diff --name-only "${{ inputs.nx-base }}" "${{ inputs.nx-head }}")
-          E2E=false
-          LH=false
-          SB=false
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            case "$file" in
-              apps/root/*|apps/root-e2e/*|libs/*)
-                E2E=true
-                ;;
-            esac
-            case "$file" in
-              apps/root/*|libs/shared/*)
-                LH=true
-                ;;
-            esac
-            case "$file" in
-              libs/shared/ui/*|apps/root/.storybook/*|*.stories.ts|*.stories.tsx|*.stories.mdx|*.stories.js|*.stories.jsx)
-                SB=true
-                ;;
-            esac
-          done <<< "$CHANGED"
-          echo "e2e=$E2E" >> "$GITHUB_OUTPUT"
-          echo "lighthouse=$LH" >> "$GITHUB_OUTPUT"
-          echo "storybook=$SB" >> "$GITHUB_OUTPUT"
-          echo "Changed path flags: e2e=$E2E lighthouse=$LH storybook=$SB"
-
-  e2e:
-    needs: filter
-    if: needs.filter.outputs.e2e == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
-      - name: Log Playwright cache status
-        run: |
-          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
-            echo "::notice::Playwright cache HIT (version ${{ steps.playwright-version.outputs.version }})"
-          else
-            echo "::warning::Playwright cache MISS (version ${{ steps.playwright-version.outputs.version }}) — browsers will download"
-          fi
-
-      - name: Install Playwright
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run e2e tests
-        run: pnpm nx affected -t e2e --nxBail
-        env:
-          NX_BASE: ${{ inputs.nx-base }}
-          NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-  lighthouse:
-    needs: filter
-    if: needs.filter.outputs.lighthouse == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Build app (remote cache hit from ci-fast)
-        run: pnpm nx build root
-        env:
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-      - name: Run Lighthouse CI
-        run: pnpm test:lighthouse
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
-
-  storybook-and-chromatic:
-    needs: filter
-    if: needs.filter.outputs.storybook == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     env:
       CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     steps:
@@ -149,7 +56,59 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
+      # --- e2e ---
+      - name: Get Playwright version
+        if: inputs.e2e-changed == 'true'
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        if: inputs.e2e-changed == 'true'
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Log Playwright cache status
+        if: inputs.e2e-changed == 'true'
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "::notice::Playwright cache HIT (version ${{ steps.playwright-version.outputs.version }})"
+          else
+            echo "::warning::Playwright cache MISS (version ${{ steps.playwright-version.outputs.version }}) — browsers will download"
+          fi
+
+      - name: Install Playwright
+        if: inputs.e2e-changed == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        if: inputs.e2e-changed == 'true'
+        run: pnpm nx affected -t e2e --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+
+      # --- lighthouse ---
+      - name: Build app for Lighthouse
+        if: inputs.lighthouse-changed == 'true'
+        run: pnpm nx build root
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+
+      - name: Run Lighthouse CI
+        if: inputs.lighthouse-changed == 'true'
+        run: pnpm test:lighthouse
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
+
+      # --- storybook + chromatic ---
       - name: Build Storybook affected
+        if: inputs.storybook-changed == 'true'
         run: pnpm nx affected -t build-storybook --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
@@ -158,36 +117,5 @@ jobs:
           NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Chromatic visual tests
-        if: env.CHROMATIC_PROJECT_TOKEN != ''
+        if: inputs.storybook-changed == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
         run: pnpm chromatic:ui --exit-zero-on-changes --exit-once-sent
-
-  gate:
-    if: always()
-    needs: [filter, e2e, lighthouse, storybook-and-chromatic]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Check results
-        run: |
-          echo "  filter: ${{ needs.filter.result }}"
-          echo "  e2e: ${{ needs.e2e.result }}"
-          echo "  lighthouse: ${{ needs.lighthouse.result }}"
-          echo "  storybook-and-chromatic: ${{ needs.storybook-and-chromatic.result }}"
-
-          if [ "${{ needs.filter.result }}" = "failure" ] || [ "${{ needs.filter.result }}" = "cancelled" ]; then
-            echo "CI full filter failed"
-            exit 1
-          fi
-          if [ "${{ needs.e2e.result }}" = "failure" ] || [ "${{ needs.e2e.result }}" = "cancelled" ]; then
-            echo "CI full e2e failed"
-            exit 1
-          fi
-          if [ "${{ needs.lighthouse.result }}" = "failure" ] || [ "${{ needs.lighthouse.result }}" = "cancelled" ]; then
-            echo "CI full lighthouse failed"
-            exit 1
-          fi
-          if [ "${{ needs.storybook-and-chromatic.result }}" = "failure" ] || [ "${{ needs.storybook-and-chromatic.result }}" = "cancelled" ]; then
-            echo "CI full storybook-and-chromatic failed"
-            exit 1
-          fi
-          echo "All CI full checks passed or were skipped"
