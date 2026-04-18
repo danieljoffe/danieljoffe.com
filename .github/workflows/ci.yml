@@ -7,6 +7,9 @@ on:
   pull_request:
     branches-ignore:
       - main # PRs to main are handled by ci-preview.yml
+    # ready_for_review re-triggers CI when a draft is marked ready, so the
+    # draft-gated jobs (fast, ci-python) run before merge.
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       update-snapshots:
@@ -93,7 +96,7 @@ jobs:
 
   fast:
     needs: preflight
-    if: ${{ needs.preflight.outputs.docs-only != 'true' && !inputs.update-snapshots }}
+    if: ${{ needs.preflight.outputs.docs-only != 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
     uses: ./.github/workflows/ci-fast.yml
     with:
       nx-base: ${{ needs.preflight.outputs.nx-base }}
