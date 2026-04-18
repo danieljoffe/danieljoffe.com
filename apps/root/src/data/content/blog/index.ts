@@ -124,6 +124,12 @@ import AdminLoginHardeningJwtCookie, {
 import AsyncioGatherSyncClient, {
   metadata as asyncioGatherSyncClientMeta,
 } from './asyncio-gather-sync-client.mdx';
+import ParityHarnessSilentlyBrokenService, {
+  metadata as parityHarnessSilentlyBrokenServiceMeta,
+} from './parity-harness-silently-broken-service.mdx';
+import RailwayFastapiPlaywrightDeploy, {
+  metadata as railwayFastapiPlaywrightDeployMeta,
+} from './railway-fastapi-playwright-deploy.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -169,6 +175,8 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'uv-python-workspace-nx-monorepo': UvPythonWorkspaceNxMonorepo,
   'admin-login-hardening-jwt-cookie': AdminLoginHardeningJwtCookie,
   'asyncio-gather-sync-client': AsyncioGatherSyncClient,
+  'parity-harness-silently-broken-service': ParityHarnessSilentlyBrokenService,
+  'railway-fastapi-playwright-deploy': RailwayFastapiPlaywrightDeploy,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -213,4 +221,7 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'uv-python-workspace-nx-monorepo': uvPythonWorkspaceNxMonorepoMeta,
   'admin-login-hardening-jwt-cookie': adminLoginHardeningJwtCookieMeta,
   'asyncio-gather-sync-client': asyncioGatherSyncClientMeta,
+  'parity-harness-silently-broken-service':
+    parityHarnessSilentlyBrokenServiceMeta,
+  'railway-fastapi-playwright-deploy': railwayFastapiPlaywrightDeployMeta,
 };

@@ -1,0 +1,111 @@
+export const metadata = {
+  title: 'The Parity Harness That Caught a Silently Broken Service',
+  date: '2026-04-18',
+  excerpt:
+    'I wrote a parity harness to de-risk a Node to Python scan service port. It caught the existing Node service silently returning perf=0 on every URL.',
+  author: 'Daniel Joffe',
+  category: 'Testing',
+  tags: ['Testing', 'Node.js', 'Lighthouse', 'Monorepo'],
+  slug: 'parity-harness-silently-broken-service',
+  type: 'blog',
+  cover: {
+    alt: 'Two pairs of almost-identical shoes resting side by side on a bench',
+    src: '/images/covers/parity-harness-silently-broken-service.webp',
+  },
+};
+
+## The problem
+
+I was porting a Lighthouse + axe scan service from Node to Python. Same API contract, same Supabase tables, same grading thresholds. The frontend would not change. "Zero frontend changes" is the kind of claim that sounds safe until the first production scan comes back wrong.
+
+The old Node service was already live on Railway. The new FastAPI one was coming up alongside it. Both would write to the same `scans` and `scan_issues` tables. The risk was not whether the Python service worked; the risk was whether it worked the same. A port that drifts on score rounding, issue count, or Core Web Vitals math looks identical in dev and fails the moment a real user hits it.
+
+## The harness
+
+Fire both services against the same URL, poll Supabase until both finish, diff the two rows, fail on anything outside a tolerance band.
+
+```python title="apps/audit-api/scripts/parity.py (excerpt)"
+TEST_URLS = ["https://example.com", "https://web.dev", "https://vercel.com"]
+
+SCORE_TOLERANCES = {
+    "score_performance": 10,  # network variance is real
+    "score_accessibility": 3,  # deterministic
+    "score_seo": 3,
+    "score_best_practices": 3,
+}
+
+CWV_TOLERANCE_PCT = 0.3
+ISSUE_COUNT_TOLERANCE = 3
+```
+
+Performance gets a wide band because Lighthouse is noisy over the network. The other three dimensions are deterministic; a three-point drift means the scoring logic diverged. Core Web Vitals compare within a 30% envelope. Issue counts allow plus or minus three because both Lighthouse versions emit minor audits differently.
+
+The harness fires both services in parallel, uses the same `x-api-key` contract each service exposes, then offloads the blocking Supabase polls to `asyncio.to_thread` so the two waits overlap:
+
+```python
+async def run_one(client, node, python, supabase, url):
+    node_id, python_id = str(uuid.uuid4()), str(uuid.uuid4())
+    _insert_pending(supabase, node_id, url)
+    _insert_pending(supabase, python_id, url)
+
+    await asyncio.gather(
+        _post_scan(client, node, node_id, url),
+        _post_scan(client, python, python_id, url),
+    )
+
+    node_row, python_row = await asyncio.gather(
+        asyncio.to_thread(_wait_for_completion, supabase, node_id),
+        asyncio.to_thread(_wait_for_completion, supabase, python_id),
+    )
+```
+
+Each URL takes about 20 seconds end-to-end. Three URLs, two services, overlapped: the whole parity sweep finishes in roughly a minute.
+
+## What parity revealed
+
+The diff table from the first run:
+
+```text
+=== https://example.com
+  NODE   completed grade=- perf=0 a11y=100 seo=90 bp=100 lcp=- issues=4
+  PYTHON completed grade=B perf=88 a11y=100 seo=90 bp=100 lcp=1204ms issues=4
+  PARITY FAILURES:
+    - score_performance: node=0 python=88 diff=88 (>10)
+    - grade_overall: node=None python=B
+    - lcp_ms: node=None python=1204 diff>30%
+```
+
+The Python service looked right. The Node service was returning `perf=0` on every URL. It had been returning `perf=0` for weeks. Nobody noticed because the HTTP response was a clean `202 Accepted`, the `scans` row went to `completed`, and the admin dashboard dutifully rendered a gauge at zero. A successful HTTP response is not a successful scan.
+
+The root cause was a Lighthouse CLI upgrade that broke the Node service's JSON extraction a couple of versions back. It never crashed. It just silently lost the performance category while every other dimension kept working. Logs showed "scan completed"; the database confirmed it; the gauge was wrong.
+
+## The log problem
+
+You cannot alert on "the category is missing" because missing categories look like successful scans to everything downstream. You can alert on exceptions, on HTTP status codes, on queue depth. You cannot alert on the absence of an integer that Lighthouse never promised to include.
+
+Two implementations of the same contract can. If service A returns `perf=0` and service B returns `perf=88` for the same URL, one of them is lying. The harness does not need to know which one is right; it only needs to know they disagree.
+
+## The full harness
+
+```python title="apps/audit-api/scripts/parity.py"
+async def main() -> int:
+    node, python, supabase = load_env()
+    all_pass = True
+    async with httpx.AsyncClient() as client:
+        for url in TEST_URLS:
+            ok, failures = await run_one(client, node, python, supabase, url)
+            if ok:
+                print("  PARITY OK")
+            else:
+                all_pass = False
+                for failure in failures:
+                    print(f"    - {failure}")
+    print("OVERALL: PASS" if all_pass else "OVERALL: FAIL")
+    return 0 if all_pass else 1
+```
+
+Run locally with the service URLs and API keys for both the Node and Python instances, plus the Supabase service role key. The script exits non-zero on any mismatch, so it is CI-ready if you want to gate the cutover.
+
+## Takeaway
+
+During a migration you get something you never have otherwise: two working implementations of the same contract. Diff them. The harness that proves the port is right will also prove the original was wrong, and that second finding often matters more than the first.

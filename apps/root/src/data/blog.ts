@@ -42,6 +42,8 @@ export const blogSlugs = {
   uvPythonWorkspaceNxMonorepo: 'uv-python-workspace-nx-monorepo',
   adminLoginHardeningJwtCookie: 'admin-login-hardening-jwt-cookie',
   asyncioGatherSyncClient: 'asyncio-gather-sync-client',
+  parityHarnessSilentlyBrokenService: 'parity-harness-silently-broken-service',
+  railwayFastapiPlaywrightDeploy: 'railway-fastapi-playwright-deploy',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
