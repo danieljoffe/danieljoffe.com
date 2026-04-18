@@ -10,7 +10,9 @@ dependencies = [
   "uvicorn[standard]>=0.34",
   "pydantic-settings>=2.7",
   "pyjwt>=2.10",
-  "playwright>=1.48",
+  # Must match the Playwright base image tag in apps/audit-api/Dockerfile —
+  # browser binaries ship at version-specific paths in the base image.
+  "playwright==1.58.0",
   "supabase>=2.9",
   "sentry-sdk[fastapi]>=2.19",
 ]
