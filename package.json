@@ -33,7 +33,7 @@
     "db:reset": "supabase db reset",
     "db:gen-types": "supabase gen types typescript --linked > libs/shared/audit/src/lib/database.types.ts",
     "build-storybook:ui": "nx build-storybook @danieljoffe.com/shared-ui",
-    "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui",
+    "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui --only-changed",
     "prebuild": "tsx scripts/generate-search-index.ts"
   },
   "private": true,

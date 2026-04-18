@@ -1,0 +1,43 @@
+{
+  "name": "audit-api",
+  "sourceRoot": "apps/audit-api",
+  "projectType": "application",
+  "tags": ["scope:audit", "type:app", "platform:python"],
+  "targets": {
+    "dev": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --package audit-api uvicorn app.main:app --reload --port 8001",
+        "cwd": "apps/audit-api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "uv run --package audit-api pytest -v",
+        "cwd": "apps/audit-api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default"],
+      "options": {
+        "command": "uv run --package audit-api ruff check .",
+        "cwd": "apps/audit-api"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "uv run --package audit-api mypy app/",
+        "cwd": "apps/audit-api"
+      }
+    }
+  }
+}

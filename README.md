@@ -74,7 +74,8 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 │   │       ├── types/     # TypeScript type definitions
 │   │       └── utils/     # Helper functions and constants
 │   ├── root-e2e/          # Playwright E2E tests
-│   └── audit-scan-service/ # Express Lighthouse/axe audit service
+│   ├── audit-api/         # FastAPI Lighthouse/axe audit service
+│   └── job-api/           # FastAPI job posting CMS
 ├── libs/
 │   └── shared/
 │       ├── ui/            # Shared React component library (34 components)

@@ -1,0 +1,115 @@
+export const metadata = {
+  title: 'Eight Failed Deploys to Ship FastAPI + Playwright on Railway',
+  date: '2026-04-18',
+  excerpt:
+    'Eight red deploys in a row shipping a Python audit service to Railway: uv grabbing Python 3.14, /root perms, Playwright browser paths, and a glob that broke.',
+  author: 'Daniel Joffe',
+  category: 'Tooling & CI',
+  tags: ['CI/CD', 'Playwright', 'Nx', 'Monorepo', 'Lighthouse'],
+  slug: 'railway-fastapi-playwright-deploy',
+  type: 'blog',
+  cover: {
+    alt: 'A row of stamped-red boarding passes lined up on a counter',
+    src: '/images/covers/railway-fastapi-playwright-deploy.webp',
+  },
+};
+
+## The problem
+
+I was shipping a new FastAPI service to Railway. The container runs Lighthouse CLI and Playwright to audit pages. Builds were green; deploys were red, eight times in a row. Each failure pointed somewhere specific and wrong.
+
+A single deploy cycle on Railway is about three minutes: pull image, start container, wait on the healthcheck. Eight cycles is most of an evening. Below is the failure chain and the three root causes worth internalizing.
+
+## The chain
+
+| #   | Symptom                                          | Cause                               |
+| --- | ------------------------------------------------ | ----------------------------------- |
+| 1   | Chromium SIGSEGV on launch                       | APT-installed chromium, wrong libs  |
+| 2   | `lighthouse: not found`                          | Playwright base image has no Node   |
+| 3   | `pyiceberg` source build fails                   | uv grabbed Python 3.14, no wheels   |
+| 4   | `exec: uvicorn: Permission denied`               | `/root` mode 700 blocks non-root    |
+| 5   | `Executable doesn't exist at /ms-playwright/...` | Playwright pypi vs base image skew  |
+| 6   | `CHROME_BIN` empty, build fails                  | Layout shifted under /ms-playwright |
+| 7   | `scan_issues_scan_id_fkey` violation             | Env pointing at wrong Supabase      |
+| 8   | (diagnosis) 20s silent fail on every scan        | Undetected row miss                 |
+
+The first two were stupid-mine. Chromium needs all of Playwright's vetted system libs; I should have started from the Playwright base image instead of apt-installing. Lighthouse needs Node; the Python-variant Playwright image ships Python only. Add NodeSource. Done.
+
+The next three are the ones I had not seen before, and they generalize.
+
+## uv grabbed Python 3.14
+
+I asked uv for a FastAPI service and it built one. What I did not notice was which Python it had picked. uv defaults to the newest Python it can find. At the time, that was 3.14. One of my transitive dependencies (pyiceberg, via supabase) does not publish wheels for 3.14, so uv started a source build, which needs a C toolchain the container does not have.
+
+The fix was to pin Python at the Dockerfile layer, not the pyproject layer:
+
+```dockerfile
+ENV UV_PYTHON_INSTALL_DIR=/app/.uv-python
+RUN uv python install 3.11 \
+    && uv sync --frozen --no-dev --no-editable --package audit-api --python 3.11
+```
+
+`uv python install 3.11` materializes the managed interpreter before `uv sync` runs. `--python 3.11` forces the sync to use it. Without both flags, uv can and will pick a newer interpreter on the next build just because it exists in the cache.
+
+The lesson: pinning a Python version in `pyproject.toml` (`requires-python = ">=3.11"`) tells uv the minimum. It does not tell uv which version to choose when several satisfy the minimum. Pin the actual version in the Dockerfile.
+
+## The /root mode 700 problem
+
+uv installs its managed Python interpreters under `$HOME/.local/share/uv/python` by default. When the container runs as root, that is `/root/.local/share/uv/python`. When the container runs as a non-root user (which it should), the venv shebang still points at `/root/...`, and `/root` is mode 700. Result:
+
+```text
+sh: 1: exec: /app/.venv/bin/uvicorn: Permission denied
+```
+
+The venv shebang can be read; the interpreter it points at cannot. The healthcheck fails. Railway kills the container.
+
+The fix is to relocate uv's managed Python before the sync runs:
+
+```dockerfile
+ENV UV_PYTHON_INSTALL_DIR=/app/.uv-python
+```
+
+`chown -R app:app /app` at the end of the build covers the relocated interpreter. The venv shebang now points at `/app/.uv-python/...`, which the non-root `app` user can exec.
+
+This applies to anyone running uv-managed Python under a non-root user. The failure mode is loud (`Permission denied` at container start), but the cause is not in any error message; it is in the default install location.
+
+## Playwright's version-locked browser paths
+
+Playwright pre-installs browsers at version-specific paths. `/ms-playwright/chromium_headless_shell-1208/` for Playwright 1.48. `/ms-playwright/chromium_headless_shell-1172/` for a different version. The Playwright pypi package refuses to launch a browser at an unexpected path, because the protocol between the pypi client and the browser changes across versions.
+
+My `uv.lock` had resolved `playwright>=1.48` up to 1.58 at install time. My Dockerfile was still `FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy`. The pypi client looked for 1.58's browser build; the image had 1.48's. Launch failed on every scan.
+
+The fix is to lock both in a single commit:
+
+```toml title="apps/audit-api/pyproject.toml"
+dependencies = [
+  "playwright==1.58.0",
+  # Dockerfile base image tag must match this version. See Dockerfile comment.
+]
+```
+
+```dockerfile
+# IMPORTANT: tag MUST match the `playwright` version in uv.lock.
+FROM mcr.microsoft.com/playwright/python:v1.58.0-jammy AS base
+```
+
+Pin the pypi package, pin the image tag, put them next to each other, bump in lockstep. A floating range plus a pinned image is a time bomb.
+
+## The layout-agnostic binary lookup
+
+Lighthouse's `chrome-launcher` follows `CHROME_PATH`. I had been pointing it at `/ms-playwright/chromium-NNN/chrome-linux/chrome`. Playwright 1.58's base image reorganized things: no `chrome-linux/`, no standalone `chrome` in some variants, only `chrome-headless-shell`. The glob returned nothing, the `ln -sf` silently failed, the scan crashed later when Lighthouse could not spawn Chrome.
+
+Replace the glob with a `find` that matches any launcher-capable binary:
+
+```dockerfile
+RUN CHROME_BIN="$(find /ms-playwright -path '*chromium*' -type f \
+      \( -name chrome -o -name chrome-headless-shell \) -executable 2>/dev/null | head -1)" \
+    && test -n "$CHROME_BIN" \
+    && ln -sf "$CHROME_BIN" /usr/local/bin/chrome
+```
+
+`test -n "$CHROME_BIN"` fails the build loudly if nothing matched. A silent empty glob that produces an empty symlink is a setup that looks fine until runtime; a build that fails when the layout changes is a setup that tells you to look.
+
+## Takeaway
+
+Every failure in this chain was visible at build time to someone paying attention. Every one was silent at runtime until the first real request. The pattern across all three generalizable causes is the same: a default that works in isolation (uv picking the newest Python, uv picking the default home, a glob that evaluates to nothing) becomes wrong at the boundary where another system expects a contract. Pin the defaults; validate them in the build; fail loud.

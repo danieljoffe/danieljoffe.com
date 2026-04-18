@@ -17,10 +17,14 @@ on:
       NX_CLOUD_ID:
         required: false
 
+env:
+  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
+  NX_NO_CLOUD: 'true'
+
 jobs:
-  lint:
+  checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
@@ -29,88 +33,10 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
-      - name: Lint affected
-        run: pnpm nx affected -t lint --exclude=job-api --nxBail
+      - name: Lint, typecheck, test, build affected
+        run: pnpm nx affected -t lint typecheck test build --exclude=job-api,audit-api --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
           NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-  typecheck:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Typecheck affected
-        run: pnpm nx affected -t typecheck --exclude=job-api --nxBail
-        env:
-          NX_BASE: ${{ inputs.nx-base }}
-          NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-  test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Test affected
-        run: pnpm nx affected -t test --exclude=job-api --nxBail
-        env:
-          NX_BASE: ${{ inputs.nx-base }}
-          NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Build affected
-        run: pnpm nx affected -t build --exclude=job-api --nxBail
-        env:
-          NX_BASE: ${{ inputs.nx-base }}
-          NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-  gate:
-    if: always()
-    needs: [lint, typecheck, test, build]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Check results
-        run: |
-          if [ "${{ needs.lint.result }}" = "failure" ] || \
-             [ "${{ needs.typecheck.result }}" = "failure" ] || \
-             [ "${{ needs.test.result }}" = "failure" ] || \
-             [ "${{ needs.build.result }}" = "failure" ]; then
-            echo "CI fast checks failed"
-            echo "  lint: ${{ needs.lint.result }}"
-            echo "  typecheck: ${{ needs.typecheck.result }}"
-            echo "  test: ${{ needs.test.result }}"
-            echo "  build: ${{ needs.build.result }}"
-            exit 1
-          fi
-          echo "All CI fast checks passed"

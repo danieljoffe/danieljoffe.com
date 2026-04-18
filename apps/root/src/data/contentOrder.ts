@@ -105,4 +105,6 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.uvPythonWorkspaceNxMonorepo, // 2026-04-15
   blogSlugs.adminLoginHardeningJwtCookie, // 2026-04-15
   blogSlugs.asyncioGatherSyncClient, // 2026-04-17
+  blogSlugs.parityHarnessSilentlyBrokenService, // 2026-04-18
+  blogSlugs.railwayFastapiPlaywrightDeploy, // 2026-04-18
 ];

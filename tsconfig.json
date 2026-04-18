@@ -10,9 +10,6 @@
       "path": "./libs/shared/ui"
     },
     {
-      "path": "./apps/audit-scan-service"
-    },
-    {
       "path": "./libs/shared/audit"
     }
   ],

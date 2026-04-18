@@ -11,6 +11,24 @@ on:
         description: NX_HEAD SHA for affected detection
         type: string
         required: true
+      # Callers that pre-classify changes (ci.yml preflight) pass these
+      # to skip expensive step blocks. Defaults to 'true' so callers like
+      # deploy-production.yml that want the full suite can omit them.
+      e2e-changed:
+        description: Whether paths affecting e2e tests changed
+        type: string
+        required: false
+        default: 'true'
+      lighthouse-changed:
+        description: Whether paths affecting Lighthouse CI changed
+        type: string
+        required: false
+        default: 'true'
+      storybook-changed:
+        description: Whether paths affecting Storybook/Chromatic changed
+        type: string
+        required: false
+        default: 'true'
     secrets:
       NX_CLOUD_ACCESS_TOKEN:
         required: false
@@ -19,64 +37,21 @@ on:
       CHROMATIC_PROJECT_TOKEN:
         required: false
 
+env:
+  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
+  NX_NO_CLOUD: 'true'
+
 jobs:
-  e2e:
+  # Single consolidated job. Previously three parallel jobs (e2e, lighthouse,
+  # storybook-and-chromatic) each did their own checkout + pnpm install +
+  # Nx cache restore (~60s × 3). Collapsing into one job shares that setup,
+  # trading parallelism for credits. Only runs when at least one flag is set;
+  # individual step blocks are gated by their respective changed flags so we
+  # still skip the expensive work when it isn't needed.
+  full:
+    if: ${{ inputs.e2e-changed == 'true' || inputs.lighthouse-changed == 'true' || inputs.storybook-changed == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
-      - name: Install Playwright
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run e2e tests
-        run: pnpm nx affected -t e2e --nxBail
-        env:
-          NX_BASE: ${{ inputs.nx-base }}
-          NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-  lighthouse:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Build app (remote cache hit from ci-fast)
-        run: pnpm nx build root
-        env:
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
-
-      - name: Run Lighthouse CI
-        run: pnpm test:lighthouse
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
-
-  storybook-and-chromatic:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     env:
       CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     steps:
@@ -87,7 +62,59 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
+      # --- e2e ---
+      - name: Get Playwright version
+        if: inputs.e2e-changed == 'true'
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        if: inputs.e2e-changed == 'true'
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Log Playwright cache status
+        if: inputs.e2e-changed == 'true'
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "::notice::Playwright cache HIT (version ${{ steps.playwright-version.outputs.version }})"
+          else
+            echo "::warning::Playwright cache MISS (version ${{ steps.playwright-version.outputs.version }}) — browsers will download"
+          fi
+
+      - name: Install Playwright
+        if: inputs.e2e-changed == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        if: inputs.e2e-changed == 'true'
+        run: pnpm nx affected -t e2e --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+
+      # --- lighthouse ---
+      - name: Build app for Lighthouse
+        if: inputs.lighthouse-changed == 'true'
+        run: pnpm nx build root
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+
+      - name: Run Lighthouse CI
+        if: inputs.lighthouse-changed == 'true'
+        run: pnpm test:lighthouse
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
+
+      # --- storybook + chromatic ---
       - name: Build Storybook affected
+        if: inputs.storybook-changed == 'true'
         run: pnpm nx affected -t build-storybook --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
@@ -96,24 +123,5 @@ jobs:
           NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Chromatic visual tests
-        if: env.CHROMATIC_PROJECT_TOKEN != ''
+        if: inputs.storybook-changed == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
         run: pnpm chromatic:ui --exit-zero-on-changes --exit-once-sent
-
-  gate:
-    if: always()
-    needs: [e2e, lighthouse, storybook-and-chromatic]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Check results
-        run: |
-          if [ "${{ needs.e2e.result }}" = "failure" ] || \
-             [ "${{ needs.lighthouse.result }}" = "failure" ] || \
-             [ "${{ needs.storybook-and-chromatic.result }}" = "failure" ]; then
-            echo "CI full checks failed"
-            echo "  e2e: ${{ needs.e2e.result }}"
-            echo "  lighthouse: ${{ needs.lighthouse.result }}"
-            echo "  storybook-and-chromatic: ${{ needs.storybook-and-chromatic.result }}"
-            exit 1
-          fi
-          echo "All CI full checks passed"
