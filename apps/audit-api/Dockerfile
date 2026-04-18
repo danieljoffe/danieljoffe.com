@@ -1,7 +1,13 @@
 # Official Playwright image ships Chromium + all required system libs, vetted
 # by the Playwright team. The previous uv+bookworm base with apt-installed
 # chromium was SIGSEGV-ing on Playwright's Chromium launch in Railway.
-FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy AS base
+#
+# IMPORTANT: this tag MUST match the `playwright` version resolved in uv.lock.
+# Playwright pre-installs browsers at version-specific paths
+# (/ms-playwright/chromium_headless_shell-<build>), and the pypi package
+# refuses to launch a mismatched build. When bumping the playwright pypi dep,
+# bump this tag in the same commit.
+FROM mcr.microsoft.com/playwright/python:v1.58.0-jammy AS base
 
 # uv for Python dependency management (not present in the Playwright image).
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
