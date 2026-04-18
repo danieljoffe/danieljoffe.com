@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight, Calendar, Clock } from 'lucide-react';
+import { ArrowUpRight, Clock } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -61,24 +61,12 @@ export function PostCard({
         <Text variant='cardDescription' className='line-clamp-2'>
           {post.description}
         </Text>
-        {(post.duration || post.readingTime) && (
-          <div className='flex items-center gap-3'>
-            {post.duration && (
-              <div className='flex items-center gap-1.5'>
-                <Calendar className='h-3 w-3 text-text-tertiary' />
-                <Text variant='meta' as='span'>
-                  {post.duration}
-                </Text>
-              </div>
-            )}
-            {post.readingTime && (
-              <div className='flex items-center gap-1.5'>
-                <Clock className='h-3 w-3 text-text-tertiary' />
-                <Text variant='meta' as='span'>
-                  {post.readingTime} min read
-                </Text>
-              </div>
-            )}
+        {post.readingTime && (
+          <div className='flex items-center gap-1.5'>
+            <Clock className='h-3 w-3 text-text-tertiary' />
+            <Text variant='meta' as='span'>
+              {post.readingTime} min read
+            </Text>
           </div>
         )}
       </div>

@@ -2,18 +2,20 @@
  * Optimize AI-generated cover images for the portfolio.
  *
  * Usage:
- *   pnpm tsx scripts/optimize-covers.ts <input-dir>
+ *   pnpm tsx scripts/optimize-covers.ts <input-dir> <slug> [<slug> ...]
  *
- * Input:  A directory of images named by content slug (any format sharp supports).
- *         e.g., unified-content-pipeline.png, fightcamp.jpg, winc.webp
+ * Example:
+ *   pnpm tsx scripts/optimize-covers.ts ~/Downloads/covers \
+ *     parity-harness-silently-broken-service \
+ *     railway-fastapi-playwright-deploy
+ *
+ * Input:  A directory containing images whose filename (sans extension)
+ *         matches each slug, e.g. parity-harness-silently-broken-service.png.
  *
  * Output: Optimized WebP files at apps/root/public/images/covers/{slug}.webp
  *         - Max width: 1280px (largest Next.js deviceSize)
  *         - Quality: 80 (WebP)
  *         - Aspect ratio preserved
- *
- * The script validates that every content slug has a corresponding input image
- * and reports any missing or extra files.
  */
 
 import { readdirSync, mkdirSync, existsSync, statSync } from 'node:fs';
@@ -27,73 +29,15 @@ const MAX_WIDTH = 1280;
 const QUALITY = 80;
 const OUTPUT_DIR = resolve(__dirname, '../apps/root/public/images/covers');
 
-/** All content slugs that need cover images. */
-const EXPECTED_SLUGS = [
-  // Blog (36)
-  'accessible-dropdown-keyboard-nav',
-  'asyncio-gather-sync-client',
-  'auto-generated-toc-scroll-spy',
-  'calendly-embed-timeout-fallback',
-  'ci-docs-only-shell-detection',
-  'client-side-tag-filtering-seo',
-  'compose-providers-react-context',
-  'cycling-theme-toggle',
-  'documenting-design-tokens',
-  'eslint-import-ordering-monorepo',
-  'executable-style-guide-zod',
-  'favicon-pipeline-one-svg',
-  'form-api-alignment-aria',
-  'funnel-session-id-analytics',
-  'graceful-degradation-third-party-embeds',
-  'hydration-mismatch-use-synced-state',
-  'import-type-circular-dependency',
-  'keyboard-navigable-data-tables',
-  'mdx-single-source-of-truth',
-  'minisearch-ranked-search-cmdk',
-  'mobile-bottom-nav-z-index',
-  'mobile-nav-a11y-bottom-sheet',
-  'mobile-vr-data-driven-playwright',
-  'pnpm-phantom-dependencies',
-  'prefers-reduced-motion-component-library',
-  'removing-focus-trap-react',
-  'rule-of-three-design-systems',
-  'sentry-skip-without-dsn',
-  'shared-ui-design-system',
-  'standardizing-component-size-scale',
-  'static-site-search-cmdk',
-  'storybook-interaction-tests-aria',
-  'three-tools-monorepo-hygiene',
-  'toast-pause-on-hover',
-  'tooltip-aria-describedby-wrong-element',
-  'typography-system-nextjs',
-  'unified-content-pipeline',
-  'visual-regression-ci-pipeline',
-  // Projects (10)
-  'accessibility-serials-study-case',
-  'appcontext-simplification-case-study',
-  'cms-tooling-case-study',
-  'component-library-case-study',
-  'contact-form-case-study',
-  'logistics-dashboard-study-case',
-  'performance-case-study',
-  'portfolio-modern-practice-study-case',
-  'ui-components-v1',
-  'ui-components-v2',
-  // Experience (4)
-  'fightcamp',
-  'internet-brands',
-  'professional-development',
-  'the-library-corporation',
-  'winc',
-] as const;
-
 async function main() {
-  const inputDir = process.argv[2];
+  const [inputDir, ...slugs] = process.argv.slice(2);
 
-  if (!inputDir) {
-    console.error('Usage: pnpm tsx scripts/optimize-covers.ts <input-dir>');
+  if (!inputDir || slugs.length === 0) {
     console.error(
-      'Example: pnpm tsx scripts/optimize-covers.ts ~/Downloads/covers'
+      'Usage: pnpm tsx scripts/optimize-covers.ts <input-dir> <slug> [<slug> ...]'
+    );
+    console.error(
+      'Example: pnpm tsx scripts/optimize-covers.ts ~/Downloads/covers my-post-slug'
     );
     process.exit(1);
   }
@@ -104,44 +48,31 @@ async function main() {
     process.exit(1);
   }
 
-  // Scan input directory — map slug (filename without extension) to full path
-  const inputFiles = readdirSync(resolvedInput).filter(f => !f.startsWith('.'));
   const inputMap = new Map<string, string>();
-  for (const file of inputFiles) {
-    const { name } = parse(file);
-    inputMap.set(name, join(resolvedInput, file));
+  for (const file of readdirSync(resolvedInput).filter(
+    f => !f.startsWith('.')
+  )) {
+    inputMap.set(parse(file).name, join(resolvedInput, file));
   }
 
-  // Validate coverage
-  const expectedSet = new Set<string>(EXPECTED_SLUGS);
-  const missing = EXPECTED_SLUGS.filter(s => !inputMap.has(s));
-  const extra = [...inputMap.keys()].filter(s => !expectedSet.has(s));
-
+  const missing = slugs.filter(s => !inputMap.has(s));
   if (missing.length > 0) {
-    console.warn(`\n Missing images (${missing.length}):`);
-    for (const slug of missing) console.warn(`  - ${slug}`);
-  }
-  if (extra.length > 0) {
-    console.warn(`\n Extra images not matching any slug (${extra.length}):`);
-    for (const slug of extra) console.warn(`  - ${slug}`);
-  }
-
-  // Only process images that match expected slugs
-  const toProcess = EXPECTED_SLUGS.filter(s => inputMap.has(s));
-  if (toProcess.length === 0) {
-    console.error('\nNo matching images found. Nothing to do.');
+    console.error(`\nMissing images for ${missing.length} slug(s):`);
+    for (const slug of missing) console.error(`  - ${slug}`);
+    console.error(
+      `\nExpected a file named <slug>.<ext> in ${resolvedInput} for each slug.`
+    );
     process.exit(1);
   }
 
-  // Ensure output directory exists
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  console.log(`\nProcessing ${toProcess.length} images...\n`);
+  console.log(`\nProcessing ${slugs.length} image(s)...\n`);
 
   let totalInputBytes = 0;
   let totalOutputBytes = 0;
 
-  for (const slug of toProcess) {
+  for (const slug of slugs) {
     const inputPath = inputMap.get(slug)!;
     const outputPath = join(OUTPUT_DIR, `${slug}.webp`);
 
@@ -153,7 +84,6 @@ async function main() {
     const inputWidth = metadata.width ?? 0;
     const inputHeight = metadata.height ?? 0;
 
-    // Resize only if wider than MAX_WIDTH
     const pipeline =
       inputWidth > MAX_WIDTH ? image.resize({ width: MAX_WIDTH }) : image;
 
@@ -176,22 +106,13 @@ async function main() {
   }
 
   console.log(`\n--- Summary ---`);
-  console.log(
-    `  Processed: ${toProcess.length}/${EXPECTED_SLUGS.length} images`
-  );
+  console.log(`  Processed: ${slugs.length} image(s)`);
   console.log(`  Total input:  ${formatBytes(totalInputBytes)}`);
   console.log(`  Total output: ${formatBytes(totalOutputBytes)}`);
   console.log(
     `  Savings: ${formatBytes(totalInputBytes - totalOutputBytes)} (${((1 - totalOutputBytes / totalInputBytes) * 100).toFixed(0)}%)`
   );
   console.log(`  Output: ${OUTPUT_DIR}\n`);
-
-  if (missing.length > 0) {
-    console.warn(
-      `${missing.length} images still missing. Re-run after adding them.\n`
-    );
-    process.exit(1);
-  }
 }
 
 function formatBytes(bytes: number): string {
