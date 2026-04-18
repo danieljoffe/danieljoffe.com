@@ -1,23 +1,16 @@
-from dataclasses import dataclass
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
 from app.services.issues import ParsedIssue
 from app.services.persistence import (
+    ScanRowMissingError,
     mark_scan_failed,
     mark_scan_running,
     persist_scan_completion,
 )
 from app.services.scanner import ScanResults
-
-
-@dataclass
-class _FakeExecute:
-    called_with: dict[str, Any]
-
-    def execute(self) -> None:
-        return None
 
 
 class _FakeQuery:
@@ -41,8 +34,9 @@ class _FakeQuery:
         self._payload = {"filter_column": column, "filter_value": value, "payload": self._payload}
         return self
 
-    def execute(self) -> None:
+    def execute(self) -> SimpleNamespace:
         self._log.append((f"{self._table}.{self._op}", self._payload))
+        return SimpleNamespace(data=[{"ok": True}])
 
 
 class _FakeSupabase:
@@ -97,6 +91,24 @@ async def test_mark_scan_running_updates_status(fake_supabase: _FakeSupabase) ->
 
 async def test_mark_scan_running_noops_when_supabase_is_none() -> None:
     await mark_scan_running(None, "scan-1")  # no error, no write
+
+
+async def test_mark_scan_running_raises_when_row_missing() -> None:
+    class _EmptySupabase:
+        def table(self, _name: str) -> "_EmptySupabase":
+            return self
+
+        def update(self, _payload: dict[str, Any]) -> "_EmptySupabase":
+            return self
+
+        def eq(self, _col: str, _val: Any) -> "_EmptySupabase":
+            return self
+
+        def execute(self) -> SimpleNamespace:
+            return SimpleNamespace(data=[])
+
+    with pytest.raises(ScanRowMissingError):
+        await mark_scan_running(_EmptySupabase(), "scan-missing")
 
 
 async def test_persist_scan_completion_writes_scores_and_cwv(

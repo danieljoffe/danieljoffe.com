@@ -7,6 +7,7 @@ import sentry_sdk
 from app.services.issues import parse_issues
 from app.services.lighthouse_config import DeviceMode
 from app.services.persistence import (
+    ScanRowMissingError,
     mark_scan_failed,
     mark_scan_running,
     persist_scan_completion,
@@ -86,6 +87,12 @@ class ScanQueue:
                 job.device,
                 len(issues),
             )
+        except ScanRowMissingError as exc:
+            # No row to mark_scan_failed against. Surface loudly — this is
+            # almost always a DB/env config mismatch between the caller and
+            # this service, and the scan never ran.
+            logger.error("Scan aborted, row missing: %s | %s", job.scan_id, exc)
+            sentry_sdk.capture_exception(exc)
         except ScanError as exc:
             await mark_scan_failed(supabase, job.scan_id, str(exc))
             logger.warning("Scan failed: %s | %s", job.scan_id, exc)

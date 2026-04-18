@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+from app.services.persistence import ScanRowMissingError
 from app.services.scan_queue import ScanJob, ScanQueue
 from app.services.scanner import ScanError, ScanResults
 
@@ -98,6 +99,40 @@ async def test_queue_marks_failed_on_scan_error() -> None:
         await queue.stop()
 
     assert calls["failed"] == {"scan_id": "s2", "message": "lh exploded"}
+
+
+async def test_queue_skips_mark_failed_when_row_is_missing() -> None:
+    queue = ScanQueue()
+    calls: dict[str, Any] = {}
+
+    async def raising_running(supabase: Any, scan_id: str) -> None:
+        raise ScanRowMissingError(f"scans row {scan_id} not found")
+
+    async def fake_failed(supabase: Any, scan_id: str, message: str) -> None:
+        calls["failed"] = {"scan_id": scan_id, "message": message}
+
+    async def noop_run_scan(*args: Any, **kwargs: Any) -> ScanResults:
+        calls["ran_scan"] = True
+        raise AssertionError("run_scan should not be reached")
+
+    async def noop_persist(*args: Any, **kwargs: Any) -> None:
+        return None
+
+    with (
+        patch("app.services.scan_queue.mark_scan_running", raising_running),
+        patch("app.services.scan_queue.run_scan", noop_run_scan),
+        patch("app.services.scan_queue.persist_scan_completion", noop_persist),
+        patch("app.services.scan_queue.mark_scan_failed", fake_failed),
+        patch("app.services.scan_queue.get_supabase_client", return_value=None),
+    ):
+        await queue.enqueue(
+            ScanJob(scan_id="s-missing", url="https://x.com", device="mobile")
+        )
+        await _wait_until_idle(queue)
+        await queue.stop()
+
+    assert "failed" not in calls
+    assert "ran_scan" not in calls
 
 
 async def test_queue_serializes_concurrent_jobs(fake_results: ScanResults) -> None:
