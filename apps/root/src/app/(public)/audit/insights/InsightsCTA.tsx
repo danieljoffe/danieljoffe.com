@@ -20,7 +20,7 @@ export default function InsightsCTA({
         <div className='flex flex-col gap-4 items-center'>
           <Heading variant='section' id='insights-cta-heading'>
             {topViolation
-              ? `The #1 issue across ${totalScans.toLocaleString()} sites? ${topViolation}.`
+              ? `The #1 issue across ${totalScans.toLocaleString()} sites? "${topViolation}"`
               : 'Find out how your site stacks up.'}
           </Heading>
           <Text variant='bodyLg' className='max-w-md'>

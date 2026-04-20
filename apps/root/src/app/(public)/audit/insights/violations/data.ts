@@ -1,4 +1,4 @@
-export type Difficulty = 'easy' | 'moderate' | 'hard';
+export type Difficulty = 'easy' | 'moderate' | 'complex';
 export type ViolationCategory = 'performance' | 'accessibility' | 'seo' | 'ux';
 
 export interface ViolationGuide {
@@ -24,32 +24,191 @@ function titleToSlug(title: string): string {
     .replace(/^-|-$/g, '');
 }
 
+/* ---------------------------------------------------------------------------
+ * Guides are ordered: performance → accessibility → seo → ux.
+ *
+ * Titles for the first 22 entries match the human-friendly titles produced by
+ * the audit-api (apps/audit-api/app/services/issue_mappings.py). This is what
+ * makes getViolationSlug() work — the lookup is by exact title.
+ *
+ * The remaining 5 entries have no 1:1 mapping in issue_mappings.py but are
+ * kept as standalone SEO guide pages.
+ * --------------------------------------------------------------------------- */
 const guides: ViolationGuide[] = [
+  // ── Performance (scan-mapped) ──────────────────────────────────────────
+
   {
-    slug: 'render-blocking-resources',
-    title: 'Render-blocking resources',
+    slug: 'largest-contentful-paint',
+    title: 'Main content takes too long to appear',
+    difficulty: 'complex',
+    category: 'performance',
+    description:
+      "Your page's main content (like the hero image or headline) is taking too long to show up. Visitors expect to see something meaningful within 2.5 seconds. If it takes longer, they'll assume the site is broken and leave.",
+    impact:
+      "Google uses this as a ranking factor. Sites that are slow to show content lose up to 25% of visitors before they ever see what's on the page.",
+    solution:
+      'Find the biggest element on your page (usually a large image or heading). Make sure the browser can load it as fast as possible: preload the image so the browser starts downloading it immediately, and remove anything that blocks it from appearing (like large CSS or JS files in the way).',
+    codeExample: {
+      before:
+        '<!-- Browser doesn\'t know about this image until it parses the HTML -->\n<img src="/hero.webp" alt="Hero" />',
+      after: `<!-- Tell the browser to start downloading the image right away -->
+<link rel="preload" as="image" href="/hero.webp" type="image/webp" />
+
+<!-- Mark it as high priority so it loads before other images -->
+<img src="/hero.webp" alt="Hero" fetchpriority="high" />`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Optimize LCP',
+        url: 'https://web.dev/optimize-lcp/',
+      },
+    ],
+  },
+  {
+    slug: 'first-contentful-paint',
+    title: 'Page is slow to show anything',
     difficulty: 'moderate',
     category: 'performance',
     description:
-      'Resources like CSS and synchronous JavaScript in the <head> block the browser from rendering any content until they finish loading. Users see a blank screen while these files download and parse.',
+      'When someone visits your page, they see a blank white screen for too long before anything appears. Even a loading spinner or some text would help, but right now the browser is stuck downloading files before it can show anything at all.',
     impact:
-      'Directly increases First Contentful Paint (FCP) and Largest Contentful Paint (LCP). Every blocking resource adds network round-trip time before users see anything.',
+      'Every extra second of staring at a blank screen makes it 32% more likely someone will hit the back button. On a phone with a slower connection, it feels even worse.',
     solution:
-      'Inline critical CSS for above-the-fold content, defer non-critical stylesheets with media queries or preload hints, and add async or defer to scripts that do not need to run before first paint.',
+      "The fix is to let the browser show something quickly while it loads the rest. Put your most important styles directly in the HTML (instead of a separate file), delay loading JavaScript that isn't needed right away, and make sure your server responds fast.",
     codeExample: {
       before:
-        '<link rel="stylesheet" href="/styles/full.css" />\n<script src="/analytics.js"></script>',
-      after: `<!-- Critical CSS inlined -->
+        '<!-- Browser must download BOTH of these before showing anything -->\n<link rel="stylesheet" href="/styles/full.css" />\n<script src="/app.js"></script>',
+      after: `<!-- Put essential styles right in the HTML -->
 <style>
-  /* above-the-fold styles only */
-  .hero { display: flex; min-height: 100vh; }
+  body { font-family: system-ui, sans-serif; }
+  .hero { min-height: 100vh; display: flex; }
 </style>
 
-<!-- Full stylesheet loaded asynchronously -->
+<!-- Load the full stylesheet in the background -->
 <link rel="preload" href="/styles/full.css" as="style"
       onload="this.onload=null;this.rel='stylesheet'" />
 
-<!-- Script deferred -->
+<!-- Let the page show before running this script -->
+<script src="/app.js" defer></script>`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: First Contentful Paint',
+        url: 'https://web.dev/fcp/',
+      },
+    ],
+  },
+  {
+    slug: 'total-blocking-time',
+    title: 'Page freezes during load',
+    difficulty: 'complex',
+    category: 'performance',
+    description:
+      "Your page looks like it's loaded, but when visitors try to click a button, scroll, or type — nothing happens. The browser is busy running JavaScript and can't respond to anything until it's done.",
+    impact:
+      "This makes your site feel broken, especially on phones. People will tap a button multiple times thinking it didn't register, or just give up and leave.",
+    solution:
+      'Break up large chunks of JavaScript into smaller pieces so the browser can respond to user actions in between. Think of it like a conversation: instead of one person talking for 5 minutes straight, take turns.',
+    codeExample: {
+      before: `// Everything runs at once — browser can't respond for 300ms
+function initPage() {
+  parseData();       // 120ms
+  buildDOM();        // 100ms
+  attachListeners(); // 80ms
+}
+initPage();`,
+      after: `// Break into steps — browser can respond between each one
+async function initPage() {
+  parseData();
+  await scheduler.yield(); // pause so browser can handle clicks
+  buildDOM();
+  await scheduler.yield();
+  attachListeners();
+}
+initPage();`,
+      language: 'javascript',
+    },
+    resources: [
+      {
+        label: 'web.dev: Total Blocking Time',
+        url: 'https://web.dev/tbt/',
+      },
+    ],
+  },
+  {
+    slug: 'cumulative-layout-shift',
+    title: 'Content shifts around while loading',
+    difficulty: 'easy',
+    category: 'performance',
+    description:
+      'Things on your page jump around as it loads. You might be reading text when suddenly an image pops in and pushes everything down. Or you go to tap a button and it moves right as you reach it, causing you to click the wrong thing.',
+    impact:
+      'This is one of the most frustrating user experiences on the web. Google tracks it and uses it to rank your site. The usual culprits are images without set dimensions, ads that load late, or fonts that change text size.',
+    solution:
+      'The simplest fix: always tell the browser how big images and videos will be before they load. That way it can reserve the right amount of space and nothing jumps when the content appears.',
+    codeExample: {
+      before:
+        '<!-- Browser doesn\'t know how tall this will be -->\n<img src="/hero.jpg" alt="Hero" />',
+      after: `<!-- Browser reserves exact space before the image loads -->
+<img src="/hero.jpg" alt="Hero" width="1200" height="630" />
+
+<!-- Or use aspect-ratio for responsive layouts -->
+<img src="/hero.jpg" alt="Hero"
+     style="aspect-ratio: 1200/630; width: 100%; height: auto;" />`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Optimize CLS',
+        url: 'https://web.dev/optimize-cls/',
+      },
+    ],
+  },
+  {
+    slug: 'speed-index',
+    title: 'Page feels slow to visually complete',
+    difficulty: 'moderate',
+    category: 'performance',
+    description:
+      'Your page loads in chunks — first some text appears, then a big blank gap, then more content pops in, then images load one by one. Instead of feeling smooth and fast, the experience feels jerky and incomplete.',
+    impact:
+      'Even if your total load time is decent, a page that fills in slowly feels worse than one that shows everything at once. Visitors compare the experience to other sites they use daily.',
+    solution:
+      "Prioritize what's visible first (above the fold). Load images and content that visitors see immediately before anything else. Defer everything below the scroll line until they actually need it.",
+    codeExample: null,
+    resources: [
+      {
+        label: 'web.dev: Speed Index',
+        url: 'https://web.dev/speed-index/',
+      },
+    ],
+  },
+  {
+    slug: 'render-blocking-resources',
+    title: 'Files are blocking your page from loading',
+    difficulty: 'moderate',
+    category: 'performance',
+    description:
+      'Your page has CSS and JavaScript files that the browser insists on downloading completely before it will show anything on screen. While those files download, visitors see nothing but a white page.',
+    impact:
+      'Each blocking file adds anywhere from half a second to several seconds of blank-screen time, depending on file size and connection speed. Removing them can make your page appear 1-3 seconds faster.',
+    solution:
+      "Put your most critical styles (just enough to style what's visible without scrolling) directly in the HTML. Load everything else in the background. For scripts, add 'defer' so they run after the page appears.",
+    codeExample: {
+      before:
+        '<!-- Both of these block the page from showing anything -->\n<link rel="stylesheet" href="/styles/full.css" />\n<script src="/analytics.js"></script>',
+      after: `<!-- Only the essential styles, right in the HTML -->
+<style>
+  .hero { display: flex; min-height: 100vh; }
+</style>
+
+<!-- Full styles load in the background -->
+<link rel="preload" href="/styles/full.css" as="style"
+      onload="this.onload=null;this.rel='stylesheet'" />
+
+<!-- Script runs after the page appears -->
 <script src="/analytics.js" defer></script>`,
       language: 'html',
     },
@@ -61,19 +220,50 @@ const guides: ViolationGuide[] = [
     ],
   },
   {
-    slug: 'properly-size-images',
-    title: 'Properly size images',
+    slug: 'uses-optimized-images',
+    title: "Images aren't compressed",
     difficulty: 'easy',
     category: 'performance',
     description:
-      'Images served at dimensions larger than their rendered size waste bandwidth. The browser downloads a 2000px-wide image only to display it at 400px.',
+      "Your images are much larger than they need to be. Modern compression can shrink them by 30-50% without any visible difference in quality. Right now, visitors are downloading megabytes of image data they don't need.",
     impact:
-      'Oversized images are often the single largest payload on a page. Fixing this can reduce page weight by 50% or more, directly improving LCP and Time to Interactive.',
+      'Uncompressed images are the #1 reason pages load slowly. Fixing this alone can cut your page load time in half, especially on mobile where data connections are slower.',
     solution:
-      'Use responsive images with srcset and sizes attributes, or a framework image component (like next/image) that serves correctly-sized variants automatically.',
+      'Convert images to modern formats like WebP or AVIF (they look the same but are much smaller). If you use a framework like Next.js, its Image component handles this automatically.',
     codeExample: {
-      before: '<img src="/hero-2000w.jpg" alt="Hero" />',
-      after: `<img
+      before:
+        '<!-- Old format, large file size -->\n<img src="/photo.jpg" alt="Team photo" />',
+      after: `<!-- Serve modern formats with a fallback -->
+<picture>
+  <source srcset="/photo.avif" type="image/avif" />
+  <source srcset="/photo.webp" type="image/webp" />
+  <img src="/photo.jpg" alt="Team photo" />
+</picture>`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Use optimized images',
+        url: 'https://web.dev/uses-optimized-images/',
+      },
+    ],
+  },
+  {
+    slug: 'uses-responsive-images',
+    title: 'Mobile users are downloading desktop-sized images',
+    difficulty: 'easy',
+    category: 'performance',
+    description:
+      "You're serving the same massive images to phones as you do to desktop monitors. A phone with a 400px-wide screen is downloading images meant for a 2000px display — that's 4x more data than needed.",
+    impact:
+      "This wastes your visitors' mobile data and makes your site load much slower on phones. Fixing it can cut mobile data usage by more than half.",
+    solution:
+      'Provide multiple sizes of each image and let the browser pick the right one for the screen. Modern frameworks (like Next.js Image) do this automatically.',
+    codeExample: {
+      before:
+        '<!-- Same huge image for every device -->\n<img src="/hero-2000w.jpg" alt="Hero" />',
+      after: `<!-- Browser picks the right size for the screen -->
+<img
   src="/hero-800w.jpg"
   srcset="/hero-400w.jpg 400w,
          /hero-800w.jpg 800w,
@@ -91,25 +281,436 @@ const guides: ViolationGuide[] = [
     ],
   },
   {
+    slug: 'offscreen-images',
+    title: 'Images load before users scroll to them',
+    difficulty: 'easy',
+    category: 'performance',
+    description:
+      "All images on your page start downloading the moment someone visits, even ones way below the screen that they haven't scrolled to yet. This slows down the images they can actually see.",
+    impact:
+      "Loading images people haven't scrolled to yet wastes bandwidth and slows down the stuff at the top of the page. Deferring them can reduce your initial page weight by 30-60%.",
+    solution:
+      'Add loading="lazy" to images below the fold. The browser will only download them when the visitor scrolls near them. Just don\'t lazy-load your hero image at the top — that one should load immediately.',
+    codeExample: {
+      before:
+        '<!-- All images load at once, even ones below the screen -->\n<img src="/hero.jpg" alt="Hero" />\n<img src="/feature-1.jpg" alt="Feature" />\n<img src="/feature-2.jpg" alt="Feature" />',
+      after: `<!-- Hero loads immediately (visible on screen) -->
+<img src="/hero.jpg" alt="Hero" fetchpriority="high" />
+
+<!-- These only load when scrolled into view -->
+<img src="/feature-1.jpg" alt="Feature" loading="lazy" />
+<img src="/feature-2.jpg" alt="Feature" loading="lazy" />`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Lazy-load offscreen images',
+        url: 'https://web.dev/offscreen-images/',
+      },
+    ],
+  },
+  {
+    slug: 'uses-text-compression',
+    title: "Text content isn't compressed",
+    difficulty: 'easy',
+    category: 'performance',
+    description:
+      "Your server is sending HTML, CSS, and JavaScript as raw text without compressing it first. It's like mailing a document without folding it — it takes up way more space than it needs to.",
+    impact:
+      "Enabling compression shrinks text files by 60-80%. It's one of the easiest performance wins: a one-time server config change that speeds up every page load.",
+    solution:
+      "Enable gzip or Brotli compression on your server or hosting platform. Most modern hosts (Vercel, Netlify, Cloudflare) do this by default. If you self-host, it's a quick config change.",
+    codeExample: {
+      before:
+        '# No compression — files sent at full size\n# A 100KB JavaScript file transfers as 100KB',
+      after: `# Enable gzip compression in Nginx
+gzip on;
+gzip_types text/plain text/css application/json
+           application/javascript text/xml;
+gzip_min_length 256;
+
+# Result: that 100KB file now transfers as ~25KB`,
+      language: 'bash',
+    },
+    resources: [
+      {
+        label: 'web.dev: Enable text compression',
+        url: 'https://web.dev/uses-text-compression/',
+      },
+    ],
+  },
+  {
+    slug: 'unminified-css',
+    title: 'CSS files contain unnecessary whitespace',
+    difficulty: 'easy',
+    category: 'performance',
+    description:
+      "Your CSS files still have all the spaces, line breaks, and comments that developers use to read the code. Visitors' browsers don't need any of that — it just makes the files bigger and slower to download.",
+    impact:
+      'Minifying CSS is free performance. Your build tool removes the whitespace automatically, making files smaller without any downside. Most modern frameworks do this by default in production.',
+    solution:
+      'Make sure your build process includes CSS minification. If you use Next.js, Vite, or similar tools, this happens automatically when you build for production. If not, add a tool like cssnano or Lightning CSS to your build.',
+    codeExample: {
+      before: `/* Navigation styles */
+.nav {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem;
+}`,
+      after:
+        '/* Same styles, ~40% smaller file */\n.nav{display:flex;gap:1rem;padding:1rem 2rem}',
+      language: 'css',
+    },
+    resources: [
+      {
+        label: 'web.dev: Minify CSS',
+        url: 'https://web.dev/unminified-css/',
+      },
+    ],
+  },
+  {
+    slug: 'unminified-javascript',
+    title: "JavaScript files aren't minified",
+    difficulty: 'easy',
+    category: 'performance',
+    description:
+      "Your JavaScript files contain long variable names, comments, and formatting that help developers read the code — but visitors' browsers don't need any of it. Removing it makes the files smaller and faster to download.",
+    impact:
+      'Minified JavaScript loads faster and also parses faster (the browser has less text to read through). Most build tools handle this automatically.',
+    solution:
+      'Make sure your production build minifies JavaScript. Tools like Next.js, Vite, and webpack do this by default. If you see unminified JS in production, check your build configuration.',
+    codeExample: {
+      before: `// Calculate the total price including tax
+function calculateTotalPrice(items, taxRate) {
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price,
+    0
+  );
+  return subtotal * (1 + taxRate);
+}`,
+      after:
+        '// Same function, much smaller\nfunction calculateTotalPrice(e,t){return e.reduce((e,t)=>e+t.price,0)*(1+t)}',
+      language: 'javascript',
+    },
+    resources: [
+      {
+        label: 'web.dev: Minify JavaScript',
+        url: 'https://web.dev/unminified-javascript/',
+      },
+    ],
+  },
+
+  // ── Accessibility (scan-mapped) ────────────────────────────────────────
+
+  {
+    slug: 'color-contrast',
+    title: 'Some text is hard to read',
+    difficulty: 'easy',
+    category: 'accessibility',
+    description:
+      "Some text on your page doesn't stand out enough from its background. Light gray text on a white background, for example, is hard to read for everyone — and nearly impossible for people with low vision or color blindness.",
+    impact:
+      'About 15% of people have some form of visual impairment. Low-contrast text also hurts everyone in bright sunlight or on dim screens. Search engines penalize sites with accessibility issues.',
+    solution:
+      'Make text darker (or backgrounds lighter) until the contrast ratio is at least 4.5:1 for normal text and 3:1 for large text. Use a free contrast checker tool to test your color combinations.',
+    codeExample: {
+      before:
+        '/* Light gray on white — too hard to read (ratio: 2.5:1) */\n.subtitle { color: #999; background: #f5f5f5; }',
+      after: `/* Darker gray — easy to read (ratio: 4.6:1) */
+.subtitle { color: #595959; background: #f5f5f5; }`,
+      language: 'css',
+    },
+    resources: [
+      {
+        label: 'WebAIM Contrast Checker',
+        url: 'https://webaim.org/resources/contrastchecker/',
+      },
+    ],
+  },
+  {
+    slug: 'image-alt',
+    title: 'Images are missing descriptions',
+    difficulty: 'easy',
+    category: 'accessibility',
+    description:
+      "Some images on your page don't have text descriptions (alt text). This means people using screen readers have no idea what those images show. It also means search engines can't understand your images.",
+    impact:
+      "Screen reader users hear 'image' with no context — they have no way to know what they're missing. Google also uses alt text to understand and rank images in search results.",
+    solution:
+      'Add a short description to every meaningful image. If an image is purely decorative (like a background pattern), use an empty alt attribute so screen readers skip it.',
+    codeExample: {
+      before:
+        '<!-- Screen reader says: "image" — no help at all -->\n<img src="/chart.png" />\n<img src="/decorative-swirl.svg" />',
+      after: `<!-- Screen reader says: "Revenue grew 40% from Q1 to Q4" -->
+<img src="/chart.png" alt="Revenue grew 40% from Q1 to Q4 2025" />
+
+<!-- Screen reader skips this decorative image entirely -->
+<img src="/decorative-swirl.svg" alt="" />`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'WCAG 1.1.1: Non-text Content',
+        url: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
+      },
+    ],
+  },
+  {
+    slug: 'label',
+    title: 'Form fields are missing labels',
+    difficulty: 'easy',
+    category: 'accessibility',
+    description:
+      "Some form fields on your page (like text inputs or dropdowns) don't have labels telling people what to type. Sighted users might figure it out from placeholder text or context, but screen reader users hear nothing — they don't know what's being asked.",
+    impact:
+      "Unlabeled forms are impossible to use for people relying on screen readers. Even for sighted users, clicking a label should focus the associated input — without the connection, this doesn't work.",
+    solution:
+      "Give every form field a visible label that clearly says what to enter. Connect the label to the input using the 'for' attribute matching the input's 'id'.",
+    codeExample: {
+      before:
+        '<!-- What goes here? Screen readers can\'t tell -->\n<input type="email" placeholder="Email" />',
+      after: `<!-- Clear label — works for everyone -->
+<label for="email">Email address</label>
+<input type="email" id="email" placeholder="you@example.com" />`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Labels and text alternatives',
+        url: 'https://web.dev/labels-and-text-alternatives/',
+      },
+    ],
+  },
+  {
+    slug: 'heading-order',
+    title: 'Heading levels are out of order',
+    difficulty: 'easy',
+    category: 'accessibility',
+    description:
+      "Your page jumps between heading sizes in a way that doesn't make logical sense — like going from a main title (H1) directly to a small subtitle (H3), skipping H2 entirely. This confuses screen readers that use headings as a table of contents.",
+    impact:
+      "Screen reader users navigate pages by jumping between headings. When the order is broken, it's like a book with chapter numbers that skip around — confusing and hard to follow.",
+    solution:
+      'Use headings in order: H1 for the page title, H2 for main sections, H3 for subsections within those. Never skip a level. If you want smaller visual text, use CSS for sizing instead of a lower heading level.',
+    codeExample: {
+      before:
+        '<h1>Page Title</h1>\n<h3>Section</h3>  <!-- jumped from 1 to 3! -->\n<h5>Subsection</h5>  <!-- jumped from 3 to 5! -->',
+      after: `<h1>Page Title</h1>
+<h2>Section</h2>
+<h3>Subsection</h3>`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Headings and landmarks',
+        url: 'https://web.dev/headings-and-landmarks/',
+      },
+    ],
+  },
+  {
+    slug: 'link-name',
+    title: "Links don't describe where they go",
+    difficulty: 'easy',
+    category: 'accessibility',
+    description:
+      'Some links on your page say things like "click here" or "read more" without explaining where they lead. Screen reader users often pull up a list of all links on a page — and a list full of "click here" is completely useless.',
+    impact:
+      'Vague link text hurts both accessibility and usability. Everyone benefits from knowing where a link will take them before clicking. It also helps search engines understand your page structure.',
+    solution:
+      'Make each link\'s text describe what you\'ll find when you click it. Instead of "click here to see your report," just make the link text say "View your audit report."',
+    codeExample: {
+      before:
+        '<!-- Where does this go? Nobody knows -->\n<a href="/report">Click here</a> to view your report.',
+      after:
+        '<!-- Clear destination -->\n<a href="/report">View your audit report</a>',
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'WCAG 2.4.4: Link Purpose',
+        url: 'https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html',
+      },
+    ],
+  },
+
+  // ── SEO (scan-mapped) ─────────────────────────────────────────────────
+
+  {
+    slug: 'document-title',
+    title: 'Page is missing a title',
+    difficulty: 'easy',
+    category: 'seo',
+    description:
+      "Your page doesn't have a title tag. The title is what shows up in the browser tab, in bookmarks, and as the clickable headline in Google search results. Without one, the browser just shows the URL.",
+    impact:
+      "No title means Google has nothing to display as your headline in search results. This dramatically reduces the chances anyone will click through to your site. It's one of the most basic SEO requirements.",
+    solution:
+      'Add a unique, descriptive title to every page. Keep it under 60 characters. Make it clear what the page is about.',
+    codeExample: {
+      before:
+        '<head>\n  <!-- no title — browser shows the URL instead -->\n</head>',
+      after: `// In Next.js, add this to your page file:
+export const metadata = {
+  title: 'Free Website Performance Audit | Daniel Joffe',
+};`,
+      language: 'tsx',
+    },
+    resources: [
+      {
+        label: 'web.dev: Document has a title element',
+        url: 'https://web.dev/document-title/',
+      },
+    ],
+  },
+  {
+    slug: 'meta-description',
+    title: 'Page is missing a meta description',
+    difficulty: 'easy',
+    category: 'seo',
+    description:
+      "Your page is missing the short summary that appears below the title in Google results. Without it, Google will grab a random snippet from your page — which usually doesn't look great or make people want to click.",
+    impact:
+      'Pages with a well-written description get about 6% more clicks from search results. That might not sound like much, but over thousands of searches it adds up significantly.',
+    solution:
+      'Write a short, compelling description (under 160 characters) for every page. Think of it as a mini advertisement — what would make someone want to click?',
+    codeExample: {
+      before:
+        '<head>\n  <title>My Page</title>\n  <!-- no description — Google guesses -->\n</head>',
+      after: `<head>
+  <title>My Page</title>
+  <meta
+    name="description"
+    content="A brief, compelling summary that makes people want to click. Keep it under 160 characters."
+  />
+</head>`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'Google: Control your snippets in search results',
+        url: 'https://developers.google.com/search/docs/appearance/snippet',
+      },
+    ],
+  },
+  {
+    slug: 'http-status-code',
+    title: 'Page returns an error',
+    difficulty: 'moderate',
+    category: 'seo',
+    description:
+      'When someone (or Google) tries to load this page, the server responds with an error instead of the actual content. This might be a 404 (page not found) or a 500 (something went wrong on the server).',
+    impact:
+      "Google will stop showing error pages in search results. If this is a page that used to rank well, you're losing all that traffic until it's fixed.",
+    solution:
+      "Figure out what's causing the error. If the page moved, set up a redirect to the new location. If the page was deleted, either bring it back or redirect to the most relevant alternative. If it's a server error, check your server logs.",
+    codeExample: {
+      before:
+        '# Page at /old-page returns 404\n# Visitors and Google get an error',
+      after: `// next.config.js — redirect old URLs to their new home
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/old-page',
+        destination: '/new-page',
+        permanent: true, // tells Google the move is permanent
+      },
+    ];
+  },
+};`,
+      language: 'javascript',
+    },
+    resources: [
+      {
+        label: 'Google: HTTP errors and network issues',
+        url: 'https://developers.google.com/search/docs/crawling-indexing/http-network-errors',
+      },
+    ],
+  },
+  {
+    slug: 'is-crawlable',
+    title: "Search engines can't find this page",
+    difficulty: 'easy',
+    category: 'seo',
+    description:
+      "Your page is telling search engines not to index it. This is sometimes intentional (for admin pages or staging sites), but if this is a public page you want people to find via Google, it's a problem.",
+    impact:
+      'A page blocked from crawling is completely invisible to search. No matter how good the content is, nobody will find it through Google, Bing, or any other search engine.',
+    solution:
+      "Check for a 'noindex' tag in your HTML or a robots.txt rule blocking the page. Remove it if the page should be public. Use Google Search Console's URL Inspection tool to verify Google can access it.",
+    codeExample: {
+      before:
+        '<!-- This tells Google to ignore your page -->\n<meta name="robots" content="noindex, nofollow" />',
+      after: `<!-- Remove the noindex tag, or explicitly allow indexing -->
+<meta name="robots" content="index, follow" />
+
+<!-- In Next.js, just don't add a robots field (defaults to indexable) -->
+export const metadata = {
+  title: 'My Public Page',
+};`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'Google: Robots meta tag',
+        url: 'https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag',
+      },
+    ],
+  },
+
+  // ── UX (scan-mapped) ──────────────────────────────────────────────────
+
+  {
+    slug: 'viewport',
+    title: "Page isn't configured for mobile",
+    difficulty: 'easy',
+    category: 'ux',
+    description:
+      'Your page is missing a small but critical piece of code that tells phones how to display it. Without it, mobile browsers render the page as if it were on a desktop monitor, then shrink everything down. The result: tiny unreadable text that requires pinch-zooming.',
+    impact:
+      "Over 60% of web traffic comes from phones. Without this fix, your page is essentially broken for the majority of visitors. Google also penalizes pages that aren't mobile-friendly in mobile search results.",
+    solution:
+      "Add one line to your HTML head. Most frameworks include this automatically, but if yours doesn't, it's a quick fix.",
+    codeExample: {
+      before:
+        '<head>\n  <!-- missing viewport tag — page renders tiny on phones -->\n</head>',
+      after: `<head>
+  <!-- This one line makes your page work on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>`,
+      language: 'html',
+    },
+    resources: [
+      {
+        label: 'web.dev: Viewport meta tag',
+        url: 'https://web.dev/viewport/',
+      },
+    ],
+  },
+
+  // ── Standalone guides (no scan-mapped title) ──────────────────────────
+
+  {
     slug: 'unused-javascript',
     title: 'Unused JavaScript',
     difficulty: 'moderate',
     category: 'performance',
     description:
-      'JavaScript that is downloaded but never executed on the current page wastes bandwidth and blocks the main thread during parsing. Common culprits: analytics bundles loaded on every page, feature flags for routes the user never visits, and third-party widgets.',
+      "Your page downloads JavaScript code that it never actually uses. Maybe it's an analytics library loaded on every page but only needed on one, or features for a section the visitor never sees. The browser still has to download and process all of it.",
     impact:
-      'Unused JS increases Total Blocking Time (TBT) and Time to Interactive (TTI). Every KB of JavaScript costs more than a KB of an image because it must be parsed and compiled.',
+      'Unused JavaScript makes pages load slower and become interactive later. Unlike images, JavaScript must be parsed and compiled — so 100KB of unused JS costs more than 100KB of unused images.',
     solution:
-      'Code-split by route, lazy-load components below the fold, audit third-party scripts, and use tree-shaking to eliminate dead exports.',
+      "Only load code when it's needed. Split your JavaScript by page (so the homepage doesn't download dashboard code). Lazy-load features that are below the fold or behind user interactions.",
     codeExample: {
       before:
-        "import { Chart } from 'chart-library'; // 80KB, only used on /dashboard",
-      after: `import dynamic from 'next/dynamic';
+        "// This 80KB chart library loads on EVERY page\nimport { Chart } from 'chart-library';",
+      after: `// Only load the chart when someone visits the dashboard
+import dynamic from 'next/dynamic';
 
-const Chart = dynamic(() => import('chart-library').then(m => m.Chart), {
-  ssr: false,
-  loading: () => <div className="h-64 animate-pulse bg-muted rounded" />,
-});`,
+const Chart = dynamic(
+  () => import('chart-library').then(m => m.Chart),
+  { ssr: false }
+);`,
       language: 'tsx',
     },
     resources: [
@@ -125,22 +726,20 @@ const Chart = dynamic(() => import('chart-library').then(m => m.Chart), {
     difficulty: 'easy',
     category: 'performance',
     description:
-      'Static assets (fonts, images, JS, CSS) without proper Cache-Control headers are re-downloaded on every visit. The browser cannot reuse what it already has.',
+      "When someone visits your site a second time, their browser should remember the files it already downloaded (images, CSS, JavaScript). Right now it's re-downloading everything from scratch each time, as if the visitor had never been there before.",
     impact:
-      'Repeat visitors download the same files again, wasting bandwidth and slowing page loads. Proper caching makes return visits nearly instant.',
+      'Proper caching makes return visits nearly instant — the browser uses saved files instead of downloading them again. Without it, every visit feels like the first one.',
     solution:
-      'Set long max-age values for hashed/fingerprinted assets (1 year). Use shorter durations for HTML and API responses. Most frameworks handle this automatically for build output.',
+      'Tell browsers to save files for a long time (1 year for files with version hashes in their names). Most hosting platforms and frameworks handle this automatically.',
     codeExample: {
-      before: 'Cache-Control: no-cache',
-      after: `# Hashed assets (JS, CSS, images with content hash in filename)
+      before:
+        '# Browser re-downloads everything every time\nCache-Control: no-cache',
+      after: `# Files with hashes in the name (safe to cache forever)
 Cache-Control: public, max-age=31536000, immutable
 
-# HTML pages
-Cache-Control: public, max-age=0, must-revalidate
-
-# API responses
-Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400`,
-      language: 'text',
+# HTML pages (always check for updates)
+Cache-Control: public, max-age=0, must-revalidate`,
+      language: 'bash',
     },
     resources: [
       {
@@ -155,14 +754,16 @@ Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400`,
     difficulty: 'easy',
     category: 'performance',
     description:
-      'JPEG and PNG are legacy formats. WebP and AVIF provide the same visual quality at 25-50% smaller file sizes through modern compression algorithms.',
+      "Your images are in older formats (JPEG or PNG) when newer formats exist that look identical but are 25-50% smaller. It's like using a VHS tape when Blu-ray is available — same content, much less space.",
     impact:
-      'Switching from JPEG/PNG to WebP or AVIF often saves hundreds of KB per page, directly improving LCP and reducing data costs for mobile users.',
+      'Switching to modern formats (WebP or AVIF) often saves hundreds of KB per page. For image-heavy pages, this can cut load time significantly without any visual difference.',
     solution:
-      'Use a <picture> element with WebP/AVIF sources and a JPEG fallback, or use a framework image component that handles format negotiation via Accept headers.',
+      'Use WebP or AVIF format for your images. You can provide fallbacks for older browsers using the <picture> element, or let a framework/CDN handle format negotiation automatically.',
     codeExample: {
-      before: '<img src="/photo.jpg" alt="Team photo" />',
-      after: `<picture>
+      before:
+        '<!-- Old format, large file -->\n<img src="/photo.jpg" alt="Team photo" />',
+      after: `<!-- Modern formats with fallback for old browsers -->
+<picture>
   <source srcset="/photo.avif" type="image/avif" />
   <source srcset="/photo.webp" type="image/webp" />
   <img src="/photo.jpg" alt="Team photo" />
@@ -177,176 +778,20 @@ Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400`,
     ],
   },
   {
-    slug: 'missing-alt-text',
-    title: 'Image elements do not have [alt] attributes',
-    difficulty: 'easy',
-    category: 'accessibility',
-    description:
-      'Images without alt attributes are invisible to screen readers. Users who cannot see the image get no information about what it contains or why it is there.',
-    impact:
-      'Fails WCAG 2.1 Level A (Success Criterion 1.1.1). Screen reader users hear "image" with no context. Also hurts SEO since search engines use alt text for image indexing.',
-    solution:
-      'Add descriptive alt text to informative images. Use alt="" (empty string) for purely decorative images so screen readers skip them entirely.',
-    codeExample: {
-      before: '<img src="/chart.png" />\n<img src="/decorative-swirl.svg" />',
-      after: `<!-- Informative image: describe what it shows -->
-<img src="/chart.png" alt="Revenue grew 40% from Q1 to Q4 2025" />
-
-<!-- Decorative image: empty alt to skip -->
-<img src="/decorative-swirl.svg" alt="" />`,
-      language: 'html',
-    },
-    resources: [
-      {
-        label: 'WCAG 1.1.1: Non-text Content',
-        url: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
-      },
-    ],
-  },
-  {
-    slug: 'color-contrast',
-    title:
-      'Background and foreground colors do not have a sufficient contrast ratio',
-    difficulty: 'easy',
-    category: 'accessibility',
-    description:
-      'Text that does not meet minimum contrast ratios against its background is hard to read for users with low vision, color blindness, or anyone in bright sunlight.',
-    impact:
-      'Fails WCAG 2.1 Level AA (Success Criterion 1.4.3). Minimum ratios: 4.5:1 for normal text, 3:1 for large text (18px+ bold or 24px+ regular).',
-    solution:
-      'Adjust text or background colors to meet the required ratio. Use design tokens with pre-validated contrast pairs. Test with a contrast checker.',
-    codeExample: {
-      before:
-        '/* Gray text on light gray: ratio 2.5:1 — fails */\n.subtitle { color: #999; background: #f5f5f5; }',
-      after: `/* Darker gray on light background: ratio 4.6:1 — passes */
-.subtitle { color: #595959; background: #f5f5f5; }`,
-      language: 'css',
-    },
-    resources: [
-      {
-        label: 'WebAIM Contrast Checker',
-        url: 'https://webaim.org/resources/contrastchecker/',
-      },
-    ],
-  },
-  {
-    slug: 'missing-meta-description',
-    title: 'Document does not have a meta description',
-    difficulty: 'easy',
-    category: 'seo',
-    description:
-      'The meta description provides a summary of the page content that search engines display in results. Without it, search engines auto-generate a snippet from page content, which is often less compelling.',
-    impact:
-      'Pages without meta descriptions typically have lower click-through rates in search results. The auto-generated snippet may not represent the page well.',
-    solution:
-      'Add a unique, compelling meta description to every page. Keep it under 160 characters. Include relevant keywords naturally.',
-    codeExample: {
-      before: '<head>\n  <title>My Page</title>\n</head>',
-      after: `<head>
-  <title>My Page</title>
-  <meta
-    name="description"
-    content="A concise summary of the page content, under 160 characters, that compels users to click."
-  />
-</head>`,
-      language: 'html',
-    },
-    resources: [
-      {
-        label: 'Google: Control your snippets in search results',
-        url: 'https://developers.google.com/search/docs/appearance/snippet',
-      },
-    ],
-  },
-  {
-    slug: 'document-title',
-    title: 'Document does not have a <title> element',
-    difficulty: 'easy',
-    category: 'seo',
-    description:
-      'The <title> element defines what appears in browser tabs, bookmarks, and search engine results. Without it, browsers show the URL and search engines may not index the page well.',
-    impact:
-      'Missing titles reduce search visibility and make the page unidentifiable in browser tabs. One of the most fundamental SEO requirements.',
-    solution:
-      'Add a unique, descriptive <title> to every page. In Next.js, export a metadata object or use generateMetadata.',
-    codeExample: {
-      before: '<head>\n  <!-- no title -->\n</head>',
-      after: `// Next.js App Router
-export const metadata = {
-  title: 'Free Website Performance Audit | Daniel Joffe',
-};`,
-      language: 'tsx',
-    },
-    resources: [
-      {
-        label: 'web.dev: Document has a title element',
-        url: 'https://web.dev/document-title/',
-      },
-    ],
-  },
-  {
-    slug: 'link-text',
-    title: 'Links do not have descriptive text',
-    difficulty: 'easy',
-    category: 'accessibility',
-    description:
-      'Links with generic text like "click here" or "read more" provide no context when read out of the visual layout. Screen reader users often navigate by listing all links on a page.',
-    impact:
-      'Fails WCAG 2.1 Level A (Success Criterion 2.4.4). A list of links reading "click here, click here, click here" is useless for navigation.',
-    solution:
-      'Make link text describe the destination or action. If the visual design requires short text, use aria-label to provide fuller context.',
-    codeExample: {
-      before: '<a href="/report">Click here</a> to view your report.',
-      after: '<a href="/report">View your audit report</a>',
-      language: 'html',
-    },
-    resources: [
-      {
-        label: 'WCAG 2.4.4: Link Purpose',
-        url: 'https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html',
-      },
-    ],
-  },
-  {
-    slug: 'heading-order',
-    title: 'Heading elements are not in a sequentially-descending order',
-    difficulty: 'easy',
-    category: 'accessibility',
-    description:
-      'Headings that skip levels (e.g., h1 followed by h3) break the document outline. Screen reader users rely on heading hierarchy to understand page structure and navigate between sections.',
-    impact:
-      'A broken heading hierarchy makes it hard for assistive technology users to understand the relationship between sections. Also a minor SEO signal.',
-    solution:
-      'Use headings in sequential order: h1 → h2 → h3. Never skip a level. Use CSS to control visual size independently of semantic level.',
-    codeExample: {
-      before:
-        '<h1>Page Title</h1>\n<h3>Section</h3>  <!-- skipped h2 -->\n<h5>Subsection</h5>  <!-- skipped h4 -->',
-      after: `<h1>Page Title</h1>
-<h2>Section</h2>
-<h3>Subsection</h3>`,
-      language: 'html',
-    },
-    resources: [
-      {
-        label: 'web.dev: Headings and landmarks',
-        url: 'https://web.dev/headings-and-landmarks/',
-      },
-    ],
-  },
-  {
     slug: 'tap-targets',
     title: 'Tap targets are not sized appropriately',
     difficulty: 'moderate',
     category: 'ux',
     description:
-      'Interactive elements (buttons, links, form inputs) that are too small or too close together cause mis-taps on mobile devices. Users with motor impairments are disproportionately affected.',
+      'Buttons and links on your page are too small or too close together for comfortable tapping on a phone. People end up hitting the wrong thing or having to zoom in to tap accurately.',
     impact:
-      'Frustrates mobile users and fails accessibility guidelines. Google uses tap target sizing as a mobile usability signal in search ranking.',
+      'Small tap targets frustrate mobile users and cause accidental clicks. Google flags this as a mobile usability problem that can affect your search ranking.',
     solution:
-      'Ensure tap targets are at least 48x48 CSS pixels with at least 8px of spacing between adjacent targets. Use padding rather than just the content area.',
+      "Make every tappable element at least 48x48 pixels (about the size of a fingertip). Add spacing between buttons so they're easy to tap individually. Use padding to increase the tap area without changing the visual size.",
     codeExample: {
-      before: '.nav-link { padding: 4px 8px; font-size: 12px; }',
-      after: `/* Minimum 48px touch target via padding */
+      before:
+        '/* Too small to tap comfortably on a phone */\n.nav-link { padding: 4px 8px; font-size: 12px; }',
+      after: `/* Comfortable tap target (48px minimum) */
 .nav-link {
   padding: 12px 16px;
   font-size: 14px;
@@ -369,15 +814,16 @@ export const metadata = {
     difficulty: 'easy',
     category: 'performance',
     description:
-      'Custom web fonts that block text rendering cause a "flash of invisible text" (FOIT). Users see a blank page until the font downloads, which can take seconds on slow connections.',
+      'Your page uses a custom font that takes time to download. While it downloads, the text is completely invisible — visitors see a blank space where words should be. On slow connections, this can last several seconds.',
     impact:
-      'Directly delays First Contentful Paint. Users on slow connections may wait 3+ seconds seeing no text at all.',
+      "Invisible text means visitors can't read anything while the font loads. This directly delays when people can start consuming your content.",
     solution:
-      'Add font-display: swap to @font-face declarations. This shows text immediately in a fallback font, then swaps to the custom font once loaded.',
+      "Tell the browser to show text immediately using a fallback system font, then swap in the custom font once it's ready. Visitors see content instantly, and the font change is barely noticeable.",
     codeExample: {
       before:
-        "@font-face {\n  font-family: 'Brand';\n  src: url('/fonts/brand.woff2') format('woff2');\n}",
-      after: `@font-face {
+        "/* Text is invisible until this font downloads */\n@font-face {\n  font-family: 'Brand';\n  src: url('/fonts/brand.woff2') format('woff2');\n}",
+      after: `/* Text shows immediately in a fallback font, then swaps */
+@font-face {
   font-family: 'Brand';
   src: url('/fonts/brand.woff2') format('woff2');
   font-display: swap;
@@ -388,59 +834,6 @@ export const metadata = {
       {
         label: 'web.dev: font-display',
         url: 'https://web.dev/font-display/',
-      },
-    ],
-  },
-  {
-    slug: 'viewport-meta',
-    title:
-      'Does not have a <meta name="viewport"> tag with width or initial-scale',
-    difficulty: 'easy',
-    category: 'ux',
-    description:
-      'Without a viewport meta tag, mobile browsers render the page at a desktop width (typically 980px) and then scale it down. Text is tiny, and users must pinch-zoom to read anything.',
-    impact:
-      'The page is essentially unusable on mobile without zooming. Google will flag this as not mobile-friendly, which directly impacts mobile search ranking.',
-    solution:
-      'Add the viewport meta tag to the <head>. Most frameworks include this by default.',
-    codeExample: {
-      before: '<head>\n  <!-- no viewport tag -->\n</head>',
-      after:
-        '<meta name="viewport" content="width=device-width, initial-scale=1" />',
-      language: 'html',
-    },
-    resources: [
-      {
-        label: 'web.dev: Viewport meta tag',
-        url: 'https://web.dev/viewport/',
-      },
-    ],
-  },
-  {
-    slug: 'largest-contentful-paint',
-    title: 'Largest Contentful Paint element took too long to render',
-    difficulty: 'hard',
-    category: 'performance',
-    description:
-      'Largest Contentful Paint (LCP) measures when the biggest visible element (usually a hero image or heading) finishes rendering. An LCP over 2.5 seconds means users perceive the page as slow.',
-    impact:
-      'LCP is a Core Web Vital and a Google ranking factor. Poor LCP correlates with higher bounce rates: users leave before the page appears loaded.',
-    solution:
-      'Identify the LCP element (usually a hero image or large heading). Optimize its loading path: preload the image, inline critical CSS, eliminate render-blocking resources before it, and ensure the server responds quickly (TTFB under 800ms).',
-    codeExample: {
-      before:
-        '<!-- Hero image discovered late by the browser -->\n<img src="/hero.webp" alt="Hero" />',
-      after: `<!-- Preload the LCP image so the browser fetches it immediately -->
-<link rel="preload" as="image" href="/hero.webp" type="image/webp" />
-
-<!-- Use fetchpriority to prioritize it over other images -->
-<img src="/hero.webp" alt="Hero" fetchpriority="high" />`,
-      language: 'html',
-    },
-    resources: [
-      {
-        label: 'web.dev: Optimize LCP',
-        url: 'https://web.dev/optimize-lcp/',
       },
     ],
   },

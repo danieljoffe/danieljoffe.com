@@ -10,6 +10,7 @@ import {
   getViolationGuideBySlug,
   type Difficulty,
 } from '../data';
+import CodeBlock from './CodeBlock';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -42,7 +43,7 @@ const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   easy: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   moderate:
     'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  hard: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  complex: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -121,7 +122,7 @@ export default async function ViolationGuidePage({ params }: PageProps) {
                 {CATEGORY_LABELS[guide.category]}
               </span>
             </div>
-            <Heading variant='page' as='h1'>
+            <Heading variant='hero' as='h1'>
               {guide.title}
             </Heading>
           </header>
@@ -154,23 +155,17 @@ export default async function ViolationGuidePage({ params }: PageProps) {
             {guide.codeExample && (
               <div className='space-y-4'>
                 {guide.codeExample.before && (
-                  <div>
-                    <Text variant='detail' className='mb-2'>
-                      Before:
-                    </Text>
-                    <pre className='rounded-lg bg-surface-secondary border border-border p-4 overflow-x-auto text-sm'>
-                      <code>{guide.codeExample.before}</code>
-                    </pre>
-                  </div>
+                  <CodeBlock
+                    code={guide.codeExample.before}
+                    language={guide.codeExample.language}
+                    label='Before'
+                  />
                 )}
-                <div>
-                  <Text variant='detail' className='mb-2'>
-                    After:
-                  </Text>
-                  <pre className='rounded-lg bg-surface-secondary border border-border p-4 overflow-x-auto text-sm'>
-                    <code>{guide.codeExample.after}</code>
-                  </pre>
-                </div>
+                <CodeBlock
+                  code={guide.codeExample.after}
+                  language={guide.codeExample.language}
+                  label='After'
+                />
               </div>
             )}
           </section>
