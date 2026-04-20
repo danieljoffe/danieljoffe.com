@@ -1,7 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isValidUuid, type ScanIssue } from '@danieljoffe.com/shared-audit';
+import {
+  isValidUuid,
+  type Scan,
+  type ScanIssue,
+} from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { captureApiError } from '@/lib/errorTracking';
+
+type CompareScan = Pick<
+  Scan,
+  | 'id'
+  | 'url'
+  | 'normalized_url'
+  | 'status'
+  | 'created_at'
+  | 'completed_at'
+  | 'device_mode'
+  | 'grade_overall'
+  | 'score_performance'
+  | 'score_accessibility'
+  | 'score_best_practices'
+  | 'score_seo'
+  | 'fcp_ms'
+  | 'lcp_ms'
+  | 'tbt_ms'
+  | 'cls'
+  | 'si_ms'
+  | 'page_title'
+  | 'page_screenshot_url'
+>;
 
 const COMPARE_SCAN_FIELDS = [
   'id',
@@ -74,8 +101,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const scanA = scans.find(s => s.id === auditA);
-    const scanB = scans.find(s => s.id === auditB);
+    const typedScans = scans as unknown as CompareScan[];
+    const scanA = typedScans.find(s => s.id === auditA);
+    const scanB = typedScans.find(s => s.id === auditB);
 
     if (!scanA || !scanB) {
       return NextResponse.json(
