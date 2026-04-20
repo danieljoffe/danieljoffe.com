@@ -244,6 +244,109 @@ describe('POST /api/audit/scan', () => {
     expect(json.device).toBe('both');
   });
 
+  it('returns 503 when SCAN_SERVICE_URL is missing', async () => {
+    delete process.env['SCAN_SERVICE_URL'];
+
+    // Rate limit check: under limit
+    const rateLimitChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+    };
+    mockSelect.mockReturnValueOnce(rateLimitChain);
+    rateLimitChain.gte.mockResolvedValueOnce({ count: 0 });
+
+    // Cache check: no cached result
+    const cacheChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    mockSelect.mockReturnValueOnce(cacheChain);
+
+    const req = createRequest({ url: 'https://example.com' });
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json.error).toContain('not configured');
+    // Crucially: no scan row was inserted
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 503 when SCAN_SERVICE_API_KEY is missing', async () => {
+    delete process.env['SCAN_SERVICE_API_KEY'];
+
+    const rateLimitChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+    };
+    mockSelect.mockReturnValueOnce(rateLimitChain);
+    rateLimitChain.gte.mockResolvedValueOnce({ count: 0 });
+
+    const cacheChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    mockSelect.mockReturnValueOnce(cacheChain);
+
+    const req = createRequest({ url: 'https://example.com' });
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it('marks scan failed when scan service returns non-2xx', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(new Response('boom', { status: 500 }));
+
+    const rateLimitChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+    };
+    mockSelect.mockReturnValueOnce(rateLimitChain);
+    rateLimitChain.gte.mockResolvedValueOnce({ count: 0 });
+
+    const cacheChain = {
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    mockSelect.mockReturnValueOnce(cacheChain);
+
+    const insertChain = {
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { id: 'scan-500' },
+        error: null,
+      }),
+    };
+    mockInsert.mockReturnValueOnce(insertChain);
+
+    const updateChain = { eq: jest.fn().mockResolvedValue({ error: null }) };
+    mockUpdate.mockReturnValue(updateChain);
+
+    const req = createRequest({ url: 'https://example.com' });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    // Wait for fire-and-forget fetch().then() to settle
+    await new Promise(resolve => setImmediate(resolve));
+
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'failed',
+        error_message: expect.stringContaining('HTTP 500'),
+      })
+    );
+  });
+
   it('returns 500 on unexpected error', async () => {
     // Make Supabase throw
     mockSelect.mockImplementationOnce(() => {
