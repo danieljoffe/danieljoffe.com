@@ -24,10 +24,29 @@ describe('isSameOrigin', () => {
     expect(isSameOrigin(req({ origin: 'http://localhost:3000' }))).toBe(true);
   });
 
-  it('accepts vercel preview origins', () => {
+  it('accepts the project-prefixed vercel production alias', () => {
     expect(
-      isSameOrigin(req({ origin: 'https://my-pr-preview.vercel.app' }))
+      isSameOrigin(req({ origin: 'https://danieljoffe-com.vercel.app' }))
     ).toBe(true);
+  });
+
+  it('accepts project-prefixed vercel preview origins', () => {
+    expect(
+      isSameOrigin(
+        req({
+          origin: 'https://danieljoffe-com-git-feature-x-team.vercel.app',
+        })
+      )
+    ).toBe(true);
+  });
+
+  it('rejects unrelated *.vercel.app origins', () => {
+    expect(isSameOrigin(req({ origin: 'https://attacker.vercel.app' }))).toBe(
+      false
+    );
+    expect(
+      isSameOrigin(req({ origin: 'https://danieljoffe-evil.vercel.app' }))
+    ).toBe(false);
   });
 
   it('falls back to referer when origin is missing', () => {
