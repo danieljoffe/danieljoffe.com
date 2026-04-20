@@ -20,6 +20,17 @@ function parseDevice(raw: unknown): DeviceSelection {
   return 'mobile';
 }
 
+async function markScanFailed(
+  supabase: any,
+  scanId: string,
+  errorMessage: string
+) {
+  await supabase
+    .from('scans')
+    .update({ status: 'failed', error_message: errorMessage })
+    .eq('id', scanId);
+}
+
 function fireScan(
   serviceUrl: string,
   apiKey: string,
@@ -33,25 +44,36 @@ function fireScan(
       'x-api-key': apiKey,
     },
     body: JSON.stringify(payload),
-  }).catch(async (fetchError: unknown) => {
-    await supabase
-      .from('scans')
-      .update({
-        status: 'failed',
-        error_message: 'Failed to reach scan service',
-      })
-      .eq('id', payload.scan_id);
+  })
+    .then(async res => {
+      if (res.ok) return;
+      const message = `Scan service returned HTTP ${res.status}`;
+      await markScanFailed(supabase, payload.scan_id, message);
+      captureApiError(
+        new Error(message),
+        '/api/audit/scan',
+        'POST',
+        res.status,
+        { scanId: payload.scan_id }
+      );
+    })
+    .catch(async (fetchError: unknown) => {
+      await markScanFailed(
+        supabase,
+        payload.scan_id,
+        'Failed to reach scan service'
+      );
 
-    captureApiError(
-      fetchError instanceof Error
-        ? fetchError
-        : new Error('Scan service fetch failed'),
-      '/api/audit/scan',
-      'POST',
-      500,
-      { scanId: payload.scan_id }
-    );
-  });
+      captureApiError(
+        fetchError instanceof Error
+          ? fetchError
+          : new Error('Scan service fetch failed'),
+        '/api/audit/scan',
+        'POST',
+        500,
+        { scanId: payload.scan_id }
+      );
+    });
 }
 
 export async function POST(request: NextRequest) {
@@ -152,6 +174,18 @@ export async function POST(request: NextRequest) {
 
     const scanServiceUrl = process.env['SCAN_SERVICE_URL'];
     const scanServiceApiKey = process.env['SCAN_SERVICE_API_KEY'];
+    if (!scanServiceUrl || !scanServiceApiKey) {
+      captureApiError(
+        new Error('SCAN_SERVICE_URL or SCAN_SERVICE_API_KEY is not set'),
+        '/api/audit/scan',
+        'POST',
+        503
+      );
+      return NextResponse.json(
+        { error: 'Scan service is not configured. Please try again later.' },
+        { status: 503 }
+      );
+    }
     const sourceValue = source || 'organic';
 
     // --- "both" mode: create two scans, link them ---
@@ -200,25 +234,22 @@ export async function POST(request: NextRequest) {
         .update({ paired_scan_id: mobileScan.id })
         .eq('id', desktopScan.id);
 
-      // Fire both scans
-      if (scanServiceUrl && scanServiceApiKey) {
-        fireScan(
-          scanServiceUrl,
-          scanServiceApiKey,
-          { scan_id: mobileScan.id, url: normalized, device_mode: 'mobile' },
-          supabase
-        );
-        fireScan(
-          scanServiceUrl,
-          scanServiceApiKey,
-          {
-            scan_id: desktopScan.id,
-            url: normalized,
-            device_mode: 'desktop',
-          },
-          supabase
-        );
-      }
+      fireScan(
+        scanServiceUrl,
+        scanServiceApiKey,
+        { scan_id: mobileScan.id, url: normalized, device_mode: 'mobile' },
+        supabase
+      );
+      fireScan(
+        scanServiceUrl,
+        scanServiceApiKey,
+        {
+          scan_id: desktopScan.id,
+          url: normalized,
+          device_mode: 'desktop',
+        },
+        supabase
+      );
 
       return NextResponse.json({
         scan_id: mobileScan.id,
@@ -246,15 +277,12 @@ export async function POST(request: NextRequest) {
       throw new Error(insertError?.message || 'Failed to create scan');
     }
 
-    // Fire-and-forget scan trigger
-    if (scanServiceUrl && scanServiceApiKey) {
-      fireScan(
-        scanServiceUrl,
-        scanServiceApiKey,
-        { scan_id: newScan.id, url: normalized, device_mode: device },
-        supabase
-      );
-    }
+    fireScan(
+      scanServiceUrl,
+      scanServiceApiKey,
+      { scan_id: newScan.id, url: normalized, device_mode: device },
+      supabase
+    );
 
     return NextResponse.json({
       scan_id: newScan.id,
