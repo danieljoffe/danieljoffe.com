@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GitCompareArrows } from 'lucide-react';
+import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 
 interface CompareWithPreviousButtonProps {
@@ -51,14 +52,16 @@ export default function CompareWithPreviousButton({
   };
 
   return (
-    <button
-      onClick={handleClick}
+    <Button
+      name='compare-with-previous'
+      variant='bare'
       disabled={loading}
-      className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+      onClick={handleClick}
       aria-label='Compare with previous scan'
+      className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors'
     >
       <GitCompareArrows className='size-4' aria-hidden='true' />
       {loading ? 'Loading...' : 'Compare'}
-    </button>
+    </Button>
   );
 }
