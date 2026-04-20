@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { captureApiError } from '@/lib/errorTracking';
 import { isSameOrigin } from '../sameOrigin';
-import { checkInsightsRateLimit } from '../rateLimit';
+import { checkInsightsRateLimit, extractClientIp } from '../rateLimit';
 
 export const revalidate = 3600;
 
@@ -41,9 +41,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const forwarded = request.headers.get('x-forwarded-for');
-    const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
-    const rate = checkInsightsRateLimit(ip);
+    const rate = checkInsightsRateLimit(extractClientIp(request));
     if (rate.blocked) {
       return NextResponse.json(
         { error: 'Rate limit exceeded' },
