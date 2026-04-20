@@ -25,7 +25,7 @@ export default function HeroStats({ data }: HeroStatsProps) {
     >
       <div className='max-w-4xl mx-auto w-full px-4 sm:px-6'>
         <div className='text-center mb-12'>
-          <Heading variant='page' as='h1' id='insights-hero-heading'>
+          <Heading variant='hero' as='h1' id='insights-hero-heading'>
             Audit Insights
           </Heading>
           <Text variant='bodyLg' className='mt-3 max-w-2xl mx-auto'>

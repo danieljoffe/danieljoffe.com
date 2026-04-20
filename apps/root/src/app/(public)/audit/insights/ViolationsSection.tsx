@@ -178,7 +178,7 @@ export default function ViolationsSection({
           <div className='space-y-8'>
             {CATEGORIES.map(cat => (
               <div key={cat.key}>
-                <Heading variant='subsection' as='h3' className='mb-3'>
+                <Heading variant='subtitle' as='h3' className='mb-3'>
                   {cat.label}
                 </Heading>
                 <div className='rounded-lg border border-border bg-surface-elevated p-4'>

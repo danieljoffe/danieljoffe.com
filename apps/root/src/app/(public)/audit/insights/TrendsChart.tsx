@@ -79,8 +79,8 @@ export default function TrendsChart({ data }: TrendsChartProps) {
                     borderRadius: '0.5rem',
                   }}
                   labelStyle={{ color: 'var(--color-foreground)' }}
-                  formatter={(value: number | null) => [
-                    value !== null ? Math.round(value) : 'N/A',
+                  formatter={value => [
+                    typeof value === 'number' ? Math.round(value) : 'N/A',
                     'Avg Score',
                   ]}
                 />
