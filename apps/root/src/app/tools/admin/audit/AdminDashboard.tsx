@@ -10,6 +10,9 @@ import {
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';
 import LeadsTable from './LeadsTable';
+import ScansOverTimeCard from './charts/ScansOverTimeCard';
+import ScoreDistributionCard from './charts/ScoreDistributionCard';
+import LeadSourcesCard from './charts/LeadSourcesCard';
 
 interface Stats {
   totalScans: number;
@@ -49,7 +52,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className='max-w-3xl mx-auto w-full px-4 sm:px-6'>
+    <div className='max-w-6xl mx-auto w-full px-4 sm:px-6'>
       <div className='flex flex-col gap-6 py-8'>
         <Heading variant='section' as='h1'>
           Audit Admin
@@ -80,6 +83,12 @@ export default function AdminDashboard() {
             ))}
           </div>
         )}
+
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <ScansOverTimeCard />
+          <ScoreDistributionCard />
+          <LeadSourcesCard />
+        </div>
 
         <div className='w-full'>
           <div className='border-b border-border'>
