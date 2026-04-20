@@ -16,6 +16,19 @@ const isCI = process.env.CI === 'true';
 const mockFonts = process.env.MOCK_FONTS === 'true';
 const isAnalyze = process.env.ANALYZE === 'true';
 
+// Derive the Supabase storage host from the env so screenshot URLs keep working
+// when the project is swapped. Falls back to undefined if the env is missing,
+// which leaves remotePatterns empty (safe — _next/image will reject unknown hosts).
+const supabaseHost = (() => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return undefined;
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return undefined;
+  }
+})();
+
 // Bundle analyzer
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: isAnalyze,
@@ -103,12 +116,9 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'grwmzluuqyczatkxorfa.supabase.co',
-      },
-    ],
+    remotePatterns: supabaseHost
+      ? [{ protocol: 'https', hostname: supabaseHost }]
+      : [],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     deviceSizes: [640, 768, 1024, 1280],
