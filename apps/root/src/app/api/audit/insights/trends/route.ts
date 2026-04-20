@@ -4,7 +4,8 @@ import { captureApiError } from '@/lib/errorTracking';
 import { isSameOrigin } from '../sameOrigin';
 import { checkInsightsRateLimit, extractClientIp } from '../rateLimit';
 
-export const revalidate = 86400;
+// No `revalidate` export: reading request headers opts the route into
+// dynamic rendering. CDN caching still applies via Cache-Control below.
 
 const INTERVAL_MAP: Record<string, 'week' | 'month'> = {
   weekly: 'week',

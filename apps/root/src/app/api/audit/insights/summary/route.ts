@@ -4,7 +4,9 @@ import { captureApiError } from '@/lib/errorTracking';
 import { isSameOrigin } from '../sameOrigin';
 import { checkInsightsRateLimit, extractClientIp } from '../rateLimit';
 
-export const revalidate = 3600;
+// No `revalidate` export: reading request headers (origin, x-forwarded-for)
+// opts the route into dynamic rendering. The Cache-Control headers below
+// still cache at the Vercel CDN edge.
 
 interface SummaryRow {
   total_scans: number | null;

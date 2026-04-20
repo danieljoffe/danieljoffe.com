@@ -4,7 +4,8 @@ import { captureApiError } from '@/lib/errorTracking';
 import { isSameOrigin } from '../sameOrigin';
 import { checkInsightsRateLimit, extractClientIp } from '../rateLimit';
 
-export const revalidate = 3600;
+// No `revalidate` export: reading request headers opts the route into
+// dynamic rendering. CDN caching still applies via Cache-Control below.
 
 const VALID_PERIODS = new Set(['30', '90']);
 
