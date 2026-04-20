@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
@@ -27,22 +28,28 @@ export default function ScanHero({
               Get a detailed report in 30 seconds.
             </Text>
           </div>
-          {avgScore !== null && topViolation && (
-            <div className='flex flex-col gap-1'>
-              <Text variant='body'>
-                The average score is:{' '}
-                <span className='font-bold'>{Math.round(avgScore)}/100</span>.
-              </Text>
-              <Text variant='body'>
-                The #1 issue: <span className='font-bold'>{topViolation}</span>.
-              </Text>
-            </div>
-          )}
           <URLInputForm />
           {scanCount > 0 && (
             <Text variant='caption'>
               {scanCount.toLocaleString()} sites audited
             </Text>
+          )}
+          {avgScore !== null && topViolation && (
+            <div className='flex flex-col gap-1 items-center'>
+              <Text variant='caption'>
+                The average score is:{' '}
+                <span className='font-bold'>{Math.round(avgScore)}/100</span>.
+              </Text>
+              <Text variant='caption'>
+                The #1 issue: <span className='font-bold'>{topViolation}</span>.
+              </Text>
+              <Link
+                href='/audit/insights'
+                className='text-sm text-brand-500 hover:text-brand-600 underline underline-offset-2 mt-1'
+              >
+                View all insights
+              </Link>
+            </div>
           )}
         </div>
       </div>
