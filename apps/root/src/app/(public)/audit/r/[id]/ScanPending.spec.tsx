@@ -99,6 +99,42 @@ describe('ScanPending', () => {
     );
   });
 
+  it('shows a timeout error after the max poll attempts', async () => {
+    jest.useFakeTimers();
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ status: 'pending' }),
+    });
+
+    await act(async () => {
+      render(
+        <ScanPending
+          scanId='scan-1'
+          url='https://example.com'
+          deviceMode='mobile'
+          isPaired={false}
+        />
+      );
+    });
+
+    // Advance through 90 polling intervals (3 minutes at 2s each).
+    for (let i = 0; i < 90; i += 1) {
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+    }
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: /scan failed/i })
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(/taking longer than expected/i)
+    ).toBeInTheDocument();
+    jest.useRealTimers();
+  });
+
   it('shows a failed state when the poll request errors', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
