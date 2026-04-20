@@ -61,7 +61,14 @@ export async function GET(
       .limit(1)
       .maybeSingle();
 
-    return NextResponse.json({ previous: previous ?? null });
+    return NextResponse.json(
+      { previous: previous ?? null },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=60, stale-while-revalidate=300',
+        },
+      }
+    );
   } catch (error) {
     captureApiError(error, '/api/audit/previous/[id]', 'GET', 500);
     return NextResponse.json(

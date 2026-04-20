@@ -8,7 +8,8 @@ const mockScansEq = jest.fn();
 const mockScansIn = jest.fn(() => ({ eq: mockScansEq }));
 const mockScansSelect = jest.fn(() => ({ in: mockScansIn }));
 
-const mockIssuesIn = jest.fn();
+const mockIssuesOrder = jest.fn();
+const mockIssuesIn = jest.fn(() => ({ order: mockIssuesOrder }));
 const mockIssuesSelect = jest.fn(() => ({ in: mockIssuesIn }));
 
 const mockFrom = jest.fn((table: string) => {
@@ -60,6 +61,9 @@ function buildScan(overrides: Record<string, unknown>) {
 describe('GET /api/audit/compare', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Issues query runs in parallel with scans, so it always fires when we
+    // get past validation. Provide a safe default; tests override as needed.
+    mockIssuesOrder.mockResolvedValue({ data: [], error: null });
   });
 
   it('returns 400 when auditA or auditB is missing', async () => {
@@ -112,7 +116,7 @@ describe('GET /api/audit/compare', () => {
       ],
       error: null,
     });
-    mockIssuesIn.mockResolvedValueOnce({
+    mockIssuesOrder.mockResolvedValueOnce({
       data: [
         { id: 'x', scan_id: idA, title: 'A-issue' },
         { id: 'y', scan_id: idB, title: 'B-issue' },

@@ -3,15 +3,21 @@ import { notFound } from 'next/navigation';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import {
   isValidUuid,
-  type Scan,
   type ScanIssue,
   type DeviceMode,
 } from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import {
+  COMPARE_SCAN_FIELDS,
+  COMPARE_SCAN_ISSUE_FIELDS,
+  type CompareScan,
+} from '@/lib/compareScanFields';
 import ComparisonHeader from './ComparisonHeader';
 import ScoreDeltaCards from './ScoreDeltaCards';
 import CoreWebVitalsDelta from './CoreWebVitalsDelta';
 import IssueDiff from './IssueDiff';
+
+export const revalidate = 300;
 
 interface CompareSearchParams {
   auditA?: string;
@@ -21,36 +27,6 @@ interface CompareSearchParams {
 interface ComparePageProps {
   searchParams: Promise<CompareSearchParams>;
 }
-
-type CompareScan = Pick<
-  Scan,
-  | 'id'
-  | 'url'
-  | 'normalized_url'
-  | 'status'
-  | 'created_at'
-  | 'completed_at'
-  | 'device_mode'
-  | 'grade_overall'
-  | 'score_performance'
-  | 'score_accessibility'
-  | 'score_best_practices'
-  | 'score_seo'
-  | 'fcp_ms'
-  | 'lcp_ms'
-  | 'tbt_ms'
-  | 'cls'
-  | 'si_ms'
-  | 'page_title'
-  | 'page_screenshot_url'
->;
-
-const COMPARE_SCAN_FIELDS = [
-  'id, url, normalized_url, status, created_at, completed_at,',
-  'device_mode, grade_overall, score_performance, score_accessibility,',
-  'score_best_practices, score_seo, fcp_ms, lcp_ms, tbt_ms, cls, si_ms,',
-  'page_title, page_screenshot_url',
-].join(' ');
 
 interface CompareData {
   scanA: CompareScan;
@@ -66,12 +42,20 @@ async function getCompareData(
   const supabase = createServerSupabaseClient();
   if (!supabase) return null;
 
-  const { data: scans, error } = await supabase
-    .from('scans')
-    .select(COMPARE_SCAN_FIELDS)
-    .in('id', [auditA, auditB])
-    .eq('status', 'completed');
+  const [scansRes, issuesRes] = await Promise.all([
+    supabase
+      .from('scans')
+      .select(COMPARE_SCAN_FIELDS)
+      .in('id', [auditA, auditB])
+      .eq('status', 'completed'),
+    supabase
+      .from('scan_issues')
+      .select(COMPARE_SCAN_ISSUE_FIELDS)
+      .in('scan_id', [auditA, auditB])
+      .order('sort_order', { ascending: true }),
+  ]);
 
+  const { data: scans, error } = scansRes;
   if (error || !scans || scans.length !== 2) return null;
 
   const typed = scans as unknown as CompareScan[];
@@ -81,15 +65,7 @@ async function getCompareData(
 
   if (scanA.normalized_url !== scanB.normalized_url) return null;
 
-  const { data: issues } = await supabase
-    .from('scan_issues')
-    .select(
-      'id, scan_id, category, severity, title, description, impact, fix_difficulty, sort_order'
-    )
-    .in('scan_id', [auditA, auditB])
-    .order('sort_order', { ascending: true });
-
-  const allIssues = (issues ?? []) as ScanIssue[];
+  const allIssues = (issuesRes.data ?? []) as ScanIssue[];
 
   return {
     scanA,

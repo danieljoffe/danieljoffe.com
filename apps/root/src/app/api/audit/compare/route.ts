@@ -1,56 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  isValidUuid,
-  type Scan,
-  type ScanIssue,
-} from '@danieljoffe.com/shared-audit';
+import { isValidUuid, type ScanIssue } from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { captureApiError } from '@/lib/errorTracking';
+import {
+  COMPARE_SCAN_FIELDS,
+  COMPARE_SCAN_ISSUE_FIELDS,
+  type CompareScan,
+} from '@/lib/compareScanFields';
 
-type CompareScan = Pick<
-  Scan,
-  | 'id'
-  | 'url'
-  | 'normalized_url'
-  | 'status'
-  | 'created_at'
-  | 'completed_at'
-  | 'device_mode'
-  | 'grade_overall'
-  | 'score_performance'
-  | 'score_accessibility'
-  | 'score_best_practices'
-  | 'score_seo'
-  | 'fcp_ms'
-  | 'lcp_ms'
-  | 'tbt_ms'
-  | 'cls'
-  | 'si_ms'
-  | 'page_title'
-  | 'page_screenshot_url'
->;
-
-const COMPARE_SCAN_FIELDS = [
-  'id',
-  'url',
-  'normalized_url',
-  'status',
-  'created_at',
-  'completed_at',
-  'device_mode',
-  'grade_overall',
-  'score_performance',
-  'score_accessibility',
-  'score_best_practices',
-  'score_seo',
-  'fcp_ms',
-  'lcp_ms',
-  'tbt_ms',
-  'cls',
-  'si_ms',
-  'page_title',
-  'page_screenshot_url',
-].join(', ');
+const CACHE_HEADERS = {
+  'Cache-Control':
+    'public, max-age=300, s-maxage=86400, stale-while-revalidate=3600',
+} as const;
 
 export async function GET(request: NextRequest) {
   try {
@@ -84,16 +45,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: scans, error: scansError } = await supabase
-      .from('scans')
-      .select(COMPARE_SCAN_FIELDS)
-      .in('id', [auditA, auditB])
-      .eq('status', 'completed');
+    const [scansRes, issuesRes] = await Promise.all([
+      supabase
+        .from('scans')
+        .select(COMPARE_SCAN_FIELDS)
+        .in('id', [auditA, auditB])
+        .eq('status', 'completed'),
+      supabase
+        .from('scan_issues')
+        .select(COMPARE_SCAN_ISSUE_FIELDS)
+        .in('scan_id', [auditA, auditB])
+        .order('sort_order', { ascending: true }),
+    ]);
 
-    if (scansError) {
-      throw scansError;
-    }
+    if (scansRes.error) throw scansRes.error;
+    if (issuesRes.error) throw issuesRes.error;
 
+    const scans = scansRes.data;
     if (!scans || scans.length !== 2) {
       return NextResponse.json(
         { error: 'One or both scans were not found' },
@@ -119,28 +87,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: issues, error: issuesError } = await supabase
-      .from('scan_issues')
-      .select(
-        'id, scan_id, category, severity, title, description, impact, fix_difficulty, sort_order'
-      )
-      .in('scan_id', [auditA, auditB])
-      .order('sort_order', { ascending: true });
-
-    if (issuesError) {
-      throw issuesError;
-    }
-
-    const allIssues = (issues ?? []) as ScanIssue[];
+    const allIssues = (issuesRes.data ?? []) as ScanIssue[];
     const issuesA = allIssues.filter(i => i.scan_id === auditA);
     const issuesB = allIssues.filter(i => i.scan_id === auditB);
 
-    return NextResponse.json({
-      scanA,
-      scanB,
-      issuesA,
-      issuesB,
-    });
+    return NextResponse.json(
+      { scanA, scanB, issuesA, issuesB },
+      { headers: CACHE_HEADERS }
+    );
   } catch (error) {
     captureApiError(error, '/api/audit/compare', 'GET', 500);
     return NextResponse.json(
