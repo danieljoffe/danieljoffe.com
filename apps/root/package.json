@@ -5,6 +5,7 @@
   "dependencies": {
     "@danieljoffe.com/shared-audit": "workspace:*",
     "@danieljoffe.com/shared-ui": "workspace:*",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "sharp": "^0.34.5"
   }
 }
