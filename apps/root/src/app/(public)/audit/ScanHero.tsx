@@ -28,11 +28,15 @@ export default function ScanHero({
             </Text>
           </div>
           {avgScore !== null && topViolation && (
-            <Text variant='body' className='max-w-md'>
-              The average site scores{' '}
-              <span className='font-bold'>{Math.round(avgScore)}/100</span>. The
-              #1 issue? <span className='font-bold'>{topViolation}</span>.
-            </Text>
+            <div className='flex flex-col gap-1'>
+              <Text variant='body'>
+                The average score is:{' '}
+                <span className='font-bold'>{Math.round(avgScore)}/100</span>.
+              </Text>
+              <Text variant='body'>
+                The #1 issue: <span className='font-bold'>{topViolation}</span>.
+              </Text>
+            </div>
           )}
           <URLInputForm />
           {scanCount > 0 && (
