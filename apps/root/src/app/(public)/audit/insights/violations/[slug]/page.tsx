@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import Button from '@/components/Button';
 import { DOMAIN_URL } from '@/utils/constants';
 import {
   getAllViolationGuides,
@@ -198,12 +199,9 @@ export default async function ViolationGuidePage({ params }: PageProps) {
             <Text variant='body' className='mb-3'>
               Want to check if your site has this issue?
             </Text>
-            <Link
-              href='/audit'
-              className='inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition-colors'
-            >
+            <Button as='link' href='/audit' name='violation-guide-cta'>
               Run a free audit
-            </Link>
+            </Button>
           </section>
         </div>
       </article>

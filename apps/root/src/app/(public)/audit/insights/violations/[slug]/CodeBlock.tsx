@@ -27,6 +27,10 @@ export default async function CodeBlock({
         </p>
       )}
       <div
+        role='region'
+        aria-label={
+          label ? `Code example: ${label.toLowerCase()}` : 'Code example'
+        }
         className='rounded-lg border border-border overflow-x-auto text-sm [&_pre]:p-4 [&_pre]:m-0 [&_pre]:bg-surface-secondary!'
         dangerouslySetInnerHTML={{ __html: html }}
       />

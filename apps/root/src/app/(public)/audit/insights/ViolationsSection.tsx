@@ -59,16 +59,25 @@ function ViolationRow({
       </div>
       <div className='flex items-center gap-2 shrink-0 ml-4'>
         {violation.severity.critical > 0 && (
-          <span className='text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'>
+          <span
+            className='text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+            aria-label={`${violation.severity.critical} critical`}
+          >
             {violation.severity.critical}
           </span>
         )}
         {violation.severity.warning > 0 && (
-          <span className='text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'>
+          <span
+            className='text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+            aria-label={`${violation.severity.warning} warnings`}
+          >
             {violation.severity.warning}
           </span>
         )}
-        <span className='text-sm font-medium text-muted'>
+        <span
+          className='text-sm font-medium text-muted'
+          aria-label={`${total} total`}
+        >
           {total.toLocaleString()}
         </span>
       </div>
@@ -131,7 +140,8 @@ export default function ViolationsSection({
 
         {!expanded && (
           <>
-            <nav
+            <div
+              role='tablist'
               aria-label='Violation categories'
               className='flex gap-1 mb-6 flex-wrap'
             >
@@ -140,14 +150,21 @@ export default function ViolationsSection({
                   key={cat.key}
                   name={`tab-${cat.key}`}
                   variant={activeTab === cat.key ? 'primary' : 'ghost'}
-                  aria-pressed={activeTab === cat.key}
+                  role='tab'
+                  aria-selected={activeTab === cat.key}
+                  aria-controls='violations-tabpanel'
                   onClick={() => setActiveTab(cat.key)}
                 >
                   {cat.label}
                 </Button>
               ))}
-            </nav>
-            <div className='rounded-lg border border-border bg-surface-elevated p-4'>
+            </div>
+            <div
+              id='violations-tabpanel'
+              role='tabpanel'
+              aria-label={`${CATEGORIES.find(c => c.key === activeTab)?.label} violations`}
+              className='rounded-lg border border-border bg-surface-elevated p-4'
+            >
               <CategoryList
                 violations={violations}
                 category={activeTab}

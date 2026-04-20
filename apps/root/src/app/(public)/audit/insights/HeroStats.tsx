@@ -39,12 +39,17 @@ export default function HeroStats({ data }: HeroStatsProps) {
           <p
             className='text-7xl md:text-8xl font-bold tracking-tight'
             style={{ color: scoreColor }}
+            aria-label={
+              data.avgOverallScore !== null
+                ? `Average score: ${Math.round(data.avgOverallScore)} out of 100`
+                : 'No score data available'
+            }
           >
             {data.avgOverallScore !== null
               ? Math.round(data.avgOverallScore)
               : '—'}
           </p>
-          <Text variant='detail' className='mt-2'>
+          <Text variant='detail' className='mt-2' aria-hidden='true'>
             Average score across all audits
           </Text>
         </div>
