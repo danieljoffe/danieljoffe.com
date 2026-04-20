@@ -237,7 +237,7 @@ export default async function ReportPage({
         siMs={scan.si_ms}
         deviceMode={deviceMode}
       />
-      <IssueList issues={issues} scanId={scan.id} />
+      <IssueList issues={issues} />
       <CTASection />
       {scan.grade_overall && (
         <ReportAnalytics scanId={scan.id} grade={scan.grade_overall} />
