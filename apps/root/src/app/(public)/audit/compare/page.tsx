@@ -83,7 +83,9 @@ async function getCompareData(
 
   const { data: issues } = await supabase
     .from('scan_issues')
-    .select('*')
+    .select(
+      'id, scan_id, category, severity, title, description, impact, fix_difficulty, sort_order'
+    )
     .in('scan_id', [auditA, auditB])
     .order('sort_order', { ascending: true });
 

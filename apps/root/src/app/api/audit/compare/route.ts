@@ -121,8 +121,11 @@ export async function GET(request: NextRequest) {
 
     const { data: issues, error: issuesError } = await supabase
       .from('scan_issues')
-      .select('*')
-      .in('scan_id', [auditA, auditB]);
+      .select(
+        'id, scan_id, category, severity, title, description, impact, fix_difficulty, sort_order'
+      )
+      .in('scan_id', [auditA, auditB])
+      .order('sort_order', { ascending: true });
 
     if (issuesError) {
       throw issuesError;
