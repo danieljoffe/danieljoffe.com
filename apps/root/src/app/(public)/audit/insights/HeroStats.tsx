@@ -6,22 +6,25 @@ interface HeroStatsProps {
   data: SummaryData;
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className='rounded-lg border border-border bg-surface-elevated p-6 text-center'>
-      <Text variant='detail' className='mb-1'>
-        {label}
-      </Text>
-      <p className='text-3xl font-bold text-foreground'>{value}</p>
-    </div>
-  );
+function getScoreColor(score: number | null): string {
+  if (score === null) return '#888';
+  if (score >= 90) return '#63CAA5';
+  if (score >= 75) return '#8C8FFF';
+  if (score >= 60) return '#FFB46B';
+  if (score >= 40) return '#FF8CA0';
+  return '#FF6B6B';
 }
 
 export default function HeroStats({ data }: HeroStatsProps) {
+  const scoreColor = getScoreColor(data.avgOverallScore);
+
   return (
-    <section aria-labelledby='insights-hero-heading' className='w-full py-16'>
+    <section
+      aria-labelledby='insights-hero-heading'
+      className='w-full bg-surface-secondary py-20 md:py-28'
+    >
       <div className='max-w-4xl mx-auto w-full px-4 sm:px-6'>
-        <div className='text-center mb-10'>
+        <div className='text-center mb-12'>
           <Heading variant='page' as='h1' id='insights-hero-heading'>
             Audit Insights
           </Heading>
@@ -30,25 +33,53 @@ export default function HeroStats({ data }: HeroStatsProps) {
             what issues affect real websites the most.
           </Text>
         </div>
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-          <StatCard
-            label='Sites Audited'
-            value={data.totalScans.toLocaleString()}
-          />
-          <StatCard
-            label='Unique Domains'
-            value={data.uniqueDomains.toLocaleString()}
-          />
-          <StatCard
-            label='Avg Score'
-            value={
-              data.avgOverallScore !== null
-                ? `${Math.round(data.avgOverallScore)}`
-                : 'N/A'
-            }
-          />
-          <StatCard label='Top Issue' value={data.topViolation ?? 'N/A'} />
+
+        {/* Focal stat: average score */}
+        <div className='flex flex-col items-center mb-10 animate-fade-in'>
+          <p
+            className='text-7xl md:text-8xl font-bold tracking-tight'
+            style={{ color: scoreColor }}
+          >
+            {data.avgOverallScore !== null
+              ? Math.round(data.avgOverallScore)
+              : '—'}
+          </p>
+          <Text variant='detail' className='mt-2'>
+            Average score across all audits
+          </Text>
         </div>
+
+        {/* Supporting stats */}
+        <div className='grid grid-cols-2 gap-4 max-w-md mx-auto animate-slide-up'>
+          <div className='rounded-lg border border-border bg-surface-elevated p-5 text-center'>
+            <p className='text-2xl font-bold text-foreground'>
+              {data.totalScans.toLocaleString()}
+            </p>
+            <Text variant='detail' className='mt-1'>
+              Sites Audited
+            </Text>
+          </div>
+          <div className='rounded-lg border border-border bg-surface-elevated p-5 text-center'>
+            <p className='text-2xl font-bold text-foreground'>
+              {data.uniqueDomains.toLocaleString()}
+            </p>
+            <Text variant='detail' className='mt-1'>
+              Unique Domains
+            </Text>
+          </div>
+        </div>
+
+        {/* Top violation callout */}
+        {data.topViolation && (
+          <div className='mt-8 rounded-lg border border-border bg-surface-elevated px-6 py-4 max-w-lg mx-auto text-center animate-slide-up'>
+            <Text variant='detail' className='mb-1'>
+              #1 issue found across all scans
+            </Text>
+            <p className='text-lg font-semibold text-foreground'>
+              {data.topViolation}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
