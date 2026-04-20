@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import dynamic from 'next/dynamic';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { DOMAIN_URL } from '@/utils/constants';
+import { getOrigin } from '@/lib/getOrigin';
 import type {
   SummaryData,
   ViolationsData,
@@ -12,10 +13,11 @@ import type {
 import { getAllViolationGuides } from './violations/data';
 import HeroStats from './HeroStats';
 import ViolationsSection from './ViolationsSection';
-import ScoreDistribution from './ScoreDistribution';
-import TrendsChart from './TrendsChart';
 import TopDomains from './TopDomains';
 import InsightsCTA from './InsightsCTA';
+
+const ScoreDistribution = dynamic(() => import('./ScoreDistribution'));
+const TrendsChart = dynamic(() => import('./TrendsChart'));
 
 export const metadata: Metadata = {
   title: 'Audit Insights | Daniel Joffe',
@@ -54,10 +56,7 @@ async function fetchInsights<T>(
 }
 
 export default async function AuditInsightsPage() {
-  const headersList = await headers();
-  const host = headersList.get('host') ?? 'localhost:3000';
-  const protocol = host.startsWith('localhost') ? 'http' : 'https';
-  const origin = `${protocol}://${host}`;
+  const origin = await getOrigin();
 
   const [summary, violations, scores, trends, domains] = await Promise.all([
     fetchInsights<SummaryData>('summary', origin),

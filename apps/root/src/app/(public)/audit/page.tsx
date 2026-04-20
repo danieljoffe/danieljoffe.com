@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { auditFaqStructuredData } from '@/data/structuredData/audit';
+import { getOrigin } from '@/lib/getOrigin';
 import type { SummaryData } from './insights/types';
 import { getViolationSlug } from './insights/violations/data';
 import ScanHero from './ScanHero';
@@ -41,10 +41,7 @@ async function getSummary(origin: string): Promise<SummaryData | null> {
 }
 
 export default async function AuditPage() {
-  const headersList = await headers();
-  const host = headersList.get('host') ?? 'localhost:3000';
-  const protocol = host.startsWith('localhost') ? 'http' : 'https';
-  const origin = `${protocol}://${host}`;
+  const origin = await getOrigin();
 
   const summary = await getSummary(origin);
 
