@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { getViolationSlug } from '../../insights/violations/data';
 
 const severityMap: Record<string, BadgeVariant> = {
   critical: 'error',
@@ -27,6 +29,8 @@ interface IssueCardProps {
 }
 
 export default function IssueCard({ issue }: IssueCardProps) {
+  const guideSlug = getViolationSlug(issue.title);
+
   return (
     <div className='rounded-lg border border-border bg-surface-elevated p-6 w-full'>
       <div className='flex flex-col gap-2'>
@@ -44,7 +48,16 @@ export default function IssueCard({ issue }: IssueCardProps) {
           )}
         </div>
         <Heading variant='cardTitle' as='h3'>
-          {issue.title}
+          {guideSlug ? (
+            <Link
+              href={`/audit/insights/violations/${guideSlug}`}
+              className='underline underline-offset-2 decoration-border hover:decoration-brand-500 hover:text-brand-500 transition-colors'
+            >
+              {issue.title}
+            </Link>
+          ) : (
+            issue.title
+          )}
         </Heading>
         <Text variant='body'>{issue.description}</Text>
         {issue.impact && (

@@ -355,6 +355,19 @@
   color: var(--shiki-dark);
 }
 
+/* Standalone shiki blocks (CodeBlock component, not via rehype-pretty-code) */
+.shiki.shiki-themes span:not(:is(.dark *)) {
+  color: var(--shiki-light);
+}
+
+.shiki.shiki-themes span:is(.dark *) {
+  color: var(--shiki-dark);
+}
+
+.shiki.shiki-themes:is(.dark *) {
+  background-color: var(--shiki-dark-bg) !important;
+}
+
 /* Code block title (```ts title="filename.ts") */
 [data-rehype-pretty-code-title] {
   @apply text-xs font-mono text-text-tertiary bg-surface-tertiary border border-b-0 border-border rounded-t-lg px-4 py-2;

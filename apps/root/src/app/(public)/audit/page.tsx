@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { auditFaqStructuredData } from '@/data/structuredData/audit';
+import { getOrigin } from '@/lib/getOrigin';
+import type { SummaryData } from './insights/types';
+import { getViolationSlug } from './insights/violations/data';
 import ScanHero from './ScanHero';
 import HowItWorks from './HowItWorks';
 
@@ -25,22 +27,23 @@ export const metadata: Metadata = {
   },
 };
 
-async function getCompletedScanCount(): Promise<number> {
+async function getSummary(origin: string): Promise<SummaryData | null> {
   try {
-    const supabase = createServerSupabaseClient();
-    if (!supabase) return 0;
-    const { count } = await supabase
-      .from('scans')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'completed');
-    return count ?? 0;
+    const res = await fetch(`${origin}/api/audit/insights/summary`, {
+      headers: { origin },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    return res.json() as Promise<SummaryData>;
   } catch {
-    return 0;
+    return null;
   }
 }
 
 export default async function AuditPage() {
-  const scanCount = await getCompletedScanCount();
+  const origin = await getOrigin();
+
+  const summary = await getSummary(origin);
 
   return (
     <PageLayout>
@@ -53,7 +56,14 @@ export default async function AuditPage() {
           ),
         }}
       />
-      <ScanHero scanCount={scanCount} />
+      <ScanHero
+        scanCount={summary?.totalScans ?? 0}
+        avgScore={summary?.avgOverallScore ?? null}
+        topViolation={summary?.topViolation ?? null}
+        topViolationSlug={
+          summary?.topViolation ? getViolationSlug(summary.topViolation) : null
+        }
+      />
       <HowItWorks />
     </PageLayout>
   );

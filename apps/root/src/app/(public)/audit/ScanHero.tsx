@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { sectionContainer } from '@/lib/layoutStyles';
@@ -5,9 +6,17 @@ import URLInputForm from './URLInputForm';
 
 interface ScanHeroProps {
   scanCount: number;
+  avgScore: number | null;
+  topViolation: string | null;
+  topViolationSlug: string | null;
 }
 
-export default function ScanHero({ scanCount }: ScanHeroProps) {
+export default function ScanHero({
+  scanCount,
+  avgScore,
+  topViolation,
+  topViolationSlug,
+}: ScanHeroProps) {
   return (
     <section className={sectionContainer} aria-labelledby='audit-hero-heading'>
       <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 text-center py-20 md:py-32'>
@@ -22,11 +31,44 @@ export default function ScanHero({ scanCount }: ScanHeroProps) {
             </Text>
           </div>
           <URLInputForm />
-          {scanCount > 0 && (
-            <Text variant='caption'>
-              {scanCount.toLocaleString()} sites audited
-            </Text>
-          )}
+          <div className='flex flex-col gap-1 items-center'>
+            {scanCount > 0 && (
+              <Text variant='caption'>
+                Total sites audited:{' '}
+                <span className='font-bold'>{scanCount.toLocaleString()}</span>
+              </Text>
+            )}
+            {avgScore !== null && topViolation && (
+              <>
+                <Text variant='caption'>
+                  The average score is:{' '}
+                  <span className='font-bold'>{Math.round(avgScore)}/100</span>.
+                </Text>
+                <Text variant='caption'>
+                  The #1 issue:{' '}
+                  {topViolationSlug ? (
+                    <Link
+                      href={`/audit/insights/violations/${topViolationSlug}`}
+                      className='font-bold underline underline-offset-2 decoration-border hover:decoration-brand-500 hover:text-brand-500 transition-colors'
+                    >
+                      &quot;{topViolation}&quot;
+                    </Link>
+                  ) : (
+                    <span className='font-bold'>
+                      &quot;{topViolation}&quot;
+                    </span>
+                  )}
+                  .
+                </Text>
+                <Link
+                  href='/audit/insights'
+                  className='text-sm text-brand-500 hover:text-brand-600 underline underline-offset-2 mt-1'
+                >
+                  View all insights
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </section>

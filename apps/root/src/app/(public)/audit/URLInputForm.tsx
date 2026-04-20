@@ -198,7 +198,7 @@ export default function URLInputForm() {
           <Button
             type='submit'
             name='audit-submit'
-            size='lg'
+            size='md'
             disabled={state.phase === 'submitting'}
             className='w-full'
           >

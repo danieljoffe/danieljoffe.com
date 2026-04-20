@@ -2,20 +2,13 @@ import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import IssueCard from './IssueCard';
-import EmailGate from './EmailGate';
-
-const FREE_ISSUE_COUNT = 3;
 
 interface IssueListProps {
   issues: ScanIssue[];
-  scanId: string;
 }
 
-export default function IssueList({ issues, scanId }: IssueListProps) {
+export default function IssueList({ issues }: IssueListProps) {
   if (issues.length === 0) return null;
-
-  const visibleIssues = issues.slice(0, FREE_ISSUE_COUNT);
-  const gatedIssues = issues.slice(FREE_ISSUE_COUNT);
 
   const summary = {
     total: issues.length,
@@ -42,14 +35,10 @@ export default function IssueList({ issues, scanId }: IssueListProps) {
           </div>
 
           <div className='flex flex-col gap-2'>
-            {visibleIssues.map(issue => (
+            {issues.map(issue => (
               <IssueCard key={issue.id} issue={issue} />
             ))}
           </div>
-
-          {gatedIssues.length > 0 && (
-            <EmailGate gatedIssues={gatedIssues} scanId={scanId} />
-          )}
         </div>
       </div>
     </section>
