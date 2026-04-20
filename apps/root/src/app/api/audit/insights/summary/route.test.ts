@@ -5,8 +5,8 @@ import { NextRequest } from 'next/server';
 import { resetInsightsRateLimit } from '../rateLimit';
 import { GET } from './route';
 
-const mockSingle = jest.fn();
-const mockSelect = jest.fn(() => ({ single: mockSingle }));
+const mockMaybeSingle = jest.fn();
+const mockSelect = jest.fn(() => ({ maybeSingle: mockMaybeSingle }));
 const mockFrom = jest.fn(() => ({ select: mockSelect }));
 
 jest.mock('@/lib/supabase/server', () => ({
@@ -44,7 +44,7 @@ describe('GET /api/audit/insights/summary', () => {
   });
 
   it('returns aggregated summary from the view', async () => {
-    mockSingle.mockResolvedValueOnce({
+    mockMaybeSingle.mockResolvedValueOnce({
       data: {
         total_scans: 128,
         unique_domains: 47,
@@ -67,7 +67,7 @@ describe('GET /api/audit/insights/summary', () => {
   });
 
   it('handles an empty database (zero completed scans)', async () => {
-    mockSingle.mockResolvedValueOnce({
+    mockMaybeSingle.mockResolvedValueOnce({
       data: {
         total_scans: 0,
         unique_domains: 0,
@@ -87,8 +87,20 @@ describe('GET /api/audit/insights/summary', () => {
     });
   });
 
+  it('returns zeroed summary when the view yields no rows', async () => {
+    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
+    const res = await GET(createRequest());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      totalScans: 0,
+      uniqueDomains: 0,
+      avgOverallScore: null,
+      topViolation: null,
+    });
+  });
+
   it('returns 500 when the view query errors', async () => {
-    mockSingle.mockResolvedValueOnce({
+    mockMaybeSingle.mockResolvedValueOnce({
       data: null,
       error: { message: 'view missing' },
     });
@@ -97,7 +109,7 @@ describe('GET /api/audit/insights/summary', () => {
   });
 
   it('returns 429 once rate limit is exhausted', async () => {
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: {
         total_scans: 1,
         unique_domains: 1,

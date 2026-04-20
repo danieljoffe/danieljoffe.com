@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from('insights_summary_view')
       .select('total_scans, unique_domains, avg_overall_score, top_violation')
-      .single<SummaryRow>();
+      .maybeSingle<SummaryRow>();
 
     if (error) {
       throw new Error(error.message);
