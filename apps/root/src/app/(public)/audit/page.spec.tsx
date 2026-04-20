@@ -1,20 +1,40 @@
 import { render, screen } from '@testing-library/react';
 import AuditPage from './page';
 
-jest.mock('@/lib/supabase/server', () => ({
-  createServerSupabaseClient: () => ({
-    from: () => ({
-      select: () => ({
-        eq: jest.fn().mockResolvedValue({ count: 42 }),
-      }),
-    }),
+jest.mock('next/headers', () => ({
+  headers: jest.fn().mockResolvedValue({
+    get: (key: string) => (key === 'host' ? 'localhost:3000' : null),
   }),
 }));
 
+const mockSummary = {
+  totalScans: 42,
+  uniqueDomains: 10,
+  avgOverallScore: 65,
+  topViolation: 'Render-blocking resources',
+};
+
+global.fetch = jest.fn().mockResolvedValue({
+  ok: true,
+  json: () => Promise.resolve(mockSummary),
+}) as jest.Mock;
+
 jest.mock('./ScanHero', () => ({
   __esModule: true,
-  default: function ScanHero({ scanCount }: { scanCount: number }) {
-    return <div data-testid='scan-hero'>count:{scanCount}</div>;
+  default: function ScanHero({
+    scanCount,
+    avgScore,
+    topViolation,
+  }: {
+    scanCount: number;
+    avgScore: number | null;
+    topViolation: string | null;
+  }) {
+    return (
+      <div data-testid='scan-hero'>
+        count:{scanCount},avg:{avgScore},top:{topViolation}
+      </div>
+    );
   },
 }));
 
@@ -32,9 +52,13 @@ describe('Audit Page', () => {
     expect(main).toHaveAttribute('id', 'main-content');
   });
 
-  it('renders ScanHero with scan count', async () => {
+  it('renders ScanHero with summary data', async () => {
     render(await AuditPage());
     expect(screen.getByTestId('scan-hero')).toHaveTextContent('count:42');
+    expect(screen.getByTestId('scan-hero')).toHaveTextContent('avg:65');
+    expect(screen.getByTestId('scan-hero')).toHaveTextContent(
+      'top:Render-blocking resources'
+    );
   });
 
   it('renders HowItWorks section', async () => {
