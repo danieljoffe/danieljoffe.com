@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -45,13 +45,26 @@ export default function ScansOverTimeCard() {
     };
   }, []);
 
-  const chartData =
-    data?.series.map(point => ({
-      date: formatBucket(point.bucketStart),
-      scans: point.scanCount,
-    })) ?? [];
+  const chartData = useMemo(
+    () =>
+      data?.series.map(point => ({
+        date: formatBucket(point.bucketStart),
+        scans: point.scanCount,
+      })) ?? [],
+    [data]
+  );
 
   const hasData = chartData.some(point => point.scans > 0);
+
+  const chartLabel = useMemo(() => {
+    if (!hasData) return '';
+    const total = chartData.reduce((sum, point) => sum + point.scans, 0);
+    const peak = chartData.reduce(
+      (max, point) => (point.scans > max.scans ? point : max),
+      chartData[0] ?? { date: '', scans: 0 }
+    );
+    return `Weekly scan counts, last 3 months. Total ${total} scans across ${chartData.length} weeks. Peak ${peak.scans} in week of ${peak.date}.`;
+  }, [chartData, hasData]);
 
   return (
     <section
@@ -66,19 +79,21 @@ export default function ScansOverTimeCard() {
       </Text>
 
       {error ? (
-        <Text variant='error'>{error}</Text>
+        <Text variant='error' role='alert'>
+          {error}
+        </Text>
       ) : !data ? (
-        <div className='h-48 w-full rounded bg-surface animate-pulse' />
+        <div
+          role='status'
+          aria-label='Loading scan trend'
+          className='h-48 w-full rounded bg-surface animate-pulse'
+        />
       ) : !hasData ? (
         <Text variant='body' className='text-text-secondary'>
           Not enough data yet. Scans will appear here as they accumulate.
         </Text>
       ) : (
-        <div
-          className='h-48 w-full'
-          role='img'
-          aria-label='Bar chart showing weekly scan counts over the last three months'
-        >
+        <div className='h-48 w-full' role='img' aria-label={chartLabel}>
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray='3 3' className='stroke-border' />

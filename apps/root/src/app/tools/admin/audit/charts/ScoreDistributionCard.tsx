@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -47,14 +47,24 @@ export default function ScoreDistributionCard() {
     };
   }, []);
 
-  const chartData = data
-    ? Object.entries(data.gradeDistribution).map(([grade, count]) => ({
-        grade,
-        count,
-      }))
-    : [];
+  const chartData = useMemo(
+    () =>
+      data
+        ? Object.entries(data.gradeDistribution).map(([grade, count]) => ({
+            grade,
+            count,
+          }))
+        : [],
+    [data]
+  );
 
   const hasData = (data?.total ?? 0) > 0;
+
+  const chartLabel = useMemo(() => {
+    if (!hasData) return '';
+    const parts = chartData.map(({ grade, count }) => `${grade}: ${count}`);
+    return `Grade distribution across ${(data?.total ?? 0).toLocaleString()} completed scans. ${parts.join(', ')}.`;
+  }, [chartData, hasData, data]);
 
   return (
     <section
@@ -71,19 +81,21 @@ export default function ScoreDistributionCard() {
       </Text>
 
       {error ? (
-        <Text variant='error'>{error}</Text>
+        <Text variant='error' role='alert'>
+          {error}
+        </Text>
       ) : !data ? (
-        <div className='h-48 w-full rounded bg-surface animate-pulse' />
+        <div
+          role='status'
+          aria-label='Loading score distribution'
+          className='h-48 w-full rounded bg-surface animate-pulse'
+        />
       ) : !hasData ? (
         <Text variant='body' className='text-text-secondary'>
           Not enough data yet. Grades will appear as scans complete.
         </Text>
       ) : (
-        <div
-          className='h-48 w-full'
-          role='img'
-          aria-label='Bar chart showing grade distribution A through F across all completed scans'
-        >
+        <div className='h-48 w-full' role='img' aria-label={chartLabel}>
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
@@ -100,6 +112,7 @@ export default function ScoreDistributionCard() {
                   borderRadius: '0.5rem',
                 }}
                 labelStyle={{ color: 'var(--color-foreground)' }}
+                labelFormatter={label => `Grade ${label}`}
                 formatter={value => [String(value), 'Sites']}
               />
               <Bar dataKey='count' radius={[4, 4, 0, 0]}>

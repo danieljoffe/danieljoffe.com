@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -45,13 +45,22 @@ export default function LeadSourcesCard() {
     };
   }, []);
 
-  const chartData =
-    data?.sources.map(entry => ({
-      source: formatSourceLabel(entry.source),
-      count: entry.count,
-    })) ?? [];
+  const chartData = useMemo(
+    () =>
+      data?.sources.map(entry => ({
+        source: formatSourceLabel(entry.source),
+        count: entry.count,
+      })) ?? [],
+    [data]
+  );
 
   const hasData = (data?.total ?? 0) > 0 && chartData.length > 0;
+
+  const chartLabel = useMemo(() => {
+    if (!hasData) return '';
+    const parts = chartData.map(({ source, count }) => `${source}: ${count}`);
+    return `Lead counts by source. ${parts.join(', ')}.`;
+  }, [chartData, hasData]);
 
   return (
     <section
@@ -68,19 +77,21 @@ export default function LeadSourcesCard() {
       </Text>
 
       {error ? (
-        <Text variant='error'>{error}</Text>
+        <Text variant='error' role='alert'>
+          {error}
+        </Text>
       ) : !data ? (
-        <div className='h-48 w-full rounded bg-surface animate-pulse' />
+        <div
+          role='status'
+          aria-label='Loading lead sources'
+          className='h-48 w-full rounded bg-surface animate-pulse'
+        />
       ) : !hasData ? (
         <Text variant='body' className='text-text-secondary'>
           No leads captured yet.
         </Text>
       ) : (
-        <div
-          className='h-48 w-full'
-          role='img'
-          aria-label='Horizontal bar chart showing lead counts grouped by source'
-        >
+        <div className='h-48 w-full' role='img' aria-label={chartLabel}>
           <ResponsiveContainer width='100%' height='100%'>
             <BarChart data={chartData} layout='vertical'>
               <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
