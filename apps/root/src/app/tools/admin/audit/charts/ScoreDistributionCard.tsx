@@ -66,7 +66,7 @@ export default function ScoreDistributionCard() {
       </Heading>
       <Text variant='detail' className='mt-1 mb-4'>
         {hasData
-          ? `Grades across ${data!.total.toLocaleString()} completed scans`
+          ? `Grades across ${(data?.total ?? 0).toLocaleString()} completed scans`
           : 'Grades across completed scans'}
       </Text>
 

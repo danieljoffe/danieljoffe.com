@@ -63,7 +63,7 @@ export default function LeadSourcesCard() {
       </Heading>
       <Text variant='detail' className='mt-1 mb-4'>
         {hasData
-          ? `Where ${data!.total.toLocaleString()} captured leads came from`
+          ? `Where ${(data?.total ?? 0).toLocaleString()} captured leads came from`
           : 'Where captured leads come from'}
       </Text>
 
