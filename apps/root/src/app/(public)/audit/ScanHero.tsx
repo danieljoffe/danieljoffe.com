@@ -8,12 +8,14 @@ interface ScanHeroProps {
   scanCount: number;
   avgScore: number | null;
   topViolation: string | null;
+  topViolationSlug: string | null;
 }
 
 export default function ScanHero({
   scanCount,
   avgScore,
   topViolation,
+  topViolationSlug,
 }: ScanHeroProps) {
   return (
     <section className={sectionContainer} aria-labelledby='audit-hero-heading'>
@@ -29,28 +31,44 @@ export default function ScanHero({
             </Text>
           </div>
           <URLInputForm />
-          {scanCount > 0 && (
-            <Text variant='caption'>
-              {scanCount.toLocaleString()} sites audited
-            </Text>
-          )}
-          {avgScore !== null && topViolation && (
-            <div className='flex flex-col gap-1 items-center'>
+          <div className='flex flex-col gap-1 items-center'>
+            {scanCount > 0 && (
               <Text variant='caption'>
-                The average score is:{' '}
-                <span className='font-bold'>{Math.round(avgScore)}/100</span>.
+                Total sites audited:{' '}
+                <span className='font-bold'>{scanCount.toLocaleString()}</span>
               </Text>
-              <Text variant='caption'>
-                The #1 issue: <span className='font-bold'>{topViolation}</span>.
-              </Text>
-              <Link
-                href='/audit/insights'
-                className='text-sm text-brand-500 hover:text-brand-600 underline underline-offset-2 mt-1'
-              >
-                View all insights
-              </Link>
-            </div>
-          )}
+            )}
+            {avgScore !== null && topViolation && (
+              <>
+                <Text variant='caption'>
+                  The average score is:{' '}
+                  <span className='font-bold'>{Math.round(avgScore)}/100</span>.
+                </Text>
+                <Text variant='caption'>
+                  The #1 issue:{' '}
+                  {topViolationSlug ? (
+                    <Link
+                      href={`/audit/insights/violations/${topViolationSlug}`}
+                      className='font-bold underline underline-offset-2 decoration-border hover:decoration-brand-500 hover:text-brand-500 transition-colors'
+                    >
+                      &quot;{topViolation}&quot;
+                    </Link>
+                  ) : (
+                    <span className='font-bold'>
+                      &quot;{topViolation}&quot;
+                    </span>
+                  )}
+                  .
+                </Text>
+                <Link
+                  href='/audit/insights'
+                  className='text-sm text-brand-500 hover:text-brand-600 underline underline-offset-2 mt-1'
+                >
+                  View all insights
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </section>

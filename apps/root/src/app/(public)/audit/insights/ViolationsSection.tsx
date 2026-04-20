@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
@@ -17,19 +18,34 @@ const CATEGORIES: { key: Category; label: string }[] = [
 
 interface ViolationsSectionProps {
   violations: Violation[];
+  /** Map of violation title (lowercase) → guide slug. */
+  guideSlugs: Record<string, string>;
 }
 
 function ViolationRow({
   violation,
   rank,
+  guideSlug,
 }: {
   violation: Violation;
   rank: number;
+  guideSlug: string | undefined;
 }) {
   const total =
     violation.severity.critical +
     violation.severity.warning +
     violation.severity.info;
+
+  const titleContent = guideSlug ? (
+    <Link
+      href={`/audit/insights/violations/${guideSlug}`}
+      className='hover:text-brand-500 underline underline-offset-2 decoration-border hover:decoration-brand-500 transition-colors'
+    >
+      {violation.title}
+    </Link>
+  ) : (
+    violation.title
+  );
 
   return (
     <li className='flex items-center justify-between py-3 border-b border-border last:border-b-0'>
@@ -38,7 +54,7 @@ function ViolationRow({
           {rank}.
         </span>
         <Text variant='body' className='truncate'>
-          {violation.title}
+          {titleContent}
         </Text>
       </div>
       <div className='flex items-center gap-2 shrink-0 ml-4'>
@@ -63,9 +79,11 @@ function ViolationRow({
 function CategoryList({
   violations,
   category,
+  guideSlugs,
 }: {
   violations: Violation[];
   category: Category;
+  guideSlugs: Record<string, string>;
 }) {
   const filtered = violations.filter(v => v.category === category);
 
@@ -80,7 +98,12 @@ function CategoryList({
   return (
     <ol className='list-none p-0'>
       {filtered.map((v, i) => (
-        <ViolationRow key={v.title} violation={v} rank={i + 1} />
+        <ViolationRow
+          key={v.title}
+          violation={v}
+          rank={i + 1}
+          guideSlug={guideSlugs[v.title.toLowerCase()]}
+        />
       ))}
     </ol>
   );
@@ -88,6 +111,7 @@ function CategoryList({
 
 export default function ViolationsSection({
   violations,
+  guideSlugs,
 }: ViolationsSectionProps) {
   const [activeTab, setActiveTab] = useState<Category>('performance');
   const [expanded, setExpanded] = useState(false);
@@ -124,7 +148,11 @@ export default function ViolationsSection({
               ))}
             </nav>
             <div className='rounded-lg border border-border bg-surface-elevated p-4'>
-              <CategoryList violations={violations} category={activeTab} />
+              <CategoryList
+                violations={violations}
+                category={activeTab}
+                guideSlugs={guideSlugs}
+              />
             </div>
           </>
         )}
@@ -137,7 +165,11 @@ export default function ViolationsSection({
                   {cat.label}
                 </Heading>
                 <div className='rounded-lg border border-border bg-surface-elevated p-4'>
-                  <CategoryList violations={violations} category={cat.key} />
+                  <CategoryList
+                    violations={violations}
+                    category={cat.key}
+                    guideSlugs={guideSlugs}
+                  />
                 </div>
               </div>
             ))}

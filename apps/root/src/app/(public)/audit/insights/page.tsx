@@ -9,6 +9,7 @@ import type {
   TrendsData,
   DomainsData,
 } from './types';
+import { getAllViolationGuides } from './violations/data';
 import HeroStats from './HeroStats';
 import ViolationsSection from './ViolationsSection';
 import ScoreDistribution from './ScoreDistribution';
@@ -96,6 +97,12 @@ export default async function AuditInsightsPage() {
   const scoresData = scores ?? defaultScores;
   const trendsData = trends ?? defaultTrends;
 
+  // Build slug lookup for linking violation titles to guide pages
+  const guideSlugs: Record<string, string> = {};
+  for (const guide of getAllViolationGuides()) {
+    guideSlugs[guide.title.toLowerCase()] = guide.slug;
+  }
+
   return (
     <PageLayout>
       <script
@@ -117,7 +124,10 @@ export default async function AuditInsightsPage() {
         }}
       />
       <HeroStats data={summaryData} />
-      <ViolationsSection violations={violations?.violations ?? []} />
+      <ViolationsSection
+        violations={violations?.violations ?? []}
+        guideSlugs={guideSlugs}
+      />
       <ScoreDistribution data={scoresData} />
       <TrendsChart data={trendsData} />
       <TopDomains domains={domains?.domains ?? []} />

@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { auditFaqStructuredData } from '@/data/structuredData/audit';
 import type { SummaryData } from './insights/types';
+import { getViolationSlug } from './insights/violations/data';
 import ScanHero from './ScanHero';
 import HowItWorks from './HowItWorks';
 
@@ -62,6 +63,9 @@ export default async function AuditPage() {
         scanCount={summary?.totalScans ?? 0}
         avgScore={summary?.avgOverallScore ?? null}
         topViolation={summary?.topViolation ?? null}
+        topViolationSlug={
+          summary?.topViolation ? getViolationSlug(summary.topViolation) : null
+        }
       />
       <HowItWorks />
     </PageLayout>

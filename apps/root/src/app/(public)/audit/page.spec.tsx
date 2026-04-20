@@ -19,6 +19,11 @@ global.fetch = jest.fn().mockResolvedValue({
   json: () => Promise.resolve(mockSummary),
 }) as jest.Mock;
 
+jest.mock('./insights/violations/data', () => ({
+  getViolationSlug: (title: string) =>
+    title === 'Render-blocking resources' ? 'render-blocking-resources' : null,
+}));
+
 jest.mock('./ScanHero', () => ({
   __esModule: true,
   default: function ScanHero({
