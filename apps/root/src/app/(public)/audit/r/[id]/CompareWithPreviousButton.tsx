@@ -56,8 +56,9 @@ export default function CompareWithPreviousButton({
       name='compare-with-previous'
       variant='bare'
       disabled={loading}
+      aria-busy={loading}
       onClick={handleClick}
-      aria-label='Compare with previous scan'
+      aria-label='Compare scan with previous scan'
       className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors'
     >
       <GitCompareArrows className='size-4' aria-hidden='true' />

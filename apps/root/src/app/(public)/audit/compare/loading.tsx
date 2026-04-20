@@ -4,7 +4,12 @@ import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 export default function Loading() {
   return (
     <PageLayout>
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
+      <div
+        role='status'
+        aria-live='polite'
+        aria-label='Loading comparison'
+        className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'
+      >
         <div className='flex flex-col gap-8'>
           {/* Comparison header */}
           <div className='flex flex-col gap-6'>

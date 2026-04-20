@@ -25,10 +25,13 @@ function Group({ title, description, icon, issues, emptyLabel }: GroupProps) {
         {icon}
         <Heading variant='cardTitle' as='h3'>
           {title}
-          <span className='ml-2 text-text-secondary font-normal tabular-nums'>
-            ({issues.length})
-          </span>
         </Heading>
+        <span
+          className='text-text-secondary font-normal tabular-nums text-sm'
+          aria-label={`${issues.length} ${issues.length === 1 ? 'issue' : 'issues'}`}
+        >
+          ({issues.length})
+        </span>
       </div>
       <Text variant='detail'>{description}</Text>
       {issues.length === 0 ? (
