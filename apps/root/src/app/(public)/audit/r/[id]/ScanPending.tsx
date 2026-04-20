@@ -12,6 +12,9 @@ import ScanProgress from '../../ScanProgress';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
 const POLL_INTERVAL_MS = 2000;
+const MAX_POLL_ATTEMPTS = 90;
+const TIMEOUT_MESSAGE =
+  'This scan is taking longer than expected. The worker may be unavailable. Please try again in a few minutes.';
 
 interface ScanPendingProps {
   scanId: string;
@@ -29,6 +32,7 @@ export default function ScanPending({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const attemptsRef = useRef(0);
 
   const clearPoll = useCallback(() => {
     if (pollRef.current) {
@@ -39,6 +43,7 @@ export default function ScanPending({
 
   useEffect(() => {
     const poll = async () => {
+      attemptsRef.current += 1;
       try {
         const res = await fetch(`/api/audit/status/${scanId}`);
         if (!res.ok) {
@@ -50,9 +55,16 @@ export default function ScanPending({
         if (data.status === 'completed') {
           clearPoll();
           router.refresh();
-        } else if (data.status === 'failed') {
+          return;
+        }
+        if (data.status === 'failed') {
           clearPoll();
           setError(friendlyErrorMessage(data.error_message));
+          return;
+        }
+        if (attemptsRef.current >= MAX_POLL_ATTEMPTS) {
+          clearPoll();
+          setError(TIMEOUT_MESSAGE);
         }
       } catch {
         clearPoll();
