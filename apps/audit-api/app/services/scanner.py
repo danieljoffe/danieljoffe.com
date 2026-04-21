@@ -81,6 +81,11 @@ async def _run_axe_and_capture(
                 },
                 device_scale_factor=cfg.screen_emulation.device_scale_factor,
                 is_mobile=cfg.screen_emulation.mobile,
+                user_agent=(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/125.0.0.0 Safari/537.36"
+                ),
             )
             context.set_default_timeout(30_000)
             page = await context.new_page()
