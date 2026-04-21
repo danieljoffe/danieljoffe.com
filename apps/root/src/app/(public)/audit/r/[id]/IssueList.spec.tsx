@@ -20,7 +20,7 @@ function makeIssue(
 
 describe('IssueList', () => {
   it('returns null when no issues', () => {
-    const { container } = render(<IssueList issues={[]} scanId='scan-1' />);
+    const { container } = render(<IssueList issues={[]} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -30,7 +30,7 @@ describe('IssueList', () => {
       makeIssue({ id: 'i2', severity: 'warning' }),
       makeIssue({ id: 'i3', severity: 'info' }),
     ];
-    render(<IssueList issues={issues} scanId='scan-1' />);
+    render(<IssueList issues={issues} />);
     expect(
       screen.getByRole('heading', { name: /issues found/i })
     ).toBeInTheDocument();
@@ -39,24 +39,15 @@ describe('IssueList', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders the first three issues as visible cards', () => {
+  it('renders all issues without gating', () => {
     const issues: ScanIssue[] = Array.from({ length: 5 }).map((_, i) =>
       makeIssue({ id: `i${i}`, severity: 'warning' })
     );
-    render(<IssueList issues={issues} scanId='scan-1' />);
+    render(<IssueList issues={issues} />);
     expect(screen.getByText('Issue i0')).toBeInTheDocument();
     expect(screen.getByText('Issue i1')).toBeInTheDocument();
     expect(screen.getByText('Issue i2')).toBeInTheDocument();
-  });
-
-  it('does not render EmailGate affordance when all issues fit in free tier', () => {
-    const issues: ScanIssue[] = [
-      makeIssue({ id: 'i1', severity: 'critical' }),
-      makeIssue({ id: 'i2', severity: 'warning' }),
-    ];
-    render(<IssueList issues={issues} scanId='scan-1' />);
-    // Only two issue titles in the document
-    expect(screen.getByText('Issue i1')).toBeInTheDocument();
-    expect(screen.getByText('Issue i2')).toBeInTheDocument();
+    expect(screen.getByText('Issue i3')).toBeInTheDocument();
+    expect(screen.getByText('Issue i4')).toBeInTheDocument();
   });
 });

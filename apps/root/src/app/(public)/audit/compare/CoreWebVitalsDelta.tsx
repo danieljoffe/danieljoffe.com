@@ -1,6 +1,6 @@
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { sectionContainer } from '@/lib/layoutStyles';
 import { cwvDelta } from './calcDelta';
 import DeltaIndicator from './DeltaIndicator';
 
@@ -96,48 +96,51 @@ export default function CoreWebVitalsDelta({
   ];
 
   return (
-    <section aria-labelledby='cwv-delta-heading' className={sectionContainer}>
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <Heading variant='section' as='h2' id='cwv-delta-heading'>
-          Core Web Vitals
-        </Heading>
-        <Text variant='detail' className='mb-4'>
-          Lower values are better for every metric below.
-        </Text>
-        <div className='rounded-lg border border-border bg-surface-elevated p-6'>
-          <div className='flex flex-col'>
-            {metrics.map((metric, i) => {
-              const delta = cwvDelta(metric.a, metric.b);
-              return (
-                <div
-                  key={metric.label}
-                  className={`flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3 ${
-                    i < metrics.length - 1 ? 'border-b border-border' : ''
-                  }`}
-                >
-                  <span className='text-sm'>{metric.label}</span>
-                  <div className='flex flex-row gap-3 items-center justify-between sm:justify-end'>
-                    <span className='text-sm tabular-nums text-text-secondary'>
-                      {metric.a !== null ? metric.format(metric.a) : 'N/A'}
-                    </span>
-                    <span className='text-text-secondary' aria-hidden='true'>
-                      →
-                    </span>
-                    <span className='text-sm font-medium tabular-nums'>
-                      {metric.b !== null ? metric.format(metric.b) : 'N/A'}
-                    </span>
-                    <DeltaIndicator
-                      delta={delta}
-                      formatValue={metric.formatDelta}
-                      className='min-w-20 justify-end'
-                    />
-                  </div>
+    <Section
+      aria-labelledby='cwv-delta-heading'
+      background='alt'
+      overflow='hidden'
+      center
+    >
+      <Heading variant='section' as='h2' id='cwv-delta-heading'>
+        Core Web Vitals
+      </Heading>
+      <Text variant='detail' className='mb-4'>
+        Lower values are better for every metric below.
+      </Text>
+      <div className='rounded-lg border border-border bg-surface-elevated p-6'>
+        <div className='flex flex-col'>
+          {metrics.map((metric, i) => {
+            const delta = cwvDelta(metric.a, metric.b);
+            return (
+              <div
+                key={metric.label}
+                className={`flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3 ${
+                  i < metrics.length - 1 ? 'border-b border-border' : ''
+                }`}
+              >
+                <span className='text-sm'>{metric.label}</span>
+                <div className='flex flex-row gap-3 items-center justify-between sm:justify-end'>
+                  <span className='text-sm tabular-nums text-text-secondary'>
+                    {metric.a !== null ? metric.format(metric.a) : 'N/A'}
+                  </span>
+                  <span className='text-text-secondary' aria-hidden='true'>
+                    →
+                  </span>
+                  <span className='text-sm font-medium tabular-nums'>
+                    {metric.b !== null ? metric.format(metric.b) : 'N/A'}
+                  </span>
+                  <DeltaIndicator
+                    delta={delta}
+                    formatValue={metric.formatDelta}
+                    className='min-w-20 justify-end'
+                  />
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

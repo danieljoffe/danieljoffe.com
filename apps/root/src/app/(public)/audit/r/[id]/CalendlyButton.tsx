@@ -10,7 +10,8 @@ export default function CalendlyButton() {
       as='link'
       href={CALENDLY_URL}
       variant='primary'
-      size='lg'
+      size='md'
+      name='calendly-discovery-call'
       onClick={() => analytics.auditCalendlyClicked()}
     >
       Book a free discovery call

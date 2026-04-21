@@ -44,6 +44,24 @@ describe('AdminDashboard', () => {
         page: 1,
         pageSize: 20,
       },
+      '/api/audit/insights/trends': {
+        interval: 'weekly',
+        period: '3m',
+        series: [],
+      },
+      '/api/audit/insights/scores': {
+        period: null,
+        averages: {
+          performance: null,
+          accessibility: null,
+          bestPractices: null,
+          seo: null,
+          overall: null,
+        },
+        gradeDistribution: { A: 0, B: 0, C: 0, D: 0, F: 0 },
+        total: 0,
+      },
+      '/api/audit/admin/leads/sources': { total: 0, sources: [] },
     });
 
     render(<AdminDashboard />);
@@ -56,6 +74,10 @@ describe('AdminDashboard', () => {
       expect(screen.getByText('10')).toBeInTheDocument();
       expect(screen.getByText('25%')).toBeInTheDocument();
     });
+
+    expect(screen.getByText('Scans Over Time')).toBeInTheDocument();
+    expect(screen.getByText('Score Distribution')).toBeInTheDocument();
+    expect(screen.getByText('Lead Sources')).toBeInTheDocument();
   });
 
   it('shows an error message when stats fail to load', async () => {

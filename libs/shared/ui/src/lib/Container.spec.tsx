@@ -29,17 +29,22 @@ describe('Container', () => {
 
   it('applies md size', () => {
     const { container } = render(<Container size='md'>Content</Container>);
-    expect(container.firstChild).toHaveClass('max-w-5xl');
+    expect(container.firstChild).toHaveClass('max-w-4xl');
   });
 
   it('applies lg size', () => {
     const { container } = render(<Container size='lg'>Content</Container>);
-    expect(container.firstChild).toHaveClass('max-w-7xl');
+    expect(container.firstChild).toHaveClass('max-w-5xl');
   });
 
   it('applies xl size', () => {
     const { container } = render(<Container size='xl'>Content</Container>);
-    expect(container.firstChild).toHaveClass('max-w-8xl');
+    expect(container.firstChild).toHaveClass('max-w-6xl');
+  });
+
+  it('applies 2xl size', () => {
+    const { container } = render(<Container size='2xl'>Content</Container>);
+    expect(container.firstChild).toHaveClass('max-w-7xl');
   });
 
   it('applies full size', () => {

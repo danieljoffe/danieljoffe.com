@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Run full verification loop — build, dev server + browser hydration check, and pom scripts individually
+description: Run full verification loop — build, dev server + browser console.log check, and pom scripts individually
 user-invocable: true
 ---
 
@@ -14,7 +14,7 @@ Run the full verification loop after significant changes. Fix any issues that ar
 
 Run `yarn nx build root --prod`. Fix any build errors (missing imports, type errors, prerender failures) before continuing.
 
-### Phase 2: Dev Server + Browser Hydration Check
+### Phase 2: Dev Server + Browser console.log Check
 
 1. Start the dev server: `yarn nx dev root` (background)
 2. Wait for it to be ready, then open a browser using Chrome DevTools MCP
@@ -27,7 +27,7 @@ Run `yarn nx build root --prod`. Fix any build errors (missing imports, type err
    - `/blog`
    - `/audit`
    - One detail page from each content type (e.g. `/experience/winc`, `/projects/ui-components-v2`, `/blog/unified-content-pipeline`)
-4. If any hydration errors or unexpected errors appear, fix them
+4. If there are any console.log errors or unexpected errors appear, fix them
 5. Stop the dev server when done
 
 ### Phase 3: POM Scripts (individually)

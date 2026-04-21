@@ -1,4 +1,5 @@
 import { type ReactNode, type HTMLAttributes, type Ref } from 'react';
+import { Container, type ContainerSize } from './Container';
 import { cn } from './utils';
 
 export interface SectionProps extends Omit<
@@ -15,6 +16,12 @@ export interface SectionProps extends Omit<
   overflow?: 'visible' | 'hidden' | 'auto';
   /** Full width section */
   fullWidth?: boolean;
+  /**
+   * Wrap children in a Container with the given size.
+   * Use this for standalone sections (outside PageLayout) that need
+   * their own max-width constraint and horizontal padding.
+   */
+  contain?: ContainerSize | undefined;
   className?: string;
 }
 
@@ -42,19 +49,26 @@ const overflowClasses = {
 export function Section({
   children,
   ref,
-  padding = 'none',
+  padding = 'md',
   background = 'none',
   center = false,
   overflow = 'visible',
   fullWidth = true,
+  contain,
   className,
   ...rest
 }: SectionProps) {
+  const content = contain ? (
+    <Container size={contain}>{children}</Container>
+  ) : (
+    children
+  );
+
   return (
     <section
       ref={ref}
       className={cn(
-        'relative px-4 sm:px-6 lg:px-0',
+        'relative',
         paddingClasses[padding],
         backgroundClasses[background],
         overflowClasses[overflow],
@@ -64,7 +78,7 @@ export function Section({
       )}
       {...rest}
     >
-      {children}
+      {content}
     </section>
   );
 }

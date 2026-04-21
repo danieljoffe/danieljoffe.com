@@ -27,7 +27,7 @@ export default function ExperiencePage() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Where I&apos;ve worked, what I built</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
@@ -40,7 +40,7 @@ export default function ExperiencePage() {
       {/* ══════════════════════════════════
           TIMELINE
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Briefcase className='h-3.5 w-3.5' />}
           label='Career Timeline'

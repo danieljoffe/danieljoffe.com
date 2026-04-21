@@ -115,6 +115,10 @@ export const PROJECTS_TAGS_LINK: NavLink = {
   label: 'Tags',
 };
 export const AUDIT_LINK: NavLink = { href: '/audit', label: 'Free Audit' };
+export const AUDIT_INSIGHTS_LINK: NavLink = {
+  href: '/audit/insights',
+  label: 'Audit Insights',
+};
 
 // ============================================================================
 // CONTENT LISTING CONSTANTS

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
@@ -51,7 +52,7 @@ type ScanReport = Pick<
   | 'paired_scan_id'
 >;
 
-async function getScanData(id: string) {
+const getScanData = cache(async (id: string) => {
   const supabase = createServerSupabaseClient();
   if (!supabase) return null;
 
@@ -88,7 +89,7 @@ async function getScanData(id: string) {
     scan: typedScan,
     issues: (issues || []) as ScanIssue[],
   };
-}
+});
 
 const noIndexRobots = { index: false, follow: true } as const;
 
@@ -237,7 +238,7 @@ export default async function ReportPage({
         siMs={scan.si_ms}
         deviceMode={deviceMode}
       />
-      <IssueList issues={issues} scanId={scan.id} />
+      <IssueList issues={issues} />
       <CTASection />
       {scan.grade_overall && (
         <ReportAnalytics scanId={scan.id} grade={scan.grade_overall} />

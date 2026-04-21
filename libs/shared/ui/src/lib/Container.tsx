@@ -1,21 +1,24 @@
 import { type ReactNode, type HTMLAttributes, type Ref } from 'react';
 import { cn } from './utils';
 
+export type ContainerSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+
 export interface ContainerProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'className'
 > {
   ref?: Ref<HTMLDivElement> | undefined;
   children: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: ContainerSize;
   className?: string;
 }
 
-const sizeClasses = {
+const sizeClasses: Record<ContainerSize, string> = {
   sm: 'max-w-3xl',
-  md: 'max-w-5xl',
-  lg: 'max-w-7xl',
-  xl: 'max-w-8xl',
+  md: 'max-w-4xl',
+  lg: 'max-w-5xl',
+  xl: 'max-w-6xl',
+  '2xl': 'max-w-7xl',
   full: 'max-w-full',
 };
 

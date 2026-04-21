@@ -42,7 +42,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <div className='text-center space-y-6'>
           <Badge variant='brand-solid'>
             Currently available for new projects
@@ -70,7 +70,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           SERVICE SELECTION GUIDE
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <Heading variant='section'>Not sure which service?</Heading>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6'>
           {painPointMatchers.map(matcher => (
@@ -97,7 +97,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           SERVICES GRID
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <div id='services-grid'>
           <SectionLabel
             icon={<Layers className='h-3.5 w-3.5' />}
@@ -172,35 +172,35 @@ export default function Services() {
       {/* ══════════════════════════════════
           MVP BUILDS
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <ServiceSection {...mvpBuildsSection} />
       </Section>
 
       {/* ══════════════════════════════════
           PERFORMANCE AUDITS
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <ServiceSection {...performanceAuditsSection} />
       </Section>
 
       {/* ══════════════════════════════════
           CMS & TOOLING
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <ServiceSection {...cmsToolingSection} />
       </Section>
 
       {/* ══════════════════════════════════
           COMPONENT LIBRARIES
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <ServiceSection {...componentLibrariesSection} />
       </Section>
 
       {/* ══════════════════════════════════
           HOW I WORK
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Layers className='h-3.5 w-3.5' />}
           label='How I Work'
@@ -245,7 +245,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           WHO I WORK WITH
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Users className='h-3.5 w-3.5' />}
           label='Who I Work Best With'
@@ -268,7 +268,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           COMPARE SERVICES
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Layers className='h-3.5 w-3.5' />}
           label='Compare Services'
@@ -345,7 +345,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           FAQ
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<HelpCircle className='h-3.5 w-3.5' />}
           label='FAQ'
@@ -356,7 +356,7 @@ export default function Services() {
       {/* ══════════════════════════════════
           CTA — Inline Calendly Embed
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <div className='text-center space-y-2 mb-6'>
           <Heading variant='section'>
             Let&apos;s figure out how I can help.

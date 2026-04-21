@@ -1,5 +1,5 @@
 import { type ReactNode, type HTMLAttributes, type Ref } from 'react';
-import { Container } from './Container';
+import { Container, type ContainerSize } from './Container';
 import { cn } from './utils';
 
 export interface PageContainerProps extends Omit<
@@ -11,7 +11,7 @@ export interface PageContainerProps extends Omit<
   /** HTML element for the outer wrapper - defaults to 'div' */
   as?: 'div' | 'main' | 'section';
   /** Container size - defaults to 'sm' for page content */
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: ContainerSize;
   /** Additional classes for the outer wrapper */
   wrapperClassName?: string;
   /** Additional classes for the inner container */

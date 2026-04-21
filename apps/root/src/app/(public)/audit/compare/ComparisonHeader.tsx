@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { sectionContainer } from '@/lib/layoutStyles';
 import { formatDate } from '@/lib/dateFormatting';
 
 interface ScanSummary {
@@ -67,37 +67,36 @@ export default function ComparisonHeader({
   deviceMode,
 }: ComparisonHeaderProps) {
   return (
-    <section
-      className={sectionContainer}
+    <Section
       aria-labelledby='comparison-header-heading'
+      background='alt'
+      overflow='hidden'
+      center
     >
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 md:py-16'>
-        <Link
-          href={`/audit/r/${scanB.id}`}
-          className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
-        >
-          <ArrowLeft className='size-4' aria-hidden='true' />
-          Back to report
-        </Link>
+      <Link
+        href={`/audit/r/${scanB.id}`}
+        className='inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+      >
+        <ArrowLeft className='size-4' aria-hidden='true' />
+        Back to report
+      </Link>
 
-        <Heading
-          variant='section'
-          as='h1'
-          id='comparison-header-heading'
-          className='mt-4'
-        >
-          Comparison
-        </Heading>
-        <Text variant='body' className='mt-1'>
-          {deviceMode === 'desktop' ? 'Desktop' : 'Mobile'} scans for{' '}
-          {scanB.url}
-        </Text>
+      <Heading
+        variant='section'
+        as='h1'
+        id='comparison-header-heading'
+        className='mt-4'
+      >
+        Comparison
+      </Heading>
+      <Text variant='body' className='mt-1'>
+        {deviceMode === 'desktop' ? 'Desktop' : 'Mobile'} scans for {scanB.url}
+      </Text>
 
-        <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-4'>
-          <ScanColumn label='Previous' scan={scanA} />
-          <ScanColumn label='Current' scan={scanB} />
-        </div>
+      <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <ScanColumn label='Previous' scan={scanA} />
+        <ScanColumn label='Current' scan={scanB} />
       </div>
-    </section>
+    </Section>
   );
 }

@@ -58,7 +58,7 @@ export default async function TagDetailPage({ params }: TagPageProps) {
 
   return (
     <PageLayout>
-      <Section>
+      <Section padding='none'>
         <BreadCrumbs
           items={[
             BLOG_LINK,
@@ -68,7 +68,7 @@ export default async function TagDetailPage({ params }: TagPageProps) {
         />
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <Heading as='h1' variant='hero'>
           Tag: {tagName}
         </Heading>
@@ -77,7 +77,7 @@ export default async function TagDetailPage({ params }: TagPageProps) {
         </Text>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<PenLine className='h-3.5 w-3.5' />}
           label='Posts'
