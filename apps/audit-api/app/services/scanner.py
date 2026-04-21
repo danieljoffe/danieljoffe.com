@@ -84,7 +84,11 @@ async def _run_axe_and_capture(
             )
             context.set_default_timeout(30_000)
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=30_000)
+            await page.goto(url, wait_until="load", timeout=30_000)
+            try:
+                await page.wait_for_load_state("networkidle", timeout=10_000)
+            except Exception:
+                logger.info("networkidle not reached for %s; proceeding after load", url)
 
             page_title = await page.title()
             page_description = ""
