@@ -59,6 +59,7 @@ def verify_session_jwt(
             token,
             s.admin_session_secret,
             algorithms=["HS256"],
+            options={"require": ["exp", "sub"]},
         )
     except jwt.PyJWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid session token") from exc
@@ -82,6 +83,7 @@ def verify_api_key_or_session(
                     token,
                     s.admin_session_secret,
                     algorithms=["HS256"],
+                    options={"require": ["exp", "sub"]},
                 )
             except jwt.PyJWTError:
                 pass

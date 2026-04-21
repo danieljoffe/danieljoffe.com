@@ -10,6 +10,13 @@ from app.routers import jobs, poll, sources, status
 from app.supabase_pool import close_supabase, init_supabase
 
 
+if not settings.allowed_hosts_list:
+    raise RuntimeError(
+        "ALLOWED_HOSTS must be set (comma-separated host allowlist). "
+        "Use '*' only in local dev."
+    )
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     init_supabase()
@@ -29,7 +36,7 @@ app = FastAPI(
 
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=settings.allowed_hosts_list or ["*"],
+    allowed_hosts=settings.allowed_hosts_list,
 )
 
 app.include_router(jobs.router)
