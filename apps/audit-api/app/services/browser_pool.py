@@ -8,7 +8,6 @@ automatically after BROWSER_IDLE_SEC of inactivity.
 import asyncio
 import logging
 import os
-from typing import Any
 
 from playwright.async_api import Browser, Playwright, async_playwright
 
