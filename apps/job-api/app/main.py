@@ -9,7 +9,6 @@ from app.http_client import close_http_client
 from app.routers import jobs, poll, sources, status
 from app.supabase_pool import close_supabase, init_supabase
 
-
 if not settings.allowed_hosts_list:
     raise RuntimeError(
         "ALLOWED_HOSTS must be set (comma-separated host allowlist). "
