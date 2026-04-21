@@ -40,7 +40,7 @@ export default function Projects() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Case studies from the field</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
@@ -53,7 +53,7 @@ export default function Projects() {
       {/* ══════════════════════════════════
           OPEN SOURCE CALLOUT
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Code className='h-3.5 w-3.5' />}
           label='Open Source'
@@ -95,7 +95,7 @@ export default function Projects() {
       {/* ══════════════════════════════════
           PROJECT GRID
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'

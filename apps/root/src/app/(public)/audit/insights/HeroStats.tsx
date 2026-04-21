@@ -23,7 +23,7 @@ export default function HeroStats({ data }: HeroStatsProps) {
     <Section
       aria-labelledby='insights-hero-heading'
       background='alt'
-      className='py-20 md:py-28'
+      padding='lg'
     >
       <div className='text-center mb-12'>
         <Heading variant='hero' as='h1' id='insights-hero-heading'>

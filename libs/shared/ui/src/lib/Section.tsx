@@ -49,7 +49,7 @@ const overflowClasses = {
 export function Section({
   children,
   ref,
-  padding = 'none',
+  padding = 'md',
   background = 'none',
   center = false,
   overflow = 'visible',
@@ -69,7 +69,6 @@ export function Section({
       ref={ref}
       className={cn(
         'relative',
-        !contain && 'px-4 sm:px-6 lg:px-0',
         paddingClasses[padding],
         backgroundClasses[background],
         overflowClasses[overflow],

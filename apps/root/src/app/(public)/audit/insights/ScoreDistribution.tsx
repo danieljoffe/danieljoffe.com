@@ -38,7 +38,7 @@ export default function ScoreDistribution({ data }: ScoreDistributionProps) {
   const hasData = data.total > 0;
 
   return (
-    <Section aria-labelledby='scores-heading' className='py-16'>
+    <Section aria-labelledby='scores-heading'>
       <Heading variant='section' as='h2' id='scores-heading'>
         Score Distribution
       </Heading>

@@ -33,11 +33,7 @@ export default function TrendsChart({ data }: TrendsChartProps) {
   const hasData = chartData.length > 0;
 
   return (
-    <Section
-      aria-labelledby='trends-heading'
-      background='alt'
-      className='py-16'
-    >
+    <Section aria-labelledby='trends-heading' background='alt'>
       <Heading variant='section' as='h2' id='trends-heading'>
         Scores Over Time
       </Heading>

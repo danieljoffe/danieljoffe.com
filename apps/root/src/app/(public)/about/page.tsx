@@ -90,7 +90,7 @@ export default function About() {
         </div>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <SectionLabel icon={<User className='h-3.5 w-3.5' />} label='About' />
         <div className='space-y-6'>
           <Text variant='bodyLg'>
@@ -117,7 +117,7 @@ export default function About() {
       {/* ══════════════════════════════════
           CAREER TIMELINE
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Briefcase className='h-3.5 w-3.5' />}
           label='Career Timeline'
@@ -215,7 +215,7 @@ export default function About() {
       {/* ══════════════════════════════════
           TECHNICAL EXPERTISE
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Code2 className='h-3.5 w-3.5' />}
           label='Technical Expertise'
@@ -266,7 +266,7 @@ export default function About() {
       {/* ══════════════════════════════════
           WHAT I VALUE
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Heart className='h-3.5 w-3.5' />}
           label='What I Value'
@@ -286,7 +286,7 @@ export default function About() {
       {/* ══════════════════════════════════
           CONTACT
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<MessageCircle className='h-3.5 w-3.5' />}
           label="Let's Connect"

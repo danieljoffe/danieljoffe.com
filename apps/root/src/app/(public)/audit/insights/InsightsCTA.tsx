@@ -16,7 +16,8 @@ export default function InsightsCTA({
     <Section
       aria-labelledby='insights-cta-heading'
       background='alt'
-      className='py-16 text-center'
+      padding='lg'
+      className='text-center'
     >
       <div className='flex flex-col gap-4 items-center'>
         <Heading variant='section' id='insights-cta-heading'>

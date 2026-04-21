@@ -17,13 +17,13 @@ export default function TagsIndexPage() {
 
   return (
     <PageLayout>
-      <Section>
+      <Section padding='none'>
         <Button as='link' variant='bare' size='sm' href={'/blog'}>
           ← Back to Blog
         </Button>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <Heading as='h1' variant='hero'>
           All Topics
         </Heading>
@@ -33,7 +33,7 @@ export default function TagsIndexPage() {
         </Text>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <div className='flex flex-wrap gap-3'>
           {allTags.map(tag => {
             const count = tagCounts.get(tag) || 0;

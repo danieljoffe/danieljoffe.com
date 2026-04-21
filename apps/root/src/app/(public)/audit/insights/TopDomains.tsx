@@ -20,7 +20,7 @@ export default function TopDomains({ domains }: TopDomainsProps) {
   const hasData = domains.length > 0;
 
   return (
-    <Section aria-labelledby='domains-heading' className='py-16'>
+    <Section aria-labelledby='domains-heading'>
       <Heading variant='section' as='h2' id='domains-heading'>
         Most Audited Domains
       </Heading>

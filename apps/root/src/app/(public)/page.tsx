@@ -48,7 +48,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <GridBg />
         <div className='relative space-y-6'>
           <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
@@ -76,7 +76,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           PREVIOUS TEAMS
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Briefcase className='h-3.5 w-3.5' />}
           label="Teams I've worked with"
@@ -110,7 +110,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           ACHIEVEMENTS
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Zap className='h-3.5 w-3.5' />}
           label='Achievements'
@@ -135,7 +135,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           FEATURED PROJECTS
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Layers className='h-3.5 w-3.5' />}
           label='Featured Projects'
@@ -161,7 +161,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           METHODOLOGY
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<Heart className='h-3.5 w-3.5' />}
           label='How I Think'
@@ -192,7 +192,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           CTA / CONTACT
           ══════════════════════════════════ */}
-      <Section>
+      <Section padding='none'>
         <CTACard
           heading='Got a project that needs senior engineering?'
           description={

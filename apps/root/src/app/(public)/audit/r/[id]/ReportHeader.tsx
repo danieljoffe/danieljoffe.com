@@ -36,7 +36,6 @@ export default function ReportHeader({
       center
       overflow='hidden'
       aria-labelledby='report-header-heading'
-      className='py-12 md:py-16'
     >
       <div className='flex items-center justify-between'>
         <Link
