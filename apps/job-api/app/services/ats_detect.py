@@ -5,12 +5,12 @@ from urllib.parse import urlparse
 
 import httpx
 
+from app.http_client import get_http_client
 from app.services.ashby import ASHBY_BASE
 from app.services.greenhouse import GREENHOUSE_BASE
 from app.services.lever import LEVER_BASE
 from app.services.smartrecruiters import SMARTRECRUITERS_BASE
 
-REQUEST_TIMEOUT = 8.0
 PROBE_DELAY = 0.1
 
 
@@ -169,16 +169,16 @@ async def detect_ats(raw_input: str) -> DetectResult | None:
     if not slug:
         return None
 
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-        # If we know the provider from the URL, just probe that one
-        if provider_hint and provider_hint in _PROBERS:
-            return await _PROBERS[provider_hint](slug, client)
+    client = get_http_client()
+    # If we know the provider from the URL, just probe that one
+    if provider_hint and provider_hint in _PROBERS:
+        return await _PROBERS[provider_hint](slug, client)
 
-        # Otherwise probe all three sequentially with a small delay
-        for provider in _PROBE_ORDER:
-            result = await _PROBERS[provider](slug, client)
-            if result:
-                return result
-            await asyncio.sleep(PROBE_DELAY)
+    # Otherwise probe all sequentially with a small delay
+    for provider in _PROBE_ORDER:
+        result = await _PROBERS[provider](slug, client)
+        if result:
+            return result
+        await asyncio.sleep(PROBE_DELAY)
 
     return None

@@ -8,6 +8,7 @@ from app.config import settings
 from app.observability import init_sentry
 from app.routers import run_scan as run_scan_router
 from app.schemas import HealthResponse
+from app.services.browser_pool import get_browser_pool
 from app.services.scan_queue import get_queue
 
 if not settings.allowed_hosts_list:
@@ -27,6 +28,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await queue.stop()
+        await get_browser_pool().shutdown()
 
 
 app = FastAPI(

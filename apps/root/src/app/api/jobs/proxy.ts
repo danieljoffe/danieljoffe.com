@@ -52,7 +52,10 @@ export async function proxyToFastAPI(
   } catch (err) {
     const detail =
       process.env.NODE_ENV !== 'production' && err instanceof Error
-        ? { message: err.message, cause: err.cause ? String(err.cause) : undefined }
+        ? {
+            message: err.message,
+            cause: err.cause ? String(err.cause) : undefined,
+          }
         : undefined;
     return NextResponse.json(
       { error: 'Job API unavailable', ...(detail ? { detail } : {}) },

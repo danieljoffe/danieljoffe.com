@@ -1,21 +1,21 @@
 import httpx
 
+from app.http_client import get_http_client
 from app.services.standard_job import StandardJob
 
 ASHBY_BASE = "https://api.ashbyhq.com/posting-api/job-board"
-REQUEST_TIMEOUT = 10.0
 
 
 async def fetch_ashby_jobs(slug: str) -> list[StandardJob]:
     url = f"{ASHBY_BASE}/{slug}"
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-        try:
-            resp = await client.get(url)
-            if resp.status_code == 404:
-                return []
-            resp.raise_for_status()
-        except httpx.HTTPError:
+    client = get_http_client()
+    try:
+        resp = await client.get(url)
+        if resp.status_code == 404:
             return []
+        resp.raise_for_status()
+    except httpx.HTTPError:
+        return []
 
     data = resp.json()
     raw_jobs = data.get("jobs", [])

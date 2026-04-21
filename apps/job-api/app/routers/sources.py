@@ -5,10 +5,11 @@ from fastapi import APIRouter, Depends, Query
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key_or_session
+from app.http_client import get_http_client
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
 from app.services.ats_detect import detect_ats
-from app.services.greenhouse import GREENHOUSE_BASE, REQUEST_TIMEOUT
+from app.services.greenhouse import GREENHOUSE_BASE
 
 router = APIRouter(
     prefix="/sources",
@@ -74,11 +75,11 @@ async def verify_board_token(
     board_token: str = Query(pattern=r"^[a-z0-9][a-z0-9-]{1,80}$"),
 ) -> dict[str, Any]:
     url = f"{GREENHOUSE_BASE}/{board_token}"
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-        try:
-            resp = await client.get(url)
-        except httpx.HTTPError:
-            return {"valid": False}
+    client = get_http_client()
+    try:
+        resp = await client.get(url)
+    except httpx.HTTPError:
+        return {"valid": False}
     if resp.status_code != 200:
         return {"valid": False}
     data = resp.json()
