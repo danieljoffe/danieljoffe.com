@@ -28,19 +28,25 @@ describe('PageContainer', () => {
   it('applies md size', () => {
     render(<PageContainer size='md'>Content</PageContainer>);
     const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('max-w-5xl');
+    expect(inner).toHaveClass('max-w-4xl');
   });
 
   it('applies lg size', () => {
     render(<PageContainer size='lg'>Content</PageContainer>);
     const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('max-w-7xl');
+    expect(inner).toHaveClass('max-w-5xl');
   });
 
   it('applies xl size', () => {
     render(<PageContainer size='xl'>Content</PageContainer>);
     const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('max-w-8xl');
+    expect(inner).toHaveClass('max-w-6xl');
+  });
+
+  it('applies 2xl size', () => {
+    render(<PageContainer size='2xl'>Content</PageContainer>);
+    const inner = screen.getByTestId('page-container-inner');
+    expect(inner).toHaveClass('max-w-7xl');
   });
 
   it('applies full size', () => {

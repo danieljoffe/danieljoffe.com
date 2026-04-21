@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
-import { sectionContainer, sectionInner } from '@/lib/layoutStyles';
 import ScanProgress from '../../ScanProgress';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 
@@ -81,43 +81,42 @@ export default function ScanPending({
 
   if (error) {
     return (
-      <section
-        className={sectionContainer}
+      <Section
         aria-labelledby='scan-failed-heading'
+        background='alt'
+        overflow='hidden'
+        center
+        padding='lg'
       >
-        <div className={sectionInner}>
-          <div className='flex flex-col gap-6 items-center text-center max-w-md mx-auto'>
-            <div className='inline-flex items-center justify-center size-14 rounded-full bg-error/10'>
-              <AlertTriangle className='size-7 text-error' aria-hidden='true' />
-            </div>
-
-            <div>
-              <Heading variant='section' id='scan-failed-heading'>
-                Scan failed
-              </Heading>
-              <Text variant='bodyLg' className='mt-2 truncate max-w-sm mx-auto'>
-                {url}
-              </Text>
-            </div>
-
-            <Alert variant='error'>{error}</Alert>
-
-            <Button as='link' href='/audit'>
-              Try again
-            </Button>
+        <div className='flex flex-col gap-6 items-center text-center max-w-md mx-auto'>
+          <div className='inline-flex items-center justify-center size-14 rounded-full bg-error/10'>
+            <AlertTriangle className='size-7 text-error' aria-hidden='true' />
           </div>
+
+          <div>
+            <Heading variant='section' id='scan-failed-heading'>
+              Scan failed
+            </Heading>
+            <Text variant='bodyLg' className='mt-2 truncate max-w-sm mx-auto'>
+              {url}
+            </Text>
+          </div>
+
+          <Alert variant='error'>{error}</Alert>
+
+          <Button as='link' href='/audit'>
+            Try again
+          </Button>
         </div>
-      </section>
+      </Section>
     );
   }
 
   return (
-    <section className={sectionContainer}>
-      <div className={sectionInner}>
-        <div className='flex flex-col gap-6 items-center max-w-md mx-auto'>
-          <ScanProgress url={url} device={device} />
-        </div>
+    <Section background='alt' overflow='hidden' center padding='lg'>
+      <div className='flex flex-col gap-6 items-center max-w-md mx-auto'>
+        <ScanProgress url={url} device={device} />
       </div>
-    </section>
+    </Section>
   );
 }

@@ -1,7 +1,7 @@
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { sectionContainer } from '@/lib/layoutStyles';
 
 interface CoreWebVitalsProps {
   fcpMs: number | null;
@@ -102,49 +102,49 @@ export default function CoreWebVitals({
   ];
 
   return (
-    <section
+    <Section
       aria-labelledby='core-web-vitals-heading'
-      className={sectionContainer}
+      background='alt'
+      overflow='hidden'
+      center
     >
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <Heading variant='section' as='h2' id='core-web-vitals-heading'>
-          Core Web Vitals
-        </Heading>
-        <Text variant='detail' className='mb-4'>
-          {deviceMode === 'desktop'
-            ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'
-            : 'Measured under simulated mobile conditions (2x CPU slowdown, 4G network).'}
-        </Text>
-        <div className='rounded-lg border border-border bg-surface-elevated p-6'>
-          <div className='flex flex-col'>
-            {metrics.map((metric, i) => {
-              const status =
-                metric.value !== null
-                  ? getStatus(metric.value, metric.good, metric.poor)
-                  : null;
+      <Heading variant='section' as='h2' id='core-web-vitals-heading'>
+        Core Web Vitals
+      </Heading>
+      <Text variant='detail' className='mb-4'>
+        {deviceMode === 'desktop'
+          ? 'Measured under simulated desktop conditions (no CPU throttling, broadband).'
+          : 'Measured under simulated mobile conditions (2x CPU slowdown, 4G network).'}
+      </Text>
+      <div className='rounded-lg border border-border bg-surface-elevated p-6'>
+        <div className='flex flex-col'>
+          {metrics.map((metric, i) => {
+            const status =
+              metric.value !== null
+                ? getStatus(metric.value, metric.good, metric.poor)
+                : null;
 
-              return (
-                <div
-                  key={metric.label}
-                  className={`flex items-center justify-between py-3 ${
-                    i < metrics.length - 1 ? 'border-b border-border' : ''
-                  }`}
-                >
-                  <span className='text-sm'>{metric.label}</span>
-                  <div className='flex flex-row gap-2 items-center'>
-                    <span className='text-sm font-medium tabular-nums'>
-                      {metric.value !== null
-                        ? metric.format(metric.value)
-                        : 'N/A'}
-                    </span>
-                    {status && <StatusIcon status={status} />}
-                  </div>
+            return (
+              <div
+                key={metric.label}
+                className={`flex items-center justify-between py-3 ${
+                  i < metrics.length - 1 ? 'border-b border-border' : ''
+                }`}
+              >
+                <span className='text-sm'>{metric.label}</span>
+                <div className='flex flex-row gap-2 items-center'>
+                  <span className='text-sm font-medium tabular-nums'>
+                    {metric.value !== null
+                      ? metric.format(metric.value)
+                      : 'N/A'}
+                  </span>
+                  {status && <StatusIcon status={status} />}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

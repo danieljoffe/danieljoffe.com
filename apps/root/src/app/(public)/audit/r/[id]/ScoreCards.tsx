@@ -1,4 +1,5 @@
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 interface ScoreCardsProps {
@@ -46,31 +47,26 @@ export default function ScoreCards({
   deviceMode,
 }: ScoreCardsProps) {
   return (
-    <section
-      aria-labelledby='scores-heading'
-      className='w-full overflow-hidden flex flex-col justify-center'
-    >
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <Heading
-          variant='section'
-          as='h2'
-          id='scores-heading'
-          className='sr-only'
-        >
-          Scores
-        </Heading>
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-          <ScoreCardItem label='Performance' score={performance} />
-          <ScoreCardItem label='Accessibility' score={accessibility} />
-          <ScoreCardItem label='SEO' score={seo} />
-          <ScoreCardItem label='Best Practices' score={bestPractices} />
-        </div>
-        <Text variant='detail' className='text-center mt-3'>
-          {deviceMode === 'desktop'
-            ? 'Scores reflect a desktop device on a broadband connection.'
-            : 'Scores reflect a mobile device on a 4G connection. Results may differ on desktop or faster networks.'}
-        </Text>
+    <Section aria-labelledby='scores-heading' overflow='hidden' center>
+      <Heading
+        variant='section'
+        as='h2'
+        id='scores-heading'
+        className='sr-only'
+      >
+        Scores
+      </Heading>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+        <ScoreCardItem label='Performance' score={performance} />
+        <ScoreCardItem label='Accessibility' score={accessibility} />
+        <ScoreCardItem label='SEO' score={seo} />
+        <ScoreCardItem label='Best Practices' score={bestPractices} />
       </div>
-    </section>
+      <Text variant='detail' className='text-center mt-3'>
+        {deviceMode === 'desktop'
+          ? 'Scores reflect a desktop device on a broadband connection.'
+          : 'Scores reflect a mobile device on a 4G connection. Results may differ on desktop or faster networks.'}
+      </Text>
+    </Section>
   );
 }

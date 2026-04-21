@@ -1,4 +1,5 @@
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { scoreDelta } from './calcDelta';
 import DeltaIndicator from './DeltaIndicator';
@@ -52,36 +53,31 @@ export default function ScoreDeltaCards({
   scanB,
 }: ScoreDeltaCardsProps) {
   return (
-    <section
-      aria-labelledby='score-delta-heading'
-      className='w-full overflow-hidden'
-    >
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <Heading variant='section' as='h2' id='score-delta-heading'>
-          Scores
-        </Heading>
-        <Text variant='detail' className='mb-4'>
-          Previous value → current value, with the change between scans.
-        </Text>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-          <Card
-            label='Performance'
-            a={scanA.score_performance}
-            b={scanB.score_performance}
-          />
-          <Card
-            label='Accessibility'
-            a={scanA.score_accessibility}
-            b={scanB.score_accessibility}
-          />
-          <Card label='SEO' a={scanA.score_seo} b={scanB.score_seo} />
-          <Card
-            label='Best Practices'
-            a={scanA.score_best_practices}
-            b={scanB.score_best_practices}
-          />
-        </div>
+    <Section aria-labelledby='score-delta-heading' overflow='hidden'>
+      <Heading variant='section' as='h2' id='score-delta-heading'>
+        Scores
+      </Heading>
+      <Text variant='detail' className='mb-4'>
+        Previous value → current value, with the change between scans.
+      </Text>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+        <Card
+          label='Performance'
+          a={scanA.score_performance}
+          b={scanB.score_performance}
+        />
+        <Card
+          label='Accessibility'
+          a={scanA.score_accessibility}
+          b={scanB.score_accessibility}
+        />
+        <Card label='SEO' a={scanA.score_seo} b={scanB.score_seo} />
+        <Card
+          label='Best Practices'
+          a={scanA.score_best_practices}
+          b={scanB.score_best_practices}
+        />
       </div>
-    </section>
+    </Section>
   );
 }

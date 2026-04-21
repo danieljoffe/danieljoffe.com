@@ -47,7 +47,7 @@ export function BlogIndexView({ currentPage }: BlogIndexViewProps) {
 
   return (
     <PageLayout>
-      <Section>
+      <Section padding='none'>
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Notes from shipping code</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
@@ -58,7 +58,7 @@ export function BlogIndexView({ currentPage }: BlogIndexViewProps) {
         </div>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <SectionLabel
           icon={<PenLine className='h-3.5 w-3.5' />}
           label='Posts'

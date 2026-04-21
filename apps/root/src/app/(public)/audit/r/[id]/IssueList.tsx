@@ -1,5 +1,6 @@
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import IssueCard from './IssueCard';
 
@@ -18,29 +19,24 @@ export default function IssueList({ issues }: IssueListProps) {
   };
 
   return (
-    <section
-      aria-labelledby='issues-heading'
-      className='w-full overflow-hidden flex flex-col justify-center'
-    >
-      <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
-        <div className='flex flex-col gap-4'>
-          <div>
-            <Heading variant='section' as='h2' id='issues-heading'>
-              Issues Found
-            </Heading>
-            <Text variant='body'>
-              {summary.total} issues: {summary.critical} critical,{' '}
-              {summary.warning} warnings, {summary.info} informational
-            </Text>
-          </div>
+    <Section aria-labelledby='issues-heading' overflow='hidden' center>
+      <div className='flex flex-col gap-4'>
+        <div>
+          <Heading variant='section' as='h2' id='issues-heading'>
+            Issues Found
+          </Heading>
+          <Text variant='body'>
+            {summary.total} issues: {summary.critical} critical,{' '}
+            {summary.warning} warnings, {summary.info} informational
+          </Text>
+        </div>
 
-          <div className='flex flex-col gap-2'>
-            {issues.map(issue => (
-              <IssueCard key={issue.id} issue={issue} />
-            ))}
-          </div>
+        <div className='flex flex-col gap-2'>
+          {issues.map(issue => (
+            <IssueCard key={issue.id} issue={issue} />
+          ))}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
