@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -24,26 +24,22 @@ def _mock_response(
 
 
 @pytest.mark.asyncio
-async def test_fetch_404_returns_empty():
+async def test_fetch_404_returns_empty(mock_http_client):
     resp = _mock_response(404)
-    with patch("app.services.smartrecruiters.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_smartrecruiters_jobs("missing-co")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_smartrecruiters_jobs("missing-co")
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_fetch_http_error_returns_empty():
-    with patch("app.services.smartrecruiters.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(side_effect=httpx.HTTPError("boom"))
-        result = await fetch_smartrecruiters_jobs("bad")
+async def test_fetch_http_error_returns_empty(mock_http_client):
+    mock_http_client.get = AsyncMock(side_effect=httpx.HTTPError("boom"))
+    result = await fetch_smartrecruiters_jobs("bad")
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_fetch_valid_json_maps_jobs():
+async def test_fetch_valid_json_maps_jobs(mock_http_client):
     payload = {
         "content": [
             {
@@ -63,10 +59,8 @@ async def test_fetch_valid_json_maps_jobs():
         ]
     }
     resp = _mock_response(200, payload)
-    with patch("app.services.smartrecruiters.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_smartrecruiters_jobs("example")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_smartrecruiters_jobs("example")
 
     assert len(result) == 1
     job = result[0]
@@ -80,7 +74,7 @@ async def test_fetch_valid_json_maps_jobs():
 
 
 @pytest.mark.asyncio
-async def test_fetch_missing_optional_fields():
+async def test_fetch_missing_optional_fields(mock_http_client):
     payload = {
         "content": [
             {
@@ -92,10 +86,8 @@ async def test_fetch_missing_optional_fields():
         ]
     }
     resp = _mock_response(200, payload)
-    with patch("app.services.smartrecruiters.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_smartrecruiters_jobs("co")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_smartrecruiters_jobs("co")
 
     assert len(result) == 1
     assert result[0].location_name is None
@@ -104,10 +96,8 @@ async def test_fetch_missing_optional_fields():
 
 
 @pytest.mark.asyncio
-async def test_fetch_empty_content_returns_empty():
+async def test_fetch_empty_content_returns_empty(mock_http_client):
     resp = _mock_response(200, {"content": []})
-    with patch("app.services.smartrecruiters.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_smartrecruiters_jobs("empty")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_smartrecruiters_jobs("empty")
     assert result == []

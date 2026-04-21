@@ -205,42 +205,41 @@ async def _poll_one_source(
                 }
             )
 
-        if rows_to_upsert:
-            upsert_query = supabase.table("job_postings").upsert(
-                rows_to_upsert, on_conflict="source_id,external_id"
-            )
-            upsert_resp = await asyncio.to_thread(upsert_query.execute)
-            for raw_row in upsert_resp.data or []:
-                data = cast(dict[str, Any], raw_row)
-                if data.get("created_at") == data.get("updated_at"):
-                    summary["new"] += 1
-                else:
-                    summary["updated"] += 1
-
-        # Archive stale jobs: postings in the DB for this source that are
-        # no longer returned by the ATS. Skip user-intent statuses.
+        # Phase 1: Upsert new/updated jobs AND fetch existing rows in parallel.
+        # These are independent — upsert adds/updates matched rows, existing
+        # query looks for stale rows by external_id not in the ATS response.
         existing_query = (
             supabase.table("job_postings")
             .select("id, external_id")
             .eq("source_id", source_id)
             .not_.in_("status", ["saved", "applied", "archived"])
         )
-        existing_resp = await asyncio.to_thread(existing_query.execute)
+
+        if rows_to_upsert:
+            upsert_query = supabase.table("job_postings").upsert(
+                rows_to_upsert, on_conflict="source_id,external_id"
+            )
+            upsert_resp, existing_resp = await asyncio.gather(
+                asyncio.to_thread(upsert_query.execute),
+                asyncio.to_thread(existing_query.execute),
+            )
+            for raw_row in upsert_resp.data or []:
+                data = cast(dict[str, Any], raw_row)
+                if data.get("created_at") == data.get("updated_at"):
+                    summary["new"] += 1
+                else:
+                    summary["updated"] += 1
+        else:
+            existing_resp = await asyncio.to_thread(existing_query.execute)
+
+        # Identify stale jobs no longer on the board
         stale_ids: list[str] = []
         for existing_job in existing_resp.data or []:
             row_data = cast(dict[str, Any], existing_job)
             if row_data["external_id"] not in all_external_ids:
                 stale_ids.append(row_data["id"])
 
-        if stale_ids:
-            archive_query = (
-                supabase.table("job_postings")
-                .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
-                .in_("id", stale_ids)
-            )
-            await asyncio.to_thread(archive_query.execute)
-            summary["archived"] = len(stale_ids)
-
+        # Phase 2: Archive stale jobs AND update last_polled_at in parallel
         last_polled_query = (
             supabase.table("job_sources")
             .update(
@@ -251,7 +250,20 @@ async def _poll_one_source(
             )
             .eq("id", source_id)
         )
-        await asyncio.to_thread(last_polled_query.execute)
+
+        if stale_ids:
+            archive_query = (
+                supabase.table("job_postings")
+                .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
+                .in_("id", stale_ids)
+            )
+            await asyncio.gather(
+                asyncio.to_thread(archive_query.execute),
+                asyncio.to_thread(last_polled_query.execute),
+            )
+            summary["archived"] = len(stale_ids)
+        else:
+            await asyncio.to_thread(last_polled_query.execute)
 
     except Exception:
         logger.exception("Poll failed for %s", company_name)

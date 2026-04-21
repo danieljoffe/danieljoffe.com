@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -142,12 +142,10 @@ def _mock_response(status_code: int, text: str) -> MagicMock:
 
 
 @pytest.mark.asyncio
-async def test_fetch_single_posting():
+async def test_fetch_single_posting(mock_http_client):
     resp = _mock_response(200, _SINGLE_POSTING_HTML)
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert len(result) == 1
     job = result[0]
@@ -160,12 +158,10 @@ async def test_fetch_single_posting():
 
 
 @pytest.mark.asyncio
-async def test_fetch_graph_format():
+async def test_fetch_graph_format(mock_http_client):
     resp = _mock_response(200, _GRAPH_HTML)
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert len(result) == 1
     assert result[0].title == "Designer"
@@ -173,56 +169,46 @@ async def test_fetch_graph_format():
 
 
 @pytest.mark.asyncio
-async def test_fetch_strips_html_from_description():
+async def test_fetch_strips_html_from_description(mock_http_client):
     resp = _mock_response(200, _HTML_DESCRIPTION)
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert "<" not in result[0].content
     assert "infrastructure" in result[0].content
 
 
 @pytest.mark.asyncio
-async def test_fetch_no_jsonld_returns_empty():
+async def test_fetch_no_jsonld_returns_empty(mock_http_client):
     resp = _mock_response(200, _NO_JSONLD_HTML)
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_fetch_404_returns_empty():
+async def test_fetch_404_returns_empty(mock_http_client):
     resp = _mock_response(404, "")
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_fetch_network_error_returns_empty():
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(side_effect=httpx.HTTPError("timeout"))
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+async def test_fetch_network_error_returns_empty(mock_http_client):
+    mock_http_client.get = AsyncMock(side_effect=httpx.HTTPError("timeout"))
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert result == []
 
 
 @pytest.mark.asyncio
-async def test_fetch_array_format():
+async def test_fetch_array_format(mock_http_client):
     resp = _mock_response(200, _ARRAY_FORMAT_HTML)
-    with patch("app.services.jsonld.httpx.AsyncClient") as cm:
-        client = cm.return_value.__aenter__.return_value
-        client.get = AsyncMock(return_value=resp)
-        result = await fetch_jsonld_jobs("https://example.com/careers")
+    mock_http_client.get = AsyncMock(return_value=resp)
+    result = await fetch_jsonld_jobs("https://example.com/careers")
 
     assert len(result) == 2
     assert result[0].title == "Job A"

@@ -3,7 +3,7 @@ import hmac
 import jwt
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
-from supabase import Client, create_client
+from supabase import Client
 
 from app.config import Settings, settings
 
@@ -14,10 +14,13 @@ def get_settings() -> Settings:
     return settings
 
 
-def get_supabase(s: Settings = Depends(get_settings)) -> Client:
-    if not s.supabase_url or not s.supabase_service_role_key:
+def get_supabase() -> Client:
+    from app.supabase_pool import get_supabase_pool
+
+    client = get_supabase_pool()
+    if client is None:
         raise HTTPException(status_code=503, detail="Supabase not configured")
-    return create_client(s.supabase_url, s.supabase_service_role_key)
+    return client
 
 
 def _api_key_matches(presented: str | None, expected: str) -> bool:

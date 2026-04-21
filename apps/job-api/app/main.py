@@ -1,13 +1,30 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.config import settings
+from app.http_client import close_http_client
 from app.routers import jobs, poll, sources, status
+from app.supabase_pool import close_supabase, init_supabase
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    init_supabase()
+    try:
+        yield
+    finally:
+        close_supabase()
+        await close_http_client()
+
 
 app = FastAPI(
     title="Job Pipeline API",
     description="Polls Greenhouse job boards, scores postings, serves results",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
