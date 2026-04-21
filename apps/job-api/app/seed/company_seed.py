@@ -22,7 +22,6 @@ COMPANY_SEED: list[dict[str, str]] = [
     {"board_token": "dbtlabs", "company_name": "dbt Labs"},
     {"board_token": "loom", "company_name": "Loom"},
     {"board_token": "mux", "company_name": "Mux"},
-    {"board_token": "vercel", "company_name": "Vercel"},
     {"board_token": "planetscale", "company_name": "PlanetScale"},
     {"board_token": "supabase", "company_name": "Supabase"},
     {"board_token": "clerk", "company_name": "Clerk"},
