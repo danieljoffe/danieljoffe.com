@@ -9,6 +9,7 @@ permissions:
   contents: write
   pull-requests: write
   actions: read
+  id-token: write
 
 jobs:
   auto-fix:
@@ -59,9 +60,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          max_turns: 10
-          timeout_minutes: 15
-          direct_prompt: |
+          claude_args: '--max-turns 10'
+          prompt: |
             CI failed on this branch. Diagnose and fix ONLY mechanical failures.
 
             Run these commands in order and fix what fails:

@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 jobs:
   review:
@@ -26,9 +27,8 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          max_turns: 20
-          timeout_minutes: 8
-          direct_prompt: |
+          claude_args: '--max-turns 20'
+          prompt: |
             Review this PR and post a single summary comment. Do NOT make any code changes.
 
             ## Context
