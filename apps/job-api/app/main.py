@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.types import Receive, Scope, Send
 
 from app.config import settings
 from app.http_client import close_http_client
@@ -33,8 +34,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+class _HealthBypassTrustedHost(TrustedHostMiddleware):
+    """Skip host validation for infrastructure health probes."""
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and scope["path"] == "/health":
+            await self.app(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
+
 app.add_middleware(
-    TrustedHostMiddleware,
+    _HealthBypassTrustedHost,
     allowed_hosts=settings.allowed_hosts_list,
 )
 
