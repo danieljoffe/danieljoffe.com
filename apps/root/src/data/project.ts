@@ -10,6 +10,7 @@ export const projectSlugs = {
   csContactForm: 'contact-form-case-study',
   csAppContext: 'appcontext-simplification-case-study',
   csJobPipeline: 'job-pipeline-case-study',
+  csApiPerformance: 'api-performance-case-study',
 } as const;
 
 export const projectPageSlugs = [...Object.values(projectSlugs)];
