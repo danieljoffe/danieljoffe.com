@@ -294,7 +294,7 @@
 p {
   margin-bottom: 0.5em;
 }
-p:last-child:not(:only-child) {
+p:last-child:not(:only-of-type) {
   margin-bottom: 0;
 }
 
