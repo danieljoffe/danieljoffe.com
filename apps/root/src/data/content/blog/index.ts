@@ -130,6 +130,12 @@ import ParityHarnessSilentlyBrokenService, {
 import RailwayFastapiPlaywrightDeploy, {
   metadata as railwayFastapiPlaywrightDeployMeta,
 } from './railway-fastapi-playwright-deploy.mdx';
+import PoolingPlaywrightBrowsersFastapi, {
+  metadata as poolingPlaywrightBrowsersFastapiMeta,
+} from './pooling-playwright-browsers-fastapi.mdx';
+import ClaudeCodeThreeTiersCi, {
+  metadata as claudeCodeThreeTiersCiMeta,
+} from './claude-code-three-tiers-ci.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -177,6 +183,8 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'asyncio-gather-sync-client': AsyncioGatherSyncClient,
   'parity-harness-silently-broken-service': ParityHarnessSilentlyBrokenService,
   'railway-fastapi-playwright-deploy': RailwayFastapiPlaywrightDeploy,
+  'pooling-playwright-browsers-fastapi': PoolingPlaywrightBrowsersFastapi,
+  'claude-code-three-tiers-ci': ClaudeCodeThreeTiersCi,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -224,4 +232,6 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'parity-harness-silently-broken-service':
     parityHarnessSilentlyBrokenServiceMeta,
   'railway-fastapi-playwright-deploy': railwayFastapiPlaywrightDeployMeta,
+  'pooling-playwright-browsers-fastapi': poolingPlaywrightBrowsersFastapiMeta,
+  'claude-code-three-tiers-ci': claudeCodeThreeTiersCiMeta,
 };

@@ -44,6 +44,8 @@ export const blogSlugs = {
   asyncioGatherSyncClient: 'asyncio-gather-sync-client',
   parityHarnessSilentlyBrokenService: 'parity-harness-silently-broken-service',
   railwayFastapiPlaywrightDeploy: 'railway-fastapi-playwright-deploy',
+  poolingPlaywrightBrowsersFastapi: 'pooling-playwright-browsers-fastapi',
+  claudeCodeThreeTiersCi: 'claude-code-three-tiers-ci',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

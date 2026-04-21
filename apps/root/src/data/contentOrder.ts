@@ -47,6 +47,7 @@ export const projectHistory: AllowedProjectSlugs[] = [
   projectSlugs.csContactForm, // 2026-03-24 — Portfolio (Aug 2025)
   projectSlugs.csAppContext, // 2026-04-05 — Portfolio (Mar 2026)
   projectSlugs.csJobPipeline, // 2026-04-15 — Portfolio (Apr 2026)
+  projectSlugs.csApiPerformance, // 2026-04-21 — Portfolio (Apr 2026)
 ];
 
 /**
@@ -107,4 +108,6 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.asyncioGatherSyncClient, // 2026-04-17
   blogSlugs.parityHarnessSilentlyBrokenService, // 2026-04-18
   blogSlugs.railwayFastapiPlaywrightDeploy, // 2026-04-18
+  blogSlugs.poolingPlaywrightBrowsersFastapi, // 2026-04-21
+  blogSlugs.claudeCodeThreeTiersCi, // 2026-04-21
 ];
