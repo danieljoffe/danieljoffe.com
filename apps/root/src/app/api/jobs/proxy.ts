@@ -6,9 +6,6 @@ const JOB_API_KEY = process.env['JOB_API_KEY'] ?? '';
 
 export async function verifyJobsAdmin(): Promise<boolean> {
   const session = await readAdminSession();
-  console.log('[jobs proxy] verifyJobsAdmin', {
-    hasSession: session !== null,
-  });
   return session !== null;
 }
 
@@ -26,15 +23,6 @@ export async function proxyToFastAPI(
 
   const sessionToken = await readAdminSessionToken();
 
-  console.log('[jobs proxy] outbound', {
-    method,
-    url,
-    hasJobApiUrl: !!JOB_API_URL,
-    hasJobApiKey: !!JOB_API_KEY,
-    hasSessionToken: !!sessionToken,
-    hasBody: body !== undefined,
-  });
-
   try {
     const res = await fetch(url, {
       method,
@@ -46,24 +34,10 @@ export async function proxyToFastAPI(
       body: body ? JSON.stringify(body) : null,
     });
 
-    const contentType = res.headers.get('content-type') ?? '';
     const rawBody = await res.text();
-    console.log('[jobs proxy] upstream response', {
-      url,
-      status: res.status,
-      contentType,
-      bodyPreview: rawBody.slice(0, 300),
-    });
-
-    let data: unknown;
     try {
-      data = JSON.parse(rawBody);
+      return NextResponse.json(JSON.parse(rawBody), { status: res.status });
     } catch {
-      console.error('[jobs proxy] upstream returned non-JSON body', {
-        status: res.status,
-        contentType,
-        bodyPreview: rawBody.slice(0, 300),
-      });
       return NextResponse.json(
         {
           error: 'Upstream returned non-JSON',
@@ -75,15 +49,7 @@ export async function proxyToFastAPI(
         { status: 502 }
       );
     }
-    return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('[jobs proxy] fetch failed', {
-      url,
-      hasJobApiUrl: !!JOB_API_URL,
-      hasJobApiKey: !!JOB_API_KEY,
-      error: err instanceof Error ? err.message : String(err),
-      cause: err instanceof Error && err.cause ? String(err.cause) : undefined,
-    });
     const detail =
       process.env.NODE_ENV !== 'production' && err instanceof Error
         ? { message: err.message, cause: err.cause ? String(err.cause) : undefined }
