@@ -4,9 +4,8 @@ from html.parser import HTMLParser
 
 import httpx
 
+from app.http_client import get_http_client
 from app.services.standard_job import StandardJob
-
-REQUEST_TIMEOUT = 10.0
 
 
 class _JsonLdExtractor(HTMLParser):
@@ -105,13 +104,13 @@ _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 async def fetch_jsonld_jobs(careers_url: str) -> list[StandardJob]:
     """Fetch a careers page and extract jobs from JSON-LD markup."""
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-        try:
-            resp = await client.get(careers_url, follow_redirects=True)
-            if resp.status_code != 200:
-                return []
-        except httpx.HTTPError:
+    client = get_http_client()
+    try:
+        resp = await client.get(careers_url)
+        if resp.status_code != 200:
             return []
+    except httpx.HTTPError:
+        return []
 
     postings = _extract_job_postings(resp.text)
 

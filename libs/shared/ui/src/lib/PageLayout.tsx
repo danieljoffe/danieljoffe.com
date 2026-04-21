@@ -26,7 +26,7 @@ export function PageLayout({
     <PageContainer
       as='main'
       id='main-content'
-      size={wide ? 'md' : 'sm'}
+      size={wide ? 'lg' : 'sm'}
       className={cn('py-16 lg:py-24 space-y-24', className)}
       {...rest}
     >

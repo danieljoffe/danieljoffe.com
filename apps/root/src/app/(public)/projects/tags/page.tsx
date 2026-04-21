@@ -17,13 +17,13 @@ export default function ProjectTagsIndexPage() {
 
   return (
     <PageLayout>
-      <Section>
+      <Section padding='none'>
         <Button as='link' variant='bare' size='sm' href='/projects'>
           ← Back to Projects
         </Button>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <Heading as='h1' variant='hero'>
           Project Topics
         </Heading>
@@ -33,7 +33,7 @@ export default function ProjectTagsIndexPage() {
         </Text>
       </Section>
 
-      <Section>
+      <Section padding='none'>
         <div className='flex flex-wrap gap-3'>
           {allTags.map(tag => {
             const count = tagCounts.get(tag) || 0;

@@ -17,7 +17,7 @@ export {
 } from './Button';
 export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 export { Checkbox } from './Checkbox';
-export { Container } from './Container';
+export { Container, type ContainerSize } from './Container';
 export { CTACard } from './CTACard';
 export { Divider } from './Divider';
 export { Heading } from './Heading';

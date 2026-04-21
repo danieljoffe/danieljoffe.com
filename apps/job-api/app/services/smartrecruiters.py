@@ -1,23 +1,22 @@
 import httpx
 
+from app.http_client import get_http_client
 from app.services.standard_job import StandardJob
 
 SMARTRECRUITERS_BASE = "https://api.smartrecruiters.com/v1/companies"
-REQUEST_TIMEOUT = 10.0
 
 
 async def fetch_smartrecruiters_jobs(company_id: str) -> list[StandardJob]:
     """Fetch jobs from SmartRecruiters' public Posting API."""
     url = f"{SMARTRECRUITERS_BASE}/{company_id}/postings"
-
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-        try:
-            resp = await client.get(url)
-            if resp.status_code == 404:
-                return []
-            resp.raise_for_status()
-        except httpx.HTTPError:
+    client = get_http_client()
+    try:
+        resp = await client.get(url)
+        if resp.status_code == 404:
             return []
+        resp.raise_for_status()
+    except httpx.HTTPError:
+        return []
 
     data = resp.json()
     items = data.get("content", [])

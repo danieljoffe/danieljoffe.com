@@ -1,0 +1,92 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    # Skip PRs from bots (renovate, dependabot) and PRs targeting main
+    if: |
+      github.event.pull_request.user.login != 'renovate[bot]' &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.base.ref != 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--max-turns 20'
+          prompt: |
+            Review this PR and post a single summary comment. Do NOT make any code changes.
+
+            ## Context
+
+            This is a Next.js 16 / React 19 / TypeScript Nx monorepo. Key conventions:
+            - `exactOptionalPropertyTypes` is enabled (use `prop: T | undefined`, not `prop?: T`)
+            - Custom ESLint rules: `require-button-name`, `no-raw-headings`
+            - Import order: builtin > external > @danieljoffe.com/* > @/* > local
+            - Shared UI (`libs/shared/ui`) must not depend on Next.js APIs
+            - First-person singular voice in content ("I", never "we")
+
+            ## Review checklist
+
+            Run `git diff origin/develop...HEAD` to see all changes, then evaluate:
+
+            **Accessibility:**
+            - ARIA attributes on interactive elements
+            - Keyboard navigation support
+            - Form inputs have `aria-describedby` for errors
+            - Images have meaningful alt text
+
+            **Performance:**
+            - No unnecessary client components ('use client' only when needed)
+            - Large dependencies not added to client bundles
+            - Images use next/image with proper sizing
+
+            **Architecture:**
+            - Module boundaries respected (shared-ui has no Next.js imports)
+            - No circular imports
+            - Content changes follow the MDX metadata schema
+
+            **Security:**
+            - No secrets or PII in code
+            - API routes validate input
+            - `data-sentry-mask` on PII form fields
+
+            **TypeScript:**
+            - No `any` types without justification
+            - `exactOptionalPropertyTypes` respected
+
+            ## Output format
+
+            Post a SINGLE comment on the PR with this structure:
+
+            ```
+            ## 🤖 Claude Review
+
+            **Files reviewed**: <count>
+            **Verdict**: ✅ Ready to merge | ⚠️ Changes suggested | 🚫 Blocking issues
+
+            ### Critical (must fix before merge)
+            - file:line — description
+
+            ### Suggestions (non-blocking)
+            - file:line — description
+
+            ### Looks good
+            - Brief note on what's well done
+            ```
+
+            If everything looks clean, keep it short — just the verdict and a one-liner.

@@ -13,9 +13,9 @@ describe('Section', () => {
   });
 
   // Padding tests
-  it('applies default padding (none)', () => {
+  it('applies default padding (md)', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).toHaveClass('py-0');
+    expect(container.firstChild).toHaveClass('py-6', 'sm:py-8', 'md:py-12');
   });
 
   it('applies sm padding', () => {
@@ -64,14 +64,15 @@ describe('Section', () => {
   });
 
   // Base styles tests
-  it('applies relative positioning and responsive horizontal padding by default', () => {
+  it('applies relative positioning by default', () => {
     const { container } = render(<Section>Content</Section>);
-    expect(container.firstChild).toHaveClass(
-      'relative',
-      'px-4',
-      'sm:px-6',
-      'lg:px-0'
-    );
+    expect(container.firstChild).toHaveClass('relative');
+  });
+
+  it('does not apply horizontal padding (Container owns that)', () => {
+    const { container } = render(<Section>Content</Section>);
+    expect(container.firstChild).not.toHaveClass('px-4');
+    expect(container.firstChild).not.toHaveClass('sm:px-6');
   });
 
   // Center tests
@@ -135,6 +136,20 @@ describe('Section', () => {
     expect(section).toHaveAttribute('aria-labelledby', 'section-heading');
   });
 
+  // Contain prop tests
+  it('renders Container when contain is set', () => {
+    const { container } = render(<Section contain='sm'>Content</Section>);
+    const inner = container.querySelector('.max-w-3xl');
+    expect(inner).toBeInTheDocument();
+    expect(inner).toHaveTextContent('Content');
+  });
+
+  it('does not apply horizontal padding regardless of contain', () => {
+    const { container } = render(<Section contain='md'>Content</Section>);
+    expect(container.firstChild).not.toHaveClass('px-4');
+    expect(container.firstChild).not.toHaveClass('sm:px-6');
+  });
+
   // Combined test
   it('combines all classes correctly', () => {
     const { container } = render(
@@ -149,9 +164,6 @@ describe('Section', () => {
     );
     expect(container.firstChild).toHaveClass(
       'relative',
-      'px-4',
-      'sm:px-6',
-      'lg:px-0',
       'py-8',
       'sm:py-12',
       'md:py-16',
@@ -161,5 +173,6 @@ describe('Section', () => {
       'overflow-hidden',
       'w-full'
     );
+    expect(container.firstChild).not.toHaveClass('px-4');
   });
 });

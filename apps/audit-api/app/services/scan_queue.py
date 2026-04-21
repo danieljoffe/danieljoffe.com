@@ -17,6 +17,49 @@ from app.services.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
 
+_ERROR_PATTERNS: list[tuple[str, str]] = [
+    (
+        "ERR_HTTP2_PROTOCOL_ERROR",
+        "This site blocked our scanner. It uses bot detection that prevents automated audits.",
+    ),
+    (
+        "ERR_CONNECTION_REFUSED",
+        "Could not connect to this site. The server refused the connection.",
+    ),
+    (
+        "ERR_NAME_NOT_RESOLVED",
+        "This domain could not be found. Check the URL for typos.",
+    ),
+    (
+        "ERR_CONNECTION_TIMED_OUT",
+        "The site took too long to respond. It may be down or unreachable.",
+    ),
+    (
+        "ERR_SSL_PROTOCOL_ERROR",
+        "This site has an SSL/TLS configuration issue that prevents secure connections.",
+    ),
+    (
+        "ERR_CERT_",
+        "This site has an invalid or expired SSL certificate.",
+    ),
+    (
+        "ERR_TOO_MANY_REDIRECTS",
+        "This site has a redirect loop. Check the URL.",
+    ),
+    (
+        "Timeout 30000ms exceeded",
+        "This site took too long to load. It may be very slow or blocking automated browsers.",
+    ),
+]
+
+
+def _friendly_error(raw: str) -> str:
+    """Map raw Playwright/network errors to user-friendly messages."""
+    for pattern, message in _ERROR_PATTERNS:
+        if pattern in raw:
+            return message
+    return raw or "Unknown scan error"
+
 
 @dataclass(frozen=True)
 class ScanJob:
@@ -97,7 +140,7 @@ class ScanQueue:
             await mark_scan_failed(supabase, job.scan_id, str(exc))
             logger.warning("Scan failed: %s | %s", job.scan_id, exc)
         except Exception as exc:
-            message = str(exc) or "Unknown scan error"
+            message = _friendly_error(str(exc))
             await mark_scan_failed(supabase, job.scan_id, message)
             logger.exception("Scan errored: %s", job.scan_id)
             sentry_sdk.capture_exception(exc)

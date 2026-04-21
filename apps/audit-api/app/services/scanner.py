@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from app.services.browser_pool import get_browser_pool
 from app.services.lighthouse_config import DeviceMode, build_cli_args, config_for
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,12 @@ LIGHTHOUSE_BIN = os.environ.get("LIGHTHOUSE_BIN", "lighthouse")
 AXE_SCRIPT_PATH = os.environ.get("AXE_SCRIPT_PATH", "/app/vendor/axe.min.js")
 SCAN_TIMEOUT_SEC = int(os.environ.get("SCAN_TIMEOUT_SEC", "90"))
 AXE_TIMEOUT_SEC = int(os.environ.get("AXE_TIMEOUT_SEC", "30"))
+
+_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/125.0.0.0 Safari/537.36"
+)
 
 
 @dataclass(frozen=True)
@@ -60,31 +67,27 @@ async def _run_lighthouse(url: str, device: DeviceMode) -> dict[str, Any]:
 async def _run_axe_and_capture(
     url: str, device: DeviceMode
 ) -> tuple[dict[str, Any], str, str, bytes | None]:
-    from playwright.async_api import async_playwright
-
-    cfg = config_for(device)
-    async with async_playwright() as pw:
-        browser = await pw.chromium.launch(
-            args=[
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-                "--disable-software-rasterizer",
-                "--disable-setuid-sandbox",
-            ]
+    pool = get_browser_pool()
+    browser = await pool.acquire()
+    try:
+        cfg = config_for(device)
+        context = await browser.new_context(
+            viewport={
+                "width": cfg.screen_emulation.width,
+                "height": cfg.screen_emulation.height,
+            },
+            device_scale_factor=cfg.screen_emulation.device_scale_factor,
+            is_mobile=cfg.screen_emulation.mobile,
+            user_agent=_USER_AGENT,
         )
+        context.set_default_timeout(30_000)
         try:
-            context = await browser.new_context(
-                viewport={
-                    "width": cfg.screen_emulation.width,
-                    "height": cfg.screen_emulation.height,
-                },
-                device_scale_factor=cfg.screen_emulation.device_scale_factor,
-                is_mobile=cfg.screen_emulation.mobile,
-            )
-            context.set_default_timeout(30_000)
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=30_000)
+            await page.goto(url, wait_until="load", timeout=30_000)
+            try:
+                await page.wait_for_load_state("networkidle", timeout=10_000)
+            except Exception:
+                logger.info("networkidle not reached for %s; proceeding after load", url)
 
             page_title = await page.title()
             page_description = ""
@@ -125,7 +128,9 @@ async def _run_axe_and_capture(
 
             return axe_result, page_title, page_description, screenshot_bytes
         finally:
-            await browser.close()
+            await context.close()
+    finally:
+        await pool.release()
 
 
 async def _upload_screenshot(
@@ -156,10 +161,26 @@ async def run_scan(
     device: DeviceMode = "mobile",
     supabase: Any | None = None,
 ) -> ScanResults:
-    lighthouse_result = await _run_lighthouse(url, device)
-    axe_result, page_title, page_description, screenshot_bytes = (
-        await _run_axe_and_capture(url, device)
+    # Run Lighthouse and Playwright in parallel — they use independent processes
+    lighthouse_task = asyncio.create_task(_run_lighthouse(url, device))
+    axe_task = asyncio.create_task(_run_axe_and_capture(url, device))
+
+    # Wait for both; if Lighthouse fails, still let axe finish for cleanup
+    lighthouse_result, axe_results = await asyncio.gather(
+        lighthouse_task, axe_task, return_exceptions=True
     )
+
+    # Re-raise Lighthouse errors
+    if isinstance(lighthouse_result, BaseException):
+        raise lighthouse_result
+
+    # Re-raise Playwright errors
+    if isinstance(axe_results, BaseException):
+        raise axe_results
+
+    axe_result, page_title, page_description, screenshot_bytes = axe_results
+
+    # Upload screenshot concurrently (doesn't block result assembly)
     screenshot_url = await _upload_screenshot(supabase, screenshot_bytes)
 
     return ScanResults(

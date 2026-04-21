@@ -21,6 +21,7 @@ The service builds from the monorepo root so the uv workspace lockfile is in sco
      - **Root Directory**: leave empty (repo root) — required so the Dockerfile can see `pyproject.toml` and `uv.lock`.
      - **Config Path**: `apps/job-api/railway.toml`.
      - **Watch Paths**: `apps/job-api/**` (prevents rebuilds when only the Next.js app changes).
+     - **Networking → Target Port**: `8080`. Must match the `--port 8080` in `railway.toml`. A mismatch returns `502 "Application failed to respond"` with `x-railway-fallback: true` even though the container is healthy.
 
 2. **Set environment variables** (Settings → Variables) from `apps/job-api/.env.example`:
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`

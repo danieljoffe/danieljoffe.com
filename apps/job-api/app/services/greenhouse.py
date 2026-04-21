@@ -1,21 +1,21 @@
 import httpx
 
+from app.http_client import get_http_client
 from app.services.standard_job import StandardJob
 
 GREENHOUSE_BASE = "https://boards-api.greenhouse.io/v1/boards"
-REQUEST_TIMEOUT = 10.0
 
 
 async def fetch_board_jobs(board_token: str) -> list[StandardJob]:
     url = f"{GREENHOUSE_BASE}/{board_token}/jobs?content=true"
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-        try:
-            resp = await client.get(url)
-            if resp.status_code == 404:
-                return []
-            resp.raise_for_status()
-        except httpx.HTTPError:
+    client = get_http_client()
+    try:
+        resp = await client.get(url)
+        if resp.status_code == 404:
             return []
+        resp.raise_for_status()
+    except httpx.HTTPError:
+        return []
 
     data = resp.json()
     jobs: list[StandardJob] = []

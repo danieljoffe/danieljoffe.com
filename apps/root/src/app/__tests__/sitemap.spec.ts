@@ -4,6 +4,7 @@ jest.mock('@/utils/constants', () => ({
   DOMAIN_URL: 'https://danieljoffe.com',
   ABOUT_LINK: { href: '/about' },
   AUDIT_LINK: { href: '/audit' },
+  AUDIT_INSIGHTS_LINK: { href: '/audit/insights' },
   BLOG_LINK: { href: '/blog' },
   BLOG_TAGS_LINK: { href: '/blog/tags' },
   EXPERIENCE_LINK: { href: '/experience' },

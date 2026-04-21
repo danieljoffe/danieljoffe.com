@@ -34,9 +34,32 @@ export async function proxyToFastAPI(
       body: body ? JSON.stringify(body) : null,
     });
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch {
-    return NextResponse.json({ error: 'Job API unavailable' }, { status: 503 });
+    const rawBody = await res.text();
+    try {
+      return NextResponse.json(JSON.parse(rawBody), { status: res.status });
+    } catch {
+      return NextResponse.json(
+        {
+          error: 'Upstream returned non-JSON',
+          upstreamStatus: res.status,
+          ...(process.env.NODE_ENV !== 'production'
+            ? { bodyPreview: rawBody.slice(0, 300) }
+            : {}),
+        },
+        { status: 502 }
+      );
+    }
+  } catch (err) {
+    const detail =
+      process.env.NODE_ENV !== 'production' && err instanceof Error
+        ? {
+            message: err.message,
+            cause: err.cause ? String(err.cause) : undefined,
+          }
+        : undefined;
+    return NextResponse.json(
+      { error: 'Job API unavailable', ...(detail ? { detail } : {}) },
+      { status: 503 }
+    );
   }
 }
