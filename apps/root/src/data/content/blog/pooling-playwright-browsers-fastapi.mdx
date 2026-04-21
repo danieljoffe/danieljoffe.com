@@ -1,0 +1,121 @@
+export const metadata = {
+  title: 'Pooling Playwright browsers across FastAPI scans',
+  date: '2026-04-21',
+  excerpt:
+    'A persistent Chromium instance with idle-timeout shutdown eliminates per-scan browser launch while isolating cookies via fresh contexts.',
+  author: 'Daniel Joffe',
+  category: 'Performance',
+  tags: ['Playwright', 'Lighthouse', 'Architecture', 'REST APIs', 'Monorepo'],
+  slug: 'pooling-playwright-browsers-fastapi',
+  type: 'blog',
+  cover: {
+    alt: 'Industrial pipes and valves in a mechanical room',
+    src: '/images/covers/pooling-playwright-browsers-fastapi.webp',
+  },
+};
+
+## The problem
+
+My audit-api service runs Lighthouse and axe-core against any URL a user submits. Every scan launched a fresh Chromium instance, ran the tools, closed the browser, and launched again for the next request. On Railway's container, that cold start costs 2-4 seconds per scan, and under concurrent load the memory profile gets ugly: multiple browser processes fighting for the same container RAM.
+
+Worse, some scans never finish. The original navigation uses `wait_until="networkidle"`, which waits for zero network connections for 500ms. Sites with analytics pings, WebSocket heartbeats, or long-polling connections never reach that state. Scans against the Washington Post hit `ERR_HTTP2_PROTOCOL_ERROR` because the site's bot detection drops the connection entirely.
+
+Three problems: launch overhead, unbounded wait, and hostile responses.
+
+## The pool pattern
+
+One Chromium process stays alive between scans. Each scan gets a fresh browser context (isolated cookies, localStorage, session state) then closes it:
+
+```python
+class BrowserPool:
+    def __init__(self) -> None:
+        self._browser: Browser | None = None
+        self._lock = asyncio.Lock()
+        self._idle_handle: asyncio.TimerHandle | None = None
+        self._scan_count = 0
+
+    async def acquire(self) -> Browser:
+        async with self._lock:
+            self._cancel_idle_timer()
+            if self._browser is None or not self._browser.is_connected():
+                await self._launch()
+            self._scan_count += 1
+            return self._browser
+
+    async def release(self) -> None:
+        async with self._lock:
+            self._scan_count = max(0, self._scan_count - 1)
+            if self._scan_count == 0:
+                self._schedule_idle_shutdown()
+```
+
+The idle timer fires after 30 minutes of no scans. `acquire()` cancels it if a new scan arrives. On app shutdown, the FastAPI lifespan handler calls `pool.shutdown()` to force-close.
+
+Each scan creates an isolated context with a realistic User-Agent:
+
+```python
+context = await browser.new_context(
+    viewport={"width": cfg.screen_emulation.width, ...},
+    user_agent=_USER_AGENT,
+)
+try:
+    page = await context.new_page()
+    await page.goto(url, wait_until="load", timeout=30_000)
+    try:
+        await page.wait_for_load_state("networkidle", timeout=10_000)
+    except Exception:
+        pass  # best-effort; proceed after load
+finally:
+    await context.close()
+```
+
+`wait_until="load"` fires when the DOM and all subresources finish loading. A 10-second `networkidle` attempt follows as best-effort. If the site keeps connections alive, the scan proceeds anyway.
+
+## Parallel Lighthouse and axe
+
+Lighthouse runs as a subprocess. axe-core runs inside the Playwright page. They share nothing, so I overlap them:
+
+```python
+lighthouse_task = asyncio.create_task(_run_lighthouse(url, device))
+axe_task = asyncio.create_task(_run_axe_and_capture(url, device))
+
+lighthouse_result, axe_results = await asyncio.gather(
+    lighthouse_task, axe_task, return_exceptions=True
+)
+
+if isinstance(lighthouse_result, BaseException):
+    raise lighthouse_result
+if isinstance(axe_results, BaseException):
+    raise axe_results
+```
+
+`return_exceptions=True` prevents one failure from cancelling the other, which matters because the axe task holds a browser context that needs cleanup. After both complete, I re-raise any exception explicitly.
+
+The `ScanQueue` itself is serialized: one scan at a time. Lighthouse uses global performance marks that collide in concurrent runs. The parallelism is within a single scan, not across scans.
+
+## Friendly error mapping
+
+Bot detection and network failures produce raw Playwright error strings that mean nothing to users. A tuple lookup table turns them into sentences:
+
+```python
+_ERROR_PATTERNS: list[tuple[str, str]] = [
+    ("ERR_HTTP2_PROTOCOL_ERROR",
+     "This site blocked our scanner. It uses bot detection..."),
+    ("ERR_NAME_NOT_RESOLVED",
+     "This domain could not be found. Check the URL for typos."),
+    ("Timeout 30000ms exceeded",
+     "This site took too long to load..."),
+]
+
+def _friendly_error(raw: str) -> str:
+    for pattern, message in _ERROR_PATTERNS:
+        if pattern in raw:
+            return message
+    return raw or "Unknown scan error"
+```
+
+Substring matching against the raw error string. Eight patterns cover every failure I have seen in production so far.
+
+## Takeaway
+
+Pool the expensive resource (browser process), isolate the cheap one (context per scan). Wait for what matters (`load`), attempt what helps (`networkidle`), and do not block on what might never arrive.
