@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import signal
 import tempfile
 import uuid
 from dataclasses import dataclass
@@ -38,6 +39,23 @@ class ScanError(RuntimeError):
     """Lighthouse run failed or returned unusable output."""
 
 
+def _kill_process_group(proc: asyncio.subprocess.Process) -> None:
+    """Kill the entire process group that *proc* leads.
+
+    Lighthouse's Node process spawns Chrome as a child via chrome-launcher.
+    A bare proc.kill() only SIGKILLs the Node process; Chrome survives as
+    an orphan, consuming memory and blocking subsequent scans with "Unable
+    to connect to Chrome." start_new_session=True on the subprocess puts
+    the tree in its own process group so killpg reaches Chrome too.
+    """
+    if proc.pid is None:
+        return
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (ProcessLookupError, OSError):
+        pass
+
+
 async def _run_lighthouse(url: str, device: DeviceMode) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmpdir:
         output_path = str(Path(tmpdir) / "report.json")
@@ -45,14 +63,20 @@ async def _run_lighthouse(url: str, device: DeviceMode) -> dict[str, Any]:
         args[0] = LIGHTHOUSE_BIN
 
         proc = await asyncio.create_subprocess_exec(
-            *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            start_new_session=True,
         )
         try:
             _, stderr = await asyncio.wait_for(
                 proc.communicate(), timeout=SCAN_TIMEOUT_SEC
             )
         except TimeoutError as exc:
-            proc.kill()
+            # Kill the entire process group — not just the Node process.
+            # Without this, Chrome is orphaned and causes the next scan to
+            # fail with "Unable to connect to Chrome."
+            _kill_process_group(proc)
             await proc.wait()
             raise ScanError(f"Lighthouse timed out after {SCAN_TIMEOUT_SEC}s") from exc
 
