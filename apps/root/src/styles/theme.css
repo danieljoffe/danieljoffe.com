@@ -249,12 +249,7 @@
     margin-top: 0;
   }
 
-  p {
-    margin-bottom: 0.5em;
-  }
-  p:last-child:not(:only-child) {
-    margin-bottom: 0;
-  }
+  /* p margin handled outside @layer to override Tailwind preflight — see below */
 
   /* Inline code only — code blocks are styled by rehype-pretty-code below */
   code:not([data-theme]) {
@@ -289,6 +284,18 @@
   td:last-child {
     padding-right: 0;
   }
+}
+
+/*
+ * Paragraph margin — outside @layer so it overrides Tailwind preflight's
+ * `margin: 0`. Removes trailing margin only when the p has siblings
+ * (avoids collapsing margin on solo paragraphs).
+ */
+p {
+  margin-bottom: 0.5em;
+}
+p:last-child:not(:only-child) {
+  margin-bottom: 0;
 }
 
 /* Scrollbar styling */
