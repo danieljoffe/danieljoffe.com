@@ -135,6 +135,26 @@ describe('Section', () => {
     expect(section).toHaveAttribute('aria-labelledby', 'section-heading');
   });
 
+  // Contain prop tests
+  it('renders Container when contain is set', () => {
+    const { container } = render(<Section contain='sm'>Content</Section>);
+    const inner = container.querySelector('.max-w-3xl');
+    expect(inner).toBeInTheDocument();
+    expect(inner).toHaveTextContent('Content');
+  });
+
+  it('removes section horizontal padding when contain is set', () => {
+    const { container } = render(<Section contain='md'>Content</Section>);
+    expect(container.firstChild).not.toHaveClass('px-4');
+    expect(container.firstChild).not.toHaveClass('sm:px-6');
+    expect(container.firstChild).not.toHaveClass('lg:px-0');
+  });
+
+  it('applies horizontal padding when contain is not set', () => {
+    const { container } = render(<Section>Content</Section>);
+    expect(container.firstChild).toHaveClass('px-4', 'sm:px-6', 'lg:px-0');
+  });
+
   // Combined test
   it('combines all classes correctly', () => {
     const { container } = render(

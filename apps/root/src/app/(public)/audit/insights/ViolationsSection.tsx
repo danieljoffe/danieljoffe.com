@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import type { Violation } from './types';
@@ -126,83 +127,82 @@ export default function ViolationsSection({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <section
+    <Section
       aria-labelledby='violations-heading'
-      className='w-full bg-surface-secondary py-16'
+      background='alt'
+      className='py-16'
     >
-      <div className='max-w-4xl mx-auto w-full px-4 sm:px-6'>
-        <Heading variant='section' as='h2' id='violations-heading'>
-          Top Violations
-        </Heading>
-        <Text variant='body' className='mt-2 mb-6'>
-          The most common issues found across all audited sites.
-        </Text>
+      <Heading variant='section' as='h2' id='violations-heading'>
+        Top Violations
+      </Heading>
+      <Text variant='body' className='mt-2 mb-6'>
+        The most common issues found across all audited sites.
+      </Text>
 
-        {!expanded && (
-          <>
-            <div
-              role='tablist'
-              aria-label='Violation categories'
-              className='flex gap-1 mb-6 flex-wrap'
-            >
-              {CATEGORIES.map(cat => (
-                <Button
-                  key={cat.key}
-                  name={`tab-${cat.key}`}
-                  variant={activeTab === cat.key ? 'primary' : 'ghost'}
-                  role='tab'
-                  aria-selected={activeTab === cat.key}
-                  aria-controls='violations-tabpanel'
-                  onClick={() => setActiveTab(cat.key)}
-                >
-                  {cat.label}
-                </Button>
-              ))}
-            </div>
-            <div
-              id='violations-tabpanel'
-              role='tabpanel'
-              aria-label={`${CATEGORIES.find(c => c.key === activeTab)?.label} violations`}
-              className='rounded-lg border border-border bg-surface-elevated p-4'
-            >
-              <CategoryList
-                violations={violations}
-                category={activeTab}
-                guideSlugs={guideSlugs}
-              />
-            </div>
-          </>
-        )}
-
-        {expanded && (
-          <div className='space-y-8'>
+      {!expanded && (
+        <>
+          <div
+            role='tablist'
+            aria-label='Violation categories'
+            className='flex gap-1 mb-6 flex-wrap'
+          >
             {CATEGORIES.map(cat => (
-              <div key={cat.key}>
-                <Heading variant='subtitle' as='h3' className='mb-3'>
-                  {cat.label}
-                </Heading>
-                <div className='rounded-lg border border-border bg-surface-elevated p-4'>
-                  <CategoryList
-                    violations={violations}
-                    category={cat.key}
-                    guideSlugs={guideSlugs}
-                  />
-                </div>
-              </div>
+              <Button
+                key={cat.key}
+                name={`tab-${cat.key}`}
+                variant={activeTab === cat.key ? 'primary' : 'ghost'}
+                role='tab'
+                aria-selected={activeTab === cat.key}
+                aria-controls='violations-tabpanel'
+                onClick={() => setActiveTab(cat.key)}
+              >
+                {cat.label}
+              </Button>
             ))}
           </div>
-        )}
-
-        <div className='mt-4 text-center'>
-          <Button
-            name='toggle-violations-view'
-            variant='ghost'
-            onClick={() => setExpanded(prev => !prev)}
+          <div
+            id='violations-tabpanel'
+            role='tabpanel'
+            aria-label={`${CATEGORIES.find(c => c.key === activeTab)?.label} violations`}
+            className='rounded-lg border border-border bg-surface-elevated p-4'
           >
-            {expanded ? 'View Tabs' : 'View All'}
-          </Button>
+            <CategoryList
+              violations={violations}
+              category={activeTab}
+              guideSlugs={guideSlugs}
+            />
+          </div>
+        </>
+      )}
+
+      {expanded && (
+        <div className='space-y-8'>
+          {CATEGORIES.map(cat => (
+            <div key={cat.key}>
+              <Heading variant='subtitle' as='h3' className='mb-3'>
+                {cat.label}
+              </Heading>
+              <div className='rounded-lg border border-border bg-surface-elevated p-4'>
+                <CategoryList
+                  violations={violations}
+                  category={cat.key}
+                  guideSlugs={guideSlugs}
+                />
+              </div>
+            </div>
+          ))}
         </div>
+      )}
+
+      <div className='mt-4 text-center'>
+        <Button
+          name='toggle-violations-view'
+          variant='ghost'
+          onClick={() => setExpanded(prev => !prev)}
+        >
+          {expanded ? 'View Tabs' : 'View All'}
+        </Button>
       </div>
-    </section>
+    </Section>
   );
 }

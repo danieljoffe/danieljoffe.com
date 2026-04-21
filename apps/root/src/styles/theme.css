@@ -252,7 +252,7 @@
   p {
     margin-bottom: 0.5em;
   }
-  p:last-child {
+  p:last-child:not(:only-child) {
     margin-bottom: 0;
   }
 
