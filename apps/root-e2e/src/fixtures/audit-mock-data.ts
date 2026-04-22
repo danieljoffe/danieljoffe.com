@@ -1,17 +1,3 @@
-// Inline type to avoid cross-boundary dependency (e2e cannot import shared-audit)
-interface ScanIssue {
-  id: string;
-  scan_id: string;
-  category: 'performance' | 'accessibility' | 'seo' | 'ux';
-  severity: 'critical' | 'warning' | 'info';
-  title: string;
-  description: string;
-  impact: string | null;
-  fix_difficulty: 'easy' | 'moderate' | 'complex' | null;
-  technical_detail: Record<string, unknown> | null;
-  sort_order: number;
-}
-
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -74,80 +60,6 @@ export function makeStatusFailed(
     grade: null,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Issue factory
-// ---------------------------------------------------------------------------
-
-let issueCounter = 0;
-
-function makeIssue(overrides: Partial<ScanIssue> = {}): ScanIssue {
-  const id = `issue-${++issueCounter}`;
-  return {
-    id,
-    scan_id: MOCK_SCAN_ID,
-    category: 'performance',
-    severity: 'warning',
-    title: `Test issue ${id}`,
-    description: 'Test description for this issue.',
-    impact: 'This affects page load time.',
-    fix_difficulty: 'easy',
-    technical_detail: null,
-    sort_order: issueCounter,
-    ...overrides,
-  };
-}
-
-/** 5 issues (2 critical, 2 warning, 1 info) — triggers email gate (>3) */
-export const ISSUES_AVERAGE: ScanIssue[] = [
-  makeIssue({
-    severity: 'critical',
-    category: 'performance',
-    title: 'Slow LCP',
-  }),
-  makeIssue({
-    severity: 'critical',
-    category: 'accessibility',
-    title: 'Low contrast text',
-  }),
-  makeIssue({
-    severity: 'warning',
-    category: 'seo',
-    title: 'Missing meta description',
-  }),
-  makeIssue({
-    severity: 'warning',
-    category: 'performance',
-    title: 'Unminified CSS',
-  }),
-  makeIssue({ severity: 'info', category: 'ux', title: 'No favicon' }),
-];
-
-/** 2 issues — no email gate (<=3 free) */
-export const ISSUES_UNDER_GATE: ScanIssue[] = [
-  makeIssue({
-    severity: 'critical',
-    category: 'performance',
-    title: 'Render-blocking resource',
-  }),
-  makeIssue({
-    severity: 'warning',
-    category: 'seo',
-    title: 'Missing alt text',
-  }),
-];
-
-/** Empty array — no issues section rendered */
-export const ISSUES_NONE: ScanIssue[] = [];
-
-/** 30 issues — outlier / stress test */
-export const ISSUES_MAX: ScanIssue[] = Array.from({ length: 30 }, (_, i) =>
-  makeIssue({
-    severity: i < 10 ? 'critical' : i < 20 ? 'warning' : 'info',
-    title: `Issue #${i + 1}`,
-    sort_order: i + 1,
-  })
-);
 
 // ---------------------------------------------------------------------------
 // Lead capture factories (POST /api/leads/capture)

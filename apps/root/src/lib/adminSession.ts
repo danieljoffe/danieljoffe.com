@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 
 export const ADMIN_SESSION_COOKIE = 'admin_session';
-export const ADMIN_SESSION_TTL_SECONDS = 8 * 60 * 60;
+const ADMIN_SESSION_TTL_SECONDS = 8 * 60 * 60;
 
 interface AdminPayload extends JWTPayload {
   sub: 'tools-admin';
@@ -28,9 +28,7 @@ export async function mintSessionToken(
     .sign(getSecret());
 }
 
-export async function verifySessionToken(
-  token: string
-): Promise<AdminPayload | null> {
+async function verifySessionToken(token: string): Promise<AdminPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
     if (payload.sub !== 'tools-admin') return null;

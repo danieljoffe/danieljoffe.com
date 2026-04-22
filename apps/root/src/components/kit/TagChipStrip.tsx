@@ -13,7 +13,7 @@ export interface TagChip {
   href: string;
 }
 
-export interface TagChipStripProps {
+interface TagChipStripProps {
   tags: TagChip[];
   /** Optional href for a trailing "View all tags" link. */
   viewAllHref?: string | undefined;

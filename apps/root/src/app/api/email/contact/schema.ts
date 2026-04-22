@@ -22,9 +22,6 @@ type RootError =
 /** Union type for all possible error sources */
 type ErrorSource = FormField | RootError;
 
-/** Form field error structure for client-side error handling */
-export type FormFieldError = Record<ErrorSource, { message: string }>;
-
 /** Contact form data structure */
 export type FormFieldSchema<T = string> = Record<FormField, T>;
 
@@ -65,9 +62,9 @@ const MESSAGE_MIN_LENGTH = 30;
 const MESSAGE_MAX_LENGTH = FORM_LIMITS.MESSAGE_MAX_LENGTH;
 
 /** Helper functions for generating consistent validation messages */
-export const minLengthMessage = (label: string, min: number) =>
+const minLengthMessage = (label: string, min: number) =>
   `${label} must be at least ${min} characters`;
-export const maxLengthMessage = (label: string, max: number) =>
+const maxLengthMessage = (label: string, max: number) =>
   `${label} must be at most ${max} characters`;
 
 /**

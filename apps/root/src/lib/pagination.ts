@@ -1,7 +1,7 @@
 import { getContentByType, type ContentEntry } from '@/data/contentRegistry';
 import { ContentType } from '@/types/postTypes';
 
-export interface PaginatedResult<T> {
+interface PaginatedResult<T> {
   items: T[];
   currentPage: number;
   totalPages: number;

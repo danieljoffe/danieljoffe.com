@@ -40,3 +40,6 @@ jobs:
           NX_HEAD: ${{ inputs.nx-head }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
           NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+
+      - name: Dead code check (Knip)
+        run: pnpm knip

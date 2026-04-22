@@ -10,9 +10,9 @@ import {
   useState,
 } from 'react';
 
-export type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark' | 'system';
 
-export interface ThemeContextType {
+interface ThemeContextType {
   theme: Theme;
   resolvedTheme: 'light' | 'dark';
   isDarkMode: boolean;
