@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkBotId } from 'botid/server';
 import { isValidUuid } from '@danieljoffe.com/shared-audit';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { captureApiError } from '@/lib/errorTracking';
@@ -23,13 +22,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (process.env['VERCEL']) {
-      const botCheck = await checkBotId();
-      if (botCheck.isBot) {
-        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-      }
-    }
-
     const { id } = await params;
 
     if (!isValidUuid(id)) {
