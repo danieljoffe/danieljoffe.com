@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_experience_optimized_user_version
 -- Retrieval index over the optimized doc. One row per retrievable unit
 -- (role, skill, outcome, summary). Populated when an optimized doc is written.
 -- chunk_type tags what facet the chunk represents — useful for weighted retrieval.
--- embedding dim: 1536 (OpenAI text-embedding-3-small / Voyage via reduction).
+-- embedding dim: 1024 (Voyage voyage-3, Anthropic-aligned).
 -- If we switch embedding models later, we alter the column dim.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS experience_chunks (
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS experience_chunks (
   chunk_ref          TEXT NOT NULL,
   content            TEXT NOT NULL,
   metadata           JSONB NOT NULL DEFAULT '{}'::jsonb,
-  embedding          extensions.vector(1536),
+  embedding          extensions.vector(1024),
   created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
