@@ -1,7 +1,7 @@
 export type Difficulty = 'easy' | 'moderate' | 'complex';
-export type ViolationCategory = 'performance' | 'accessibility' | 'seo' | 'ux';
+type ViolationCategory = 'performance' | 'accessibility' | 'seo' | 'ux';
 
-export interface ViolationGuide {
+interface ViolationGuide {
   slug: string;
   title: string;
   difficulty: Difficulty;
@@ -15,13 +15,6 @@ export interface ViolationGuide {
     language: string;
   } | null;
   resources: { label: string; url: string }[];
-}
-
-function titleToSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
 }
 
 /* ---------------------------------------------------------------------------
@@ -859,6 +852,3 @@ export function getViolationGuideBySlug(
 export function getViolationSlug(title: string): string | null {
   return titleIndex.get(title.toLowerCase()) ?? null;
 }
-
-/** Generate a slug from any title (for consistent URL generation). */
-export { titleToSlug };

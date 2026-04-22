@@ -6,8 +6,6 @@ export const JOB_STATUSES = [
   'archived',
 ] as const;
 
-export type JobStatus = (typeof JOB_STATUSES)[number];
-
 export const PROVIDERS = [
   'greenhouse',
   'lever',

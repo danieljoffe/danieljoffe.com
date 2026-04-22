@@ -37,7 +37,7 @@ export function cwvDelta(
   return { delta, direction: delta < 0 ? 'improved' : 'regressed' };
 }
 
-export interface IssueDiff {
+interface IssueDiff {
   resolved: ScanIssue[];
   added: ScanIssue[];
   persisted: Array<{ a: ScanIssue; b: ScanIssue }>;

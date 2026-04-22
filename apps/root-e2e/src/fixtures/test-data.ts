@@ -5,15 +5,6 @@ export const PRIMARY_NAV_LINKS = [
   { href: '/experience', label: 'Experience' },
 ];
 
-// Secondary navigation links — inside "More" dropdown/sheet
-export const MORE_NAV_LINKS = [
-  { href: '/about', label: 'About' },
-  { href: '/blog', label: 'Blog' },
-];
-
-// All nav links (union of primary + more)
-export const NAV_LINKS = [...PRIMARY_NAV_LINKS, ...MORE_NAV_LINKS];
-
 // Project slugs for parametrized tests (from apps/root/src/data/project.ts)
 export const PROJECT_SLUGS = [
   'ui-components-v1',
@@ -54,4 +45,3 @@ export const INVALID_FORM_DATA = {
 
 // Audit page test data
 export const VALID_AUDIT_URL = 'example.com';
-export const INVALID_AUDIT_URLS = ['no-tld', 'localhost', '192.168.1.1'];

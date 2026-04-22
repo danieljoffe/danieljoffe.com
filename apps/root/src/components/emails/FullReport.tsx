@@ -8,7 +8,7 @@ interface TopIssue {
   category: string;
 }
 
-export interface FullReportEmailProps {
+interface FullReportEmailProps {
   name: string | null;
   url: string;
   grade: string;
