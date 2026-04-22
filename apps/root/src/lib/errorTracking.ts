@@ -7,9 +7,9 @@
 
 import * as Sentry from '@sentry/nextjs';
 
-export type ErrorSeverity = 'fatal' | 'error' | 'warning' | 'info';
+type ErrorSeverity = 'fatal' | 'error' | 'warning' | 'info';
 
-export type ErrorCategory =
+type ErrorCategory =
   | 'render' // React component render errors
   | 'api' // API route errors
   | 'form' // Form submission errors
@@ -19,7 +19,7 @@ export type ErrorCategory =
   | 'config' // Configuration errors
   | 'unknown'; // Uncategorized errors
 
-export interface ErrorContext {
+interface ErrorContext {
   category: ErrorCategory;
   severity?: ErrorSeverity;
   component?: string;

@@ -7,7 +7,7 @@ import {
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
 
-export interface ListPaginationProps {
+interface ListPaginationProps {
   currentPage: number;
   totalPages: number;
   /** Return the href for a given 1-indexed page number. */

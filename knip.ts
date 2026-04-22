@@ -1,6 +1,10 @@
 import type { KnipConfig } from 'knip';
 
 const config: KnipConfig = {
+  ignoreBinaries: [
+    // Python package manager used in project.json targets
+    'uv',
+  ],
   workspaces: {
     // -----------------------------------------------------------------
     // Root workspace (scripts, configs)
@@ -17,6 +21,16 @@ const config: KnipConfig = {
         '@tailwindcss/typography',
         // caniuse-lite is required by browserslist (package.json config)
         'caniuse-lite',
+        // ts-node is referenced in tsconfig.json "ts-node" block
+        'ts-node',
+        // jest-environment-jsdom is resolved by Jest via testEnvironment: 'jsdom'
+        'jest-environment-jsdom',
+        // @swc/jest is used by libs/shared/audit/jest.config.cts (hoisted dep)
+        '@swc/jest',
+        // @eslint/js is required by @nx/eslint-plugin flat config presets
+        '@eslint/js',
+        // ts-jest is required by @nx/jest/preset transform config
+        'ts-jest',
       ],
     },
 
@@ -36,6 +50,8 @@ const config: KnipConfig = {
         'src/app/**/opengraph-image.tsx',
         // Jest setup file referenced via config, not imports
         'src/test-setup.ts',
+        // lib/env.ts is consumed via dynamic require() in utils/helpers.ts
+        'src/lib/env.ts',
       ],
       project: ['src/**/*.{ts,tsx}'],
       ignoreDependencies: [

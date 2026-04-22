@@ -17,16 +17,16 @@ import type { SemanticVariant } from '@danieljoffe.com/shared-ui/styles/semantic
 import { SEMANTIC_TEXT } from '@danieljoffe.com/shared-ui/styles/semanticVariants';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 
-export type ToastVariant = SemanticVariant;
+type ToastVariant = SemanticVariant;
 
-export interface ToastItem {
+interface ToastItem {
   id: string;
   variant: ToastVariant;
   title: string;
   description?: string;
 }
 
-export interface ToastContextType {
+interface ToastContextType {
   toast: (params: Omit<ToastItem, 'id'>) => void;
 }
 

@@ -28,7 +28,7 @@ interface Audience {
   description: string;
 }
 
-export interface ServiceSectionData {
+interface ServiceSectionData {
   id: string;
   painPoint: { headline: string; subtext: string | undefined };
   description: string;
@@ -518,7 +518,7 @@ export const mvpBuildsSection: ServiceSectionData = {
   ctaHref: undefined,
 };
 
-export interface PainPointMatcher {
+interface PainPointMatcher {
   problem: string;
   service: string;
   price: string;
@@ -591,5 +591,3 @@ export const serviceComparisons: ServiceComparisonRow[] = [
     componentLibrary: 'Documented component library',
   },
 ];
-
-export const serviceSections: ServiceSectionData[] = [];

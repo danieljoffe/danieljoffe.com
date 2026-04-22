@@ -1,13 +1,13 @@
 import type { EntryType, SearchEntry } from './searchIndex';
 import { buildSearchIndex } from './searchIndex';
 
-export type TagContentEntry = Pick<
+type TagContentEntry = Pick<
   SearchEntry,
   'slug' | 'title' | 'excerpt' | 'tags' | 'type' | 'url' | 'date'
 >;
 
 /** Scoped content type for tag helpers: blog, project, or experience. */
-export type TagEntryType = Exclude<EntryType, 'page'>;
+type TagEntryType = Exclude<EntryType, 'page'>;
 
 const CONTENT_TYPES: readonly TagEntryType[] = [
   'blog',
@@ -27,7 +27,7 @@ function isContentType(type: EntryType): type is TagEntryType {
  * The `type` parameter is optional so existing callers that want a mixed list
  * (like the original `/blog/tags/[tag]` route) keep working unchanged.
  */
-export function getAllContent(type?: TagEntryType): TagContentEntry[] {
+function getAllContent(type?: TagEntryType): TagContentEntry[] {
   return buildSearchIndex()
     .filter(entry => (type ? entry.type === type : isContentType(entry.type)))
     .map(({ slug, title, excerpt, tags, type: entryType, url, date }) => ({

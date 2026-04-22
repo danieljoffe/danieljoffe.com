@@ -47,8 +47,8 @@
         "^@testing-library/",
         "^jest",
         "^@types/jest",
-        "^ts-jest",
         "^jest-axe",
+        "^ts-jest",
         "^@playwright/",
         "^playwright$"
       ],

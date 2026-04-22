@@ -2,7 +2,7 @@ import { Section, Text, Link, Hr } from '@react-email/components';
 import type { CSSProperties } from 'react';
 import EmailLayout from './EmailLayout';
 
-export interface FollowUpEmailProps {
+interface FollowUpEmailProps {
   name: string | null;
   url: string;
   grade: string;
