@@ -9,6 +9,7 @@ export const EXAMPLE_URL = 'https://example.com';
 export const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
 export const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
 const SENTRY_URL = 'https://www.sentry.io';
+const SENTRY_INGEST_URL = 'https://*.ingest.us.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
 const SUPABASE_STORAGE_URL = 'https://grwmzluuqyczatkxorfa.supabase.co';
@@ -43,6 +44,7 @@ export const allowedOrigins = [
   ...allowedImageOrigins,
   DOMAIN_URL,
   SENTRY_URL,
+  SENTRY_INGEST_URL,
   SCHEMA_ORG_URL,
   HCAPTCHA_URL,
 ];

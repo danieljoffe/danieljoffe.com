@@ -26,8 +26,6 @@ export default async function Head() {
       <link rel='dns-prefetch' href='https://www.google-analytics.com' />
       <link rel='dns-prefetch' href='https://hcaptcha.com' />
       <link rel='dns-prefetch' href='https://api.hcaptcha.com' />
-      <link rel='prefetch' href='https://images.unsplash.com' />
-      <link rel='prefetch' href='https://unsplash.com' />
     </head>
   );
 }
