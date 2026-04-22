@@ -49,7 +49,7 @@ After all steps pass, report a summary table:
 | Step            | Result |
 | --------------- | ------ |
 | Build           | ...    |
-| Hydration check | ...    |
+| console.logs    | ...    |
 | typecheck       | ...    |
 | lint:fix        | ...    |
 | format          | ...    |
