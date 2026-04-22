@@ -13,3 +13,22 @@ __pycache__
 playwright-report
 test-results
 storybook-static
+
+# IDE / editor
+.vscode
+
+# CI/CD and git hooks
+.github
+.husky
+
+# Claude Code config
+.claude
+
+# E2E tests (not needed in prod images)
+apps/root-e2e
+
+# Documentation
+*.md
+
+# Dev tooling
+tools
