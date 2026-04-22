@@ -1,6 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ThemeProvider } from './ThemeProvider';
 import { ThemeToggle } from './ThemeToggle';
+
+expect.extend(toHaveNoViolations);
 
 const renderToggle = () =>
   render(
@@ -62,5 +65,10 @@ describe('ThemeToggle', () => {
     expect(buttons[0]).toHaveAttribute('title', 'Light');
     expect(buttons[1]).toHaveAttribute('title', 'Dark');
     expect(buttons[2]).toHaveAttribute('title', 'System');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = renderToggle();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

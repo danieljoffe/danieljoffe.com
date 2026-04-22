@@ -36,9 +36,8 @@ describe('StatsCard', () => {
   });
 
   it('does not render change section when change is undefined', () => {
-    const { container } = render(<StatsCard title='Revenue' value='$12k' />);
-    expect(container.querySelector('.text-success')).not.toBeInTheDocument();
-    expect(container.querySelector('.text-error')).not.toBeInTheDocument();
+    render(<StatsCard title='Revenue' value='$12k' />);
+    expect(screen.queryByText(/[+-]\d+%/)).not.toBeInTheDocument();
   });
 
   it('renders icon when provided', () => {

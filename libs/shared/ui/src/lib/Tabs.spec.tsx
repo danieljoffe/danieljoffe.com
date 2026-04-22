@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Tabs } from './Tabs';
+
+expect.extend(toHaveNoViolations);
 
 const defaultTabs = [
   { id: 'tab1', label: 'Tab 1', content: <div>Content 1</div> },
@@ -199,5 +202,10 @@ describe('Tabs', () => {
       expect(screen.getByText('Content 3')).toBeInTheDocument();
       expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Tabs tabs={defaultTabs} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

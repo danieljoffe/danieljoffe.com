@@ -1,5 +1,8 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ToastProvider, useToast } from './Toast';
+
+expect.extend(toHaveNoViolations);
 
 function ToastTrigger() {
   const { toast } = useToast();
@@ -252,5 +255,15 @@ describe('Toast', () => {
     });
 
     expect(screen.queryByText('Heads up')).not.toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    jest.useRealTimers();
+    const { container } = render(
+      <ToastProvider>
+        <div>App</div>
+      </ToastProvider>
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

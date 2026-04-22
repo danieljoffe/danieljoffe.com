@@ -2,26 +2,22 @@ import { render, screen, act } from '@testing-library/react';
 import { ThemeProvider, useTheme } from './ThemeProvider';
 
 const mockMatchMedia = (prefersDark: boolean) => {
-  const listeners: ((e: { matches: boolean }) => void)[] = [];
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: jest.fn().mockReturnValue({
       matches: prefersDark,
-      addEventListener: (_: string, fn: (e: { matches: boolean }) => void) =>
-        listeners.push(fn),
+      addEventListener: (_: string, fn: (e: { matches: boolean }) => void) => {
+        // listener registration stub
+        void fn;
+      },
       removeEventListener: (
         _: string,
         fn: (e: { matches: boolean }) => void
       ) => {
-        const idx = listeners.indexOf(fn);
-        if (idx >= 0) listeners.splice(idx, 1);
+        void fn;
       },
     }),
   });
-  return {
-    triggerChange: (matches: boolean) =>
-      listeners.forEach(fn => fn({ matches })),
-  };
 };
 
 function ThemeDisplay() {
