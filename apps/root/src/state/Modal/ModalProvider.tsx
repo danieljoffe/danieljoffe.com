@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 
-export interface ModalContextValue {
+interface ModalContextValue {
   isModalOpen: boolean;
   toggleModal: () => void;
   modalContent: React.ReactNode | null;

@@ -4,10 +4,10 @@
 export const DOMAIN_URL = 'https://danieljoffe.com';
 const LINKEDIN_URL = 'https://www.linkedin.com';
 const GITHUB_URL = 'https://github.com';
-export const GOOGLE_DOCS_URL = 'https://docs.google.com';
-export const EXAMPLE_URL = 'https://example.com';
-export const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
-export const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
+const GOOGLE_DOCS_URL = 'https://docs.google.com';
+const EXAMPLE_URL = 'https://example.com';
+const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
+const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
 const SENTRY_URL = 'https://www.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';

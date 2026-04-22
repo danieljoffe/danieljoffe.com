@@ -6,7 +6,7 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { cn } from '@/lib/cn';
 import { STORYBOOK_URL } from '@/utils/constants';
 
-export interface DemoControl {
+interface DemoControl {
   label: string;
   args: Record<string, string>;
 }
