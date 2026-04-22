@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ViolationsSection from './ViolationsSection';
 import type { Violation } from './types';
@@ -65,8 +65,10 @@ describe('ViolationsSection', () => {
       <ViolationsSection violations={defaultViolations} guideSlugs={{}} />
     );
     await user.click(screen.getByRole('tab', { name: 'Accessibility' }));
-    expect(screen.getByText('Missing alt text')).toBeInTheDocument();
-    expect(screen.queryByText('Slow LCP')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Missing alt text')).toBeInTheDocument();
+      expect(screen.queryByText('Slow LCP')).not.toBeInTheDocument();
+    });
   });
 
   it('shows empty state for category with no violations', async () => {
@@ -80,7 +82,11 @@ describe('ViolationsSection', () => {
       />
     );
     await user.click(screen.getByRole('tab', { name: 'SEO' }));
-    expect(screen.getByText('No violations recorded yet.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText('No violations recorded yet.')
+      ).toBeInTheDocument();
+    });
   });
 
   it('toggles between tabs and expanded view', async () => {
@@ -97,16 +103,20 @@ describe('ViolationsSection', () => {
 
     // Click "View All" to expand
     await user.click(screen.getByRole('button', { name: 'View All' }));
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
-    expect(screen.getByText('Slow LCP')).toBeInTheDocument();
-    expect(screen.getByText('Missing alt text')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'View Tabs' })
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+      expect(screen.getByText('Slow LCP')).toBeInTheDocument();
+      expect(screen.getByText('Missing alt text')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'View Tabs' })
+      ).toBeInTheDocument();
+    });
 
     // Click "View Tabs" to collapse
     await user.click(screen.getByRole('button', { name: 'View Tabs' }));
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
+    });
   });
 
   it('renders critical severity badges when count > 0', () => {

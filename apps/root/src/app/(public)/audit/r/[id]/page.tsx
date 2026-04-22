@@ -53,42 +53,46 @@ type ScanReport = Pick<
 >;
 
 const getScanData = cache(async (id: string) => {
-  const supabase = createServerSupabaseClient();
-  if (!supabase) return null;
+  try {
+    const supabase = createServerSupabaseClient();
+    if (!supabase) return null;
 
-  const { data: scan, error: scanError } = await supabase
-    .from('scans')
-    .select(
-      [
-        'id, url, normalized_url, status, created_at, completed_at,',
-        'error_message, score_performance, score_accessibility, score_best_practices,',
-        'score_seo, grade_overall, fcp_ms, lcp_ms, tbt_ms, cls, si_ms,',
-        'page_title, page_description, page_screenshot_url, source,',
-        'device_mode, paired_scan_id',
-      ].join(' ')
-    )
-    .eq('id', id)
-    .single();
+    const { data: scan, error: scanError } = await supabase
+      .from('scans')
+      .select(
+        [
+          'id, url, normalized_url, status, created_at, completed_at,',
+          'error_message, score_performance, score_accessibility, score_best_practices,',
+          'score_seo, grade_overall, fcp_ms, lcp_ms, tbt_ms, cls, si_ms,',
+          'page_title, page_description, page_screenshot_url, source,',
+          'device_mode, paired_scan_id',
+        ].join(' ')
+      )
+      .eq('id', id)
+      .single();
 
-  if (scanError || !scan) return null;
+    if (scanError || !scan) return null;
 
-  const typedScan = scan as unknown as ScanReport;
+    const typedScan = scan as unknown as ScanReport;
 
-  // Only fetch issues for completed scans
-  if (typedScan.status !== 'completed') {
-    return { scan: typedScan, issues: [] as ScanIssue[] };
+    // Only fetch issues for completed scans
+    if (typedScan.status !== 'completed') {
+      return { scan: typedScan, issues: [] as ScanIssue[] };
+    }
+
+    const { data: issues } = await supabase
+      .from('scan_issues')
+      .select('*')
+      .eq('scan_id', id)
+      .order('sort_order', { ascending: true });
+
+    return {
+      scan: typedScan,
+      issues: (issues || []) as ScanIssue[],
+    };
+  } catch {
+    return null;
   }
-
-  const { data: issues } = await supabase
-    .from('scan_issues')
-    .select('*')
-    .eq('scan_id', id)
-    .order('sort_order', { ascending: true });
-
-  return {
-    scan: typedScan,
-    issues: (issues || []) as ScanIssue[],
-  };
 });
 
 const noIndexRobots = { index: false, follow: true } as const;
