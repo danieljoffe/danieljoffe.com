@@ -16,10 +16,10 @@ Use the context7 MCP server (`resolve-library-id` then `query-docs`) to fetch do
 
 Resolve and query these libraries:
 
-1. **next** — App Router, rendering, caching, configuration, image optimization, metadata, fonts, scripts
-2. **react** — Server Components, use/Suspense, hooks rules, concurrent features
-3. **@sentry/nextjs** — if Sentry is in use (check `next.config.js`)
-4. **tailwindcss** — if Tailwind is in use (check for `tailwind.config`)
+1. **next** (use `/vercel/next.js`, prefer latest version tag) — App Router, rendering, caching, `use cache` directive, `cacheComponents` (PPR), `connection()`, `after()`, metadata API, image optimization, fonts, scripts, Turbopack
+2. **react** — Server Components, `use()`, Suspense, hooks rules, React 19 patterns (no `forwardRef`, `ref` as prop)
+3. **@sentry/nextjs** — if Sentry is in use (check `next.config`)
+4. **tailwindcss** — if Tailwind is in use (check for Tailwind config or `@theme` directive)
 
 ### Phase 2: Audit Areas
 
@@ -36,10 +36,12 @@ Check against docs:
 - `headers()`, `cookies()`, or `searchParams` usage forcing dynamic rendering unnecessarily
 - Missing or misused `loading.tsx` / `error.tsx` / `not-found.tsx` conventions
 - Layouts re-rendering when they should be cached (shared layouts between routes)
+- **React 19**: components using `forwardRef` instead of accepting `ref` as a regular prop
+- **PPR opportunity**: pages mixing static and dynamic content that could use `cacheComponents: true` with Suspense boundaries
 
 #### 2.2 Data Fetching & Caching
 
-Files to read: `app/api/**`, server components doing fetches, `next.config.js` (`revalidate`, `fetchCache`)
+Files to read: `app/api/**`, server components doing fetches, `next.config` (`revalidate`, `fetchCache`)
 
 Check against docs:
 
@@ -48,6 +50,8 @@ Check against docs:
 - Server actions/functions that should use `revalidatePath` or `revalidateTag`
 - Data fetched in layouts that could be deduplicated with `cache()` from React
 - Sequential data fetches that could be parallelized
+- **`use cache` directive**: functions or components doing expensive computation that could benefit from the `'use cache'` directive with `cacheLife()` configuration
+- **`connection()`**: dynamic security/auth checks that should use `await connection()` to defer to request time before cached computation
 
 #### 2.3 Metadata & SEO
 
@@ -63,7 +67,7 @@ Check against docs:
 
 #### 2.4 Image Optimization
 
-Files to read: all files importing `next/image`, `next.config.js` images config
+Files to read: all files importing `next/image`, `next.config` images config
 
 Check against docs:
 
@@ -87,26 +91,29 @@ Check against docs:
 
 #### 2.6 Configuration
 
-Files to read: `next.config.js`, `tsconfig.json`, `vercel.json`
+Files to read: `next.config.mjs` (or `.ts`), `tsconfig.json`, `vercel.json`
 
 Check against docs:
 
 - Deprecated config options
-- `experimental` flags that have graduated to stable
+- `experimental` flags that have graduated to stable (check current docs for what's now stable)
+- **`cacheComponents`**: whether PPR should be enabled (replaces `experimental.ppr`)
 - Webpack customizations that conflict with Next.js internals (especially `splitChunks`, `optimization`)
 - Missing recommended settings for the detected Next.js version
 - `outputFileTracingIncludes` correctness for serverless deployments
+- **Turbopack**: if `--turbopack` is used in dev, verify config compatibility
 
-#### 2.7 Proxy / Middleware
+#### 2.7 Middleware
 
-Files to read: `proxy.ts` (or `middleware.ts`)
+Files to read: `middleware.ts` (or `proxy.ts`)
 
 Check against docs:
 
 - Matcher config correctness
-- Response manipulation that could be done with `next.config.js` headers/redirects instead
-- Heavy computation in proxy (runs on every matched request)
+- Response manipulation that could be done with `next.config` headers/redirects instead
+- Heavy computation in middleware (runs on every matched request)
 - CSP nonce generation and propagation
+- **`forbidden()` / `unauthorized()`**: new Next.js auth helpers that should be used instead of manual 401/403 responses
 
 #### 2.8 Error Handling
 
@@ -118,6 +125,15 @@ Check against docs:
 - `error.tsx` not marked `'use client'` (required by Next.js)
 - Error boundaries not using `reset` function for recovery
 - Missing error handling for parallel routes or intercepting routes
+
+#### 2.9 Post-Request Work
+
+Files to read: API routes, server actions, any file using `waitUntil` or background work
+
+Check against docs:
+
+- Background work that should use the `after()` API instead of `waitUntil` or fire-and-forget patterns
+- Analytics, logging, or cache warming that blocks the response unnecessarily
 
 ### Phase 3: Apply Fixes
 
