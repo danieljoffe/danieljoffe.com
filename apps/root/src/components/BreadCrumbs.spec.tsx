@@ -19,31 +19,27 @@ jest.mock('next/navigation', () => ({
 
 // Mock next/link to use a real anchor and prevent navigation
 jest.mock('next/link', () => {
-  const React = require('react');
-  const MockLink = React.forwardRef(
-    (
-      props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string },
-      ref: React.ForwardedRef<HTMLAnchorElement>
-    ) => {
-      const { href, children, onClick, ...rest } = props;
-      return (
-        <a
-          ref={ref}
-          href={href}
-          onClick={e => {
-            e.preventDefault();
-            onClick?.(e);
-          }}
-          {...rest}
-        >
-          {children}
-        </a>
-      );
+  return function MockLink(
+    props: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      href: string;
+      ref?: React.Ref<HTMLAnchorElement>;
     }
-  );
-
-  MockLink.displayName = 'MockLink';
-  return MockLink;
+  ) {
+    const { href, children, onClick, ref, ...rest } = props;
+    return (
+      <a
+        ref={ref}
+        href={href}
+        onClick={e => {
+          e.preventDefault();
+          onClick?.(e);
+        }}
+        {...rest}
+      >
+        {children}
+      </a>
+    );
+  };
 });
 
 describe('BreadCrumbs', () => {

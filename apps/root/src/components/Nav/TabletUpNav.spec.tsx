@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import TabletUpNav from './TabletUpNav';
+
+expect.extend(toHaveNoViolations);
 
 const mockPush = jest.fn();
 
@@ -9,21 +12,19 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('next/link', () => {
-  const MockLink = React.forwardRef(
-    (
-      props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string },
-      ref: React.ForwardedRef<HTMLAnchorElement>
-    ) => {
-      const { href, children, ...rest } = props;
-      return (
-        <a ref={ref} href={href} {...rest}>
-          {children}
-        </a>
-      );
+  return function MockLink(
+    props: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      href: string;
+      ref?: React.Ref<HTMLAnchorElement>;
     }
-  );
-  MockLink.displayName = 'MockLink';
-  return MockLink;
+  ) {
+    const { href, children, ref, ...rest } = props;
+    return (
+      <a ref={ref} href={href} {...rest}>
+        {children}
+      </a>
+    );
+  };
 });
 
 jest.mock('next/image', () => {
@@ -45,6 +46,8 @@ jest.mock('./SearchTrigger', () => {
   };
 });
 
+// analytics.navClick is imported by TabletUpNav but not exercised in these
+// render-only tests. The mock prevents the real module from loading.
 jest.mock('@/lib/analytics', () => ({
   analytics: { navClick: jest.fn() },
 }));
@@ -81,5 +84,10 @@ describe('TabletUpNav', () => {
     expect(
       screen.getByRole('navigation', { name: /primary/i })
     ).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<TabletUpNav pathname='/' />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

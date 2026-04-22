@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { InteractiveDemo } from './InteractiveDemo';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@/utils/constants', () => ({
   STORYBOOK_URL: 'https://ui.danieljoffe.com',
@@ -254,5 +257,12 @@ describe('InteractiveDemo', () => {
         screen.getByRole('group', { name: 'Demo variant controls' })
       ).toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <InteractiveDemo story='button--primary' title='Button Demo' />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

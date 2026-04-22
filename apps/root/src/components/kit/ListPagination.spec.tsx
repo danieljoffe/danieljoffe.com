@@ -1,5 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ListPagination } from './ListPagination';
+
+expect.extend(toHaveNoViolations);
 
 // next/link renders a plain <a> with an href in the test environment — jest
 // already has the usual Next mocks in place via apps/root/src/test-setup.ts.
@@ -70,5 +73,12 @@ describe('ListPagination', () => {
     // First and last pages always present
     expect(within(nav).getByLabelText('Go to page 1')).toBeInTheDocument();
     expect(within(nav).getByLabelText('Go to page 10')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <ListPagination currentPage={1} totalPages={3} hrefFor={hrefFor} />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
