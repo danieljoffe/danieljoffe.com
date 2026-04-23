@@ -10,6 +10,7 @@ from app.config import Settings, settings
 
 if TYPE_CHECKING:
     from app.services.embeddings.client import EmbeddingsClient
+    from app.services.llm.client import LLMClient
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
@@ -32,6 +33,15 @@ def get_embeddings_client() -> "EmbeddingsClient":
     Voyage when the real implementation lands).
     """
     from app.services.embeddings import get_default_client
+
+    return get_default_client()
+
+
+def get_llm_client() -> "LLMClient":
+    """LLM client factory. Returns the default (mock today, Anthropic
+    when the real implementation lands).
+    """
+    from app.services.llm import get_default_client
 
     return get_default_client()
 
