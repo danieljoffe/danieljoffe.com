@@ -1,0 +1,74 @@
+"""Pydantic models for the conversation orchestrator (#185 P2d)."""
+
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+from app.models.experience import ConversationType
+
+GapKind = Literal[
+    "role.missing_outcomes",
+    "role.missing_summary",
+    "role.missing_end_date",
+    "outcome.missing_metric",
+    "skill.missing_evidence",
+    "content.empty",
+]
+
+
+class Gap(BaseModel):
+    """A missing slot in the optimized doc worth probing for."""
+
+    kind: GapKind
+    ref: str
+    priority: int
+    context: str
+
+
+class TurnRequest(BaseModel):
+    """Client payload for POST /experience/conversation/turn."""
+
+    conversation_type: ConversationType
+    content: str = Field(min_length=1, max_length=50_000)
+    skipped: bool = False
+
+
+class LLMTurnResponse(BaseModel):
+    """The structured shape the LLM must return.
+
+    - `assistant_message`: the question or acknowledgement shown to the user.
+    - `prose_append`: optional chunk of narrative to append to the prose doc.
+      The LLM can only *append*, never rewrite existing prose.
+    - `done`: true when the orchestrator should stop probing for this phase.
+    """
+
+    assistant_message: str = Field(min_length=1, max_length=10_000)
+    prose_append: str | None = None
+    done: bool = False
+
+
+class TurnResult(BaseModel):
+    """What POST /experience/conversation/turn returns to the client."""
+
+    assistant_message: str
+    prose_updated: bool
+    prose_version: int | None
+    done: bool
+
+
+class ProbeResult(BaseModel):
+    """What GET /experience/conversation/next-probe returns.
+
+    `gap` is None when there are no gaps worth probing.
+    """
+
+    question: str
+    gap: Gap | None
+
+
+class ResetResult(BaseModel):
+    """What POST /experience/conversation/reset returns."""
+
+    prose_versions_deleted: int
+    optimized_versions_deleted: int
+    turns_deleted: int

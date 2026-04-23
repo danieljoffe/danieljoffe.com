@@ -17,6 +17,12 @@ from app.dependencies import (
     get_supabase,
     verify_api_key_or_session,
 )
+from app.models.conversation import (
+    ProbeResult,
+    ResetResult,
+    TurnRequest,
+    TurnResult,
+)
 from app.models.experience import (
     ConversationType,
     OptimizedDoc,
@@ -27,6 +33,7 @@ from app.models.experience import (
     ProseDocCreate,
     TurnAppend,
 )
+from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import chunks, derive, optimized, preferences, prose, turns
 from app.services.llm import cost_log
@@ -201,3 +208,44 @@ async def append_turn(
         prose_doc_id=body.prose_doc_id,
     )
     return turn.model_dump(mode="json")
+
+
+# ---- Conversation orchestrator (P2d) -------------------------------------
+
+
+@router.post("/conversation/turn")
+async def conversation_turn(
+    body: TurnRequest,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> TurnResult:
+    """Run one orchestrated turn. Persists user + assistant turns,
+    appends to prose doc if the LLM determined fresh content was shared.
+    """
+    return await orchestrator.handle_turn(
+        supabase,
+        llm,
+        user_id=None,
+        conversation_type=body.conversation_type,
+        user_content=body.content,
+        skipped=body.skipped,
+    )
+
+
+@router.post("/conversation/reset")
+async def conversation_reset(
+    supabase: Client = Depends(get_supabase),
+) -> ResetResult:
+    """Wipe prose, optimized (chunks cascade), and turns. Preferences are
+    preserved — delete them via DELETE /experience/preferences if wanted.
+    """
+    return orchestrator.reset_content(supabase, user_id=None)
+
+
+@router.get("/conversation/next-probe")
+async def conversation_next_probe(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> ProbeResult:
+    """Top-priority gap phrased as a user-facing question by the LLM."""
+    return await orchestrator.next_probe(supabase, llm, user_id=None)
