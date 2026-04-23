@@ -13,67 +13,40 @@ function req(headers: Record<string, string>): Request {
   });
 }
 
-describe('extractClientIp', () => {
-  it('prefers x-vercel-forwarded-for over x-forwarded-for', () => {
-    expect(
-      extractClientIp(
-        req({
-          'x-vercel-forwarded-for': '198.51.100.1',
-          'x-forwarded-for': '203.0.113.9, 10.0.0.1',
-        })
-      )
-    ).toBe('198.51.100.1');
-  });
-
-  it('falls back to x-forwarded-for first hop', () => {
-    expect(
-      extractClientIp(req({ 'x-forwarded-for': '203.0.113.9, 10.0.0.1' }))
-    ).toBe('203.0.113.9');
-  });
-
-  it('returns "unknown" when no forwarded headers are set', () => {
-    expect(extractClientIp(req({}))).toBe('unknown');
-  });
-});
-
-describe('checkInsightsRateLimit', () => {
+describe('insights rate limiter (30 req / 60s)', () => {
   beforeEach(() => {
     resetInsightsRateLimit();
   });
 
-  it('allows requests under the limit', () => {
-    const result = checkInsightsRateLimit('1.1.1.1');
-    expect(result.blocked).toBe(false);
-  });
-
-  it('blocks once the per-IP limit is exceeded', () => {
-    const ip = '2.2.2.2';
+  it('allows 30 requests then blocks', () => {
+    const ip = '1.1.1.1';
     for (let i = 0; i < 30; i++) {
       expect(checkInsightsRateLimit(ip).blocked).toBe(false);
     }
-    const blocked = checkInsightsRateLimit(ip);
-    expect(blocked.blocked).toBe(true);
-    expect(blocked.retryAfterSeconds).toBeGreaterThan(0);
+    const result = checkInsightsRateLimit(ip);
+    expect(result.blocked).toBe(true);
+    expect(result.retryAfterSeconds).toBeGreaterThan(0);
   });
 
-  it('expires entries after the window passes', () => {
-    const realNow = Date.now;
-    let now = 1_000_000;
-    Date.now = () => now;
+  it('resets after the 60s window expires', () => {
+    const ip = '2.2.2.2';
+    jest.useFakeTimers();
     try {
-      const ip = '3.3.3.3';
+      // Exhaust the limit
       for (let i = 0; i < 30; i++) checkInsightsRateLimit(ip);
       expect(checkInsightsRateLimit(ip).blocked).toBe(true);
-      now += 60_001;
+
+      // Advance past the 60s window
+      jest.advanceTimersByTime(61_000);
       expect(checkInsightsRateLimit(ip).blocked).toBe(false);
     } finally {
-      Date.now = realNow;
+      jest.useRealTimers();
     }
   });
 
-  it('isolates limits per IP', () => {
-    for (let i = 0; i < 30; i++) checkInsightsRateLimit('4.4.4.4');
-    expect(checkInsightsRateLimit('4.4.4.4').blocked).toBe(true);
-    expect(checkInsightsRateLimit('5.5.5.5').blocked).toBe(false);
+  it('re-exports extractClientIp', () => {
+    expect(
+      extractClientIp(req({ 'x-vercel-forwarded-for': '198.51.100.1' }))
+    ).toBe('198.51.100.1');
   });
 });

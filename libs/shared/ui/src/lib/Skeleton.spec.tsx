@@ -4,43 +4,47 @@ import { Skeleton } from './Skeleton';
 describe('Skeleton', () => {
   it('renders text variant by default', () => {
     const { container } = render(<Skeleton />);
-    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    const line = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(line).toHaveClass('animate-pulse');
   });
 
   it('renders single line by default', () => {
     const { container } = render(<Skeleton />);
-    const pulseElements = container.querySelectorAll('.animate-pulse');
-    expect(pulseElements).toHaveLength(1);
+    const children = container.querySelectorAll('[class*="animate-pulse"]');
+    expect(children).toHaveLength(1);
   });
 
   it('renders multiple lines', () => {
     const { container } = render(<Skeleton lines={3} />);
-    const pulseElements = container.querySelectorAll('.animate-pulse');
-    expect(pulseElements).toHaveLength(3);
+    const wrapper = container.firstChild as HTMLElement;
+    const lines = wrapper.querySelectorAll('[class*="animate-pulse"]');
+    expect(lines).toHaveLength(3);
   });
 
   it('makes last line shorter when multiple lines', () => {
     const { container } = render(<Skeleton lines={3} />);
-    const lines = container.querySelectorAll('.animate-pulse');
+    const wrapper = container.firstChild as HTMLElement;
+    const lines = wrapper.querySelectorAll('[class*="animate-pulse"]');
     expect(lines[2]).toHaveClass('w-3/4');
     expect(lines[0]).not.toHaveClass('w-3/4');
   });
 
   it('renders circular variant', () => {
     const { container } = render(<Skeleton variant='circular' />);
-    expect(container.querySelector('.rounded-full')).toBeInTheDocument();
+    expect(container.firstChild).toHaveClass('rounded-full');
   });
 
   it('renders rectangular variant', () => {
     const { container } = render(<Skeleton variant='rectangular' />);
-    expect(container.querySelector('.rounded-lg')).toBeInTheDocument();
+    expect(container.firstChild).toHaveClass('rounded-lg');
   });
 
   it('applies custom width and height to circular variant', () => {
     const { container } = render(
       <Skeleton variant='circular' width={60} height={60} />
     );
-    const el = container.querySelector('.rounded-full') as HTMLElement;
+    const el = container.firstChild as HTMLElement;
+    expect(el).toHaveClass('rounded-full');
     expect(el.style.width).toBe('60px');
     expect(el.style.height).toBe('60px');
   });
@@ -53,22 +57,26 @@ describe('Skeleton', () => {
   describe('sizes', () => {
     it('applies md text line height by default', () => {
       const { container } = render(<Skeleton />);
-      expect(container.querySelector('.h-4')).toBeInTheDocument();
+      const line = (container.firstChild as HTMLElement).firstElementChild!;
+      expect(line).toHaveClass('h-4');
     });
 
     it('applies sm text line height', () => {
       const { container } = render(<Skeleton size='sm' />);
-      expect(container.querySelector('.h-3')).toBeInTheDocument();
+      const line = (container.firstChild as HTMLElement).firstElementChild!;
+      expect(line).toHaveClass('h-3');
     });
 
     it('applies lg text line height', () => {
       const { container } = render(<Skeleton size='lg' />);
-      expect(container.querySelector('.h-5')).toBeInTheDocument();
+      const line = (container.firstChild as HTMLElement).firstElementChild!;
+      expect(line).toHaveClass('h-5');
     });
 
     it('uses sm circular default size', () => {
       const { container } = render(<Skeleton variant='circular' size='sm' />);
-      const el = container.querySelector('.rounded-full') as HTMLElement;
+      const el = container.firstChild as HTMLElement;
+      expect(el).toHaveClass('rounded-full');
       expect(el.style.width).toBe('32px');
     });
 
@@ -76,7 +84,8 @@ describe('Skeleton', () => {
       const { container } = render(
         <Skeleton variant='rectangular' size='lg' />
       );
-      const el = container.querySelector('.rounded-lg') as HTMLElement;
+      const el = container.firstChild as HTMLElement;
+      expect(el).toHaveClass('rounded-lg');
       expect(el.style.height).toBe('180px');
     });
   });

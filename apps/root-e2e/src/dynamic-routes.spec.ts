@@ -5,7 +5,7 @@ test.describe('projects listing page', () => {
   test('displays projects page with heading', async ({ page }) => {
     await page.goto('/projects', { waitUntil: 'domcontentloaded' });
 
-    const heading = page.locator('h1');
+    const heading = page.getByRole('heading', { level: 1 });
     await expect(heading).toBeVisible();
   });
 
@@ -36,7 +36,7 @@ test.describe('project detail pages', () => {
       await page.goto(`/projects/${slug}`, { waitUntil: 'domcontentloaded' });
 
       // Page should load without error - project pages use h1 or h2 as main heading
-      const heading = page.locator('h1, h2').first();
+      const heading = page.getByRole('heading').first();
       await expect(heading).toBeVisible();
 
       // Breadcrumbs should be present
@@ -84,7 +84,7 @@ test.describe('experience listing page', () => {
   test('displays experience page with heading', async ({ page }) => {
     await page.goto('/experience', { waitUntil: 'domcontentloaded' });
 
-    const heading = page.locator('h1');
+    const heading = page.getByRole('heading', { level: 1 });
     await expect(heading).toBeVisible();
   });
 
@@ -115,7 +115,7 @@ test.describe('experience detail pages', () => {
       await page.goto(`/experience/${slug}`, { waitUntil: 'domcontentloaded' });
 
       // Page should load without error - experience pages use h2 as main heading
-      const heading = page.locator('h2').first();
+      const heading = page.getByRole('heading', { level: 2 }).first();
       await expect(heading).toBeVisible();
 
       // Breadcrumbs should be present
@@ -158,7 +158,9 @@ test.describe('invalid routes', () => {
 
     await page.waitForLoadState('load');
     const url = page.url();
-    const heading = (await page.locator('h1').first().textContent()) ?? '';
+    const heading =
+      (await page.getByRole('heading', { level: 1 }).first().textContent()) ??
+      '';
     // Accept: 404 content, error boundary, or parent listing page fallback
     expect(
       url.endsWith('/projects') ||
@@ -178,7 +180,9 @@ test.describe('invalid routes', () => {
 
     await page.waitForLoadState('load');
     const url = page.url();
-    const heading = (await page.locator('h1').first().textContent()) ?? '';
+    const heading =
+      (await page.getByRole('heading', { level: 1 }).first().textContent()) ??
+      '';
     expect(
       url.endsWith('/experience') ||
         /not found|404/i.test(heading) ||

@@ -1,6 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { TagChipStrip } from './TagChipStrip';
+
+expect.extend(toHaveNoViolations);
 
 const tags = [
   { name: 'React', count: 5, href: '/blog/tags/react' },
@@ -90,5 +93,10 @@ describe('TagChipStrip', () => {
     expect(
       screen.getByRole('link', { name: /view all tags/i })
     ).toHaveAttribute('href', '/blog/tags');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<TagChipStrip tags={tags} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

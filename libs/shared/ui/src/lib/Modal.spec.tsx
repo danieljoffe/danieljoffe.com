@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Modal } from './Modal';
+
+expect.extend(toHaveNoViolations);
 
 // Helper that provides a tabbable node for focus-trap
 const renderModal = (props: Partial<React.ComponentProps<typeof Modal>> = {}) =>
@@ -170,5 +173,10 @@ describe('Modal', () => {
         screen.getByRole('button', { name: 'Close dialog' })
       ).toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = renderModal({ title: 'Test Dialog' });
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

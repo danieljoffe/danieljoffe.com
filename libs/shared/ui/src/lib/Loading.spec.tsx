@@ -44,14 +44,20 @@ describe('Loading', () => {
   });
 
   it('renders bouncing dots', () => {
-    const { container } = render(<Loading />);
-    const dots = container.querySelectorAll('.rounded-full.size-2');
+    render(<Loading />);
+    const status = screen.getByRole('status');
+    const dots = status.querySelectorAll(
+      '[class*="rounded-full"][class*="size-2"]'
+    );
     expect(dots.length).toBe(4);
   });
 
   it('applies motion-reduce:animate-none to bouncing dots', () => {
-    const { container } = render(<Loading />);
-    const dots = container.querySelectorAll('.rounded-full.size-2');
+    render(<Loading />);
+    const status = screen.getByRole('status');
+    const dots = status.querySelectorAll(
+      '[class*="rounded-full"][class*="size-2"]'
+    );
     dots.forEach(dot => {
       expect(dot).toHaveClass('motion-reduce:animate-none');
     });
@@ -64,8 +70,11 @@ describe('Loading', () => {
   });
 
   it('renders dots with correct color variants', () => {
-    const { container } = render(<Loading />);
-    const dots = container.querySelectorAll('.rounded-full.size-2');
+    render(<Loading />);
+    const status = screen.getByRole('status');
+    const dots = status.querySelectorAll(
+      '[class*="rounded-full"][class*="size-2"]'
+    );
     expect(dots[0]).toHaveClass('bg-brand-500');
     expect(dots[1]).toHaveClass('bg-brand-500/60');
     expect(dots[2]).toHaveClass('bg-brand-500');

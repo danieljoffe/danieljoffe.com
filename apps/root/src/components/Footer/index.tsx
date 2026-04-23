@@ -8,8 +8,7 @@ import {
 import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
-  PRIMARY_NAV_LINKS,
-  MORE_NAV_LINKS,
+  NAV_LINKS,
   AUDIT_LINK,
   STORYBOOK_URL,
   RESUME_URL,
@@ -77,42 +76,26 @@ export default function Footer() {
 
         {/* Navigation */}
         <nav aria-label='Footer navigation'>
-          <div className='flex flex-wrap justify-center sm:justify-start gap-x-8 gap-y-4'>
-            {/* Primary links */}
-            <ul className='flex flex-wrap gap-x-6 gap-y-2'>
-              {PRIMARY_NAV_LINKS.map(link => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {/* More links */}
-            <ul className='flex flex-wrap gap-x-6 gap-y-2'>
-              {MORE_NAV_LINKS.map(link => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
+          <ul className='flex flex-wrap justify-center sm:justify-start gap-x-6 gap-y-2'>
+            {NAV_LINKS.map(link => (
+              <li key={link.href}>
                 <Link
-                  href={AUDIT_LINK.href}
+                  href={link.href}
                   className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
                 >
-                  {AUDIT_LINK.label}
+                  {link.label}
                 </Link>
               </li>
-            </ul>
-          </div>
+            ))}
+            <li>
+              <Link
+                href={AUDIT_LINK.href}
+                className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
+              >
+                {AUDIT_LINK.label}
+              </Link>
+            </li>
+          </ul>
         </nav>
 
         {/* Bottom row: copyright + design system link */}

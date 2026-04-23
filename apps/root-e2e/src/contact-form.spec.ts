@@ -229,7 +229,7 @@ test.describe('contact form submission', () => {
     await submitButton.click();
 
     // Wait for error alert
-    const errorAlert = page.locator('#form-error');
+    const errorAlert = page.getByRole('alert');
     await expect(errorAlert).toBeVisible({ timeout: 5000 });
   });
 
@@ -267,7 +267,7 @@ test.describe('contact form submission', () => {
     await submitButton.click();
 
     // Should show captcha error - wait for it to appear using auto-waiting
-    const errorAlert = page.locator('#form-error');
+    const errorAlert = page.getByRole('alert');
     await expect(errorAlert).toBeVisible({ timeout: 5000 });
   });
 

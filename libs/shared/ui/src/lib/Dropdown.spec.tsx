@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Dropdown } from './Dropdown';
+
+expect.extend(toHaveNoViolations);
 
 // Mock requestAnimationFrame to run callbacks synchronously in tests
 beforeEach(() => {
@@ -16,8 +19,8 @@ afterEach(() => {
 });
 
 const items = [
-  { label: 'Edit', onClick: jest.fn() },
-  { label: 'Delete', onClick: jest.fn(), danger: true },
+  { label: 'Edit', onClick: () => {} },
+  { label: 'Delete', onClick: () => {}, danger: true },
 ];
 
 describe('Dropdown', () => {
@@ -350,5 +353,12 @@ describe('Dropdown', () => {
       expect(screen.queryByRole('menu')).not.toBeInTheDocument();
       expect(trigger).toHaveFocus();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <Dropdown trigger={<span>Menu</span>} items={items} />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

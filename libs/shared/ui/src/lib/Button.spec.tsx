@@ -1,6 +1,9 @@
 import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Button, type ButtonVariant, type ButtonSize } from './Button';
+
+expect.extend(toHaveNoViolations);
 
 describe('Button', () => {
   it('renders children content', () => {
@@ -243,5 +246,10 @@ describe('Button', () => {
       );
       expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Button>Click</Button>);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

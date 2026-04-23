@@ -12,11 +12,11 @@ Run the full verification loop after significant changes. Fix any issues that ar
 
 ### Phase 1: Production Build
 
-Run `yarn nx build root --prod`. Fix any build errors (missing imports, type errors, prerender failures) before continuing.
+Run `pnpm nx build root`. Fix any build errors (missing imports, type errors, prerender failures) before continuing.
 
 ### Phase 2: Dev Server + Browser console.log Check
 
-1. Start the dev server: `yarn nx dev root` (background)
+1. Start the dev server: `pnpm nx dev root` (background)
 2. Wait for it to be ready, then open a browser using Chrome DevTools MCP
 3. Visit these pages and check console for errors/warnings (ignore Calendly 403s, Storybook iframe errors, and "unable to connect to top frame" warnings — these are pre-existing):
    - `/` (homepage)
@@ -32,15 +32,15 @@ Run `yarn nx build root --prod`. Fix any build errors (missing imports, type err
 
 ### Phase 3: POM Scripts (individually)
 
-Run each script from `yarn pom` one at a time in this order. Fix failures before proceeding:
+Run each script from `pnpm pom` one at a time in this order. Fix failures before proceeding:
 
-1. `yarn typecheck`
-2. `yarn lint:fix`
-3. `yarn format`
-4. `yarn test`
-5. `yarn test:coverage`
-6. `yarn test:e2e`
-7. `yarn test:lighthouse`
+1. `pnpm typecheck`
+2. `pnpm lint:fix`
+3. `pnpm format`
+4. `pnpm test`
+5. `pnpm test:coverage`
+6. `pnpm test:e2e`
+7. `pnpm test:lighthouse`
 
 ### Phase 4: Report
 
@@ -49,7 +49,7 @@ After all steps pass, report a summary table:
 | Step            | Result |
 | --------------- | ------ |
 | Build           | ...    |
-| Hydration check | ...    |
+| console.logs    | ...    |
 | typecheck       | ...    |
 | lint:fix        | ...    |
 | format          | ...    |

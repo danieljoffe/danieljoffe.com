@@ -37,15 +37,19 @@ jest.mock('@/utils/constants', () => ({
 }));
 
 // Mock HeadlessUI components
-const MockDialogPanel = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode }
->(({ children, ...props }, ref) => (
-  <div data-testid='dialog-panel' ref={ref} {...props}>
-    {children}
-  </div>
-));
-MockDialogPanel.displayName = 'DialogPanel';
+function MockDialogPanel(
+  props: React.HTMLAttributes<HTMLDivElement> & {
+    children: React.ReactNode;
+    ref?: React.Ref<HTMLDivElement>;
+  }
+) {
+  const { children, ref, ...rest } = props;
+  return (
+    <div data-testid='dialog-panel' ref={ref} {...rest}>
+      {children}
+    </div>
+  );
+}
 
 jest.mock('@headlessui/react', () => ({
   Dialog: ({

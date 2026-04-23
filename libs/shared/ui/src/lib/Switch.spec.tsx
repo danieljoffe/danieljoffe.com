@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Switch } from './Switch';
+
+expect.extend(toHaveNoViolations);
 
 describe('Switch', () => {
   it('renders switch element', () => {
@@ -135,5 +138,12 @@ describe('Switch', () => {
       render(<Switch checked={false} onChange={() => {}} label='Dark mode' />);
       expect(screen.getByText('Dark mode')).toBeVisible();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <Switch label='Toggle' checked={false} onChange={() => {}} />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

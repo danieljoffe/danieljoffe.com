@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Spinner } from './Spinner';
+
+expect.extend(toHaveNoViolations);
 
 describe('Spinner', () => {
   it('renders spinner element', () => {
@@ -68,5 +71,10 @@ describe('Spinner', () => {
         'Submitting form'
       );
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Spinner />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

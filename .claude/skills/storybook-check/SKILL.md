@@ -18,8 +18,8 @@ Build Storybook for projects affected by current changes and report any broken s
 1. **Identify affected projects with Storybook targets:**
 
    ```bash
-   npx nx show projects --affected --base=origin/develop --type=lib
-   npx nx show projects --affected --base=origin/develop --type=app
+   pnpm nx show projects --affected --base=origin/develop --type=lib
+   pnpm nx show projects --affected --base=origin/develop --type=app
    ```
 
    Cross-reference with projects that have a `build-storybook` target.
@@ -27,7 +27,7 @@ Build Storybook for projects affected by current changes and report any broken s
 2. **Run Storybook builds for affected projects:**
 
    ```bash
-   npx nx run-many -t build-storybook --projects=<affected-projects-with-storybook>
+   pnpm nx run-many -t build-storybook --projects=<affected-projects-with-storybook>
    ```
 
    If no affected projects have Storybook, report that and exit.
