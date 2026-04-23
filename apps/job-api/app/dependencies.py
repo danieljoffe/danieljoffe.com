@@ -1,4 +1,5 @@
 import hmac
+from typing import TYPE_CHECKING
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Security
@@ -6,6 +7,9 @@ from fastapi.security import APIKeyHeader
 from supabase import Client
 
 from app.config import Settings, settings
+
+if TYPE_CHECKING:
+    from app.services.embeddings.client import EmbeddingsClient
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
@@ -21,6 +25,15 @@ def get_supabase() -> Client:
     if client is None:
         raise HTTPException(status_code=503, detail="Supabase not configured")
     return client
+
+
+def get_embeddings_client() -> "EmbeddingsClient":
+    """Embeddings client factory. Returns the default (mock today,
+    Voyage when the real implementation lands).
+    """
+    from app.services.embeddings import get_default_client
+
+    return get_default_client()
 
 
 def _api_key_matches(presented: str | None, expected: str) -> bool:

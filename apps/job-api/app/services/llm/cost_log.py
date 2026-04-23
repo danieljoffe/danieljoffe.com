@@ -1,8 +1,12 @@
-"""Cost-log CRUD. Every LLM call writes one row here.
+"""Cost-log CRUD. Every LLM completion or embedding call writes one row here.
 
-Consumers call `record(...)` right after `client.complete(...)` with the
-resulting `LLMResult` + a `purpose` label. Spend queries (`total_spend`,
-`spend_by_purpose`) power the dashboard and any future budget guards.
+Consumers call `record(...)` right after `client.complete(...)` (LLM) or
+`record_embedding(...)` after `embed_client.embed(...)` with the result
++ a `purpose` label. Spend queries (`total_spend`, `spend_by_purpose`)
+power the dashboard and any future budget guards.
+
+The model column holds either a Claude ID or a Voyage ID — disambiguated
+by the caller, opaque at the read layer.
 """
 
 from datetime import datetime
@@ -10,9 +14,18 @@ from typing import Any, cast
 
 from supabase import Client
 
+from app.models.embeddings import EmbeddingResult
 from app.models.llm import LLMCallRecord, LLMResult
 
 TABLE = "llm_cost_log"
+
+
+def _insert_row(supabase: Client, row: dict[str, Any]) -> LLMCallRecord:
+    resp = supabase.table(TABLE).insert(row).execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError("Failed to insert llm_cost_log row")
+    return LLMCallRecord.model_validate(rows[0])
 
 
 def record(
@@ -22,23 +35,45 @@ def record(
     result: LLMResult,
     metadata: dict[str, str | int | float | bool] | None = None,
 ) -> LLMCallRecord:
-    row = {
-        "user_id": user_id,
-        "model": result.model,
-        "purpose": purpose,
-        "input_tokens": result.usage.input_tokens,
-        "output_tokens": result.usage.output_tokens,
-        "cache_read_input_tokens": result.usage.cache_read_input_tokens,
-        "cache_creation_input_tokens": result.usage.cache_creation_input_tokens,
-        "cost_usd": result.cost_usd,
-        "latency_ms": result.latency_ms,
-        "metadata": metadata or {},
-    }
-    resp = supabase.table(TABLE).insert(row).execute()
-    rows = cast(list[dict[str, Any]], resp.data or [])
-    if not rows:
-        raise RuntimeError("Failed to insert llm_cost_log row")
-    return LLMCallRecord.model_validate(rows[0])
+    return _insert_row(
+        supabase,
+        {
+            "user_id": user_id,
+            "model": result.model,
+            "purpose": purpose,
+            "input_tokens": result.usage.input_tokens,
+            "output_tokens": result.usage.output_tokens,
+            "cache_read_input_tokens": result.usage.cache_read_input_tokens,
+            "cache_creation_input_tokens": result.usage.cache_creation_input_tokens,
+            "cost_usd": result.cost_usd,
+            "latency_ms": result.latency_ms,
+            "metadata": metadata or {},
+        },
+    )
+
+
+def record_embedding(
+    supabase: Client,
+    user_id: str | None,
+    purpose: str,
+    result: EmbeddingResult,
+    metadata: dict[str, str | int | float | bool] | None = None,
+) -> LLMCallRecord:
+    return _insert_row(
+        supabase,
+        {
+            "user_id": user_id,
+            "model": result.model,
+            "purpose": purpose,
+            "input_tokens": result.usage.input_tokens,
+            "output_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0,
+            "cost_usd": result.cost_usd,
+            "latency_ms": result.latency_ms,
+            "metadata": metadata or {},
+        },
+    )
 
 
 def list_recent(

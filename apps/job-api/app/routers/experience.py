@@ -1,8 +1,7 @@
-"""Experience router (#185 P1).
+"""Experience router.
 
 CRUD over prose docs, optimized docs, conversation turns, and preferences.
-No LLM involvement in this phase — that ships in P2. These endpoints exist
-so a client (CLI today, dashboard later) can exercise the data layer.
+Creating a new optimized doc also embeds + writes its chunks (P2b).
 """
 
 from typing import Any
@@ -10,7 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_embeddings_client, get_supabase, verify_api_key_or_session
 from app.models.experience import (
     ConversationType,
     OptimizedDoc,
@@ -21,7 +20,8 @@ from app.models.experience import (
     ProseDocCreate,
     TurnAppend,
 )
-from app.services.experience import optimized, preferences, prose, turns
+from app.services.embeddings.client import EmbeddingsClient
+from app.services.experience import chunks, optimized, preferences, prose, turns
 
 router = APIRouter(
     prefix="/experience",
@@ -68,8 +68,9 @@ async def get_optimized(
 async def create_optimized(
     body: OptimizedDocUpsert,
     supabase: Client = Depends(get_supabase),
+    embeddings: EmbeddingsClient = Depends(get_embeddings_client),
 ) -> OptimizedDoc:
-    return optimized.create_version(
+    doc = optimized.create_version(
         supabase,
         user_id=None,
         payload=body.payload,
@@ -77,6 +78,13 @@ async def create_optimized(
         source=body.source,
         markdown_view=body.markdown_view,
     )
+    await chunks.upsert_for_optimized(
+        supabase,
+        embeddings,
+        doc,
+        user_id=None,
+    )
+    return doc
 
 
 # ---- Preferences ----------------------------------------------------------
