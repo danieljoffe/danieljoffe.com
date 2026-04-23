@@ -41,9 +41,16 @@ class LLMResult(BaseModel):
 
 
 class LLMCallRecord(BaseModel):
+    """Read shape for llm_cost_log rows.
+
+    Covers both LLM completions and embedding calls. The `model` column
+    holds either a Claude ID (ModelId) or a Voyage ID (EmbeddingModelId);
+    typed as `str` here since at read time we don't disambiguate.
+    """
+
     id: str
     user_id: str | None
-    model: ModelId
+    model: str
     purpose: str
     input_tokens: int
     output_tokens: int
