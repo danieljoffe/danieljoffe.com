@@ -1,14 +1,23 @@
-"""Tailor module (#185 P3a).
+"""Tailor module (#185 P3).
 
-LLM-based resume synthesis from an OptimizedPayload + JD. Post-validates
-that every role + bullet traces back to the source career record, so
-hallucinations are caught at generation time rather than in front of an
-employer.
+LLM-based resume synthesis from an OptimizedPayload + JD, with
+post-validation that every role + bullet traces back to the source
+career record. Hallucinations are caught at generation time, not in
+front of an employer.
 
-P3b adds .docx rendering. P3c adds the ATS linter.
-P3d wires this into a POST /tailor/resume endpoint.
+Layout:
+- tailor.py       — LLM synthesis + trace validation (P3a)
+- prompts.py      — TAILOR_SYSTEM (P3a)
+- persistence.py  — tailored_resumes CRUD + Supabase Storage (P3d)
+- pipeline.py     — end-to-end orchestration (P3d)
 """
 
+from app.services.tailor.pipeline import (
+    PipelineLintFailure,
+    PipelineResult,
+    PipelineSuccess,
+    run_tailor_pipeline,
+)
 from app.services.tailor.tailor import (
     DEFAULT_MODEL,
     DEFAULT_PURPOSE,
@@ -20,7 +29,11 @@ from app.services.tailor.tailor import (
 __all__ = [
     "DEFAULT_MODEL",
     "DEFAULT_PURPOSE",
+    "PipelineLintFailure",
+    "PipelineResult",
+    "PipelineSuccess",
     "build_user_message",
+    "run_tailor_pipeline",
     "tailor_resume",
     "validate_trace_refs",
 ]
