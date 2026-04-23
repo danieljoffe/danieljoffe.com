@@ -32,13 +32,16 @@ function formatScore(n: number): string {
 function Card({ label, a, b }: CardProps) {
   const delta = scoreDelta(a, b);
   return (
-    <div className='rounded-lg border border-border bg-surface-elevated p-6 text-center flex flex-col gap-2'>
+    <div className='rounded-lg border border-border bg-surface-elevated p-4 sm:p-6 text-center flex flex-col gap-2'>
       <Text variant='body'>{label}</Text>
       <div className='flex items-baseline justify-center gap-2'>
         <span className='text-2xl text-text-secondary tabular-nums'>
           {a ?? 'N/A'}
         </span>
-        <span className='text-text-secondary'>→</span>
+        <span className='text-text-secondary' aria-hidden='true'>
+          →
+        </span>
+        <span className='sr-only'>to</span>
         <span className='text-3xl font-bold tabular-nums'>{b ?? 'N/A'}</span>
       </div>
       <div className='flex justify-center'>
@@ -60,7 +63,7 @@ export default function ScoreDeltaCards({
       <Text variant='detail' className='mb-4'>
         Previous value → current value, with the change between scans.
       </Text>
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
         <Card
           label='Performance'
           a={scanA.score_performance}

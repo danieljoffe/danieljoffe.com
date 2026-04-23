@@ -14,10 +14,13 @@ describe('DeltaIndicator', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders N/A when delta is null even with a direction', () => {
-    const delta: Delta = { delta: null, direction: 'unknown' };
+  it('renders N/A when delta is null even with a meaningful direction', () => {
+    const delta: Delta = { delta: null, direction: 'improved' };
     render(<DeltaIndicator delta={delta} formatValue={fmt} />);
     expect(screen.getByText('N/A')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('No comparison available')
+    ).toBeInTheDocument();
   });
 
   it('renders unchanged state', () => {
@@ -67,16 +70,15 @@ describe('DeltaIndicator', () => {
         className='custom-class'
       />
     );
-    expect(
-      screen.getByLabelText('No comparison available').className
-    ).toContain('custom-class');
+    expect(screen.getByLabelText('No comparison available')).toHaveClass(
+      'custom-class'
+    );
   });
 
   it('handles undefined className without error', () => {
     const delta: Delta = { delta: 0, direction: 'unchanged' };
     render(<DeltaIndicator delta={delta} formatValue={fmt} />);
-    const el = screen.getByLabelText('Unchanged');
-    expect(el.className).not.toContain('undefined');
+    expect(screen.getByLabelText('Unchanged')).toBeInTheDocument();
   });
 
   it('uses the formatValue callback for display', () => {

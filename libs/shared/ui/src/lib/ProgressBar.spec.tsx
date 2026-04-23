@@ -3,62 +3,76 @@ import { ProgressBar } from './ProgressBar';
 
 describe('ProgressBar', () => {
   it('renders progress bar element', () => {
-    const { container } = render(<ProgressBar value={50} />);
-    expect(container.querySelector('.bg-surface-elevated')).toBeInTheDocument();
+    render(<ProgressBar value={50} />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveClass('bg-surface-elevated');
   });
 
   it('renders with correct percentage width', () => {
-    const { container } = render(<ProgressBar value={75} />);
-    const progressFill = container.querySelector('.bg-brand-500');
-    expect(progressFill).toHaveStyle({ width: '75%' });
+    render(<ProgressBar value={75} />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveStyle({ width: '75%' });
   });
 
   it('calculates percentage based on max value', () => {
-    const { container } = render(<ProgressBar value={50} max={200} />);
-    const progressFill = container.querySelector('.bg-brand-500');
-    expect(progressFill).toHaveStyle({ width: '25%' });
+    render(<ProgressBar value={50} max={200} />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveStyle({ width: '25%' });
   });
 
   it('caps percentage at 100%', () => {
-    const { container } = render(<ProgressBar value={150} max={100} />);
-    const progressFill = container.querySelector('.bg-brand-500');
-    expect(progressFill).toHaveStyle({ width: '100%' });
+    render(<ProgressBar value={150} max={100} />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveStyle({ width: '100%' });
   });
 
   it('does not go below 0%', () => {
-    const { container } = render(<ProgressBar value={-10} />);
-    const progressFill = container.querySelector('.bg-brand-500');
-    expect(progressFill).toHaveStyle({ width: '0%' });
+    render(<ProgressBar value={-10} />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveStyle({ width: '0%' });
   });
 
   it('applies accent variant by default', () => {
-    const { container } = render(<ProgressBar value={50} />);
-    expect(container.querySelector('.bg-brand-500')).toBeInTheDocument();
+    render(<ProgressBar value={50} />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveClass('bg-brand-500');
   });
 
   it('applies success variant styles', () => {
-    const { container } = render(<ProgressBar value={50} variant='success' />);
-    expect(container.querySelector('.bg-success')).toBeInTheDocument();
+    render(<ProgressBar value={50} variant='success' />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveClass('bg-success');
   });
 
   it('applies error variant styles', () => {
-    const { container } = render(<ProgressBar value={50} variant='error' />);
-    expect(container.querySelector('.bg-error')).toBeInTheDocument();
+    render(<ProgressBar value={50} variant='error' />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveClass('bg-error');
   });
 
   it('applies md size by default', () => {
-    const { container } = render(<ProgressBar value={50} />);
-    expect(container.querySelector('.h-2')).toBeInTheDocument();
+    render(<ProgressBar value={50} />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveClass('h-2');
   });
 
   it('applies sm size styles', () => {
-    const { container } = render(<ProgressBar value={50} size='sm' />);
-    expect(container.querySelector('.h-1')).toBeInTheDocument();
+    render(<ProgressBar value={50} size='sm' />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveClass('h-1');
   });
 
   it('applies lg size styles', () => {
-    const { container } = render(<ProgressBar value={50} size='lg' />);
-    expect(container.querySelector('.h-3')).toBeInTheDocument();
+    render(<ProgressBar value={50} size='lg' />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveClass('h-3');
   });
 
   it('does not show label by default', () => {
@@ -77,15 +91,15 @@ describe('ProgressBar', () => {
   });
 
   it('applies custom className', () => {
-    const { container } = render(
-      <ProgressBar value={50} className='custom-class' />
-    );
-    expect(container.querySelector('.custom-class')).toBeInTheDocument();
+    render(<ProgressBar value={50} className='custom-class' />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveClass('custom-class');
   });
 
   it('applies motion-reduce:transition-none to progress fill', () => {
-    const { container } = render(<ProgressBar value={50} />);
-    const fill = container.querySelector('.bg-brand-500');
+    render(<ProgressBar value={50} />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
     expect(fill).toHaveClass('motion-reduce:transition-none');
   });
 

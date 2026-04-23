@@ -6,11 +6,11 @@ disable-model-invocation: true
 
 # Security Review
 
-Perform a security-focused code review of the changes on the current branch compared to main.
+Perform a security-focused code review of the changes on the current branch compared to develop (the default PR target).
 
 ## Instructions
 
-1. Run `git diff main...HEAD` to get all changes on the current branch
+1. Run `git fetch origin && git diff origin/develop...HEAD` to get all changes on the current branch
 2. Identify all modified files, focusing on:
    - API routes (`apps/root/src/app/api/`)
    - Proxy/middleware (`apps/root/src/proxy.ts`)

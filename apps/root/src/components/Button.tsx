@@ -40,6 +40,7 @@ interface ButtonProps
 
 interface AsButtonProps extends ButtonProps {
   as?: 'button';
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
 interface AsLinkProps
@@ -155,57 +156,54 @@ function LinkAsButton(props: AsLinkProps) {
   );
 }
 
-const Button = React.forwardRef<HTMLButtonElement, AppButtonProps>(
-  (props, ref) => {
-    const { as, ...rest } = props;
+function Button(props: AppButtonProps) {
+  const { as, ...rest } = props;
 
-    if (as === 'link') {
-      return <LinkAsButton {...(rest as Omit<AsLinkProps, 'as'>)} as='link' />;
-    }
-
-    const { onClick, ...restButton } = rest as Omit<AsButtonProps, 'as'>;
-
-    const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        if (!restButton.disabled && onClick) {
-          onClick(e as unknown as React.MouseEvent<HTMLButtonElement>);
-        }
-      }
-    };
-
-    const {
-      type = 'button',
-      children,
-      variant,
-      size,
-      iconOnly,
-      className,
-      ...buttonRest
-    } = restButton;
-
-    const sizeMap = iconOnly ? iconOnlySizeStyles : sizeButtonStyles;
-
-    return (
-      <button
-        {...buttonRest}
-        ref={ref}
-        disabled={restButton.disabled}
-        type={type}
-        onClick={restButton.disabled ? undefined : onClick}
-        onKeyDown={onKeyDown}
-        className={cn(
-          baseButtonStyles,
-          variantButtonStyles[variant ?? 'primary'],
-          sizeMap[size ?? 'md'],
-          className
-        )}
-      >
-        {children}
-      </button>
-    );
+  if (as === 'link') {
+    return <LinkAsButton {...(rest as Omit<AsLinkProps, 'as'>)} as='link' />;
   }
-);
 
-Button.displayName = 'Button';
+  const { onClick, ref, ...restButton } = rest as Omit<AsButtonProps, 'as'>;
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!restButton.disabled && onClick) {
+        onClick(e as unknown as React.MouseEvent<HTMLButtonElement>);
+      }
+    }
+  };
+
+  const {
+    type = 'button',
+    children,
+    variant,
+    size,
+    iconOnly,
+    className,
+    ...buttonRest
+  } = restButton;
+
+  const sizeMap = iconOnly ? iconOnlySizeStyles : sizeButtonStyles;
+
+  return (
+    <button
+      {...buttonRest}
+      ref={ref}
+      disabled={restButton.disabled}
+      type={type}
+      onClick={restButton.disabled ? undefined : onClick}
+      onKeyDown={onKeyDown}
+      className={cn(
+        baseButtonStyles,
+        variantButtonStyles[variant ?? 'primary'],
+        sizeMap[size ?? 'md'],
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default Button;

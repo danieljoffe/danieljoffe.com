@@ -4,35 +4,20 @@ import Footer from '../index';
 
 // Mock next/link to render a real <a>
 jest.mock('next/link', () => {
-  const React = require('react');
-  const MockLink = React.forwardRef(
-    (
-      props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string },
-      ref: React.ForwardedRef<HTMLAnchorElement>
-    ) => {
-      const { href, children, ...rest } = props;
-      return (
-        <a ref={ref} href={href} {...rest}>
-          {children}
-        </a>
-      );
+  return function MockLink(
+    props: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      href: string;
+      ref?: React.Ref<HTMLAnchorElement>;
     }
-  );
-  MockLink.displayName = 'MockLink';
-  return MockLink;
+  ) {
+    const { href, children, ref, ...rest } = props;
+    return (
+      <a ref={ref} href={href} {...rest}>
+        {children}
+      </a>
+    );
+  };
 });
-
-jest.mock('@/lib/analytics', () => ({
-  analytics: {
-    ctaClick: jest.fn(),
-    navClick: jest.fn(),
-  },
-}));
-
-jest.mock('@/utils/helpers', () => ({
-  downloadResume: jest.fn(),
-  devLog: jest.fn(),
-}));
 
 describe('Footer', () => {
   it('renders with contentinfo role', () => {

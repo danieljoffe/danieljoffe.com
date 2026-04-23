@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import MobileNav from '../MobileNav';
+
+expect.extend(toHaveNoViolations);
 
 const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
@@ -10,6 +13,9 @@ jest.mock('@/hooks/useFocusTrap', () => ({
   useFocusTrap: () => ({ current: null }),
 }));
 
+// analytics is imported by MobileNav; mocks prevent the real module from loading.
+// formStart is not exercised by these tests but is called in code paths that
+// import the module, so it must remain mocked to avoid runtime errors.
 jest.mock('@/lib/analytics', () => ({
   analytics: {
     mobileMenuToggle: jest.fn(),
@@ -97,5 +103,10 @@ describe('MobileNav', () => {
     expect(
       screen.getByRole('button', { name: /open more menu/i })
     ).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<MobileNav pathname='/' />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

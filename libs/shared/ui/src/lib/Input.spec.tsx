@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Input } from './Input';
+
+expect.extend(toHaveNoViolations);
 
 describe('Input', () => {
   it('renders input element', () => {
@@ -172,5 +175,10 @@ describe('Input', () => {
         'This field is required'
       );
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Input label='Name' />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

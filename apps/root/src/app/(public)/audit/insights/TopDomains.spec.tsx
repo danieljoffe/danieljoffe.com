@@ -41,40 +41,34 @@ describe('TopDomains', () => {
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
-  it('applies green class for grade A', () => {
+  it('sets data-grade="A" for grade A', () => {
     render(<TopDomains domains={[buildDomain({ latestGrade: 'A' })]} />);
-    const gradeCell = screen.getByText('A');
-    expect(gradeCell.className).toContain('text-green-500');
+    expect(screen.getByText('A')).toHaveAttribute('data-grade', 'A');
   });
 
-  it('applies indigo class for grade B', () => {
+  it('sets data-grade="B" for grade B', () => {
     render(<TopDomains domains={[buildDomain({ latestGrade: 'B' })]} />);
-    const gradeCell = screen.getByText('B');
-    expect(gradeCell.className).toContain('text-indigo-400');
+    expect(screen.getByText('B')).toHaveAttribute('data-grade', 'B');
   });
 
-  it('applies amber class for grade C', () => {
+  it('sets data-grade="C" for grade C', () => {
     render(<TopDomains domains={[buildDomain({ latestGrade: 'C' })]} />);
-    const gradeCell = screen.getByText('C');
-    expect(gradeCell.className).toContain('text-amber-500');
+    expect(screen.getByText('C')).toHaveAttribute('data-grade', 'C');
   });
 
-  it('applies rose class for grade D', () => {
+  it('sets data-grade="D" for grade D', () => {
     render(<TopDomains domains={[buildDomain({ latestGrade: 'D' })]} />);
-    const gradeCell = screen.getByText('D');
-    expect(gradeCell.className).toContain('text-rose-400');
+    expect(screen.getByText('D')).toHaveAttribute('data-grade', 'D');
   });
 
-  it('applies red class for grade F', () => {
+  it('sets data-grade="F" for grade F', () => {
     render(<TopDomains domains={[buildDomain({ latestGrade: 'F' })]} />);
-    const gradeCell = screen.getByText('F');
-    expect(gradeCell.className).toContain('text-red-500');
+    expect(screen.getByText('F')).toHaveAttribute('data-grade', 'F');
   });
 
-  it('applies muted class for null grade', () => {
+  it('sets data-grade="none" for null grade', () => {
     render(<TopDomains domains={[buildDomain({ latestGrade: null })]} />);
-    const gradeCell = screen.getByText('N/A');
-    expect(gradeCell.className).toContain('text-muted');
+    expect(screen.getByText('N/A')).toHaveAttribute('data-grade', 'none');
   });
 
   it('renders table headers', () => {

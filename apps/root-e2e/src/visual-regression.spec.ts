@@ -144,6 +144,7 @@ function getMasks(
 ) {
   const masks: import('@playwright/test').Locator[] = [];
   if (entry.maskHCaptcha) {
+    // TODO: add data-testid="hcaptcha-container" to the hCaptcha wrapper component
     masks.push(page.locator('.min-h-\\[78px\\]'));
   }
   return masks;

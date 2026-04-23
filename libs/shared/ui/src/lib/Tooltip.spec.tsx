@@ -1,5 +1,8 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Tooltip } from './Tooltip';
+
+expect.extend(toHaveNoViolations);
 
 describe('Tooltip', () => {
   beforeEach(() => {
@@ -293,5 +296,15 @@ describe('Tooltip', () => {
 
     const tooltip = container.querySelector('[role="tooltip"]');
     expect(tooltip).toHaveAttribute('aria-hidden', 'false');
+  });
+
+  it('has no accessibility violations', async () => {
+    jest.useRealTimers();
+    const { container } = render(
+      <Tooltip content='Tooltip text'>
+        <button>Hover me</button>
+      </Tooltip>
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

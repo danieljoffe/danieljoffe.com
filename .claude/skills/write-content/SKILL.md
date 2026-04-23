@@ -115,7 +115,7 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
    - Insert the slug into the correct position in `contentOrder.ts`
    - For **experience** entries only: add a hand-authored entry to `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata.
 
-7. **Verify**: Run `yarn tsc --noEmit` and `npx nx test root` to ensure the new content integrates cleanly.
+7. **Verify**: Run `pnpm tsc --noEmit` and `pnpm nx test root` to ensure the new content integrates cleanly.
 
 ## Rules
 

@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Checkbox } from './Checkbox';
+
+expect.extend(toHaveNoViolations);
 
 describe('Checkbox', () => {
   it('renders checkbox input', () => {
@@ -121,5 +124,10 @@ describe('Checkbox', () => {
       expect(visibleLabel.tagName).toBe('LABEL');
       expect(visibleLabel).toHaveAttribute('for', checkbox.id);
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Checkbox label='Accept' />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

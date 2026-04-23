@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { ScrollToTop } from './ScrollToTop';
+
+expect.extend(toHaveNoViolations);
 
 describe('ScrollToTop', () => {
   let scrollHandler: EventListener;
@@ -12,7 +15,7 @@ describe('ScrollToTop', () => {
         if (event === 'scroll') scrollHandler = handler as EventListener;
       });
     jest.spyOn(window, 'removeEventListener');
-    window.scrollTo = jest.fn();
+    jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -85,5 +88,10 @@ describe('ScrollToTop', () => {
       'scroll',
       expect.any(Function)
     );
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<ScrollToTop />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

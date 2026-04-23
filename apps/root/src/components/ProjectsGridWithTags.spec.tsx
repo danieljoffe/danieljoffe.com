@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import type { PostThumbnail } from '@/types/postTypes';
 import { ProjectsGridWithTags } from './ProjectsGridWithTags';
+
+expect.extend(toHaveNoViolations);
 
 function makeProject(
   slug: string,
@@ -88,5 +91,12 @@ describe('ProjectsGridWithTags', () => {
 
     expect(screen.getByText('Performance Audit')).toBeInTheDocument();
     expect(screen.getByText('Accessibility Audit')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <ProjectsGridWithTags allProjects={projects} tags={tags} />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -22,7 +22,9 @@ test.describe('services page', () => {
   });
 
   test('service cards show pricing and timeline', async ({ page }) => {
+    // Content assertion — update if pricing changes
     await expect(page.getByText('$5,000').first()).toBeVisible();
+    // Content assertion — update if timeline changes
     await expect(page.getByText('2-4 weeks').first()).toBeVisible();
   });
 
@@ -56,7 +58,9 @@ test.describe('services page', () => {
   });
 
   test('the CTA buttons link to booking page', async ({ page }) => {
-    const ctaButtons = page.locator('a:has-text("Book a Discovery Call")');
+    const ctaButtons = page.getByRole('link', {
+      name: /book a discovery call/i,
+    });
     const count = await ctaButtons.count();
     expect(count).toBeGreaterThanOrEqual(1);
 

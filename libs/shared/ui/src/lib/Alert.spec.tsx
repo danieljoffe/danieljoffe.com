@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Alert } from './Alert';
+
+expect.extend(toHaveNoViolations);
 
 describe('Alert', () => {
   it('renders children content', () => {
@@ -121,5 +124,10 @@ describe('Alert', () => {
       const icon = container.querySelector('[aria-hidden="true"]');
       expect(icon).toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Alert>Message</Alert>);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

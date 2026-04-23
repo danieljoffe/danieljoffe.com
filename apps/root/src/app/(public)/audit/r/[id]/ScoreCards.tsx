@@ -28,7 +28,7 @@ function ScoreCardItem({ label, score }: ScoreCardItemProps) {
   const color = getScoreColor(score);
 
   return (
-    <div className='rounded-lg border border-border bg-surface-elevated p-6 text-center'>
+    <div className='rounded-lg border border-border bg-surface-elevated p-4 sm:p-6 text-center'>
       <Text variant='body' className='mb-2'>
         {label}
       </Text>

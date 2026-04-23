@@ -17,13 +17,12 @@ test.describe('404 Error Page', () => {
     // Wait for page content to render
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
-    const is404 = await page.locator('h1:has-text("404")').isVisible();
-    const isNotFound = await page
-      .locator('h2:has-text("Page Not Found")')
-      .isVisible();
-    const hasErrorText = await page.locator('text=/not found/i').isVisible();
-
-    expect(is404 || isNotFound || hasErrorText).toBeTruthy();
+    await expect(
+      page
+        .getByRole('heading', { name: '404' })
+        .or(page.getByRole('heading', { name: 'Page Not Found' }))
+        .or(page.getByText(/not found/i))
+    ).toBeVisible();
   });
 
   test('404 page has link back to home', async ({ page }) => {
@@ -76,7 +75,7 @@ test.describe('404 Error Page', () => {
       expect(hasNoindex).toBeTruthy();
     } else {
       // If no robots tag, just verify it's a 404 page
-      const is404 = page.locator('h1:has-text("404")');
+      const is404 = page.getByRole('heading', { name: '404' });
       await expect(is404).toBeVisible();
     }
   });
@@ -100,27 +99,24 @@ test.describe('thank-you page protection', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
     // Fill and submit form
-    await fillInput(page.locator('input[name="name"]'), VALID_FORM_DATA.name);
-    await fillInput(page.locator('input[name="email"]'), VALID_FORM_DATA.email);
-    await fillInput(
-      page.locator('textarea[name="message"]'),
-      VALID_FORM_DATA.message
-    );
+    await fillInput(page.getByLabel(/name/i), VALID_FORM_DATA.name);
+    await fillInput(page.getByLabel(/email/i), VALID_FORM_DATA.email);
+    await fillInput(page.getByLabel(/message/i), VALID_FORM_DATA.message);
 
     // Complete hCaptcha verification
     await completeHCaptcha(page);
 
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     // Wait for navigation to thank-you page
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Verify thank-you page content is visible
-    const thankYouHeading = page.locator('h1, h2').first();
+    const thankYouHeading = page.getByRole('heading').first();
     await expect(thankYouHeading).toBeVisible();
   });
 
@@ -133,18 +129,15 @@ test.describe('thank-you page protection', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
-    await fillInput(page.locator('input[name="name"]'), VALID_FORM_DATA.name);
-    await fillInput(page.locator('input[name="email"]'), VALID_FORM_DATA.email);
-    await fillInput(
-      page.locator('textarea[name="message"]'),
-      VALID_FORM_DATA.message
-    );
+    await fillInput(page.getByLabel(/name/i), VALID_FORM_DATA.name);
+    await fillInput(page.getByLabel(/email/i), VALID_FORM_DATA.email);
+    await fillInput(page.getByLabel(/message/i), VALID_FORM_DATA.message);
 
     await completeHCaptcha(page);
 
-    await page.locator('button[type="submit"]').click();
+    await page.getByRole('button', { name: /submit/i }).click();
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Check for noindex
@@ -163,18 +156,15 @@ test.describe('thank-you page protection', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.locator('button[type="submit"]')).toBeEnabled();
+    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
-    await fillInput(page.locator('input[name="name"]'), VALID_FORM_DATA.name);
-    await fillInput(page.locator('input[name="email"]'), VALID_FORM_DATA.email);
-    await fillInput(
-      page.locator('textarea[name="message"]'),
-      VALID_FORM_DATA.message
-    );
+    await fillInput(page.getByLabel(/name/i), VALID_FORM_DATA.name);
+    await fillInput(page.getByLabel(/email/i), VALID_FORM_DATA.email);
+    await fillInput(page.getByLabel(/message/i), VALID_FORM_DATA.message);
 
     await completeHCaptcha(page);
 
-    await page.locator('button[type="submit"]').click();
+    await page.getByRole('button', { name: /submit/i }).click();
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Check for the "Back to home" button (not the nav link, which is hidden on mobile)

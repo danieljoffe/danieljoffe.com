@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Textarea } from './Textarea';
+
+expect.extend(toHaveNoViolations);
 
 describe('Textarea', () => {
   it('renders textarea element', () => {
@@ -158,5 +161,10 @@ describe('Textarea', () => {
         'Description is required'
       );
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Textarea label='Message' />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
