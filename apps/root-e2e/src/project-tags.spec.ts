@@ -12,7 +12,7 @@ test.describe('project listing and tag filtering', () => {
   }) => {
     const projectLinks = page.locator('.grid a[href^="/projects/"]');
     await expect(projectLinks.first()).toBeVisible();
-    expect(await projectLinks.count()).toBeGreaterThan(0);
+    await expect(projectLinks).not.toHaveCount(0);
   });
 
   test('filters projects by clicking a tag chip', async ({ page }) => {
@@ -79,10 +79,7 @@ test.describe('project listing and tag filtering', () => {
     await expect(filterSummary).toBeHidden();
 
     // All projects should be visible again
-    await expect(async () => {
-      const count = projectLinks;
-      await expect(count).toHaveCount(initialCount);
-    }).toPass({ timeout: 5000 });
+    await expect(projectLinks).toHaveCount(initialCount);
   });
 
   test('project tag page (/projects/tags/{tag}) shows filtered projects', async ({

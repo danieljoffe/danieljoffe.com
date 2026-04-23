@@ -65,7 +65,10 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
     entry.count++;
 
     if (entry.count > maxRequests) {
-      const retryAfterSeconds = Math.ceil((entry.resetAt - now) / 1000);
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((entry.resetAt - now) / 1000)
+      );
       return { blocked: true, retryAfterSeconds };
     }
 

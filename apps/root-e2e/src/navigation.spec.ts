@@ -155,8 +155,7 @@ test.describe('mobile navigation', () => {
     // Close via the backdrop overlay — use dispatchEvent because the fixed
     // bottom nav bar (z-50) sits above the overlay (z-40) and intercepts
     // normal Playwright clicks.
-    // TODO: add data-testid="sheet-overlay" to SheetOverlay component
-    const overlay = page.locator('.fixed.inset-0.bg-black\\/40');
+    const overlay = page.getByTestId('sheet-overlay');
     await overlay.dispatchEvent('click');
     // The sheet uses translate-y transition to slide off-screen
     await expect(sheet).toBeHidden();
@@ -187,7 +186,6 @@ test.describe('breadcrumb navigation', () => {
     await page.goto('/projects/performance-case-study', {
       waitUntil: 'domcontentloaded',
     });
-    await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
     await expect(breadcrumbNav).toBeVisible();
@@ -197,7 +195,6 @@ test.describe('breadcrumb navigation', () => {
     await page.goto('/projects/performance-case-study', {
       waitUntil: 'domcontentloaded',
     });
-    await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
     await expect(breadcrumbNav).toBeVisible();

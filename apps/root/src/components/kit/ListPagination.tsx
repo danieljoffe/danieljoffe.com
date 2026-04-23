@@ -76,9 +76,7 @@ export function ListPagination({
     >
       {isPrevDisabled ? (
         <span
-          role='link'
-          aria-label='Previous page'
-          aria-disabled='true'
+          aria-hidden='true'
           className={cn(navItemBase, DISABLED, 'opacity-50 cursor-not-allowed')}
         >
           <ChevronLeft className='h-4 w-4' />
@@ -105,10 +103,7 @@ export function ListPagination({
         ) : page === currentPage ? (
           <span
             key={page}
-            role='link'
-            aria-label={`Page ${page}`}
             aria-current='page'
-            aria-disabled='true'
             className={cn(
               pageItemBase,
               'bg-brand-600 text-white font-medium inline-flex items-center justify-center'
@@ -135,9 +130,7 @@ export function ListPagination({
 
       {isNextDisabled ? (
         <span
-          role='link'
-          aria-label='Next page'
-          aria-disabled='true'
+          aria-hidden='true'
           className={cn(navItemBase, DISABLED, 'opacity-50 cursor-not-allowed')}
         >
           <ChevronRight className='h-4 w-4' />

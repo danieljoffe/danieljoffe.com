@@ -32,3 +32,8 @@ apps/root-e2e
 
 # Dev tooling
 tools
+
+# Build artifacts and logs
+*.log
+*.tsbuildinfo
+.sentryclirc

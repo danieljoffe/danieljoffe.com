@@ -14,7 +14,7 @@ test.describe('blog search and filtering', () => {
     const postLinks = page.locator('.grid a[href^="/blog/"]');
     const locator = (await postCards.count()) > 0 ? postCards : postLinks;
     await expect(locator.first()).toBeVisible();
-    expect(await locator.count()).toBeGreaterThan(0);
+    await expect(locator).not.toHaveCount(0);
   });
 
   test('searches for a blog post by title', async ({ page }) => {
@@ -53,10 +53,7 @@ test.describe('blog search and filtering', () => {
     // Results summary should disappear and original post count should restore
     await expect(resultsSummary).toBeHidden();
     await expect(postLinks.first()).toBeVisible();
-    await expect(async () => {
-      const count = postLinks;
-      await expect(count).toHaveCount(initialCount);
-    }).toPass({ timeout: 5000 });
+    await expect(postLinks).toHaveCount(initialCount);
   });
 
   test('filters posts by clicking a tag chip', async ({ page }) => {
@@ -114,38 +111,40 @@ test.describe('blog search and filtering', () => {
   test('pagination is hidden while a search is active', async ({ page }) => {
     // First verify pagination exists on the unfiltered page
     const pagination = page.locator('nav[aria-label="Pagination"]');
-    // Pagination may not exist if there are fewer posts than the page size
-    const paginationExists = (await pagination.count()) > 0;
+    // Skip if there are fewer posts than the page size
+    test.skip(
+      (await pagination.count()) === 0,
+      'No pagination — fewer posts than page size'
+    );
 
-    if (paginationExists) {
-      await expect(pagination).toBeVisible();
+    await expect(pagination).toBeVisible();
 
-      // Search to activate filtering
-      const searchInput = page.getByLabel('Search blog posts');
-      await searchInput.fill('performance');
+    // Search to activate filtering
+    const searchInput = page.getByLabel('Search blog posts');
+    await searchInput.fill('performance');
 
-      // Pagination should be hidden
-      await expect(pagination).toBeHidden();
-    }
+    // Pagination should be hidden
+    await expect(pagination).toBeHidden();
   });
 
   test('pagination is hidden while a tag filter is active', async ({
     page,
   }) => {
     const pagination = page.locator('nav[aria-label="Pagination"]');
-    const paginationExists = (await pagination.count()) > 0;
+    test.skip(
+      (await pagination.count()) === 0,
+      'No pagination — fewer posts than page size'
+    );
 
-    if (paginationExists) {
-      await expect(pagination).toBeVisible();
+    await expect(pagination).toBeVisible();
 
-      // Click a tag to activate filtering
-      const tagNav = page.locator('nav[aria-label="Filter blog posts by tag"]');
-      const firstTagButton = tagNav.locator('button[aria-pressed]').first();
-      await firstTagButton.click();
+    // Click a tag to activate filtering
+    const tagNav = page.locator('nav[aria-label="Filter blog posts by tag"]');
+    const firstTagButton = tagNav.locator('button[aria-pressed]').first();
+    await firstTagButton.click();
 
-      // Pagination should be hidden
-      await expect(pagination).toBeHidden();
-    }
+    // Pagination should be hidden
+    await expect(pagination).toBeHidden();
   });
 
   test('navigates to a blog post detail page from the listing', async ({

@@ -38,7 +38,10 @@ function Card({ label, a, b }: CardProps) {
         <span className='text-2xl text-text-secondary tabular-nums'>
           {a ?? 'N/A'}
         </span>
-        <span className='text-text-secondary'>→</span>
+        <span className='text-text-secondary' aria-hidden='true'>
+          →
+        </span>
+        <span className='sr-only'>to</span>
         <span className='text-3xl font-bold tabular-nums'>{b ?? 'N/A'}</span>
       </div>
       <div className='flex justify-center'>

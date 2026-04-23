@@ -6,6 +6,7 @@
   "targets": {
     "dev": {
       "executor": "nx:run-commands",
+      "continuous": true,
       "options": {
         "command": "uv run --package job-api uvicorn app.main:app --reload --port 8000",
         "cwd": "apps/job-api"

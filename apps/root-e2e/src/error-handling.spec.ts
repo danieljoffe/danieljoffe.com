@@ -17,13 +17,12 @@ test.describe('404 Error Page', () => {
     // Wait for page content to render
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
-    const is404 = await page.getByRole('heading', { name: '404' }).isVisible();
-    const isNotFound = await page
-      .getByRole('heading', { name: 'Page Not Found' })
-      .isVisible();
-    const hasErrorText = await page.getByText(/not found/i).isVisible();
-
-    expect(is404 || isNotFound || hasErrorText).toBeTruthy();
+    await expect(
+      page
+        .getByRole('heading', { name: '404' })
+        .or(page.getByRole('heading', { name: 'Page Not Found' }))
+        .or(page.getByText(/not found/i))
+    ).toBeVisible();
   });
 
   test('404 page has link back to home', async ({ page }) => {
