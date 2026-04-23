@@ -1,7 +1,9 @@
 """Experience router.
 
 CRUD over prose docs, optimized docs, conversation turns, and preferences.
-Creating a new optimized doc also embeds + writes its chunks (P2b).
+Creating a new optimized doc also embeds + writes its chunks.
+POST /experience/derive runs the end-to-end loop: prose -> LLM -> optimized
+doc -> chunks, all cost-logged.
 """
 
 from typing import Any
@@ -9,7 +11,12 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_embeddings_client, get_supabase, verify_api_key_or_session
+from app.dependencies import (
+    get_embeddings_client,
+    get_llm_client,
+    get_supabase,
+    verify_api_key_or_session,
+)
 from app.models.experience import (
     ConversationType,
     OptimizedDoc,
@@ -21,7 +28,9 @@ from app.models.experience import (
     TurnAppend,
 )
 from app.services.embeddings.client import EmbeddingsClient
-from app.services.experience import chunks, optimized, preferences, prose, turns
+from app.services.experience import chunks, derive, optimized, preferences, prose, turns
+from app.services.llm import cost_log
+from app.services.llm.client import LLMClient
 
 router = APIRouter(
     prefix="/experience",
@@ -77,6 +86,47 @@ async def create_optimized(
         prose_doc_id=body.prose_doc_id,
         source=body.source,
         markdown_view=body.markdown_view,
+    )
+    await chunks.upsert_for_optimized(
+        supabase,
+        embeddings,
+        doc,
+        user_id=None,
+    )
+    return doc
+
+
+@router.post("/derive")
+async def derive_optimized(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+) -> OptimizedDoc:
+    """Read the latest prose doc, derive an OptimizedPayload via LLM,
+    persist it as a new optimized version, embed its chunks, and log cost.
+    """
+    prose_doc = prose.get_latest(supabase, user_id=None)
+    if prose_doc is None:
+        raise HTTPException(status_code=404, detail="no prose doc to derive from")
+
+    payload, result = await derive.derive_from_prose(
+        llm,
+        prose_text=prose_doc.content,
+    )
+    cost_log.record(
+        supabase,
+        user_id=None,
+        purpose=derive.DEFAULT_PURPOSE,
+        result=result,
+        metadata={"prose_doc_id": prose_doc.id, "prose_version": prose_doc.version},
+    )
+
+    doc = optimized.create_version(
+        supabase,
+        user_id=None,
+        payload=payload,
+        prose_doc_id=prose_doc.id,
+        source="llm",
     )
     await chunks.upsert_for_optimized(
         supabase,
