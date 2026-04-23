@@ -28,6 +28,22 @@ describe('insights rate limiter (30 req / 60s)', () => {
     expect(result.retryAfterSeconds).toBeGreaterThan(0);
   });
 
+  it('resets after the 60s window expires', () => {
+    const ip = '2.2.2.2';
+    jest.useFakeTimers();
+    try {
+      // Exhaust the limit
+      for (let i = 0; i < 30; i++) checkInsightsRateLimit(ip);
+      expect(checkInsightsRateLimit(ip).blocked).toBe(true);
+
+      // Advance past the 60s window
+      jest.advanceTimersByTime(61_000);
+      expect(checkInsightsRateLimit(ip).blocked).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('re-exports extractClientIp', () => {
     expect(
       extractClientIp(req({ 'x-vercel-forwarded-for': '198.51.100.1' }))

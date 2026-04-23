@@ -11,7 +11,9 @@ test.describe('blog search and filtering', () => {
     // Posts render inside a grid; each PostCard contains a link
     const postCards = page.locator('article, [data-testid="post-card"]');
     // Fallback: check that at least one link inside the grid is visible
-    const postLinks = page.locator('.grid a[href^="/blog/"]');
+    const postLinks = page.locator(
+      '[data-testid="post-list"] a[href^="/blog/"]'
+    );
     const locator = (await postCards.count()) > 0 ? postCards : postLinks;
     await expect(locator.first()).toBeVisible();
     await expect(locator).not.toHaveCount(0);
@@ -30,7 +32,9 @@ test.describe('blog search and filtering', () => {
     await expect(resultsSummary).toContainText(/\d+ results? for/);
 
     // Verify at least one post is shown
-    const postLinks = page.locator('.grid a[href^="/blog/"]');
+    const postLinks = page.locator(
+      '[data-testid="post-list"] a[href^="/blog/"]'
+    );
     await expect(postLinks.first()).toBeVisible();
   });
 
@@ -38,7 +42,9 @@ test.describe('blog search and filtering', () => {
     const searchInput = page.getByLabel('Search blog posts');
 
     // Count initial posts
-    const postLinks = page.locator('.grid a[href^="/blog/"]');
+    const postLinks = page.locator(
+      '[data-testid="post-list"] a[href^="/blog/"]'
+    );
     await expect(postLinks.first()).toBeVisible();
     const initialCount = await postLinks.count();
 
@@ -150,7 +156,9 @@ test.describe('blog search and filtering', () => {
   test('navigates to a blog post detail page from the listing', async ({
     page,
   }) => {
-    const postLink = page.locator('.grid a[href^="/blog/"]').first();
+    const postLink = page
+      .locator('[data-testid="post-list"] a[href^="/blog/"]')
+      .first();
     await expect(postLink).toBeVisible();
 
     const href = await postLink.getAttribute('href');

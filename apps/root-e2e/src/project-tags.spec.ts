@@ -10,7 +10,9 @@ test.describe('project listing and tag filtering', () => {
   test('loads the projects page with project cards visible', async ({
     page,
   }) => {
-    const projectLinks = page.locator('.grid a[href^="/projects/"]');
+    const projectLinks = page.locator(
+      '[data-testid="post-list"] a[href^="/projects/"]'
+    );
     await expect(projectLinks.first()).toBeVisible();
     await expect(projectLinks).not.toHaveCount(0);
   });
@@ -23,7 +25,9 @@ test.describe('project listing and tag filtering', () => {
     await expect(firstTagButton).toBeVisible();
 
     // Get initial project count
-    const projectLinks = page.locator('.grid a[href^="/projects/"]');
+    const projectLinks = page.locator(
+      '[data-testid="post-list"] a[href^="/projects/"]'
+    );
     await expect(projectLinks.first()).toBeVisible();
     // Click the tag to filter
     await firstTagButton.click();
@@ -59,7 +63,9 @@ test.describe('project listing and tag filtering', () => {
     const firstTagButton = tagNav.locator('button[aria-pressed]').first();
 
     // Get initial project count
-    const projectLinks = page.locator('.grid a[href^="/projects/"]');
+    const projectLinks = page.locator(
+      '[data-testid="post-list"] a[href^="/projects/"]'
+    );
     await expect(projectLinks.first()).toBeVisible();
     const initialCount = await projectLinks.count();
 
@@ -108,7 +114,9 @@ test.describe('project listing and tag filtering', () => {
   test('navigates to a project detail page from the listing', async ({
     page,
   }) => {
-    const projectLink = page.locator('.grid a[href^="/projects/"]').first();
+    const projectLink = page
+      .locator('[data-testid="post-list"] a[href^="/projects/"]')
+      .first();
     await expect(projectLink).toBeVisible();
 
     const href = await projectLink.getAttribute('href');

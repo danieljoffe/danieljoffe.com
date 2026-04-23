@@ -1,4 +1,4 @@
-export interface RateLimiterOptions {
+interface RateLimiterOptions {
   maxRequests: number;
   windowMs: number;
   /** Maximum tracked IPs before oldest entries are evicted. Default: 10 000 */
@@ -7,7 +7,7 @@ export interface RateLimiterOptions {
   sweepIntervalMs?: number | undefined;
 }
 
-export interface RateLimitResult {
+interface RateLimitResult {
   blocked: boolean;
   retryAfterSeconds: number;
 }
@@ -17,7 +17,7 @@ interface Entry {
   resetAt: number;
 }
 
-export interface RateLimiter {
+interface RateLimiter {
   check(ip: string): RateLimitResult;
   reset(ip?: string): void;
 }
