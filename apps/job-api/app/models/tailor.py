@@ -1,15 +1,18 @@
-"""Pydantic models for the tailor layer (#185 P3a).
+"""Pydantic models for the tailor layer.
 
 The LLM produces a TailoredResume — a structured representation the
-`.docx` renderer (P3b) will consume. Every claim made in this structure
-must trace back to something in the OptimizedPayload; source refs are
+`.docx` renderer consumes. Every claim made in this structure must
+trace back to something in the OptimizedPayload; source refs are
 mandatory for bullets and roles so a post-hoc hallucination check can
 verify them.
 """
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
+
+from app.models.ats_lint import LintViolation
 
 ResumeType = Literal["senior-frontend", "fullstack", "frontend-lead", "generic"]
 
@@ -71,9 +74,46 @@ class TailoredResume(BaseModel):
 
 
 class TailorRequest(BaseModel):
-    """Router input shape (consumed in P3d)."""
+    """Router input shape for POST /tailor/resume."""
 
     job_description: str = Field(min_length=1, max_length=20_000)
+    contact: ContactInfo
     critique: str | None = Field(default=None, max_length=5_000)
     resume_type: ResumeType | None = None
     page_budget: Literal[1, 2] = 2
+    job_posting_id: str | None = None
+    """Optional link to a jobs pipeline row (#184)."""
+
+
+class TailoredResumeRecord(BaseModel):
+    """Read shape for a tailored_resumes row."""
+
+    id: str
+    user_id: str | None
+    job_posting_id: str | None
+    resume_type: str
+    jd_snapshot: str
+    jd_snapshot_hash: str
+    payload: TailoredResume
+    storage_path: str | None
+    warnings: list[str]
+    model: str | None
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+    latency_ms: int
+    created_at: datetime
+
+
+class TailorResponse(BaseModel):
+    """Router output for POST /tailor/resume on success."""
+
+    record: TailoredResumeRecord
+    lint_warnings: list[LintViolation] = Field(default_factory=list)
+
+
+class TailorLintFailureResponse(BaseModel):
+    """Router output when the linter finds blocking errors."""
+
+    ok: Literal[False] = False
+    violations: list[LintViolation]

@@ -1,0 +1,143 @@
+"""End-to-end tailor pipeline (#185 P3d).
+
+Glue between the four isolated units:
+  tailor_resume (P3a)  -> render_docx (P3b) -> lint_docx (P3c) -> persist
+
+Splits cleanly between "LLM synthesis" (can fail on hallucination
+trace-check with ValueError) and "format check" (returns LintResult).
+Lint errors short-circuit the pipeline and return without persisting.
+
+The router layer just calls `run_tailor_pipeline(...)` and converts the
+result into an HTTP response.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from supabase import Client
+
+from app.models.ats_lint import LintResult
+from app.models.experience import OptimizedDoc, PreferencesPayload
+from app.models.llm import LLMResult
+from app.models.tailor import (
+    ContactInfo,
+    ResumeType,
+    TailoredResume,
+    TailoredResumeRecord,
+)
+from app.services.ats_lint import lint_docx
+from app.services.docx.renderer import render_docx
+from app.services.llm import cost_log
+from app.services.llm.client import LLMClient
+from app.services.tailor import persistence
+from app.services.tailor.tailor import DEFAULT_PURPOSE, tailor_resume
+
+
+@dataclass
+class PipelineSuccess:
+    record: TailoredResumeRecord
+    resume: TailoredResume
+    warnings: list[str]
+    lint: LintResult
+    llm_result: LLMResult
+
+
+@dataclass
+class PipelineLintFailure:
+    lint: LintResult
+    resume: TailoredResume
+    warnings: list[str]
+    llm_result: LLMResult
+
+
+PipelineResult = PipelineSuccess | PipelineLintFailure
+
+
+async def run_tailor_pipeline(
+    supabase: Client,
+    llm: LLMClient,
+    *,
+    user_id: str | None,
+    optimized: OptimizedDoc,
+    job_description: str,
+    contact: ContactInfo,
+    preferences: PreferencesPayload | None = None,
+    critique: str | None = None,
+    resume_type: ResumeType = "generic",
+    page_budget: int = 2,
+    job_posting_id: str | None = None,
+) -> PipelineResult:
+    """Run the full tailor pipeline end-to-end.
+
+    Returns PipelineSuccess on clean lint, PipelineLintFailure when the
+    rendered doc has blocking errors. On lint failure nothing is
+    persisted and no `.docx` is uploaded — the caller should surface the
+    violations and retry with a critique.
+    """
+    resume, trace_warnings, llm_result = await tailor_resume(
+        llm,
+        optimized=optimized.payload,
+        job_description=job_description,
+        contact=contact,
+        resume_type=resume_type,
+        preferences_rules=(preferences.rules if preferences else None),
+        preferences_avoid=(preferences.avoid if preferences else None),
+        preferences_tone_notes=(preferences.tone_notes if preferences else None),
+        critique=critique,
+        page_budget=page_budget,
+    )
+
+    cost_log.record(
+        supabase,
+        user_id=user_id,
+        purpose=DEFAULT_PURPOSE,
+        result=llm_result,
+        metadata={
+            "optimized_doc_id": optimized.id,
+            "job_posting_id": job_posting_id or "",
+        },
+    )
+
+    docx_bytes = render_docx(resume)
+    lint = lint_docx(docx_bytes)
+    if not lint.ok:
+        return PipelineLintFailure(
+            lint=lint,
+            resume=resume,
+            warnings=trace_warnings,
+            llm_result=llm_result,
+        )
+
+    record = persistence.persist(
+        supabase,
+        user_id=user_id,
+        job_posting_id=job_posting_id,
+        resume=resume,
+        job_description=job_description,
+        warnings=trace_warnings,
+        llm_result=llm_result,
+        storage_path=None,
+    )
+    try:
+        storage_path = persistence.upload_docx(
+            supabase,
+            user_id=user_id,
+            resume_id=record.id,
+            docx_bytes=docx_bytes,
+        )
+    except Exception:
+        storage_path = None
+    if storage_path:
+        supabase.table(persistence.TABLE).update({"storage_path": storage_path}).eq(
+            "id", record.id
+        ).execute()
+        record = record.model_copy(update={"storage_path": storage_path})
+
+    return PipelineSuccess(
+        record=record,
+        resume=resume,
+        warnings=trace_warnings,
+        lint=lint,
+        llm_result=llm_result,
+    )
