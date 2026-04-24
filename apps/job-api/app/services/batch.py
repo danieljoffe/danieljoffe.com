@@ -1,0 +1,167 @@
+"""Batch resume generation service (#503).
+
+Processes multiple job postings sequentially through the existing
+`run_tailor_pipeline`. Progress is tracked in the `batch_jobs` table
+so the frontend can poll for status.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import Any, cast
+
+from supabase import Client
+
+from app.models.batch import BatchItem, BatchJob
+from app.models.experience import OptimizedDoc, PreferencesPayload
+from app.models.tailor import ContactInfo, ResumeType
+from app.services.llm.client import LLMClient
+from app.services.tailor import PipelineSuccess, run_tailor_pipeline
+
+TABLE = "batch_jobs"
+
+
+# ---------------------------------------------------------------------------
+# Persistence helpers
+# ---------------------------------------------------------------------------
+
+
+def create_batch(
+    supabase: Client,
+    *,
+    user_id: str | None,
+    job_posting_ids: list[str],
+) -> BatchJob:
+    """Insert a new batch_jobs row with all items pending."""
+    items = [
+        BatchItem(job_posting_id=jid).model_dump(mode="json")
+        for jid in job_posting_ids
+    ]
+    row: dict[str, Any] = {
+        "user_id": user_id,
+        "status": "pending",
+        "total": len(job_posting_ids),
+        "completed": 0,
+        "failed": 0,
+        "items": items,
+    }
+    resp = supabase.table(TABLE).insert(row).execute()
+    data = cast(dict[str, Any], resp.data[0])
+    return BatchJob.model_validate(data)
+
+
+def get_batch(supabase: Client, batch_id: str) -> BatchJob | None:
+    """Fetch a batch by ID."""
+    resp = supabase.table(TABLE).select("*").eq("id", batch_id).execute()
+    if not resp.data:
+        return None
+    return BatchJob.model_validate(resp.data[0])
+
+
+def _update_batch(
+    supabase: Client,
+    batch_id: str,
+    *,
+    status: str | None = None,
+    completed: int | None = None,
+    failed: int | None = None,
+    items: list[dict[str, Any]] | None = None,
+) -> None:
+    """Partial update of a batch row."""
+    updates: dict[str, Any] = {"updated_at": datetime.now(UTC).isoformat()}
+    if status is not None:
+        updates["status"] = status
+    if completed is not None:
+        updates["completed"] = completed
+    if failed is not None:
+        updates["failed"] = failed
+    if items is not None:
+        updates["items"] = items
+    supabase.table(TABLE).update(updates).eq("id", batch_id).execute()
+
+
+# ---------------------------------------------------------------------------
+# Core processing loop
+# ---------------------------------------------------------------------------
+
+
+async def process_batch(
+    supabase: Client,
+    llm: LLMClient,
+    *,
+    batch_id: str,
+    user_id: str | None,
+    optimized: OptimizedDoc,
+    job_postings: list[dict[str, Any]],
+    contact: ContactInfo,
+    preferences: PreferencesPayload | None,
+    resume_type: ResumeType,
+    page_budget: int,
+) -> None:
+    """Process all items in a batch sequentially.
+
+    Called as a FastAPI BackgroundTask. Updates the batch row after
+    each item so the frontend can poll for progress.
+    """
+    batch = get_batch(supabase, batch_id)
+    if batch is None:
+        return
+
+    items = [item.model_dump(mode="json") for item in batch.items]
+    completed = 0
+    failed = 0
+
+    _update_batch(supabase, batch_id, status="processing")
+
+    for i, posting in enumerate(job_postings):
+        job_posting_id = posting["id"]
+        description_html = posting.get("description_html", "") or ""
+
+        try:
+            result = await run_tailor_pipeline(
+                supabase,
+                llm,
+                user_id=user_id,
+                optimized=optimized,
+                job_description=description_html,
+                contact=contact,
+                preferences=preferences,
+                resume_type=resume_type,
+                page_budget=page_budget,
+                job_posting_id=job_posting_id,
+            )
+
+            if isinstance(result, PipelineSuccess):
+                items[i]["status"] = "completed"
+                items[i]["resume_record_id"] = result.record.id
+                completed += 1
+
+                # Advance job status to resume_draft
+                supabase.table("job_postings").update(
+                    {
+                        "status": "resume_draft",
+                        "updated_at": datetime.now(UTC).isoformat(),
+                    }
+                ).eq("id", job_posting_id).execute()
+            else:
+                # Lint failure
+                violations = [v.message for v in result.lint.violations]
+                items[i]["status"] = "failed"
+                items[i]["error"] = f"lint: {'; '.join(violations)}"
+                failed += 1
+
+        except Exception as exc:
+            items[i]["status"] = "failed"
+            items[i]["error"] = str(exc)[:500]
+            failed += 1
+
+        _update_batch(
+            supabase,
+            batch_id,
+            completed=completed,
+            failed=failed,
+            items=items,
+        )
+
+    final_status = "completed" if completed > 0 else "failed"
+    _update_batch(supabase, batch_id, status=final_status)
