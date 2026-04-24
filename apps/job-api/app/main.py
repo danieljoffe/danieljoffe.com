@@ -7,7 +7,7 @@ from starlette.types import Receive, Scope, Send
 
 from app.config import settings
 from app.http_client import close_http_client
-from app.routers import experience, jobs, poll, sources, status, tailor, targets
+from app.routers import analysis, experience, jobs, poll, sources, status, tailor, targets
 from app.supabase_pool import close_supabase, init_supabase
 
 if not settings.allowed_hosts_list:
@@ -49,6 +49,7 @@ app.add_middleware(
     allowed_hosts=settings.allowed_hosts_list,
 )
 
+app.include_router(analysis.router)
 app.include_router(experience.router)
 app.include_router(jobs.router)
 app.include_router(poll.router)
