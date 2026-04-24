@@ -21,7 +21,7 @@ class ScoreResult(BaseModel):
     excluded: bool
 
 
-Provider = Literal["greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld"]
+Provider = Literal["greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld", "manual"]
 
 
 class JobPosting(BaseModel):
@@ -87,3 +87,19 @@ class UrlValidateResponse(BaseModel):
     final_url: str
     warnings: list[str]
     rejection_reason: str | None
+
+
+class ManualJobRequest(BaseModel):
+    url: str = Field(max_length=2048)
+    title: str | None = Field(default=None, max_length=500)
+    company_name: str | None = Field(default=None, max_length=200)
+    location: str | None = Field(default=None, max_length=200)
+
+
+class ManualJobResponse(BaseModel):
+    success: bool
+    posting_id: str | None = None
+    extracted: dict[str, str | None]
+    extraction_tier: str
+    warnings: list[str]
+    needs_manual_fields: bool

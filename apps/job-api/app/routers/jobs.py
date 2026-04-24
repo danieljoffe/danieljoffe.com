@@ -1,12 +1,36 @@
-from typing import Any
+import hashlib
+from datetime import UTC, datetime
+from typing import Any, cast
+from urllib.parse import urlparse
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from postgrest.types import CountMethod
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key_or_session
-from app.models.schemas import UrlValidateRequest, UrlValidateResponse
-from app.services.validate import validate_job_url
+from app.http_client import get_http_client
+from app.models.schemas import (
+    ManualJobRequest,
+    ManualJobResponse,
+    UrlValidateRequest,
+    UrlValidateResponse,
+)
+from app.seed.keyword_config import keyword_config
+from app.services.extract import (
+    MANUAL_SOURCE_ID,
+    ExtractionResult,
+    _extract_from_firecrawl,
+    extract_job_from_html,
+)
+from app.services.sanitize import sanitize_html
+from app.services.scoring import score_job
+from app.services.validate import (
+    is_banned_domain,
+    registrable_domain,
+    validate_format,
+    validate_job_url,
+)
 
 router = APIRouter(
     prefix="/jobs",
@@ -66,6 +90,130 @@ async def validate_url(body: UrlValidateRequest) -> UrlValidateResponse:
         final_url=result.final_url,
         warnings=result.warnings,
         rejection_reason=result.rejection_reason,
+    )
+
+
+@router.post("/manual")
+async def add_manual_job(
+    body: ManualJobRequest,
+    supabase: Client = Depends(get_supabase),
+) -> ManualJobResponse:
+    """Add a job posting by URL. Extracts metadata via cascade."""
+    warnings: list[str] = []
+
+    # Layer 1: Format validation
+    cleaned = validate_format(body.url)
+    if cleaned is None:
+        raise HTTPException(status_code=400, detail="Malformed URL")
+
+    # Layer 2: Banned domain check
+    hostname = urlparse(cleaned).hostname or ""
+    if is_banned_domain(hostname):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Banned domain: {registrable_domain(hostname)}",
+        )
+
+    # Fetch the page
+    client = get_http_client()
+    try:
+        resp = await client.get(cleaned)
+        final_url = str(resp.url)
+    except httpx.HTTPError:
+        raise HTTPException(status_code=400, detail="Failed to fetch URL")
+
+    # Check post-redirect domain
+    final_hostname = urlparse(final_url).hostname or ""
+    if is_banned_domain(final_hostname):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Redirects to banned domain: {registrable_domain(final_hostname)}",
+        )
+    if registrable_domain(hostname) != registrable_domain(final_hostname):
+        warnings.append(
+            f"redirect_domain_change:"
+            f"{registrable_domain(hostname)}->"
+            f"{registrable_domain(final_hostname)}"
+        )
+
+    # Extract metadata
+    html = resp.text if resp.status_code == 200 else ""
+    extraction: ExtractionResult
+    if html:
+        extraction = extract_job_from_html(html, final_url)
+    else:
+        warnings.append(f"http_status:{resp.status_code}")
+        extraction = ExtractionResult(tier="none", warnings=["fetch_non_200"])
+
+    # Tier 3: Firecrawl fallback if extraction found nothing
+    if extraction.tier == "none":
+        fc_result = await _extract_from_firecrawl(final_url)
+        if fc_result:
+            extraction = fc_result
+
+    warnings.extend(extraction.warnings)
+
+    # Merge: user overrides take precedence
+    title = body.title or extraction.title
+    company_name = body.company_name or extraction.company_name or ""
+    location = body.location or extraction.location
+    description_html = extraction.description_html or ""
+
+    extracted_summary = {
+        "title": extraction.title,
+        "company_name": extraction.company_name,
+        "location": extraction.location,
+    }
+
+    # If no title, return partial result asking for manual fields
+    if not title:
+        return ManualJobResponse(
+            success=False,
+            extracted=extracted_summary,
+            extraction_tier=extraction.tier,
+            warnings=warnings,
+            needs_manual_fields=True,
+        )
+
+    # Generate external_id from URL
+    external_id = hashlib.sha256(final_url.encode()).hexdigest()[:16]
+
+    # Score the job
+    score_result = score_job(title, description_html, keyword_config)
+
+    # Upsert into job_postings
+    row = {
+        "external_id": external_id,
+        "source_id": MANUAL_SOURCE_ID,
+        "title": title,
+        "company_name": company_name,
+        "location": location,
+        "department": None,
+        "description_html": sanitize_html(description_html) if description_html else "",
+        "absolute_url": final_url,
+        "score": score_result.score,
+        "score_breakdown": score_result.breakdown.model_dump(),
+        "greenhouse_updated_at": datetime.now(UTC).isoformat(),
+    }
+
+    resp_db = (
+        supabase.table("job_postings")
+        .upsert(row, on_conflict="source_id,external_id")
+        .execute()
+    )
+
+    posting_id = None
+    if resp_db.data:
+        data = cast(dict[str, Any], resp_db.data[0])
+        posting_id = data.get("id")
+
+    return ManualJobResponse(
+        success=True,
+        posting_id=posting_id,
+        extracted=extracted_summary,
+        extraction_tier=extraction.tier,
+        warnings=warnings,
+        needs_manual_fields=False,
     )
 
 

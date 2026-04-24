@@ -7,10 +7,10 @@ import pytest
 
 from app.services.validate import (
     BANNED_DOMAINS,
-    _is_banned,
-    _registrable_domain,
-    _validate_format,
     _verify_content,
+    is_banned_domain,
+    registrable_domain,
+    validate_format,
     validate_job_url,
 )
 
@@ -21,38 +21,38 @@ from app.services.validate import (
 
 class TestValidateFormat:
     def test_valid_https(self):
-        assert _validate_format("https://example.com/jobs/123") is not None
+        assert validate_format("https://example.com/jobs/123") is not None
 
     def test_valid_http(self):
-        assert _validate_format("http://example.com/jobs") is not None
+        assert validate_format("http://example.com/jobs") is not None
 
     def test_missing_scheme(self):
-        assert _validate_format("example.com/jobs") is None
+        assert validate_format("example.com/jobs") is None
 
     def test_ftp_rejected(self):
-        assert _validate_format("ftp://example.com/file") is None
+        assert validate_format("ftp://example.com/file") is None
 
     def test_ip_address_rejected(self):
-        assert _validate_format("https://192.168.1.1/jobs") is None
+        assert validate_format("https://192.168.1.1/jobs") is None
 
     def test_no_dot_rejected(self):
-        assert _validate_format("http://localhost/jobs") is None
+        assert validate_format("http://localhost/jobs") is None
 
     def test_whitespace_stripped(self):
-        result = _validate_format("  https://example.com/jobs  ")
+        result = validate_format("  https://example.com/jobs  ")
         assert result == "https://example.com/jobs"
 
     def test_empty_string(self):
-        assert _validate_format("") is None
+        assert validate_format("") is None
 
     def test_garbage_input(self):
-        assert _validate_format("not a url at all") is None
+        assert validate_format("not a url at all") is None
 
     def test_javascript_protocol(self):
-        assert _validate_format("javascript:alert(1)") is None
+        assert validate_format("javascript:alert(1)") is None
 
     def test_data_uri(self):
-        assert _validate_format("data:text/html,<h1>hi</h1>") is None
+        assert validate_format("data:text/html,<h1>hi</h1>") is None
 
 
 # ---------------------------------------------------------------------------
@@ -62,19 +62,19 @@ class TestValidateFormat:
 
 class TestBannedDomains:
     def test_known_banned(self):
-        assert _is_banned("ziprecruiter.com") is True
+        assert is_banned_domain("ziprecruiter.com") is True
 
     def test_subdomain_of_banned(self):
-        assert _is_banned("jobs.ziprecruiter.com") is True
+        assert is_banned_domain("jobs.ziprecruiter.com") is True
 
     def test_www_subdomain_of_banned(self):
-        assert _is_banned("www.craigslist.org") is True
+        assert is_banned_domain("www.craigslist.org") is True
 
     def test_legit_domain(self):
-        assert _is_banned("greenhouse.io") is False
+        assert is_banned_domain("greenhouse.io") is False
 
     def test_case_insensitive(self):
-        assert _is_banned("ZIPRECRUITER.COM") is True
+        assert is_banned_domain("ZIPRECRUITER.COM") is True
 
     def test_seed_count(self):
         assert len(BANNED_DOMAINS) >= 20
@@ -82,19 +82,19 @@ class TestBannedDomains:
 
 class TestRegistrableDomain:
     def test_www_prefix(self):
-        assert _registrable_domain("www.example.com") == "example.com"
+        assert registrable_domain("www.example.com") == "example.com"
 
     def test_deep_subdomain(self):
-        assert _registrable_domain("jobs.boards.greenhouse.io") == "greenhouse.io"
+        assert registrable_domain("jobs.boards.greenhouse.io") == "greenhouse.io"
 
     def test_bare_domain(self):
-        assert _registrable_domain("example.com") == "example.com"
+        assert registrable_domain("example.com") == "example.com"
 
     def test_trailing_dot(self):
-        assert _registrable_domain("example.com.") == "example.com"
+        assert registrable_domain("example.com.") == "example.com"
 
     def test_uppercase(self):
-        assert _registrable_domain("WWW.EXAMPLE.COM") == "example.com"
+        assert registrable_domain("WWW.EXAMPLE.COM") == "example.com"
 
 
 # ---------------------------------------------------------------------------
