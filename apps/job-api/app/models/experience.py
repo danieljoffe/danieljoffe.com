@@ -140,3 +140,18 @@ class TurnAppend(BaseModel):
     content: str = Field(min_length=1, max_length=50_000)
     skipped: bool = False
     prose_doc_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Response shapes (router outputs)
+# ---------------------------------------------------------------------------
+
+class ResumeUploadResponse(BaseModel):
+    success: bool
+    prose_doc_id: str
+    prose_version: int
+    upload_id: str
+    extracted_chars: int
+    filename: str
+    warnings: list[str] = []
+    optimized_doc_id: str | None = None

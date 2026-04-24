@@ -18,7 +18,7 @@ from app.services.jsonld import _extract_job_postings
 _IP_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
 
 
-def _validate_format(url: str) -> str | None:
+def validate_format(url: str) -> str | None:
     """Return cleaned URL if valid, None if malformed."""
     cleaned = url.strip()
     if not cleaned:
@@ -74,7 +74,7 @@ BANNED_DOMAINS: frozenset[str] = frozenset(
 )
 
 
-def _registrable_domain(hostname: str) -> str:
+def registrable_domain(hostname: str) -> str:
     """Extract the registrable domain (last two parts) from a hostname."""
     parts = hostname.lower().rstrip(".").split(".")
     if len(parts) >= 2:
@@ -82,8 +82,8 @@ def _registrable_domain(hostname: str) -> str:
     return hostname.lower()
 
 
-def _is_banned(hostname: str) -> bool:
-    return _registrable_domain(hostname) in BANNED_DOMAINS
+def is_banned_domain(hostname: str) -> bool:
+    return registrable_domain(hostname) in BANNED_DOMAINS
 
 
 # ---------------------------------------------------------------------------
@@ -156,7 +156,7 @@ class ValidationResult(BaseModel):
 async def validate_job_url(url: str) -> ValidationResult:
     """Validate a job URL through all four layers."""
     # Layer 1: Format
-    cleaned = _validate_format(url)
+    cleaned = validate_format(url)
     if cleaned is None:
         return ValidationResult(
             is_valid=False,
@@ -166,11 +166,11 @@ async def validate_job_url(url: str) -> ValidationResult:
 
     # Layer 2: Banned domain (pre-redirect)
     hostname = urlparse(cleaned).hostname or ""
-    if _is_banned(hostname):
+    if is_banned_domain(hostname):
         return ValidationResult(
             is_valid=False,
             final_url=cleaned,
-            rejection_reason=f"banned_domain:{_registrable_domain(hostname)}",
+            rejection_reason=f"banned_domain:{registrable_domain(hostname)}",
         )
 
     # Layer 3: Redirect detection + Layer 4: Content verification
@@ -190,21 +190,21 @@ async def validate_job_url(url: str) -> ValidationResult:
 
             # Detect domain change via redirect
             final_hostname = urlparse(final_url).hostname or ""
-            if _registrable_domain(hostname) != _registrable_domain(final_hostname):
+            if registrable_domain(hostname) != registrable_domain(final_hostname):
                 warnings.append(
                     f"redirect_domain_change:"
-                    f"{_registrable_domain(hostname)}->"
-                    f"{_registrable_domain(final_hostname)}"
+                    f"{registrable_domain(hostname)}->"
+                    f"{registrable_domain(final_hostname)}"
                 )
 
             # Layer 2 again: banned check post-redirect
-            if _is_banned(final_hostname):
+            if is_banned_domain(final_hostname):
                 return ValidationResult(
                     is_valid=False,
                     final_url=final_url,
                     rejection_reason=(
                         f"banned_domain_after_redirect:"
-                        f"{_registrable_domain(final_hostname)}"
+                        f"{registrable_domain(final_hostname)}"
                     ),
                 )
 

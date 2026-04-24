@@ -21,7 +21,7 @@ class ScoreResult(BaseModel):
     excluded: bool
 
 
-Provider = Literal["greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld"]
+Provider = Literal["greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld", "manual"]
 
 
 class JobPosting(BaseModel):
@@ -60,7 +60,7 @@ class PollResult(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    status: Literal["new", "saved", "applied", "rejected", "archived"]
+    status: Literal["new", "saved", "applied", "rejected", "archived", "resume_draft"]
     note: str | None = Field(default=None, max_length=1000)
 
 
@@ -87,3 +87,33 @@ class UrlValidateResponse(BaseModel):
     final_url: str
     warnings: list[str]
     rejection_reason: str | None
+
+
+class ManualJobRequest(BaseModel):
+    url: str = Field(max_length=2048)
+    title: str | None = Field(default=None, max_length=500)
+    company_name: str | None = Field(default=None, max_length=200)
+    location: str | None = Field(default=None, max_length=200)
+
+
+class ManualJobResponse(BaseModel):
+    success: bool
+    posting_id: str | None = None
+    extracted: dict[str, str | None]
+    extraction_tier: str
+    warnings: list[str]
+    needs_manual_fields: bool
+
+
+class JobTargetScore(BaseModel):
+    """DB read shape for job_target_scores rows."""
+
+    id: str
+    job_posting_id: str
+    target_id: str
+    score: int
+    score_breakdown: ScoreBreakdown | None
+    matched_keywords: list[str]
+    excluded: bool
+    created_at: datetime
+    updated_at: datetime

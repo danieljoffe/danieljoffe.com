@@ -8,7 +8,7 @@ doc -> chunks, all cost-logged.
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from supabase import Client
 
 from app.dependencies import (
@@ -31,11 +31,15 @@ from app.models.experience import (
     PreferencesUpsert,
     ProseDoc,
     ProseDocCreate,
+    ResumeUploadResponse,
     TurnAppend,
 )
 from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import chunks, derive, optimized, preferences, prose, turns
+from app.services.ingest import merge_into_prose, parse_resume
+from app.services.ingest.parse import ParseError
+from app.services.ingest.storage import upload_file
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 
@@ -65,6 +69,117 @@ async def create_prose(
     supabase: Client = Depends(get_supabase),
 ) -> ProseDoc:
     return prose.create_version(supabase, user_id=None, content=body.content)
+
+
+# ---- Resume upload --------------------------------------------------------
+
+
+@router.post("/upload-resume")
+async def upload_resume(
+    file: UploadFile,
+    auto_derive: bool = Query(default=False),
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+) -> ResumeUploadResponse:
+    """Upload a resume file (PDF/DOCX), extract text, merge into prose doc."""
+    content_type = file.content_type or ""
+    filename = file.filename or "unknown"
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=422, detail="Empty file")
+
+    try:
+        parsed = parse_resume(file_bytes, filename, content_type)
+    except ValueError as exc:
+        if "too large" in str(exc).lower():
+            raise HTTPException(status_code=413, detail=str(exc))
+        raise HTTPException(status_code=415, detail=str(exc))
+    except ParseError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    if not parsed.text.strip():
+        raise HTTPException(
+            status_code=422, detail="No text could be extracted from file"
+        )
+
+    warnings = list(parsed.warnings)
+
+    # Store original file in Supabase Storage
+    import uuid
+
+    upload_id = str(uuid.uuid4())
+    file_ext = parsed.file_type
+    try:
+        storage_path = upload_file(
+            supabase,
+            user_id=None,
+            upload_id=upload_id,
+            file_bytes=file_bytes,
+            file_ext=file_ext,
+            content_type=content_type,
+        )
+    except Exception:
+        warnings.append("storage_upload_failed")
+        storage_path = ""
+
+    # Merge into prose doc
+    existing = prose.get_latest(supabase, user_id=None)
+    merged = merge_into_prose(
+        existing.content if existing else None,
+        parsed,
+    )
+    prose_doc = prose.create_version(supabase, user_id=None, content=merged)
+
+    # Track the upload
+    upload_row: dict[str, Any] = {
+        "id": upload_id,
+        "user_id": None,
+        "filename": filename,
+        "file_type": parsed.file_type,
+        "storage_path": storage_path,
+        "extracted_text": parsed.text,
+        "prose_doc_id": prose_doc.id,
+        "page_count": parsed.page_count,
+        "file_size_bytes": len(file_bytes),
+        "warnings": warnings,
+    }
+    supabase.table("resume_uploads").insert(upload_row).execute()
+
+    # Optional: auto-derive
+    optimized_doc_id: str | None = None
+    if auto_derive:
+        payload, result = await derive.derive_from_prose(
+            llm, prose_text=prose_doc.content
+        )
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose=derive.DEFAULT_PURPOSE,
+            result=result,
+            metadata={"prose_doc_id": prose_doc.id, "prose_version": prose_doc.version},
+        )
+        doc = optimized.create_version(
+            supabase,
+            user_id=None,
+            payload=payload,
+            prose_doc_id=prose_doc.id,
+            source="llm",
+        )
+        await chunks.upsert_for_optimized(supabase, embeddings, doc, user_id=None)
+        optimized_doc_id = doc.id
+
+    return ResumeUploadResponse(
+        success=True,
+        prose_doc_id=prose_doc.id,
+        prose_version=prose_doc.version,
+        upload_id=upload_id,
+        extracted_chars=len(parsed.text),
+        filename=filename,
+        warnings=warnings,
+        optimized_doc_id=optimized_doc_id,
+    )
 
 
 # ---- Optimized doc --------------------------------------------------------

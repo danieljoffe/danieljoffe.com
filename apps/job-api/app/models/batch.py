@@ -1,0 +1,49 @@
+"""Pydantic models for batch resume generation (#503)."""
+
+from datetime import datetime
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+from app.models.tailor import ContactInfo, ResumeType
+
+
+class BatchItem(BaseModel):
+    """Per-job status within a batch."""
+
+    job_posting_id: str
+    status: Literal["pending", "completed", "failed"] = "pending"
+    resume_record_id: str | None = None
+    error: str | None = None
+
+
+class BatchJob(BaseModel):
+    """DB read shape for batch_jobs rows."""
+
+    id: str
+    user_id: str | None
+    status: Literal["pending", "processing", "completed", "failed"]
+    total: int
+    completed: int
+    failed: int
+    items: list[BatchItem]
+    created_at: datetime
+    updated_at: datetime
+
+
+class BatchRequest(BaseModel):
+    """Router input for POST /tailor/batch."""
+
+    job_posting_ids: list[str] = Field(min_length=1, max_length=20)
+    contact: ContactInfo
+    resume_type: ResumeType | None = None
+    page_budget: Literal[1, 2] = 2
+
+
+class BatchResponse(BaseModel):
+    """Immediate response when a batch is created."""
+
+    batch_id: str
+    total: int
+    status: str
+    warnings: list[str] = Field(default_factory=list)
