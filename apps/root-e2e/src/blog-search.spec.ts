@@ -26,10 +26,11 @@ test.describe('blog search and filtering', () => {
     // Type a search term that should match at least one post
     await searchInput.fill('performance');
 
-    // Wait for the results count summary to appear (aria-live region)
-    const resultsSummary = page.locator('[aria-live="polite"]');
+    // The results-count summary is an aria-live region whose text matches
+    // "N result(s) for \"query\"". Match by text so the locator isn't
+    // ambiguous with any other aria-live region on the page.
+    const resultsSummary = page.getByText(/\d+ results? for "performance"/);
     await expect(resultsSummary).toBeVisible();
-    await expect(resultsSummary).toContainText(/\d+ results? for/);
 
     // Verify at least one post is shown
     const postLinks = page.locator(
