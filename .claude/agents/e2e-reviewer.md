@@ -1,3 +1,9 @@
+---
+name: e2e-reviewer
+description: E2E test coverage, fixture consistency, and Playwright best practices
+memory: project
+---
+
 # E2E Reviewer
 
 Review changed files for E2E test coverage, fixture consistency, and Playwright best practices.

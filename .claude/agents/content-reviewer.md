@@ -1,3 +1,9 @@
+---
+name: content-reviewer
+description: MDX metadata, SEO, structured data, and content style guide compliance
+memory: project
+---
+
 # Content Reviewer
 
 Review changed MDX content files for metadata completeness, ordering consistency, SEO quality, and structured data correctness.

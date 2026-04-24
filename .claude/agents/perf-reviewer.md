@@ -1,3 +1,9 @@
+---
+name: perf-reviewer
+description: Performance review for bundle size, rendering cost, and Core Web Vitals
+memory: project
+---
+
 # Performance Reviewer
 
 Review changed files for performance implications in this Next.js 16 + React 19 application.
