@@ -7,8 +7,14 @@ Rules (Greenhouse-floor):
 - no_text_frames (error)      — no `txbx` in document XML
 - no_shapes (error)           — no `w:drawing` / `w:pict` in document XML
 - experience_heading (error)  — at least one Heading 1 named "Experience"
+                                (resume only — skipped for cover letters)
 - standard_headings (warning) — every Heading 1 in {Summary, Experience, Skills, Education}
+                                (resume only — skipped for cover letters)
 - page_count (warning/error)  — ~paragraph count heuristic: > 80 warn, > 120 error
+
+Document type matters for the heading rules: cover letters don't use
+Heading 1 at all, so enforcing "Experience" would fail every cover
+letter. Pass `document_type="cover_letter"` to skip the heading rules.
 
 The renderer module already avoids these failure modes by construction.
 The linter is the safety net — it catches the case where the renderer
@@ -19,6 +25,7 @@ from __future__ import annotations
 
 import io
 import zipfile
+from typing import Literal
 
 from docx import Document
 
@@ -65,7 +72,11 @@ def _non_empty_paragraph_count(doc: object) -> int:
     return len([p for p in paragraphs if p.text.strip()])
 
 
-def lint_docx(data: bytes) -> LintResult:
+def lint_docx(
+    data: bytes,
+    *,
+    document_type: Literal["resume", "cover_letter"] = "resume",
+) -> LintResult:
     violations: list[LintViolation] = []
 
     entries = _zip_entries(data)
@@ -132,33 +143,35 @@ def lint_docx(data: bytes) -> LintResult:
             )
         )
 
-    headings = _heading_1_texts(doc)
-    # experience_heading
-    if "Experience" not in headings:
-        violations.append(
-            LintViolation(
-                code="experience_heading",
-                message=(
-                    'Missing required Heading 1 "Experience". ATS parsers key '
-                    "off standard section names."
-                ),
-                severity="error",
+    # Heading rules are resume-only. Cover letters are prose — they
+    # intentionally have no Heading 1, so enforcing Experience would
+    # false-positive on every letter.
+    if document_type == "resume":
+        headings = _heading_1_texts(doc)
+        if "Experience" not in headings:
+            violations.append(
+                LintViolation(
+                    code="experience_heading",
+                    message=(
+                        'Missing required Heading 1 "Experience". ATS parsers key '
+                        "off standard section names."
+                    ),
+                    severity="error",
+                )
             )
-        )
 
-    # standard_headings
-    non_standard = [h for h in headings if h not in _ALLOWED_HEADING_1_NAMES]
-    if non_standard:
-        violations.append(
-            LintViolation(
-                code="standard_headings",
-                message=(
-                    f"Non-standard Heading 1(s): {sorted(set(non_standard))}. "
-                    f"Expected a subset of {sorted(_ALLOWED_HEADING_1_NAMES)}."
-                ),
-                severity="warning",
+        non_standard = [h for h in headings if h not in _ALLOWED_HEADING_1_NAMES]
+        if non_standard:
+            violations.append(
+                LintViolation(
+                    code="standard_headings",
+                    message=(
+                        f"Non-standard Heading 1(s): {sorted(set(non_standard))}. "
+                        f"Expected a subset of {sorted(_ALLOWED_HEADING_1_NAMES)}."
+                    ),
+                    severity="warning",
+                )
             )
-        )
 
     # page_count
     paragraph_count = _non_empty_paragraph_count(doc)

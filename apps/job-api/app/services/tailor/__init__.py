@@ -13,27 +13,43 @@ Layout:
 """
 
 from app.services.tailor.pipeline import (
+    CoverLetterPipelineLintFailure,
+    CoverLetterPipelineResult,
+    CoverLetterPipelineSuccess,
     PipelineLintFailure,
     PipelineResult,
     PipelineSuccess,
+    run_cover_letter_pipeline,
     run_tailor_pipeline,
 )
 from app.services.tailor.tailor import (
+    DEFAULT_COVER_LETTER_PURPOSE,
     DEFAULT_MODEL,
     DEFAULT_PURPOSE,
+    build_cover_letter_user_message,
     build_user_message,
+    tailor_cover_letter,
     tailor_resume,
+    validate_cover_letter_refs,
     validate_trace_refs,
 )
 
 __all__ = [
+    "CoverLetterPipelineLintFailure",
+    "CoverLetterPipelineResult",
+    "CoverLetterPipelineSuccess",
+    "DEFAULT_COVER_LETTER_PURPOSE",
     "DEFAULT_MODEL",
     "DEFAULT_PURPOSE",
     "PipelineLintFailure",
     "PipelineResult",
     "PipelineSuccess",
+    "build_cover_letter_user_message",
     "build_user_message",
+    "run_cover_letter_pipeline",
     "run_tailor_pipeline",
+    "tailor_cover_letter",
     "tailor_resume",
+    "validate_cover_letter_refs",
     "validate_trace_refs",
 ]
