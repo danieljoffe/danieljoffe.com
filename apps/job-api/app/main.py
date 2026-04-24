@@ -7,7 +7,7 @@ from starlette.types import Receive, Scope, Send
 
 from app.config import settings
 from app.http_client import close_http_client
-from app.routers import experience, jobs, poll, sources, status, tailor
+from app.routers import experience, jobs, poll, sources, status, tailor, targets
 from app.supabase_pool import close_supabase, init_supabase
 
 if not settings.allowed_hosts_list:
@@ -55,6 +55,7 @@ app.include_router(poll.router)
 app.include_router(sources.router)
 app.include_router(status.router)
 app.include_router(tailor.router)
+app.include_router(targets.router)
 
 
 @app.get("/health")
