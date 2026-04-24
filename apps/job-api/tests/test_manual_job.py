@@ -47,6 +47,13 @@ OG_HTML = """
 
 
 class TestManualJobEndpoint:
+    @pytest.fixture(autouse=True)
+    def _no_active_target(self, monkeypatch):
+        """Prevent target scoring from firing in manual-job tests."""
+        from app.routers import jobs as jobs_router
+
+        monkeypatch.setattr(jobs_router, "get_active_target", lambda *_a, **_kw: None)
+
     @pytest.mark.asyncio
     async def test_happy_path_jsonld(self, mock_http_client):
         mock_http_client.get = AsyncMock(
