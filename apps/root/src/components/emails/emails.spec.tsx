@@ -3,6 +3,7 @@ import ContactNotification from './ContactNotification';
 import EmailLayout from './EmailLayout';
 import FollowUpEmail from './FollowUp';
 import FullReportEmail from './FullReport';
+import JobAlertEmail from './JobAlert';
 import QuickWinEmail from './QuickWin';
 
 describe('ContactNotification', () => {
@@ -200,5 +201,54 @@ describe('QuickWinEmail', () => {
     const html = renderToStaticMarkup(QuickWinEmail(props));
     expect(html).toContain('https://danieljoffe.com/audit/r/789');
     expect(html).toContain('See All Your Issues');
+  });
+});
+
+describe('JobAlertEmail', () => {
+  const props = {
+    title: 'Senior Frontend Engineer',
+    company: 'Acme Corp',
+    location: 'Remote, US',
+    score: 87,
+    jobUrl: 'https://boards.greenhouse.io/acme/jobs/1',
+    fittedUrl: 'https://danieljoffe.com/fitted/jobs/abc-123',
+    unsubscribeUrl:
+      'https://danieljoffe.com/api/email/jobs/unsubscribe?profile_id=p1&token=tok',
+  };
+
+  it('renders job title, company, and score', () => {
+    const html = renderToStaticMarkup(JobAlertEmail(props));
+    expect(html).toContain('Senior Frontend Engineer');
+    expect(html).toContain('Acme Corp');
+    expect(html).toContain('87');
+  });
+
+  it('renders the Fitted deep link and original posting link', () => {
+    const html = renderToStaticMarkup(JobAlertEmail(props));
+    expect(html).toContain('Open in Fitted');
+    expect(html).toContain('https://danieljoffe.com/fitted/jobs/abc-123');
+    expect(html).toContain('View original posting');
+    expect(html).toContain('https://boards.greenhouse.io/acme/jobs/1');
+  });
+
+  it('renders location when present', () => {
+    const html = renderToStaticMarkup(JobAlertEmail(props));
+    expect(html).toContain('Remote, US');
+  });
+
+  it('omits location separator when location is null', () => {
+    const html = renderToStaticMarkup(
+      JobAlertEmail({ ...props, location: null })
+    );
+    expect(html).toContain('Acme Corp');
+    expect(html).not.toContain(' · null');
+  });
+
+  it('renders the unsubscribe link from EmailLayout', () => {
+    const html = renderToStaticMarkup(JobAlertEmail(props));
+    // React Email HTML-escapes '&' to '&amp;' in href output — match on the
+    // un-escaped prefix instead of the raw URL.
+    expect(html).toContain('/api/email/jobs/unsubscribe?profile_id=p1');
+    expect(html).toContain('token=tok');
   });
 });

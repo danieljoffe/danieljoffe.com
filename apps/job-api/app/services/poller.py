@@ -8,6 +8,7 @@ from supabase import Client
 
 from app.models.schemas import PollResult
 from app.seed.keyword_config import keyword_config
+from app.services import notify
 from app.services.ashby import fetch_ashby_jobs
 from app.services.greenhouse import fetch_board_jobs
 from app.services.jsonld import fetch_jsonld_jobs
@@ -215,6 +216,7 @@ async def _poll_one_source(
             .not_.in_("status", ["saved", "applied", "archived"])
         )
 
+        new_rows: list[dict[str, Any]] = []
         if rows_to_upsert:
             upsert_query = supabase.table("job_postings").upsert(
                 rows_to_upsert, on_conflict="source_id,external_id"
@@ -227,6 +229,7 @@ async def _poll_one_source(
                 data = cast(dict[str, Any], raw_row)
                 if data.get("created_at") == data.get("updated_at"):
                     summary["new"] += 1
+                    new_rows.append(data)
                 else:
                     summary["updated"] += 1
         else:
@@ -264,6 +267,16 @@ async def _poll_one_source(
             summary["archived"] = len(stale_ids)
         else:
             await asyncio.to_thread(last_polled_query.execute)
+
+        # Fire email alerts for newly-inserted high-scoring jobs. Notification
+        # failures are logged inside the service and must not fail the poll.
+        if new_rows:
+            try:
+                await notify.send_alerts_for_new_jobs(supabase, new_rows)
+            except Exception:
+                logger.exception(
+                    "Job alert dispatch raised for %s", company_name
+                )
 
     except Exception:
         logger.exception("Poll failed for %s", company_name)
