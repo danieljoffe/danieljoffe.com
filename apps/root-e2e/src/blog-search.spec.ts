@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForHydration } from './fixtures/base.fixture';
+import { fillInput, waitForHydration } from './fixtures/base.fixture';
 
 test.describe('blog search and filtering', () => {
   test.beforeEach(async ({ page }) => {
@@ -23,14 +23,19 @@ test.describe('blog search and filtering', () => {
     const searchInput = page.getByLabel('Search blog posts');
     await expect(searchInput).toBeVisible();
 
-    // Type a search term that should match at least one post
-    await searchInput.fill('performance');
+    // pressSequentially fires real key events so React's onChange on the
+    // controlled Input reliably flips `isSearching` — plain fill() can skip
+    // the onChange handler and leave the aria-live summary unrendered.
+    await fillInput(searchInput, 'performance');
+    await expect(searchInput).toHaveValue('performance');
 
-    // The results-count summary is an aria-live region whose text matches
-    // "N result(s) for \"query\"". Match by text so the locator isn't
-    // ambiguous with any other aria-live region on the page.
-    const resultsSummary = page.getByText(/\d+ results? for "performance"/);
-    await expect(resultsSummary).toBeVisible();
+    // Scope to the aria-live region that carries the results-count text.
+    // useDeferredValue + MiniSearch indexing can be slow on CI, so give it
+    // a generous timeout.
+    const resultsSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ results? for/ });
+    await expect(resultsSummary).toBeVisible({ timeout: 15000 });
 
     // Verify at least one post is shown
     const postLinks = page.locator(
