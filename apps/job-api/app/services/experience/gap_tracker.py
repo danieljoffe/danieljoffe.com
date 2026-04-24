@@ -12,8 +12,29 @@ Priority scale: lower = more urgent. Tailored so a missing outcome on the
 most recent role beats a missing end-date on an older role.
 """
 
-from app.models.conversation import Gap
+from app.models.conversation import Gap, GapHealthResult, GapKind, GapTier
 from app.models.experience import OptimizedPayload
+
+GAP_WEIGHTS: dict[GapKind, int] = {
+    "role.missing_outcomes": 5,
+    "outcome.missing_metric": 3,
+    "role.missing_summary": 2,
+    "role.missing_end_date": 1,
+    "skill.missing_evidence": 1,
+    "content.empty": 0,
+}
+
+
+def _pct_to_tier(pct: float) -> GapTier:
+    if pct >= 50:
+        return "red"
+    if pct >= 35:
+        return "orange"
+    if pct >= 25:
+        return "yellow"
+    if pct >= 15:
+        return "lime"
+    return "green"
 
 
 def _role_priority_boost(index: int, total: int) -> int:
@@ -116,3 +137,43 @@ def detect_gaps(payload: OptimizedPayload) -> list[Gap]:
 def top_gap(payload: OptimizedPayload) -> Gap | None:
     gaps = detect_gaps(payload)
     return gaps[0] if gaps else None
+
+
+def gap_health(payload: OptimizedPayload) -> GapHealthResult:
+    """Weighted completeness metric. Pure, deterministic, no LLM."""
+    gaps = detect_gaps(payload)
+
+    if any(g.kind == "content.empty" for g in gaps):
+        return GapHealthResult(
+            gap_pct=100.0, tier="red", gaps=gaps, total_weight=0, gap_weight=0
+        )
+
+    n_roles = len(payload.roles)
+    n_outcomes = len(payload.outcomes)
+    n_skills = len(payload.skills)
+    n_non_first_roles = max(0, n_roles - 1)
+
+    total_weight = (
+        n_roles * 5  # each role could be missing outcomes
+        + n_roles * 2  # each role could be missing summary
+        + n_outcomes * 3  # each outcome could be missing metric
+        + n_non_first_roles * 1  # non-first roles could be missing end date
+        + n_skills * 1  # each skill could be missing evidence
+    )
+
+    if total_weight == 0:
+        return GapHealthResult(
+            gap_pct=0.0, tier="green", gaps=gaps, total_weight=0, gap_weight=0
+        )
+
+    gap_weight = sum(GAP_WEIGHTS.get(g.kind, 0) for g in gaps)
+    gap_pct = round((gap_weight / total_weight) * 100, 1)
+    tier = _pct_to_tier(gap_pct)
+
+    return GapHealthResult(
+        gap_pct=gap_pct,
+        tier=tier,
+        gaps=gaps,
+        total_weight=total_weight,
+        gap_weight=gap_weight,
+    )

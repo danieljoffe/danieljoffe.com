@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import CareerOverview from './CareerOverview';
-import type { OptimizedDoc, ProseDoc } from './types';
+import type { GapHealthResult, OptimizedDoc, ProseDoc } from './types';
 
 const proseDoc: ProseDoc = {
   id: 'prose-1',
@@ -57,10 +57,47 @@ const optimizedDoc: OptimizedDoc = {
   created_at: '2026-04-21T10:00:00Z',
 };
 
-function mockFetch(prose: unknown, optimized: unknown, status = 200): void {
+const gapHealthGreen: GapHealthResult = {
+  gap_pct: 0,
+  tier: 'green',
+  gaps: [],
+  total_weight: 10,
+  gap_weight: 0,
+};
+
+const gapHealthRed: GapHealthResult = {
+  gap_pct: 72,
+  tier: 'red',
+  gaps: [
+    {
+      kind: 'role.missing_outcomes',
+      ref: 'fc',
+      priority: 10,
+      context: 'Senior Frontend Engineer at FightCamp has no outcomes.',
+    },
+    {
+      kind: 'outcome.missing_metric',
+      ref: 'Cut mobile load times',
+      priority: 20,
+      context: "Outcome lacks a quantified metric: 'Cut mobile load times'",
+    },
+  ],
+  total_weight: 25,
+  gap_weight: 18,
+};
+
+function mockFetch(
+  prose: unknown,
+  optimized: unknown,
+  gapHealth: unknown = gapHealthGreen,
+  status = 200
+): void {
   (global.fetch as jest.Mock) = jest.fn((input: RequestInfo | URL) => {
     const url = typeof input === 'string' ? input : input.toString();
-    const body = url.endsWith('/prose') ? prose : optimized;
+    let body: unknown;
+    if (url.includes('/gap-health')) body = gapHealth;
+    else if (url.endsWith('/prose')) body = prose;
+    else body = optimized;
     return Promise.resolve({
       ok: status >= 200 && status < 300,
       status,
@@ -99,8 +136,10 @@ describe('CareerOverview', () => {
     expect(
       screen.getByText(/senior fe with a decade of shipped work/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/2 roles · 2 skills · 1 outcome/i)).toBeInTheDocument();
-    expect(screen.getByText(/FightCamp/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/2 roles · 2 skills · 1 outcome/i)
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/FightCamp/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Acme/)).toBeInTheDocument();
     expect(screen.getByText(/2024-05 - present/)).toBeInTheDocument();
   });
@@ -139,16 +178,57 @@ describe('CareerOverview', () => {
     );
   });
 
-  it('issues requests to both career proxy endpoints', async () => {
+  it('issues requests to all three career proxy endpoints', async () => {
     mockFetch({ prose: null }, { optimized: null });
     render(<CareerOverview />);
     await waitFor(() =>
       expect(screen.getByText(/no prose doc yet/i)).toBeInTheDocument()
     );
-    const urls = (global.fetch as jest.Mock).mock.calls.map(
-      (call: unknown[]) => String(call[0])
+    const urls = (global.fetch as jest.Mock).mock.calls.map((call: unknown[]) =>
+      String(call[0])
     );
     expect(urls).toContain('/api/career/experience/prose');
     expect(urls).toContain('/api/career/experience/optimized');
+    expect(urls).toContain('/api/career/experience/gap-health');
+  });
+
+  // Gap health card tests (#498)
+
+  it('renders gap health card with progress bar and tier badge', async () => {
+    mockFetch(proseDoc, optimizedDoc, gapHealthRed);
+    render(<CareerOverview />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/gap health/i)).toBeInTheDocument()
+    );
+
+    expect(screen.getByText('red')).toBeInTheDocument();
+    expect(screen.getByText(/28% complete/i)).toBeInTheDocument();
+    expect(screen.getByText(/fix gaps/i)).toBeInTheDocument();
+  });
+
+  it('shows gap details in the gap health card', async () => {
+    mockFetch(proseDoc, optimizedDoc, gapHealthRed);
+    render(<CareerOverview />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/gap health/i)).toBeInTheDocument()
+    );
+
+    expect(
+      screen.getByText(/outcome lacks a quantified metric/i)
+    ).toBeInTheDocument();
+  });
+
+  it('hides "Fix gaps" link when gap_pct is 0', async () => {
+    mockFetch(proseDoc, optimizedDoc, gapHealthGreen);
+    render(<CareerOverview />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/gap health/i)).toBeInTheDocument()
+    );
+
+    expect(screen.getByText(/100% complete/i)).toBeInTheDocument();
+    expect(screen.queryByText(/fix gaps/i)).not.toBeInTheDocument();
   });
 });

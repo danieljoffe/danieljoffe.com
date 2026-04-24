@@ -72,3 +72,20 @@ class ResetResult(BaseModel):
     prose_versions_deleted: int
     optimized_versions_deleted: int
     turns_deleted: int
+
+
+# ---------------------------------------------------------------------------
+# Gap health (#498)
+# ---------------------------------------------------------------------------
+
+GapTier = Literal["red", "orange", "yellow", "lime", "green"]
+
+
+class GapHealthResult(BaseModel):
+    """Weighted completeness metric over the master document."""
+
+    gap_pct: float
+    tier: GapTier
+    gaps: list[Gap]
+    total_weight: int
+    gap_weight: int

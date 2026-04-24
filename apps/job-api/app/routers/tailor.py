@@ -24,6 +24,7 @@ from app.dependencies import (
 from app.models.batch import BatchJob, BatchRequest, BatchResponse
 from app.models.tailor import (
     CoverLetterRequest,
+    GapGateFailureResponse,
     TailoredResumeRecord,
     TailorLintFailureResponse,
     TailorRequest,
@@ -32,6 +33,7 @@ from app.models.tailor import (
 from app.services.batch import create_batch, get_batch, process_batch
 from app.services.experience import optimized, preferences
 from app.services.llm.client import LLMClient
+from app.services.experience import gap_tracker
 from app.services.tailor import (
     CoverLetterPipelineLintFailure,
     CoverLetterPipelineSuccess,
@@ -48,8 +50,13 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key_or_session)],
 )
 
+GATE_THRESHOLD = 45.0
 
-@router.post("/resume", responses={422: {"model": TailorLintFailureResponse}})
+
+@router.post(
+    "/resume",
+    responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
+)
 async def create_tailored_resume(
     body: TailorRequest,
     supabase: Client = Depends(get_supabase),
@@ -60,6 +67,23 @@ async def create_tailored_resume(
         raise HTTPException(
             status_code=404,
             detail="no optimized doc — derive one via POST /experience/derive first",
+        )
+
+    health = gap_tracker.gap_health(current_optimized.payload)
+    if health.gap_pct > GATE_THRESHOLD:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "ok": False,
+                "code": "gap_gate",
+                "gap_pct": health.gap_pct,
+                "tier": health.tier,
+                "message": (
+                    f"Master doc has {health.gap_pct}% gaps "
+                    f"(threshold: {GATE_THRESHOLD}%). "
+                    "Fill gaps via the conversation flow before generating."
+                ),
+            },
         )
 
     prefs_row = preferences.get(supabase, user_id=None)
@@ -97,7 +121,7 @@ async def create_tailored_resume(
 
 @router.post(
     "/cover-letter",
-    responses={422: {"model": TailorLintFailureResponse}},
+    responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
 )
 async def create_tailored_cover_letter(
     body: CoverLetterRequest,
@@ -109,6 +133,23 @@ async def create_tailored_cover_letter(
         raise HTTPException(
             status_code=404,
             detail="no optimized doc — derive one via POST /experience/derive first",
+        )
+
+    health = gap_tracker.gap_health(current_optimized.payload)
+    if health.gap_pct > GATE_THRESHOLD:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "ok": False,
+                "code": "gap_gate",
+                "gap_pct": health.gap_pct,
+                "tier": health.tier,
+                "message": (
+                    f"Master doc has {health.gap_pct}% gaps "
+                    f"(threshold: {GATE_THRESHOLD}%). "
+                    "Fill gaps via the conversation flow before generating."
+                ),
+            },
         )
 
     prefs_row = preferences.get(supabase, user_id=None)

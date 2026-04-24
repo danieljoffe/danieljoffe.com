@@ -34,9 +34,19 @@ from app.models.experience import (
     ResumeUploadResponse,
     TurnAppend,
 )
+from app.models.conversation import GapHealthResult
+from app.models.experience import OptimizedPayload
 from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
-from app.services.experience import chunks, derive, optimized, preferences, prose, turns
+from app.services.experience import (
+    chunks,
+    derive,
+    gap_tracker,
+    optimized,
+    preferences,
+    prose,
+    turns,
+)
 from app.services.ingest import merge_into_prose, parse_resume
 from app.services.ingest.parse import ParseError
 from app.services.ingest.storage import upload_file
@@ -257,6 +267,19 @@ async def derive_optimized(
         user_id=None,
     )
     return doc
+
+
+# ---- Gap health (#498) ----------------------------------------------------
+
+
+@router.get("/gap-health")
+async def get_gap_health(
+    supabase: Client = Depends(get_supabase),
+) -> GapHealthResult:
+    doc = optimized.get_latest(supabase, user_id=None)
+    if doc is None:
+        return gap_tracker.gap_health(OptimizedPayload())
+    return gap_tracker.gap_health(doc.payload)
 
 
 # ---- Preferences ----------------------------------------------------------
