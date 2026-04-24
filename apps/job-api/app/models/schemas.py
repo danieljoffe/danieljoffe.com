@@ -76,3 +76,14 @@ class PaginatedResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class UrlValidateRequest(BaseModel):
+    url: str = Field(max_length=2048)
+
+
+class UrlValidateResponse(BaseModel):
+    is_valid: bool
+    final_url: str
+    warnings: list[str]
+    rejection_reason: str | None

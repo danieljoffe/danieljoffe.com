@@ -5,6 +5,8 @@ from postgrest.types import CountMethod
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key_or_session
+from app.models.schemas import UrlValidateRequest, UrlValidateResponse
+from app.services.validate import validate_job_url
 
 router = APIRouter(
     prefix="/jobs",
@@ -54,6 +56,17 @@ async def list_jobs(
         "page": page,
         "page_size": page_size,
     }
+
+
+@router.post("/validate-url")
+async def validate_url(body: UrlValidateRequest) -> UrlValidateResponse:
+    result = await validate_job_url(body.url)
+    return UrlValidateResponse(
+        is_valid=result.is_valid,
+        final_url=result.final_url,
+        warnings=result.warnings,
+        rejection_reason=result.rejection_reason,
+    )
 
 
 @router.delete("/{posting_id}")
