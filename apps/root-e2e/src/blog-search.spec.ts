@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForHydration } from './fixtures/base.fixture';
+import { fillInput, waitForHydration } from './fixtures/base.fixture';
 
 test.describe('blog search and filtering', () => {
   test.beforeEach(async ({ page }) => {
@@ -23,13 +23,19 @@ test.describe('blog search and filtering', () => {
     const searchInput = page.getByLabel('Search blog posts');
     await expect(searchInput).toBeVisible();
 
-    // Type a search term that should match at least one post
-    await searchInput.fill('performance');
+    // pressSequentially fires real key events so React's onChange on the
+    // controlled Input reliably flips `isSearching` — plain fill() can skip
+    // the onChange handler and leave the aria-live summary unrendered.
+    await fillInput(searchInput, 'performance');
+    await expect(searchInput).toHaveValue('performance');
 
-    // Wait for the results count summary to appear (aria-live region)
-    const resultsSummary = page.locator('[aria-live="polite"]');
-    await expect(resultsSummary).toBeVisible();
-    await expect(resultsSummary).toContainText(/\d+ results? for/);
+    // Scope to the aria-live region that carries the results-count text.
+    // useDeferredValue + MiniSearch indexing can be slow on CI, so give it
+    // a generous timeout.
+    const resultsSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ results? for/ });
+    await expect(resultsSummary).toBeVisible({ timeout: 15000 });
 
     // Verify at least one post is shown
     const postLinks = page.locator(
@@ -49,9 +55,11 @@ test.describe('blog search and filtering', () => {
     const initialCount = await postLinks.count();
 
     // Search to filter down
-    await searchInput.fill('performance');
-    const resultsSummary = page.locator('[aria-live="polite"]');
-    await expect(resultsSummary).toBeVisible();
+    await fillInput(searchInput, 'performance');
+    const resultsSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ results? for/ });
+    await expect(resultsSummary).toBeVisible({ timeout: 15000 });
 
     // Clear search
     await searchInput.fill('');
@@ -87,7 +95,7 @@ test.describe('blog search and filtering', () => {
 
   test('selecting a tag clears the search input', async ({ page }) => {
     const searchInput = page.getByLabel('Search blog posts');
-    await searchInput.fill('test query');
+    await fillInput(searchInput, 'test query');
     await expect(searchInput).toHaveValue('test query');
 
     // Click a tag chip
@@ -108,7 +116,7 @@ test.describe('blog search and filtering', () => {
 
     // Now type in search
     const searchInput = page.getByLabel('Search blog posts');
-    await searchInput.fill('performance');
+    await fillInput(searchInput, 'performance');
 
     // Tag should be deselected
     await expect(firstTagButton).toHaveAttribute('aria-pressed', 'false');
@@ -127,7 +135,7 @@ test.describe('blog search and filtering', () => {
 
     // Search to activate filtering
     const searchInput = page.getByLabel('Search blog posts');
-    await searchInput.fill('performance');
+    await fillInput(searchInput, 'performance');
 
     // Pagination should be hidden
     await expect(pagination).toBeHidden();

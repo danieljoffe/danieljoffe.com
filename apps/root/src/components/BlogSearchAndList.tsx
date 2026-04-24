@@ -135,17 +135,13 @@ export function BlogSearchAndList({
 
       {isSearching && (
         <Text variant='meta' as='p' aria-live='polite'>
-          {searchResults.length}{' '}
-          {searchResults.length === 1 ? 'result' : 'results'} for &quot;
-          {trimmedQuery}&quot;
+          {`${searchResults.length} ${searchResults.length === 1 ? 'result' : 'results'} for "${trimmedQuery}"`}
         </Text>
       )}
 
       {isFiltering && !isSearching && (
         <Text variant='meta' as='p' aria-live='polite'>
-          {tagResults.length} {tagResults.length === 1 ? 'post' : 'posts'}{' '}
-          tagged &quot;
-          {activeTag}&quot;
+          {`${tagResults.length} ${tagResults.length === 1 ? 'post' : 'posts'} tagged "${activeTag}"`}
         </Text>
       )}
 

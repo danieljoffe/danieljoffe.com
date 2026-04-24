@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     greenhouse_delay_ms: int = 200
     score_normalizer: int = 30
     allowed_hosts: str = "*"
+    # Cross-service email alerts: the poller POSTs new high-scoring jobs to
+    # the Next.js app, which renders via React Email and sends through Resend.
+    next_app_url: str = ""
+    job_alert_secret: str = ""
 
     # LLM provider — set to "anthropic" to use the real SDK; mock is the safe default.
     llm_provider: Literal["mock", "anthropic"] = "mock"
