@@ -1,3 +1,9 @@
+---
+name: nx-reviewer
+description: Monorepo structure, module boundaries, and Nx configuration review
+memory: project
+---
+
 # Nx Reviewer
 
 Review changed files for Nx monorepo structure, module boundary, and configuration issues.

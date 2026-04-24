@@ -1,3 +1,9 @@
+---
+name: a11y-reviewer
+description: WCAG 2.1 AA compliance review for interactive elements, focus management, and semantics
+memory: project
+---
+
 # Accessibility Reviewer
 
 Review changed files for WCAG 2.1 AA compliance issues.
