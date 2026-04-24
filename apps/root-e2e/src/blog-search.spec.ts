@@ -55,9 +55,11 @@ test.describe('blog search and filtering', () => {
     const initialCount = await postLinks.count();
 
     // Search to filter down
-    await searchInput.fill('performance');
-    const resultsSummary = page.locator('[aria-live="polite"]');
-    await expect(resultsSummary).toBeVisible();
+    await fillInput(searchInput, 'performance');
+    const resultsSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ results? for/ });
+    await expect(resultsSummary).toBeVisible({ timeout: 15000 });
 
     // Clear search
     await searchInput.fill('');
@@ -93,7 +95,7 @@ test.describe('blog search and filtering', () => {
 
   test('selecting a tag clears the search input', async ({ page }) => {
     const searchInput = page.getByLabel('Search blog posts');
-    await searchInput.fill('test query');
+    await fillInput(searchInput, 'test query');
     await expect(searchInput).toHaveValue('test query');
 
     // Click a tag chip
@@ -114,7 +116,7 @@ test.describe('blog search and filtering', () => {
 
     // Now type in search
     const searchInput = page.getByLabel('Search blog posts');
-    await searchInput.fill('performance');
+    await fillInput(searchInput, 'performance');
 
     // Tag should be deselected
     await expect(firstTagButton).toHaveAttribute('aria-pressed', 'false');
@@ -133,7 +135,7 @@ test.describe('blog search and filtering', () => {
 
     // Search to activate filtering
     const searchInput = page.getByLabel('Search blog posts');
-    await searchInput.fill('performance');
+    await fillInput(searchInput, 'performance');
 
     // Pagination should be hidden
     await expect(pagination).toBeHidden();
