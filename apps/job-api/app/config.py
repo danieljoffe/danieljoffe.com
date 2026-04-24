@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     anthropic_timeout_seconds: float = 600.0
     anthropic_max_retries: int = 2
 
+    # Embeddings provider — set to "voyage" to use the real SDK; mock is the default.
+    embeddings_provider: Literal["mock", "voyage"] = "mock"
+    voyage_api_key: str = ""
+    voyage_timeout_seconds: float = 60.0
+    voyage_max_retries: int = 2
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
     @property
