@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.models.experience import ConversationType
+from app.models.experience import AnnotationAction, AnnotationRefType, ConversationType
 
 GapKind = Literal[
     "role.missing_outcomes",
@@ -33,6 +33,16 @@ class TurnRequest(BaseModel):
     skipped: bool = False
 
 
+class LLMAnnotationDirective(BaseModel):
+    """Parsed annotation intent from a conversation turn (#499)."""
+
+    action: AnnotationAction
+    ref_type: AnnotationRefType
+    ref_value: str
+    target_label: str | None = None
+    reason: str | None = None
+
+
 class LLMTurnResponse(BaseModel):
     """The structured shape the LLM must return.
 
@@ -40,11 +50,13 @@ class LLMTurnResponse(BaseModel):
     - `prose_append`: optional chunk of narrative to append to the prose doc.
       The LLM can only *append*, never rewrite existing prose.
     - `done`: true when the orchestrator should stop probing for this phase.
+    - `annotation`: optional annotation directive parsed from user intent (#499).
     """
 
     assistant_message: str = Field(min_length=1, max_length=10_000)
     prose_append: str | None = None
     done: bool = False
+    annotation: LLMAnnotationDirective | None = None
 
 
 class TurnResult(BaseModel):

@@ -33,11 +33,24 @@ export interface Skill {
   years: number | null;
 }
 
+export type AnnotationAction = 'emphasize' | 'exclude' | 'de-emphasize';
+export type AnnotationRefType = 'role' | 'skill' | 'outcome';
+
+export interface Annotation {
+  id: string;
+  action: AnnotationAction;
+  ref_type: AnnotationRefType;
+  ref_value: string;
+  target_label: string | null;
+  reason: string | null;
+}
+
 export interface OptimizedPayload {
   summary: string | null;
   roles: Role[];
   skills: Skill[];
   outcomes: Outcome[];
+  annotations: Annotation[];
 }
 
 export type OptimizedDocSource = 'llm' | 'user_edit';

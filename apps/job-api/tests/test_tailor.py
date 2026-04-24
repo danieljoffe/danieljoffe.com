@@ -101,6 +101,7 @@ def test_build_user_message_contains_every_section() -> None:
         contact=_contact(),
         resume_type="senior-frontend",
         preferences_text='{"rules": ["present tense"]}',
+        annotations_text="EMPHASIZE: role roadmap",
         critique="Lead with performance.",
         page_budget=2,
     )
@@ -110,6 +111,7 @@ def test_build_user_message_contains_every_section() -> None:
         "[ResumeType] senior-frontend",
         "[PageBudget] 2",
         "[Preferences]",
+        "[Annotations]",
         "[Critique]",
         "[JobDescription]",
     ):
@@ -123,10 +125,12 @@ def test_build_user_message_omits_preferences_and_critique_when_absent() -> None
         contact=_contact(),
         resume_type="generic",
         preferences_text=None,
+        annotations_text=None,
         critique=None,
         page_budget=1,
     )
     assert "[Preferences]" not in msg
+    assert "[Annotations]" not in msg
     assert "[Critique]" not in msg
     assert "[JobDescription]" in msg
 

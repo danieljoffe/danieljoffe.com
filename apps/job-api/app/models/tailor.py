@@ -91,6 +91,8 @@ class TailorRequest(BaseModel):
     page_budget: Literal[1, 2] = 2
     job_posting_id: str | None = None
     """Optional link to a jobs pipeline row (#184)."""
+    target_label: str | None = None
+    """Target label for annotation resolution (#499)."""
 
 
 # ---------------------------------------------------------------------------
@@ -141,6 +143,8 @@ class CoverLetterRequest(BaseModel):
     contact: ContactInfo
     critique: str | None = Field(default=None, max_length=5_000)
     job_posting_id: str | None = None
+    target_label: str | None = None
+    """Target label for annotation resolution (#499)."""
 
 
 # ---------------------------------------------------------------------------

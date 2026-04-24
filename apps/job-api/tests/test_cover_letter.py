@@ -184,6 +184,7 @@ def test_build_cover_letter_user_message_includes_all_sections() -> None:
         contact=_contact(),
         role_title="Senior FE",
         preferences_text='{"rules": ["present tense"]}',
+        annotations_text="EMPHASIZE: role roadmap",
         critique="Lead with the PDP rebuild.",
     )
     for tag in (
@@ -192,6 +193,7 @@ def test_build_cover_letter_user_message_includes_all_sections() -> None:
         "[RecipientCompany] Acme",
         "[RoleTitle] Senior FE",
         "[Preferences]",
+        "[Annotations]",
         "[Critique]",
         "[JobDescription]",
     ):
@@ -206,10 +208,12 @@ def test_build_cover_letter_user_message_omits_role_title_when_absent() -> None:
         contact=_contact(),
         role_title=None,
         preferences_text=None,
+        annotations_text=None,
         critique=None,
     )
     assert "[RoleTitle]" not in msg
     assert "[Preferences]" not in msg
+    assert "[Annotations]" not in msg
     assert "[Critique]" not in msg
 
 

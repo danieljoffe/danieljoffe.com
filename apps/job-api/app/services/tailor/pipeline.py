@@ -29,6 +29,11 @@ from app.models.tailor import (
 )
 from app.services.ats_lint import lint_docx
 from app.services.docx.renderer import render_cover_letter_docx, render_docx
+from app.services.experience.annotations import (
+    apply_exclusions,
+    build_annotations_text,
+    resolve_for_target,
+)
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.tailor import persistence
@@ -73,6 +78,7 @@ async def run_tailor_pipeline(
     resume_type: ResumeType = "generic",
     page_budget: int = 2,
     job_posting_id: str | None = None,
+    target_label: str | None = None,
 ) -> PipelineResult:
     """Run the full tailor pipeline end-to-end.
 
@@ -81,15 +87,23 @@ async def run_tailor_pipeline(
     persisted and no `.docx` is uploaded — the caller should surface the
     violations and retry with a critique.
     """
+    # Resolve annotations for the target (#499)
+    emphasize, exclude, de_emph = resolve_for_target(
+        optimized.payload.annotations, target_label
+    )
+    filtered_payload = apply_exclusions(optimized.payload, exclude)
+    annotations_text = build_annotations_text(emphasize, de_emph)
+
     resume, trace_warnings, llm_result = await tailor_resume(
         llm,
-        optimized=optimized.payload,
+        optimized=filtered_payload,
         job_description=job_description,
         contact=contact,
         resume_type=resume_type,
         preferences_rules=(preferences.rules if preferences else None),
         preferences_avoid=(preferences.avoid if preferences else None),
         preferences_tone_notes=(preferences.tone_notes if preferences else None),
+        annotations_text=annotations_text,
         critique=critique,
         page_budget=page_budget,
     )
@@ -187,6 +201,7 @@ async def run_cover_letter_pipeline(
     preferences: PreferencesPayload | None = None,
     critique: str | None = None,
     job_posting_id: str | None = None,
+    target_label: str | None = None,
 ) -> CoverLetterPipelineResult:
     """Run the full cover-letter pipeline end-to-end.
 
@@ -195,9 +210,16 @@ async def run_cover_letter_pipeline(
     persisted and no `.docx` is uploaded — the caller should surface the
     violations and retry with a critique.
     """
+    # Resolve annotations for the target (#499)
+    emphasize, exclude, de_emph = resolve_for_target(
+        optimized.payload.annotations, target_label
+    )
+    filtered_payload = apply_exclusions(optimized.payload, exclude)
+    annotations_text = build_annotations_text(emphasize, de_emph)
+
     letter, trace_warnings, llm_result = await tailor_cover_letter(
         llm,
-        optimized=optimized.payload,
+        optimized=filtered_payload,
         job_description=job_description,
         company_name=company_name,
         contact=contact,
@@ -205,6 +227,7 @@ async def run_cover_letter_pipeline(
         preferences_rules=(preferences.rules if preferences else None),
         preferences_avoid=(preferences.avoid if preferences else None),
         preferences_tone_notes=(preferences.tone_notes if preferences else None),
+        annotations_text=annotations_text,
         critique=critique,
     )
 
