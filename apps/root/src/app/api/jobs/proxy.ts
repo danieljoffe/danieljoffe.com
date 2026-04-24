@@ -1,12 +1,25 @@
 import { NextResponse } from 'next/server';
 import { readAdminSession, readAdminSessionToken } from '@/lib/adminSession';
+import { createAuthServerClient } from '@/lib/supabase/auth-server';
 
 const JOB_API_URL = process.env['JOB_API_URL'] ?? '';
 const JOB_API_KEY = process.env['JOB_API_KEY'] ?? '';
 
-export async function verifyJobsAdmin(): Promise<boolean> {
-  const session = await readAdminSession();
-  return session !== null;
+/**
+ * Verify access: accepts either an admin session cookie (admin dashboard)
+ * or a valid Supabase session (Fitted app via magic link).
+ */
+export async function verifyJobsAccess(): Promise<boolean> {
+  const adminSession = await readAdminSession();
+  if (adminSession !== null) return true;
+
+  try {
+    const supabase = await createAuthServerClient();
+    const { data } = await supabase.auth.getUser();
+    return data.user !== null;
+  } catch {
+    return false;
+  }
 }
 
 export async function proxyToFastAPI(

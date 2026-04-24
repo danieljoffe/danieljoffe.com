@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI } from './proxy';
+import { verifyJobsAccess, proxyToFastAPI } from './proxy';
 
 export async function GET(request: NextRequest) {
-  if (!(await verifyJobsAdmin())) {
+  if (!(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

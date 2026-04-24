@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI } from '../proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '../proxy';
 
 function constantTimeEqual(a: string, b: string): boolean {
   const aBuf = Buffer.from(a, 'utf8');
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     : '';
   const isCron = !!cronSecret && constantTimeEqual(presented, cronSecret);
 
-  if (!isCron && !(await verifyJobsAdmin())) {
+  if (!isCron && !(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

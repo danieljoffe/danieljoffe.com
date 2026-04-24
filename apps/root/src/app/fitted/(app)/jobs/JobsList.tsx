@@ -1,0 +1,153 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { useToast } from '@/state/Toast/ToastProvider';
+import BatchActionBar from './BatchActionBar';
+import JobsFilter from './JobsFilter';
+import JobsListTable from './JobsListTable';
+import type { JobsFilterState } from './types';
+
+const INITIAL_FILTERS: JobsFilterState = {
+  minScore: '',
+  status: '',
+  search: '',
+};
+
+const BATCH_POLL_INTERVAL = 3000;
+
+export default function JobsList() {
+  const [filters, setFilters] = useState<JobsFilterState>(INITIAL_FILTERS);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [generating, setGenerating] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const { toast } = useToast();
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const handleBatchGenerate = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/jobs/tailor/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_posting_ids: [...selectedIds],
+          contact: {},
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        toast({
+          variant: 'error',
+          title:
+            (err as Record<string, string> | null)?.detail ??
+            'Batch generation failed',
+        });
+        setGenerating(false);
+        return;
+      }
+
+      const { batch_id } = (await res.json()) as { batch_id: string };
+
+      // Poll for completion
+      pollRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/jobs/tailor/batch/${batch_id}`);
+          if (!pollRes.ok) return;
+
+          const batch = (await pollRes.json()) as {
+            status: string;
+            completed: number;
+            failed: number;
+            total: number;
+          };
+
+          if (batch.status === 'completed' || batch.status === 'failed') {
+            clearInterval(pollRef.current);
+            pollRef.current = undefined;
+            setGenerating(false);
+            setSelectedIds(new Set());
+            setRefreshKey(k => k + 1);
+
+            if (batch.failed > 0) {
+              toast({
+                variant: 'warning',
+                title: `Batch done: ${batch.completed} succeeded, ${batch.failed} failed`,
+              });
+            } else {
+              toast({
+                variant: 'success',
+                title: `${batch.completed} resumes generated`,
+              });
+            }
+          }
+        } catch {
+          // polling error — keep trying
+        }
+      }, BATCH_POLL_INTERVAL);
+    } catch {
+      toast({ variant: 'error', title: 'Network error starting batch' });
+      setGenerating(false);
+    }
+  }, [selectedIds, toast]);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+
+    /* eslint-disable no-alert -- personal tool */
+    if (!window.confirm(`Delete ${selectedIds.size} jobs?`)) return;
+    /* eslint-enable no-alert */
+
+    let deleted = 0;
+    for (const id of selectedIds) {
+      try {
+        const res = await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
+        if (res.ok) deleted++;
+      } catch {
+        // continue with remaining
+      }
+    }
+
+    toast({
+      variant: deleted > 0 ? 'success' : 'error',
+      title: deleted > 0 ? `Deleted ${deleted} jobs` : 'Failed to delete jobs',
+    });
+    setSelectedIds(new Set());
+    setRefreshKey(k => k + 1);
+  }, [selectedIds, toast]);
+
+  return (
+    <div className='flex flex-col gap-6'>
+      <Heading variant='component' as='h1'>
+        Jobs
+      </Heading>
+
+      <JobsFilter filters={filters} onChange={setFilters} />
+
+      <JobsListTable
+        filters={filters}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        refreshKey={refreshKey}
+      />
+
+      <BatchActionBar
+        selectedCount={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onBatchGenerate={handleBatchGenerate}
+        onBatchDelete={handleBatchDelete}
+        generating={generating}
+      />
+    </div>
+  );
+}

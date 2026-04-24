@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI } from '../../proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '../../proxy';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await verifyJobsAdmin())) {
+  if (!(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
