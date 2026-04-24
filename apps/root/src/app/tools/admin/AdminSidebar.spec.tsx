@@ -37,6 +37,7 @@ describe('AdminSidebar', () => {
     render(<AdminSidebar />);
     expect(screen.getByText('Tools Admin')).toBeInTheDocument();
     expect(screen.getByText('Jobs')).toBeInTheDocument();
+    expect(screen.getByText('Career')).toBeInTheDocument();
     expect(screen.getByText('Site Audits')).toBeInTheDocument();
   });
 
