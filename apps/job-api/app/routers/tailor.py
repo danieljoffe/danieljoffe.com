@@ -10,7 +10,9 @@ GET  /tailor/resumes/{id}/download — serves the `.docx` bytes.
 All 422 responses carry the LintFailureResponse shape.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Any, cast
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import Response
 from supabase import Client
 
@@ -19,6 +21,7 @@ from app.dependencies import (
     get_supabase,
     verify_api_key_or_session,
 )
+from app.models.batch import BatchJob, BatchRequest, BatchResponse
 from app.models.tailor import (
     CoverLetterRequest,
     TailoredResumeRecord,
@@ -26,6 +29,7 @@ from app.models.tailor import (
     TailorRequest,
     TailorResponse,
 )
+from app.services.batch import create_batch, get_batch, process_batch
 from app.services.experience import optimized, preferences
 from app.services.llm.client import LLMClient
 from app.services.tailor import (
@@ -199,3 +203,85 @@ async def download_tailored_resume(
         media_type=persistence.DOCX_CONTENT_TYPE,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ---- Batch resume generation (#503) ----------------------------------------
+
+
+@router.post("/batch")
+async def create_batch_resumes(
+    body: BatchRequest,
+    background_tasks: BackgroundTasks,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> BatchResponse:
+    """Kick off batch resume generation for multiple job postings.
+
+    Returns immediately with a batch_id. Poll GET /tailor/batch/{id}
+    for progress.
+    """
+    current_optimized = optimized.get_latest(supabase, user_id=None)
+    if current_optimized is None:
+        raise HTTPException(
+            status_code=404,
+            detail="no optimized doc — derive one via POST /experience/derive first",
+        )
+
+    # Verify all job posting IDs exist and fetch their descriptions
+    warnings: list[str] = []
+    postings: list[dict[str, Any]] = []
+    for jid in body.job_posting_ids:
+        resp = (
+            supabase.table("job_postings")
+            .select("id, title, description_html")
+            .eq("id", jid)
+            .execute()
+        )
+        if not resp.data:
+            raise HTTPException(status_code=404, detail=f"job posting not found: {jid}")
+        row = cast(dict[str, Any], resp.data[0])
+        if not row.get("description_html"):
+            warnings.append(f"no_description:{jid}")
+        postings.append(row)
+
+    prefs_row = preferences.get(supabase, user_id=None)
+    prefs_payload = prefs_row.payload if prefs_row else None
+
+    batch = create_batch(
+        supabase,
+        user_id=None,
+        job_posting_ids=body.job_posting_ids,
+    )
+
+    background_tasks.add_task(
+        process_batch,
+        supabase,
+        llm,
+        batch_id=batch.id,
+        user_id=None,
+        optimized=current_optimized,
+        job_postings=postings,
+        contact=body.contact,
+        preferences=prefs_payload,
+        resume_type=body.resume_type or "generic",
+        page_budget=body.page_budget,
+    )
+
+    return BatchResponse(
+        batch_id=batch.id,
+        total=batch.total,
+        status=batch.status,
+        warnings=warnings,
+    )
+
+
+@router.get("/batch/{batch_id}")
+async def get_batch_status(
+    batch_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> BatchJob:
+    """Poll batch processing progress."""
+    batch = get_batch(supabase, batch_id)
+    if batch is None:
+        raise HTTPException(status_code=404, detail="batch not found")
+    return batch
