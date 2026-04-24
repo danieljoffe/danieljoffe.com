@@ -9,6 +9,10 @@ enforced here. Rendering and linting are kept separate so the linter
 can catch regressions if this module ever widens its output.
 """
 
-from app.services.docx.renderer import format_date, render_docx
+from app.services.docx.renderer import (
+    format_date,
+    render_cover_letter_docx,
+    render_docx,
+)
 
-__all__ = ["render_docx", "format_date"]
+__all__ = ["format_date", "render_cover_letter_docx", "render_docx"]

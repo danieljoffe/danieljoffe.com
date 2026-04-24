@@ -18,7 +18,12 @@ import io
 
 from docx import Document
 
-from app.models.tailor import ContactInfo, TailoredResume, TailoredRole
+from app.models.tailor import (
+    ContactInfo,
+    TailoredCoverLetter,
+    TailoredResume,
+    TailoredRole,
+)
 
 SECTION_SUMMARY = "Summary"
 SECTION_EXPERIENCE = "Experience"
@@ -123,6 +128,55 @@ def render_docx(resume: TailoredResume) -> bytes:
             header_p.add_run(header).bold = True
             if edu.dates:
                 doc.add_paragraph(edu.dates)
+
+    buf = io.BytesIO()
+    doc.save(buf)
+    return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# Cover letter renderer
+# ---------------------------------------------------------------------------
+
+
+def render_cover_letter_docx(letter: TailoredCoverLetter) -> bytes:
+    """Render a TailoredCoverLetter to ATS-friendly `.docx` bytes.
+
+    Simpler structure than a resume: contact header, recipient, salutation,
+    paragraphs, closing, signature. Single column, Calibri, plain paragraphs.
+    No headings (cover letters don't use them).
+    """
+    doc = Document()
+
+    # Contact header: name + contact line
+    title = doc.add_paragraph()
+    name_run = title.add_run(letter.contact.name)
+    name_run.bold = True
+    contact_line = _contact_line(letter.contact)
+    if contact_line:
+        doc.add_paragraph(contact_line)
+
+    doc.add_paragraph()  # blank line before recipient
+
+    # Recipient block
+    recipient = letter.recipient_company
+    if letter.recipient_role:
+        doc.add_paragraph(f"Re: {letter.recipient_role}")
+    doc.add_paragraph(recipient)
+
+    doc.add_paragraph()  # blank line before salutation
+
+    # Salutation
+    doc.add_paragraph(letter.salutation)
+
+    # Body paragraphs
+    for paragraph in letter.paragraphs:
+        doc.add_paragraph(paragraph.text)
+
+    # Closing
+    doc.add_paragraph()
+    doc.add_paragraph(letter.closing)
+    doc.add_paragraph(letter.signature)
 
     buf = io.BytesIO()
     doc.save(buf)

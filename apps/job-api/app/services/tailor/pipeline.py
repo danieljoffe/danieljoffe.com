@@ -23,15 +23,21 @@ from app.models.llm import LLMResult
 from app.models.tailor import (
     ContactInfo,
     ResumeType,
+    TailoredCoverLetter,
     TailoredResume,
     TailoredResumeRecord,
 )
 from app.services.ats_lint import lint_docx
-from app.services.docx.renderer import render_docx
+from app.services.docx.renderer import render_cover_letter_docx, render_docx
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.tailor import persistence
-from app.services.tailor.tailor import DEFAULT_PURPOSE, tailor_resume
+from app.services.tailor.tailor import (
+    DEFAULT_COVER_LETTER_PURPOSE,
+    DEFAULT_PURPOSE,
+    tailor_cover_letter,
+    tailor_resume,
+)
 
 
 @dataclass
@@ -137,6 +143,121 @@ async def run_tailor_pipeline(
     return PipelineSuccess(
         record=record,
         resume=resume,
+        warnings=trace_warnings,
+        lint=lint,
+        llm_result=llm_result,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Cover letter pipeline
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class CoverLetterPipelineSuccess:
+    record: TailoredResumeRecord
+    letter: TailoredCoverLetter
+    warnings: list[str]
+    lint: LintResult
+    llm_result: LLMResult
+
+
+@dataclass
+class CoverLetterPipelineLintFailure:
+    lint: LintResult
+    letter: TailoredCoverLetter
+    warnings: list[str]
+    llm_result: LLMResult
+
+
+CoverLetterPipelineResult = CoverLetterPipelineSuccess | CoverLetterPipelineLintFailure
+
+
+async def run_cover_letter_pipeline(
+    supabase: Client,
+    llm: LLMClient,
+    *,
+    user_id: str | None,
+    optimized: OptimizedDoc,
+    job_description: str,
+    company_name: str,
+    contact: ContactInfo,
+    role_title: str | None = None,
+    preferences: PreferencesPayload | None = None,
+    critique: str | None = None,
+    job_posting_id: str | None = None,
+) -> CoverLetterPipelineResult:
+    """Run the full cover-letter pipeline end-to-end.
+
+    Returns CoverLetterPipelineSuccess on clean lint, CoverLetterPipelineLintFailure
+    when the rendered doc has blocking errors. On lint failure nothing is
+    persisted and no `.docx` is uploaded — the caller should surface the
+    violations and retry with a critique.
+    """
+    letter, trace_warnings, llm_result = await tailor_cover_letter(
+        llm,
+        optimized=optimized.payload,
+        job_description=job_description,
+        company_name=company_name,
+        contact=contact,
+        role_title=role_title,
+        preferences_rules=(preferences.rules if preferences else None),
+        preferences_avoid=(preferences.avoid if preferences else None),
+        preferences_tone_notes=(preferences.tone_notes if preferences else None),
+        critique=critique,
+    )
+
+    cost_log.record(
+        supabase,
+        user_id=user_id,
+        purpose=DEFAULT_COVER_LETTER_PURPOSE,
+        result=llm_result,
+        metadata={
+            "optimized_doc_id": optimized.id,
+            "job_posting_id": job_posting_id or "",
+            "recipient_company": company_name,
+        },
+    )
+
+    docx_bytes = render_cover_letter_docx(letter)
+    lint = lint_docx(docx_bytes, document_type="cover_letter")
+    if not lint.ok:
+        return CoverLetterPipelineLintFailure(
+            lint=lint,
+            letter=letter,
+            warnings=trace_warnings,
+            llm_result=llm_result,
+        )
+
+    record = persistence.persist_cover_letter(
+        supabase,
+        user_id=user_id,
+        job_posting_id=job_posting_id,
+        letter=letter,
+        job_description=job_description,
+        warnings=trace_warnings,
+        llm_result=llm_result,
+        storage_path=None,
+    )
+    try:
+        storage_path = persistence.upload_docx(
+            supabase,
+            user_id=user_id,
+            resume_id=record.id,
+            docx_bytes=docx_bytes,
+        )
+    except Exception:
+        storage_path = None
+    if storage_path:
+        supabase.table(persistence.TABLE).update({"storage_path": storage_path}).eq(
+            "id", record.id
+        ).execute()
+        record = record.model_copy(update={"storage_path": storage_path})
+
+    return CoverLetterPipelineSuccess(
+        record=record,
+        letter=letter,
         warnings=trace_warnings,
         lint=lint,
         llm_result=llm_result,
