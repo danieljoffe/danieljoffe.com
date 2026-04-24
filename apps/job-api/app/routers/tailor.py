@@ -50,9 +50,6 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key_or_session)],
 )
 
-GATE_THRESHOLD = 45.0
-
-
 @router.post(
     "/resume",
     responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
@@ -69,20 +66,18 @@ async def create_tailored_resume(
             detail="no optimized doc — derive one via POST /experience/derive first",
         )
 
-    health = gap_tracker.gap_health(current_optimized.payload)
-    if health.gap_pct > GATE_THRESHOLD:
+    gate = gap_tracker.can_generate(current_optimized.payload)
+    if not gate.ok:
+        health = gap_tracker.gap_health(current_optimized.payload)
         raise HTTPException(
             status_code=422,
             detail={
                 "ok": False,
                 "code": "gap_gate",
+                "reason": gate.reason,
+                "message": gate.message,
                 "gap_pct": health.gap_pct,
                 "tier": health.tier,
-                "message": (
-                    f"Master doc has {health.gap_pct}% gaps "
-                    f"(threshold: {GATE_THRESHOLD}%). "
-                    "Fill gaps via the conversation flow before generating."
-                ),
             },
         )
 
@@ -135,20 +130,18 @@ async def create_tailored_cover_letter(
             detail="no optimized doc — derive one via POST /experience/derive first",
         )
 
-    health = gap_tracker.gap_health(current_optimized.payload)
-    if health.gap_pct > GATE_THRESHOLD:
+    gate = gap_tracker.can_generate(current_optimized.payload)
+    if not gate.ok:
+        health = gap_tracker.gap_health(current_optimized.payload)
         raise HTTPException(
             status_code=422,
             detail={
                 "ok": False,
                 "code": "gap_gate",
+                "reason": gate.reason,
+                "message": gate.message,
                 "gap_pct": health.gap_pct,
                 "tier": health.tier,
-                "message": (
-                    f"Master doc has {health.gap_pct}% gaps "
-                    f"(threshold: {GATE_THRESHOLD}%). "
-                    "Fill gaps via the conversation flow before generating."
-                ),
             },
         )
 

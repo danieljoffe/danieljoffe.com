@@ -78,7 +78,9 @@ class ResetResult(BaseModel):
 # Gap health (#498)
 # ---------------------------------------------------------------------------
 
-GapTier = Literal["red", "orange", "yellow", "lime", "green"]
+GapTier = Literal["red", "yellow", "green"]
+
+GateReason = Literal["no_roles", "insufficient_outcomes"]
 
 
 class GapHealthResult(BaseModel):
@@ -89,3 +91,11 @@ class GapHealthResult(BaseModel):
     gaps: list[Gap]
     total_weight: int
     gap_weight: int
+
+
+class GateResult(BaseModel):
+    """Structural minimum check for generation readiness."""
+
+    ok: bool
+    reason: GateReason | None = None
+    message: str = ""

@@ -86,6 +86,21 @@ const gapHealthRed: GapHealthResult = {
   gap_weight: 18,
 };
 
+const gapHealthYellow: GapHealthResult = {
+  gap_pct: 30,
+  tier: 'yellow',
+  gaps: [
+    {
+      kind: 'role.missing_summary',
+      ref: 'fc',
+      priority: 30,
+      context: 'Senior Frontend Engineer at FightCamp has no summary sentence.',
+    },
+  ],
+  total_weight: 10,
+  gap_weight: 3,
+};
+
 function mockFetch(
   prose: unknown,
   optimized: unknown,
@@ -230,5 +245,18 @@ describe('CareerOverview', () => {
 
     expect(screen.getByText(/100% complete/i)).toBeInTheDocument();
     expect(screen.queryByText(/fix gaps/i)).not.toBeInTheDocument();
+  });
+
+  it('renders yellow tier with warning badge', async () => {
+    mockFetch(proseDoc, optimizedDoc, gapHealthYellow);
+    render(<CareerOverview />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/gap health/i)).toBeInTheDocument()
+    );
+
+    expect(screen.getByText('yellow')).toBeInTheDocument();
+    expect(screen.getByText(/70% complete/i)).toBeInTheDocument();
+    expect(screen.getByText(/fix gaps/i)).toBeInTheDocument();
   });
 });

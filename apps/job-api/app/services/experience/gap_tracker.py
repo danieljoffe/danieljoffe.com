@@ -12,7 +12,7 @@ Priority scale: lower = more urgent. Tailored so a missing outcome on the
 most recent role beats a missing end-date on an older role.
 """
 
-from app.models.conversation import Gap, GapHealthResult, GapKind, GapTier
+from app.models.conversation import Gap, GapHealthResult, GapKind, GapTier, GateResult
 from app.models.experience import OptimizedPayload
 
 GAP_WEIGHTS: dict[GapKind, int] = {
@@ -28,12 +28,8 @@ GAP_WEIGHTS: dict[GapKind, int] = {
 def _pct_to_tier(pct: float) -> GapTier:
     if pct >= 50:
         return "red"
-    if pct >= 35:
-        return "orange"
     if pct >= 25:
         return "yellow"
-    if pct >= 15:
-        return "lime"
     return "green"
 
 
@@ -137,6 +133,39 @@ def detect_gaps(payload: OptimizedPayload) -> list[Gap]:
 def top_gap(payload: OptimizedPayload) -> Gap | None:
     gaps = detect_gaps(payload)
     return gaps[0] if gaps else None
+
+
+def can_generate(payload: OptimizedPayload) -> GateResult:
+    """Structural minimum check: block only when the LLM can't produce useful output."""
+    if not payload.roles:
+        return GateResult(
+            ok=False,
+            reason="no_roles",
+            message="No roles in the master document. Add at least one role before generating.",
+        )
+
+    outcome_refs_by_role: dict[str, bool] = {}
+    for o in payload.outcomes:
+        if o.role_ref:
+            outcome_refs_by_role[o.role_ref] = True
+
+    roles_without = sum(
+        1
+        for role in payload.roles
+        if not role.outcome_refs and role.id not in outcome_refs_by_role
+    )
+
+    if roles_without > len(payload.roles) / 2:
+        return GateResult(
+            ok=False,
+            reason="insufficient_outcomes",
+            message=(
+                f"{roles_without} of {len(payload.roles)} roles have no outcomes. "
+                "Add outcomes to at least half your roles before generating."
+            ),
+        )
+
+    return GateResult(ok=True)
 
 
 def gap_health(payload: OptimizedPayload) -> GapHealthResult:

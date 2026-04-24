@@ -205,10 +205,11 @@ class TailorLintFailureResponse(BaseModel):
 
 
 class GapGateFailureResponse(BaseModel):
-    """Router output when the master doc is too incomplete to generate."""
+    """Router output when the master doc is structurally insufficient to generate."""
 
     ok: Literal[False] = False
     code: Literal["gap_gate"] = "gap_gate"
+    reason: str
+    message: str
     gap_pct: float
     tier: str
-    message: str

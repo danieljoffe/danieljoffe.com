@@ -44,17 +44,16 @@ function formatDate(iso: string): string {
 }
 
 function tierToVariant(tier: GapTier): 'error' | 'accent' | 'success' {
-  if (tier === 'red' || tier === 'orange') return 'error';
+  if (tier === 'red') return 'error';
   if (tier === 'yellow') return 'accent';
   return 'success';
 }
 
 function tierToBadgeVariant(
   tier: GapTier
-): 'destructive' | 'warning' | 'success' | 'info' {
+): 'destructive' | 'warning' | 'success' {
   if (tier === 'red') return 'destructive';
-  if (tier === 'orange' || tier === 'yellow') return 'warning';
-  if (tier === 'lime') return 'info';
+  if (tier === 'yellow') return 'warning';
   return 'success';
 }
 

@@ -1,7 +1,7 @@
-"""Pure-function tests for gap_tracker.detect_gaps, top_gap, and gap_health."""
+"""Pure-function tests for gap_tracker.detect_gaps, top_gap, gap_health, and can_generate."""
 
 from app.models.experience import OptimizedPayload, Outcome, Role, Skill
-from app.services.experience.gap_tracker import detect_gaps, gap_health, top_gap
+from app.services.experience.gap_tracker import can_generate, detect_gaps, gap_health, top_gap
 
 
 def _role(
@@ -239,3 +239,62 @@ def test_gap_health_summary_only_returns_green() -> None:
     result = gap_health(payload)
     assert result.gap_pct == 0.0
     assert result.tier == "green"
+
+
+# ---- can_generate() (#498 revision) -----------------------------------------
+
+
+def test_can_generate_blocks_when_no_roles() -> None:
+    result = can_generate(OptimizedPayload())
+    assert not result.ok
+    assert result.reason == "no_roles"
+
+
+def test_can_generate_blocks_single_role_no_outcomes() -> None:
+    payload = OptimizedPayload(roles=[_role("a")])
+    result = can_generate(payload)
+    assert not result.ok
+    assert result.reason == "insufficient_outcomes"
+
+
+def test_can_generate_blocks_when_majority_roles_lack_outcomes() -> None:
+    payload = OptimizedPayload(
+        roles=[
+            _role("a", outcome_refs=["x"]),
+            _role("b"),
+            _role("c"),
+        ],
+    )
+    result = can_generate(payload)
+    assert not result.ok
+    assert result.reason == "insufficient_outcomes"
+
+
+def test_can_generate_allows_when_minority_roles_lack_outcomes() -> None:
+    payload = OptimizedPayload(
+        roles=[
+            _role("a", outcome_refs=["x"]),
+            _role("b", outcome_refs=["y"]),
+            _role("c"),
+        ],
+    )
+    result = can_generate(payload)
+    assert result.ok
+
+
+def test_can_generate_allows_with_all_outcomes_present() -> None:
+    payload = OptimizedPayload(
+        roles=[_role("a", outcome_refs=["x"]), _role("b", outcome_refs=["y"])],
+    )
+    result = can_generate(payload)
+    assert result.ok
+
+
+def test_can_generate_counts_outcome_role_refs() -> None:
+    """Outcomes linked via role_ref count as the role having outcomes."""
+    payload = OptimizedPayload(
+        roles=[_role("a")],
+        outcomes=[_outcome("did a thing", role_ref="a")],
+    )
+    result = can_generate(payload)
+    assert result.ok

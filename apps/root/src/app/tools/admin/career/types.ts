@@ -59,7 +59,7 @@ export type ProseResponse = ProseDoc | { prose: null };
 export type OptimizedResponse = OptimizedDoc | { optimized: null };
 
 // Gap health (#498)
-export type GapTier = 'red' | 'orange' | 'yellow' | 'lime' | 'green';
+export type GapTier = 'red' | 'yellow' | 'green';
 
 export interface GapHealthResult {
   gap_pct: number;
