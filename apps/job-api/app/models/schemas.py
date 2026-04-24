@@ -103,3 +103,17 @@ class ManualJobResponse(BaseModel):
     extraction_tier: str
     warnings: list[str]
     needs_manual_fields: bool
+
+
+class JobTargetScore(BaseModel):
+    """DB read shape for job_target_scores rows."""
+
+    id: str
+    job_posting_id: str
+    target_id: str
+    score: int
+    score_breakdown: ScoreBreakdown | None
+    matched_keywords: list[str]
+    excluded: bool
+    created_at: datetime
+    updated_at: datetime

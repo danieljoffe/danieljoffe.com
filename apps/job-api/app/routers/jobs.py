@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from datetime import UTC, datetime
 from typing import Any, cast
 from urllib.parse import urlparse
@@ -25,12 +26,20 @@ from app.services.extract import (
 )
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_job
+from app.services.target_scoring import (
+    bulk_score_for_target,
+    get_target_scores,
+    score_and_upsert as target_score_and_upsert,
+)
+from app.services.targets.crud import get as get_target, get_active as get_active_target
 from app.services.validate import (
     is_banned_domain,
     registrable_domain,
     validate_format,
     validate_job_url,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/jobs",
@@ -51,6 +60,7 @@ async def list_jobs(
     ),
     company: str | None = Query(None, max_length=200),
     search: str | None = Query(None, max_length=200),
+    target_id: str | None = Query(None),
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
     offset = (page - 1) * page_size
@@ -62,7 +72,9 @@ async def list_jobs(
         count=CountMethod.exact,
     )
 
-    if min_score is not None:
+    if min_score is not None and not target_id:
+        # min_score filter on global score only when no target selected;
+        # target-specific min_score filtering happens post-merge below.
         query = query.gte("score", min_score)
     if status:
         query = query.eq("status", status)
@@ -74,8 +86,37 @@ async def list_jobs(
     query = query.order(sort, desc=not ascending).range(offset, offset + page_size - 1)
     resp = query.execute()
 
+    postings = list(resp.data or [])
+
+    # Overlay target-specific scores when a target is selected (#502)
+    if target_id and postings:
+        job_ids = [cast(dict[str, Any], p)["id"] for p in postings]
+        scores = get_target_scores(supabase, target_id, job_ids)
+        for posting in postings:
+            p = cast(dict[str, Any], posting)
+            ts = scores.get(p["id"])
+            if ts:
+                p["score"] = ts.score
+                p["score_breakdown"] = (
+                    ts.score_breakdown.model_dump() if ts.score_breakdown else None
+                )
+
+        # Re-sort by target score if sorting by score
+        if sort == "score":
+            postings.sort(
+                key=lambda p: cast(dict[str, Any], p).get("score", 0),
+                reverse=not ascending,
+            )
+
+        # Apply min_score filter post-merge for target scoring
+        if min_score is not None:
+            postings = [
+                p for p in postings
+                if cast(dict[str, Any], p).get("score", 0) >= min_score
+            ]
+
     return {
-        "postings": resp.data or [],
+        "postings": postings,
         "total": resp.count or 0,
         "page": page,
         "page_size": page_size,
@@ -207,6 +248,21 @@ async def add_manual_job(
         data = cast(dict[str, Any], resp_db.data[0])
         posting_id = data.get("id")
 
+    # Score against active target (#502)
+    if posting_id and title:
+        active_target = get_active_target(supabase, user_id=None)
+        if active_target:
+            try:
+                target_score_and_upsert(
+                    supabase,
+                    job_posting_id=posting_id,
+                    title=title,
+                    description_html=description_html,
+                    target=active_target,
+                )
+            except Exception:
+                logger.exception("Target scoring failed for manual job %s", posting_id)
+
     return ManualJobResponse(
         success=True,
         posting_id=posting_id,
@@ -215,6 +271,20 @@ async def add_manual_job(
         warnings=warnings,
         needs_manual_fields=False,
     )
+
+
+@router.post("/rescore/{target_id}")
+async def rescore_for_target(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    """Re-score all jobs against a target's scoring profile."""
+    target = get_target(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+
+    scored = bulk_score_for_target(supabase, target)
+    return {"target_id": target_id, "jobs_scored": scored}
 
 
 @router.delete("/{posting_id}")
