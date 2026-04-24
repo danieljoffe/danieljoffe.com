@@ -19,14 +19,16 @@ from app.models.tailor import (
     ContactInfo,
     ResumeType,
     TailoredBullet,
+    TailoredCoverLetter,
     TailoredResume,
     TailoredRole,
 )
 from app.services.llm.client import LLMClient, complete_json
-from app.services.tailor.prompts import TAILOR_SYSTEM
+from app.services.tailor.prompts import COVER_LETTER_SYSTEM, TAILOR_SYSTEM
 
 DEFAULT_MODEL: ModelId = "claude-sonnet-4-6"
 DEFAULT_PURPOSE = "tailor.resume"
+DEFAULT_COVER_LETTER_PURPOSE = "tailor.cover_letter"
 
 
 def build_user_message(
@@ -166,4 +168,135 @@ async def tailor_resume(
     )
 
     cleaned, warnings = validate_trace_refs(parsed, optimized)
+    return cleaned, warnings, result
+
+
+# ---------------------------------------------------------------------------
+# Cover letters
+# ---------------------------------------------------------------------------
+
+
+def build_cover_letter_user_message(
+    *,
+    optimized: OptimizedPayload,
+    job_description: str,
+    company_name: str,
+    contact: ContactInfo,
+    role_title: str | None,
+    preferences_text: str | None,
+    critique: str | None,
+) -> str:
+    """Assemble the variable content for the LLM call.
+
+    The system prompt is static (cache target); everything that changes
+    per call lives here.
+    """
+    sections: list[str] = []
+    sections.append(f"[OptimizedPayload]\n{optimized.model_dump_json(indent=2)}")
+    sections.append(f"[ContactInfo]\n{contact.model_dump_json(indent=2)}")
+    sections.append(f"[RecipientCompany] {company_name}")
+    if role_title:
+        sections.append(f"[RoleTitle] {role_title}")
+    if preferences_text:
+        sections.append(f"[Preferences]\n{preferences_text}")
+    if critique:
+        sections.append(f"[Critique]\n{critique}")
+    sections.append(f"[JobDescription]\n{job_description}")
+    return "\n\n".join(sections)
+
+
+def validate_cover_letter_refs(
+    letter: TailoredCoverLetter,
+    optimized: OptimizedPayload,
+) -> tuple[TailoredCoverLetter, list[str]]:
+    """Drop refs that don't trace back to the OptimizedPayload. Returns
+    the cleaned letter + warnings for each dropped ref.
+
+    Unlike the resume trace check, cover letters reference refs in
+    aggregate (not per-bullet). We drop invalid refs rather than raise
+    because a cover letter's prose may still be salvageable even if one
+    claimed ref is off — the prose itself is what the user ships.
+    Callers should surface warnings to the user.
+    """
+    valid_role_ids = {r.id for r in optimized.roles}
+    valid_outcome_descriptions = {o.description for o in optimized.outcomes}
+    valid_skill_names = {s.name for s in optimized.skills}
+
+    warnings: list[str] = []
+
+    kept_role_refs: list[str] = []
+    for ref in letter.source_role_refs:
+        if ref in valid_role_ids:
+            kept_role_refs.append(ref)
+        else:
+            warnings.append(f"Dropped unknown role_ref: {ref!r}")
+
+    kept_outcome_refs: list[str] = []
+    for ref in letter.source_outcome_refs:
+        if ref in valid_outcome_descriptions:
+            kept_outcome_refs.append(ref)
+        else:
+            warnings.append(f"Dropped unknown outcome_ref: {ref[:60]!r}")
+
+    kept_skill_refs: list[str] = []
+    for ref in letter.source_skill_refs:
+        if ref in valid_skill_names:
+            kept_skill_refs.append(ref)
+        else:
+            warnings.append(f"Dropped unknown skill_ref: {ref!r}")
+
+    cleaned = letter.model_copy(
+        update={
+            "source_role_refs": kept_role_refs,
+            "source_outcome_refs": kept_outcome_refs,
+            "source_skill_refs": kept_skill_refs,
+        }
+    )
+    return cleaned, warnings
+
+
+async def tailor_cover_letter(
+    llm: LLMClient,
+    *,
+    optimized: OptimizedPayload,
+    job_description: str,
+    company_name: str,
+    contact: ContactInfo,
+    role_title: str | None = None,
+    preferences_rules: list[str] | None = None,
+    preferences_avoid: list[str] | None = None,
+    preferences_tone_notes: list[str] | None = None,
+    critique: str | None = None,
+    model: ModelId = DEFAULT_MODEL,
+    purpose: str = DEFAULT_COVER_LETTER_PURPOSE,
+) -> tuple[TailoredCoverLetter, list[str], LLMResult]:
+    """Run the LLM and post-validate that declared refs trace back.
+
+    Returns (letter, warnings, llm_result). Caller is responsible for
+    cost-logging and persistence.
+    """
+    user_message = build_cover_letter_user_message(
+        optimized=optimized,
+        job_description=job_description,
+        company_name=company_name,
+        contact=contact,
+        role_title=role_title,
+        preferences_text=_preferences_text(
+            preferences_rules, preferences_avoid, preferences_tone_notes
+        ),
+        critique=critique,
+    )
+
+    parsed, result = await complete_json(
+        llm,
+        model=model,
+        system=COVER_LETTER_SYSTEM,
+        messages=[Message(role="user", content=user_message)],
+        schema=TailoredCoverLetter,
+        purpose=purpose,
+        cache_system=True,
+        max_tokens=4096,
+    )
+
+    cleaned, warnings = validate_cover_letter_refs(parsed, optimized)
     return cleaned, warnings, result

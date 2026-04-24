@@ -5,14 +5,22 @@ The LLM produces a TailoredResume — a structured representation the
 trace back to something in the OptimizedPayload; source refs are
 mandatory for bullets and roles so a post-hoc hallucination check can
 verify them.
+
+P5 adds cover letters via the same pipeline. The `document_type`
+discriminator decides which payload shape the LLM produces and which
+renderer is used downstream. Cover letter tracing is aggregate (list
+of referenced outcomes/roles/skills) rather than per-bullet — prose
+doesn't cleanly split into traceable units.
 """
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 from app.models.ats_lint import LintViolation
+
+DocumentType = Literal["resume", "cover_letter"]
 
 ResumeType = Literal["senior-frontend", "fullstack", "frontend-lead", "generic"]
 
@@ -85,16 +93,79 @@ class TailorRequest(BaseModel):
     """Optional link to a jobs pipeline row (#184)."""
 
 
+# ---------------------------------------------------------------------------
+# Cover letter shapes
+# ---------------------------------------------------------------------------
+
+
+class CoverLetterParagraph(BaseModel):
+    """One paragraph of cover-letter prose."""
+
+    text: str = Field(min_length=1, max_length=1500)
+
+
+class TailoredCoverLetter(BaseModel):
+    """The structured cover letter the docx renderer consumes.
+
+    Tracing is aggregate: the LLM declares which OptimizedPayload items
+    it drew from (outcomes, roles, skills) as lists of refs. Exact
+    per-sentence traceability isn't practical for prose — we validate
+    structurally that the declared refs exist in the source doc.
+    """
+
+    contact: ContactInfo
+    recipient_company: str = Field(min_length=1, max_length=200)
+    recipient_role: str | None = Field(default=None, max_length=200)
+    salutation: str = Field(min_length=1, max_length=200)
+    paragraphs: list[CoverLetterParagraph]
+    closing: str = Field(min_length=1, max_length=100)
+    signature: str = Field(min_length=1, max_length=200)
+
+    jd_snippet: str = Field(default="", max_length=800)
+    preferences_applied: list[str] = Field(default_factory=list)
+
+    source_outcome_refs: list[str] = Field(default_factory=list)
+    """Outcome.description values from the OptimizedPayload this letter drew from."""
+    source_role_refs: list[str] = Field(default_factory=list)
+    """Role.id values from the OptimizedPayload this letter drew from."""
+    source_skill_refs: list[str] = Field(default_factory=list)
+    """Skill.name values from the OptimizedPayload this letter drew from."""
+
+
+class CoverLetterRequest(BaseModel):
+    """Router input shape for POST /tailor/cover-letter."""
+
+    job_description: str = Field(min_length=1, max_length=20_000)
+    company_name: str = Field(min_length=1, max_length=200)
+    role_title: str | None = Field(default=None, max_length=200)
+    contact: ContactInfo
+    critique: str | None = Field(default=None, max_length=5_000)
+    job_posting_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Records + responses
+# ---------------------------------------------------------------------------
+
+
 class TailoredResumeRecord(BaseModel):
-    """Read shape for a tailored_resumes row."""
+    """Read shape for a tailored_resumes row.
+
+    `payload` is stored as JSONB; its shape depends on `document_type`:
+    - `"resume"` -> parseable as `TailoredResume`
+    - `"cover_letter"` -> parseable as `TailoredCoverLetter`
+
+    Helpers below do the typed parse at the call site.
+    """
 
     id: str
     user_id: str | None
     job_posting_id: str | None
+    document_type: DocumentType = "resume"
     resume_type: str
     jd_snapshot: str
     jd_snapshot_hash: str
-    payload: TailoredResume
+    payload: dict[str, Any]
     storage_path: str | None
     warnings: list[str]
     model: str | None
@@ -104,9 +175,23 @@ class TailoredResumeRecord(BaseModel):
     latency_ms: int
     created_at: datetime
 
+    def as_resume(self) -> TailoredResume:
+        if self.document_type != "resume":
+            raise ValueError(
+                f"record is document_type={self.document_type!r}, not a resume"
+            )
+        return TailoredResume.model_validate(self.payload)
+
+    def as_cover_letter(self) -> TailoredCoverLetter:
+        if self.document_type != "cover_letter":
+            raise ValueError(
+                f"record is document_type={self.document_type!r}, not a cover letter"
+            )
+        return TailoredCoverLetter.model_validate(self.payload)
+
 
 class TailorResponse(BaseModel):
-    """Router output for POST /tailor/resume on success."""
+    """Router output for POST /tailor/resume and /tailor/cover-letter on success."""
 
     record: TailoredResumeRecord
     lint_warnings: list[LintViolation] = Field(default_factory=list)

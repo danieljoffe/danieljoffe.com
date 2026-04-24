@@ -36,6 +36,7 @@ class JobPosting(BaseModel):
     score: int
     score_breakdown: ScoreBreakdown | None
     status: str
+    target_id: str | None = None
     first_seen_at: datetime
     created_at: datetime
 

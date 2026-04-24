@@ -1,11 +1,13 @@
-"""Tailor router (#185 P3d).
+"""Tailor router.
 
-POST /tailor/resume — runs the full pipeline (synthesize -> render ->
-lint -> persist -> upload). Returns the record on success; 422 with
-violations on lint failure.
-GET /tailor/resumes — recent tailorings for the user.
-GET /tailor/resumes/{id} — one record.
-GET /tailor/resumes/{id}/download — serves the `.docx` bytes.
+POST /tailor/resume           — synthesize + render + lint + persist a resume.
+POST /tailor/cover-letter     — same pipeline shape, for cover letters.
+GET  /tailor/resumes          — recent resume tailorings.
+GET  /tailor/cover-letters    — recent cover-letter tailorings.
+GET  /tailor/resumes/{id}     — one record (either type; look up by id).
+GET  /tailor/resumes/{id}/download — serves the `.docx` bytes.
+
+All 422 responses carry the LintFailureResponse shape.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -18,6 +20,7 @@ from app.dependencies import (
     verify_api_key_or_session,
 )
 from app.models.tailor import (
+    CoverLetterRequest,
     TailoredResumeRecord,
     TailorLintFailureResponse,
     TailorRequest,
@@ -26,9 +29,12 @@ from app.models.tailor import (
 from app.services.experience import optimized, preferences
 from app.services.llm.client import LLMClient
 from app.services.tailor import (
+    CoverLetterPipelineLintFailure,
+    CoverLetterPipelineSuccess,
     PipelineLintFailure,
     PipelineSuccess,
     persistence,
+    run_cover_letter_pipeline,
     run_tailor_pipeline,
 )
 
@@ -85,13 +91,81 @@ async def create_tailored_resume(
     )
 
 
+@router.post(
+    "/cover-letter",
+    responses={422: {"model": TailorLintFailureResponse}},
+)
+async def create_tailored_cover_letter(
+    body: CoverLetterRequest,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> TailorResponse:
+    current_optimized = optimized.get_latest(supabase, user_id=None)
+    if current_optimized is None:
+        raise HTTPException(
+            status_code=404,
+            detail="no optimized doc — derive one via POST /experience/derive first",
+        )
+
+    prefs_row = preferences.get(supabase, user_id=None)
+    prefs_payload = prefs_row.payload if prefs_row else None
+
+    result = await run_cover_letter_pipeline(
+        supabase,
+        llm,
+        user_id=None,
+        optimized=current_optimized,
+        job_description=body.job_description,
+        company_name=body.company_name,
+        contact=body.contact,
+        role_title=body.role_title,
+        preferences=prefs_payload,
+        critique=body.critique,
+        job_posting_id=body.job_posting_id,
+    )
+
+    if isinstance(result, CoverLetterPipelineLintFailure):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "ok": False,
+                "violations": [v.model_dump() for v in result.lint.violations],
+            },
+        )
+
+    assert isinstance(result, CoverLetterPipelineSuccess)
+    return TailorResponse(
+        record=result.record,
+        lint_warnings=result.lint.warnings,
+    )
+
+
 @router.get("/resumes")
 async def list_tailored_resumes(
     limit: int = 50,
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, list[TailoredResumeRecord]]:
-    rows = persistence.list_recent(supabase, user_id=None, limit=max(1, min(limit, 200)))
+    rows = persistence.list_recent(
+        supabase,
+        user_id=None,
+        limit=max(1, min(limit, 200)),
+        document_type="resume",
+    )
     return {"resumes": rows}
+
+
+@router.get("/cover-letters")
+async def list_tailored_cover_letters(
+    limit: int = 50,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, list[TailoredResumeRecord]]:
+    rows = persistence.list_recent(
+        supabase,
+        user_id=None,
+        limit=max(1, min(limit, 200)),
+        document_type="cover_letter",
+    )
+    return {"cover_letters": rows}
 
 
 @router.get("/resumes/{resume_id}")
