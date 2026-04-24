@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
+  Briefcase,
   User,
   BarChart3,
   Menu,
@@ -23,6 +24,12 @@ const NAV_ITEMS: (SidebarItem & { href: string })[] = [
     label: 'Dashboard',
     href: '/fitted',
     icon: <LayoutDashboard className='size-4' aria-hidden />,
+  },
+  {
+    id: 'jobs',
+    label: 'Jobs',
+    href: '/fitted/jobs',
+    icon: <Briefcase className='size-4' aria-hidden />,
   },
   {
     id: 'profile',

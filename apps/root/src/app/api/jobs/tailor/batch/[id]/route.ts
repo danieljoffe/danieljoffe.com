@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '../proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '../../../proxy';
 
-export async function DELETE(
+export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -10,5 +10,5 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  return proxyToFastAPI(`/jobs/${id}`, { method: 'DELETE' });
+  return proxyToFastAPI(`/tailor/batch/${id}`);
 }

@@ -2,16 +2,16 @@
  * @jest-environment node
  */
 import { NextResponse } from 'next/server';
-import { proxyToFastAPI, verifyJobsAdmin } from '@/app/api/jobs/proxy';
+import { proxyToFastAPI, verifyJobsAccess } from '@/app/api/jobs/proxy';
 import { GET } from './route';
 
 jest.mock('@/app/api/jobs/proxy', () => ({
-  verifyJobsAdmin: jest.fn(),
+  verifyJobsAccess: jest.fn(),
   proxyToFastAPI: jest.fn(),
 }));
 
-const mockedVerify = verifyJobsAdmin as jest.MockedFunction<
-  typeof verifyJobsAdmin
+const mockedVerify = verifyJobsAccess as jest.MockedFunction<
+  typeof verifyJobsAccess
 >;
 const mockedProxy = proxyToFastAPI as jest.MockedFunction<
   typeof proxyToFastAPI

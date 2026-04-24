@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAdmin, proxyToFastAPI } from '../proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '../proxy';
 
 type SourceAction =
   | { action: 'add'; board_token: string; company_name: string }
@@ -7,7 +7,7 @@ type SourceAction =
   | { action: 'seed' };
 
 export async function GET() {
-  if (!(await verifyJobsAdmin())) {
+  if (!(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -15,7 +15,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await verifyJobsAdmin())) {
+  if (!(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
