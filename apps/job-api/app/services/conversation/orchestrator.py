@@ -27,7 +27,7 @@ from app.models.conversation import (
     ResetResult,
     TurnResult,
 )
-from app.models.experience import ConversationType
+from app.models.experience import AnnotationCreate, ConversationType
 from app.models.llm import Message, ModelId
 from app.services.conversation.prompts import (
     ONBOARDING_SYSTEM,
@@ -35,6 +35,7 @@ from app.services.conversation.prompts import (
     UPDATE_SYSTEM,
 )
 from app.services.experience import gap_tracker, optimized, prose, turns
+from app.services.experience import annotations as annotation_svc
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient, complete_json
 
@@ -156,6 +157,23 @@ async def handle_turn(
         )
         new_prose_version = new_doc.version
         prose_updated = True
+
+    # Persist annotation directive if the LLM parsed one (#499)
+    if parsed.annotation:
+        try:
+            annotation_svc.add_annotation(
+                supabase,
+                user_id=user_id,
+                body=AnnotationCreate(
+                    action=parsed.annotation.action,
+                    ref_type=parsed.annotation.ref_type,
+                    ref_value=parsed.annotation.ref_value,
+                    target_label=parsed.annotation.target_label,
+                    reason=parsed.annotation.reason,
+                ),
+            )
+        except ValueError:
+            pass  # No optimized doc yet — skip annotation
 
     turns.append(
         supabase,

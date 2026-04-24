@@ -15,7 +15,20 @@ _SHARED_OUTPUT_CONTRACT = """Return a strict JSON object matching this schema \
 the user just gave you fresh career content. Must be the user's claim restated \
 in third-person-neutral or first-person-singular. Never a summary. Never \
 invention.",
-  "done": boolean — true when the current phase has enough content to stop probing
+  "done": boolean — true when the current phase has enough content to stop probing,
+  "annotation": object or null — if the user expressed an annotation directive \
+(emphasis, exclusion, or de-emphasis for resume tailoring), parse it here. \
+Shape: {"action": "emphasize"|"exclude"|"de-emphasize", "ref_type": \
+"role"|"skill"|"outcome", "ref_value": "the id, name, or description", \
+"target_label": "target name or null for global", "reason": "user's stated \
+intent or null"}. Only populate when the user explicitly asks to emphasize, \
+exclude, or de-emphasize something for their resumes. Examples: \
+"don't include my helpdesk role on engineering resumes" -> {"action": "exclude", \
+"ref_type": "role", "ref_value": "helpdesk-support", "target_label": \
+"Frontend Engineer", "reason": "not relevant to engineering"}. \
+"emphasize the roadmap work for PM targets" -> {"action": "emphasize", \
+"ref_type": "outcome", "ref_value": "roadmap", "target_label": \
+"Product Manager", "reason": "user wants to highlight PM-relevant work"}.
 }
 
 Rules:
@@ -26,6 +39,7 @@ not say.
 - If the user skipped a question (skipped=true in the turn metadata), \
 acknowledge gracefully and ask the next question.
 - Keep assistant_message short and direct — one concrete question at a time.
+- annotation and prose_append can coexist in one response.
 """
 
 

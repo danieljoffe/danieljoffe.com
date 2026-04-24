@@ -38,6 +38,7 @@ def build_user_message(
     contact: ContactInfo,
     resume_type: ResumeType,
     preferences_text: str | None,
+    annotations_text: str | None,
     critique: str | None,
     page_budget: int,
 ) -> str:
@@ -53,6 +54,8 @@ def build_user_message(
     sections.append(f"[PageBudget] {page_budget}")
     if preferences_text:
         sections.append(f"[Preferences]\n{preferences_text}")
+    if annotations_text:
+        sections.append(f"[Annotations]\n{annotations_text}")
     if critique:
         sections.append(f"[Critique]\n{critique}")
     sections.append(f"[JobDescription]\n{job_description}")
@@ -134,6 +137,7 @@ async def tailor_resume(
     preferences_rules: list[str] | None = None,
     preferences_avoid: list[str] | None = None,
     preferences_tone_notes: list[str] | None = None,
+    annotations_text: str | None = None,
     critique: str | None = None,
     page_budget: int = 2,
     model: ModelId = DEFAULT_MODEL,
@@ -152,6 +156,7 @@ async def tailor_resume(
         preferences_text=_preferences_text(
             preferences_rules, preferences_avoid, preferences_tone_notes
         ),
+        annotations_text=annotations_text,
         critique=critique,
         page_budget=page_budget,
     )
@@ -184,6 +189,7 @@ def build_cover_letter_user_message(
     contact: ContactInfo,
     role_title: str | None,
     preferences_text: str | None,
+    annotations_text: str | None,
     critique: str | None,
 ) -> str:
     """Assemble the variable content for the LLM call.
@@ -199,6 +205,8 @@ def build_cover_letter_user_message(
         sections.append(f"[RoleTitle] {role_title}")
     if preferences_text:
         sections.append(f"[Preferences]\n{preferences_text}")
+    if annotations_text:
+        sections.append(f"[Annotations]\n{annotations_text}")
     if critique:
         sections.append(f"[Critique]\n{critique}")
     sections.append(f"[JobDescription]\n{job_description}")
@@ -266,6 +274,7 @@ async def tailor_cover_letter(
     preferences_rules: list[str] | None = None,
     preferences_avoid: list[str] | None = None,
     preferences_tone_notes: list[str] | None = None,
+    annotations_text: str | None = None,
     critique: str | None = None,
     model: ModelId = DEFAULT_MODEL,
     purpose: str = DEFAULT_COVER_LETTER_PURPOSE,
@@ -284,6 +293,7 @@ async def tailor_cover_letter(
         preferences_text=_preferences_text(
             preferences_rules, preferences_avoid, preferences_tone_notes
         ),
+        annotations_text=annotations_text,
         critique=critique,
     )
 

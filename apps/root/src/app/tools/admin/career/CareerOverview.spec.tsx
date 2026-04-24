@@ -51,6 +51,7 @@ const optimizedDoc: OptimizedDoc = {
         role_ref: 'fc',
       },
     ],
+    annotations: [],
   },
   markdown_view: null,
   source: 'llm',

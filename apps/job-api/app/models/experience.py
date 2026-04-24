@@ -16,6 +16,8 @@ ConversationType = Literal["onboarding", "update"]
 TurnRole = Literal["user", "assistant", "system"]
 ChunkType = Literal["role", "skill", "outcome", "summary"]
 OptimizedDocSource = Literal["llm", "user_edit"]
+AnnotationAction = Literal["emphasize", "exclude", "de-emphasize"]
+AnnotationRefType = Literal["role", "skill", "outcome"]
 
 
 # ---------------------------------------------------------------------------
@@ -48,11 +50,23 @@ class Skill(BaseModel):
     years: float | None = None
 
 
+class Annotation(BaseModel):
+    """User directive for per-target emphasis or exclusion (#499)."""
+
+    id: str
+    action: AnnotationAction
+    ref_type: AnnotationRefType
+    ref_value: str
+    target_label: str | None = None
+    reason: str | None = None
+
+
 class OptimizedPayload(BaseModel):
     summary: str | None = None
     roles: list[Role] = Field(default_factory=list)
     skills: list[Skill] = Field(default_factory=list)
     outcomes: list[Outcome] = Field(default_factory=list)
+    annotations: list[Annotation] = Field(default_factory=list)
 
 
 class PreferencesPayload(BaseModel):
@@ -118,6 +132,14 @@ class Preferences(BaseModel):
 # ---------------------------------------------------------------------------
 # Request shapes (router inputs)
 # ---------------------------------------------------------------------------
+
+class AnnotationCreate(BaseModel):
+    action: AnnotationAction
+    ref_type: AnnotationRefType
+    ref_value: str = Field(min_length=1, max_length=500)
+    target_label: str | None = None
+    reason: str | None = None
+
 
 class ProseDocCreate(BaseModel):
     content: str = Field(min_length=1, max_length=500_000)

@@ -24,6 +24,8 @@ from app.models.conversation import (
     TurnResult,
 )
 from app.models.experience import (
+    Annotation,
+    AnnotationCreate,
     ConversationType,
     OptimizedDoc,
     OptimizedDocUpsert,
@@ -39,6 +41,7 @@ from app.models.experience import OptimizedPayload
 from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import (
+    annotations,
     chunks,
     derive,
     gap_tracker,
@@ -170,6 +173,16 @@ async def upload_resume(
             result=result,
             metadata={"prose_doc_id": prose_doc.id, "prose_version": prose_doc.version},
         )
+
+        # Carry forward annotations from previous optimized doc (#499)
+        previous_opt = optimized.get_latest(supabase, user_id=None)
+        if previous_opt and previous_opt.payload.annotations:
+            valid = annotations.validate_annotation_refs(
+                previous_opt.payload.annotations, payload
+            )
+            if valid:
+                payload = payload.model_copy(update={"annotations": valid})
+
         doc = optimized.create_version(
             supabase,
             user_id=None,
@@ -253,6 +266,15 @@ async def derive_optimized(
         metadata={"prose_doc_id": prose_doc.id, "prose_version": prose_doc.version},
     )
 
+    # Carry forward annotations from the previous optimized doc (#499)
+    previous = optimized.get_latest(supabase, user_id=None)
+    if previous and previous.payload.annotations:
+        valid = annotations.validate_annotation_refs(
+            previous.payload.annotations, payload
+        )
+        if valid:
+            payload = payload.model_copy(update={"annotations": valid})
+
     doc = optimized.create_version(
         supabase,
         user_id=None,
@@ -280,6 +302,40 @@ async def get_gap_health(
     if doc is None:
         return gap_tracker.gap_health(OptimizedPayload())
     return gap_tracker.gap_health(doc.payload)
+
+
+# ---- Annotations (#499) ---------------------------------------------------
+
+
+@router.get("/annotations")
+async def list_annotations(
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, list[Annotation]]:
+    return {"annotations": annotations.list_annotations(supabase, user_id=None)}
+
+
+@router.post("/annotations", status_code=201)
+async def add_annotation(
+    body: AnnotationCreate,
+    supabase: Client = Depends(get_supabase),
+) -> OptimizedDoc:
+    try:
+        return annotations.add_annotation(supabase, user_id=None, body=body)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.delete("/annotations/{annotation_id}")
+async def delete_annotation(
+    annotation_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> OptimizedDoc:
+    try:
+        return annotations.remove_annotation(
+            supabase, user_id=None, annotation_id=annotation_id
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 # ---- Preferences ----------------------------------------------------------

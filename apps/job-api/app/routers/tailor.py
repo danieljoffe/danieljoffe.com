@@ -96,6 +96,7 @@ async def create_tailored_resume(
         resume_type=body.resume_type or "generic",
         page_budget=body.page_budget,
         job_posting_id=body.job_posting_id,
+        target_label=body.target_label,
     )
 
     if isinstance(result, PipelineLintFailure):
@@ -160,6 +161,7 @@ async def create_tailored_cover_letter(
         preferences=prefs_payload,
         critique=body.critique,
         job_posting_id=body.job_posting_id,
+        target_label=body.target_label,
     )
 
     if isinstance(result, CoverLetterPipelineLintFailure):

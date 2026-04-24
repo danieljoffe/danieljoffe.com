@@ -66,6 +66,18 @@ influence the output. Record which rules you honored in \
 `preferences_applied` by echoing the rule text.
 - `preferences.avoid` is a hard filter on bullets.
 
+ANNOTATIONS:
+- If [Annotations] is provided, it contains user directives about what to \
+emphasize or de-emphasize for this specific target.
+- "EMPHASIZE" items should be prioritized in content selection — lead with \
+these roles, outcomes, and skills even if they aren't the closest JD match.
+- "DE-EMPHASIZE" items should be included only if space allows after all \
+emphasized and JD-relevant content is placed.
+- Excluded items have already been removed from the OptimizedPayload — you \
+will not see them, so don't reference them.
+- Annotations reflect explicit user intent and take precedence over \
+JD-derived relevance signals.
+
 CRITIQUE:
 - If critique is provided, treat it as the correction to make relative to \
 an implicit prior draft. Example critique: "lead with performance not design \
@@ -130,6 +142,18 @@ PREFERENCES:
 - Every rule in `preferences.rules` should influence the output. Record \
 which you honored in `preferences_applied`.
 - `preferences.avoid` is a hard filter.
+
+ANNOTATIONS:
+- If [Annotations] is provided, it contains user directives about what to \
+emphasize or de-emphasize for this specific target.
+- "EMPHASIZE" items should be prioritized in content selection — lead with \
+these roles, outcomes, and skills even if they aren't the closest JD match.
+- "DE-EMPHASIZE" items should be included only if space allows after all \
+emphasized and JD-relevant content is placed.
+- Excluded items have already been removed from the OptimizedPayload — you \
+will not see them, so don't reference them.
+- Annotations reflect explicit user intent and take precedence over \
+JD-derived relevance signals.
 
 CRITIQUE:
 - If critique is provided, treat it as the correction relative to an \
