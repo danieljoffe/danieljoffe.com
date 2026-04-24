@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic_settings import BaseSettings
 
 
@@ -9,6 +11,12 @@ class Settings(BaseSettings):
     greenhouse_delay_ms: int = 200
     score_normalizer: int = 30
     allowed_hosts: str = "*"
+
+    # LLM provider — set to "anthropic" to use the real SDK; mock is the safe default.
+    llm_provider: Literal["mock", "anthropic"] = "mock"
+    anthropic_api_key: str = ""
+    anthropic_timeout_seconds: float = 600.0
+    anthropic_max_retries: int = 2
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
