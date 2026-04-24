@@ -57,3 +57,19 @@ export interface OptimizedDoc {
 // when the table is empty. The discriminator is that the payload fields are absent.
 export type ProseResponse = ProseDoc | { prose: null };
 export type OptimizedResponse = OptimizedDoc | { optimized: null };
+
+// Gap health (#498)
+export type GapTier = 'red' | 'yellow' | 'green';
+
+export interface GapHealthResult {
+  gap_pct: number;
+  tier: GapTier;
+  gaps: Array<{
+    kind: string;
+    ref: string;
+    priority: number;
+    context: string;
+  }>;
+  total_weight: number;
+  gap_weight: number;
+}

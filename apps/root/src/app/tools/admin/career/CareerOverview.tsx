@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Card } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Stack } from '@danieljoffe.com/shared-ui/Stack';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import type {
+  GapHealthResult,
+  GapTier,
   OptimizedDoc,
   OptimizedResponse,
   ProseDoc,
@@ -19,6 +22,7 @@ interface CareerState {
   error: string | null;
   prose: ProseDoc | null;
   optimized: OptimizedDoc | null;
+  gapHealth: GapHealthResult | null;
 }
 
 function hasProse(value: ProseResponse): value is ProseDoc {
@@ -39,13 +43,29 @@ function formatDate(iso: string): string {
   });
 }
 
+function tierToVariant(tier: GapTier): 'error' | 'accent' | 'success' {
+  if (tier === 'red') return 'error';
+  if (tier === 'yellow') return 'accent';
+  return 'success';
+}
+
+function tierToBadgeVariant(
+  tier: GapTier
+): 'destructive' | 'warning' | 'success' {
+  if (tier === 'red') return 'destructive';
+  if (tier === 'yellow') return 'warning';
+  return 'success';
+}
+
 async function fetchCareerData(): Promise<{
   prose: ProseDoc | null;
   optimized: OptimizedDoc | null;
+  gapHealth: GapHealthResult | null;
 }> {
-  const [proseRes, optRes] = await Promise.all([
+  const [proseRes, optRes, gapRes] = await Promise.all([
     fetch('/api/career/experience/prose', { cache: 'no-store' }),
     fetch('/api/career/experience/optimized', { cache: 'no-store' }),
+    fetch('/api/career/experience/gap-health', { cache: 'no-store' }),
   ]);
 
   if (!proseRes.ok) throw new Error(`Prose fetch failed (${proseRes.status})`);
@@ -53,10 +73,12 @@ async function fetchCareerData(): Promise<{
 
   const proseBody = (await proseRes.json()) as ProseResponse;
   const optBody = (await optRes.json()) as OptimizedResponse;
+  const gapBody = gapRes.ok ? ((await gapRes.json()) as GapHealthResult) : null;
 
   return {
     prose: hasProse(proseBody) ? proseBody : null,
     optimized: hasOptimized(optBody) ? optBody : null,
+    gapHealth: gapBody,
   };
 }
 
@@ -66,6 +88,7 @@ export default function CareerOverview() {
     error: null,
     prose: null,
     optimized: null,
+    gapHealth: null,
   });
 
   useEffect(() => {
@@ -78,15 +101,18 @@ export default function CareerOverview() {
           error: null,
           prose: data.prose,
           optimized: data.optimized,
+          gapHealth: data.gapHealth,
         });
       })
       .catch((err: unknown) => {
         if (cancelled) return;
         setState({
           loading: false,
-          error: err instanceof Error ? err.message : 'Failed to load career data',
+          error:
+            err instanceof Error ? err.message : 'Failed to load career data',
           prose: null,
           optimized: null,
+          gapHealth: null,
         });
       });
     return () => {
@@ -110,7 +136,7 @@ export default function CareerOverview() {
     );
   }
 
-  const { prose, optimized } = state;
+  const { prose, optimized, gapHealth } = state;
 
   return (
     <Stack gap='lg'>
@@ -188,12 +214,50 @@ export default function CareerOverview() {
             </Stack>
           ) : (
             <Text variant='body'>
-              No optimized doc yet. Derive one via POST /experience/derive once the
-              prose doc has content.
+              No optimized doc yet. Derive one via POST /experience/derive once
+              the prose doc has content.
             </Text>
           )}
         </Stack>
       </Card>
+
+      {gapHealth && (
+        <Card>
+          <Stack gap='md'>
+            <div className='flex items-center justify-between'>
+              <Heading variant='cardTitle' as='h2'>
+                Gap health
+              </Heading>
+              <Badge variant={tierToBadgeVariant(gapHealth.tier)}>
+                {gapHealth.tier}
+              </Badge>
+            </div>
+            <ProgressBar
+              value={Math.round(100 - gapHealth.gap_pct)}
+              variant={tierToVariant(gapHealth.tier)}
+              aria-label={`Document completeness: ${Math.round(100 - gapHealth.gap_pct)}%`}
+            />
+            <Text variant='detail'>
+              {Math.round(100 - gapHealth.gap_pct)}% complete
+            </Text>
+            {gapHealth.gaps.length > 0 && (
+              <ul className='list-disc pl-5 text-sm text-text-secondary'>
+                {gapHealth.gaps.map((gap, i) => (
+                  <li key={`${gap.kind}-${gap.ref}-${i}`}>{gap.context}</li>
+                ))}
+              </ul>
+            )}
+            {gapHealth.gap_pct > 0 && (
+              <a
+                href='/tools/admin/career/conversation'
+                className='text-sm font-medium text-accent-primary hover:underline'
+              >
+                Fix gaps
+              </a>
+            )}
+          </Stack>
+        </Card>
+      )}
     </Stack>
   );
 }

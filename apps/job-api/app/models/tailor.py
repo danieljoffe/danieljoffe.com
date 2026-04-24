@@ -202,3 +202,14 @@ class TailorLintFailureResponse(BaseModel):
 
     ok: Literal[False] = False
     violations: list[LintViolation]
+
+
+class GapGateFailureResponse(BaseModel):
+    """Router output when the master doc is structurally insufficient to generate."""
+
+    ok: Literal[False] = False
+    code: Literal["gap_gate"] = "gap_gate"
+    reason: str
+    message: str
+    gap_pct: float
+    tier: str

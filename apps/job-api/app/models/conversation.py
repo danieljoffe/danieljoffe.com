@@ -72,3 +72,30 @@ class ResetResult(BaseModel):
     prose_versions_deleted: int
     optimized_versions_deleted: int
     turns_deleted: int
+
+
+# ---------------------------------------------------------------------------
+# Gap health (#498)
+# ---------------------------------------------------------------------------
+
+GapTier = Literal["red", "yellow", "green"]
+
+GateReason = Literal["no_roles", "insufficient_outcomes"]
+
+
+class GapHealthResult(BaseModel):
+    """Weighted completeness metric over the master document."""
+
+    gap_pct: float
+    tier: GapTier
+    gaps: list[Gap]
+    total_weight: int
+    gap_weight: int
+
+
+class GateResult(BaseModel):
+    """Structural minimum check for generation readiness."""
+
+    ok: bool
+    reason: GateReason | None = None
+    message: str = ""
