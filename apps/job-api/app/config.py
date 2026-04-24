@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # URL validation — enable to validate job URLs during polling.
     validate_poll_urls: bool = False
 
+    # Firecrawl — set API key to enable JS-rendered page extraction fallback.
+    firecrawl_api_key: str = ""
+
     # Embeddings provider — set to "voyage" to use the real SDK; mock is the default.
     embeddings_provider: Literal["mock", "voyage"] = "mock"
     voyage_api_key: str = ""
