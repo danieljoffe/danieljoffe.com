@@ -6,6 +6,7 @@ from typing import Any, cast
 
 from supabase import Client
 
+from app.config import settings
 from app.models.schemas import PollResult
 from app.seed.keyword_config import keyword_config
 from app.services.ashby import fetch_ashby_jobs
@@ -16,6 +17,7 @@ from app.services.sanitize import sanitize_html
 from app.services.scoring import score_job
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
+from app.services.validate import validate_job_url
 from app.services.workday import fetch_workday_jobs
 
 logger = logging.getLogger(__name__)
@@ -150,6 +152,32 @@ def _is_us_location(location: str | None) -> bool:
     return not any(hint in loc for hint in _NON_US_HINTS)
 
 
+async def _validate_one_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Validate the absolute_url of a single job row."""
+    url = row.get("absolute_url")
+    if not url:
+        return row
+    try:
+        result = await validate_job_url(url)
+        if not result.is_valid:
+            row["url_validation_status"] = "rejected"
+            row["url_validation_warnings"] = [result.rejection_reason]
+            row["absolute_url"] = None
+        else:
+            row["url_validation_status"] = "valid"
+            row["url_validation_warnings"] = result.warnings
+            if result.final_url != url:
+                row["absolute_url"] = result.final_url
+    except Exception:
+        logger.exception("URL validation failed for %s", url)
+    return row
+
+
+async def _validate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Validate URLs for all rows concurrently."""
+    return list(await asyncio.gather(*(_validate_one_row(r) for r in rows)))
+
+
 async def _poll_one_source(
     source: dict[str, Any], supabase: Client
 ) -> dict[str, Any]:
@@ -204,6 +232,10 @@ async def _poll_one_source(
                     "greenhouse_updated_at": job.updated_at,
                 }
             )
+
+        # Optional: validate job URLs before upserting (#496)
+        if settings.validate_poll_urls and rows_to_upsert:
+            rows_to_upsert = await _validate_rows(rows_to_upsert)
 
         # Phase 1: Upsert new/updated jobs AND fetch existing rows in parallel.
         # These are independent — upsert adds/updates matched rows, existing

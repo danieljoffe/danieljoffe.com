@@ -22,6 +22,7 @@ from app.services.llm.client import LLMClient
 from app.services.targets import crud
 from app.services.targets.derive_profile import DEFAULT_PURPOSE, derive_profile_from_jd
 from app.services.targets.merge import merge_profiles
+from app.services.validate import validate_job_url
 
 router = APIRouter(
     prefix="/targets",
@@ -119,6 +120,16 @@ async def add_reference_jd(
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
+
+    # Validate JD URL if provided (#496)
+    if body.jd_url:
+        vr = await validate_job_url(body.jd_url)
+        if not vr.is_valid:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid JD URL: {vr.rejection_reason}",
+            )
+        body.jd_url = vr.final_url
 
     # Derive profile from JD via LLM
     extracted_profile, result = await derive_profile_from_jd(

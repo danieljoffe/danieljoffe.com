@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     anthropic_timeout_seconds: float = 600.0
     anthropic_max_retries: int = 2
 
+    # URL validation — enable to validate job URLs during polling.
+    validate_poll_urls: bool = False
+
     # Embeddings provider — set to "voyage" to use the real SDK; mock is the default.
     embeddings_provider: Literal["mock", "voyage"] = "mock"
     voyage_api_key: str = ""
