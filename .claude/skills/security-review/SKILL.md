@@ -8,9 +8,17 @@ disable-model-invocation: true
 
 Perform a security-focused code review of the changes on the current branch compared to develop (the default PR target).
 
+## Token Budget Rules
+
+- Route `git diff` output through `ctx_execute` — branch diffs can be very large
+- Use `ctx_search` to find specific patterns in indexed diff output rather than re-reading files
+
 ## Instructions
 
-1. Run `git fetch origin && git diff origin/develop...HEAD` to get all changes on the current branch
+1. Run via `ctx_execute`:
+   ```
+   ctx_execute(language: "shell", code: "git fetch origin && git diff origin/develop...HEAD")
+   ```
 2. Identify all modified files, focusing on:
    - API routes (`apps/root/src/app/api/`)
    - Proxy/middleware (`apps/root/src/proxy.ts`)

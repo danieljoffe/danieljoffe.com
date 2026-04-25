@@ -9,11 +9,22 @@ user-invocable: true
 
 Review all pending changes, group them into logical commits, and push each one.
 
+## Token Budget Rules
+
+- Route `git diff --stat` and `git status` through `ctx_batch_execute` when the changeset is large
+- Use `ctx_execute` for `git diff --staged --stat` before each commit if many files are staged
+
 ## Instructions
 
 1. **Assess the changeset**
-   - Run `git status` and `git diff --stat` (both staged and unstaged) to see all modified, added, and deleted files.
-   - Run `git log --oneline -5` to understand the recent commit style.
+   - Run via `ctx_batch_execute`:
+     ```
+     [
+       { "label": "status",  "command": "git status" },
+       { "label": "diff",    "command": "git diff --stat" },
+       { "label": "log",     "command": "git log --oneline -5" }
+     ]
+     ```
 
 2. **Plan commit batches**
    - Group files by logical concern (e.g., dependency upgrades, feature code, config changes, documentation, test fixes).

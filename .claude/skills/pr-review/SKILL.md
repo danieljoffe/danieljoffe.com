@@ -9,6 +9,11 @@ user-invocable: true
 
 Run all reviewer agents in parallel on the current branch's changed files and produce a unified report.
 
+## Token Budget Rules
+
+- Route `git diff` and file list output through `ctx_execute` — diffs can be large
+- Each spawned agent inherits ctx_batch_execute — remind them to use it for large outputs
+
 ## Arguments
 
 `/pr-review` — no arguments needed (uses current branch diff against develop)

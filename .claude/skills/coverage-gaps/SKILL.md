@@ -10,6 +10,11 @@ argument-hint: '[--fix] [--quality]'
 
 Scan the codebase for components missing unit tests or Storybook stories, report the gaps, and optionally generate stubs. With `--quality`, also audit existing tests for anti-patterns.
 
+## Token Budget Rules
+
+- Route file listing and test output through `ctx_batch_execute` — scanning many directories produces large output
+- When running generated specs (`--fix`), route test output through `ctx_execute`
+
 ## Arguments
 
 `/coverage-gaps` — scan for missing tests and stories (read-only)
