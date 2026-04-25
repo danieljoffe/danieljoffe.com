@@ -1,12 +1,12 @@
 ---
-name: verify
-description: Run full verification loop — build, dev server + browser console.log check, and pom scripts individually
+name: verify-root
+description: Verify the root Next.js app — build, dev server + browser console check, and POM scripts
 user-invocable: true
 ---
 
-# Verify
+# Verify Root
 
-Run the full verification loop after significant changes. Fix any issues that arise at each step before proceeding to the next.
+Run the full verification loop for the root Next.js application (portfolio/public site) after significant changes. Fix any issues that arise at each step before proceeding to the next.
 
 ## Instructions
 
