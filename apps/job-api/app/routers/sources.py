@@ -1,7 +1,7 @@
 from typing import Any, cast
 
 import httpx
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
 from app.dependencies import get_supabase, verify_api_key_or_session
@@ -31,7 +31,7 @@ async def manage_source(
 ) -> dict[str, Any]:
     if body.action == "add":
         if not body.company_name:
-            return {"error": "company_name required for add"}
+            raise HTTPException(status_code=422, detail="company_name required for add")
         resp = (
             supabase.table("job_sources")
             .upsert(

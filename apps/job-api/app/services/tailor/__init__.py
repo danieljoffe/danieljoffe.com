@@ -42,12 +42,12 @@ from app.services.tailor.tailor import (
 )
 
 __all__ = [
-    "CoverLetterPipelineLintFailure",
-    "CoverLetterPipelineResult",
-    "CoverLetterPipelineSuccess",
     "DEFAULT_COVER_LETTER_PURPOSE",
     "DEFAULT_MODEL",
     "DEFAULT_PURPOSE",
+    "CoverLetterPipelineLintFailure",
+    "CoverLetterPipelineResult",
+    "CoverLetterPipelineSuccess",
     "PipelineLintFailure",
     "PipelineResult",
     "PipelineSuccess",

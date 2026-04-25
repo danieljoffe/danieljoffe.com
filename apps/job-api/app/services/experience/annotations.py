@@ -12,16 +12,15 @@ payload edits.
 from __future__ import annotations
 
 import uuid
-from typing import Any, cast
 
 from supabase import Client
 
 from app.models.experience import (
     Annotation,
     AnnotationCreate,
-    Outcome,
     OptimizedDoc,
     OptimizedPayload,
+    Outcome,
 )
 from app.services.experience import optimized
 
@@ -112,9 +111,7 @@ def resolve_for_target(
     def _matches(a: Annotation) -> bool:
         if a.target_label is None:
             return True
-        if target_lower is not None and a.target_label.lower() == target_lower:
-            return True
-        return False
+        return target_lower is not None and a.target_label.lower() == target_lower
 
     emphasize: list[Annotation] = []
     exclude: list[Annotation] = []
@@ -220,13 +217,12 @@ def validate_annotation_refs(
 
     valid: list[Annotation] = []
     for a in annotations:
-        if a.ref_type == "role" and a.ref_value in role_ids:
-            valid.append(a)
-        elif a.ref_type == "skill" and a.ref_value.lower() in skill_names:
-            valid.append(a)
-        elif a.ref_type == "outcome" and any(
+        matches_role = a.ref_type == "role" and a.ref_value in role_ids
+        matches_skill = a.ref_type == "skill" and a.ref_value.lower() in skill_names
+        matches_outcome = a.ref_type == "outcome" and any(
             a.ref_value.lower() in desc for desc in outcome_descs
-        ):
+        )
+        if matches_role or matches_skill or matches_outcome:
             valid.append(a)
 
     return valid

@@ -65,8 +65,8 @@ def score_job(title: str, description_html: str, config: KeywordConfig) -> Score
         all_matched.extend(matched)
 
     # Negative keywords
-    hard_count, hard_matched = _count_matches(searchable, config.negative_keywords.hard_exclude)
-    soft_count, soft_matched = _count_matches(searchable, config.negative_keywords.soft_exclude)
+    hard_count, _hard_matched = _count_matches(searchable, config.negative_keywords.hard_exclude)
+    soft_count, _soft_matched = _count_matches(searchable, config.negative_keywords.soft_exclude)
     breakdown.negative = (hard_count * SCORE_WEIGHTS["hard_exclude"]) + (
         soft_count * SCORE_WEIGHTS["soft_exclude"]
     )

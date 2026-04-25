@@ -49,7 +49,7 @@ class VoyageEmbeddingsClient:
         *,
         model: EmbeddingModelId,
         inputs: list[str],
-        purpose: str,  # noqa: ARG002 — cost-log grouping label, used by callers not the client
+        purpose: str,
     ) -> EmbeddingResult:
         if not inputs:
             # Don't call the API for an empty batch — save a roundtrip.

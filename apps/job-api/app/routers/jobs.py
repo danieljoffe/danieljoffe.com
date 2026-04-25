@@ -29,9 +29,12 @@ from app.services.scoring import score_job
 from app.services.target_scoring import (
     bulk_score_for_target,
     get_target_scores,
+)
+from app.services.target_scoring import (
     score_and_upsert as target_score_and_upsert,
 )
-from app.services.targets.crud import get as get_target, get_active as get_active_target
+from app.services.targets.crud import get as get_target
+from app.services.targets.crud import get_active as get_active_target
 from app.services.validate import (
     is_banned_domain,
     registrable_domain,
@@ -161,7 +164,7 @@ async def add_manual_job(
         resp = await client.get(cleaned)
         final_url = str(resp.url)
     except httpx.HTTPError:
-        raise HTTPException(status_code=400, detail="Failed to fetch URL")
+        raise HTTPException(status_code=400, detail="Failed to fetch URL") from None
 
     # Check post-redirect domain
     final_hostname = urlparse(final_url).hostname or ""

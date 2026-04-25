@@ -409,7 +409,7 @@ async def test_tailor_raises_on_hallucinated_role() -> None:
 
 async def test_invalid_json_raises() -> None:
     llm = MockLLMClient(scripted={DEFAULT_PURPOSE: "not json"})
-    with pytest.raises(Exception):  # noqa: B017
+    with pytest.raises(Exception):
         await tailor_resume(
             llm,
             optimized=_optimized(),

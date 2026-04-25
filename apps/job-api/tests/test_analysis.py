@@ -27,11 +27,10 @@ from app.models.experience import (
     Role,
     Skill,
 )
-from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job, build_user_message
 from app.services.analysis import persistence as persistence_mod
+from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job, build_user_message
 from app.services.llm import cost_log as cost_log_mod
 from app.services.llm.mock import MockLLMClient
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -307,7 +306,6 @@ async def test_router_cache_hit_skips_llm(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """When a cached analysis exists, the LLM should not be called."""
-    from app.routers import analysis as analysis_router
 
     cached_record = JobAnalysisRecord.model_validate(_analysis_record_row())
     monkeypatch.setattr(
@@ -343,7 +341,6 @@ async def test_router_cache_miss_runs_llm_and_persists(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Cache miss → LLM call → cost log → persist → return record."""
-    from app.routers import analysis as analysis_router
 
     monkeypatch.setattr(persistence_mod, "get_cached", lambda *_a, **_kw: None)
     monkeypatch.setattr(cost_log_mod, "record", MagicMock())

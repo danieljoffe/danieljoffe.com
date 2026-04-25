@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -192,7 +191,6 @@ class TestPersistenceHelpers:
 class TestEditResume:
     @pytest.mark.asyncio
     async def test_edit_success(self) -> None:
-        from fastapi import HTTPException
 
         from app.routers import tailor as tailor_router
 

@@ -301,7 +301,7 @@ _twilio_client: Any = None
 
 def _get_twilio_client() -> Any:
     """Return a cached Twilio client, creating it on first call."""
-    global _twilio_client  # noqa: PLW0603
+    global _twilio_client
     if _twilio_client is None:
         from twilio.rest import Client as TwilioClient  # type: ignore[import-untyped]
 

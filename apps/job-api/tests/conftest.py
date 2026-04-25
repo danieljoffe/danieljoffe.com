@@ -6,11 +6,11 @@ os.environ.setdefault("JOB_API_KEY", "testkey")
 # Force-overwrite so a local .env with restrictive hosts can't break tests.
 os.environ["ALLOWED_HOSTS"] = "*"
 
-from unittest.mock import MagicMock  # noqa: E402
+from unittest.mock import MagicMock
 
-import pytest  # noqa: E402
+import pytest
 
-from app.seed.keyword_config import keyword_config  # noqa: E402
+from app.seed.keyword_config import keyword_config
 
 
 @pytest.fixture

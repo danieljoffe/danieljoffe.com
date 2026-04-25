@@ -13,7 +13,6 @@ from app.models.targets import (
     TargetUpdate,
 )
 
-
 # ---- ScoringProfile --------------------------------------------------------
 
 

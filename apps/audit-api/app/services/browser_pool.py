@@ -41,7 +41,8 @@ class BrowserPool:
             if self._browser is None or not self._browser.is_connected():
                 await self._launch()
             self._scan_count += 1
-            assert self._browser is not None
+            if self._browser is None:  # pragma: no cover
+                raise RuntimeError("Browser failed to launch")
             return self._browser
 
     async def release(self) -> None:
@@ -74,13 +75,13 @@ class BrowserPool:
             try:
                 await self._browser.close()
             except Exception:
-                pass
+                logger.debug("Browser close failed", exc_info=True)
             self._browser = None
         if self._playwright:
             try:
                 await self._playwright.stop()
             except Exception:
-                pass
+                logger.debug("Playwright stop failed", exc_info=True)
             self._playwright = None
         logger.info("Browser closed")
 
