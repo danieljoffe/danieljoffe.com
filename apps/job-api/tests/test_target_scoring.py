@@ -7,7 +7,7 @@ poller integration, list endpoint overlay, re-score endpoint.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -27,7 +27,6 @@ from app.services.target_scoring import (
     get_target_scores,
     score_and_upsert,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

@@ -20,7 +20,7 @@ from supabase import Client
 
 from app.models.schemas import JobTargetScore, ScoreBreakdown
 from app.models.targets import JobTarget
-from app.services.scoring import score_job_with_profile, strip_html
+from app.services.scoring import score_job_with_profile
 
 logger = logging.getLogger(__name__)
 

@@ -6,6 +6,7 @@ POST /experience/derive runs the end-to-end loop: prose -> LLM -> optimized
 doc -> chunks, all cost-logged.
 """
 
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
@@ -18,6 +19,7 @@ from app.dependencies import (
     verify_api_key_or_session,
 )
 from app.models.conversation import (
+    GapHealthResult,
     ProbeResult,
     ResetResult,
     TurnRequest,
@@ -29,6 +31,7 @@ from app.models.experience import (
     ConversationType,
     OptimizedDoc,
     OptimizedDocUpsert,
+    OptimizedPayload,
     Preferences,
     PreferencesUpsert,
     ProseDoc,
@@ -36,8 +39,6 @@ from app.models.experience import (
     ResumeUploadResponse,
     TurnAppend,
 )
-from app.models.conversation import GapHealthResult
-from app.models.experience import OptimizedPayload
 from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import (
@@ -104,13 +105,13 @@ async def upload_resume(
         raise HTTPException(status_code=422, detail="Empty file")
 
     try:
-        parsed = parse_resume(file_bytes, filename, content_type)
+        parsed = await asyncio.to_thread(parse_resume, file_bytes, filename, content_type)
     except ValueError as exc:
         if "too large" in str(exc).lower():
-            raise HTTPException(status_code=413, detail=str(exc))
-        raise HTTPException(status_code=415, detail=str(exc))
+            raise HTTPException(status_code=413, detail=str(exc)) from None
+        raise HTTPException(status_code=415, detail=str(exc)) from None
     except ParseError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from None
 
     if not parsed.text.strip():
         raise HTTPException(

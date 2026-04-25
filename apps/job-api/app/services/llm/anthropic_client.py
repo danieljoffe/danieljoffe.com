@@ -48,7 +48,7 @@ class AnthropicLLMClient:
         model: ModelId,
         system: str,
         messages: list[Message],
-        purpose: str,  # noqa: ARG002 — cost-log grouping label, used by callers not the client
+        purpose: str,
         max_tokens: int = 4096,
         cache_system: bool = False,
     ) -> LLMResult:

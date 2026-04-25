@@ -39,12 +39,11 @@ from app.models.tailor import (
     TailorRequest,
     TailorResponse,
 )
-from app.services.batch import create_batch, get_batch, process_batch
-from app.services.experience import optimized, preferences
-from app.services.llm.client import LLMClient
 from app.services.ats_lint.linter import lint_docx
+from app.services.batch import create_batch, get_batch, process_batch
 from app.services.docx.renderer import render_docx
-from app.services.experience import gap_tracker
+from app.services.experience import gap_tracker, optimized, preferences
+from app.services.llm.client import LLMClient
 from app.services.tailor import (
     CoverLetterPipelineLintFailure,
     CoverLetterPipelineSuccess,
@@ -169,7 +168,8 @@ async def create_tailored_resume(
             },
         )
 
-    assert isinstance(result, PipelineSuccess)
+    if not isinstance(result, PipelineSuccess):
+        raise HTTPException(status_code=500, detail="Unexpected pipeline result")
     return TailorResponse(
         record=result.record,
         lint_warnings=result.lint.warnings,
@@ -234,7 +234,8 @@ async def create_tailored_cover_letter(
             },
         )
 
-    assert isinstance(result, CoverLetterPipelineSuccess)
+    if not isinstance(result, CoverLetterPipelineSuccess):
+        raise HTTPException(status_code=500, detail="Unexpected pipeline result")
     return TailorResponse(
         record=result.record,
         lint_warnings=result.lint.warnings,

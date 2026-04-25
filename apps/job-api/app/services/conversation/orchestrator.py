@@ -16,6 +16,7 @@ they want the optimized doc regenerated from accumulated prose.
 
 from __future__ import annotations
 
+import contextlib
 import json
 from typing import Any, cast
 
@@ -34,8 +35,8 @@ from app.services.conversation.prompts import (
     PROBE_SYSTEM,
     UPDATE_SYSTEM,
 )
-from app.services.experience import gap_tracker, optimized, prose, turns
 from app.services.experience import annotations as annotation_svc
+from app.services.experience import gap_tracker, optimized, prose, turns
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient, complete_json
 
@@ -158,9 +159,10 @@ async def handle_turn(
         new_prose_version = new_doc.version
         prose_updated = True
 
-    # Persist annotation directive if the LLM parsed one (#499)
+    # Persist annotation directive if the LLM parsed one (#499).
+    # ValueError is raised when no optimized doc exists yet — skip silently.
     if parsed.annotation:
-        try:
+        with contextlib.suppress(ValueError):
             annotation_svc.add_annotation(
                 supabase,
                 user_id=user_id,
@@ -172,8 +174,6 @@ async def handle_turn(
                     reason=parsed.annotation.reason,
                 ),
             )
-        except ValueError:
-            pass  # No optimized doc yet — skip annotation
 
     turns.append(
         supabase,

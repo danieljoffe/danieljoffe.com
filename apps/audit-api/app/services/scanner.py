@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -50,10 +51,8 @@ def _kill_process_group(proc: asyncio.subprocess.Process) -> None:
     """
     if proc.pid is None:
         return
-    try:
+    with contextlib.suppress(ProcessLookupError, OSError):
         os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-    except (ProcessLookupError, OSError):
-        pass
 
 
 async def _run_lighthouse(url: str, device: DeviceMode) -> dict[str, Any]:

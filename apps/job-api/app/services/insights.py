@@ -8,7 +8,7 @@ in Python.  Supabase REST has no GROUP BY, but at personal-tool scale
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from supabase import Client
 
@@ -207,7 +207,10 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
         bucket_counts[f"{lo}-{hi}"] += 1
 
     buckets = [
-        ScoreBucket(bucket=f"{lo}-{lo + 10 if lo < 90 else 100}", count=bucket_counts.get(f"{lo}-{lo + 10 if lo < 90 else 100}", 0))
+        ScoreBucket(
+            bucket=f"{lo}-{lo + 10 if lo < 90 else 100}",
+            count=bucket_counts.get(f"{lo}-{lo + 10 if lo < 90 else 100}", 0),
+        )
         for lo in range(0, 100, 10)
     ]
 
@@ -343,5 +346,7 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
         cost_over_time=cost_over_time,
         cost_by_purpose=cost_by_purpose,
         total_cost=round(total_cost, 4),
-        avg_cost_per_resume=round(avg_cost_per_resume, 4) if avg_cost_per_resume is not None else None,
+        avg_cost_per_resume=(
+            round(avg_cost_per_resume, 4) if avg_cost_per_resume is not None else None
+        ),
     )

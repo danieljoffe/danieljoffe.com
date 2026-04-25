@@ -1,15 +1,16 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     supabase_url: str = ""
-    supabase_service_role_key: str = ""
-    audit_api_key: str = ""
-    admin_session_secret: str = ""
+    supabase_service_role_key: str = Field(default="", repr=False)
+    audit_api_key: str = Field(default="", repr=False)
+    admin_session_secret: str = Field(default="", repr=False)
     allowed_hosts: str = ""
-    sentry_dsn: str = ""
+    sentry_dsn: str = Field(default="", repr=False)
     sentry_environment: str = "development"
-    sentry_traces_sample_rate: float = 0.1
+    sentry_traces_sample_rate: float = Field(default=0.1, ge=0.0, le=1.0)
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

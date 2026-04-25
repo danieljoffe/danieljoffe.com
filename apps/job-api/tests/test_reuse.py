@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock
 
+from app.models.tailor import TailoredResumeRecord
 from app.models.targets import (
     CategoryProfile,
     DomainProfile,
@@ -9,7 +10,6 @@ from app.models.targets import (
     ScoringProfile,
     SeniorityProfile,
 )
-from app.models.tailor import TailoredResumeRecord
 from app.services.tailor.reuse import (
     SIMILARITY_THRESHOLD,
     clone_resume_for_job,

@@ -16,8 +16,8 @@ from typing import Any, cast
 
 from supabase import Client
 
-from app.models.targets import ScoringProfile
 from app.models.tailor import TailoredResumeRecord
+from app.models.targets import ScoringProfile
 from app.services.tailor.persistence import insert_row, jd_hash
 
 SIMILARITY_THRESHOLD = 0.70

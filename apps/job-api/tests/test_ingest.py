@@ -10,13 +10,12 @@ from app.services.ingest.merge import merge_into_prose
 from app.services.ingest.parse import (
     ACCEPTED_CONTENT_TYPES,
     MAX_FILE_SIZE,
-    ParseError,
     ParsedResume,
+    ParseError,
     parse_docx,
     parse_pdf,
     parse_resume,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers — create minimal valid PDF / DOCX bytes
@@ -25,8 +24,8 @@ from app.services.ingest.parse import (
 
 def _make_pdf_bytes(text: str = "Senior Frontend Engineer\nReact, TypeScript") -> bytes:
     """Create a minimal single-page PDF with pdfplumber-readable text."""
-    from pdfplumber.utils.pdfinternals import resolve_and_decode  # noqa: F401
     import pypdfium2 as pdfium
+    from pdfplumber.utils.pdfinternals import resolve_and_decode  # noqa: F401
 
     pdf = pdfium.PdfDocument.new()
     page = pdf.new_page(200, 100)

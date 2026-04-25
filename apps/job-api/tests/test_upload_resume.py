@@ -9,8 +9,6 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi import UploadFile
 
-from app.models.experience import ResumeUploadResponse
-
 
 def _make_docx_bytes(paragraphs: list[str] | None = None) -> bytes:
     from docx import Document
@@ -74,8 +72,9 @@ class TestUploadResumeEndpoint:
             "app.services.experience.prose.get_latest", lambda *a, **kw: None
         )
 
-        from app.models.experience import ProseDoc
         from datetime import UTC, datetime
+
+        from app.models.experience import ProseDoc
 
         created_doc = ProseDoc(
             id="prose-1", user_id=None, version=1,

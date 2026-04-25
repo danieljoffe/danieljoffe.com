@@ -104,7 +104,7 @@ async def test_model_override_is_respected() -> None:
 
 async def test_invalid_json_response_raises() -> None:
     client = MockLLMClient(scripted={DEFAULT_PURPOSE: "not valid json"})
-    with pytest.raises(Exception):  # noqa: B017
+    with pytest.raises(Exception):
         await derive_from_prose(client, prose_text="prose")
 
 

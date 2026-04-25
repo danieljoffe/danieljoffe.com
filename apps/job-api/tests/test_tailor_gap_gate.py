@@ -8,9 +8,9 @@ from fastapi.testclient import TestClient
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.main import app
 from app.models.experience import (
-    Outcome,
     OptimizedDoc,
     OptimizedPayload,
+    Outcome,
     Role,
     Skill,
 )
