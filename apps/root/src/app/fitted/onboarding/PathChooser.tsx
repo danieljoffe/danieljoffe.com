@@ -45,7 +45,12 @@ export default function PathChooser({ onSelect, onSkip }: PathChooserProps) {
   return (
     <div className='flex flex-col gap-4'>
       {paths.map(({ id, icon: Icon, title, description }) => (
-        <button key={id} onClick={() => onSelect(id)} className='text-left'>
+        <button
+          key={id}
+          onClick={() => onSelect(id)}
+          className='text-left'
+          aria-label={title}
+        >
           <Card className='transition-colors hover:border-brand-500 cursor-pointer'>
             <div className='flex items-start gap-4'>
               <div className='rounded-lg bg-surface-tertiary p-3'>

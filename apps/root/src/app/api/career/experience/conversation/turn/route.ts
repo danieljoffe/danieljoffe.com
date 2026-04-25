@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '@/app/api/jobs/proxy';
+import {
+  verifyJobsAccess,
+  proxyToFastAPI,
+  LLM_TIMEOUT_MS,
+} from '@/app/api/jobs/proxy';
 
 export async function POST(request: NextRequest) {
   if (!(await verifyJobsAccess())) {
@@ -9,5 +13,6 @@ export async function POST(request: NextRequest) {
   return proxyToFastAPI('/experience/conversation/turn', {
     method: 'POST',
     body,
+    timeoutMs: LLM_TIMEOUT_MS,
   });
 }

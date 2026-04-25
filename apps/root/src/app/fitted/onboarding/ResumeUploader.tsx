@@ -131,7 +131,10 @@ export default function ResumeUploader({
         }}
         aria-label='Upload resume file'
       >
-        <div className='flex flex-col items-center gap-3 py-4'>
+        <div
+          aria-live='polite'
+          className='flex flex-col items-center gap-3 py-4'
+        >
           {uploading ? (
             <>
               <Spinner size='lg' aria-label='Uploading resume' />

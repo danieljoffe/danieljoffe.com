@@ -18,9 +18,9 @@ from app.services.lever import fetch_lever_jobs
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_job
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
+from app.services.standard_job import StandardJob
 from app.services.target_scoring import score_and_upsert as target_score_and_upsert
 from app.services.targets.crud import get_active as get_active_target
-from app.services.standard_job import StandardJob
 from app.services.validate import validate_job_url
 from app.services.workday import fetch_workday_jobs
 
@@ -272,20 +272,25 @@ async def _poll_one_source(
             # Score upserted jobs against the active target (#502)
             active_target = get_active_target(supabase, user_id=None)
             if active_target:
-                for raw_row in upsert_resp.data or []:
-                    data = cast(dict[str, Any], raw_row)
+
+                async def _score_one(row_data: dict[str, Any]) -> None:
                     try:
-                        target_score_and_upsert(
+                        await asyncio.to_thread(
+                            target_score_and_upsert,
                             supabase,
-                            job_posting_id=data["id"],
-                            title=data.get("title", ""),
-                            description_html=data.get("description_html", ""),
+                            job_posting_id=row_data["id"],
+                            title=row_data.get("title", ""),
+                            description_html=row_data.get("description_html", ""),
                             target=active_target,
                         )
                     except Exception:
                         logger.exception(
-                            "Target scoring failed for job %s", data.get("id")
+                            "Target scoring failed for job %s", row_data.get("id")
                         )
+
+                await asyncio.gather(
+                    *(_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
+                )
         else:
             existing_resp = await asyncio.to_thread(existing_query.execute)
 

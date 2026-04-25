@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '../../../jobs/proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '@/app/api/jobs/proxy';
 
 export async function POST(
   _request: NextRequest,

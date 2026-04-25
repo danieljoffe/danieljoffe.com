@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '../proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '@/app/api/jobs/proxy';
 
 type SourceAction =
   | { action: 'add'; board_token: string; company_name: string }

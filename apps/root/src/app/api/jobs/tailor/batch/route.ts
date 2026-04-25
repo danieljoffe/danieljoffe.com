@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '../../proxy';
+import {
+  verifyJobsAccess,
+  proxyToFastAPI,
+  LLM_TIMEOUT_MS,
+} from '@/app/api/jobs/proxy';
 
 export async function POST(request: Request) {
   if (!(await verifyJobsAccess())) {
@@ -7,5 +11,9 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  return proxyToFastAPI('/tailor/batch', { method: 'POST', body });
+  return proxyToFastAPI('/tailor/batch', {
+    method: 'POST',
+    body,
+    timeoutMs: LLM_TIMEOUT_MS,
+  });
 }

@@ -296,11 +296,22 @@ async def _try_send_sms(
     return False
 
 
+_twilio_client: Any = None
+
+
+def _get_twilio_client() -> Any:
+    """Return a cached Twilio client, creating it on first call."""
+    global _twilio_client  # noqa: PLW0603
+    if _twilio_client is None:
+        from twilio.rest import Client as TwilioClient  # type: ignore[import-untyped]
+
+        _twilio_client = TwilioClient(settings.twilio_account_sid, settings.twilio_auth_token)
+    return _twilio_client
+
+
 async def _send_twilio_sms(to: str, body: str) -> str | None:
     """Send an SMS via Twilio. Returns the message SID on success."""
-    from twilio.rest import Client as TwilioClient  # type: ignore[import-untyped]
-
-    client = TwilioClient(settings.twilio_account_sid, settings.twilio_auth_token)
+    client = _get_twilio_client()
 
     message = await asyncio.to_thread(
         lambda: client.messages.create(

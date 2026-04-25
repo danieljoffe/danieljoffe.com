@@ -53,31 +53,36 @@ export default function FunnelChart({ data }: FunnelChartProps) {
   }));
 
   return (
-    <ResponsiveContainer width='100%' height={250}>
-      <BarChart data={formatted} layout='vertical'>
-        <CartesianGrid
-          strokeDasharray='3 3'
-          stroke={CHART_COLORS.grid}
-          horizontal={false}
-        />
-        <XAxis type='number' allowDecimals={false} tick={{ fontSize: 12 }} />
-        <YAxis
-          type='category'
-          dataKey='label'
-          width={70}
-          tick={{ fontSize: 12 }}
-        />
-        <Tooltip contentStyle={{ fontSize: 12 }} />
-        <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>
-          {formatted.map((_, i) => (
-            <Cell
-              key={i}
-              fill={STAGE_COLORS[i % STAGE_COLORS.length]}
-              fillOpacity={0.85}
-            />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div
+      role='img'
+      aria-label='Pipeline funnel chart showing job counts by stage'
+    >
+      <ResponsiveContainer width='100%' height={250}>
+        <BarChart data={formatted} layout='vertical'>
+          <CartesianGrid
+            strokeDasharray='3 3'
+            stroke={CHART_COLORS.grid}
+            horizontal={false}
+          />
+          <XAxis type='number' allowDecimals={false} tick={{ fontSize: 12 }} />
+          <YAxis
+            type='category'
+            dataKey='label'
+            width={70}
+            tick={{ fontSize: 12 }}
+          />
+          <Tooltip contentStyle={{ fontSize: 12 }} />
+          <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>
+            {formatted.map((_, i) => (
+              <Cell
+                key={i}
+                fill={STAGE_COLORS[i % STAGE_COLORS.length]}
+                fillOpacity={0.85}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

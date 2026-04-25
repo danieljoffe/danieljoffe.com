@@ -319,28 +319,30 @@ export default function ScoringProfileEditor({
 
                 <div className='flex flex-wrap gap-2'>
                   {Object.entries(cat.keywords).map(([kw, weight]) => (
-                    <button
+                    <span
                       key={kw}
-                      type='button'
-                      onClick={() => cycleKeywordWeight(catName, kw)}
-                      className='group flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs transition-colors hover:border-brand-500'
+                      className='group flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs'
                     >
-                      <span className='text-text-primary'>{kw}</span>
-                      <Badge variant={weightBadgeVariant(weight)} size='sm'>
-                        {weight}
-                      </Badge>
                       <button
                         type='button'
-                        onClick={e => {
-                          e.stopPropagation();
-                          removeKeyword(catName, kw);
-                        }}
+                        onClick={() => cycleKeywordWeight(catName, kw)}
+                        className='flex items-center gap-1 transition-colors hover:text-brand-500'
+                        aria-label={`Cycle weight for ${kw}`}
+                      >
+                        <span className='text-text-primary'>{kw}</span>
+                        <Badge variant={weightBadgeVariant(weight)} size='sm'>
+                          {weight}
+                        </Badge>
+                      </button>
+                      <button
+                        type='button'
+                        onClick={() => removeKeyword(catName, kw)}
                         className='ml-0.5 text-text-tertiary hover:text-error'
                         aria-label={`Remove ${kw}`}
                       >
                         &times;
                       </button>
-                    </button>
+                    </span>
                   ))}
                 </div>
 
@@ -348,6 +350,7 @@ export default function ScoringProfileEditor({
                   <input
                     type='text'
                     placeholder='Add keyword'
+                    aria-label={`Add keyword to ${catName}`}
                     value={newKeywordByCategory[catName] ?? ''}
                     onChange={e =>
                       setNewKeywordByCategory(prev => ({
@@ -377,6 +380,7 @@ export default function ScoringProfileEditor({
             <input
               type='text'
               placeholder='New category name'
+              aria-label='New category name'
               value={newCategoryName}
               onChange={e => setNewCategoryName(e.target.value)}
               onKeyDown={e => {

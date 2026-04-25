@@ -141,6 +141,7 @@ export default function ResumeEmphasisEditor({
             <input
               type='text'
               placeholder='Add skill'
+              aria-label='Add skill to emphasize'
               value={newSkill}
               onChange={e => setNewSkill(e.target.value)}
               onKeyDown={e => {
@@ -186,6 +187,7 @@ export default function ResumeEmphasisEditor({
             <input
               type='text'
               placeholder='Add outcome'
+              aria-label='Add focus outcome'
               value={newOutcome}
               onChange={e => setNewOutcome(e.target.value)}
               onKeyDown={e => {
