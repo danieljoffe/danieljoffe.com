@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Briefcase,
+  Target,
   User,
   BarChart3,
   Menu,
@@ -30,6 +31,12 @@ const NAV_ITEMS: (SidebarItem & { href: string })[] = [
     label: 'Jobs',
     href: '/fitted/jobs',
     icon: <Briefcase className='size-4' aria-hidden />,
+  },
+  {
+    id: 'targets',
+    label: 'Targets',
+    href: '/fitted/targets',
+    icon: <Target className='size-4' aria-hidden />,
   },
   {
     id: 'profile',
