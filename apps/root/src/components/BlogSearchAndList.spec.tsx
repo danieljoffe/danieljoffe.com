@@ -1,7 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import type { PostThumbnail } from '@/types/postTypes';
 import { BlogSearchAndList } from './BlogSearchAndList';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@/lib/searchIndex', () => ({
   buildSearchIndex: () => [
@@ -162,5 +165,19 @@ describe('BlogSearchAndList', () => {
       'href',
       '/blog/page/2'
     );
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <BlogSearchAndList
+        pagePosts={[rsc]}
+        allPosts={allPosts}
+        currentPage={1}
+        totalPages={2}
+        basePath='/blog'
+        tags={defaultTags}
+      />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

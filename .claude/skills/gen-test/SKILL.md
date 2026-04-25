@@ -46,7 +46,7 @@ Generate comprehensive unit tests for a given file, following this project's tes
    - Mock Next.js APIs when needed (`jest.mock('next/navigation')`, etc.)
    - Add `React` import: `import React from 'react'`
 
-6. **Run the tests** with `npx nx test <project> -- --testPathPatterns="<TestFileName>"` to verify they pass.
+6. **Run the tests** with `pnpm nx test <project> -- --testPathPatterns="<TestFileName>"` to verify they pass.
 
 7. **Fix any failures** — all generated tests must pass before finishing.
 

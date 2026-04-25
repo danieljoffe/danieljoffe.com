@@ -182,6 +182,7 @@ export default function MobileNav({ pathname }: { pathname: string }) {
       {/* Backdrop */}
       {sheetOpen && (
         <div
+          data-testid='sheet-overlay'
           className='md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity'
           onClick={closeSheet}
           aria-hidden='true'

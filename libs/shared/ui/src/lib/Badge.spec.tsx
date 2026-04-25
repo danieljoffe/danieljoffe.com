@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Badge } from './Badge';
+
+expect.extend(toHaveNoViolations);
 
 describe('Badge', () => {
   it('renders children content', () => {
@@ -74,5 +77,10 @@ describe('Badge', () => {
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Badge>Label</Badge>);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

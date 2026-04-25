@@ -24,6 +24,16 @@ Run a stylistic review of the requested page.
    - Accessibility visual indicators (focus states, contrast)
 6. Bring up any questions if you have any
 
+## Responsive Breakpoints
+
+After the desktop screenshot, resize the viewport and screenshot at these breakpoints:
+
+- **Mobile**: 375x812 (iPhone SE)
+- **Tablet**: 768x1024 (iPad)
+- **Desktop**: 1440x900 (default)
+
+Compare layouts across breakpoints for spacing, overflow, and readability issues.
+
 ## Tools to Use
 
-Use the Playwright or Chrome DevTools MCP servers to navigate and screenshot the page. Resize the viewport to check responsive breakpoints if relevant.
+Use the Playwright or Chrome DevTools MCP servers to navigate and screenshot the page.

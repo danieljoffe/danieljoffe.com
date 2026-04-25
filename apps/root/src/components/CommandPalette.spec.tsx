@@ -1,9 +1,17 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import CommandPalette from './CommandPalette';
 
+expect.extend(toHaveNoViolations);
+
 // cmdk calls scrollIntoView internally, which doesn't exist in jsdom
+const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+afterAll(() => {
+  window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+});
 
 const mockPush = jest.fn();
 
@@ -152,5 +160,10 @@ describe('CommandPalette', () => {
     await waitFor(() => {
       expect(document.body.classList.contains('overflow-y-hidden')).toBe(true);
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<CommandPalette />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

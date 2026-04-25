@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Select } from './Select';
+
+expect.extend(toHaveNoViolations);
 
 const defaultOptions = [
   { value: 'option1', label: 'Option 1' },
@@ -122,5 +125,12 @@ describe('Select', () => {
     const select = screen.getByRole('combobox');
     expect(select).toBeInTheDocument();
     expect(select.querySelectorAll('option')).toHaveLength(0);
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <Select label='Country' options={defaultOptions} />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

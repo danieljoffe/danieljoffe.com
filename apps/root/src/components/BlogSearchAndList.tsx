@@ -135,17 +135,13 @@ export function BlogSearchAndList({
 
       {isSearching && (
         <Text variant='meta' as='p' aria-live='polite'>
-          {searchResults.length}{' '}
-          {searchResults.length === 1 ? 'result' : 'results'} for &quot;
-          {trimmedQuery}&quot;
+          {`${searchResults.length} ${searchResults.length === 1 ? 'result' : 'results'} for "${trimmedQuery}"`}
         </Text>
       )}
 
       {isFiltering && !isSearching && (
         <Text variant='meta' as='p' aria-live='polite'>
-          {tagResults.length} {tagResults.length === 1 ? 'post' : 'posts'}{' '}
-          tagged &quot;
-          {activeTag}&quot;
+          {`${tagResults.length} ${tagResults.length === 1 ? 'post' : 'posts'} tagged "${activeTag}"`}
         </Text>
       )}
 
@@ -158,7 +154,10 @@ export function BlogSearchAndList({
               : 'No posts yet.'}
         </Text>
       ) : (
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <div
+          data-testid='post-list'
+          className='grid grid-cols-1 sm:grid-cols-2 gap-4'
+        >
           {visiblePosts.map((post, i) => (
             <PostCard
               key={post.slug}

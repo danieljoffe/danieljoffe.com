@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Sidebar } from './Sidebar';
+
+expect.extend(toHaveNoViolations);
 
 const items = [
   { id: 'home', label: 'Home' },
@@ -30,7 +33,7 @@ describe('Sidebar', () => {
   it('calls onSelect when item is clicked', () => {
     const onSelect = jest.fn();
     render(<Sidebar items={items} onSelect={onSelect} />);
-    fireEvent.click(screen.getByText('Home'));
+    fireEvent.click(screen.getByRole('button', { name: 'Home' }));
     expect(onSelect).toHaveBeenCalledWith('home');
   });
 
@@ -48,15 +51,15 @@ describe('Sidebar', () => {
 
   it('expands children when parent is clicked', () => {
     render(<Sidebar items={items} />);
-    fireEvent.click(screen.getByText('Projects'));
+    fireEvent.click(screen.getByRole('button', { name: 'Projects' }));
     expect(screen.getByText('Project A')).toBeInTheDocument();
     expect(screen.getByText('Project B')).toBeInTheDocument();
   });
 
   it('collapses children when parent is clicked again', () => {
     render(<Sidebar items={items} />);
-    fireEvent.click(screen.getByText('Projects'));
-    fireEvent.click(screen.getByText('Projects'));
+    fireEvent.click(screen.getByRole('button', { name: 'Projects' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Projects' }));
     expect(screen.queryByText('Project A')).not.toBeInTheDocument();
   });
 
@@ -71,19 +74,20 @@ describe('Sidebar', () => {
   });
 
   it('applies collapsed width', () => {
-    const { container } = render(<Sidebar items={items} collapsed />);
-    expect(container.querySelector('.w-16')).toBeInTheDocument();
+    render(<Sidebar items={items} collapsed />);
+    const aside = screen.getByRole('complementary');
+    expect(aside).toHaveClass('w-16');
   });
 
   it('applies expanded width by default', () => {
-    const { container } = render(<Sidebar items={items} />);
-    const aside = container.querySelector('aside');
+    render(<Sidebar items={items} />);
+    const aside = screen.getByRole('complementary');
     expect(aside).toHaveClass('w-48', 'md:w-60');
   });
 
   it('applies motion-reduce:transition-none to sidebar container', () => {
-    const { container } = render(<Sidebar items={items} />);
-    const aside = container.querySelector('aside');
+    render(<Sidebar items={items} />);
+    const aside = screen.getByRole('complementary');
     expect(aside).toHaveClass('motion-reduce:transition-none');
   });
 
@@ -114,5 +118,10 @@ describe('Sidebar', () => {
     render(<Sidebar items={items} collapsed />);
     expect(screen.queryByText('Home')).not.toBeInTheDocument();
     expect(screen.queryByText('3')).not.toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Sidebar items={items} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

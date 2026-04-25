@@ -68,6 +68,7 @@ describe('ErrorBoundary', () => {
       expect.objectContaining({ componentStack: expect.any(String) })
     );
 
+    spy.mockRestore();
     process.env['NODE_ENV'] = originalEnv;
   });
 });

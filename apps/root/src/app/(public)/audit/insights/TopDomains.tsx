@@ -57,6 +57,7 @@ export default function TopDomains({ domains }: TopDomainsProps) {
                   </td>
                   <td
                     className={`px-4 py-3 text-sm font-bold text-right ${getGradeColor(d.latestGrade)}`}
+                    data-grade={d.latestGrade ?? 'none'}
                   >
                     {d.latestGrade ?? 'N/A'}
                   </td>

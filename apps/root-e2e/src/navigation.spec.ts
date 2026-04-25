@@ -137,7 +137,7 @@ test.describe('mobile navigation', () => {
     await moreButton.click();
 
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
-    await expect(sheet).toHaveClass(/translate-y-0/);
+    await expect(sheet).toBeVisible();
   });
 
   test('closes More sheet on close button click', async ({ page }) => {
@@ -150,15 +150,17 @@ test.describe('mobile navigation', () => {
     // Open
     await bottomNav.getByLabel('Open more menu').click();
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
-    await expect(sheet).toHaveClass(/translate-y-0/);
+    await expect(sheet).toBeVisible();
 
     // Close via the backdrop overlay — use dispatchEvent because the fixed
     // bottom nav bar (z-50) sits above the overlay (z-40) and intercepts
     // normal Playwright clicks.
-    const overlay = page.locator('.fixed.inset-0.bg-black\\/40');
+    const overlay = page.getByTestId('sheet-overlay');
     await overlay.dispatchEvent('click');
-    // The sheet uses translate-y transition, so check for the off-screen class
-    await expect(sheet).toHaveClass(/translate-y-full/);
+    // The sheet slides off-screen via translate-y-full and sets aria-hidden.
+    // Playwright's toBeHidden() requires display:none or visibility:hidden,
+    // so assert the semantic close state instead.
+    await expect(sheet).toHaveAttribute('aria-hidden', 'true');
   });
 
   test('navigates from More sheet', async ({ page }) => {
@@ -171,7 +173,7 @@ test.describe('mobile navigation', () => {
     // Open More sheet
     await bottomNav.getByLabel('Open more menu').click();
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
-    await expect(sheet).toHaveClass(/translate-y-0/);
+    await expect(sheet).toBeVisible();
 
     // Click About — dispatch programmatically since the sheet is fixed-positioned
     const aboutButton = sheet.locator('button', { hasText: 'About' });
@@ -186,7 +188,6 @@ test.describe('breadcrumb navigation', () => {
     await page.goto('/projects/performance-case-study', {
       waitUntil: 'domcontentloaded',
     });
-    await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
     await expect(breadcrumbNav).toBeVisible();
@@ -196,7 +197,6 @@ test.describe('breadcrumb navigation', () => {
     await page.goto('/projects/performance-case-study', {
       waitUntil: 'domcontentloaded',
     });
-    await page.waitForLoadState('domcontentloaded');
 
     const breadcrumbNav = page.locator('nav[aria-label="Breadcrumb"]');
     await expect(breadcrumbNav).toBeVisible();

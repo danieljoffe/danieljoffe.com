@@ -1,35 +1,34 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import Button from './Button';
+
+expect.extend(toHaveNoViolations);
 
 // Mock next/link to render a real <a> and support ref
 jest.mock('next/link', () => {
-  const React = require('react');
-  const MockLink = React.forwardRef(
-    (
-      props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string },
-      ref: React.ForwardedRef<HTMLAnchorElement>
-    ) => {
-      const { href, children, onClick, ...rest } = props;
-      return (
-        <a
-          ref={ref}
-          href={href}
-          onClick={e => {
-            e.preventDefault();
-            onClick?.(e);
-          }}
-          {...rest}
-        >
-          {children}
-        </a>
-      );
+  return function MockLink(
+    props: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      href: string;
+      ref?: React.Ref<HTMLAnchorElement>;
     }
-  );
-
-  MockLink.displayName = 'MockLink';
-  return MockLink;
+  ) {
+    const { href, children, onClick, ref, ...rest } = props;
+    return (
+      <a
+        ref={ref}
+        href={href}
+        onClick={e => {
+          e.preventDefault();
+          onClick?.(e);
+        }}
+        {...rest}
+      >
+        {children}
+      </a>
+    );
+  };
 });
 
 describe('Button component', () => {
@@ -222,5 +221,10 @@ describe('Button component', () => {
     );
     const link = screen.getByRole('link', { name: /styled/i });
     expect(link).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Button name='test'>Click</Button>);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

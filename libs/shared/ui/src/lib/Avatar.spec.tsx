@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Avatar } from './Avatar';
+
+expect.extend(toHaveNoViolations);
 
 describe('Avatar', () => {
   it('renders initials when no src provided', () => {
@@ -26,33 +29,39 @@ describe('Avatar', () => {
 
   it('applies md size by default', () => {
     const { container } = render(<Avatar initials='A' />);
-    expect(container.querySelector('.h-10')).toBeInTheDocument();
+    const inner = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(inner).toHaveClass('h-10');
   });
 
   it('applies sm size styles', () => {
     const { container } = render(<Avatar initials='A' size='sm' />);
-    expect(container.querySelector('.h-8')).toBeInTheDocument();
+    const inner = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(inner).toHaveClass('h-8');
   });
 
   it('applies lg size styles', () => {
     const { container } = render(<Avatar initials='A' size='lg' />);
-    expect(container.querySelector('.h-12')).toBeInTheDocument();
+    const inner = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(inner).toHaveClass('h-12');
   });
 
   it('renders status indicator when status is provided', () => {
     const { container } = render(<Avatar initials='A' status='online' />);
-    expect(container.querySelector('.bg-success')).toBeInTheDocument();
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.children).toHaveLength(2);
+    expect(wrapper.lastElementChild).toHaveClass('bg-success');
   });
 
   it('does not render status indicator when no status', () => {
     const { container } = render(<Avatar initials='A' />);
-    expect(container.querySelector('.bg-success')).not.toBeInTheDocument();
-    expect(container.querySelector('.bg-error')).not.toBeInTheDocument();
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.children).toHaveLength(1);
   });
 
   it('applies busy status color', () => {
     const { container } = render(<Avatar initials='A' status='busy' />);
-    expect(container.querySelector('.bg-error')).toBeInTheDocument();
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.lastElementChild).toHaveClass('bg-error');
   });
 
   it('applies custom className', () => {
@@ -60,5 +69,10 @@ describe('Avatar', () => {
       <Avatar initials='A' className='custom-class' />
     );
     expect(container.firstChild).toHaveClass('custom-class');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Avatar initials='DJ' />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

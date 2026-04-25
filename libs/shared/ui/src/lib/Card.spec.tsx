@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
+
+expect.extend(toHaveNoViolations);
 
 describe('Card', () => {
   it('renders children content', () => {
@@ -167,5 +170,10 @@ describe('Card composition', () => {
       );
       expect(screen.getByText('Visible content')).toBeVisible();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Card>Content</Card>);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

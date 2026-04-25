@@ -1,5 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Pagination } from './Pagination';
+
+expect.extend(toHaveNoViolations);
 
 describe('Pagination', () => {
   it('renders page buttons for small total', () => {
@@ -227,5 +230,12 @@ describe('Pagination', () => {
       expect(prevButton).not.toHaveAttribute('aria-disabled');
       expect(nextButton).not.toHaveAttribute('aria-disabled');
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

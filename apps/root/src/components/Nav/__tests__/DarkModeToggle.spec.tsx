@@ -1,8 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { useTheme } from '@/state/Theme/ThemeProvider';
 import DarkModeToggle from '../DarkModeToggle';
+
+expect.extend(toHaveNoViolations);
 
 const mockSetTheme = jest.fn();
 const mockThemeToggle = jest.fn();
@@ -100,5 +103,10 @@ describe('DarkModeToggle', () => {
   test('contains an SVG icon', () => {
     render(<DarkModeToggle />);
     expect(screen.getByRole('button').querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<DarkModeToggle />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

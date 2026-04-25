@@ -52,9 +52,7 @@ export function ProjectsGridWithTags({
 
       {isFiltering && (
         <Text variant='meta' as='p' aria-live='polite'>
-          {tagResults.length}{' '}
-          {tagResults.length === 1 ? 'case study' : 'case studies'} tagged
-          &quot;{activeTag}&quot;
+          {`${tagResults.length} ${tagResults.length === 1 ? 'case study' : 'case studies'} tagged "${activeTag}"`}
         </Text>
       )}
 
@@ -65,7 +63,10 @@ export function ProjectsGridWithTags({
             : 'No case studies yet.'}
         </Text>
       ) : (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div
+          data-testid='post-list'
+          className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+        >
           {visibleProjects.map((project, i) => (
             <PostCard
               key={project.slug}
