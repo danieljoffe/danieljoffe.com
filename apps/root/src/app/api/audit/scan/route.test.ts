@@ -4,6 +4,18 @@
 import { NextRequest } from 'next/server';
 import { POST } from './route';
 
+// Mock next/server's after() to execute callbacks immediately in tests
+const afterCallbacks: Array<() => Promise<void>> = [];
+jest.mock('next/server', () => {
+  const actual = jest.requireActual('next/server');
+  return {
+    ...actual,
+    after: (cb: () => Promise<void>) => {
+      afterCallbacks.push(cb);
+    },
+  };
+});
+
 // Mock Supabase
 const mockSelect = jest.fn();
 const mockInsert = jest.fn();
@@ -40,6 +52,7 @@ function createRequest(body: Record<string, unknown>, ip = '1.2.3.4') {
 describe('POST /api/audit/scan', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    afterCallbacks.length = 0;
     global.fetch = jest.fn().mockResolvedValue(new Response('ok'));
     process.env['SCAN_SERVICE_URL'] = 'http://scan-service:3001';
     process.env['SCAN_SERVICE_API_KEY'] = 'test-key';
@@ -336,8 +349,8 @@ describe('POST /api/audit/scan', () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
 
-    // Wait for fire-and-forget fetch().then() to settle
-    await new Promise(resolve => setImmediate(resolve));
+    // Flush after() callbacks captured by the mock
+    for (const cb of afterCallbacks) await cb();
 
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({

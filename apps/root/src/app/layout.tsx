@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import * as Sentry from '@sentry/nextjs';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { rootMetadata } from '@/data/metadata/root';
 import { WithChildren } from '@/types/base';
@@ -20,7 +21,15 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-export const metadata: Metadata = rootMetadata;
+export function generateMetadata(): Metadata {
+  return {
+    ...rootMetadata,
+    other: {
+      ...rootMetadata.other,
+      ...Sentry.getTraceData(),
+    },
+  };
+}
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
