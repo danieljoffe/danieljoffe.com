@@ -8,6 +8,12 @@ disable-model-invocation: true
 
 Audit the Next.js application against current official documentation, producing actionable findings and direct code fixes.
 
+## Token Budget Rules
+
+- Route ALL file reads and command outputs through `ctx_batch_execute` or `ctx_execute`
+- Batch context7 `query-docs` calls — resolve all libraries first, then query in 2-3 batched calls
+- If context7 docs for the same libraries were already fetched in this session, skip Phase 1
+
 ## Instructions
 
 ### Phase 1: Fetch Current Documentation

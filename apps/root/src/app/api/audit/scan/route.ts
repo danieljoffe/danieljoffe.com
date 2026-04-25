@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 import { checkBotId } from 'botid/server';
 import {
   isValidUrl,
@@ -31,22 +31,22 @@ async function markScanFailed(
     .eq('id', scanId);
 }
 
-function fireScan(
+async function fireScan(
   serviceUrl: string,
   apiKey: string,
   payload: { scan_id: string; url: string; device_mode: string },
   supabase: any
 ) {
-  fetch(`${serviceUrl}/run-scan`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-    },
-    body: JSON.stringify(payload),
-  })
-    .then(async res => {
-      if (res.ok) return;
+  try {
+    const res = await fetch(`${serviceUrl}/run-scan`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
       const message = `Scan service returned HTTP ${res.status}`;
       await markScanFailed(supabase, payload.scan_id, message);
       captureApiError(
@@ -56,24 +56,24 @@ function fireScan(
         res.status,
         { scanId: payload.scan_id }
       );
-    })
-    .catch(async (fetchError: unknown) => {
-      await markScanFailed(
-        supabase,
-        payload.scan_id,
-        'Failed to reach scan service'
-      );
+    }
+  } catch (fetchError: unknown) {
+    await markScanFailed(
+      supabase,
+      payload.scan_id,
+      'Failed to reach scan service'
+    );
 
-      captureApiError(
-        fetchError instanceof Error
-          ? fetchError
-          : new Error('Scan service fetch failed'),
-        '/api/audit/scan',
-        'POST',
-        500,
-        { scanId: payload.scan_id }
-      );
-    });
+    captureApiError(
+      fetchError instanceof Error
+        ? fetchError
+        : new Error('Scan service fetch failed'),
+      '/api/audit/scan',
+      'POST',
+      500,
+      { scanId: payload.scan_id }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -234,22 +234,24 @@ export async function POST(request: NextRequest) {
         .update({ paired_scan_id: mobileScan.id })
         .eq('id', desktopScan.id);
 
-      fireScan(
-        scanServiceUrl,
-        scanServiceApiKey,
-        { scan_id: mobileScan.id, url: normalized, device_mode: 'mobile' },
-        supabase
-      );
-      fireScan(
-        scanServiceUrl,
-        scanServiceApiKey,
-        {
-          scan_id: desktopScan.id,
-          url: normalized,
-          device_mode: 'desktop',
-        },
-        supabase
-      );
+      after(async () => {
+        await fireScan(
+          scanServiceUrl,
+          scanServiceApiKey,
+          { scan_id: mobileScan.id, url: normalized, device_mode: 'mobile' },
+          supabase
+        );
+        await fireScan(
+          scanServiceUrl,
+          scanServiceApiKey,
+          {
+            scan_id: desktopScan.id,
+            url: normalized,
+            device_mode: 'desktop',
+          },
+          supabase
+        );
+      });
 
       return NextResponse.json({
         scan_id: mobileScan.id,
@@ -277,12 +279,14 @@ export async function POST(request: NextRequest) {
       throw new Error(insertError?.message || 'Failed to create scan');
     }
 
-    fireScan(
-      scanServiceUrl,
-      scanServiceApiKey,
-      { scan_id: newScan.id, url: normalized, device_mode: device },
-      supabase
-    );
+    after(async () => {
+      await fireScan(
+        scanServiceUrl,
+        scanServiceApiKey,
+        { scan_id: newScan.id, url: normalized, device_mode: device },
+        supabase
+      );
+    });
 
     return NextResponse.json({
       scan_id: newScan.id,

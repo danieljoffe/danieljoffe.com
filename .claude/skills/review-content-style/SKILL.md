@@ -10,6 +10,11 @@ argument-hint: '<content-type or file path> to scope the review (e.g. "blog", "p
 
 Scan content against the [Content Style Guide](../../docs/content-style-guide.md) and flag violations.
 
+## Token Budget Rules
+
+- Route MDX file reads through `ctx_batch_execute` when scanning multiple files — each file is a section
+- Read the style guide once via `ctx_execute` and search with `ctx_search` for specific rules
+
 ## Instructions
 
 1. **Load the style guide**: Read `.claude/docs/content-style-guide.md` to load the full set of rules.

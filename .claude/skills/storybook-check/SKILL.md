@@ -9,6 +9,11 @@ user-invocable: true
 
 Build Storybook for projects affected by current changes and report any broken stories.
 
+## Token Budget Rules
+
+- Route Storybook build output through `ctx_execute` — builds produce verbose output
+- Route `nx show projects` through `ctx_batch_execute`
+
 ## Arguments
 
 `/storybook-check` — no arguments needed (detects affected projects automatically)
