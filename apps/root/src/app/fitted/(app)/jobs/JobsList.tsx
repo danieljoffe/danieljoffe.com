@@ -21,6 +21,7 @@ export default function JobsList() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval>>();
   const { toast } = useToast();
 
@@ -101,6 +102,63 @@ export default function JobsList() {
     }
   }, [selectedIds, toast]);
 
+  const handleBatchExport = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setExporting(true);
+    try {
+      // First, fetch resume IDs for selected jobs
+      const resumeIds: string[] = [];
+      for (const jobId of selectedIds) {
+        try {
+          const res = await fetch(`/api/jobs/tailor/by-job/${jobId}`);
+          if (res.ok) {
+            const record = (await res.json()) as {
+              id: string;
+              approved_at: string | null;
+            };
+            if (record.approved_at) {
+              resumeIds.push(record.id);
+            }
+          }
+        } catch {
+          // skip jobs without resumes
+        }
+      }
+
+      if (resumeIds.length === 0) {
+        toast({ variant: 'warning', title: 'No approved resumes to export' });
+        return;
+      }
+
+      const res = await fetch('/api/jobs/tailor/export-zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resume_ids: resumeIds }),
+      });
+
+      if (!res.ok) {
+        toast({ variant: 'error', title: 'Export failed' });
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'resumes.zip';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({
+        variant: 'success',
+        title: `Exported ${resumeIds.length} resumes`,
+      });
+    } catch {
+      toast({ variant: 'error', title: 'Network error exporting resumes' });
+    } finally {
+      setExporting(false);
+    }
+  }, [selectedIds, toast]);
+
   const handleBatchDelete = useCallback(async () => {
     if (selectedIds.size === 0) return;
 
@@ -146,7 +204,10 @@ export default function JobsList() {
         onClear={() => setSelectedIds(new Set())}
         onBatchGenerate={handleBatchGenerate}
         onBatchDelete={handleBatchDelete}
+        onBatchExport={handleBatchExport}
         generating={generating}
+        exporting={exporting}
+        hasApproved={selectedIds.size > 0}
       />
     </div>
   );

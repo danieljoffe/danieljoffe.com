@@ -6,6 +6,7 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import ResumeEditor from './ResumeEditor';
 import { JOB_STATUSES, type JobAnalysis, type JobPosting } from './types';
 
 interface JobDetailPanelProps {
@@ -25,6 +26,7 @@ export default function JobDetailPanel({
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
   const { toast } = useToast();
 
   async function updateStatus(newStatus: string) {
@@ -209,6 +211,51 @@ export default function JobDetailPanel({
           </div>
         )}
       </div>
+
+      {/* Resume lifecycle */}
+      {(status === 'resume_draft' || status === 'resume_ready') && (
+        <div>
+          <Text variant='caption' className='mb-1'>
+            Resume
+          </Text>
+          {status === 'resume_draft' && (
+            <Button
+              name='review-resume'
+              variant='primary'
+              size='sm'
+              onClick={() => setShowEditor(true)}
+            >
+              Review Resume
+            </Button>
+          )}
+          {status === 'resume_ready' && (
+            <div className='flex items-center gap-2'>
+              <Badge variant='success' size='sm'>
+                Approved
+              </Badge>
+              <Button
+                name='download-approved-resume'
+                variant='secondary'
+                size='sm'
+                onClick={() => setShowEditor(true)}
+              >
+                View / Download
+              </Button>
+            </div>
+          )}
+          <ResumeEditor
+            jobPostingId={posting.id}
+            companyName={posting.company_name}
+            jobTitle={posting.title}
+            isOpen={showEditor}
+            onClose={() => setShowEditor(false)}
+            onApproved={() => {
+              setStatus('resume_ready');
+              onStatusChange?.('resume_ready');
+            }}
+          />
+        </div>
+      )}
 
       {/* Actions */}
       <div className='flex gap-2'>
