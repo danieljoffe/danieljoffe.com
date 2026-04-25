@@ -18,10 +18,7 @@ test.describe('404 Error Page', () => {
     await page.locator('h1, h2').first().waitFor({ state: 'visible' });
 
     await expect(
-      page
-        .getByRole('heading', { name: '404' })
-        .or(page.getByRole('heading', { name: 'Page Not Found' }))
-        .or(page.getByText(/not found/i))
+      page.getByRole('heading', { name: '404', exact: true })
     ).toBeVisible();
   });
 
@@ -101,10 +98,11 @@ test.describe('thank-you page protection', () => {
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
-    // Fill and submit form
-    await fillInput(page.getByLabel(/name/i), VALID_FORM_DATA.name);
-    await fillInput(page.getByLabel(/email/i), VALID_FORM_DATA.email);
-    await fillInput(page.getByLabel(/message/i), VALID_FORM_DATA.message);
+    // Fill and submit form — scope to form to avoid matching nav "Send Email" links
+    const form = page.locator('form');
+    await fillInput(form.getByLabel(/name/i), VALID_FORM_DATA.name);
+    await fillInput(form.getByLabel(/email/i), VALID_FORM_DATA.email);
+    await fillInput(form.getByLabel(/message/i), VALID_FORM_DATA.message);
 
     // Complete hCaptcha verification
     await completeHCaptcha(page);
@@ -131,9 +129,10 @@ test.describe('thank-you page protection', () => {
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
-    await fillInput(page.getByLabel(/name/i), VALID_FORM_DATA.name);
-    await fillInput(page.getByLabel(/email/i), VALID_FORM_DATA.email);
-    await fillInput(page.getByLabel(/message/i), VALID_FORM_DATA.message);
+    const form1 = page.locator('form');
+    await fillInput(form1.getByLabel(/name/i), VALID_FORM_DATA.name);
+    await fillInput(form1.getByLabel(/email/i), VALID_FORM_DATA.email);
+    await fillInput(form1.getByLabel(/message/i), VALID_FORM_DATA.message);
 
     await completeHCaptcha(page);
 
@@ -158,9 +157,10 @@ test.describe('thank-you page protection', () => {
     await page.locator('form').waitFor({ state: 'visible' });
     await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
 
-    await fillInput(page.getByLabel(/name/i), VALID_FORM_DATA.name);
-    await fillInput(page.getByLabel(/email/i), VALID_FORM_DATA.email);
-    await fillInput(page.getByLabel(/message/i), VALID_FORM_DATA.message);
+    const form2 = page.locator('form');
+    await fillInput(form2.getByLabel(/name/i), VALID_FORM_DATA.name);
+    await fillInput(form2.getByLabel(/email/i), VALID_FORM_DATA.email);
+    await fillInput(form2.getByLabel(/message/i), VALID_FORM_DATA.message);
 
     await completeHCaptcha(page);
 
