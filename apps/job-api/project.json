@@ -1,4 +1,5 @@
 {
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "job-api",
   "sourceRoot": "apps/job-api",
   "projectType": "application",
@@ -24,13 +25,13 @@
     "lint": {
       "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["default"],
+      "inputs": ["default", "{projectRoot}/pyproject.toml"],
       "options": {
         "command": "uv run --package job-api ruff check .",
         "cwd": "apps/job-api"
       }
     },
-    "mypy": {
+    "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": ["default", "^production"],
