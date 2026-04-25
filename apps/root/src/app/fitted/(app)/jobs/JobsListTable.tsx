@@ -141,13 +141,15 @@ export default function JobsListTable({
                 />
               </th>
               {COLUMNS.map(col => (
-                <th
-                  key={col.key}
-                  scope='col'
-                  className='px-3 py-2 font-medium text-text-secondary cursor-pointer hover:text-text-primary'
-                  onClick={() => handleSort(col.key)}
-                >
-                  {col.label} {sortIndicator(col.key)}
+                <th key={col.key} scope='col' className='px-3 py-2'>
+                  <button
+                    type='button'
+                    className='flex items-center gap-1 font-medium text-text-secondary hover:text-text-primary'
+                    onClick={() => handleSort(col.key)}
+                    aria-label={`Sort by ${col.label}`}
+                  >
+                    {col.label} {sortIndicator(col.key)}
+                  </button>
                 </th>
               ))}
               <th
@@ -175,6 +177,16 @@ export default function JobsListTable({
                   onClick={() =>
                     setExpandedId(expandedId === job.id ? null : job.id)
                   }
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpandedId(expandedId === job.id ? null : job.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  role='row'
+                  aria-expanded={expandedId === job.id}
+                  aria-label={`${job.title} at ${job.company_name}`}
                 >
                   <td className='px-3 py-2'>
                     <input

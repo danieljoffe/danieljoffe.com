@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     template: '%s | Fitted',
     default: 'Fitted',
   },
+  description:
+    'AI-powered job search command center — track, tailor, and apply with confidence.',
   robots: { index: false, follow: false },
 };
 

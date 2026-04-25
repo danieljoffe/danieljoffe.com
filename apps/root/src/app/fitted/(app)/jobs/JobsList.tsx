@@ -22,7 +22,7 @@ export default function JobsList() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const { toast } = useToast();
 
   // Cleanup polling on unmount
@@ -106,24 +106,25 @@ export default function JobsList() {
     if (selectedIds.size === 0) return;
     setExporting(true);
     try {
-      // First, fetch resume IDs for selected jobs
-      const resumeIds: string[] = [];
-      for (const jobId of selectedIds) {
-        try {
-          const res = await fetch(`/api/jobs/tailor/by-job/${jobId}`);
-          if (res.ok) {
+      // Fetch resume IDs for selected jobs in parallel
+      const results = await Promise.allSettled(
+        [...selectedIds].map(jobId =>
+          fetch(`/api/jobs/tailor/by-job/${jobId}`).then(async res => {
+            if (!res.ok) return null;
             const record = (await res.json()) as {
               id: string;
               approved_at: string | null;
             };
-            if (record.approved_at) {
-              resumeIds.push(record.id);
-            }
-          }
-        } catch {
-          // skip jobs without resumes
-        }
-      }
+            return record.approved_at ? record.id : null;
+          })
+        )
+      );
+      const resumeIds = results
+        .filter(
+          (r): r is PromiseFulfilledResult<string> =>
+            r.status === 'fulfilled' && r.value !== null
+        )
+        .map(r => r.value);
 
       if (resumeIds.length === 0) {
         toast({ variant: 'warning', title: 'No approved resumes to export' });
@@ -166,15 +167,12 @@ export default function JobsList() {
     if (!window.confirm(`Delete ${selectedIds.size} jobs?`)) return;
     /* eslint-enable no-alert */
 
-    let deleted = 0;
-    for (const id of selectedIds) {
-      try {
-        const res = await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
-        if (res.ok) deleted++;
-      } catch {
-        // continue with remaining
-      }
-    }
+    const deleteResults = await Promise.allSettled(
+      [...selectedIds].map(id => fetch(`/api/jobs/${id}`, { method: 'DELETE' }))
+    );
+    const deleted = deleteResults.filter(
+      r => r.status === 'fulfilled' && r.value.ok
+    ).length;
 
     toast({
       variant: deleted > 0 ? 'success' : 'error',

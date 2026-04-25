@@ -112,6 +112,7 @@ export default function TargetSuggestions({
         onClick={handleGoToTargets}
         role='button'
         tabIndex={0}
+        aria-label='Create your first target'
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();

@@ -343,6 +343,7 @@ export default function ResumeEditor({
               Summary
             </Text>
             <textarea
+              aria-label='Summary'
               className='w-full rounded-md border border-border bg-surface p-3 text-sm font-mono resize-y min-h-[100px]'
               value={summary}
               onChange={e => {
@@ -383,6 +384,7 @@ export default function ResumeEditor({
               <div className='flex gap-2'>
                 <input
                   type='text'
+                  aria-label='New skill'
                   className='flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-sm'
                   value={newSkill}
                   onChange={e => setNewSkill(e.target.value)}
@@ -423,7 +425,7 @@ export default function ResumeEditor({
                     </Text>
                     <Text variant='meta'>at {role.company}</Text>
                     <Text variant='meta' className='ml-auto'>
-                      {role.start} — {role.end ?? 'Present'}
+                      {role.start} – {role.end ?? 'Present'}
                     </Text>
                   </div>
                   <ul className='space-y-2'>
@@ -432,6 +434,7 @@ export default function ResumeEditor({
                         <span className='text-text-secondary mt-1.5'>•</span>
                         <input
                           type='text'
+                          aria-label={`Bullet ${bi + 1} for ${role.title} at ${role.company}`}
                           className='flex-1 rounded border border-border bg-surface px-2 py-1 text-sm'
                           value={bullet.text}
                           onChange={e => updateBullet(ri, bi, e.target.value)}
@@ -475,7 +478,7 @@ export default function ResumeEditor({
               {record.payload.education.map((edu, i) => (
                 <div key={i} className='flex gap-2'>
                   <Text variant='body'>{edu.school}</Text>
-                  {edu.degree && <Text variant='meta'>— {edu.degree}</Text>}
+                  {edu.degree && <Text variant='meta'>, {edu.degree}</Text>}
                   {edu.dates && <Text variant='meta'>({edu.dates})</Text>}
                 </div>
               ))}

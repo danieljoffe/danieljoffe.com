@@ -89,13 +89,21 @@ export default function MagicLinkForm() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 aria-label='Email address'
+                aria-describedby={
+                  formState === 'error' ? 'login-error' : undefined
+                }
                 autoFocus
                 required
                 data-sentry-mask
                 className={cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER)}
               />
               {formState === 'error' && (
-                <Text variant='error' className='text-center' role='alert'>
+                <Text
+                  variant='error'
+                  className='text-center'
+                  role='alert'
+                  id='login-error'
+                >
                   {error}
                 </Text>
               )}

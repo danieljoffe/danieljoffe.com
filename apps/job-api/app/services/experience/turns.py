@@ -45,8 +45,18 @@ def append(
     skipped: bool = False,
     prose_doc_id: str | None = None,
 ) -> ConversationTurn:
-    turns = list_turns(supabase, user_id, conversation_type=conversation_type, limit=1_000_000)
-    next_index = len(turns) + 1
+    # Fetch only the max turn_index instead of loading all rows.
+    max_query = (
+        supabase.table(TABLE)
+        .select("turn_index")
+        .eq("conversation_type", conversation_type)
+        .order("turn_index", desc=True)
+        .limit(1)
+    )
+    max_query = _scope_user(max_query, user_id)
+    max_resp = max_query.execute()
+    max_rows = cast(list[dict[str, Any]], max_resp.data or [])
+    next_index = (max_rows[0]["turn_index"] + 1) if max_rows else 1
     resp = (
         supabase.table(TABLE)
         .insert(

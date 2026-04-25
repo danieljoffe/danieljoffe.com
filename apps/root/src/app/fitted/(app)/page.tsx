@@ -17,7 +17,7 @@ async function hasMasterDoc(): Promise<boolean> {
   try {
     const res = await fetch(`${JOB_API_URL}/experience/optimized`, {
       headers: { 'x-api-key': JOB_API_KEY },
-      cache: 'no-store',
+      next: { revalidate: 60 },
     });
     return res.ok;
   } catch {

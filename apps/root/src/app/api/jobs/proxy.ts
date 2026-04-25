@@ -22,6 +22,11 @@ export async function verifyJobsAccess(): Promise<boolean> {
   }
 }
 
+/** Default upstream timeout in milliseconds. */
+const DEFAULT_TIMEOUT_MS = 30_000;
+/** Longer timeout for LLM-backed routes (conversation, derive, tailor). */
+export const LLM_TIMEOUT_MS = 120_000;
+
 export async function proxyToFastAPI(
   path: string,
   options: {
@@ -29,13 +34,17 @@ export async function proxyToFastAPI(
     body?: unknown;
     searchParams?: URLSearchParams;
     binary?: boolean;
+    timeoutMs?: number;
   } = {}
 ): Promise<NextResponse> {
   const { method = 'GET', body, searchParams, binary = false } = options;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const qs = searchParams ? `?${searchParams.toString()}` : '';
   const url = `${JOB_API_URL}${path}${qs}`;
 
   const sessionToken = await readAdminSessionToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
@@ -46,6 +55,7 @@ export async function proxyToFastAPI(
         ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
       },
       body: body ? JSON.stringify(body) : null,
+      signal: controller.signal,
     });
 
     // Binary mode: pass through raw bytes with original headers
@@ -90,6 +100,8 @@ export async function proxyToFastAPI(
       { error: 'Job API unavailable', ...(detail ? { detail } : {}) },
       { status: 503 }
     );
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -102,14 +114,17 @@ export async function proxyToFastAPI(
 export async function proxyMultipartToFastAPI(
   path: string,
   request: Request,
-  options: { searchParams?: URLSearchParams } = {}
+  options: { searchParams?: URLSearchParams; timeoutMs?: number } = {}
 ): Promise<NextResponse> {
   const { searchParams } = options;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const qs = searchParams ? `?${searchParams.toString()}` : '';
   const url = `${JOB_API_URL}${path}${qs}`;
 
   const sessionToken = await readAdminSessionToken();
   const contentType = request.headers.get('Content-Type') ?? '';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
@@ -120,6 +135,7 @@ export async function proxyMultipartToFastAPI(
         ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
       },
       body: request.body,
+      signal: controller.signal,
       // @ts-expect-error -- Node fetch supports duplex for streaming request bodies
       duplex: 'half',
     });
@@ -151,5 +167,7 @@ export async function proxyMultipartToFastAPI(
       { error: 'Job API unavailable', ...(detail ? { detail } : {}) },
       { status: 503 }
     );
+  } finally {
+    clearTimeout(timer);
   }
 }

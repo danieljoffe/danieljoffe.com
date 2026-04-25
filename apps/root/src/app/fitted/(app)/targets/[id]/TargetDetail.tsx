@@ -120,6 +120,7 @@ export default function TargetDetail({ id }: TargetDetailProps) {
         {editingLabel ? (
           <div className='flex items-center gap-2'>
             <input
+              aria-label='Target label'
               value={labelDraft}
               onChange={e => setLabelDraft(e.target.value)}
               onKeyDown={e => {

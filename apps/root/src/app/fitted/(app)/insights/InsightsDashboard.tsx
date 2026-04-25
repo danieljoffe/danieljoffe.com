@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Card,
   CardContent,
@@ -11,13 +12,27 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { StatsCard } from '@danieljoffe.com/shared-ui/StatsCard';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useInsights } from '@/hooks/useInsights';
-import CostChart from './charts/CostChart';
-import FunnelChart from './charts/FunnelChart';
-import ScoreDistributionChart from './charts/ScoreDistributionChart';
-import SkillFrequencyChart from './charts/SkillFrequencyChart';
-import TargetComparisonChart from './charts/TargetComparisonChart';
-import VelocityChart from './charts/VelocityChart';
 import type { Period } from './types';
+
+const CostChart = dynamic(() => import('./charts/CostChart'), { ssr: false });
+const FunnelChart = dynamic(() => import('./charts/FunnelChart'), {
+  ssr: false,
+});
+const ScoreDistributionChart = dynamic(
+  () => import('./charts/ScoreDistributionChart'),
+  { ssr: false }
+);
+const SkillFrequencyChart = dynamic(
+  () => import('./charts/SkillFrequencyChart'),
+  { ssr: false }
+);
+const TargetComparisonChart = dynamic(
+  () => import('./charts/TargetComparisonChart'),
+  { ssr: false }
+);
+const VelocityChart = dynamic(() => import('./charts/VelocityChart'), {
+  ssr: false,
+});
 
 const PERIODS: { id: Period; label: string }[] = [
   { id: '7d', label: '7d' },
@@ -34,12 +49,17 @@ function PeriodFilter({
   onChange: (p: Period) => void;
 }) {
   return (
-    <div className='flex gap-1 p-1 bg-surface-tertiary rounded-lg'>
+    <div
+      role='group'
+      aria-label='Time period'
+      className='flex gap-1 p-1 bg-surface-tertiary rounded-lg'
+    >
       {PERIODS.map(p => (
         <button
           key={p.id}
           type='button'
           onClick={() => onChange(p.id)}
+          aria-pressed={value === p.id}
           className={[
             'px-4 py-2 rounded-md text-sm font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',

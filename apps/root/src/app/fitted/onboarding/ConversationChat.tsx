@@ -16,8 +16,14 @@ interface ConversationChatProps {
 }
 
 interface Message {
+  id: string;
   role: 'assistant' | 'user';
   content: string;
+}
+
+let _msgId = 0;
+function nextMsgId(): string {
+  return `msg-${++_msgId}`;
 }
 
 export default function ConversationChat({
@@ -51,7 +57,9 @@ export default function ConversationChat({
         if (!res.ok) throw new Error('Failed to load question');
         const data = (await res.json()) as { question: string };
         if (!cancelled) {
-          setMessages([{ role: 'assistant', content: data.question }]);
+          setMessages([
+            { id: nextMsgId(), role: 'assistant', content: data.question },
+          ]);
         }
       } catch {
         if (!cancelled)
@@ -74,7 +82,10 @@ export default function ConversationChat({
     setInput('');
     setError(null);
     setSending(true);
-    setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
+    setMessages(prev => [
+      ...prev,
+      { id: nextMsgId(), role: 'user', content: trimmed },
+    ]);
 
     try {
       const res = await fetch('/api/career/experience/conversation/turn', {
@@ -96,7 +107,7 @@ export default function ConversationChat({
 
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: data.assistant_message },
+        { id: nextMsgId(), role: 'assistant', content: data.assistant_message },
       ]);
 
       if (data.done) {
@@ -155,7 +166,7 @@ export default function ConversationChat({
 
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: data.assistant_message },
+        { id: nextMsgId(), role: 'assistant', content: data.assistant_message },
       ]);
 
       if (data.done) {
@@ -189,16 +200,12 @@ export default function ConversationChat({
       </div>
 
       {/* Messages area */}
-      <Card
-        padding='none'
-        className='flex flex-col'
-        style={{ height: '400px' }}
-      >
+      <Card padding='none' className='flex h-[400px] flex-col'>
         <div ref={scrollRef} className='flex-1 overflow-y-auto p-4'>
-          <div className='flex flex-col gap-3'>
-            {messages.map((msg, i) => (
+          <div role='log' aria-live='polite' className='flex flex-col gap-3'>
+            {messages.map(msg => (
               <div
-                key={i}
+                key={msg.id}
                 className={
                   msg.role === 'assistant'
                     ? 'flex justify-start'

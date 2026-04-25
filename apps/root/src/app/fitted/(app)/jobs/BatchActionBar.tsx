@@ -26,7 +26,11 @@ export default function BatchActionBar({
   if (selectedCount === 0) return null;
 
   return (
-    <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-lg'>
+    <div
+      role='status'
+      aria-live='polite'
+      className='fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-lg'
+    >
       <span className='text-sm font-medium text-text-primary'>
         {selectedCount} selected
       </span>

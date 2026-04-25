@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -32,10 +32,16 @@ export default function OnboardingWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>('path-chooser');
   const [selectedPath, setSelectedPath] = useState<OnboardingPath | null>(null);
+  const stepRef = useRef<HTMLDivElement>(null);
 
   const steps = selectedPath ? STEPS_BY_PATH[selectedPath] : ['path-chooser'];
   const stepIndex = steps.indexOf(currentStep);
   const totalSteps = steps.length;
+
+  // Move focus to the new step content on transition
+  useEffect(() => {
+    stepRef.current?.focus();
+  }, [currentStep]);
 
   const goNext = useCallback(() => {
     if (!selectedPath) return;
@@ -83,23 +89,30 @@ export default function OnboardingWizard() {
           </div>
         )}
 
-        {/* Step content */}
-        {currentStep === 'path-chooser' && (
-          <PathChooser onSelect={handlePathSelect} onSkip={handleSkip} />
-        )}
-        {currentStep === 'upload-resume' && (
-          <ResumeUploader onComplete={goNext} onSkip={handleSkip} />
-        )}
-        {currentStep === 'add-job' && (
-          <JobUrlInput onComplete={goNext} onSkip={handleSkip} />
-        )}
-        {currentStep === 'pick-targets' && (
-          <TargetSuggestions onComplete={goNext} onSkip={handleSkip} />
-        )}
-        {currentStep === 'conversation' && (
-          <ConversationChat onComplete={goNext} onSkip={handleSkip} />
-        )}
-        {currentStep === 'completion' && <CompletionScreen />}
+        {/* Step content — tabIndex={-1} allows programmatic focus */}
+        <div
+          ref={stepRef}
+          tabIndex={-1}
+          aria-label={`Onboarding step: ${currentStep.replace(/-/g, ' ')}`}
+          className='outline-none'
+        >
+          {currentStep === 'path-chooser' && (
+            <PathChooser onSelect={handlePathSelect} onSkip={handleSkip} />
+          )}
+          {currentStep === 'upload-resume' && (
+            <ResumeUploader onComplete={goNext} onSkip={handleSkip} />
+          )}
+          {currentStep === 'add-job' && (
+            <JobUrlInput onComplete={goNext} onSkip={handleSkip} />
+          )}
+          {currentStep === 'pick-targets' && (
+            <TargetSuggestions onComplete={goNext} onSkip={handleSkip} />
+          )}
+          {currentStep === 'conversation' && (
+            <ConversationChat onComplete={goNext} onSkip={handleSkip} />
+          )}
+          {currentStep === 'completion' && <CompletionScreen />}
+        </div>
       </div>
     </div>
   );

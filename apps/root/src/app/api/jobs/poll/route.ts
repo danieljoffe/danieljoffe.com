@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '../proxy';
+import { verifyJobsAccess, proxyToFastAPI } from '@/app/api/jobs/proxy';
 
 function constantTimeEqual(a: string, b: string): boolean {
   const aBuf = Buffer.from(a, 'utf8');

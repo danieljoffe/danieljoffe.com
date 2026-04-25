@@ -36,18 +36,27 @@ export default function ScoreDistributionChart({
   }
 
   return (
-    <ResponsiveContainer width='100%' height={250}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray='3 3' stroke={CHART_COLORS.grid} />
-        <XAxis dataKey='bucket' tick={{ fontSize: 11 }} />
-        <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-        <Tooltip contentStyle={{ fontSize: 12 }} />
-        <Bar dataKey='count' name='Jobs' radius={[4, 4, 0, 0]}>
-          {data.map((entry, i) => (
-            <Cell key={i} fill={bucketColor(entry.bucket)} fillOpacity={0.8} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div
+      role='img'
+      aria-label='Score distribution chart showing job counts by score range'
+    >
+      <ResponsiveContainer width='100%' height={250}>
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray='3 3' stroke={CHART_COLORS.grid} />
+          <XAxis dataKey='bucket' tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+          <Tooltip contentStyle={{ fontSize: 12 }} />
+          <Bar dataKey='count' name='Jobs' radius={[4, 4, 0, 0]}>
+            {data.map((entry, i) => (
+              <Cell
+                key={i}
+                fill={bucketColor(entry.bucket)}
+                fillOpacity={0.8}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

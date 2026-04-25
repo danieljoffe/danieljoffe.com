@@ -31,35 +31,43 @@ export default function VelocityChart({ data }: VelocityChartProps) {
   }
 
   return (
-    <ResponsiveContainer width='100%' height={250}>
-      <AreaChart data={data}>
-        <CartesianGrid strokeDasharray='3 3' stroke={CHART_COLORS.grid} />
-        <XAxis
-          dataKey='week_start'
-          tickFormatter={formatWeek}
-          tick={{ fontSize: 12 }}
-        />
-        <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-        <Tooltip labelFormatter={formatWeek} contentStyle={{ fontSize: 12 }} />
-        <Area
-          type='monotone'
-          dataKey='resumes_generated'
-          name='Resumes'
-          stackId='1'
-          stroke={CHART_COLORS.brand}
-          fill={CHART_COLORS.brand}
-          fillOpacity={0.3}
-        />
-        <Area
-          type='monotone'
-          dataKey='applications_submitted'
-          name='Applications'
-          stackId='1'
-          stroke={CHART_COLORS.success}
-          fill={CHART_COLORS.success}
-          fillOpacity={0.3}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div
+      role='img'
+      aria-label='Application velocity chart showing resumes generated and applications submitted over time'
+    >
+      <ResponsiveContainer width='100%' height={250}>
+        <AreaChart data={data}>
+          <CartesianGrid strokeDasharray='3 3' stroke={CHART_COLORS.grid} />
+          <XAxis
+            dataKey='week_start'
+            tickFormatter={formatWeek}
+            tick={{ fontSize: 12 }}
+          />
+          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+          <Tooltip
+            labelFormatter={label => formatWeek(String(label))}
+            contentStyle={{ fontSize: 12 }}
+          />
+          <Area
+            type='monotone'
+            dataKey='resumes_generated'
+            name='Resumes'
+            stackId='1'
+            stroke={CHART_COLORS.brand}
+            fill={CHART_COLORS.brand}
+            fillOpacity={0.3}
+          />
+          <Area
+            type='monotone'
+            dataKey='applications_submitted'
+            name='Applications'
+            stackId='1'
+            stroke={CHART_COLORS.success}
+            fill={CHART_COLORS.success}
+            fillOpacity={0.3}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
