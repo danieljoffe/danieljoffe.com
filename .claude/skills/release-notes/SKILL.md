@@ -10,14 +10,30 @@ argument-hint: '<format: pr|changelog|summary> (default: pr)'
 
 Diff `develop` against `main`, analyze all merged work, and generate release content.
 
+## Token Budget Rules
+
+- Route git log and diff output through `ctx_batch_execute` — these can be large
+- Batch all `gh pr view` calls into a single `ctx_batch_execute` instead of calling per-PR
+
 ## Instructions
 
 1. **Gather the diff**
-   - Run `git fetch origin` to ensure both branches are up to date.
-   - Run `git log main..develop --oneline --no-merges` to get all non-merge commits.
-   - Run `git log main..develop --oneline --merges` to identify merged PRs.
-   - Run `git diff main..develop --stat` to get the file-level change summary.
-   - For each merged PR, extract the PR number from the merge commit message and run `gh pr view <number> --json title,body,labels,number` to get the full context.
+   - Run via `ctx_batch_execute`:
+     ```
+     [
+       { "label": "commits",    "command": "git fetch origin && git log main..develop --oneline --no-merges" },
+       { "label": "merges",     "command": "git log main..develop --oneline --merges" },
+       { "label": "diff-stat",  "command": "git diff main..develop --stat" }
+     ]
+     ```
+   - Extract PR numbers from merge commits, then batch all `gh pr view` calls into one `ctx_batch_execute`:
+     ```
+     [
+       { "label": "PR-123", "command": "gh pr view 123 --json title,body,labels,number" },
+       { "label": "PR-124", "command": "gh pr view 124 --json title,body,labels,number" },
+       ...
+     ]
+     ```
 
 2. **Categorize changes**
    Group the work into these categories (skip empty ones):

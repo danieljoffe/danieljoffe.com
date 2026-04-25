@@ -1,63 +1,78 @@
 ---
 name: verify
-description: Run full verification loop — build, dev server + browser console.log check, and pom scripts individually
+description: Verify the root Next.js app — build, browser console check, and quality gate
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Verify
 
-Run the full verification loop after significant changes. Fix any issues that arise at each step before proceeding to the next.
+Verify the root Next.js application passes build, renders correctly, and meets quality gates. **Do not fix failures** — report them and stop.
+
+## Token Budget Rules
+
+- Route ALL commands producing >20 lines through `ctx_batch_execute` or `ctx_execute`
+- Batch independent commands into a single `ctx_batch_execute` call
+- If any phase fails, report the failure in the summary table and **stop** — do not attempt fixes
+- Browser checks: 4 representative pages only
 
 ## Instructions
 
 ### Phase 1: Production Build
 
-Run `pnpm nx build root`. Fix any build errors (missing imports, type errors, prerender failures) before continuing.
+Run via `ctx_execute`:
 
-### Phase 2: Dev Server + Browser console.log Check
+```
+ctx_execute(language: "shell", code: "NX_SOCKET_DIR=/tmp/nx-tmp pnpm nx build root")
+```
+
+If the build fails, report and stop.
+
+### Phase 2: Dev Server + Browser Console Check
 
 1. Start the dev server: `pnpm nx dev root` (background)
 2. Wait for it to be ready, then open a browser using Chrome DevTools MCP
-3. Visit these pages and check console for errors/warnings (ignore Calendly 403s, Storybook iframe errors, and "unable to connect to top frame" warnings — these are pre-existing):
+3. Visit these representative pages and check console for errors (ignore Calendly 403s, Storybook iframe errors, "unable to connect to top frame"):
    - `/` (homepage)
    - `/about`
-   - `/services`
-   - `/projects`
-   - `/experience`
    - `/blog`
    - `/audit`
-   - One detail page from each content type (e.g. `/experience/winc`, `/projects/ui-components-v2`, `/blog/unified-content-pipeline`)
-4. If there are any console.log errors or unexpected errors appear, fix them
+4. If unexpected console errors appear, note them in the report
 5. Stop the dev server when done
 
-### Phase 3: POM Scripts (individually)
+### Phase 3: Test Suite
 
-Run each script from `pnpm pom` one at a time in this order. Fix failures before proceeding:
+Run via `ctx_batch_execute`:
 
-1. `pnpm typecheck`
-2. `pnpm lint:fix`
-3. `pnpm format`
-4. `pnpm test`
-5. `pnpm test:coverage`
-6. `pnpm test:e2e`
-7. `pnpm test:lighthouse`
+```
+[
+  { "label": "typecheck",  "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm typecheck" },
+  { "label": "lint",       "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm lint:fix" },
+  { "label": "format",     "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm format" },
+  { "label": "test",       "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm test" },
+  { "label": "coverage",   "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm test:coverage" },
+  { "label": "e2e",        "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm test:e2e" },
+  { "label": "lighthouse", "command": "NX_SOCKET_DIR=/tmp/nx-tmp pnpm test:lighthouse" }
+]
+```
+
+Search results for failures: `ctx_search(["error", "failed", "FAILED"])`.
 
 ### Phase 4: Report
 
-After all steps pass, report a summary table:
+Report a summary table:
 
-| Step            | Result |
-| --------------- | ------ |
-| Build           | ...    |
-| console.logs    | ...    |
-| typecheck       | ...    |
-| lint:fix        | ...    |
-| format          | ...    |
-| test            | ...    |
-| test:coverage   | ...    |
-| test:e2e        | ...    |
-| test:lighthouse | ...    |
+| Step       | Result |
+| ---------- | ------ |
+| build      | ...    |
+| typecheck  | ...    |
+| lint       | ...    |
+| console    | ...    |
+| test       | ...    |
+| coverage   | ...    |
+| e2e        | ...    |
+| lighthouse | ...    |
 
 Note any pre-existing warnings (not introduced by current changes) separately.
 
-If any fixes were made during verification, commit them before reporting.
+**Do not commit fixes.** If failures need fixing, report them so the user can address them.
