@@ -21,7 +21,9 @@ class ScoreResult(BaseModel):
     excluded: bool
 
 
-Provider = Literal["greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld", "manual"]
+Provider = Literal[
+    "greenhouse", "lever", "ashby", "workday", "smartrecruiters", "jsonld", "crawl", "manual"
+]
 
 
 class JobPosting(BaseModel):

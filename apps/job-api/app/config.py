@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     voyage_timeout_seconds: float = 60.0
     voyage_max_retries: int = 2
 
+    # Firecrawl — set API key to enable crawl-based job extraction fallback.
+    firecrawl_api_key: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
     @property
