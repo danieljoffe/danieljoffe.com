@@ -42,6 +42,8 @@ from app.models.tailor import (
 from app.services.batch import create_batch, get_batch, process_batch
 from app.services.experience import optimized, preferences
 from app.services.llm.client import LLMClient
+from app.services.ats_lint.linter import lint_docx
+from app.services.docx.renderer import render_docx
 from app.services.experience import gap_tracker
 from app.services.tailor import (
     CoverLetterPipelineLintFailure,
@@ -265,6 +267,156 @@ async def list_tailored_cover_letters(
         document_type="cover_letter",
     )
     return {"cover_letters": rows}
+
+
+# ---- Resume lifecycle (#505) -------------------------------------------------
+
+
+@router.get("/resumes/by-job/{job_posting_id}")
+async def get_resume_by_job(
+    job_posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TailoredResumeRecord:
+    """Most recent resume for a given job posting."""
+    row = persistence.get_by_job(supabase, job_posting_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="no resume found for this job posting")
+    return row
+
+
+@router.post("/resumes/export-zip")
+async def export_resumes_zip(
+    body: BulkExportRequest,
+    supabase: Client = Depends(get_supabase),
+) -> Response:
+    """Download approved resumes as a single .zip archive."""
+    records: list[TailoredResumeRecord] = []
+    unapproved: list[str] = []
+    for rid in body.resume_ids:
+        row = persistence.get(supabase, rid)
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"resume not found: {rid}")
+        if row.approved_at is None:
+            unapproved.append(rid)
+        records.append(row)
+
+    if unapproved:
+        raise HTTPException(
+            status_code=400,
+            detail=f"resumes not yet approved: {', '.join(unapproved)}",
+        )
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for rec in records:
+            if not rec.storage_path:
+                continue
+            docx_bytes = persistence.download_docx(supabase, rec.storage_path)
+            resume = rec.as_resume()
+            # Build a descriptive filename from the first experience entry
+            company = "unknown"
+            title = "resume"
+            if resume.experience:
+                company = resume.experience[0].company
+                title = resume.experience[0].title
+            safe = re.sub(r"[^\w\s-]", "", f"{company}_{title}")
+            safe = re.sub(r"\s+", "_", safe).strip("_")[:80]
+            zf.writestr(f"{safe}.docx", docx_bytes)
+
+    buf.seek(0)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": 'attachment; filename="resumes.zip"'},
+    )
+
+
+@router.patch("/resumes/{resume_id}")
+async def edit_tailored_resume(
+    resume_id: str,
+    body: ResumeEditRequest,
+    supabase: Client = Depends(get_supabase),
+) -> TailorResponse:
+    """Edit a draft resume. Rejected if already approved."""
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored resume not found")
+    if row.document_type != "resume":
+        raise HTTPException(status_code=400, detail="only resumes can be edited")
+    if row.approved_at is not None:
+        raise HTTPException(status_code=409, detail="resume already approved — cannot edit")
+
+    current = row.as_resume()
+
+    # Merge non-None fields from the edit request
+    updates: dict[str, Any] = {}
+    if body.summary is not None:
+        updates["summary"] = body.summary
+    if body.skills is not None:
+        updates["skills"] = body.skills
+    if body.experience is not None:
+        updates["experience"] = body.experience
+    if body.education is not None:
+        updates["education"] = body.education
+
+    updated = current.model_copy(update=updates)
+
+    # Re-render and re-lint
+    docx_bytes = render_docx(updated)
+    lint_result = lint_docx(docx_bytes, document_type="resume")
+
+    if lint_result.errors:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "ok": False,
+                "violations": [v.model_dump() for v in lint_result.violations],
+            },
+        )
+
+    # Persist updated payload and re-upload .docx
+    new_payload = updated.model_dump(mode="json")
+    storage_path = persistence.upload_docx(
+        supabase,
+        user_id=row.user_id,
+        resume_id=resume_id,
+        docx_bytes=docx_bytes,
+    )
+    record = persistence.update_payload(
+        supabase, resume_id, new_payload, storage_path=storage_path
+    )
+
+    return TailorResponse(record=record, lint_warnings=lint_result.warnings)
+
+
+@router.post("/resumes/{resume_id}/approve")
+async def approve_tailored_resume(
+    resume_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TailoredResumeRecord:
+    """Approve (lock) a resume. Idempotent if already approved."""
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored resume not found")
+    if row.document_type != "resume":
+        raise HTTPException(status_code=400, detail="only resumes can be approved")
+
+    # Idempotent: if already approved, just return it
+    if row.approved_at is not None:
+        return row
+
+    record = persistence.approve(supabase, resume_id)
+
+    # Advance linked job posting to resume_ready
+    if row.job_posting_id:
+        supabase.table("job_postings").update(
+            {"status": "resume_ready"}
+        ).eq("id", row.job_posting_id).execute()
+
+    return record
+
+
+# ---- Single resume lookup + download ----------------------------------------
 
 
 @router.get("/resumes/{resume_id}")

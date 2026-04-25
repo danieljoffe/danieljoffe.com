@@ -24,14 +24,16 @@ function ScoreBadge({ score }: { score: number }) {
 
 function StatusBadge({ status }: { status: string }) {
   const variant =
-    status === 'applied'
+    status === 'applied' || status === 'resume_ready'
       ? 'success'
       : status === 'saved' || status === 'resume_draft'
         ? 'info'
-        : status === 'rejected'
-          ? 'error'
-          : 'default';
-  return <Badge variant={variant}>{status.replace('_', ' ')}</Badge>;
+        : status === 'interviewing' || status === 'offer'
+          ? 'warning'
+          : status === 'rejected'
+            ? 'error'
+            : 'default';
+  return <Badge variant={variant}>{status.replace(/_/g, ' ')}</Badge>;
 }
 
 function timeAgo(dateStr: string): string {
@@ -222,7 +224,7 @@ export default function JobsListTable({
                           setExpandedId(null);
                           setDeleteKey(k => k + 1);
                         }}
-                        onStatusChange={undefined}
+                        onStatusChange={() => setDeleteKey(k => k + 1)}
                       />
                     </td>
                   </tr>

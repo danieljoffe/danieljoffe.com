@@ -1,10 +1,13 @@
 export const JOB_STATUSES = [
   'new',
   'saved',
+  'resume_draft',
+  'resume_ready',
   'applied',
+  'interviewing',
+  'offer',
   'rejected',
   'archived',
-  'resume_draft',
 ] as const;
 
 export type JobStatus = (typeof JOB_STATUSES)[number];
@@ -57,4 +60,82 @@ export interface JobAnalysis {
   cost_usd: number;
   latency_ms: number;
   created_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Resume lifecycle types (#505)
+// ---------------------------------------------------------------------------
+
+export interface TailoredBullet {
+  text: string;
+  source_outcome_ref: string | null;
+}
+
+export interface TailoredRole {
+  company: string;
+  title: string;
+  location: string | null;
+  start: string;
+  end: string | null;
+  bullets: TailoredBullet[];
+  source_role_ref: string;
+}
+
+export interface TailoredEducation {
+  school: string;
+  degree: string | null;
+  dates: string | null;
+}
+
+export interface ContactInfo {
+  name: string;
+  email: string | null;
+  phone: string | null;
+  location: string | null;
+  website: string | null;
+  linkedin: string | null;
+}
+
+export interface TailoredResumePayload {
+  summary: string;
+  contact: ContactInfo;
+  experience: TailoredRole[];
+  skills: string[];
+  education: TailoredEducation[];
+  resume_type: string;
+  jd_snippet: string;
+  preferences_applied: string[];
+}
+
+export interface LintViolation {
+  code: string;
+  message: string;
+  severity: 'error' | 'warning';
+}
+
+export interface TailoredResumeRecord {
+  id: string;
+  user_id: string | null;
+  job_posting_id: string | null;
+  document_type: string;
+  resume_type: string;
+  jd_snapshot: string;
+  jd_snapshot_hash: string;
+  payload: TailoredResumePayload;
+  storage_path: string | null;
+  warnings: string[];
+  model: string | null;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  latency_ms: number;
+  created_at: string;
+  updated_at: string | null;
+  approved_at: string | null;
+  source_resume_id: string | null;
+}
+
+export interface TailorResponse {
+  record: TailoredResumeRecord;
+  lint_warnings: LintViolation[];
 }

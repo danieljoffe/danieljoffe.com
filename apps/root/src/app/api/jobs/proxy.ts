@@ -28,9 +28,10 @@ export async function proxyToFastAPI(
     method?: string;
     body?: unknown;
     searchParams?: URLSearchParams;
+    binary?: boolean;
   } = {}
 ): Promise<NextResponse> {
-  const { method = 'GET', body, searchParams } = options;
+  const { method = 'GET', body, searchParams, binary = false } = options;
   const qs = searchParams ? `?${searchParams.toString()}` : '';
   const url = `${JOB_API_URL}${path}${qs}`;
 
@@ -46,6 +47,21 @@ export async function proxyToFastAPI(
       },
       body: body ? JSON.stringify(body) : null,
     });
+
+    // Binary mode: pass through raw bytes with original headers
+    if (binary) {
+      const buffer = await res.arrayBuffer();
+      return new NextResponse(buffer, {
+        status: res.status,
+        headers: {
+          'Content-Type':
+            res.headers.get('Content-Type') ?? 'application/octet-stream',
+          ...(res.headers.get('Content-Disposition')
+            ? { 'Content-Disposition': res.headers.get('Content-Disposition')! }
+            : {}),
+        },
+      });
+    }
 
     const rawBody = await res.text();
     try {

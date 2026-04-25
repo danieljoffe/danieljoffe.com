@@ -7,7 +7,10 @@ interface BatchActionBarProps {
   onClear: () => void;
   onBatchGenerate: () => void;
   onBatchDelete: () => void;
+  onBatchExport: () => void;
   generating: boolean;
+  exporting: boolean;
+  hasApproved: boolean;
 }
 
 export default function BatchActionBar({
@@ -15,7 +18,10 @@ export default function BatchActionBar({
   onClear,
   onBatchGenerate,
   onBatchDelete,
+  onBatchExport,
   generating,
+  exporting,
+  hasApproved,
 }: BatchActionBarProps) {
   if (selectedCount === 0) return null;
 
@@ -41,6 +47,17 @@ export default function BatchActionBar({
       >
         {generating ? 'Generating...' : 'Generate resumes'}
       </Button>
+      {hasApproved && (
+        <Button
+          name='batch-export'
+          variant='secondary'
+          size='sm'
+          onClick={onBatchExport}
+          disabled={exporting}
+        >
+          {exporting ? 'Exporting...' : 'Export approved (.zip)'}
+        </Button>
+      )}
       <Button
         name='batch-delete'
         variant='error'
