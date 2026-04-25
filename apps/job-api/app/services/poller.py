@@ -11,6 +11,7 @@ from app.models.schemas import PollResult
 from app.seed.keyword_config import keyword_config
 from app.services import notify
 from app.services.ashby import fetch_ashby_jobs
+from app.services.firecrawl import fetch_firecrawl_jobs
 from app.services.greenhouse import fetch_board_jobs
 from app.services.jsonld import fetch_jsonld_jobs
 from app.services.lever import fetch_lever_jobs
@@ -34,6 +35,7 @@ FETCHERS: dict[str, Fetcher] = {
     "workday": fetch_workday_jobs,
     "smartrecruiters": fetch_smartrecruiters_jobs,
     "jsonld": fetch_jsonld_jobs,
+    "crawl": fetch_firecrawl_jobs,
 }
 
 POLL_CONCURRENCY = 10
@@ -320,14 +322,21 @@ async def _poll_one_source(
         else:
             await asyncio.to_thread(last_polled_query.execute)
 
-        # Fire email alerts for newly-inserted high-scoring jobs. Notification
-        # failures are logged inside the service and must not fail the poll.
+        # Fire email + SMS alerts for newly-inserted high-scoring jobs.
+        # Notification failures are logged inside the service and must not
+        # fail the poll.
         if new_rows:
             try:
                 await notify.send_alerts_for_new_jobs(supabase, new_rows)
             except Exception:
                 logger.exception(
-                    "Job alert dispatch raised for %s", company_name
+                    "Email alert dispatch raised for %s", company_name
+                )
+            try:
+                await notify.send_sms_alerts_for_new_jobs(supabase, new_rows)
+            except Exception:
+                logger.exception(
+                    "SMS alert dispatch raised for %s", company_name
                 )
 
     except Exception:

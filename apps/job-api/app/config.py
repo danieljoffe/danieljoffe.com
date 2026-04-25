@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     next_app_url: str = ""
     job_alert_secret: str = ""
 
+    # Twilio SMS — set all three to enable SMS notifications (#511).
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
+
     # LLM provider — set to "anthropic" to use the real SDK; mock is the safe default.
     llm_provider: Literal["mock", "anthropic"] = "mock"
     anthropic_api_key: str = ""

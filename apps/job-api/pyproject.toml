@@ -19,6 +19,7 @@ dependencies = [
   "python-multipart>=0.0.18",
   "anthropic>=0.40",
   "voyageai>=0.3",
+  "twilio>=9.0",
 ]
 
 [dependency-groups]
