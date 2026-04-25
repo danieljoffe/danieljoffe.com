@@ -13,6 +13,7 @@ export const PROVIDERS = [
   'workday',
   'smartrecruiters',
   'jsonld',
+  'crawl',
 ] as const;
 
 export type Provider = (typeof PROVIDERS)[number];

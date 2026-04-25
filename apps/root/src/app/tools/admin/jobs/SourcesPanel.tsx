@@ -50,6 +50,10 @@ export default function SourcesPanel() {
   const [detectInput, setDetectInput] = useState('');
   const [detect, setDetect] = useState<DetectState>({ status: 'idle' });
 
+  // Crawl fallback flow
+  const [crawlUrl, setCrawlUrl] = useState('');
+  const [crawlName, setCrawlName] = useState('');
+
   // Advanced manual flow
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [newToken, setNewToken] = useState('');
@@ -157,6 +161,28 @@ export default function SourcesPanel() {
       `Added ${company_name}`
     );
     if (ok) {
+      setDetectInput('');
+      setDetect({ status: 'idle' });
+      fetchSources();
+    }
+  }
+
+  // --- Crawl fallback flow ---
+
+  async function handleAddCrawl() {
+    if (!crawlUrl.trim() || !crawlName.trim()) return;
+    const ok = await runAction(
+      {
+        action: 'add',
+        board_token: crawlUrl.trim(),
+        company_name: crawlName.trim(),
+        provider: 'crawl',
+      },
+      `Added ${crawlName.trim()} (crawl)`
+    );
+    if (ok) {
+      setCrawlUrl('');
+      setCrawlName('');
       setDetectInput('');
       setDetect({ status: 'idle' });
       fetchSources();
@@ -286,9 +312,44 @@ export default function SourcesPanel() {
         )}
 
         {detect.status === 'not_found' && (
-          <Text variant='body' className='text-text-tertiary text-sm'>
-            No ATS provider detected. Try the manual form below.
-          </Text>
+          <div className='space-y-2 p-3 rounded-lg border border-border bg-surface-secondary'>
+            <Text variant='body' className='text-text-secondary text-sm'>
+              No ATS provider detected. Add as a crawl source?
+            </Text>
+            <div className='flex gap-2 items-end'>
+              <div className='flex flex-col gap-1 flex-1'>
+                <label className='text-xs text-text-secondary'>
+                  Careers page URL
+                </label>
+                <input
+                  value={crawlUrl}
+                  onChange={e => setCrawlUrl(e.target.value)}
+                  placeholder='https://example.com/careers'
+                  className={inputStyles}
+                />
+              </div>
+              <div className='flex flex-col gap-1'>
+                <label className='text-xs text-text-secondary'>
+                  Company Name
+                </label>
+                <input
+                  value={crawlName}
+                  onChange={e => setCrawlName(e.target.value)}
+                  placeholder='Acme Inc'
+                  className={inputStyles}
+                />
+              </div>
+              <Button
+                name='add-crawl-source'
+                variant='primary'
+                size='sm'
+                onClick={handleAddCrawl}
+                disabled={!crawlUrl.trim() || !crawlName.trim()}
+              >
+                Add crawl source
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 
@@ -408,8 +469,21 @@ export default function SourcesPanel() {
                     {source.provider ?? 'greenhouse'}
                   </Badge>
                 </td>
-                <td className='px-3 py-2 text-text-tertiary font-mono text-xs'>
-                  {source.board_token}
+                <td className='px-3 py-2 text-text-tertiary font-mono text-xs max-w-48 truncate'>
+                  {source.provider === 'crawl' ||
+                  source.provider === 'jsonld' ? (
+                    <a
+                      href={source.board_token}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='hover:text-text-secondary underline'
+                      title={source.board_token}
+                    >
+                      {source.board_token}
+                    </a>
+                  ) : (
+                    source.board_token
+                  )}
                 </td>
                 <td className='px-3 py-2'>{source.job_count}</td>
                 <td className='px-3 py-2 text-text-tertiary'>
