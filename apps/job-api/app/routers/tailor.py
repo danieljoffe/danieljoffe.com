@@ -1,15 +1,22 @@
 """Tailor router.
 
-POST /tailor/resume           — synthesize + render + lint + persist a resume.
-POST /tailor/cover-letter     — same pipeline shape, for cover letters.
-GET  /tailor/resumes          — recent resume tailorings.
-GET  /tailor/cover-letters    — recent cover-letter tailorings.
-GET  /tailor/resumes/{id}     — one record (either type; look up by id).
-GET  /tailor/resumes/{id}/download — serves the `.docx` bytes.
+POST  /tailor/resume                    — synthesize + render + lint + persist a resume.
+POST  /tailor/cover-letter              — same pipeline shape, for cover letters.
+GET   /tailor/resumes                   — recent resume tailorings.
+GET   /tailor/cover-letters             — recent cover-letter tailorings.
+GET   /tailor/resumes/by-job/{id}       — most recent resume for a job posting.
+POST  /tailor/resumes/export-zip        — bulk .docx download as zip.
+PATCH /tailor/resumes/{id}              — edit a draft resume payload.
+POST  /tailor/resumes/{id}/approve      — approve (lock) a resume.
+GET   /tailor/resumes/{id}              — one record (either type; look up by id).
+GET   /tailor/resumes/{id}/download     — serves the `.docx` bytes.
 
 All 422 responses carry the LintFailureResponse shape.
 """
 
+import io
+import re
+import zipfile
 from typing import Any, cast
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -23,8 +30,10 @@ from app.dependencies import (
 )
 from app.models.batch import BatchJob, BatchRequest, BatchResponse
 from app.models.tailor import (
+    BulkExportRequest,
     CoverLetterRequest,
     GapGateFailureResponse,
+    ResumeEditRequest,
     TailoredResumeRecord,
     TailorLintFailureResponse,
     TailorRequest,
@@ -42,6 +51,11 @@ from app.services.tailor import (
     persistence,
     run_cover_letter_pipeline,
     run_tailor_pipeline,
+)
+from app.services.tailor.reuse import (
+    clone_resume_for_job,
+    extract_profile_keywords,
+    find_reusable_resume,
 )
 
 router = APIRouter(
@@ -80,6 +94,51 @@ async def create_tailored_resume(
                 "tier": health.tier,
             },
         )
+
+    # Reuse check (#504): skip pipeline if a similar resume exists in the target
+    if not body.force_fresh and body.job_posting_id:
+        jp_resp = (
+            supabase.table("job_postings")
+            .select("target_id")
+            .eq("id", body.job_posting_id)
+            .execute()
+        )
+        if jp_resp.data:
+            target_id = cast(dict[str, Any], jp_resp.data[0]).get("target_id")
+            if target_id:
+                target_resp = (
+                    supabase.table("job_targets")
+                    .select("scoring_profile")
+                    .eq("id", target_id)
+                    .execute()
+                )
+                if target_resp.data:
+                    from app.models.targets import ScoringProfile
+
+                    target_row = cast(dict[str, Any], target_resp.data[0])
+                    profile = ScoringProfile.model_validate(
+                        target_row["scoring_profile"]
+                    )
+                    keywords = extract_profile_keywords(profile)
+                    if keywords:
+                        reusable = find_reusable_resume(
+                            supabase,
+                            target_id=target_id,
+                            job_description=body.job_description,
+                            profile_keywords=keywords,
+                        )
+                        if reusable is not None:
+                            cloned = clone_resume_for_job(
+                                supabase,
+                                source=reusable,
+                                job_posting_id=body.job_posting_id,
+                                job_description=body.job_description,
+                                user_id=None,
+                            )
+                            return TailorResponse(
+                                record=cloned,
+                                lint_warnings=[],
+                            )
 
     prefs_row = preferences.get(supabase, user_id=None)
     prefs_payload = prefs_row.payload if prefs_row else None
@@ -263,13 +322,13 @@ async def create_batch_resumes(
             detail="no optimized doc — derive one via POST /experience/derive first",
         )
 
-    # Verify all job posting IDs exist and fetch their descriptions
+    # Verify all job posting IDs exist and fetch their descriptions + target_id
     warnings: list[str] = []
     postings: list[dict[str, Any]] = []
     for jid in body.job_posting_ids:
         resp = (
             supabase.table("job_postings")
-            .select("id, title, description_html")
+            .select("id, title, description_html, target_id")
             .eq("id", jid)
             .execute()
         )
@@ -279,6 +338,9 @@ async def create_batch_resumes(
         if not row.get("description_html"):
             warnings.append(f"no_description:{jid}")
         postings.append(row)
+
+    # Derive common target_id from first posting (all batch jobs share a target)
+    target_id: str | None = postings[0].get("target_id") if postings else None
 
     prefs_row = preferences.get(supabase, user_id=None)
     prefs_payload = prefs_row.payload if prefs_row else None
@@ -301,6 +363,8 @@ async def create_batch_resumes(
         preferences=prefs_payload,
         resume_type=body.resume_type or "generic",
         page_budget=body.page_budget,
+        force_fresh=body.force_fresh,
+        target_id=target_id,
     )
 
     return BatchResponse(

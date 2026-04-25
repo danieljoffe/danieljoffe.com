@@ -14,6 +14,8 @@ class BatchItem(BaseModel):
     job_posting_id: str
     status: Literal["pending", "completed", "failed"] = "pending"
     resume_record_id: str | None = None
+    reused_from: str | None = None
+    """Source resume ID when this item reused an existing resume (#504)."""
     error: str | None = None
 
 
@@ -38,6 +40,8 @@ class BatchRequest(BaseModel):
     contact: ContactInfo
     resume_type: ResumeType | None = None
     page_budget: Literal[1, 2] = 2
+    force_fresh: bool = False
+    """Skip resume reuse and generate every resume from scratch (#504)."""
 
 
 class BatchResponse(BaseModel):

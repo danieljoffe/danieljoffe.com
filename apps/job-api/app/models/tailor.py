@@ -93,11 +93,22 @@ class TailorRequest(BaseModel):
     """Optional link to a jobs pipeline row (#184)."""
     target_label: str | None = None
     """Target label for annotation resolution (#499)."""
+    force_fresh: bool = False
+    """Skip resume reuse check and generate from scratch (#504)."""
 
 
 # ---------------------------------------------------------------------------
 # Cover letter shapes
 # ---------------------------------------------------------------------------
+
+
+class ResumeEditRequest(BaseModel):
+    """Partial update to a draft resume. Contact, source refs, resume_type locked."""
+
+    summary: str | None = Field(default=None, min_length=1, max_length=600)
+    skills: list[str] | None = None
+    experience: list[TailoredRole] | None = None
+    education: list[TailoredEducation] | None = None
 
 
 class CoverLetterParagraph(BaseModel):
@@ -178,6 +189,12 @@ class TailoredResumeRecord(BaseModel):
     cost_usd: float
     latency_ms: int
     created_at: datetime
+    updated_at: datetime | None = None
+    approved_at: datetime | None = None
+    source_resume_id: str | None = None
+    """Points to the original resume when this was cloned via reuse (#504)."""
+
+    model_config = {"extra": "ignore"}
 
     def as_resume(self) -> TailoredResume:
         if self.document_type != "resume":
@@ -217,3 +234,9 @@ class GapGateFailureResponse(BaseModel):
     message: str
     gap_pct: float
     tier: str
+
+
+class BulkExportRequest(BaseModel):
+    """Input for POST /tailor/resumes/export-zip."""
+
+    resume_ids: list[str] = Field(min_length=1, max_length=20)

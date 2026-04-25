@@ -64,7 +64,7 @@ def download_docx(supabase: Client, storage_path: str) -> bytes:
     return supabase.storage.from_(STORAGE_BUCKET).download(storage_path)
 
 
-def _insert_row(supabase: Client, row: dict[str, Any]) -> TailoredResumeRecord:
+def insert_row(supabase: Client, row: dict[str, Any]) -> TailoredResumeRecord:
     resp = supabase.table(TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
@@ -100,7 +100,7 @@ def persist(
         "cost_usd": llm_result.cost_usd,
         "latency_ms": llm_result.latency_ms,
     }
-    return _insert_row(supabase, row)
+    return insert_row(supabase, row)
 
 
 def persist_cover_letter(
@@ -135,7 +135,7 @@ def persist_cover_letter(
         "cost_usd": llm_result.cost_usd,
         "latency_ms": llm_result.latency_ms,
     }
-    return _insert_row(supabase, row)
+    return insert_row(supabase, row)
 
 
 def get(supabase: Client, resume_id: str) -> TailoredResumeRecord | None:
@@ -145,6 +145,55 @@ def get(supabase: Client, resume_id: str) -> TailoredResumeRecord | None:
     if not resp.data:
         return None
     return TailoredResumeRecord.model_validate(cast(dict[str, Any], resp.data))
+
+
+def update_payload(
+    supabase: Client,
+    resume_id: str,
+    payload_dict: dict[str, Any],
+    storage_path: str | None = None,
+) -> TailoredResumeRecord:
+    """Update the payload JSONB and set updated_at. Optionally update storage_path."""
+    updates: dict[str, Any] = {
+        "payload": payload_dict,
+        "updated_at": "now()",
+    }
+    if storage_path is not None:
+        updates["storage_path"] = storage_path
+    resp = supabase.table(TABLE).update(updates).eq("id", resume_id).execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
+    return TailoredResumeRecord.model_validate(rows[0])
+
+
+def approve(supabase: Client, resume_id: str) -> TailoredResumeRecord:
+    """Set approved_at on a tailored resume."""
+    resp = supabase.table(TABLE).update({"approved_at": "now()"}).eq("id", resume_id).execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError(f"Failed to approve tailored_resumes row {resume_id}")
+    return TailoredResumeRecord.model_validate(rows[0])
+
+
+def get_by_job(
+    supabase: Client,
+    job_posting_id: str,
+) -> TailoredResumeRecord | None:
+    """Fetch the most recent resume for a job posting."""
+    resp = (
+        supabase.table(TABLE)
+        .select("*")
+        .eq("job_posting_id", job_posting_id)
+        .eq("document_type", "resume")
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        return None
+    return TailoredResumeRecord.model_validate(rows[0])
 
 
 def list_recent(
