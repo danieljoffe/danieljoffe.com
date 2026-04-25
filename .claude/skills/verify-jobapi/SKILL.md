@@ -2,48 +2,54 @@
 name: verify-jobapi
 description: Verify the job-api backend and its Fitted frontend workflows
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Verify Job API
 
-Run targeted verification for the job-api backend and its Fitted frontend integration. Fix any issues at each step before proceeding.
+Verify the job-api backend and Fitted frontend integration pass all checks. **Do not fix failures** — report them and stop.
+
+## Token Budget Rules
+
+- Route ALL commands producing >20 lines through `ctx_batch_execute` or `ctx_execute`
+- Batch independent commands into a single `ctx_batch_execute` call
+- If any phase fails, report the failure in the summary table and **stop** — do not attempt fixes
+- Browser checks: 2 representative pages only
 
 ## Instructions
 
-### Phase 1: Backend Checks
+### Phase 1: Backend + TypeScript Checks
 
-Run these sequentially, fixing failures before proceeding:
+Run via `ctx_batch_execute` (one call):
 
-1. `pnpm nx lint job-api`
-2. `pnpm nx mypy job-api`
-3. `pnpm nx test job-api`
-
-### Phase 2: TypeScript Typecheck
-
-Run `pnpm tsc --noEmit`. This catches type errors in the Next.js API routes and frontend components that integrate with job-api.
-
-### Phase 3: Frontend Unit Tests (API route subset)
-
-Run the subset of root app tests that cover the job-api integration layer:
-
-```bash
-pnpm nx test root -- --testPathPatterns="(api/(jobs|career|targets)|fitted)"
+```
+[
+  { "label": "lint-jobapi",  "command": "pnpm nx lint job-api" },
+  { "label": "mypy-jobapi",  "command": "pnpm nx mypy job-api" },
+  { "label": "test-jobapi",  "command": "pnpm nx test job-api" },
+  { "label": "typecheck",    "command": "pnpm tsc --noEmit" }
+]
 ```
 
-This runs tests matching:
+Search results for failures: `ctx_search(["error", "failed", "FAILED"])`. If any command failed, report and stop.
 
-- `apps/root/src/app/api/jobs/**`
-- `apps/root/src/app/api/career/**`
-- `apps/root/src/app/api/targets/**`
-- `apps/root/src/app/fitted/**`
+### Phase 2: Frontend Unit Tests
 
-### Phase 4: Dev Server + Authenticated Browser Check
+Run the subset of root app tests covering the job-api integration:
+
+```
+ctx_execute(language: "shell", code: "pnpm nx test root -- --testPathPatterns='(api/(jobs|career|targets)|fitted)'")
+```
+
+If tests fail, report and stop.
+
+### Phase 3: Authenticated Browser Check
 
 1. Read `TOOLS_ADMIN_PASSWORD` from `apps/root/.env.local` using Grep
 2. Start the dev server: `pnpm nx dev root` (background)
 3. Wait for it to be ready, then open a browser using Chrome DevTools MCP
 4. Navigate to `http://localhost:3000`
-5. Authenticate by running this in Chrome DevTools `evaluate_script`:
+5. Authenticate via Chrome DevTools `evaluate_script`:
    ```js
    await fetch('/api/tools/login', {
      method: 'POST',
@@ -51,22 +57,14 @@ This runs tests matching:
      body: JSON.stringify({ password: '<TOOLS_ADMIN_PASSWORD value>' }),
    });
    ```
-6. Verify the response status is 200 (the `admin_session` cookie is now set)
-7. Visit these Fitted pages and check console for errors/warnings:
+6. Verify response status is 200
+7. Visit these pages and check console for errors:
    - `/fitted` (dashboard)
    - `/fitted/jobs` (job listings)
-   - `/fitted/targets` (target roles)
-   - `/fitted/profile` (experience profile)
-   - `/fitted/insights` (analytics dashboard)
-8. For each page, verify:
-   - No unexpected console errors
-   - Page renders without blank screens or loading spinners that never resolve
-   - API calls return successfully (check Network tab if needed)
+8. Note any unexpected console errors
 9. Stop the dev server when done
 
-### Phase 5: Report
-
-After all steps pass, report a summary table:
+### Phase 4: Report
 
 | Step                     | Result |
 | ------------------------ | ------ |
@@ -75,8 +73,6 @@ After all steps pass, report a summary table:
 | test (job-api)           | ...    |
 | typecheck                | ...    |
 | test (root — job routes) | ...    |
-| console.logs (Fitted)    | ...    |
+| console (Fitted)         | ...    |
 
-Note any pre-existing warnings separately.
-
-If any fixes were made during verification, commit them before reporting.
+Note pre-existing warnings separately. **Do not commit fixes.**

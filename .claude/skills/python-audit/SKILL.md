@@ -12,6 +12,12 @@ Audit the Python FastAPI services (job-api, audit-api) against current documenta
 
 By default, audit **both** `apps/job-api` and `apps/audit-api`. If the user specifies a single project, audit only that one.
 
+## Token Budget Rules
+
+- Route ALL file reads and command outputs through `ctx_batch_execute` or `ctx_execute`
+- Batch context7 `query-docs` calls — resolve all libraries first, then query in 2-3 batched calls
+- If context7 docs for the same libraries were already fetched in this session, skip Phase 1
+
 ## Instructions
 
 ### Phase 1: Fetch Current Documentation

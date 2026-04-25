@@ -8,6 +8,12 @@ disable-model-invocation: true
 
 Audit the Nx monorepo for structural and configuration issues against official Nx guidelines.
 
+## Token Budget Rules
+
+- Route ALL command outputs and workspace inspection results through `ctx_batch_execute` or `ctx_execute`
+- If Nx docs were already fetched via context7 in this session, skip Phase 1
+- Use Nx MCP tools for workspace queries — they're more efficient than raw CLI output
+
 ## Instructions
 
 ### Phase 1: Fetch Current Documentation

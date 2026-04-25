@@ -1,63 +1,88 @@
 ---
 name: verify-root
-description: Verify the root Next.js app — build, dev server + browser console check, and POM scripts
+description: Verify the root Next.js app — build, browser console check, and quality gate
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Verify Root
 
-Run the full verification loop for the root Next.js application (portfolio/public site) after significant changes. Fix any issues that arise at each step before proceeding to the next.
+Verify the root Next.js application (portfolio/public site) passes build, renders correctly, and meets quality gates. **Do not fix failures** — report them and stop.
+
+## Token Budget Rules
+
+- Route ALL commands producing >20 lines through `ctx_batch_execute` or `ctx_execute`
+- Batch independent commands into a single `ctx_batch_execute` call
+- If any phase fails, report the failure in the summary table and **stop** — do not attempt fixes
+- Keep browser checks to representative pages only
 
 ## Instructions
 
-### Phase 1: Production Build
+### Phase 1: Build + Static Checks
 
-Run `pnpm nx build root`. Fix any build errors (missing imports, type errors, prerender failures) before continuing.
+Run via `ctx_batch_execute` (all three in one call):
 
-### Phase 2: Dev Server + Browser console.log Check
+```
+[
+  { "label": "build",     "command": "pnpm nx build root" },
+  { "label": "typecheck", "command": "pnpm tsc --noEmit" },
+  { "label": "lint",      "command": "pnpm lint:fix" }
+]
+```
+
+Search results for failures: `ctx_search(["error", "failed"])`. If any command failed, report and stop.
+
+### Phase 2: Browser Console Check
 
 1. Start the dev server: `pnpm nx dev root` (background)
 2. Wait for it to be ready, then open a browser using Chrome DevTools MCP
-3. Visit these pages and check console for errors/warnings (ignore Calendly 403s, Storybook iframe errors, and "unable to connect to top frame" warnings — these are pre-existing):
+3. Visit these representative pages and check console for errors (ignore Calendly 403s, Storybook iframe errors, "unable to connect to top frame"):
    - `/` (homepage)
    - `/about`
-   - `/services`
-   - `/projects`
-   - `/experience`
    - `/blog`
    - `/audit`
-   - One detail page from each content type (e.g. `/experience/winc`, `/projects/ui-components-v2`, `/blog/unified-content-pipeline`)
-4. If there are any console.log errors or unexpected errors appear, fix them
+4. If unexpected console errors appear, note them in the report
 5. Stop the dev server when done
 
-### Phase 3: POM Scripts (individually)
+### Phase 3: Test Suite
 
-Run each script from `pnpm pom` one at a time in this order. Fix failures before proceeding:
+Run via `ctx_batch_execute`:
 
-1. `pnpm typecheck`
-2. `pnpm lint:fix`
-3. `pnpm format`
-4. `pnpm test`
-5. `pnpm test:coverage`
-6. `pnpm test:e2e`
-7. `pnpm test:lighthouse`
+```
+[
+  { "label": "unit-tests",  "command": "pnpm test" },
+  { "label": "coverage",    "command": "pnpm test:coverage" }
+]
+```
 
-### Phase 4: Report
+Search for failures. If tests fail, report and stop.
 
-After all steps pass, report a summary table:
+### Phase 4: E2E + Lighthouse (optional)
 
-| Step            | Result |
-| --------------- | ------ |
-| Build           | ...    |
-| console.logs    | ...    |
-| typecheck       | ...    |
-| lint:fix        | ...    |
-| format          | ...    |
-| test            | ...    |
-| test:coverage   | ...    |
-| test:e2e        | ...    |
-| test:lighthouse | ...    |
+These are slow and often have pre-existing flaky failures. Run only if Phases 1-3 pass cleanly:
+
+```
+[
+  { "label": "e2e",        "command": "pnpm test:e2e" },
+  { "label": "lighthouse", "command": "pnpm test:lighthouse" }
+]
+```
+
+### Phase 5: Report
+
+Report a summary table with pass/fail for each step:
+
+| Step       | Result |
+| ---------- | ------ |
+| build      | ...    |
+| typecheck  | ...    |
+| lint       | ...    |
+| console    | ...    |
+| test       | ...    |
+| coverage   | ...    |
+| e2e        | ...    |
+| lighthouse | ...    |
 
 Note any pre-existing warnings (not introduced by current changes) separately.
 
-If any fixes were made during verification, commit them before reporting.
+**Do not commit fixes.** If failures need fixing, report them so the user can address them.
