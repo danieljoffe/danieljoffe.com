@@ -10,6 +10,7 @@ Layout:
 - prompts.py      — TAILOR_SYSTEM (P3a)
 - persistence.py  — tailored_resumes CRUD + Supabase Storage (P3d)
 - pipeline.py     — end-to-end orchestration (P3d)
+- reuse.py        — resume reuse within targets (#504)
 """
 
 from app.services.tailor.pipeline import (
@@ -21,6 +22,12 @@ from app.services.tailor.pipeline import (
     PipelineSuccess,
     run_cover_letter_pipeline,
     run_tailor_pipeline,
+)
+from app.services.tailor.reuse import (
+    clone_resume_for_job,
+    extract_profile_keywords,
+    find_reusable_resume,
+    jd_similarity,
 )
 from app.services.tailor.tailor import (
     DEFAULT_COVER_LETTER_PURPOSE,
@@ -46,6 +53,10 @@ __all__ = [
     "PipelineSuccess",
     "build_cover_letter_user_message",
     "build_user_message",
+    "clone_resume_for_job",
+    "extract_profile_keywords",
+    "find_reusable_resume",
+    "jd_similarity",
     "run_cover_letter_pipeline",
     "run_tailor_pipeline",
     "tailor_cover_letter",
