@@ -16,7 +16,11 @@ const INITIAL_FILTERS: JobsFilterState = {
 
 const BATCH_POLL_INTERVAL = 3000;
 
-export default function JobsList() {
+interface JobsListProps {
+  targetId: string | undefined;
+}
+
+export default function JobsList({ targetId }: JobsListProps) {
   const [filters, setFilters] = useState<JobsFilterState>(INITIAL_FILTERS);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
@@ -196,6 +200,7 @@ export default function JobsList() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         refreshKey={refreshKey}
+        targetId={targetId}
       />
 
       <BatchActionBar

@@ -96,3 +96,20 @@ class ReferenceJDAdd(BaseModel):
 
     jd_text: str = Field(min_length=50, max_length=100_000)
     jd_url: str | None = None
+
+
+# ---- Suggestion shapes (LLM output) ----------------------------------------
+
+
+class TargetSuggestion(BaseModel):
+    """A single suggested target derived from the user's experience profile."""
+
+    label: str = Field(min_length=1, max_length=200)
+    description: str = Field(max_length=500)
+    core_skills: list[str] = Field(default_factory=list)
+
+
+class TargetSuggestions(BaseModel):
+    """LLM response containing 2-3 suggested targets."""
+
+    suggestions: list[TargetSuggestion] = Field(default_factory=list)

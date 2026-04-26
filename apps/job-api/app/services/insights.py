@@ -9,8 +9,13 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
+from typing import Any, cast
 
 from supabase import Client
+
+# Supabase .execute().data is typed as list[JSON] (a broad union).
+# In practice every row is a dict — this alias makes casts readable.
+Row = dict[str, Any]
 
 from app.models.insights import (
     CostBucket,
@@ -62,20 +67,20 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
     q = supabase.table("job_postings").select("id, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
-    postings = q.execute().data or []
+    postings = cast(list[Row], q.execute().data or [])
 
     # Fetch status log for response-time calculation
     sq = supabase.table("job_status_log").select("posting_id, old_status, new_status, created_at")
     if since:
         sq = sq.gte("created_at", since.isoformat())
-    status_logs = sq.execute().data or []
+    status_logs = cast(list[Row], sq.execute().data or [])
 
     # Fetch tailored resumes for velocity
     rq = supabase.table("tailored_resumes").select("job_posting_id, created_at")
     if since:
         rq = rq.gte("created_at", since.isoformat())
     rq = rq.eq("document_type", "resume")
-    resumes = rq.execute().data or []
+    resumes = cast(list[Row], rq.execute().data or [])
 
     # --- Funnel counts ---
     status_counts: Counter[str] = Counter()
@@ -145,17 +150,17 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
 
 def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     # Fetch all targets for labels
-    targets_data = supabase.table("job_targets").select("id, label").execute().data or []
+    targets_data = cast(list[Row], supabase.table("job_targets").select("id, label").execute().data or [])
     target_labels = {t["id"]: t["label"] for t in targets_data}
 
     # Fetch postings with target + score + status
     q = supabase.table("job_postings").select("id, target_id, score, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
-    postings = q.execute().data or []
+    postings = cast(list[Row], q.execute().data or [])
 
     # --- Per-target aggregation ---
-    target_jobs: defaultdict[str, list[dict]] = defaultdict(list)
+    target_jobs: defaultdict[str, list[Row]] = defaultdict(list)
     all_scores: list[int] = []
     for p in postings:
         score = p.get("score") or 0
@@ -243,20 +248,20 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
     aq = supabase.table("job_analyses").select("scorecard, created_at")
     if since:
         aq = aq.gte("created_at", since.isoformat())
-    analyses = aq.execute().data or []
+    analyses = cast(list[Row], aq.execute().data or [])
 
     # Fetch LLM cost log
     cq = supabase.table("llm_cost_log").select("purpose, cost_usd, created_at")
     if since:
         cq = cq.gte("created_at", since.isoformat())
-    cost_logs = cq.execute().data or []
+    cost_logs = cast(list[Row], cq.execute().data or [])
 
     # Fetch tailored resumes for per-resume cost
     rq = supabase.table("tailored_resumes").select("cost_usd, created_at")
     if since:
         rq = rq.gte("created_at", since.isoformat())
     rq = rq.eq("document_type", "resume")
-    resume_costs = rq.execute().data or []
+    resume_costs = cast(list[Row], rq.execute().data or [])
 
     # --- Skill frequencies ---
     matched_counts: Counter[str] = Counter()

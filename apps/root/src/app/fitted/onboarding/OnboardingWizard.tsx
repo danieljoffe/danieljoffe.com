@@ -7,7 +7,7 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import PathChooser from './PathChooser';
 import ResumeUploader from './ResumeUploader';
-import JobUrlInput from './JobUrlInput';
+import JobUrlInput, { type JobData } from './JobUrlInput';
 import TargetSuggestions from './TargetSuggestions';
 import ConversationChat from './ConversationChat';
 import CompletionScreen from './CompletionScreen';
@@ -23,7 +23,7 @@ type Step =
   | 'completion';
 
 const STEPS_BY_PATH: Record<OnboardingPath, Step[]> = {
-  A: ['path-chooser', 'upload-resume', 'add-job', 'completion'],
+  A: ['path-chooser', 'upload-resume', 'add-job', 'pick-targets', 'completion'],
   B: ['path-chooser', 'upload-resume', 'pick-targets', 'completion'],
   C: ['path-chooser', 'conversation', 'pick-targets', 'completion'],
 };
@@ -32,6 +32,7 @@ export default function OnboardingWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>('path-chooser');
   const [selectedPath, setSelectedPath] = useState<OnboardingPath | null>(null);
+  const [jobData, setJobData] = useState<JobData | null>(null);
   const stepRef = useRef<HTMLDivElement>(null);
 
   const steps = selectedPath ? STEPS_BY_PATH[selectedPath] : ['path-chooser'];
@@ -59,7 +60,7 @@ export default function OnboardingWizard() {
   }, []);
 
   const handleSkip = useCallback(() => {
-    router.push('/fitted');
+    router.push('/fitted/targets');
   }, [router]);
 
   return (
@@ -103,10 +104,20 @@ export default function OnboardingWizard() {
             <ResumeUploader onComplete={goNext} onSkip={handleSkip} />
           )}
           {currentStep === 'add-job' && (
-            <JobUrlInput onComplete={goNext} onSkip={handleSkip} />
+            <JobUrlInput
+              onComplete={data => {
+                if (data) setJobData(data);
+                goNext();
+              }}
+              onSkip={handleSkip}
+            />
           )}
           {currentStep === 'pick-targets' && (
-            <TargetSuggestions onComplete={goNext} onSkip={handleSkip} />
+            <TargetSuggestions
+              onComplete={goNext}
+              onSkip={handleSkip}
+              jobData={jobData}
+            />
           )}
           {currentStep === 'conversation' && (
             <ConversationChat onComplete={goNext} onSkip={handleSkip} />

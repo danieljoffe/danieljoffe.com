@@ -19,22 +19,22 @@ export default function CompletionScreen() {
               You&apos;re all set!
             </Heading>
             <Text variant='body' className='mt-2 text-text-secondary'>
-              Your account is ready. Head to the dashboard to start tracking
-              jobs and generating tailored resumes.
+              Your account is ready. Head to your targets to start tracking jobs
+              and generating tailored resumes.
             </Text>
           </div>
         </div>
       </Card>
 
       <Button
-        name='onboarding-go-to-dashboard'
+        name='onboarding-go-to-targets'
         as='link'
-        href='/fitted'
+        href='/fitted/targets'
         variant='primary'
         size='lg'
         className='w-full justify-center'
       >
-        <span>Go to Dashboard</span>
+        <span>Go to Targets</span>
         <ArrowRight className='size-4' aria-hidden />
       </Button>
     </div>

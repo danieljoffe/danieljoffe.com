@@ -5,6 +5,14 @@ export const metadata: Metadata = {
   title: 'Jobs',
 };
 
-export default function FittedJobsPage() {
-  return <JobsList />;
+export default async function FittedJobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const targetId =
+    typeof params.target === 'string' ? params.target : undefined;
+
+  return <JobsList targetId={targetId} />;
 }

@@ -12,6 +12,7 @@ interface TargetCardProps {
   target: JobTarget;
   onActivate: (id: string) => void;
   onDelete: (id: string) => void;
+  onViewJobs: (id: string) => void;
 }
 
 function countKeywords(target: JobTarget): number {
@@ -25,6 +26,7 @@ export default function TargetCard({
   target,
   onActivate,
   onDelete,
+  onViewJobs,
 }: TargetCardProps) {
   const categoryCount = Object.keys(target.scoring_profile.categories).length;
   const keywordCount = countKeywords(target);
@@ -67,6 +69,14 @@ export default function TargetCard({
         </Text>
 
         <div className='flex items-center gap-2 pt-1'>
+          <Button
+            name={`target-view-jobs-${target.id}`}
+            variant='primary'
+            size='sm'
+            onClick={() => onViewJobs(target.id)}
+          >
+            View Jobs
+          </Button>
           {!target.is_active && (
             <Button
               name={`target-activate-${target.id}`}

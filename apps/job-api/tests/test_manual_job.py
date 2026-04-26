@@ -190,7 +190,7 @@ class TestManualJobEndpoint:
         import hashlib
 
         url = "https://example.com/jobs/same"
-        expected_id = hashlib.sha256(url.encode()).hexdigest()[:16]
+        expected_id = str(int(hashlib.sha256(url.encode()).hexdigest()[:15], 16))
 
         mock_http_client.get = AsyncMock(
             return_value=_mock_response(text=JSONLD_HTML, url=url)

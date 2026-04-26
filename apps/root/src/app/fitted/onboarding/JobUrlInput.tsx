@@ -10,8 +10,13 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import Button from '@/components/Button';
 
+export interface JobData {
+  postingId: string;
+  title: string | null;
+}
+
 interface JobUrlInputProps {
-  onComplete: () => void;
+  onComplete: (data?: JobData) => void;
   onSkip: () => void;
 }
 
@@ -71,7 +76,10 @@ export default function JobUrlInput({ onComplete, onSkip }: JobUrlInputProps) {
           posting_id: data.posting_id,
         });
 
-        timerRef.current = setTimeout(onComplete, 1500);
+        const jobData = data.posting_id
+          ? { postingId: data.posting_id, title: data.extracted?.title ?? null }
+          : undefined;
+        timerRef.current = setTimeout(() => onComplete(jobData), 1500);
       } catch (err) {
         setError(
           err instanceof Error
