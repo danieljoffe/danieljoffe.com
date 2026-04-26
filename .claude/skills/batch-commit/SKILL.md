@@ -26,11 +26,28 @@ Review all pending changes, group them into logical commits, and push each one.
      ]
      ```
 
-2. **Plan commit batches**
-   - Group files by logical concern (e.g., dependency upgrades, feature code, config changes, documentation, test fixes).
-   - Each batch should tell a coherent story — a reviewer should understand the "why" from the commit alone.
-   - Prefer smaller, focused commits over large catch-all commits.
-   - Present the batching plan before executing.
+2. **Classify files and plan commit batches**
+
+   Categorize each changed file to guide grouping:
+
+   | Pattern                                                                  | Category     |
+   | ------------------------------------------------------------------------ | ------------ |
+   | `.claude/`, `CLAUDE.md`                                                  | `skill-meta` |
+   | `*.spec.*`, `*.test.*`, `__tests__/*`                                    | `test`       |
+   | `*.stories.tsx`                                                          | `story`      |
+   | `apps/root-e2e/**`                                                       | `e2e`        |
+   | `project.json`, `tsconfig*`, `nx.json`, `eslint.config*`, `package.json` | `config`     |
+   | `*.mdx` in `data/content/`                                               | `content`    |
+   | `*.md` (docs)                                                            | `docs`       |
+   | `apps/*/src/**`, `libs/*/src/**`                                         | `source`     |
+
+   Group files by logical concern using the categories as hints:
+   - Same-category files that serve one purpose go in one commit (e.g., all skill updates, all test fixes)
+   - Source + its test file go together when the test was written for that source change
+   - Config changes get their own commit unless tightly coupled to a source change
+   - Each batch should tell a coherent story — a reviewer should understand the "why" from the commit alone
+   - Prefer smaller, focused commits over large catch-all commits
+   - Present the batching plan before executing
 
 3. **For each batch, in order:**
    - `git reset HEAD -- .` (only on the first batch if files are already staged, to re-stage selectively).

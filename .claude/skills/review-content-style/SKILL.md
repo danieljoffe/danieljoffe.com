@@ -15,16 +15,28 @@ Scan content against the [Content Style Guide](../../docs/content-style-guide.md
 - Route MDX file reads through `ctx_batch_execute` when scanning multiple files — each file is a section
 - Read the style guide once via `ctx_execute` and search with `ctx_search` for specific rules
 
+## Arguments
+
+- `/review-content-style blog` — scan all blog posts
+- `/review-content-style projects` — scan all project case studies
+- `/review-content-style experience` — scan all experience entries
+- `/review-content-style path/to/file.mdx` — scan a specific file
+- `/review-content-style` — scan all MDX content files
+- `/review-content-style --changed` — scan only MDX files changed on the current branch (fastest)
+
 ## Instructions
 
 1. **Load the style guide**: Read `.claude/docs/content-style-guide.md` to load the full set of rules.
 
 2. **Determine scope**: Based on the argument:
+   - `--changed` → detect base branch via `gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "develop"`, then `git diff --name-only origin/${BASE_BRANCH}...HEAD -- '*.mdx'` to get only changed MDX files. If no MDX files changed, report clean and stop.
    - `blog` → scan all files in `apps/root/src/data/content/blog/*.mdx`
    - `projects` → scan all files in `apps/root/src/data/content/projects/*.mdx`
    - `experience` → scan all files in `apps/root/src/data/content/experience/*.mdx`
    - A specific file path → scan that file only
    - No argument → scan all MDX content files across all types
+
+   **Diff-first optimization** (applies to `--changed` mode): For files with < 10 lines changed, review the diff hunk for metadata/punctuation/voice issues before reading the full file. Skip the full read if the hunk covers the changed content entirely.
 
 3. **For each file**, check against every rule in the style guide:
 
