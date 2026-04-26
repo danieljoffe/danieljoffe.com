@@ -12,6 +12,8 @@ export default function DashboardLoading() {
         <Skeleton variant='text' className='mt-2 w-64' />
       </div>
       <Skeleton variant='rectangular' height={120} />
+      <Skeleton variant='rectangular' height={200} />
+      <Skeleton variant='rectangular' height={300} />
     </div>
   );
 }
