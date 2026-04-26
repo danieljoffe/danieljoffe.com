@@ -33,13 +33,6 @@ export default function TargetsList() {
       const res = await fetch('/api/targets');
       if (!res.ok) throw new Error('Failed to fetch targets');
       const { targets } = (await res.json()) as { targets: JobTarget[] };
-      // Active targets first, then by most recently updated
-      targets.sort((a, b) => {
-        if (a.is_active !== b.is_active) return a.is_active ? -1 : 1;
-        return (
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-        );
-      });
       setTargets(targets);
     } catch {
       toast({ variant: 'error', title: 'Failed to load targets' });
