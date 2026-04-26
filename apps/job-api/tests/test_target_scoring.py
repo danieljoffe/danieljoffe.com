@@ -224,22 +224,57 @@ def test_get_target_scores_returns_empty_dict_when_no_scores() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_list_jobs_without_target_uses_global_score() -> None:
+def test_list_jobs_without_target_returns_aggregate_no_scores(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Global view aggregates jobs from all active targets with scores nulled."""
     from fastapi.testclient import TestClient
 
     from app.dependencies import get_supabase, verify_api_key_or_session
     from app.main import app
+    from app.models.targets import JobTarget, ScoringProfile, ResumeEmphasis
+    from app.routers import jobs as jobs_router
+
+    fake_target = JobTarget(
+        id="t-1",
+        user_id=None,
+        label="SWE",
+        scoring_profile=ScoringProfile(),
+        resume_emphasis=ResumeEmphasis(),
+        search_keywords=[],
+        activation_status="ready",
+        is_active=True,
+        created_at="2026-01-01T00:00:00Z",
+        updated_at="2026-01-01T00:00:00Z",
+    )
+    monkeypatch.setattr(jobs_router, "get_active_target", lambda *_a, **_kw: [fake_target])
+
+    def _fluent_mock(data: list[dict]) -> MagicMock:
+        m = MagicMock()
+        m.execute.return_value = MagicMock(data=data)
+        for method in ("select", "eq", "in_", "ilike", "gte"):
+            getattr(m, method).return_value = m
+        return m
 
     supabase = MagicMock()
-    supabase.table.return_value.select.return_value.gte.return_value.eq.return_value.ilike.return_value.order.return_value.range.return_value.execute.return_value = MagicMock(
-        data=[{"id": "job-1", "score": 50, "score_breakdown": None}],
-        count=1,
-    )
-    # Also handle without gte/eq/ilike
-    supabase.table.return_value.select.return_value.order.return_value.range.return_value.execute.return_value = MagicMock(
-        data=[{"id": "job-1", "score": 50, "score_breakdown": None}],
-        count=1,
-    )
+    ts_mock = _fluent_mock([{"job_posting_id": "job-1"}])
+    jp_mock = _fluent_mock([
+        {
+            "id": "job-1",
+            "score": 50,
+            "score_breakdown": None,
+            "title": "Engineer",
+            "company_name": "Acme",
+            "created_at": "2026-01-01T00:00:00Z",
+        }
+    ])
+
+    def _table_router(name: str) -> MagicMock:
+        if name == "job_target_scores":
+            return ts_mock
+        return jp_mock
+
+    supabase.table.side_effect = _table_router
 
     app.dependency_overrides[get_supabase] = lambda: supabase
     app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
@@ -249,7 +284,9 @@ def test_list_jobs_without_target_uses_global_score() -> None:
         resp = tc.get("/jobs")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["postings"][0]["score"] == 50
+        assert len(data["postings"]) == 1
+        # Scores are nulled in aggregate view
+        assert data["postings"][0]["score"] is None
     finally:
         app.dependency_overrides.clear()
 

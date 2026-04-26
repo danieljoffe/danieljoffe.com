@@ -1,7 +1,6 @@
--- Migration: Create RPC function for server-side target-jobs join
--- Date: 2026-04-26
--- Context: Replaces the two-roundtrip pattern (fetch scores → fetch postings)
--- with a single server-side join that handles filtering, sorting, and pagination.
+-- RPC function: server-side target-jobs join.
+-- Replaces the two-roundtrip pattern (fetch scores then fetch postings)
+-- with a single join that handles filtering, sorting, and pagination.
 
 CREATE OR REPLACE FUNCTION get_target_jobs(
   p_target_id UUID,

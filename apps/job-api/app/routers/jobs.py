@@ -274,27 +274,77 @@ async def list_jobs(
         job_list_cache.set(cache_key, result)
         return result
 
-    # Global view
-    query = supabase.table("job_postings").select(
-        _JP_SELECT_COLS,
-        count=CountMethod.exact,
+    # Global view — aggregate jobs from all active targets, no scores
+    active_targets = get_active_target(supabase, user_id=None)
+    if not active_targets:
+        empty: dict[str, Any] = {
+            "postings": [],
+            "total": 0,
+            "page": page,
+            "page_size": page_size,
+        }
+        return empty
+
+    active_ids = [t.id for t in active_targets]
+
+    # Collect distinct job_posting_ids across all active targets
+    ts_resp = (
+        supabase.table("job_target_scores")
+        .select("job_posting_id")
+        .in_("target_id", active_ids)
+        .eq("excluded", False)
+        .execute()
     )
+    ts_rows = cast(list[dict[str, Any]], ts_resp.data or [])
+    job_ids = list({r["job_posting_id"] for r in ts_rows})
 
-    if min_score is not None:
-        query = query.gte("score", min_score)
+    if not job_ids:
+        empty_result: dict[str, Any] = {
+            "postings": [],
+            "total": 0,
+            "page": page,
+            "page_size": page_size,
+        }
+        return empty_result
+
+    # Fetch posting details — scores are not meaningful in aggregate view
+    jp_query = (
+        supabase.table("job_postings")
+        .select(_JP_SELECT_COLS)
+        .in_("id", job_ids)
+    )
     if status:
-        query = query.eq("status", status)
+        jp_query = jp_query.eq("status", status)
     if company:
-        query = query.eq("company_name", company)
+        jp_query = jp_query.eq("company_name", company)
     if search:
-        query = query.ilike("title", f"%{search}%")
+        jp_query = jp_query.ilike("title", f"%{search}%")
 
-    query = query.order(sort, desc=not ascending).range(offset, offset + page_size - 1)
-    resp = query.execute()
+    jp_resp = jp_query.execute()
+    postings = list(jp_resp.data or [])
+
+    # Null out scores — they're target-specific, not meaningful in aggregate
+    for p in postings:
+        row = cast(dict[str, Any], p)
+        row["score"] = None
+        row["score_breakdown"] = None
+
+    # Score sort is meaningless here — fall back to created_at
+    effective_sort = "created_at" if sort == "score" else sort
+
+    def _sort_key(p: Any) -> Any:
+        val = cast(dict[str, Any], p).get(effective_sort)
+        if val is None:
+            return ""
+        return val
+
+    postings.sort(key=_sort_key, reverse=not ascending)
+    total = len(postings)
+    postings = postings[offset : offset + page_size]
 
     global_result: dict[str, Any] = {
-        "postings": list(resp.data or []),
-        "total": resp.count or 0,
+        "postings": postings,
+        "total": total,
         "page": page,
         "page_size": page_size,
     }
