@@ -1,12 +1,60 @@
-from app.services.poller import _is_us_location, _title_matches_any_role
+from datetime import UTC, datetime
+
+from app.models.targets import (
+    CategoryProfile,
+    JobTarget,
+    ResumeEmphasis,
+    ScoringProfile,
+    SeniorityProfile,
+)
+from app.services.poller import _is_us_location, _title_matches_any_target
 
 
-def test_title_matches_senior_frontend_engineer():
-    assert _title_matches_any_role("Senior Frontend Engineer") is True
+def _make_target(core_keywords: dict[str, int]) -> JobTarget:
+    """Create a minimal target with the given core_skills keywords."""
+    return JobTarget(
+        id="test-target",
+        user_id=None,
+        label="Test Target",
+        scoring_profile=ScoringProfile(
+            categories={
+                "core_skills": CategoryProfile(keywords=core_keywords, weight=2.0),
+            },
+            seniority=SeniorityProfile(signals=["senior", "staff", "lead"]),
+        ),
+        resume_emphasis=ResumeEmphasis(),
+        search_keywords=[],
+        is_active=True,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
 
 
-def test_title_does_not_match_marketing():
-    assert _title_matches_any_role("Marketing Specialist") is False
+def test_title_matches_target_with_keyword():
+    targets = [_make_target({"react": 3, "typescript": 3})]
+    assert _title_matches_any_target("Senior React Engineer", targets) is True
+
+
+def test_title_no_match():
+    targets = [_make_target({"react": 3, "typescript": 3})]
+    assert _title_matches_any_target("Marketing Specialist", targets) is False
+
+
+def test_title_matches_seniority_signal():
+    targets = [_make_target({"react": 3})]
+    assert _title_matches_any_target("Senior Software Engineer", targets) is True
+
+
+def test_title_matches_with_multiple_targets():
+    targets = [
+        _make_target({"java": 3}),
+        _make_target({"react": 3}),
+    ]
+    assert _title_matches_any_target("React Developer", targets) is True
+
+
+def test_empty_targets_no_match():
+    assert _title_matches_any_target("Senior React Engineer", []) is False
 
 
 class TestIsUsLocation:
@@ -53,9 +101,3 @@ class TestIsUsLocation:
     def test_case_insensitive(self):
         assert _is_us_location("BERLIN, GERMANY") is False
         assert _is_us_location("berlin") is False
-
-
-# TODO: An integration test for `poll_all_sources` would require mocking the full
-# Supabase client chain (.table().select().eq().execute(), .upsert(...), .update(...))
-# plus all fetchers. The non-trivial chain is skipped here — scoring, sanitize,
-# location/title filters, and each fetcher are covered individually.

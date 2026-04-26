@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from collections.abc import Callable, Coroutine
@@ -7,21 +9,32 @@ from typing import Any, cast
 from supabase import Client
 
 from app.config import settings
+from app.models.experience import OptimizedDoc
 from app.models.schemas import PollResult
 from app.models.targets import JobTarget
-from app.seed.keyword_config import keyword_config
 from app.services import notify
+from app.services.analysis.analyze import analyze_job
+from app.services.analysis.persistence import persist as persist_analysis
+from app.services.analysis.scoring import blend_scores, scorecard_to_numeric
 from app.services.ashby import fetch_ashby_jobs
+from app.services.experience.optimized import get_latest as get_latest_optimized
 from app.services.extract import extract_salary_from_text
 from app.services.firecrawl import fetch_firecrawl_jobs
 from app.services.greenhouse import fetch_board_jobs
 from app.services.jsonld import fetch_jsonld_jobs
 from app.services.lever import fetch_lever_jobs
+from app.services.llm import get_default_client as get_default_llm_client
+from app.services.llm.client import LLMClient
+from app.services.llm.cost_log import record as record_llm_cost
 from app.services.sanitize import sanitize_html
-from app.services.scoring import score_job, strip_html
+from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
-from app.services.target_scoring import score_and_upsert as target_score_and_upsert
+from app.services.target_scoring import (
+    score_and_upsert as target_score_and_upsert,
+    score_title_and_upsert as target_title_score_and_upsert,
+    update_global_score,
+)
 from app.services.targets.crud import get_active as get_active_target
 from app.services.validate import validate_job_url
 from app.services.workday import fetch_workday_jobs
@@ -41,6 +54,10 @@ FETCHERS: dict[str, Fetcher] = {
 }
 
 POLL_CONCURRENCY = 10
+
+# Minimum keyword score to trigger LLM analysis during polling.
+# Below this threshold, only keyword scoring is used.
+LLM_SCORE_THRESHOLD = 40
 
 # Substrings that flag a location as non-US. Case-insensitive, substring match.
 _NON_US_HINTS: tuple[str, ...] = (
@@ -136,14 +153,17 @@ _NON_US_HINTS: tuple[str, ...] = (
 )
 
 
-def _title_matches_any_role(title: str) -> bool:
-    title_lower = title.lower()
-    all_titles = (
-        keyword_config.role_titles.high
-        + keyword_config.role_titles.medium
-        + keyword_config.role_titles.low
-    )
-    return any(kw.lower() in title_lower for kw in all_titles)
+def _title_matches_any_target(title: str, targets: list[JobTarget]) -> bool:
+    """Check if a job title matches any active target's scoring profile.
+
+    Uses stage 1 title scoring — if any target's keywords match the title,
+    the job is worth ingesting.
+    """
+    for target in targets:
+        result = score_title_against_profile(title, target.scoring_profile)
+        if result.matched_keywords or result.excluded:
+            return True
+    return False
 
 
 def _title_matches_target(title: str, keywords: list[str]) -> bool:
@@ -191,10 +211,79 @@ async def _validate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return list(await asyncio.gather(*(_validate_one_row(r) for r in rows)))
 
 
+async def _run_llm_scoring_for_row(
+    supabase: Client,
+    row_data: dict[str, Any],
+    optimized_doc: "OptimizedDoc",
+    llm: "LLMClient",
+) -> None:
+    """Run LLM analysis for a single upserted row and update it in-place.
+
+    Silently falls back to keyword-only score on any error.
+    The row must already be upserted (has 'id').
+    """
+    keyword_score = int(row_data.get("score", 0))
+    if keyword_score < LLM_SCORE_THRESHOLD:
+        return
+
+    try:
+        description_text = strip_html(row_data.get("description_html", ""))
+
+        analysis, llm_result = await analyze_job(
+            llm,
+            optimized=optimized_doc.payload,
+            job_description=description_text,
+            purpose="poll_scoring",
+        )
+
+        # Persist analysis and log cost
+        record = await asyncio.to_thread(
+            persist_analysis,
+            supabase,
+            job_posting_id=row_data["id"],
+            user_id=None,
+            optimized_doc_id=optimized_doc.id,
+            analysis=analysis,
+            llm_result=llm_result,
+        )
+        await asyncio.to_thread(
+            record_llm_cost, supabase, None, "poll_scoring", llm_result
+        )
+
+        llm_score = scorecard_to_numeric(analysis.scorecard)
+        blended = blend_scores(keyword_score, llm_score)
+
+        # Update the job_postings row with LLM score data
+        await asyncio.to_thread(
+            supabase.table("job_postings")
+            .update(
+                {
+                    "score": blended,
+                    "llm_score": llm_score,
+                    "llm_analysis_id": record.id,
+                }
+            )
+            .eq("id", row_data["id"])
+            .execute
+        )
+    except Exception:
+        logger.exception(
+            "LLM scoring failed for job %s ('%s')",
+            row_data.get("id"),
+            row_data.get("title", "?"),
+        )
+
+
 async def _poll_one_source(
     source: dict[str, Any], supabase: Client
 ) -> dict[str, Any]:
-    """Poll a single job source. Returns a per-source summary dict."""
+    """Poll a single job source. Returns a per-source summary dict.
+
+    Three-stage scoring pipeline:
+      1. Title-only match against each active target (inline, fast)
+      2. Full JD match for stage-1 matches (async, after upsert)
+      3. LLM analysis for top stage-2 scores (async)
+    """
     summary: dict[str, Any] = {
         "polled": False,
         "new": 0,
@@ -221,14 +310,17 @@ async def _poll_one_source(
         # so we don't archive jobs that exist on the board but don't match filters.
         all_external_ids: set[str] = {job.external_id for job in jobs}
 
+        # Fetch active targets once — used for title filtering and scoring
+        active_targets = get_active_target(supabase, user_id=None)
+
         rows_to_upsert: list[dict[str, Any]] = []
         for job in jobs:
-            if not _title_matches_any_role(job.title):
+            # Filter by target relevance instead of static keyword list
+            if active_targets and not _title_matches_any_target(job.title, active_targets):
                 continue
             if not _is_us_location(job.location_name):
                 continue
 
-            score_result = score_job(job.title, job.content, keyword_config)
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
 
             rows_to_upsert.append(
@@ -241,8 +333,8 @@ async def _poll_one_source(
                     "department": job.department,
                     "description_html": sanitize_html(job.content),
                     "absolute_url": job.absolute_url,
-                    "score": score_result.score,
-                    "score_breakdown": score_result.breakdown.model_dump(),
+                    "score": 0,  # Placeholder — updated by target scoring pipeline
+                    "score_breakdown": {},
                     "greenhouse_updated_at": job.updated_at,
                     "salary_text": salary,
                 }
@@ -252,9 +344,7 @@ async def _poll_one_source(
         if settings.validate_poll_urls and rows_to_upsert:
             rows_to_upsert = await _validate_rows(rows_to_upsert)
 
-        # Phase 1: Upsert new/updated jobs AND fetch existing rows in parallel.
-        # These are independent — upsert adds/updates matched rows, existing
-        # query looks for stale rows by external_id not in the ATS response.
+        # Upsert new/updated jobs AND fetch existing rows in parallel.
         existing_query = (
             supabase.table("job_postings")
             .select("id, external_id")
@@ -279,11 +369,44 @@ async def _poll_one_source(
                 else:
                     summary["updated"] += 1
 
-            # Score upserted jobs against all active targets (#502)
-            active_targets = get_active_target(supabase, user_id=None)
+            # ---- Stage 1: Title scoring per target ----
             for active_target in active_targets:
 
-                async def _score_one(
+                async def _title_score_one(
+                    row_data: dict[str, Any], target: JobTarget = active_target
+                ) -> None:
+                    try:
+                        await asyncio.to_thread(
+                            target_title_score_and_upsert,
+                            supabase,
+                            job_posting_id=row_data["id"],
+                            title=row_data.get("title", ""),
+                            target=target,
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Stage 1 scoring failed for job %s", row_data.get("id")
+                        )
+
+                await asyncio.gather(
+                    *(
+                        _title_score_one(cast(dict[str, Any], r))
+                        for r in upsert_resp.data or []
+                    )
+                )
+
+            # Update global scores after stage 1
+            for raw_row in upsert_resp.data or []:
+                data = cast(dict[str, Any], raw_row)
+                try:
+                    await asyncio.to_thread(update_global_score, supabase, data["id"])
+                except Exception:
+                    logger.exception("Global score update failed for job %s", data.get("id"))
+
+            # ---- Stage 2: Full JD scoring per target (async) ----
+            for active_target in active_targets:
+
+                async def _full_score_one(
                     row_data: dict[str, Any], target: JobTarget = active_target
                 ) -> None:
                     try:
@@ -297,12 +420,37 @@ async def _poll_one_source(
                         )
                     except Exception:
                         logger.exception(
-                            "Target scoring failed for job %s", row_data.get("id")
+                            "Stage 2 scoring failed for job %s", row_data.get("id")
                         )
 
                 await asyncio.gather(
-                    *(_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
+                    *(
+                        _full_score_one(cast(dict[str, Any], r))
+                        for r in upsert_resp.data or []
+                    )
                 )
+
+            # Update global scores after stage 2
+            for raw_row in upsert_resp.data or []:
+                data = cast(dict[str, Any], raw_row)
+                try:
+                    await asyncio.to_thread(update_global_score, supabase, data["id"])
+                except Exception:
+                    logger.exception("Global score update failed for job %s", data.get("id"))
+
+            # ---- Stage 3: LLM scoring for qualified jobs ----
+            optimized_doc = await asyncio.to_thread(
+                get_latest_optimized, supabase, None
+            )
+            if optimized_doc is not None:
+                llm = get_default_llm_client()
+                for raw_row in upsert_resp.data or []:
+                    await _run_llm_scoring_for_row(
+                        supabase,
+                        cast(dict[str, Any], raw_row),
+                        optimized_doc,
+                        llm,
+                    )
         else:
             existing_resp = await asyncio.to_thread(existing_query.execute)
 
@@ -313,7 +461,7 @@ async def _poll_one_source(
             if row_data["external_id"] not in all_external_ids:
                 stale_ids.append(row_data["id"])
 
-        # Phase 2: Archive stale jobs AND update last_polled_at in parallel
+        # Archive stale jobs AND update last_polled_at in parallel
         last_polled_query = (
             supabase.table("job_sources")
             .update(
@@ -340,8 +488,6 @@ async def _poll_one_source(
             await asyncio.to_thread(last_polled_query.execute)
 
         # Fire email + SMS alerts for newly-inserted high-scoring jobs.
-        # Notification failures are logged inside the service and must not
-        # fail the poll.
         if new_rows:
             try:
                 await notify.send_alerts_for_new_jobs(supabase, new_rows)
@@ -397,7 +543,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 async def _poll_one_source_for_target(
     source: dict[str, Any], supabase: Client, target: JobTarget
 ) -> dict[str, Any]:
-    """Poll a single source, filtering by target keywords and scoring against target profile."""
+    """Poll a single source for a specific target. Three-stage pipeline."""
     summary: dict[str, Any] = {"polled": False, "new": 0, "updated": 0, "error": None}
     company_name: str = source.get("company_name", "?")
 
@@ -421,8 +567,6 @@ async def _poll_one_source_for_target(
             if not _is_us_location(job.location_name):
                 continue
 
-            # Global score (for "All Jobs" tab)
-            score_result = score_job(job.title, job.content, keyword_config)
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
 
             rows_to_upsert.append(
@@ -435,8 +579,8 @@ async def _poll_one_source_for_target(
                     "department": job.department,
                     "description_html": sanitize_html(job.content),
                     "absolute_url": job.absolute_url,
-                    "score": score_result.score,
-                    "score_breakdown": score_result.breakdown.model_dump(),
+                    "score": 0,  # Updated by target scoring pipeline
+                    "score_breakdown": {},
                     "greenhouse_updated_at": job.updated_at,
                     "salary_text": salary,
                 }
@@ -458,8 +602,27 @@ async def _poll_one_source_for_target(
                 else:
                     summary["updated"] += 1
 
-            # Score all upserted jobs against the target
-            async def _score_one(row_data: dict[str, Any]) -> None:
+            # Stage 1: Title scoring
+            async def _title_score_one(row_data: dict[str, Any]) -> None:
+                try:
+                    await asyncio.to_thread(
+                        target_title_score_and_upsert,
+                        supabase,
+                        job_posting_id=row_data["id"],
+                        title=row_data.get("title", ""),
+                        target=target,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Stage 1 scoring failed for job %s", row_data.get("id")
+                    )
+
+            await asyncio.gather(
+                *(_title_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
+            )
+
+            # Stage 2: Full JD scoring
+            async def _full_score_one(row_data: dict[str, Any]) -> None:
                 try:
                     await asyncio.to_thread(
                         target_score_and_upsert,
@@ -471,12 +634,34 @@ async def _poll_one_source_for_target(
                     )
                 except Exception:
                     logger.exception(
-                        "Target scoring failed for job %s", row_data.get("id")
+                        "Stage 2 scoring failed for job %s", row_data.get("id")
                     )
 
             await asyncio.gather(
-                *(_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
+                *(_full_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
             )
+
+            # Update global scores after stage 2
+            for raw_row in upsert_resp.data or []:
+                data = cast(dict[str, Any], raw_row)
+                try:
+                    await asyncio.to_thread(update_global_score, supabase, data["id"])
+                except Exception:
+                    logger.exception("Global score update failed for job %s", data.get("id"))
+
+            # Stage 3: LLM scoring for qualified jobs
+            optimized_doc = await asyncio.to_thread(
+                get_latest_optimized, supabase, None
+            )
+            if optimized_doc is not None:
+                llm = get_default_llm_client()
+                for raw_row in upsert_resp.data or []:
+                    await _run_llm_scoring_for_row(
+                        supabase,
+                        cast(dict[str, Any], raw_row),
+                        optimized_doc,
+                        llm,
+                    )
 
     except Exception:
         logger.exception("Poll failed for %s (target %s)", company_name, target.label)

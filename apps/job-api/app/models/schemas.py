@@ -117,6 +117,9 @@ class ManualJobResponse(BaseModel):
     needs_manual_fields: bool
 
 
+ScoringStatus = Literal["stage1", "stage2", "complete"]
+
+
 class JobTargetScore(BaseModel):
     """DB read shape for job_target_scores rows."""
 
@@ -127,5 +130,6 @@ class JobTargetScore(BaseModel):
     score_breakdown: ScoreBreakdown | None
     matched_keywords: list[str]
     excluded: bool
+    scoring_status: ScoringStatus = "stage1"
     created_at: datetime
     updated_at: datetime

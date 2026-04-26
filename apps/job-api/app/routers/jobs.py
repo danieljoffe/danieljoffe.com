@@ -18,7 +18,6 @@ from app.models.schemas import (
     UrlValidateRequest,
     UrlValidateResponse,
 )
-from app.seed.keyword_config import keyword_config
 from app.services.extract import (
     MANUAL_SOURCE_ID,
     ExtractionResult,
@@ -27,13 +26,13 @@ from app.services.extract import (
     extract_salary_from_text,
 )
 from app.services.sanitize import sanitize_html
-from app.services.scoring import score_job, strip_html
+from app.services.scoring import strip_html
 from app.services.target_scoring import bulk_score_for_target
 from app.services.target_scoring import (
     score_and_upsert as target_score_and_upsert,
+    update_global_score,
 )
-from app.services.targets.crud import get as get_target
-from app.services.targets.crud import get_active as get_active_target
+from app.services.targets.crud import get as get_target, get_active as get_active_target
 from app.services.validate import (
     is_banned_domain,
     registrable_domain,
@@ -394,16 +393,13 @@ async def add_manual_job(
     # Generate external_id from URL — must be numeric (bigint column)
     external_id = str(int(hashlib.sha256(final_url.encode()).hexdigest()[:15], 16))
 
-    # Score the job
-    score_result = score_job(title, description_html, keyword_config)
-
     # Extract salary from extraction result or description
     salary = extraction.salary_text
     if not salary and description_html:
         salary = extract_salary_from_text(strip_html(description_html))
 
-    # Upsert into job_postings
-    row = {
+    # Upsert into job_postings (score starts at 0, updated by target pipeline)
+    row: dict[str, Any] = {
         "external_id": external_id,
         "source_id": MANUAL_SOURCE_ID,
         "title": title,
@@ -412,8 +408,8 @@ async def add_manual_job(
         "department": None,
         "description_html": sanitize_html(description_html) if description_html else "",
         "absolute_url": final_url,
-        "score": score_result.score,
-        "score_breakdown": score_result.breakdown.model_dump(),
+        "score": 0,
+        "score_breakdown": {},
         "greenhouse_updated_at": datetime.now(UTC).isoformat(),
         "salary_text": salary,
     }
@@ -429,7 +425,7 @@ async def add_manual_job(
         data = cast(dict[str, Any], resp_db.data[0])
         posting_id = data.get("id")
 
-    # Score against all active targets (#502)
+    # Score against all active targets (stages 1+2 inline for manual entry)
     if posting_id and title:
         active_targets = get_active_target(supabase, user_id=None)
         for active_target in active_targets:
@@ -443,6 +439,10 @@ async def add_manual_job(
                 )
             except Exception:
                 logger.exception("Target scoring failed for manual job %s", posting_id)
+        try:
+            update_global_score(supabase, posting_id)
+        except Exception:
+            logger.exception("Global score update failed for manual job %s", posting_id)
 
     # Invalidate job list cache after adding a new posting
     job_list_cache.invalidate()

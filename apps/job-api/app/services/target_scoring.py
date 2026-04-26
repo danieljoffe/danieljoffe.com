@@ -1,11 +1,16 @@
 """Per-target job scoring (#502).
 
+Three-stage scoring pipeline:
+  Stage 1: Title-only match (fast, inline during poll)
+  Stage 2: Full JD match (async, after stage 1 passes)
+  Stage 3: LLM analysis (async, for top stage-2 scores)
+
 Stores target-specific scores in `job_target_scores`. The global score
-on `job_postings` stays as fallback when no target is selected.
+on `job_postings` = average across active targets (updated after each stage).
 
 Consumers:
-- Poller: scores new jobs against active targets after upsert
-- Manual entry: scores the new job on insert
+- Poller: stage 1 title scoring during poll, stage 2+3 async after
+- Manual entry: stages 1+2 on insert
 - Re-score endpoint: bulk re-scores when a target's profile changes
 - List endpoint: fetches target scores for overlay
 """
@@ -18,9 +23,9 @@ from typing import Any, cast
 
 from supabase import Client
 
-from app.models.schemas import JobTargetScore, ScoreBreakdown
+from app.models.schemas import JobTargetScore, ScoreBreakdown, ScoringStatus
 from app.models.targets import JobTarget
-from app.services.scoring import score_job_with_profile
+from app.services.scoring import score_job_with_profile, score_title_against_profile
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +45,76 @@ def _parse_score(row: dict[str, Any]) -> JobTargetScore:
         ),
         matched_keywords=row.get("matched_keywords") or [],
         excluded=row.get("excluded", False),
+        scoring_status=row.get("scoring_status", "stage1"),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
+
+
+def _upsert_score(
+    supabase: Client,
+    *,
+    job_posting_id: str,
+    target_id: str,
+    score: int,
+    breakdown: ScoreBreakdown,
+    matched_keywords: list[str],
+    excluded: bool,
+    scoring_status: ScoringStatus,
+) -> JobTargetScore:
+    """Upsert a score row and return the parsed result."""
+    row: dict[str, Any] = {
+        "job_posting_id": job_posting_id,
+        "target_id": target_id,
+        "score": score,
+        "score_breakdown": breakdown.model_dump(),
+        "matched_keywords": matched_keywords,
+        "excluded": excluded,
+        "scoring_status": scoring_status,
+        "updated_at": datetime.now(UTC).isoformat(),
+    }
+    resp = (
+        supabase.table(TABLE)
+        .upsert(row, on_conflict="job_posting_id,target_id")
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError("Failed to upsert job_target_scores row")
+    return _parse_score(rows[0])
+
+
+# ---- Stage 1: Title-only scoring ------------------------------------------
+
+
+def score_title_and_upsert(
+    supabase: Client,
+    *,
+    job_posting_id: str,
+    title: str,
+    target: JobTarget,
+) -> JobTargetScore | None:
+    """Stage 1: Score a job title against a target and upsert if any match.
+
+    Returns the upserted score, or None if no keywords matched (skip).
+    """
+    result = score_title_against_profile(title, target.scoring_profile)
+    if not result.matched_keywords and not result.excluded:
+        return None
+
+    return _upsert_score(
+        supabase,
+        job_posting_id=job_posting_id,
+        target_id=target.id,
+        score=result.score,
+        breakdown=result.breakdown,
+        matched_keywords=result.matched_keywords,
+        excluded=result.excluded,
+        scoring_status="stage1",
+    )
+
+
+# ---- Stage 2: Full JD scoring (existing) ----------------------------------
 
 
 def score_and_upsert(
@@ -53,28 +125,19 @@ def score_and_upsert(
     description_html: str,
     target: JobTarget,
 ) -> JobTargetScore:
-    """Score one job against one target and upsert the result."""
+    """Stage 2: Score one job's full JD against one target and upsert."""
     result = score_job_with_profile(title, description_html, target.scoring_profile)
 
-    row: dict[str, Any] = {
-        "job_posting_id": job_posting_id,
-        "target_id": target.id,
-        "score": result.score,
-        "score_breakdown": result.breakdown.model_dump(),
-        "matched_keywords": result.matched_keywords,
-        "excluded": result.excluded,
-        "updated_at": datetime.now(UTC).isoformat(),
-    }
-
-    resp = (
-        supabase.table(TABLE)
-        .upsert(row, on_conflict="job_posting_id,target_id")
-        .execute()
+    return _upsert_score(
+        supabase,
+        job_posting_id=job_posting_id,
+        target_id=target.id,
+        score=result.score,
+        breakdown=result.breakdown,
+        matched_keywords=result.matched_keywords,
+        excluded=result.excluded,
+        scoring_status="stage2",
     )
-    rows = cast(list[dict[str, Any]], resp.data or [])
-    if not rows:
-        raise RuntimeError("Failed to upsert job_target_scores row")
-    return _parse_score(rows[0])
 
 
 def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
@@ -113,6 +176,7 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
                     "score_breakdown": result.breakdown.model_dump(),
                     "matched_keywords": result.matched_keywords,
                     "excluded": result.excluded,
+                    "scoring_status": "stage2",
                     "updated_at": now,
                 }
             )
@@ -142,3 +206,30 @@ def get_target_scores(
     resp = query.execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     return {r["job_posting_id"]: _parse_score(r) for r in rows}
+
+
+# ---- Global score aggregation ----------------------------------------------
+
+
+def update_global_score(supabase: Client, job_posting_id: str) -> None:
+    """Recompute job_postings.score as average of active-target scores.
+
+    Called after any stage updates a target score. Uses a single query
+    to average all non-excluded target scores for this job.
+    """
+    resp = (
+        supabase.table(TABLE)
+        .select("score, excluded, target_id")
+        .eq("job_posting_id", job_posting_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        return
+
+    scores = [r["score"] for r in rows if not r.get("excluded", False)]
+    avg_score = round(sum(scores) / len(scores)) if scores else 0
+
+    supabase.table("job_postings").update({"score": avg_score}).eq(
+        "id", job_posting_id
+    ).execute()

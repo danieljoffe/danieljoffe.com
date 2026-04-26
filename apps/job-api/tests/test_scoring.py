@@ -1,5 +1,12 @@
-from app.seed.keyword_config import KeywordConfig
-from app.services.scoring import score_job, strip_html
+"""Tests for scoring functions (title-only and full JD)."""
+
+from app.models.targets import (
+    CategoryProfile,
+    NegativeProfile,
+    ScoringProfile,
+    SeniorityProfile,
+)
+from app.services.scoring import score_title_against_profile, strip_html
 
 
 def test_strip_html_removes_tags():
@@ -14,66 +21,86 @@ def test_strip_html_preserves_plain_text():
     assert strip_html("no tags here") == "no tags here"
 
 
-def test_high_score_for_ideal_match(config: KeywordConfig):
-    title = "Senior Frontend Engineer"
-    description = """
-    <p>We are looking for a Senior Frontend Engineer to join our design systems team.
-    You will work with React, Next.js, TypeScript, and Tailwind CSS to build
-    our component library. Experience with accessibility (WCAG) and performance
-    optimization is required. This is a senior role requiring mentorship and
-    architectural ownership.</p>
-    """
-    result = score_job(title, description, config)
-    assert result.score > 60
-    assert not result.excluded
-    assert "react" in result.matched_keywords
-    assert "typescript" in result.matched_keywords
+# ---- score_title_against_profile tests ------------------------------------
 
 
-def test_low_score_for_poor_match(config: KeywordConfig):
-    title = "Software Engineer"
-    description = "<p>General software engineering role working on backend services.</p>"
-    result = score_job(title, description, config)
-    assert result.score < 30
+def _profile(
+    *,
+    core: dict[str, int] | None = None,
+    core_weight: float = 2.0,
+    seniority_signals: list[str] | None = None,
+    negative_keywords: list[str] | None = None,
+) -> ScoringProfile:
+    cats: dict[str, CategoryProfile] = {}
+    if core is not None:
+        cats["core_skills"] = CategoryProfile(keywords=core, weight=core_weight)
+    return ScoringProfile(
+        categories=cats,
+        seniority=SeniorityProfile(signals=seniority_signals or []),
+        negative=NegativeProfile(keywords=negative_keywords or []),
+    )
 
 
-def test_excluded_for_hard_exclude(config: KeywordConfig):
-    title = "Junior Frontend Developer"
-    description = "<p>Entry-level position for new grad developers learning React.</p>"
-    result = score_job(title, description, config)
+def test_title_matches_core_keywords():
+    profile = _profile(core={"React": 3, "TypeScript": 3})
+    result = score_title_against_profile("Senior React Engineer", profile)
+    assert result.score > 0
+    assert "React" in result.matched_keywords
+
+
+def test_title_no_match_returns_zero():
+    profile = _profile(core={"React": 3, "TypeScript": 3})
+    result = score_title_against_profile("Data Scientist", profile)
+    assert result.score == 0
+    assert len(result.matched_keywords) == 0
+
+
+def test_title_matches_seniority_signals():
+    profile = _profile(
+        core={"React": 3},
+        seniority_signals=["senior", "lead"],
+    )
+    result = score_title_against_profile("Senior React Lead", profile)
+    assert result.breakdown.seniority_signals > 0
+    assert "senior" in result.matched_keywords or "lead" in result.matched_keywords
+
+
+def test_title_excluded_by_negative():
+    profile = _profile(
+        core={"React": 3},
+        negative_keywords=["junior", "intern"],
+    )
+    result = score_title_against_profile("Junior React Developer", profile)
     assert result.excluded
     assert result.score == 0
 
 
-def test_soft_exclude_reduces_score(config: KeywordConfig):
-    title = "Senior Frontend Engineer"
-    description = """
-    <p>Build our frontend with React and TypeScript.
-    Must have experience with Angular and Java backends.
-    WordPress and PHP knowledge is a plus.</p>
-    """
-    result = score_job(title, description, config)
-    assert result.breakdown.negative < 0
+def test_title_alias_expansion():
+    """Aliases like 'reactjs' should match 'React'."""
+    profile = _profile(core={"react": 3})
+    result = score_title_against_profile("Senior ReactJS Engineer", profile)
+    assert result.score > 0
+    assert "react" in result.matched_keywords
 
 
-def test_score_clamped_to_0_100(config: KeywordConfig):
-    title = "Software Engineer"
-    description = "<p>Generic role.</p>"
-    result = score_job(title, description, config)
-    assert 0 <= result.score <= 100
+def test_title_score_clamped_to_100():
+    profile = _profile(
+        core={f"skill{i}": 3 for i in range(20)},
+        core_weight=5.0,
+    )
+    title = " ".join(f"skill{i}" for i in range(20))
+    result = score_title_against_profile(title, profile)
+    assert result.score <= 100
 
 
-def test_breakdown_populated(config: KeywordConfig):
-    title = "Senior Frontend Engineer"
-    description = "<p>React, TypeScript, design systems, accessibility.</p>"
-    result = score_job(title, description, config)
-    assert result.breakdown.role_titles > 0
-    assert result.breakdown.technologies > 0
-    assert result.breakdown.domain_skills > 0
+def test_title_empty_profile_scores_zero():
+    result = score_title_against_profile("Senior Frontend Engineer", ScoringProfile())
+    assert result.score == 0
+    assert not result.excluded
 
 
-def test_title_weighted_higher(config: KeywordConfig):
-    """A keyword in the title should contribute more than the same keyword only in the body."""
-    title_in_title = score_job("React Engineer", "<p>Generic role.</p>", config)
-    title_in_body = score_job("Engineer", "<p>Uses React.</p>", config)
-    assert title_in_title.score >= title_in_body.score
+def test_title_multiple_keywords():
+    profile = _profile(core={"React": 3, "TypeScript": 3, "Next.js": 2})
+    result = score_title_against_profile("React TypeScript Engineer", profile)
+    assert len(result.matched_keywords) >= 2
+    assert result.score > 0

@@ -75,8 +75,7 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 - Backend already fully built: `services/notify.py` with `send_sms_alerts_for_new_jobs()`, Twilio SDK integration, per-profile `sms_notifications_enabled`, `sms_score_threshold`, `sms_daily_limit`, `phone_number`, daily rate limiting, deep links.
 - Added frontend: Settings page includes SMS notification toggle, phone number input, score threshold, daily limit controls. Same backend router handles all notification preferences.
 
-### 5.3 🔵 v2 LLM-powered scoring
+### 5.3 ~~v2 LLM-powered scoring~~ DONE
 
-- **What exists**: On-demand LLM analysis (`POST /analysis/{job_id}`) using Claude Sonnet, with full scorecard (skills matched/missing, seniority fit, domain fit, recommendation). Anthropic client with prompt caching and cost logging. Frontend "Analyze" button in JobDetailPanel.
-- **What's missing**: Automatic LLM scoring in the polling pipeline. Currently `score_job()` uses keyword matching only; v2 would run LLM scoring on new jobs (all or above a keyword threshold).
-- **Needs input**: Cost-per-job budget (Claude call per polled job adds up), scoring strategy (keyword pre-filter → LLM for top candidates, or LLM replaces keywords), score blending (weighted average vs LLM override), caching/batch strategy.
+- **Implemented**: Automatic LLM scoring in both poll paths (`_poll_one_source` and `_poll_one_source_for_target`). Keyword pre-filter (>= 40) gates LLM analysis to control costs. `scorecard_to_numeric()` converts LLM Scorecard to 0-100. `blend_scores()` merges keyword (60%) + LLM (40%). Results persisted as `llm_score` and `llm_analysis_id` on `job_postings`. Cost logged via `record()`. Silent fallback to keyword-only on any LLM error.
+- Migration: `20260426120005_add_llm_score_columns.sql` adds `llm_score` (float) and `llm_analysis_id` (uuid FK) to `job_postings`.
