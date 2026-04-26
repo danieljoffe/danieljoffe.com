@@ -66,6 +66,19 @@ def _keyword_or_alias_in_text(keyword: str, text: str) -> bool:
     return any(_keyword_in_text(alias, text) for alias in aliases)
 
 
+def _count_keyword_occurrences(keyword: str, text: str) -> int:
+    """Count how many times a keyword (or alias) appears in text.
+
+    Returns capped at 3 — diminishing returns beyond repeated mentions.
+    """
+    kw_lower = keyword.lower()
+    count = text.lower().count(kw_lower)
+    if count == 0:
+        for alias in _KEYWORD_ALIASES.get(kw_lower, []):
+            count += text.lower().count(alias.lower())
+    return min(3, count)
+
+
 # ---- Target-based scoring (#495) -------------------------------------------
 
 # Map dynamic category names to existing ScoreBreakdown fields.
@@ -100,50 +113,110 @@ def score_job_with_profile(
     description_html: str,
     profile: ScoringProfile,
 ) -> ScoreResult:
-    """Score a job posting against a target's ScoringProfile.
+    """Score a job posting against a target's ScoringProfile (stage 2).
 
-    Unlike score_job() which uses tiered keyword lists with global weights,
-    this function uses per-keyword weights and per-category multipliers.
-    The normalizer is dynamic — based on the profile's max possible score —
-    so scores represent a true percentage of match quality.
+    Section-aware scoring: parses the JD into sections (requirements,
+    nice-to-have, about, benefits) and weights keyword matches by section.
+    Keywords in Requirements (2x) matter more than About Us (0.5x).
+
+    Frequency weighting: repeated keyword mentions (up to 3x) contribute
+    more than a single mention, weighted by section importance.
+
+    Negatives only count in requirements sections and the title — a
+    negative keyword in "About Us" or "Benefits" is not a disqualifier.
+
+    Title gets a 2x boost applied as a high-weight section.
     """
-    description_text = strip_html(description_html)
-    # Weight title matches by prepending title twice (same as score_job)
-    searchable = f"{title} {title} {description_text}".lower()
+    from app.services.jd_parser import SECTION_WEIGHTS, parse_jd
+
+    parsed = parse_jd(description_html)
 
     breakdown = ScoreBreakdown()
     all_matched: list[str] = []
     excluded = False
 
-    # Dynamic categories (with alias expansion)
+    # Title as a high-weight implicit section
+    title_lower = title.lower()
+    _TITLE_WEIGHT = 2.0
+
+    # ---- Category keywords across sections ----
     for cat_name, cat_profile in profile.categories.items():
         field_name = _CATEGORY_TO_FIELD.get(cat_name, "technologies")
         for keyword, kw_weight in cat_profile.keywords.items():
-            if _keyword_or_alias_in_text(keyword, searchable):
-                points = kw_weight * cat_profile.weight
+            keyword_points = 0.0
+            matched = False
+
+            # Title match (high-weight)
+            if _keyword_or_alias_in_text(keyword, title_lower):
+                keyword_points += kw_weight * cat_profile.weight * _TITLE_WEIGHT
+                matched = True
+
+            # Section matches (frequency × section weight)
+            for section in parsed.sections:
+                occurrences = _count_keyword_occurrences(keyword, section.text)
+                if occurrences > 0:
+                    keyword_points += kw_weight * cat_profile.weight * section.weight * occurrences
+                    matched = True
+
+            if matched:
                 current = getattr(breakdown, field_name)
-                setattr(breakdown, field_name, current + points)
+                setattr(breakdown, field_name, current + keyword_points)
                 all_matched.append(keyword)
 
-    # Seniority signals (with alias expansion)
+    # ---- Seniority signals ----
     for signal in profile.seniority.signals:
-        if _keyword_or_alias_in_text(signal, searchable):
-            breakdown.seniority_signals += _SENIORITY_SIGNAL_WEIGHT
+        signal_points = 0.0
+        matched = False
+
+        if _keyword_or_alias_in_text(signal, title_lower):
+            signal_points += _SENIORITY_SIGNAL_WEIGHT * _TITLE_WEIGHT
+            matched = True
+
+        for section in parsed.sections:
+            if _keyword_or_alias_in_text(signal, section.text.lower()):
+                signal_points += _SENIORITY_SIGNAL_WEIGHT * section.weight
+                matched = True
+
+        if matched:
+            breakdown.seniority_signals += signal_points
             all_matched.append(signal)
 
-    # Domain signals (with alias expansion)
+    # ---- Domain signals ----
     for signal in profile.domain.signals:
-        if _keyword_or_alias_in_text(signal, searchable):
-            breakdown.domain_skills += profile.domain.weight
+        signal_points = 0.0
+        matched = False
+
+        if _keyword_or_alias_in_text(signal, title_lower):
+            signal_points += profile.domain.weight * _TITLE_WEIGHT
+            matched = True
+
+        for section in parsed.sections:
+            if _keyword_or_alias_in_text(signal, section.text.lower()):
+                signal_points += profile.domain.weight * section.weight
+                matched = True
+
+        if matched:
+            breakdown.domain_skills += signal_points
             all_matched.append(signal)
 
-    # Negative keywords
+    # ---- Negative keywords (only in title + requirements sections) ----
+    negative_sections = {"requirements", "default"}
     for keyword in profile.negative.keywords:
-        if _keyword_or_alias_in_text(keyword, searchable):
+        # Check title
+        if _keyword_or_alias_in_text(keyword, title_lower):
             breakdown.negative += profile.negative.weight
             excluded = True
+            continue
 
-    # Dynamic normalization: score as percentage of max possible
+        # Check requirements-type sections only
+        for section in parsed.sections:
+            if section.name in negative_sections:
+                if _keyword_or_alias_in_text(keyword, section.text.lower()):
+                    breakdown.negative += profile.negative.weight
+                    excluded = True
+                    break
+
+    # Dynamic normalization
     raw = (
         breakdown.role_titles
         + breakdown.technologies
