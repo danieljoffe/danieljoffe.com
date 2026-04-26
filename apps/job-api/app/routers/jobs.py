@@ -235,10 +235,6 @@ async def list_jobs(
     offset = (page - 1) * page_size
     ascending = order == "asc"
 
-    # Default min_score for target views — omit low-relevance jobs
-    if target_id and min_score is None:
-        min_score = 45
-
     # Check cache (60s TTL — data only changes on poll/manual-add cycles)
     cache_key = make_cache_key(
         "jobs",
