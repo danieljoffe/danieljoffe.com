@@ -10,7 +10,16 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from app.cache import job_list_cache
 from app.seed.keyword_config import keyword_config
+
+
+@pytest.fixture(autouse=True)
+def _clear_caches():
+    """Prevent cross-test cache pollution from the in-memory TTL cache."""
+    job_list_cache.invalidate()
+    yield
+    job_list_cache.invalidate()
 
 
 @pytest.fixture

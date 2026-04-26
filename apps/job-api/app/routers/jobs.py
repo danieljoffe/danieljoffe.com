@@ -85,7 +85,9 @@ def _list_jobs_for_target_rpc(
             "p_offset": offset,
         },
     ).execute()
-    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not isinstance(resp.data, list):
+        raise TypeError("RPC get_target_jobs returned non-list response")
+    rows = cast(list[dict[str, Any]], resp.data)
     total = rows[0]["total_count"] if rows else 0
     # Strip the total_count helper column from each row
     postings = [{k: v for k, v in r.items() if k != "total_count"} for r in rows]
