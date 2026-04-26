@@ -72,16 +72,7 @@ async function handleFittedAuth(
   const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_ID'];
 
   if (!supabaseUrl || !anonKey) {
-    // If Supabase env vars are missing, let the request through
-    // (will fail at the page level with a clearer error)
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-nonce', nonce);
-    requestHeaders.set('Content-Security-Policy', cspValue);
-    const response = NextResponse.next({
-      request: { headers: requestHeaders },
-    });
-    response.headers.set('Content-Security-Policy', cspValue);
-    return response;
+    return new NextResponse('Supabase configuration missing', { status: 401 });
   }
 
   // Set nonce on request headers so the app can read it via headers().
