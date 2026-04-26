@@ -7,11 +7,12 @@ export default function ProfileLoading() {
         <Skeleton variant='text' size='lg' className='w-32' />
         <Skeleton variant='text' className='mt-2 w-56' />
       </div>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} variant='rectangular' height={160} />
-        ))}
+      <Skeleton variant='rectangular' height={120} />
+      <div className='grid gap-4 md:grid-cols-2'>
+        <Skeleton variant='rectangular' height={200} />
+        <Skeleton variant='rectangular' height={200} />
       </div>
+      <Skeleton variant='rectangular' height={140} />
     </div>
   );
 }
