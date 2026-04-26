@@ -233,3 +233,13 @@ def update_global_score(supabase: Client, job_posting_id: str) -> None:
     supabase.table("job_postings").update({"score": avg_score}).eq(
         "id", job_posting_id
     ).execute()
+
+
+def mark_complete(supabase: Client, job_posting_id: str) -> None:
+    """Mark all target scores for a job as scoring_status='complete'.
+
+    Called after stage 3 (LLM scoring) finishes for a job.
+    """
+    supabase.table(TABLE).update({"scoring_status": "complete"}).eq(
+        "job_posting_id", job_posting_id
+    ).execute()

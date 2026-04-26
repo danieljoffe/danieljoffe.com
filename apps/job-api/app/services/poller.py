@@ -31,6 +31,7 @@ from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
 from app.services.target_scoring import (
+    mark_complete as mark_target_scores_complete,
     score_and_upsert as target_score_and_upsert,
     score_title_and_upsert as target_title_score_and_upsert,
     update_global_score,
@@ -217,13 +218,37 @@ async def _run_llm_scoring_for_row(
     optimized_doc: "OptimizedDoc",
     llm: "LLMClient",
 ) -> None:
-    """Run LLM analysis for a single upserted row and update it in-place.
+    """Stage 3: Run LLM analysis and mark target scores as complete.
+
+    Fetches the current global score (set by stage 2) for the threshold
+    check. Blends keyword and LLM scores, updates global score, and
+    marks all target scores for this job as 'complete'.
 
     Silently falls back to keyword-only score on any error.
-    The row must already be upserted (has 'id').
     """
-    keyword_score = int(row_data.get("score", 0))
-    if keyword_score < LLM_SCORE_THRESHOLD:
+    job_id = row_data.get("id")
+    if not job_id:
+        return
+
+    # Fetch the current global score (average of target stage-2 scores)
+    try:
+        score_resp = await asyncio.to_thread(
+            supabase.table("job_postings")
+            .select("score")
+            .eq("id", job_id)
+            .single()
+            .execute
+        )
+        current_score = int(cast(dict[str, Any], score_resp.data).get("score", 0))
+    except Exception:
+        current_score = 0
+
+    if current_score < LLM_SCORE_THRESHOLD:
+        # Below threshold — skip LLM but still mark as complete
+        try:
+            await asyncio.to_thread(mark_target_scores_complete, supabase, job_id)
+        except Exception:
+            logger.exception("Failed to mark scores complete for job %s", job_id)
         return
 
     try:
@@ -240,7 +265,7 @@ async def _run_llm_scoring_for_row(
         record = await asyncio.to_thread(
             persist_analysis,
             supabase,
-            job_posting_id=row_data["id"],
+            job_posting_id=job_id,
             user_id=None,
             optimized_doc_id=optimized_doc.id,
             analysis=analysis,
@@ -251,7 +276,7 @@ async def _run_llm_scoring_for_row(
         )
 
         llm_score = scorecard_to_numeric(analysis.scorecard)
-        blended = blend_scores(keyword_score, llm_score)
+        blended = blend_scores(current_score, llm_score)
 
         # Update the job_postings row with LLM score data
         await asyncio.to_thread(
@@ -263,15 +288,24 @@ async def _run_llm_scoring_for_row(
                     "llm_analysis_id": record.id,
                 }
             )
-            .eq("id", row_data["id"])
+            .eq("id", job_id)
             .execute
         )
+
+        # Mark all target scores as complete
+        await asyncio.to_thread(mark_target_scores_complete, supabase, job_id)
+
     except Exception:
         logger.exception(
             "LLM scoring failed for job %s ('%s')",
             row_data.get("id"),
             row_data.get("title", "?"),
         )
+        # Still mark as complete on error — don't leave jobs stuck in stage2
+        try:
+            await asyncio.to_thread(mark_target_scores_complete, supabase, job_id)
+        except Exception:
+            pass
 
 
 async def _poll_one_source(
