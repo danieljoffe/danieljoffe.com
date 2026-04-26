@@ -71,6 +71,10 @@ export default function TargetCard({
             variant='primary'
             size='sm'
             onClick={() => onViewJobs(target.id)}
+            disabled={!target.is_active}
+            title={
+              target.is_active ? undefined : 'Activate this target to view jobs'
+            }
           >
             View Jobs
           </Button>

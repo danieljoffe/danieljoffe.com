@@ -69,8 +69,21 @@ export default function JobsList({ targetId }: JobsListProps) {
         };
         const activeTargets = data.targets.filter(t => t.is_active);
         setTargets(activeTargets);
-        // If no target selected via URL, default to the first active target
-        if (!targetId && activeTargets.length > 0) {
+        if (targetId && !activeTargets.some(t => t.id === targetId)) {
+          // URL target is not active — redirect to default view
+          if (activeTargets.length > 0) {
+            setActiveTargetId(activeTargets[0].id);
+            setFilters(TARGET_FILTERS);
+            router.replace(`/fitted/jobs?target=${activeTargets[0].id}`, {
+              scroll: false,
+            });
+          } else {
+            setActiveTargetId(undefined);
+            setFilters(INITIAL_FILTERS);
+            router.replace('/fitted/jobs', { scroll: false });
+          }
+        } else if (!targetId && activeTargets.length > 0) {
+          // No target selected via URL — default to the first active target
           setActiveTargetId(activeTargets[0].id);
           setFilters(TARGET_FILTERS);
         }
