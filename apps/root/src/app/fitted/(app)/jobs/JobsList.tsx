@@ -60,7 +60,8 @@ export default function JobsList() {
 
       const { batch_id } = (await res.json()) as { batch_id: string };
 
-      // Poll for completion
+      // Poll for completion — clear any stale interval first
+      if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(async () => {
         try {
           const pollRes = await fetch(`/api/jobs/tailor/batch/${batch_id}`);

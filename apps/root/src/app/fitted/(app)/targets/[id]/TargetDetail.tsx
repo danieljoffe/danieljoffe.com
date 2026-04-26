@@ -50,9 +50,15 @@ export default function TargetDetail({ id }: TargetDetailProps) {
   }, [id, toast]);
 
   useEffect(() => {
-    Promise.all([fetchTarget(), fetchReferenceJDs()]).finally(() =>
-      setLoading(false)
-    );
+    let cancelled = false;
+
+    Promise.all([fetchTarget(), fetchReferenceJDs()]).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchTarget, fetchReferenceJDs]);
 
   const handleSaveLabel = useCallback(async () => {
