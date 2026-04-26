@@ -4,11 +4,17 @@ import { Fragment, useMemo, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
-import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
+import type {
+  JobPosting,
+  JobsFilterState,
+  JobsSortColumn,
+  ScoringStatus,
+} from './types';
 
 interface JobsListTableProps {
   filters: JobsFilterState;
@@ -18,9 +24,26 @@ interface JobsListTableProps {
   targetId: string | undefined;
 }
 
-function ScoreBadge({ score }: { score: number }) {
+function ScoreBadge({
+  score,
+  scoringStatus,
+}: {
+  score: number;
+  scoringStatus: ScoringStatus | undefined;
+}) {
   const variant = score >= 70 ? 'success' : score >= 40 ? 'warning' : 'error';
-  return <Badge variant={variant}>{score}</Badge>;
+  const isScoring = scoringStatus && scoringStatus !== 'complete';
+  return (
+    <span className='inline-flex items-center gap-1'>
+      <Badge variant={variant}>{score}</Badge>
+      {isScoring && (
+        <Spinner
+          size='sm'
+          aria-label={`Scoring in progress (${scoringStatus})`}
+        />
+      )}
+    </span>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -239,7 +262,10 @@ export default function JobsListTable({
                   </td>
                   {showScore && (
                     <td className='px-3 py-2'>
-                      <ScoreBadge score={job.score} />
+                      <ScoreBadge
+                        score={job.score}
+                        scoringStatus={job.scoring_status}
+                      />
                     </td>
                   )}
                   <td className='px-3 py-2 font-medium'>

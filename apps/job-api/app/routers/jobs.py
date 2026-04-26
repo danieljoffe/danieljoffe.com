@@ -111,7 +111,7 @@ def _list_jobs_for_target_two_query(
     sort_col = "score" if sort == "score" else sort
     ts_query = (
         supabase.table("job_target_scores")
-        .select("job_posting_id, score, score_breakdown", count=CountMethod.exact)
+        .select("job_posting_id, score, score_breakdown, scoring_status", count=CountMethod.exact)
         .eq("target_id", target_id)
         .eq("excluded", False)
     )
@@ -161,6 +161,7 @@ def _list_jobs_for_target_two_query(
         if ts:
             p["score"] = ts["score"]
             p["score_breakdown"] = ts.get("score_breakdown")
+            p["scoring_status"] = ts.get("scoring_status", "stage1")
 
     # Sort + paginate in Python only when we couldn't do it server-side
     if total is None or sort_col != "score":

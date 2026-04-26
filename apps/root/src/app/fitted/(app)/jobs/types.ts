@@ -12,6 +12,8 @@ export const JOB_STATUSES = [
 
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
+export type ScoringStatus = 'stage1' | 'stage2' | 'complete';
+
 export interface JobPosting {
   id: string;
   external_id: string;
@@ -21,6 +23,7 @@ export interface JobPosting {
   absolute_url: string | null;
   score: number;
   score_breakdown: Record<string, number> | null;
+  scoring_status: ScoringStatus | undefined;
   status: string;
   salary_text: string | null;
   greenhouse_updated_at: string | null;
