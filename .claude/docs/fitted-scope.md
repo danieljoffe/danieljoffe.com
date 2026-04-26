@@ -337,7 +337,7 @@ These are hard rules the system enforces:
 - [x] Derived document viewer (experience + skills on dashboard)
 - [x] Settings page (notification preferences at /fitted/settings)
 - [ ] v2 LLM-powered scoring (infrastructure ready, pipeline integration needs design decisions)
-- [ ] Firecrawl fallback (#407, backend cascade exists, needs Firecrawl API key)
+- [x] Firecrawl fallback (#407, three-tier cascade: HTTP → HTML parsing → Firecrawl)
 - [ ] Cover letter generation (future, shared renderer, document_type param in schema)
 - [ ] Multi-target UI (target switcher, cross-target insights)
 - [ ] Per-target resume templates (future, one default template for v1)

@@ -59,11 +59,9 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 
 - Fully implemented in backend: `services/tailor/similarity.py` with Jaccard similarity of keyword hits at 70% threshold. `clone_resume_for_job()` creates zero-cost copy via `source_resume_id`. Frontend batch generation flow checks for reusable resumes before generating fresh.
 
-### 4.4 🔵 Firecrawl fallback for URL extraction
+### 4.4 ~~Firecrawl fallback for URL extraction~~ DONE
 
-- **Blueprint**: HTTP fetch → Firecrawl → warn user
-- **Needs input**: Firecrawl API key/account, timeout values, which career page patterns trigger the fallback.
-- **Work**: Backend cascade in ingest service. Frontend loading state + fallback warning.
+- Backend already fully built: three-tier cascade in `services/extract.py` (HTTP fetch → JSON-LD/HTML parsing → Firecrawl REST API with 15s timeout). `services/firecrawl.py` handles structured extraction via `/v2/scrape`. Config gated by `FIRECRAWL_API_KEY` env var — set in Railway 2026-04-26.
 
 ## Tier 5: New Feature Areas (require design decisions + multi-service work)
 

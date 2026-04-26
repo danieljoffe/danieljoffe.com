@@ -6,6 +6,7 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import CoverLetterSection from './CoverLetterSection';
 import ResumeEditor from './ResumeEditor';
 import {
   JOB_STATUSES,
@@ -316,6 +317,15 @@ export default function JobDetailPanel({
             }}
           />
         </div>
+      )}
+
+      {/* Cover letter */}
+      {(status === 'resume_draft' || status === 'resume_ready') && (
+        <CoverLetterSection
+          jobPostingId={posting.id}
+          companyName={posting.company_name}
+          roleTitle={posting.title}
+        />
       )}
 
       {/* Actions */}

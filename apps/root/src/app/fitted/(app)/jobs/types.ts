@@ -119,11 +119,11 @@ export interface TailoredResumeRecord {
   id: string;
   user_id: string | null;
   job_posting_id: string | null;
-  document_type: string;
+  document_type: 'resume' | 'cover_letter';
   resume_type: string;
   jd_snapshot: string;
   jd_snapshot_hash: string;
-  payload: TailoredResumePayload;
+  payload: TailoredResumePayload | CoverLetterPayload;
   storage_path: string | null;
   warnings: string[];
   model: string | null;
@@ -135,6 +135,25 @@ export interface TailoredResumeRecord {
   updated_at: string | null;
   approved_at: string | null;
   source_resume_id: string | null;
+}
+
+export interface CoverLetterParagraph {
+  text: string;
+}
+
+export interface CoverLetterPayload {
+  contact: ContactInfo;
+  recipient_company: string;
+  recipient_role: string | null;
+  salutation: string;
+  paragraphs: CoverLetterParagraph[];
+  closing: string;
+  signature: string;
+  jd_snippet: string;
+  preferences_applied: string[];
+  source_outcome_refs: string[];
+  source_role_refs: string[];
+  source_skill_refs: string[];
 }
 
 export interface TailorResponse {

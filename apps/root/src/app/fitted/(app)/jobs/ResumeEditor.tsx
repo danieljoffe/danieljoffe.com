@@ -59,10 +59,11 @@ export default function ResumeEditor({
       }
       const data = (await res.json()) as TailoredResumeRecord;
       setRecord(data);
-      setSummary(data.payload.summary);
-      setSkills([...data.payload.skills]);
+      const payload = data.payload as TailoredResumePayload;
+      setSummary(payload.summary);
+      setSkills([...payload.skills]);
       setExperience(
-        data.payload.experience.map(r => ({
+        payload.experience.map(r => ({
           ...r,
           bullets: r.bullets.map(b => ({ ...b })),
         }))
@@ -92,12 +93,13 @@ export default function ResumeEditor({
     setLintWarnings([]);
     try {
       const body: Record<string, unknown> = {};
-      if (summary !== record.payload.summary) body['summary'] = summary;
-      if (JSON.stringify(skills) !== JSON.stringify(record.payload.skills)) {
+      const resumePayload = record.payload as TailoredResumePayload;
+      if (summary !== resumePayload.summary) body['summary'] = summary;
+      if (JSON.stringify(skills) !== JSON.stringify(resumePayload.skills)) {
         body['skills'] = skills;
       }
       if (
-        JSON.stringify(experience) !== JSON.stringify(record.payload.experience)
+        JSON.stringify(experience) !== JSON.stringify(resumePayload.experience)
       ) {
         body['experience'] = experience;
       }
@@ -491,20 +493,24 @@ export default function ResumeEditor({
           </div>
 
           {/* Education (read-only) */}
-          {record?.payload.education && record.payload.education.length > 0 && (
-            <div>
-              <Text variant='caption' className='mb-1'>
-                Education
-              </Text>
-              {record.payload.education.map((edu, i) => (
-                <div key={i} className='flex gap-2'>
-                  <Text variant='body'>{edu.school}</Text>
-                  {edu.degree && <Text variant='meta'>, {edu.degree}</Text>}
-                  {edu.dates && <Text variant='meta'>({edu.dates})</Text>}
-                </div>
-              ))}
-            </div>
-          )}
+          {record &&
+            'education' in record.payload &&
+            (record.payload as TailoredResumePayload).education.length > 0 && (
+              <div>
+                <Text variant='caption' className='mb-1'>
+                  Education
+                </Text>
+                {(record.payload as TailoredResumePayload).education.map(
+                  (edu, i) => (
+                    <div key={i} className='flex gap-2'>
+                      <Text variant='body'>{edu.school}</Text>
+                      {edu.degree && <Text variant='meta'>, {edu.degree}</Text>}
+                      {edu.dates && <Text variant='meta'>({edu.dates})</Text>}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
         </div>
       )}
     </Modal>
