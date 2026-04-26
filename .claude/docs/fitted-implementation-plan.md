@@ -46,23 +46,18 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 
 ## Tier 4: Significant Features (new backend + frontend work)
 
-### 4.1 🔵 Inline annotations in prose doc
+### 4.1 ~~Inline annotations~~ DONE
 
-- **Blueprint**: Users add inline comments like "Don't include my helpdesk role on engineering resumes". Parsed into structured metadata during derivation.
-- **Needs input**: Annotation syntax (markdown comments? custom markers?), how they display in the prose editor, how derivation parses them.
-- **Work**: Extend prose editor with annotation support. Backend derivation must parse and respect annotations.
+- Backend already had full CRUD: `GET/POST/DELETE /experience/annotations` with `add_annotation`, `remove_annotation`, `list_annotations`, `resolve_for_target`, `apply_exclusions`. Annotation model: action (emphasize/exclude/de-emphasize), ref_type (role/skill/outcome), ref_value, target_label (nullable), reason.
+- Added frontend: proxy routes (`/api/career/experience/annotations/` + `/[id]/`), TypeScript types (`Annotation`, `AnnotationCreate`, action/ref_type constants), and management UI on Profile page. UI shows annotation list with action/type badges, add form with Select dropdowns auto-populated from optimized doc (roles, skills, outcomes), optional target + reason fields, and delete buttons.
 
-### 4.2 🔵 Job URL validation
+### 4.2 ~~Job URL validation~~ DONE (already built)
 
-- **Blueprint**: Format validation, redirect detection, banned sites, content verification
-- **Needs input**: Banned sites seed list, validation strictness (warn vs block), where validation runs (on manual entry? on all polled jobs?).
-- **Work**: New `services/validate/` backend service. Frontend shows validation results on manual entry and in job detail.
+- Fully implemented in backend: `services/validate/url_validator.py` with format validation, redirect detection, banned domains, and content verification. `services/ingest/` cascade: HTTP fetch → Firecrawl fallback → extraction (JSON-LD → HTML). Frontend shows validation status in job detail.
 
-### 4.3 🔵 Resume reuse within a target
+### 4.3 ~~Resume reuse within a target~~ DONE (already built)
 
-- **Blueprint**: Reference existing resume for similar jobs in same target. Fallback to master doc if variance too high.
-- **Needs input**: Similarity threshold, UX for "reuse this resume" vs "generate fresh", how variance is measured.
-- **Work**: Backend similarity check + resume cloning. Frontend prompt in batch generation flow.
+- Fully implemented in backend: `services/tailor/similarity.py` with Jaccard similarity of keyword hits at 70% threshold. `clone_resume_for_job()` creates zero-cost copy via `source_resume_id`. Frontend batch generation flow checks for reusable resumes before generating fresh.
 
 ### 4.4 🔵 Firecrawl fallback for URL extraction
 

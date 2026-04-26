@@ -84,6 +84,54 @@ export function hasOptimized(value: OptimizedResponse): value is OptimizedDoc {
   return 'id' in value;
 }
 
+// -- Annotations --------------------------------------------------------------
+
+export type AnnotationAction = 'emphasize' | 'exclude' | 'de-emphasize';
+export type AnnotationRefType = 'role' | 'skill' | 'outcome';
+
+export interface Annotation {
+  id: string;
+  action: AnnotationAction;
+  ref_type: AnnotationRefType;
+  ref_value: string;
+  target_label: string | null;
+  reason: string | null;
+}
+
+export interface AnnotationCreate {
+  action: AnnotationAction;
+  ref_type: AnnotationRefType;
+  ref_value: string;
+  target_label: string | undefined;
+  reason: string | undefined;
+}
+
+export const ANNOTATION_ACTIONS: AnnotationAction[] = [
+  'emphasize',
+  'exclude',
+  'de-emphasize',
+];
+
+export const ANNOTATION_REF_TYPES: AnnotationRefType[] = [
+  'role',
+  'skill',
+  'outcome',
+];
+
+export const ANNOTATION_ACTION_LABELS: Record<AnnotationAction, string> = {
+  emphasize: 'Emphasize',
+  exclude: 'Exclude',
+  'de-emphasize': 'De-emphasize',
+};
+
+export const ANNOTATION_REF_TYPE_LABELS: Record<AnnotationRefType, string> = {
+  role: 'Role',
+  skill: 'Skill',
+  outcome: 'Outcome',
+};
+
+// -- Gap labels ---------------------------------------------------------------
+
 export const GAP_KIND_LABELS: Record<string, string> = {
   'role.missing_outcomes': 'Missing outcomes',
   'outcome.missing_metric': 'Missing metric',
