@@ -74,10 +74,6 @@ export default function JobsList({ targetId }: JobsListProps) {
           setActiveTargetId(undefined);
           setFilters(INITIAL_FILTERS);
           router.replace('/fitted/jobs', { scroll: false });
-        } else if (!targetId && activeTargets.length > 0) {
-          // No target selected via URL — default to the first active target
-          setActiveTargetId(activeTargets[0].id);
-          setFilters(TARGET_FILTERS);
         }
       } catch {
         // Non-critical — tabs just won't show
