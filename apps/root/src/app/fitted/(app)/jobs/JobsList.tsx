@@ -27,6 +27,12 @@ const INITIAL_FILTERS: JobsFilterState = {
   search: '',
 };
 
+const TARGET_FILTERS: JobsFilterState = {
+  minScore: '45',
+  status: '',
+  search: '',
+};
+
 const BATCH_POLL_INTERVAL = 3000;
 
 interface JobsListProps {
@@ -34,7 +40,9 @@ interface JobsListProps {
 }
 
 export default function JobsList({ targetId }: JobsListProps) {
-  const [filters, setFilters] = useState<JobsFilterState>(INITIAL_FILTERS);
+  const [filters, setFilters] = useState<JobsFilterState>(
+    targetId ? TARGET_FILTERS : INITIAL_FILTERS
+  );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
@@ -64,6 +72,7 @@ export default function JobsList({ targetId }: JobsListProps) {
         // If no target selected via URL, default to the first active target
         if (!targetId && activeTargets.length > 0) {
           setActiveTargetId(activeTargets[0].id);
+          setFilters(TARGET_FILTERS);
         }
       } catch {
         // Non-critical — tabs just won't show
@@ -139,6 +148,7 @@ export default function JobsList({ targetId }: JobsListProps) {
       setActiveTargetId(id);
       setActivationStatus('idle');
       setSelectedIds(new Set());
+      setFilters(id ? TARGET_FILTERS : INITIAL_FILTERS);
       const url = id ? `/fitted/jobs?target=${id}` : '/fitted/jobs';
       router.replace(url, { scroll: false });
     },
