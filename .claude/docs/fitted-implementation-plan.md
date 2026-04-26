@@ -67,20 +67,18 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 
 ## Tier 5: New Feature Areas (require design decisions + multi-service work)
 
-### 5.1 🔵 Email notifications (Resend)
+### 5.1 ~~Email notifications (Resend)~~ DONE
 
-- **Blueprint**: High-score job alerts via email. Threshold-based, user-configurable, per-target.
-- **Needs input**: Default threshold, notification frequency (immediate? daily digest?), email template design, opt-in/opt-out UX.
-- **Work**: New `services/notify/` backend service. Notification preferences UI. Email templates. Cron/trigger for sending.
+- Backend already fully built: `services/notify.py` with `send_alerts_for_new_jobs()`, dedup via `job_notification_sent` table, per-profile `job_score_threshold`, calls Next.js `/api/email/job-alert` → Resend.
+- Added frontend: Settings page (`/fitted/settings`) with email notification toggle, score threshold input, and save button. Backend router `GET/PATCH /profile/notifications` for reading/updating preferences. Settings link added to sidebar nav.
 
-### 5.2 🔵 SMS notifications (Twilio)
+### 5.2 ~~SMS notifications (Twilio)~~ DONE
 
-- **Blueprint**: Great-fit jobs get a text with deep link. User clicks → logged in → sees job → can generate resume.
-- **Needs input**: Twilio account, phone number collection UX, deep link format, cost per SMS acceptable.
-- **Work**: Twilio integration. Phone number in user profile. SMS templates. Same trigger as email but different channel.
+- Backend already fully built: `services/notify.py` with `send_sms_alerts_for_new_jobs()`, Twilio SDK integration, per-profile `sms_notifications_enabled`, `sms_score_threshold`, `sms_daily_limit`, `phone_number`, daily rate limiting, deep links.
+- Added frontend: Settings page includes SMS notification toggle, phone number input, score threshold, daily limit controls. Same backend router handles all notification preferences.
 
 ### 5.3 🔵 v2 LLM-powered scoring
 
-- **Blueprint**: Claude API-powered scoring to supplement/replace keyword matching
-- **Needs input**: Which model, scoring prompt design, how it integrates with keyword scoring (replace or blend), cost implications.
-- **Work**: LLM scoring service. Score caching. UI to show LLM vs keyword scores.
+- **What exists**: On-demand LLM analysis (`POST /analysis/{job_id}`) using Claude Sonnet, with full scorecard (skills matched/missing, seniority fit, domain fit, recommendation). Anthropic client with prompt caching and cost logging. Frontend "Analyze" button in JobDetailPanel.
+- **What's missing**: Automatic LLM scoring in the polling pipeline. Currently `score_job()` uses keyword matching only; v2 would run LLM scoring on new jobs (all or above a keyword threshold).
+- **Needs input**: Cost-per-job budget (Claude call per polled job adds up), scoring strategy (keyword pre-filter → LLM for top candidates, or LLM replaces keywords), score blending (weighted average vs LLM override), caching/batch strategy.

@@ -8,6 +8,7 @@ import {
   Target,
   User,
   BarChart3,
+  Settings,
   Menu,
   X,
   LogOut,
@@ -49,6 +50,12 @@ const NAV_ITEMS: (SidebarItem & { href: string })[] = [
     label: 'Insights',
     href: '/fitted/insights',
     icon: <BarChart3 className='size-4' aria-hidden />,
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    href: '/fitted/settings',
+    icon: <Settings className='size-4' aria-hidden />,
   },
 ];
 
