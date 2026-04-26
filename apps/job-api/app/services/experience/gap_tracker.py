@@ -26,7 +26,7 @@ GAP_WEIGHTS: dict[GapKind, int] = {
 
 
 def _pct_to_tier(pct: float) -> GapTier:
-    if pct >= 50:
+    if pct >= 45:
         return "red"
     if pct >= 25:
         return "yellow"

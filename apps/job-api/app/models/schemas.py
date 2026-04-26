@@ -62,7 +62,17 @@ class PollResult(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    status: Literal["new", "saved", "applied", "rejected", "archived", "resume_draft"]
+    status: Literal[
+        "new",
+        "saved",
+        "resume_draft",
+        "resume_ready",
+        "applied",
+        "interviewing",
+        "offer",
+        "rejected",
+        "archived",
+    ]
     note: str | None = Field(default=None, max_length=1000)
 
 

@@ -343,9 +343,9 @@ export default function DashboardPage() {
               aria-label='Document completeness'
             />
 
-            {gapHealth.gap_pct >= 50 && (
+            {gapHealth.gap_pct >= 45 && (
               <Alert variant='warning'>
-                Resume generation is blocked until gaps are below 50%. Fill in
+                Resume generation is blocked until gaps are below 45%. Fill in
                 missing outcomes and metrics to unlock it.
               </Alert>
             )}
