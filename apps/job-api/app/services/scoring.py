@@ -34,36 +34,110 @@ def _keyword_in_text(keyword: str, text: str) -> bool:
 
 
 # Canonical keyword → common variations found in JDs.
-_KEYWORD_ALIASES: dict[str, list[str]] = {
+_KEYWORD_ALIASES_RAW: dict[str, list[str]] = {
+    # Frontend frameworks
     "react": ["reactjs", "react.js"],
-    "node.js": ["nodejs", "node"],
     "next.js": ["nextjs", "next"],
     "nuxt.js": ["nuxtjs", "nuxt"],
     "vue.js": ["vuejs", "vue"],
     "angular": ["angularjs", "angular.js"],
+    "svelte": ["sveltekit"],
+    "remix": ["remix.run"],
+    # Languages
     "typescript": ["ts"],
-    "javascript": ["js"],
+    "javascript": ["js", "ecmascript"],
+    "python": ["py"],
+    "golang": ["go"],
+    "ruby": ["rb"],
+    "c++": ["cpp"],
+    "c#": ["csharp", "c sharp", "dotnet", ".net"],
+    # Backend / runtime
+    "node.js": ["nodejs", "node"],
+    "express": ["expressjs", "express.js"],
+    "fastapi": ["fast api"],
+    "django": ["djangorestframework", "drf"],
+    "ruby on rails": ["rails", "ror"],
+    # Databases
     "postgresql": ["postgres", "psql"],
     "mongodb": ["mongo"],
-    "graphql": ["gql"],
+    "mysql": ["mariadb"],
+    "redis": ["valkey"],
+    "elasticsearch": ["opensearch", "elastic"],
+    # DevOps / cloud
     "kubernetes": ["k8s"],
-    "ci/cd": ["ci cd", "cicd"],
-    "c++": ["cpp"],
-    "c#": ["csharp", "c sharp"],
-    "ruby on rails": ["rails", "ror"],
+    "docker": ["containerization", "containers"],
+    "terraform": ["opentofu", "iac"],
+    "ci/cd": ["ci cd", "cicd", "continuous integration", "continuous delivery"],
     "amazon web services": ["aws"],
-    "google cloud platform": ["gcp"],
+    "google cloud platform": ["gcp", "google cloud"],
+    "microsoft azure": ["azure"],
+    # APIs / data
+    "graphql": ["gql"],
+    "rest": ["restful", "rest api"],
+    # Testing
+    "playwright": ["pw"],
+    "cypress": ["cy"],
+    "jest": ["vitest"],
+    # Build tools
+    "webpack": ["wp"],
+    "tailwind css": ["tailwindcss", "tailwind"],
+    # Concepts
     "machine learning": ["ml"],
     "artificial intelligence": ["ai"],
+    "design system": ["design systems", "component library"],
+    "accessibility": ["a11y", "wcag", "aria"],
+    "server-side rendering": ["ssr"],
+    "static site generation": ["ssg"],
+    "internationalization": ["i18n"],
+    "observability": ["o11y"],
 }
+
+# Version-stripping regex: "React 18" → "react", "Python 3.11" → "python"
+_VERSION_RE = re.compile(r"\s+\d[\d.]*$")
+
+
+def _strip_version(keyword: str) -> str:
+    """Remove trailing version numbers from a keyword."""
+    return _VERSION_RE.sub("", keyword)
+
+
+# Build bidirectional alias lookup: alias → canonical, canonical → [aliases]
+_KEYWORD_ALIASES: dict[str, list[str]] = {}
+_ALIAS_TO_CANONICAL: dict[str, str] = {}
+
+for _canonical, _aliases in _KEYWORD_ALIASES_RAW.items():
+    _key = _canonical.lower()
+    _KEYWORD_ALIASES[_key] = [a.lower() for a in _aliases]
+    for _alias in _aliases:
+        _ALIAS_TO_CANONICAL[_alias.lower()] = _key
 
 
 def _keyword_or_alias_in_text(keyword: str, text: str) -> bool:
-    """Check if a keyword or any of its aliases match in the text."""
-    if _keyword_in_text(keyword, text):
+    """Check if a keyword or any of its aliases match in the text.
+
+    Supports bidirectional lookup: if the keyword IS an alias, resolves
+    to its canonical form first. Also strips version numbers.
+    """
+    kw_lower = _strip_version(keyword).lower()
+
+    if _keyword_in_text(kw_lower, text):
         return True
-    aliases = _KEYWORD_ALIASES.get(keyword.lower(), [])
-    return any(_keyword_in_text(alias, text) for alias in aliases)
+
+    # Direct aliases (canonical → variants)
+    aliases = _KEYWORD_ALIASES.get(kw_lower, [])
+    if any(_keyword_in_text(alias, text) for alias in aliases):
+        return True
+
+    # Reverse lookup (alias → canonical → other aliases)
+    canonical = _ALIAS_TO_CANONICAL.get(kw_lower)
+    if canonical:
+        if _keyword_in_text(canonical, text):
+            return True
+        for alias in _KEYWORD_ALIASES.get(canonical, []):
+            if alias != kw_lower and _keyword_in_text(alias, text):
+                return True
+
+    return False
 
 
 def _count_keyword_occurrences(keyword: str, text: str) -> int:
@@ -71,11 +145,17 @@ def _count_keyword_occurrences(keyword: str, text: str) -> int:
 
     Returns capped at 3 — diminishing returns beyond repeated mentions.
     """
-    kw_lower = keyword.lower()
-    count = text.lower().count(kw_lower)
+    kw_lower = _strip_version(keyword).lower()
+    text_lower = text.lower()
+    count = text_lower.count(kw_lower)
     if count == 0:
         for alias in _KEYWORD_ALIASES.get(kw_lower, []):
-            count += text.lower().count(alias.lower())
+            count += text_lower.count(alias)
+        # Also check reverse lookup
+        if count == 0:
+            canonical = _ALIAS_TO_CANONICAL.get(kw_lower)
+            if canonical:
+                count += text_lower.count(canonical)
     return min(3, count)
 
 
