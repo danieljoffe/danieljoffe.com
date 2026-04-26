@@ -304,35 +304,41 @@ These are hard rules the system enforces:
 - [x] Keyword scoring v1
 - [x] Poller with stale detection
 - [x] Job CRUD + status management
-- [x] Admin dashboard (needs migration to user-facing)
+- [x] Admin dashboard (migrated to user-facing at `/fitted`)
 - [x] Supabase schema (jobs, sources, status log, experience, cost log)
 - [x] Experience services (prose, optimized, chunks, conversation, gap tracker)
 - [x] LLM + embeddings client scaffolding
 - [x] JWT admin auth
-- [ ] LLM wired into the API (in progress, #185 other session)
-- [ ] LLM job analysis / scorecard + recommendation
-- [ ] Job targets (reference JD extraction, master doc derivation, scoring profile merge)
-- [ ] Target-suggested cloud (derived from master document)
-- [ ] Resume tailoring pipeline
-- [ ] Resume reuse within targets (reference existing resume for similar jobs)
-- [ ] .docx rendering
-- [ ] ATS format linter
-- [ ] Batch generation flow (default 5, warning above, background processing)
-- [ ] Draft → free-text edit → approve → export flow
-- [ ] Manual JD entry (paste URL, cascade: HTTP → Firecrawl → warn)
-- [ ] Job URL validation (redirects, banned sites, content verification)
-- [ ] User-facing auth (Supabase Auth, magic link)
-- [ ] Onboarding flow (three paths: resume+role, resume only, from scratch)
-- [ ] Resume upload → master document parsing/merge
-- [ ] Master document gap tracking + visual health indicator
-- [ ] 45% gap gate on resume generation
-- [ ] Expanded status lifecycle (resume_draft, resume_ready, interviewing)
-- [ ] Insights panel (velocity, target comparison, skill frequency, funnel)
-- [ ] Email notifications (Resend, threshold-based)
-- [ ] SMS notifications (Twilio, deep link to job)
-- [ ] Experience annotations (per-target emphasis/exclusion in prose doc)
-- [ ] Firecrawl fallback (#407)
-- [ ] Cover letter generation (future, shared renderer)
+- [x] LLM wired into the API (Anthropic client with prompt caching + cost logging)
+- [x] LLM job analysis / scorecard + recommendation (on-demand via Analyze button)
+- [x] Job targets (reference JD extraction, master doc derivation, scoring profile merge)
+- [x] Target-suggested cloud (derived from master document, "Suggest" button on targets page)
+- [x] Resume tailoring pipeline (JD + optimized doc + target emphasis → structured JSON)
+- [x] Resume reuse within targets (Jaccard similarity at 70%, clone via source_resume_id)
+- [x] .docx rendering (individual download + bulk zip export)
+- [x] ATS format linter (deterministic post-render validation)
+- [x] Batch generation flow (max 20 via Pydantic, warning >5, disabled >20)
+- [x] Draft → free-text edit → approve → export flow (ResumeEditor with approve/download)
+- [x] Manual JD entry (paste URL, cascade: HTTP → Firecrawl → warn)
+- [x] Job URL validation (format, redirects, banned sites, content verification)
+- [x] User-facing auth (Supabase Auth, magic link)
+- [x] Onboarding flow (three paths: resume+role, resume only, from scratch)
+- [x] Resume upload → master document parsing/merge (auto-derive on upload)
+- [x] Master document gap tracking + visual health indicator (dashboard health card)
+- [x] 45% gap gate on resume generation
+- [x] Expanded status lifecycle (new, saved, resume_draft, resume_ready, applied, interviewing, offer, rejected, archived)
+- [x] Insights panel (velocity, target comparison, skill frequency, funnel)
+- [x] Email notifications (Resend, threshold-based, settings UI)
+- [x] SMS notifications (Twilio, deep link, phone/threshold/daily limit settings)
+- [x] Experience annotations (CRUD API + profile page management UI)
+- [x] Action history / status timeline per job
+- [x] Per-resume LLM cost metadata (cost, tokens, model, latency in ResumeEditor)
+- [x] Prose editor (view/edit/save/save+derive on dashboard)
+- [x] Derived document viewer (experience + skills on dashboard)
+- [x] Settings page (notification preferences at /fitted/settings)
+- [ ] v2 LLM-powered scoring (infrastructure ready, pipeline integration needs design decisions)
+- [ ] Firecrawl fallback (#407, backend cascade exists, needs Firecrawl API key)
+- [ ] Cover letter generation (future, shared renderer, document_type param in schema)
 - [ ] Multi-target UI (target switcher, cross-target insights)
 - [ ] Per-target resume templates (future, one default template for v1)
 
