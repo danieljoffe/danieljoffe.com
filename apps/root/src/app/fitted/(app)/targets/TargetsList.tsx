@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
@@ -108,8 +108,30 @@ export default function TargetsList() {
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center py-20'>
-        <Spinner size='lg' aria-label='Loading targets' />
+      <div className='flex flex-col gap-6' aria-label='Loading targets'>
+        <div className='flex items-center justify-between'>
+          <Skeleton width={120} height={28} />
+          <Skeleton variant='rectangular' width={110} height={36} />
+        </div>
+        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} padding='none'>
+              <CardContent className='p-4 flex flex-col gap-3'>
+                <Skeleton width='70%' size='lg' />
+                <div className='flex gap-4'>
+                  <Skeleton width={90} size='sm' />
+                  <Skeleton width={80} size='sm' />
+                </div>
+                <Skeleton width={130} size='sm' />
+                <div className='flex gap-2 pt-1'>
+                  <Skeleton variant='rectangular' width={80} height={32} />
+                  <Skeleton variant='rectangular' width={80} height={32} />
+                  <Skeleton variant='rectangular' width={60} height={32} />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
