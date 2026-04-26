@@ -1,7 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, RefreshCw, Sparkles } from 'lucide-react';
+import {
+  Upload,
+  RefreshCw,
+  Sparkles,
+  FileText,
+  Pencil,
+  Save,
+  X,
+} from 'lucide-react';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
@@ -23,8 +31,15 @@ import type {
   GapTier,
   OptimizedDoc,
   OptimizedResponse,
+  ProseDoc,
+  ProseResponse,
 } from './types';
-import { GAP_KIND_LABELS, GAP_KIND_WEIGHTS, hasOptimized } from './types';
+import {
+  GAP_KIND_LABELS,
+  GAP_KIND_WEIGHTS,
+  hasOptimized,
+  hasProse,
+} from './types';
 
 // -- Helpers ------------------------------------------------------------------
 
@@ -70,16 +85,21 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [optimized, setOptimized] = useState<OptimizedDoc | null>(null);
   const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
+  const [prose, setProse] = useState<ProseDoc | null>(null);
   const [deriving, setDeriving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     try {
-      const [optRes, ghRes] = await Promise.all([
+      const [optRes, ghRes, proseRes] = await Promise.all([
         fetch('/api/career/experience/optimized'),
         fetch('/api/career/experience/gap-health'),
+        fetch('/api/career/experience/prose'),
       ]);
 
       if (optRes.ok) {
@@ -89,6 +109,11 @@ export default function ProfilePage() {
 
       if (ghRes.ok) {
         setGapHealth((await ghRes.json()) as GapHealthResult);
+      }
+
+      if (proseRes.ok) {
+        const body = (await proseRes.json()) as ProseResponse;
+        setProse(hasProse(body) ? body : null);
       }
     } catch {
       toast({ variant: 'error', title: 'Failed to load profile data' });
@@ -168,6 +193,48 @@ export default function ProfilePage() {
       setDeriving(false);
     }
   }, [fetchData, toast]);
+
+  const handleEditStart = useCallback(() => {
+    setDraft(prose?.content ?? '');
+    setEditing(true);
+  }, [prose]);
+
+  const handleEditCancel = useCallback(() => {
+    setEditing(false);
+    setDraft('');
+  }, []);
+
+  const handleSaveProse = useCallback(async () => {
+    if (!draft.trim()) {
+      toast({ variant: 'error', title: 'Document cannot be empty' });
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch('/api/career/experience/prose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: draft }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          (data as Record<string, string> | null)?.detail ??
+            `Save failed (${res.status})`
+        );
+      }
+      toast({ variant: 'success', title: 'Master document saved' });
+      setEditing(false);
+      await fetchData();
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title: err instanceof Error ? err.message : 'Save failed',
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, fetchData, toast]);
 
   // Hidden file input shared by all upload triggers
   const fileInput = (
@@ -358,6 +425,116 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Master Document */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-center justify-between'>
+            <CardTitle>
+              <FileText className='mr-2 inline size-5' aria-hidden />
+              Master Document
+            </CardTitle>
+            {prose && (
+              <Text variant='meta' as='span'>
+                v{prose.version} &middot;{' '}
+                {new Date(prose.created_at).toLocaleDateString()}
+              </Text>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-3'>
+          {editing ? (
+            <>
+              <textarea
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
+                placeholder='Paste or type your master experience document here...'
+              />
+              <div className='flex items-center gap-2'>
+                <Button
+                  name='profile-save-prose'
+                  variant='primary'
+                  size='sm'
+                  onClick={handleSaveProse}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <>
+                      <Spinner size='sm' aria-label='Saving' />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className='size-4' aria-hidden />
+                      <span>Save</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  name='profile-save-derive'
+                  variant='outline'
+                  size='sm'
+                  onClick={async () => {
+                    await handleSaveProse();
+                    if (draft.trim()) await handleDerive();
+                  }}
+                  disabled={saving || deriving}
+                >
+                  {saving || deriving ? (
+                    <>
+                      <Spinner size='sm' aria-label='Processing' />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className='size-4' aria-hidden />
+                      <span>Save &amp; Re-derive</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  name='profile-cancel-edit'
+                  variant='outline'
+                  size='sm'
+                  onClick={handleEditCancel}
+                  disabled={saving}
+                >
+                  <X className='size-4' aria-hidden />
+                  <span>Cancel</span>
+                </Button>
+              </div>
+            </>
+          ) : prose ? (
+            <>
+              <div className='max-h-[400px] overflow-y-auto rounded-md border border-border bg-surface-secondary p-3'>
+                <pre className='whitespace-pre-wrap font-mono text-sm text-text-primary'>
+                  {prose.content}
+                </pre>
+              </div>
+              <div className='flex items-center gap-2'>
+                <Button
+                  name='profile-edit-prose'
+                  variant='outline'
+                  size='sm'
+                  onClick={handleEditStart}
+                >
+                  <Pencil className='size-4' aria-hidden />
+                  <span>Edit</span>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className='flex flex-col items-center gap-3 py-6'>
+              <FileText className='size-10 text-text-tertiary' aria-hidden />
+              <Text variant='body' as='p' className='text-center'>
+                No master document yet. Upload a resume or start a conversation
+                to create one.
+              </Text>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Experience */}
       {payload.roles.length > 0 && (

@@ -32,6 +32,21 @@ export interface OptimizedPayload {
   outcomes: Outcome[];
 }
 
+export interface ProseDoc {
+  id: string;
+  user_id: string | null;
+  version: number;
+  content: string;
+  created_at: string;
+}
+
+// API returns either the record or `{ prose: null }` when empty.
+export type ProseResponse = ProseDoc | { prose: null };
+
+export function hasProse(value: ProseResponse): value is ProseDoc {
+  return 'id' in value;
+}
+
 export type OptimizedDocSource = 'llm' | 'user_edit';
 
 export interface OptimizedDoc {
