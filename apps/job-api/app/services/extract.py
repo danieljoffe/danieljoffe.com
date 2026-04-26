@@ -13,7 +13,12 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
-from app.services.jsonld import _extract_job_postings, _get_location, _get_str
+from app.services.jsonld import (
+    _extract_job_postings,
+    _format_salary,
+    _get_location,
+    _get_str,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +40,25 @@ class ExtractionResult(BaseModel):
     company_name: str | None = None
     location: str | None = None
     description_html: str | None = None
+    salary_text: str | None = None
     tier: str = "none"  # "jsonld" | "html_meta" | "firecrawl" | "none"
     warnings: list[str] = []
+
+
+# Matches common salary range patterns like "$120,000 - $150,000/yr", "$120k-$150k"
+_SALARY_RE = re.compile(
+    r"\$\s*[\d,]+(?:\.\d+)?[kK]?"  # first amount
+    r"\s*[-–—to]+\s*"  # separator
+    r"\$?\s*[\d,]+(?:\.\d+)?[kK]?"  # second amount
+    r"(?:\s*/?\s*(?:yr|year|annually|per\s+year|hr|hour|hourly|per\s+hour))?"  # unit
+    , re.I
+)
+
+
+def extract_salary_from_text(text: str) -> str | None:
+    """Best-effort salary extraction from plain text via regex."""
+    m = _SALARY_RE.search(text)
+    return m.group(0).strip() if m else None
 
 
 def _company_from_domain(url: str) -> str:
@@ -76,11 +98,16 @@ def _extract_from_jsonld(html: str) -> ExtractionResult | None:
     if isinstance(org, dict):
         company = _get_str(org, "name")
 
+    salary = _format_salary(posting)
+    if not salary and description:
+        salary = extract_salary_from_text(description)
+
     return ExtractionResult(
         title=title,
         company_name=company or None,
         location=location,
         description_html=description or None,
+        salary_text=salary,
         tier="jsonld",
     )
 

@@ -1,12 +1,22 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { cn } from '@/lib/cn';
 import BatchActionBar from './BatchActionBar';
 import JobsFilter from './JobsFilter';
 import JobsListTable from './JobsListTable';
 import type { JobsFilterState } from './types';
+
+interface TargetTab {
+  id: string;
+  label: string;
+  is_active: boolean;
+}
 
 const INITIAL_FILTERS: JobsFilterState = {
   minScore: '',
@@ -26,8 +36,111 @@ export default function JobsList({ targetId }: JobsListProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [targets, setTargets] = useState<TargetTab[]>([]);
+  const [targetsLoading, setTargetsLoading] = useState(true);
+  const [activeTargetId, setActiveTargetId] = useState<string | undefined>(
+    targetId
+  );
+  const [activationStatus, setActivationStatus] = useState<string>('idle');
+  const activatingRef = useRef<Set<string>>(new Set());
   const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const { toast } = useToast();
+  const router = useRouter();
+
+  // Fetch targets for tab bar
+  useEffect(() => {
+    async function fetchTargets() {
+      try {
+        const res = await fetch('/api/targets');
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          targets: TargetTab[];
+        };
+        const activeTargets = data.targets.filter(t => t.is_active);
+        setTargets(activeTargets);
+        // If no target selected via URL, default to the first active target
+        if (!targetId && activeTargets.length > 0) {
+          setActiveTargetId(activeTargets[0].id);
+        }
+      } catch {
+        // Non-critical — tabs just won't show
+      } finally {
+        setTargetsLoading(false);
+      }
+    }
+    fetchTargets();
+  }, [targetId]);
+
+  // Check target activation status when switching tabs
+  useEffect(() => {
+    if (!activeTargetId) return;
+
+    let cancelled = false;
+    const statusPollRef: {
+      current: ReturnType<typeof setInterval> | undefined;
+    } = { current: undefined };
+
+    async function checkStatus() {
+      try {
+        const res = await fetch(`/api/targets/${activeTargetId}/status`);
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as {
+          activation_status: string;
+          jobs_count: number;
+        };
+        if (cancelled) return;
+
+        setActivationStatus(data.activation_status);
+
+        if (data.activation_status === 'ready') {
+          // Jobs are ready — refresh the table
+          if (statusPollRef.current) clearInterval(statusPollRef.current);
+          setRefreshKey(k => k + 1);
+        } else if (
+          data.activation_status === 'idle' &&
+          !activatingRef.current.has(activeTargetId!)
+        ) {
+          // Target hasn't been activated yet — trigger activation
+          activatingRef.current.add(activeTargetId!);
+          await fetch(`/api/targets/${activeTargetId}/activate`, {
+            method: 'POST',
+          });
+          // Start polling for status updates
+          statusPollRef.current = setInterval(checkStatus, 3000);
+        } else if (
+          data.activation_status === 'deriving' ||
+          data.activation_status === 'polling'
+        ) {
+          // Pipeline in progress — keep polling
+          if (!statusPollRef.current) {
+            statusPollRef.current = setInterval(checkStatus, 3000);
+          }
+        } else if (data.activation_status === 'error') {
+          if (statusPollRef.current) clearInterval(statusPollRef.current);
+        }
+      } catch {
+        // Non-critical — will retry on next interval or tab switch
+      }
+    }
+
+    checkStatus();
+
+    return () => {
+      cancelled = true;
+      if (statusPollRef.current) clearInterval(statusPollRef.current);
+    };
+  }, [activeTargetId]);
+
+  const handleTabChange = useCallback(
+    (id: string | undefined) => {
+      setActiveTargetId(id);
+      setActivationStatus('idle');
+      setSelectedIds(new Set());
+      const url = id ? `/fitted/jobs?target=${id}` : '/fitted/jobs';
+      router.replace(url, { scroll: false });
+    },
+    [router]
+  );
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -193,6 +306,70 @@ export default function JobsList({ targetId }: JobsListProps) {
         Jobs
       </Heading>
 
+      {targetsLoading ? (
+        <div className='flex gap-1 border-b border-border pb-px'>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} variant='rectangular' width={90} height={36} />
+          ))}
+        </div>
+      ) : targets.length > 0 ? (
+        <div className='border-b border-border'>
+          <div role='tablist' className='flex gap-1 overflow-x-auto'>
+            <button
+              role='tab'
+              aria-selected={activeTargetId === undefined}
+              onClick={() => handleTabChange(undefined)}
+              className={cn(
+                'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+                activeTargetId === undefined
+                  ? 'border-brand-500 text-brand-500'
+                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
+              )}
+            >
+              All Jobs
+            </button>
+            {targets.map(target => (
+              <button
+                key={target.id}
+                role='tab'
+                aria-selected={activeTargetId === target.id}
+                onClick={() => handleTabChange(target.id)}
+                className={cn(
+                  'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+                  activeTargetId === target.id
+                    ? 'border-brand-500 text-brand-500'
+                    : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
+                )}
+              >
+                {target.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {activeTargetId && activationStatus === 'deriving' && (
+        <div className='flex items-center gap-2 text-sm text-text-secondary'>
+          <Spinner size='sm' aria-label='Analyzing target' />
+          <span>Analyzing target profile...</span>
+        </div>
+      )}
+
+      {activeTargetId && activationStatus === 'polling' && (
+        <div className='flex items-center gap-2 text-sm text-text-secondary'>
+          <Spinner size='sm' aria-label='Searching for jobs' />
+          <span>Searching for matching jobs...</span>
+        </div>
+      )}
+
+      {activeTargetId && activationStatus === 'error' && (
+        <div className='text-sm text-error'>
+          Failed to load jobs for this target. Try switching tabs to retry.
+        </div>
+      )}
+
       <JobsFilter filters={filters} onChange={setFilters} />
 
       <JobsListTable
@@ -200,7 +377,7 @@ export default function JobsList({ targetId }: JobsListProps) {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         refreshKey={refreshKey}
-        targetId={targetId}
+        targetId={activeTargetId}
       />
 
       <BatchActionBar

@@ -8,15 +8,17 @@ from supabase import Client
 
 from app.config import settings
 from app.models.schemas import PollResult
+from app.models.targets import JobTarget
 from app.seed.keyword_config import keyword_config
 from app.services import notify
 from app.services.ashby import fetch_ashby_jobs
+from app.services.extract import extract_salary_from_text
 from app.services.firecrawl import fetch_firecrawl_jobs
 from app.services.greenhouse import fetch_board_jobs
 from app.services.jsonld import fetch_jsonld_jobs
 from app.services.lever import fetch_lever_jobs
 from app.services.sanitize import sanitize_html
-from app.services.scoring import score_job
+from app.services.scoring import score_job, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
 from app.services.target_scoring import score_and_upsert as target_score_and_upsert
@@ -144,6 +146,12 @@ def _title_matches_any_role(title: str) -> bool:
     return any(kw.lower() in title_lower for kw in all_titles)
 
 
+def _title_matches_target(title: str, keywords: list[str]) -> bool:
+    """Check if a job title matches any of the target's search keywords."""
+    title_lower = title.lower()
+    return any(kw.lower() in title_lower for kw in keywords)
+
+
 def _is_us_location(location: str | None) -> bool:
     """Return True if the location looks like it's in the US (or is ambiguous).
 
@@ -221,6 +229,7 @@ async def _poll_one_source(
                 continue
 
             score_result = score_job(job.title, job.content, keyword_config)
+            salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
 
             rows_to_upsert.append(
                 {
@@ -235,6 +244,7 @@ async def _poll_one_source(
                     "score": score_result.score,
                     "score_breakdown": score_result.breakdown.model_dump(),
                     "greenhouse_updated_at": job.updated_at,
+                    "salary_text": salary,
                 }
             )
 
@@ -374,6 +384,136 @@ async def poll_all_sources(supabase: Client) -> PollResult:
         result.updated_jobs += s["updated"]
         result.archived_jobs += s["archived"]
         if s["error"]:
+            result.errors.append(s["error"])
+
+    return result
+
+
+# ---- Target-specific polling ------------------------------------------------
+
+
+async def _poll_one_source_for_target(
+    source: dict[str, Any], supabase: Client, target: JobTarget
+) -> dict[str, Any]:
+    """Poll a single source, filtering by target keywords and scoring against target profile."""
+    summary: dict[str, Any] = {"polled": False, "new": 0, "updated": 0, "error": None}
+    company_name: str = source.get("company_name", "?")
+
+    try:
+        board_token: str = source["board_token"]
+        source_id: str = source["id"]
+        provider: str = source.get("provider", "greenhouse")
+
+        fetcher = FETCHERS.get(provider)
+        if not fetcher:
+            summary["error"] = f"{company_name}: unknown provider '{provider}'"
+            return summary
+
+        jobs = await fetcher(board_token)
+        summary["polled"] = True
+
+        rows_to_upsert: list[dict[str, Any]] = []
+        for job in jobs:
+            if not _title_matches_target(job.title, target.search_keywords):
+                continue
+            if not _is_us_location(job.location_name):
+                continue
+
+            # Global score (for "All Jobs" tab)
+            score_result = score_job(job.title, job.content, keyword_config)
+            salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
+
+            rows_to_upsert.append(
+                {
+                    "external_id": job.external_id,
+                    "source_id": source_id,
+                    "title": job.title,
+                    "company_name": company_name,
+                    "location": job.location_name,
+                    "department": job.department,
+                    "description_html": sanitize_html(job.content),
+                    "absolute_url": job.absolute_url,
+                    "score": score_result.score,
+                    "score_breakdown": score_result.breakdown.model_dump(),
+                    "greenhouse_updated_at": job.updated_at,
+                    "salary_text": salary,
+                }
+            )
+
+        if settings.validate_poll_urls and rows_to_upsert:
+            rows_to_upsert = await _validate_rows(rows_to_upsert)
+
+        if rows_to_upsert:
+            upsert_resp = await asyncio.to_thread(
+                supabase.table("job_postings")
+                .upsert(rows_to_upsert, on_conflict="source_id,external_id")
+                .execute
+            )
+            for raw_row in upsert_resp.data or []:
+                data = cast(dict[str, Any], raw_row)
+                if data.get("created_at") == data.get("updated_at"):
+                    summary["new"] += 1
+                else:
+                    summary["updated"] += 1
+
+            # Score all upserted jobs against the target
+            async def _score_one(row_data: dict[str, Any]) -> None:
+                try:
+                    await asyncio.to_thread(
+                        target_score_and_upsert,
+                        supabase,
+                        job_posting_id=row_data["id"],
+                        title=row_data.get("title", ""),
+                        description_html=row_data.get("description_html", ""),
+                        target=target,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Target scoring failed for job %s", row_data.get("id")
+                    )
+
+            await asyncio.gather(
+                *(_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
+            )
+
+    except Exception:
+        logger.exception("Poll failed for %s (target %s)", company_name, target.label)
+        summary["error"] = f"{company_name}: poll failed"
+
+    return summary
+
+
+async def poll_sources_for_target(supabase: Client, target: JobTarget) -> PollResult:
+    """Poll all enabled sources, filtering for jobs matching a target's search keywords."""
+    if not target.search_keywords:
+        return PollResult(
+            sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0,
+            errors=["Target has no search keywords"],
+        )
+
+    sources_query = supabase.table("job_sources").select("*").eq("enabled", True)
+    sources_resp = await asyncio.to_thread(sources_query.execute)
+    sources = sources_resp.data or []
+
+    semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
+
+    async def _worker(raw_source: Any) -> dict[str, Any]:
+        async with semaphore:
+            return await _poll_one_source_for_target(
+                cast(dict[str, Any], raw_source), supabase, target
+            )
+
+    summaries = await asyncio.gather(*(_worker(s) for s in sources))
+
+    result = PollResult(
+        sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
+    )
+    for s in summaries:
+        if s["polled"]:
+            result.sources_polled += 1
+        result.new_jobs += s["new"]
+        result.updated_jobs += s["updated"]
+        if s.get("error"):
             result.errors.append(s["error"])
 
     return result

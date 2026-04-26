@@ -32,12 +32,7 @@ export default function TargetCard({
   const keywordCount = countKeywords(target);
 
   return (
-    <Card
-      padding='none'
-      className={
-        target.is_active ? 'ring-2 ring-brand-500 border-brand-500' : undefined
-      }
-    >
+    <Card padding='none'>
       <CardContent className='p-4 flex flex-col gap-3'>
         <div className='flex items-start justify-between gap-2'>
           <Link

@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.models.schemas import JobTargetScore, ScoreBreakdown
+from app.models.schemas import ScoreBreakdown
 from app.models.targets import (
     CategoryProfile,
     DomainProfile,
@@ -261,33 +261,43 @@ def test_list_jobs_with_target_overlays_target_score(
 
     from app.dependencies import get_supabase, verify_api_key_or_session
     from app.main import app
-    from app.routers import jobs as jobs_router
+
+    def _fluent_mock(data: list[dict]) -> MagicMock:
+        """Mock that chains any query method and returns data on .execute()."""
+        m = MagicMock()
+        m.execute.return_value = MagicMock(data=data, count=len(data))
+        for method in ("select", "eq", "gte", "in_", "ilike", "order", "range"):
+            getattr(m, method).return_value = m
+        return m
+
+    ts_mock = _fluent_mock([{
+        "job_posting_id": "job-1",
+        "score": 85,
+        "score_breakdown": {
+            "role_titles": 0, "technologies": 12.0, "domain_skills": 0,
+            "seniority_signals": 0, "negative": 0,
+        },
+    }])
+
+    jp_mock = _fluent_mock([{
+        "id": "job-1",
+        "external_id": "ext-1",
+        "source_id": "src-1",
+        "title": "Frontend Engineer",
+        "company_name": "Acme",
+        "location": "Remote",
+        "department": None,
+        "absolute_url": "https://example.com/job-1",
+        "score": 50,
+        "score_breakdown": None,
+        "status": "new",
+        "first_seen_at": None,
+        "created_at": "2026-04-26T00:00:00Z",
+    }])
 
     supabase = MagicMock()
-    # list query
-    supabase.table.return_value.select.return_value.order.return_value.range.return_value.execute.return_value = MagicMock(
-        data=[{"id": "job-1", "score": 50, "score_breakdown": None}],
-        count=1,
-    )
-
-    # Mock get_target_scores at the router module level
-    target_score = JobTargetScore(
-        id="ts-1",
-        job_posting_id="job-1",
-        target_id="target-1",
-        score=85,
-        score_breakdown=ScoreBreakdown(
-            role_titles=0, technologies=12.0, domain_skills=0,
-            seniority_signals=0, negative=0,
-        ),
-        matched_keywords=["React"],
-        excluded=False,
-        created_at=datetime.now(UTC),
-        updated_at=datetime.now(UTC),
-    )
-    monkeypatch.setattr(
-        jobs_router, "get_target_scores",
-        lambda *_a, **_kw: {"job-1": target_score},
+    supabase.table.side_effect = (
+        lambda name: ts_mock if name == "job_target_scores" else jp_mock
     )
 
     app.dependency_overrides[get_supabase] = lambda: supabase
@@ -298,7 +308,7 @@ def test_list_jobs_with_target_overlays_target_score(
         resp = tc.get("/jobs?target_id=target-1")
         assert resp.status_code == 200
         data = resp.json()
-        # Score should be overlaid with target score
+        # Score should be overlaid with target score (85), not global score (50)
         assert data["postings"][0]["score"] == 85
     finally:
         app.dependency_overrides.clear()

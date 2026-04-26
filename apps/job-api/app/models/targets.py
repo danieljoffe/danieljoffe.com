@@ -61,6 +61,8 @@ class JobTarget(BaseModel):
     label: str
     scoring_profile: ScoringProfile
     resume_emphasis: ResumeEmphasis
+    search_keywords: list[str] = Field(default_factory=list)
+    activation_status: str = "idle"
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -82,12 +84,15 @@ class TargetCreate(BaseModel):
     label: str = Field(min_length=1, max_length=200)
     scoring_profile: ScoringProfile = Field(default_factory=ScoringProfile)
     resume_emphasis: ResumeEmphasis = Field(default_factory=ResumeEmphasis)
+    search_keywords: list[str] = Field(default_factory=list)
 
 
 class TargetUpdate(BaseModel):
     label: str | None = Field(default=None, min_length=1, max_length=200)
     scoring_profile: ScoringProfile | None = None
     resume_emphasis: ResumeEmphasis | None = None
+    search_keywords: list[str] | None = None
+    activation_status: str | None = None
     is_active: bool | None = None
 
 
@@ -99,6 +104,13 @@ class ReferenceJDAdd(BaseModel):
 
 
 # ---- Suggestion shapes (LLM output) ----------------------------------------
+
+
+class DerivedTarget(BaseModel):
+    """LLM output: scoring profile + search keywords derived from a target."""
+
+    scoring_profile: ScoringProfile
+    search_keywords: list[str] = Field(default_factory=list)
 
 
 class TargetSuggestion(BaseModel):

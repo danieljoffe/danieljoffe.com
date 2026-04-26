@@ -5,10 +5,12 @@ triggers LLM-powered profile derivation and merges the result into the
 target's composite scoring profile.
 """
 
+import asyncio
 import logging
 from typing import Any, cast
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from postgrest.types import CountMethod
 from supabase import Client
 
 from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_session
@@ -21,12 +23,18 @@ from app.models.targets import (
     TargetSuggestions,
     TargetUpdate,
 )
+from app.models.schemas import PollResult
 from app.services.experience import optimized
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
+from app.services.poller import poll_sources_for_target
 from app.services.scoring import strip_html
 from app.services.targets import crud
 from app.services.targets.derive_profile import DEFAULT_PURPOSE, derive_profile_from_jd
+from app.services.targets.derive_profile_from_label import (
+    DEFAULT_PURPOSE as DERIVE_LABEL_PURPOSE,
+    derive_profile_from_label,
+)
 from app.services.targets.merge import merge_profiles
 from app.services.targets.suggest import (
     DEFAULT_PURPOSE as SUGGEST_PURPOSE,
@@ -41,6 +49,74 @@ router = APIRouter(
     tags=["targets"],
     dependencies=[Depends(verify_api_key_or_session)],
 )
+
+
+# ---- Background pipeline for activation ------------------------------------
+
+
+async def _activate_pipeline(
+    supabase: Client, llm: LLMClient, target: JobTarget
+) -> None:
+    """Derive profile (if needed) then poll jobs for a target. Runs as BackgroundTask."""
+    target_id = target.id
+    needs_derive = not target.search_keywords or not target.scoring_profile.categories
+
+    try:
+        if needs_derive:
+            # Step 1: derive profile + search keywords from label
+            crud.update(
+                supabase, target_id, TargetUpdate(activation_status="deriving")
+            )
+            doc = optimized.get_latest(supabase, user_id=None)
+            if doc is None:
+                logger.warning("No OptimizedDoc for target %s — skipping derive", target_id)
+                crud.update(
+                    supabase, target_id, TargetUpdate(activation_status="error")
+                )
+                return
+
+            derived, result = await derive_profile_from_label(
+                llm, label=target.label, payload=doc.payload
+            )
+            cost_log.record(
+                supabase,
+                user_id=None,
+                purpose=DERIVE_LABEL_PURPOSE,
+                result=result,
+                metadata={"target_id": target_id, "trigger": "activation"},
+            )
+            updated = crud.update(
+                supabase,
+                target_id,
+                TargetUpdate(
+                    scoring_profile=derived.scoring_profile,
+                    search_keywords=derived.search_keywords,
+                ),
+            )
+            if updated is None:
+                logger.error("Failed to update target %s after derive", target_id)
+                return
+            target = updated
+
+        # Step 2: poll jobs using the target's search keywords
+        crud.update(
+            supabase, target_id, TargetUpdate(activation_status="polling")
+        )
+        poll_result = await poll_sources_for_target(supabase, target)
+        logger.info(
+            "Activation pipeline for target %s: %d sources, %d new jobs",
+            target_id,
+            poll_result.sources_polled,
+            poll_result.new_jobs,
+        )
+        crud.update(
+            supabase, target_id, TargetUpdate(activation_status="ready")
+        )
+    except Exception:
+        logger.exception("Activation pipeline failed for target %s", target_id)
+        crud.update(
+            supabase, target_id, TargetUpdate(activation_status="error")
+        )
 
 
 # ---- Target CRUD -----------------------------------------------------------
@@ -119,12 +195,98 @@ async def update_target(
 @router.post("/{target_id}/activate")
 async def activate_target(
     target_id: str,
+    background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
 ) -> JobTarget:
     target = crud.set_active(supabase, user_id=None, target_id=target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
+
+    background_tasks.add_task(
+        _activate_pipeline, supabase, llm, target
+    )
     return target
+
+
+@router.post("/{target_id}/derive-profile")
+async def derive_target_profile(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> JobTarget:
+    """Derive a scoring profile + search keywords from the target label + user experience."""
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+
+    doc = optimized.get_latest(supabase, user_id=None)
+    if doc is None:
+        raise HTTPException(status_code=404, detail="No experience profile found")
+
+    derived, result = await derive_profile_from_label(
+        llm, label=target.label, payload=doc.payload
+    )
+    cost_log.record(
+        supabase,
+        user_id=None,
+        purpose=DERIVE_LABEL_PURPOSE,
+        result=result,
+        metadata={"target_id": target_id},
+    )
+
+    updated = crud.update(
+        supabase,
+        target_id,
+        TargetUpdate(
+            scoring_profile=derived.scoring_profile,
+            search_keywords=derived.search_keywords,
+        ),
+    )
+    if updated is None:
+        raise HTTPException(status_code=500, detail="Failed to update target")
+    return updated
+
+
+@router.post("/{target_id}/poll-jobs")
+async def poll_jobs_for_target(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> PollResult:
+    """Poll all job sources, filtering for jobs matching this target's search keywords."""
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+    if not target.search_keywords:
+        raise HTTPException(
+            status_code=422,
+            detail="Target has no search keywords — derive a profile first",
+        )
+    return await poll_sources_for_target(supabase, target)
+
+
+@router.get("/{target_id}/status")
+async def get_target_status(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    """Return activation status and job count for a target."""
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+
+    count_resp = (
+        supabase.table("job_target_scores")
+        .select("id", count=CountMethod.exact)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    jobs_count = count_resp.count or 0
+
+    return {
+        "activation_status": target.activation_status,
+        "jobs_count": jobs_count,
+    }
 
 
 @router.delete("/{target_id}")
@@ -177,7 +339,7 @@ async def create_target_from_posting(
     jd_text = strip_html(description_html)
     if len(jd_text) >= 50:
         try:
-            extracted_profile, result = await derive_profile_from_jd(
+            derived, result = await derive_profile_from_jd(
                 llm, jd_text=jd_text
             )
             cost_log.record(
@@ -197,14 +359,17 @@ async def create_target_from_posting(
                 target_id=target.id,
                 jd_text=jd_text,
                 jd_url=absolute_url,
-                extracted_profile=extracted_profile,
+                extracted_profile=derived.scoring_profile,
             )
 
-            # Update target with the derived profile
+            # Update target with the derived profile + search keywords
             crud.update(
                 supabase,
                 target.id,
-                TargetUpdate(scoring_profile=extracted_profile),
+                TargetUpdate(
+                    scoring_profile=derived.scoring_profile,
+                    search_keywords=derived.search_keywords,
+                ),
             )
         except Exception:
             logger.exception(
@@ -245,7 +410,7 @@ async def add_reference_jd(
         body.jd_url = vr.final_url
 
     # Derive profile from JD via LLM
-    extracted_profile, result = await derive_profile_from_jd(
+    derived, result = await derive_profile_from_jd(
         llm, jd_text=body.jd_text
     )
     cost_log.record(
@@ -262,18 +427,21 @@ async def add_reference_jd(
         target_id=target_id,
         jd_text=body.jd_text,
         jd_url=body.jd_url,
-        extracted_profile=extracted_profile,
+        extracted_profile=derived.scoring_profile,
     )
 
     # Merge all reference JD profiles into composite
     all_ref_jds = crud.list_reference_jds(supabase, target_id)
     composite = merge_profiles([jd.extracted_profile for jd in all_ref_jds])
 
-    # Update target with merged profile
+    # Update target with merged profile + search keywords from latest derivation
     updated = crud.update(
         supabase,
         target_id,
-        TargetUpdate(scoring_profile=composite),
+        TargetUpdate(
+            scoring_profile=composite,
+            search_keywords=derived.search_keywords,
+        ),
     )
     if updated is None:
         raise HTTPException(status_code=500, detail="Failed to update target profile")

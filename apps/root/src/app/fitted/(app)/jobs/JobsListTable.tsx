@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
@@ -37,7 +37,8 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant={variant}>{status.replace(/_/g, ' ')}</Badge>;
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string | null): string {
+  if (!dateStr) return '\u2014';
   const diff = Date.now() - new Date(dateStr).getTime();
   const days = Math.floor(diff / 86400000);
   if (days === 0) return 'today';
@@ -49,7 +50,7 @@ const COLUMNS: { key: JobsSortColumn; label: string }[] = [
   { key: 'score', label: 'Score' },
   { key: 'title', label: 'Title' },
   { key: 'company_name', label: 'Company' },
-  { key: 'created_at', label: 'Date' },
+  { key: 'created_at', label: 'Posted' },
 ];
 
 export default function JobsListTable({
@@ -116,8 +117,15 @@ export default function JobsListTable({
 
   if (loading && postings.length === 0) {
     return (
-      <div className='flex justify-center py-12'>
-        <Spinner aria-label='Loading jobs' />
+      <div className='space-y-3' aria-label='Loading jobs'>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className='flex items-center gap-3 px-3 py-2'>
+            <Skeleton variant='rectangular' width={40} height={24} />
+            <Skeleton width='40%' size='sm' />
+            <Skeleton width='20%' size='sm' />
+            <Skeleton width='10%' size='sm' />
+          </div>
+        ))}
       </div>
     );
   }
@@ -168,6 +176,12 @@ export default function JobsListTable({
                   </button>
                 </th>
               ))}
+              <th
+                scope='col'
+                className='px-3 py-2 font-medium text-text-secondary'
+              >
+                Salary
+              </th>
               <th
                 scope='col'
                 className='px-3 py-2 font-medium text-text-secondary'
@@ -234,7 +248,10 @@ export default function JobsListTable({
                   </td>
                   <td className='px-3 py-2'>{job.company_name}</td>
                   <td className='px-3 py-2 text-text-tertiary'>
-                    {timeAgo(job.first_seen_at)}
+                    {timeAgo(job.greenhouse_updated_at ?? job.first_seen_at)}
+                  </td>
+                  <td className='px-3 py-2 text-text-tertiary'>
+                    {job.salary_text ?? '\u2014'}
                   </td>
                   <td className='px-3 py-2'>
                     <StatusBadge status={job.status} />
@@ -245,7 +262,7 @@ export default function JobsListTable({
                 </tr>
                 {expandedId === job.id && (
                   <tr>
-                    <td colSpan={7} className='p-0'>
+                    <td colSpan={8} className='p-0'>
                       <JobDetailPanel
                         posting={job}
                         onDelete={() => {

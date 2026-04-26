@@ -11,7 +11,7 @@ Follows the same pattern as app/services/experience/derive.py:
 """
 
 from app.models.llm import LLMResult, Message, ModelId
-from app.models.targets import ScoringProfile
+from app.models.targets import DerivedTarget
 from app.services.llm.client import LLMClient, complete_json
 
 DEFAULT_MODEL: ModelId = "claude-sonnet-4-6"
@@ -19,38 +19,46 @@ DEFAULT_PURPOSE = "target.derive_profile"
 
 SYSTEM_PROMPT = """\
 You are a job-search scoring-profile generator. Given a job description,
-extract a scoring profile as JSON matching this exact schema:
+extract a scoring profile and search keywords as JSON matching this exact schema:
 
 {
-  "categories": {
-    "core_skills": {
-      "keywords": {"React": 3, "TypeScript": 3},
-      "weight": 2.0
+  "scoring_profile": {
+    "categories": {
+      "core_skills": {
+        "keywords": {"React": 3, "TypeScript": 3},
+        "weight": 2.0
+      },
+      "secondary_skills": {
+        "keywords": {"Node.js": 2, "GraphQL": 2},
+        "weight": 1.0
+      },
+      "nice_to_have": {
+        "keywords": {"Kubernetes": 1, "Terraform": 1},
+        "weight": 0.5
+      }
     },
-    "secondary_skills": {
-      "keywords": {"Node.js": 2, "GraphQL": 2},
-      "weight": 1.0
+    "seniority": {
+      "level": "senior",
+      "signals": ["5+ years", "lead", "mentor"]
     },
-    "nice_to_have": {
-      "keywords": {"Kubernetes": 1, "Terraform": 1},
+    "domain": {
+      "signals": ["fintech", "payments"],
       "weight": 0.5
+    },
+    "negative": {
+      "keywords": ["junior", "intern", "entry-level"],
+      "weight": -10
     }
   },
-  "seniority": {
-    "level": "senior",
-    "signals": ["5+ years", "lead", "mentor"]
-  },
-  "domain": {
-    "signals": ["fintech", "payments"],
-    "weight": 0.5
-  },
-  "negative": {
-    "keywords": ["junior", "intern", "entry-level"],
-    "weight": -10
-  }
+  "search_keywords": [
+    "frontend engineer",
+    "front-end engineer",
+    "ui engineer",
+    "react developer"
+  ]
 }
 
-Rules:
+Rules for scoring_profile:
 - "core_skills": skills explicitly listed as required. Weight each keyword 2-3.
 - "secondary_skills": preferred or implied skills. Weight each keyword 1-2.
 - "nice_to_have": bonus skills mentioned in passing. Weight each keyword 1.
@@ -63,7 +71,16 @@ Rules:
 - Use canonical skill names (React not reactjs, TypeScript not TS, Node.js \
 not nodejs).
 - Only extract what the JD explicitly supports. Do not invent skills.
-- Return ONLY the JSON object. No prose, no markdown, no code fences."""
+
+Rules for search_keywords:
+- 5-15 lowercase role title variations derived from the JD's role title.
+- Include common synonyms and abbreviations (e.g., "frontend engineer", \
+"front-end developer", "ui engineer").
+- These are used for substring matching against job titles, so be broad.
+- Do NOT include technology names — only role titles.
+- Do NOT include seniority prefixes — the system handles seniority separately.
+
+Return ONLY the JSON object. No prose, no markdown, no code fences."""
 
 
 async def derive_profile_from_jd(
@@ -72,17 +89,17 @@ async def derive_profile_from_jd(
     jd_text: str,
     model: ModelId = DEFAULT_MODEL,
     purpose: str = DEFAULT_PURPOSE,
-) -> tuple[ScoringProfile, LLMResult]:
-    """Extract a ScoringProfile from a job description.
+) -> tuple[DerivedTarget, LLMResult]:
+    """Extract a ScoringProfile + search keywords from a job description.
 
-    Returns (profile, result) so callers can log cost.
+    Returns (derived, result) so callers can log cost.
     """
     return await complete_json(
         llm,
         model=model,
         system=SYSTEM_PROMPT,
         messages=[Message(role="user", content=jd_text)],
-        schema=ScoringProfile,
+        schema=DerivedTarget,
         purpose=purpose,
         cache_system=True,
     )

@@ -31,6 +31,8 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
         label=row["label"],
         scoring_profile=ScoringProfile.model_validate(row.get("scoring_profile") or {}),
         resume_emphasis=ResumeEmphasis.model_validate(row.get("resume_emphasis") or {}),
+        search_keywords=row.get("search_keywords") or [],
+        activation_status=row.get("activation_status") or "idle",
         is_active=row["is_active"],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
@@ -54,11 +56,12 @@ def _parse_ref_jd(row: dict[str, Any]) -> TargetReferenceJD:
 
 
 def create(supabase: Client, user_id: str | None, payload: TargetCreate) -> JobTarget:
-    row = {
+    row: dict[str, Any] = {
         "user_id": user_id,
         "label": payload.label,
         "scoring_profile": payload.scoring_profile.model_dump(),
         "resume_emphasis": payload.resume_emphasis.model_dump(),
+        "search_keywords": payload.search_keywords,
     }
     resp = supabase.table(TARGETS_TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
@@ -111,6 +114,10 @@ def update(
         updates["scoring_profile"] = payload.scoring_profile.model_dump()
     if payload.resume_emphasis is not None:
         updates["resume_emphasis"] = payload.resume_emphasis.model_dump()
+    if payload.search_keywords is not None:
+        updates["search_keywords"] = payload.search_keywords
+    if payload.activation_status is not None:
+        updates["activation_status"] = payload.activation_status
     if payload.is_active is not None:
         updates["is_active"] = payload.is_active
 

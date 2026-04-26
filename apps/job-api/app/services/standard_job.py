@@ -12,3 +12,4 @@ class StandardJob:
     content: str
     updated_at: str
     absolute_url: str
+    salary_text: str | None = None

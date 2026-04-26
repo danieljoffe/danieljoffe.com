@@ -22,6 +22,8 @@ export interface JobPosting {
   score: number;
   score_breakdown: Record<string, number> | null;
   status: string;
+  salary_text: string | null;
+  greenhouse_updated_at: string | null;
   first_seen_at: string;
   created_at: string;
 }

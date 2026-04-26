@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from app.models.targets import ScoringProfile
+from app.models.targets import DerivedTarget
 from app.services.llm.mock import MockLLMClient
 from app.services.targets.derive_profile import (
     DEFAULT_MODEL,
@@ -13,54 +13,62 @@ from app.services.targets.derive_profile import (
 )
 
 
-def _sample_profile_json() -> str:
+def _sample_derived_json() -> str:
     return json.dumps(
         {
-            "categories": {
-                "core_skills": {
-                    "keywords": {"React": 3, "TypeScript": 3},
-                    "weight": 2.0,
+            "scoring_profile": {
+                "categories": {
+                    "core_skills": {
+                        "keywords": {"React": 3, "TypeScript": 3},
+                        "weight": 2.0,
+                    },
+                    "secondary_skills": {
+                        "keywords": {"Node.js": 2, "GraphQL": 2},
+                        "weight": 1.0,
+                    },
+                    "nice_to_have": {
+                        "keywords": {"Kubernetes": 1},
+                        "weight": 0.5,
+                    },
                 },
-                "secondary_skills": {
-                    "keywords": {"Node.js": 2, "GraphQL": 2},
-                    "weight": 1.0,
+                "seniority": {
+                    "level": "senior",
+                    "signals": ["5+ years", "lead"],
                 },
-                "nice_to_have": {
-                    "keywords": {"Kubernetes": 1},
+                "domain": {
+                    "signals": ["fintech"],
                     "weight": 0.5,
                 },
+                "negative": {
+                    "keywords": ["junior", "intern"],
+                    "weight": -10,
+                },
             },
-            "seniority": {
-                "level": "senior",
-                "signals": ["5+ years", "lead"],
-            },
-            "domain": {
-                "signals": ["fintech"],
-                "weight": 0.5,
-            },
-            "negative": {
-                "keywords": ["junior", "intern"],
-                "weight": -10,
-            },
+            "search_keywords": [
+                "frontend engineer",
+                "front-end engineer",
+                "ui engineer",
+            ],
         }
     )
 
 
 @pytest.fixture
 def llm() -> MockLLMClient:
-    return MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_profile_json()})
+    return MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_derived_json()})
 
 
 @pytest.mark.asyncio
-async def test_derive_returns_scoring_profile(llm: MockLLMClient):
-    profile, result = await derive_profile_from_jd(
+async def test_derive_returns_derived_target(llm: MockLLMClient):
+    derived, result = await derive_profile_from_jd(
         llm, jd_text="Senior Frontend Engineer at Acme Corp..."
     )
-    assert isinstance(profile, ScoringProfile)
-    assert profile.categories["core_skills"].keywords["React"] == 3
-    assert profile.seniority.level == "senior"
-    assert "fintech" in profile.domain.signals
-    assert "junior" in profile.negative.keywords
+    assert isinstance(derived, DerivedTarget)
+    assert derived.scoring_profile.categories["core_skills"].keywords["React"] == 3
+    assert derived.scoring_profile.seniority.level == "senior"
+    assert "fintech" in derived.scoring_profile.domain.signals
+    assert "junior" in derived.scoring_profile.negative.keywords
+    assert "frontend engineer" in derived.search_keywords
 
 
 @pytest.mark.asyncio
@@ -94,15 +102,15 @@ async def test_derive_returns_result_with_cost(llm: MockLLMClient):
 @pytest.mark.asyncio
 async def test_derive_model_override():
     client = MockLLMClient(
-        scripted={"custom.purpose": _sample_profile_json()}
+        scripted={"custom.purpose": _sample_derived_json()}
     )
-    profile, _ = await derive_profile_from_jd(
+    derived, _ = await derive_profile_from_jd(
         client,
         jd_text="Some JD text...",
         model="claude-haiku-4-5",
         purpose="custom.purpose",
     )
-    assert isinstance(profile, ScoringProfile)
+    assert isinstance(derived, DerivedTarget)
     assert client.calls[0]["model"] == "claude-haiku-4-5"
 
 

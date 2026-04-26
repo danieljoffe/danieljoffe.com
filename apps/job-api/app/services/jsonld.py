@@ -102,6 +102,45 @@ def _get_str(obj: dict[str, object], key: str) -> str:
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 
+def _format_salary(posting: dict[str, object]) -> str | None:
+    """Extract baseSalary from a JSON-LD JobPosting and format as readable text."""
+    base = posting.get("baseSalary")
+    if not base:
+        return None
+
+    if isinstance(base, (int, float)):
+        return f"${base:,.0f}"
+
+    if not isinstance(base, dict):
+        return None
+
+    currency = str(base.get("currency", "USD"))
+    symbol = "$" if currency == "USD" else f"{currency} "
+    value = base.get("value")
+
+    if isinstance(value, (int, float)):
+        return f"{symbol}{value:,.0f}"
+
+    if isinstance(value, dict):
+        min_val = value.get("minValue")
+        max_val = value.get("maxValue")
+        unit = str(value.get("unitText", "")).upper()
+        suffix = "/yr" if unit == "YEAR" else "/hr" if unit == "HOUR" else ""
+
+        if min_val is not None and max_val is not None:
+            return f"{symbol}{float(min_val):,.0f} – {symbol}{float(max_val):,.0f}{suffix}"
+        if min_val is not None:
+            return f"From {symbol}{float(min_val):,.0f}{suffix}"
+        if max_val is not None:
+            return f"Up to {symbol}{float(max_val):,.0f}{suffix}"
+        # Single value field
+        single = value.get("value")
+        if single is not None:
+            return f"{symbol}{float(single):,.0f}{suffix}"
+
+    return None
+
+
 async def fetch_jsonld_jobs(careers_url: str) -> list[StandardJob]:
     """Fetch a careers page and extract jobs from JSON-LD markup."""
     client = get_http_client()
@@ -146,6 +185,7 @@ async def fetch_jsonld_jobs(careers_url: str) -> list[StandardJob]:
                 content=clean_desc,
                 updated_at=_get_str(posting, "datePosted"),
                 absolute_url=url,
+                salary_text=_format_salary(posting),
             )
         )
 

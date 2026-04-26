@@ -23,13 +23,11 @@ from app.services.extract import (
     ExtractionResult,
     _extract_from_firecrawl,
     extract_job_from_html,
+    extract_salary_from_text,
 )
 from app.services.sanitize import sanitize_html
-from app.services.scoring import score_job
-from app.services.target_scoring import (
-    bulk_score_for_target,
-    get_target_scores,
-)
+from app.services.scoring import score_job, strip_html
+from app.services.target_scoring import bulk_score_for_target
 from app.services.target_scoring import (
     score_and_upsert as target_score_and_upsert,
 )
@@ -50,6 +48,88 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key_or_session)],
 )
 
+_JP_SELECT_COLS = (
+    "id, external_id, source_id, title, company_name, location, department, "
+    "absolute_url, score, score_breakdown, status, salary_text, "
+    "greenhouse_updated_at, first_seen_at, created_at"
+)
+
+
+def _list_jobs_for_target(
+    supabase: Client,
+    *,
+    target_id: str,
+    offset: int,
+    page: int,
+    page_size: int,
+    sort: str,
+    ascending: bool,
+    min_score: int | None,
+    status: str | None,
+    company: str | None,
+    search: str | None,
+) -> dict[str, Any]:
+    """List jobs for a target view, sorted/paginated by target-specific scores.
+
+    Queries job_target_scores first so pagination reflects target relevance,
+    then fetches posting details and overlays the target scores.
+    """
+    # Step 1: Get qualifying target scores (score >= min_score, not excluded)
+    ts_query = (
+        supabase.table("job_target_scores")
+        .select("job_posting_id, score, score_breakdown")
+        .eq("target_id", target_id)
+        .eq("excluded", False)
+    )
+    if min_score is not None:
+        ts_query = ts_query.gte("score", min_score)
+    ts_resp = ts_query.execute()
+    ts_rows = cast(list[dict[str, Any]], ts_resp.data or [])
+
+    if not ts_rows:
+        return {"postings": [], "total": 0, "page": page, "page_size": page_size}
+
+    score_lookup = {r["job_posting_id"]: r for r in ts_rows}
+    qualifying_ids = list(score_lookup.keys())
+
+    # Step 2: Fetch posting details for qualifying IDs
+    jp_query = (
+        supabase.table("job_postings")
+        .select(_JP_SELECT_COLS)
+        .in_("id", qualifying_ids)
+    )
+    if status:
+        jp_query = jp_query.eq("status", status)
+    if company:
+        jp_query = jp_query.eq("company_name", company)
+    if search:
+        jp_query = jp_query.ilike("title", f"%{search}%")
+
+    jp_resp = jp_query.execute()
+    postings = list(jp_resp.data or [])
+
+    # Overlay target scores onto posting rows
+    for posting in postings:
+        p = cast(dict[str, Any], posting)
+        ts = score_lookup.get(p["id"])
+        if ts:
+            p["score"] = ts["score"]
+            p["score_breakdown"] = ts.get("score_breakdown")
+
+    # Sort by requested field (score is now the target score)
+    def _sort_key(p: Any) -> Any:
+        val = cast(dict[str, Any], p).get(sort)
+        if val is None:
+            return 0 if sort == "score" else ""
+        return val
+
+    postings.sort(key=_sort_key, reverse=not ascending)
+
+    total = len(postings)
+    postings = postings[offset : offset + page_size]
+
+    return {"postings": postings, "total": total, "page": page, "page_size": page_size}
+
 
 @router.get("")
 async def list_jobs(
@@ -69,15 +149,33 @@ async def list_jobs(
     offset = (page - 1) * page_size
     ascending = order == "asc"
 
+    # Default min_score for target views — omit low-relevance jobs
+    if target_id and min_score is None:
+        min_score = 45
+
+    # Target view: sort/paginate by target-specific scores
+    if target_id:
+        return _list_jobs_for_target(
+            supabase,
+            target_id=target_id,
+            offset=offset,
+            page=page,
+            page_size=page_size,
+            sort=sort,
+            ascending=ascending,
+            min_score=min_score,
+            status=status,
+            company=company,
+            search=search,
+        )
+
+    # Global view
     query = supabase.table("job_postings").select(
-        "id, external_id, source_id, title, company_name, location, department, "
-        "absolute_url, score, score_breakdown, status, first_seen_at, created_at",
+        _JP_SELECT_COLS,
         count=CountMethod.exact,
     )
 
-    if min_score is not None and not target_id:
-        # min_score filter on global score only when no target selected;
-        # target-specific min_score filtering happens post-merge below.
+    if min_score is not None:
         query = query.gte("score", min_score)
     if status:
         query = query.eq("status", status)
@@ -89,37 +187,8 @@ async def list_jobs(
     query = query.order(sort, desc=not ascending).range(offset, offset + page_size - 1)
     resp = query.execute()
 
-    postings = list(resp.data or [])
-
-    # Overlay target-specific scores when a target is selected (#502)
-    if target_id and postings:
-        job_ids = [cast(dict[str, Any], p)["id"] for p in postings]
-        scores = get_target_scores(supabase, target_id, job_ids)
-        for posting in postings:
-            p = cast(dict[str, Any], posting)
-            ts = scores.get(p["id"])
-            if ts:
-                p["score"] = ts.score
-                p["score_breakdown"] = (
-                    ts.score_breakdown.model_dump() if ts.score_breakdown else None
-                )
-
-        # Re-sort by target score if sorting by score
-        if sort == "score":
-            postings.sort(
-                key=lambda p: cast(dict[str, Any], p).get("score", 0),
-                reverse=not ascending,
-            )
-
-        # Apply min_score filter post-merge for target scoring
-        if min_score is not None:
-            postings = [
-                p for p in postings
-                if cast(dict[str, Any], p).get("score", 0) >= min_score
-            ]
-
     return {
-        "postings": postings,
+        "postings": list(resp.data or []),
         "total": resp.count or 0,
         "page": page,
         "page_size": page_size,
@@ -225,6 +294,11 @@ async def add_manual_job(
     # Score the job
     score_result = score_job(title, description_html, keyword_config)
 
+    # Extract salary from extraction result or description
+    salary = extraction.salary_text
+    if not salary and description_html:
+        salary = extract_salary_from_text(strip_html(description_html))
+
     # Upsert into job_postings
     row = {
         "external_id": external_id,
@@ -238,6 +312,7 @@ async def add_manual_job(
         "score": score_result.score,
         "score_breakdown": score_result.breakdown.model_dump(),
         "greenhouse_updated_at": datetime.now(UTC).isoformat(),
+        "salary_text": salary,
     }
 
     resp_db = (
@@ -288,6 +363,45 @@ async def rescore_for_target(
 
     scored = bulk_score_for_target(supabase, target)
     return {"target_id": target_id, "jobs_scored": scored}
+
+
+@router.post("/backfill-salary")
+async def backfill_salary(
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    """One-off: extract salary from description_html for jobs missing salary_text."""
+    batch_size = 500
+    offset = 0
+    updated = 0
+
+    while True:
+        resp = (
+            supabase.table("job_postings")
+            .select("id, description_html")
+            .is_("salary_text", "null")
+            .range(offset, offset + batch_size - 1)
+            .execute()
+        )
+        rows = cast(list[dict[str, Any]], resp.data or [])
+        if not rows:
+            break
+
+        for row in rows:
+            html = row.get("description_html") or ""
+            if not html:
+                continue
+            salary = extract_salary_from_text(strip_html(html))
+            if salary:
+                supabase.table("job_postings").update(
+                    {"salary_text": salary}
+                ).eq("id", row["id"]).execute()
+                updated += 1
+
+        if len(rows) < batch_size:
+            break
+        offset += batch_size
+
+    return {"updated": updated}
 
 
 @router.delete("/{posting_id}")

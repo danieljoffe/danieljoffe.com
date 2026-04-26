@@ -107,16 +107,26 @@ def test_per_keyword_weights_respected():
 
 
 def test_category_weight_multiplier():
-    # Same keyword, but different category weights
-    profile_high = _profile(core={"React": 3}, core_weight=2.0)
-    profile_low = _profile(core={"React": 3}, core_weight=0.5)
+    # A core_skills match (high category weight) should contribute more to
+    # the score than a secondary_skills match (low category weight) when
+    # both categories are present in the same profile.
+    profile = _profile(
+        core={"React": 3},
+        core_weight=2.0,
+        secondary={"Docker": 3},
+        secondary_weight=0.5,
+    )
 
-    jd = "<p>React developer needed.</p>"
+    # Only core matches → large fraction of max possible
+    result_core = score_job_with_profile(
+        "Engineer", "<p>React developer.</p>", profile
+    )
+    # Only secondary matches → small fraction of max possible
+    result_secondary = score_job_with_profile(
+        "Engineer", "<p>Docker expert.</p>", profile
+    )
 
-    result_high = score_job_with_profile("Engineer", jd, profile_high)
-    result_low = score_job_with_profile("Engineer", jd, profile_low)
-
-    assert result_high.score > result_low.score
+    assert result_core.score > result_secondary.score
 
 
 def test_seniority_signals_contribute():
