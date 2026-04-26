@@ -19,6 +19,7 @@ interface UseAdminTableFetchOptions<S extends string> {
 export function useAdminTableFetch<T, S extends string>({
   endpoint,
   defaultSort,
+  defaultOrder,
   pageSize = 20,
   dataKey,
   extraParams,
