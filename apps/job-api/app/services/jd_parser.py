@@ -86,6 +86,7 @@ class JDSection:
     name: str
     weight: float
     text: str
+    text_lower: str = ""
 
 
 @dataclass
@@ -144,7 +145,14 @@ def parse_jd(html: str) -> ParsedJD:
     def _flush() -> None:
         text = " ".join(current_texts).strip()
         if text:
-            sections.append(JDSection(name=current_name, weight=current_weight, text=text))
+            sections.append(
+                JDSection(
+                    name=current_name,
+                    weight=current_weight,
+                    text=text,
+                    text_lower=text.lower(),
+                )
+            )
 
     for element in soup.descendants:
         if isinstance(element, NavigableString):
@@ -175,6 +183,7 @@ def parse_jd(html: str) -> ParsedJD:
                     name="default",
                     weight=SECTION_WEIGHTS["default"],
                     text=full_text,
+                    text_lower=full_text.lower(),
                 )
             )
 

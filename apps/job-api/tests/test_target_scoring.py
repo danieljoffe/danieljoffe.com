@@ -28,6 +28,8 @@ from app.services.target_scoring import (
     score_and_upsert,
 )
 
+_BATCH_UPDATE_PATH = "app.services.target_scoring.batch_update_global_scores"
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -147,7 +149,17 @@ def test_score_and_upsert_raises_on_empty_response() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_bulk_score_for_target_scores_all_jobs() -> None:
+def test_bulk_score_for_target_scores_stage1_jobs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """bulk_score_for_target only scores jobs with existing target score rows."""
+    monkeypatch.setattr(_BATCH_UPDATE_PATH, MagicMock())
+
+    # Stage 1 score rows (existing matches for this target)
+    jts_rows = [
+        {"job_posting_id": "job-1"},
+        {"job_posting_id": "job-2"},
+    ]
     jobs = [
         {"id": "job-1", "title": "Senior FE", "description_html": "<p>React</p>"},
         {"id": "job-2", "title": "Staff FE", "description_html": "<p>TypeScript</p>"},
@@ -158,22 +170,24 @@ def test_bulk_score_for_target_scores_all_jobs() -> None:
     ]
 
     supabase = MagicMock()
-    # First call to range returns jobs, second returns empty (end of pagination)
-    supabase.table.return_value.select.return_value.range.return_value.execute.return_value.data = jobs
-    # After first batch, return empty to stop pagination
-    call_count = {"n": 0}
-    original_range = supabase.table.return_value.select.return_value.range
+
+    range_calls = {"n": 0}
 
     def range_side_effect(*args: Any, **kwargs: Any) -> MagicMock:
-        call_count["n"] += 1
+        range_calls["n"] += 1
         mock = MagicMock()
-        if call_count["n"] == 1:
-            mock.execute.return_value.data = jobs
+        if range_calls["n"] == 1:
+            mock.execute.return_value.data = jts_rows
         else:
             mock.execute.return_value.data = []
         return mock
 
-    supabase.table.return_value.select.return_value.range.side_effect = range_side_effect
+    supabase.table.return_value.select.return_value.eq.return_value.range.side_effect = (
+        range_side_effect
+    )
+    supabase.table.return_value.select.return_value.in_.return_value.execute.return_value.data = (
+        jobs
+    )
     supabase.table.return_value.upsert.return_value.execute.return_value.data = upsert_rows
 
     target = _target(core={"React": 3, "TypeScript": 3})
@@ -182,9 +196,11 @@ def test_bulk_score_for_target_scores_all_jobs() -> None:
     assert count == 2
 
 
-def test_bulk_score_for_target_handles_empty_jobs() -> None:
+def test_bulk_score_for_target_handles_no_stage1_jobs() -> None:
+    """Returns 0 when no jobs have stage 1 scores for this target."""
     supabase = MagicMock()
-    supabase.table.return_value.select.return_value.range.return_value.execute.return_value.data = []
+    # No existing target score rows
+    supabase.table.return_value.select.return_value.eq.return_value.range.return_value.execute.return_value.data = []
 
     target = _target(core={"React": 3})
     count = bulk_score_for_target(supabase, target)

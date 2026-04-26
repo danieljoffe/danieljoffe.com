@@ -25,6 +25,7 @@ from app.services.extract import (
     extract_job_from_html,
     extract_salary_from_text,
 )
+from app.services.jd_parser import parse_jd
 from app.services.sanitize import sanitize_html
 from app.services.scoring import strip_html
 from app.services.target_scoring import bulk_score_for_target
@@ -429,6 +430,7 @@ async def add_manual_job(
     # Score against all active targets (stages 1+2 inline for manual entry)
     if posting_id and title:
         active_targets = get_active_target(supabase, user_id=None)
+        parsed = parse_jd(description_html)
         for active_target in active_targets:
             try:
                 target_score_and_upsert(
@@ -437,6 +439,7 @@ async def add_manual_job(
                     title=title,
                     description_html=description_html,
                     target=active_target,
+                    parsed_jd=parsed,
                 )
             except Exception:
                 logger.exception("Target scoring failed for manual job %s", posting_id)

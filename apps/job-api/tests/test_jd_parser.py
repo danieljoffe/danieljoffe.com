@@ -157,6 +157,24 @@ class TestParseJD:
         assert "Company info" in all_text
         assert "React needed" in all_text
 
+    def test_text_lower_populated(self):
+        """Each section's text_lower equals text.lower()."""
+        html = """
+        <h2>Requirements</h2>
+        <p>React and TypeScript Experience</p>
+        <h2>About Us</h2>
+        <p>We Build GREAT Software</p>
+        """
+        result = parse_jd(html)
+        for section in result.sections:
+            assert section.text_lower == section.text.lower()
+
+    def test_text_lower_on_fallback(self):
+        """Fallback single-section path also sets text_lower."""
+        result = parse_jd("<p>React AND TypeScript</p>")
+        assert len(result.sections) == 1
+        assert result.sections[0].text_lower == result.sections[0].text.lower()
+
     def test_multiple_requirements_variants(self):
         """Different heading phrasings for requirements all classify correctly."""
         variants = [

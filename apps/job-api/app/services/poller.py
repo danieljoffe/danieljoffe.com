@@ -14,7 +14,10 @@ from app.models.schemas import PollResult
 from app.models.targets import JobTarget
 from app.services import notify
 from app.services.analysis.analyze import analyze_job
-from app.services.analysis.persistence import persist as persist_analysis
+from app.services.analysis.persistence import (
+    get_cached as get_cached_analysis,
+    persist as persist_analysis,
+)
 from app.services.analysis.scoring import blend_scores, scorecard_to_numeric
 from app.services.ashby import fetch_ashby_jobs
 from app.services.experience.optimized import get_latest as get_latest_optimized
@@ -27,10 +30,12 @@ from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import record as record_llm_cost
 from app.services.sanitize import sanitize_html
+from app.services.jd_parser import parse_jd
 from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
 from app.services.target_scoring import (
+    batch_update_global_scores,
     mark_complete as mark_target_scores_complete,
     score_and_upsert as target_score_and_upsert,
     score_title_and_upsert as target_title_score_and_upsert,
@@ -55,6 +60,7 @@ FETCHERS: dict[str, Fetcher] = {
 }
 
 POLL_CONCURRENCY = 10
+LLM_CONCURRENCY = 3
 
 # Minimum keyword score to trigger LLM analysis during polling.
 # Below this threshold, only keyword scoring is used.
@@ -251,6 +257,31 @@ async def _run_llm_scoring_for_row(
             logger.exception("Failed to mark scores complete for job %s", job_id)
         return
 
+    # Check LLM cache — skip re-analysis if this job was already analyzed
+    try:
+        cached = await asyncio.to_thread(
+            get_cached_analysis, supabase, job_id, None
+        )
+        if cached is not None:
+            llm_score = scorecard_to_numeric(cached.scorecard)
+            blended = blend_scores(current_score, llm_score)
+            await asyncio.to_thread(
+                supabase.table("job_postings")
+                .update(
+                    {
+                        "score": blended,
+                        "llm_score": llm_score,
+                        "llm_analysis_id": cached.id,
+                    }
+                )
+                .eq("id", job_id)
+                .execute
+            )
+            await asyncio.to_thread(mark_target_scores_complete, supabase, job_id)
+            return
+    except Exception:
+        logger.debug("LLM cache check failed for job %s, proceeding with analysis", job_id)
+
     try:
         description_text = strip_html(row_data.get("description_html", ""))
 
@@ -309,7 +340,9 @@ async def _run_llm_scoring_for_row(
 
 
 async def _poll_one_source(
-    source: dict[str, Any], supabase: Client
+    source: dict[str, Any],
+    supabase: Client,
+    optimized_doc: "OptimizedDoc | None" = None,
 ) -> dict[str, Any]:
     """Poll a single job source. Returns a per-source summary dict.
 
@@ -429,15 +462,25 @@ async def _poll_one_source(
                     )
                 )
 
-            # Update global scores after stage 1
-            for raw_row in upsert_resp.data or []:
-                data = cast(dict[str, Any], raw_row)
+            # Update global scores after stage 1 (batched)
+            stage1_ids = [
+                cast(dict[str, Any], r)["id"] for r in upsert_resp.data or []
+            ]
+            if stage1_ids:
                 try:
-                    await asyncio.to_thread(update_global_score, supabase, data["id"])
+                    await asyncio.to_thread(
+                        batch_update_global_scores, supabase, stage1_ids
+                    )
                 except Exception:
-                    logger.exception("Global score update failed for job %s", data.get("id"))
+                    logger.exception("Batch global score update failed after stage 1")
 
             # ---- Stage 2: Full JD scoring per target (async) ----
+            # Pre-parse each JD once, reuse across all targets
+            jd_cache: dict[str, Any] = {}
+            for raw_row in upsert_resp.data or []:
+                rd = cast(dict[str, Any], raw_row)
+                jd_cache[rd["id"]] = parse_jd(rd.get("description_html") or "")
+
             for active_target in active_targets:
 
                 async def _full_score_one(
@@ -451,6 +494,7 @@ async def _poll_one_source(
                             title=row_data.get("title", ""),
                             description_html=row_data.get("description_html", ""),
                             target=target,
+                            parsed_jd=jd_cache.get(row_data["id"]),
                         )
                     except Exception:
                         logger.exception(
@@ -464,27 +508,35 @@ async def _poll_one_source(
                     )
                 )
 
-            # Update global scores after stage 2
-            for raw_row in upsert_resp.data or []:
-                data = cast(dict[str, Any], raw_row)
+            # Update global scores after stage 2 (batched)
+            stage2_ids = [
+                cast(dict[str, Any], r)["id"] for r in upsert_resp.data or []
+            ]
+            if stage2_ids:
                 try:
-                    await asyncio.to_thread(update_global_score, supabase, data["id"])
+                    await asyncio.to_thread(
+                        batch_update_global_scores, supabase, stage2_ids
+                    )
                 except Exception:
-                    logger.exception("Global score update failed for job %s", data.get("id"))
+                    logger.exception("Batch global score update failed after stage 2")
 
-            # ---- Stage 3: LLM scoring for qualified jobs ----
-            optimized_doc = await asyncio.to_thread(
-                get_latest_optimized, supabase, None
-            )
+            # ---- Stage 3: LLM scoring for qualified jobs (concurrent) ----
             if optimized_doc is not None:
                 llm = get_default_llm_client()
-                for raw_row in upsert_resp.data or []:
-                    await _run_llm_scoring_for_row(
-                        supabase,
-                        cast(dict[str, Any], raw_row),
-                        optimized_doc,
-                        llm,
+                llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
+
+                async def _llm_one(row_data: dict[str, Any]) -> None:
+                    async with llm_sem:
+                        await _run_llm_scoring_for_row(
+                            supabase, row_data, optimized_doc, llm
+                        )
+
+                await asyncio.gather(
+                    *(
+                        _llm_one(cast(dict[str, Any], r))
+                        for r in upsert_resp.data or []
                     )
+                )
         else:
             existing_resp = await asyncio.to_thread(existing_query.execute)
 
@@ -548,11 +600,16 @@ async def poll_all_sources(supabase: Client) -> PollResult:
     sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 
+    # Fetch optimized doc once for all sources
+    optimized_doc = await asyncio.to_thread(get_latest_optimized, supabase, None)
+
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
         async with semaphore:
-            return await _poll_one_source(cast(dict[str, Any], raw_source), supabase)
+            return await _poll_one_source(
+                cast(dict[str, Any], raw_source), supabase, optimized_doc
+            )
 
     summaries = await asyncio.gather(*(_worker(s) for s in sources))
 
@@ -575,7 +632,10 @@ async def poll_all_sources(supabase: Client) -> PollResult:
 
 
 async def _poll_one_source_for_target(
-    source: dict[str, Any], supabase: Client, target: JobTarget
+    source: dict[str, Any],
+    supabase: Client,
+    target: JobTarget,
+    optimized_doc: "OptimizedDoc | None" = None,
 ) -> dict[str, Any]:
     """Poll a single source for a specific target. Three-stage pipeline."""
     summary: dict[str, Any] = {"polled": False, "new": 0, "updated": 0, "error": None}
@@ -655,7 +715,12 @@ async def _poll_one_source_for_target(
                 *(_title_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
             )
 
-            # Stage 2: Full JD scoring
+            # Stage 2: Full JD scoring (pre-parse JDs once)
+            jd_cache: dict[str, Any] = {}
+            for raw_row in upsert_resp.data or []:
+                rd = cast(dict[str, Any], raw_row)
+                jd_cache[rd["id"]] = parse_jd(rd.get("description_html") or "")
+
             async def _full_score_one(row_data: dict[str, Any]) -> None:
                 try:
                     await asyncio.to_thread(
@@ -665,6 +730,7 @@ async def _poll_one_source_for_target(
                         title=row_data.get("title", ""),
                         description_html=row_data.get("description_html", ""),
                         target=target,
+                        parsed_jd=jd_cache.get(row_data["id"]),
                     )
                 except Exception:
                     logger.exception(
@@ -675,27 +741,35 @@ async def _poll_one_source_for_target(
                 *(_full_score_one(cast(dict[str, Any], r)) for r in upsert_resp.data or [])
             )
 
-            # Update global scores after stage 2
-            for raw_row in upsert_resp.data or []:
-                data = cast(dict[str, Any], raw_row)
+            # Update global scores after stage 2 (batched)
+            s2_ids = [
+                cast(dict[str, Any], r)["id"] for r in upsert_resp.data or []
+            ]
+            if s2_ids:
                 try:
-                    await asyncio.to_thread(update_global_score, supabase, data["id"])
+                    await asyncio.to_thread(
+                        batch_update_global_scores, supabase, s2_ids
+                    )
                 except Exception:
-                    logger.exception("Global score update failed for job %s", data.get("id"))
+                    logger.exception("Batch global score update failed after stage 2")
 
-            # Stage 3: LLM scoring for qualified jobs
-            optimized_doc = await asyncio.to_thread(
-                get_latest_optimized, supabase, None
-            )
+            # Stage 3: LLM scoring for qualified jobs (concurrent)
             if optimized_doc is not None:
                 llm = get_default_llm_client()
-                for raw_row in upsert_resp.data or []:
-                    await _run_llm_scoring_for_row(
-                        supabase,
-                        cast(dict[str, Any], raw_row),
-                        optimized_doc,
-                        llm,
+                llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
+
+                async def _llm_one_t(row_data: dict[str, Any]) -> None:
+                    async with llm_sem:
+                        await _run_llm_scoring_for_row(
+                            supabase, row_data, optimized_doc, llm
+                        )
+
+                await asyncio.gather(
+                    *(
+                        _llm_one_t(cast(dict[str, Any], r))
+                        for r in upsert_resp.data or []
                     )
+                )
 
     except Exception:
         logger.exception("Poll failed for %s (target %s)", company_name, target.label)
@@ -716,12 +790,15 @@ async def poll_sources_for_target(supabase: Client, target: JobTarget) -> PollRe
     sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 
+    # Fetch optimized doc once for all sources
+    optimized_doc = await asyncio.to_thread(get_latest_optimized, supabase, None)
+
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
         async with semaphore:
             return await _poll_one_source_for_target(
-                cast(dict[str, Any], raw_source), supabase, target
+                cast(dict[str, Any], raw_source), supabase, target, optimized_doc
             )
 
     summaries = await asyncio.gather(*(_worker(s) for s in sources))

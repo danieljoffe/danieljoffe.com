@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import re
 
 from bs4 import BeautifulSoup
 
 from app.models.schemas import ScoreBreakdown, ScoreResult
 from app.models.targets import ScoringProfile
+from app.services.jd_parser import ParsedJD, parse_jd
 
 _WHITESPACE_RE = re.compile(r"\s+")
 
@@ -140,13 +143,13 @@ def _keyword_or_alias_in_text(keyword: str, text: str) -> bool:
     return False
 
 
-def _count_keyword_occurrences(keyword: str, text: str) -> int:
-    """Count how many times a keyword (or alias) appears in text.
+def _count_keyword_occurrences(keyword: str, text_lower: str) -> int:
+    """Count how many times a keyword (or alias) appears in pre-lowered text.
 
     Returns capped at 3 — diminishing returns beyond repeated mentions.
+    Caller must pass already-lowered text for performance.
     """
     kw_lower = _strip_version(keyword).lower()
-    text_lower = text.lower()
     count = text_lower.count(kw_lower)
     if count == 0:
         for alias in _KEYWORD_ALIASES.get(kw_lower, []):
@@ -192,6 +195,8 @@ def score_job_with_profile(
     title: str,
     description_html: str,
     profile: ScoringProfile,
+    *,
+    parsed_jd: ParsedJD | None = None,
 ) -> ScoreResult:
     """Score a job posting against a target's ScoringProfile (stage 2).
 
@@ -206,10 +211,11 @@ def score_job_with_profile(
     negative keyword in "About Us" or "Benefits" is not a disqualifier.
 
     Title gets a 2x boost applied as a high-weight section.
-    """
-    from app.services.jd_parser import SECTION_WEIGHTS, parse_jd
 
-    parsed = parse_jd(description_html)
+    Pass ``parsed_jd`` to skip HTML parsing when the same JD is scored
+    against multiple targets.
+    """
+    parsed = parsed_jd if parsed_jd is not None else parse_jd(description_html)
 
     breakdown = ScoreBreakdown()
     all_matched: list[str] = []
@@ -233,7 +239,7 @@ def score_job_with_profile(
 
             # Section matches (frequency × section weight)
             for section in parsed.sections:
-                occurrences = _count_keyword_occurrences(keyword, section.text)
+                occurrences = _count_keyword_occurrences(keyword, section.text_lower)
                 if occurrences > 0:
                     keyword_points += kw_weight * cat_profile.weight * section.weight * occurrences
                     matched = True
@@ -253,7 +259,7 @@ def score_job_with_profile(
             matched = True
 
         for section in parsed.sections:
-            if _keyword_or_alias_in_text(signal, section.text.lower()):
+            if _keyword_or_alias_in_text(signal, section.text_lower):
                 signal_points += _SENIORITY_SIGNAL_WEIGHT * section.weight
                 matched = True
 
@@ -271,7 +277,7 @@ def score_job_with_profile(
             matched = True
 
         for section in parsed.sections:
-            if _keyword_or_alias_in_text(signal, section.text.lower()):
+            if _keyword_or_alias_in_text(signal, section.text_lower):
                 signal_points += profile.domain.weight * section.weight
                 matched = True
 
@@ -291,7 +297,7 @@ def score_job_with_profile(
         # Check requirements-type sections only
         for section in parsed.sections:
             if section.name in negative_sections:
-                if _keyword_or_alias_in_text(keyword, section.text.lower()):
+                if _keyword_or_alias_in_text(keyword, section.text_lower):
                     breakdown.negative += profile.negative.weight
                     excluded = True
                     break

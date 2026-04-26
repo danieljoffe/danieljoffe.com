@@ -25,6 +25,7 @@ from supabase import Client
 
 from app.models.schemas import JobTargetScore, ScoreBreakdown, ScoringStatus
 from app.models.targets import JobTarget
+from app.services.jd_parser import ParsedJD, parse_jd
 from app.services.scoring import score_job_with_profile, score_title_against_profile
 
 logger = logging.getLogger(__name__)
@@ -124,9 +125,15 @@ def score_and_upsert(
     title: str,
     description_html: str,
     target: JobTarget,
+    parsed_jd: ParsedJD | None = None,
 ) -> JobTargetScore:
-    """Stage 2: Score one job's full JD against one target and upsert."""
-    result = score_job_with_profile(title, description_html, target.scoring_profile)
+    """Stage 2: Score one job's full JD against one target and upsert.
+
+    Pass ``parsed_jd`` to reuse a pre-parsed JD across multiple targets.
+    """
+    result = score_job_with_profile(
+        title, description_html, target.scoring_profile, parsed_jd=parsed_jd
+    )
 
     return _upsert_score(
         supabase,
@@ -141,32 +148,57 @@ def score_and_upsert(
 
 
 def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
-    """Score all job_postings against a target. Returns count scored.
+    """Re-score jobs that passed stage 1 for this target. Returns count scored.
 
-    Fetches jobs in batches to avoid loading everything into memory.
-    Used by the re-score endpoint when a target's profile changes.
+    Only fetches jobs with existing ``job_target_scores`` rows for this
+    target (i.e., jobs whose titles matched during stage 1). Used by the
+    re-score endpoint when a target's profile changes.
     """
     batch_size = 500
     offset = 0
     total_scored = 0
 
+    # Fetch job IDs that have a score row for this target
+    all_job_ids: list[str] = []
     while True:
+        resp = (
+            supabase.table(TABLE)
+            .select("job_posting_id")
+            .eq("target_id", target.id)
+            .range(offset, offset + batch_size - 1)
+            .execute()
+        )
+        rows = cast(list[dict[str, Any]], resp.data or [])
+        if not rows:
+            break
+        all_job_ids.extend(r["job_posting_id"] for r in rows)
+        if len(rows) < batch_size:
+            break
+        offset += batch_size
+
+    if not all_job_ids:
+        return 0
+
+    # Score those jobs in batches
+    for i in range(0, len(all_job_ids), batch_size):
+        batch_ids = all_job_ids[i : i + batch_size]
         resp = (
             supabase.table("job_postings")
             .select("id, title, description_html")
-            .range(offset, offset + batch_size - 1)
+            .in_("id", batch_ids)
             .execute()
         )
         jobs = cast(list[dict[str, Any]], resp.data or [])
         if not jobs:
-            break
+            continue
 
         rows_to_upsert: list[dict[str, Any]] = []
         now = datetime.now(UTC).isoformat()
         for job in jobs:
             description_html = job.get("description_html") or ""
+            parsed = parse_jd(description_html)
             result = score_job_with_profile(
-                job["title"], description_html, target.scoring_profile
+                job["title"], description_html, target.scoring_profile, parsed_jd=parsed
             )
             rows_to_upsert.append(
                 {
@@ -187,9 +219,8 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
             ).execute()
             total_scored += len(rows_to_upsert)
 
-        if len(jobs) < batch_size:
-            break
-        offset += batch_size
+            scored_ids = [r["job_posting_id"] for r in rows_to_upsert]
+            batch_update_global_scores(supabase, scored_ids)
 
     return total_scored
 
@@ -233,6 +264,53 @@ def update_global_score(supabase: Client, job_posting_id: str) -> None:
     supabase.table("job_postings").update({"score": avg_score}).eq(
         "id", job_posting_id
     ).execute()
+
+
+_BATCH_CHUNK_SIZE = 100
+
+
+def batch_update_global_scores(
+    supabase: Client, job_posting_ids: list[str]
+) -> None:
+    """Recompute job_postings.score for many jobs in fewer DB round-trips.
+
+    Fetches all target scores for the given IDs in one query (chunked to
+    avoid URL length limits), computes averages in Python, then updates
+    each job's global score.
+    """
+    if not job_posting_ids:
+        return
+
+    # Deduplicate
+    unique_ids = list(set(job_posting_ids))
+
+    # Fetch all target scores in chunks
+    all_score_rows: list[dict[str, Any]] = []
+    for i in range(0, len(unique_ids), _BATCH_CHUNK_SIZE):
+        chunk = unique_ids[i : i + _BATCH_CHUNK_SIZE]
+        resp = (
+            supabase.table(TABLE)
+            .select("job_posting_id, score, excluded")
+            .in_("job_posting_id", chunk)
+            .execute()
+        )
+        all_score_rows.extend(cast(list[dict[str, Any]], resp.data or []))
+
+    # Group by job_posting_id and compute averages
+    from collections import defaultdict
+
+    scores_by_job: dict[str, list[int]] = defaultdict(list)
+    for row in all_score_rows:
+        if not row.get("excluded", False):
+            scores_by_job[row["job_posting_id"]].append(row["score"])
+
+    # Update each job's global score
+    for job_id in unique_ids:
+        job_scores = scores_by_job.get(job_id, [])
+        avg_score = round(sum(job_scores) / len(job_scores)) if job_scores else 0
+        supabase.table("job_postings").update({"score": avg_score}).eq(
+            "id", job_id
+        ).execute()
 
 
 def mark_complete(supabase: Client, job_posting_id: str) -> None:
