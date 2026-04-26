@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -12,6 +14,12 @@ import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
 import CreateTargetModal from './CreateTargetModal';
 import type { JobTarget } from './types';
+
+interface Suggestion {
+  label: string;
+  description: string;
+  core_skills: string[];
+}
 
 export default function TargetsList() {
   const [targets, setTargets] = useState<JobTarget[]>([]);
@@ -103,8 +111,55 @@ export default function TargetsList() {
 
   const handleCreated = useCallback(() => {
     setModalOpen(false);
+    setSuggestions([]);
     fetchTargets();
   }, [fetchTargets]);
+
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggesting, setSuggesting] = useState(false);
+  const [creatingSuggestion, setCreatingSuggestion] = useState<string | null>(
+    null
+  );
+
+  const handleSuggest = useCallback(async () => {
+    setSuggesting(true);
+    setSuggestions([]);
+    try {
+      const res = await fetch('/api/targets/suggest', { method: 'POST' });
+      if (!res.ok) throw new Error('Suggest failed');
+      const data = (await res.json()) as { suggestions: Suggestion[] };
+      setSuggestions(data.suggestions);
+    } catch {
+      toast({ variant: 'error', title: 'Failed to generate suggestions' });
+    } finally {
+      setSuggesting(false);
+    }
+  }, [toast]);
+
+  const handleCreateFromSuggestion = useCallback(
+    async (suggestion: Suggestion) => {
+      setCreatingSuggestion(suggestion.label);
+      try {
+        const res = await fetch('/api/targets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label: suggestion.label }),
+        });
+        if (!res.ok) throw new Error('Create failed');
+        toast({
+          variant: 'success',
+          title: `Target "${suggestion.label}" created`,
+        });
+        setSuggestions(prev => prev.filter(s => s.label !== suggestion.label));
+        fetchTargets();
+      } catch {
+        toast({ variant: 'error', title: 'Failed to create target' });
+      } finally {
+        setCreatingSuggestion(null);
+      }
+    },
+    [toast, fetchTargets]
+  );
 
   if (loading) {
     return (
@@ -142,16 +197,79 @@ export default function TargetsList() {
         <Heading variant='component' as='h1'>
           Targets
         </Heading>
-        <Button
-          name='target-create'
-          variant='primary'
-          size='sm'
-          onClick={() => setModalOpen(true)}
-        >
-          <Plus className='size-4' aria-hidden />
-          <span>New Target</span>
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button
+            name='target-suggest'
+            variant='outline'
+            size='sm'
+            onClick={handleSuggest}
+            disabled={suggesting}
+          >
+            {suggesting ? (
+              <>
+                <Spinner size='sm' aria-label='Suggesting' />
+                <span>Suggesting...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className='size-4' aria-hidden />
+                <span>Suggest</span>
+              </>
+            )}
+          </Button>
+          <Button
+            name='target-create'
+            variant='primary'
+            size='sm'
+            onClick={() => setModalOpen(true)}
+          >
+            <Plus className='size-4' aria-hidden />
+            <span>New Target</span>
+          </Button>
+        </div>
       </div>
+
+      {/* AI Suggestions */}
+      {suggestions.length > 0 && (
+        <div className='flex flex-col gap-3'>
+          <Text variant='caption'>Suggested targets from your experience</Text>
+          <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
+            {suggestions.map(s => (
+              <Card key={s.label} padding='none'>
+                <CardContent className='p-4 flex flex-col gap-2'>
+                  <Text variant='body' className='font-medium'>
+                    {s.label}
+                  </Text>
+                  <Text variant='caption' className='text-text-secondary'>
+                    {s.description}
+                  </Text>
+                  {s.core_skills.length > 0 && (
+                    <div className='flex flex-wrap gap-1'>
+                      {s.core_skills.map(skill => (
+                        <Badge key={skill} variant='default' size='sm'>
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <Button
+                    name={`create-suggestion-${s.label}`}
+                    variant='primary'
+                    size='sm'
+                    onClick={() => handleCreateFromSuggestion(s)}
+                    disabled={creatingSuggestion === s.label}
+                    className='mt-1 self-start'
+                  >
+                    {creatingSuggestion === s.label
+                      ? 'Creating...'
+                      : 'Create Target'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {targets.length === 0 ? (
         <Card>
@@ -160,15 +278,27 @@ export default function TargetsList() {
               No targets yet. Create your first target to start scoring jobs
               against a specific role profile.
             </Text>
-            <Button
-              name='target-create-empty'
-              variant='primary'
-              size='sm'
-              onClick={() => setModalOpen(true)}
-            >
-              <Plus className='size-4' aria-hidden />
-              <span>Create Target</span>
-            </Button>
+            <div className='flex items-center gap-3'>
+              <Button
+                name='target-create-empty'
+                variant='primary'
+                size='sm'
+                onClick={() => setModalOpen(true)}
+              >
+                <Plus className='size-4' aria-hidden />
+                <span>Create Target</span>
+              </Button>
+              <Button
+                name='target-suggest-empty'
+                variant='outline'
+                size='sm'
+                onClick={handleSuggest}
+                disabled={suggesting}
+              >
+                <Sparkles className='size-4' aria-hidden />
+                <span>Suggest from Experience</span>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (

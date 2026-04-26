@@ -15,6 +15,22 @@ router = APIRouter(
 )
 
 
+@router.get("/{posting_id}/status-history")
+async def get_status_history(
+    posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    result = (
+        supabase.table("job_status_log")
+        .select("id, old_status, new_status, note, created_at")
+        .eq("posting_id", posting_id)
+        .order("created_at", desc=True)
+        .limit(50)
+        .execute()
+    )
+    return {"entries": result.data or []}
+
+
 @router.post("/{posting_id}/status")
 async def update_status(
     posting_id: str,

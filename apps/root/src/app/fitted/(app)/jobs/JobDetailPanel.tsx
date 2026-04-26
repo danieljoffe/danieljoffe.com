@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import ResumeEditor from './ResumeEditor';
-import { JOB_STATUSES, type JobAnalysis, type JobPosting } from './types';
+import {
+  JOB_STATUSES,
+  type JobAnalysis,
+  type JobPosting,
+  type StatusLogEntry,
+} from './types';
 
 interface JobDetailPanelProps {
   posting: JobPosting;
@@ -27,7 +32,24 @@ export default function JobDetailPanel({
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [history, setHistory] = useState<StatusLogEntry[]>([]);
   const { toast } = useToast();
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/jobs/${posting.id}/status-history`);
+      if (res.ok) {
+        const data = (await res.json()) as { entries: StatusLogEntry[] };
+        setHistory(data.entries);
+      }
+    } catch {
+      // Non-critical — don't toast on history fetch failure
+    }
+  }, [posting.id]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   async function updateStatus(newStatus: string) {
     setUpdating(true);
@@ -40,6 +62,7 @@ export default function JobDetailPanel({
       if (res.ok) {
         setStatus(newStatus);
         onStatusChange?.(newStatus);
+        fetchHistory();
       } else {
         toast({ variant: 'error', title: 'Failed to update status' });
       }
@@ -141,6 +164,44 @@ export default function JobDetailPanel({
           ))}
         </div>
       </div>
+
+      {/* Status History */}
+      {history.length > 0 && (
+        <div>
+          <Text variant='caption' className='mb-1'>
+            History
+          </Text>
+          <div className='flex flex-col gap-1'>
+            {history.slice(0, 5).map(entry => (
+              <div
+                key={entry.id}
+                className='flex items-center gap-2 text-xs text-text-secondary'
+              >
+                <span className='shrink-0'>
+                  {new Date(entry.created_at).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </span>
+                <span>&rarr;</span>
+                <Badge variant='default' size='sm'>
+                  {entry.new_status.replace('_', ' ')}
+                </Badge>
+                {entry.note && (
+                  <span className='truncate italic'>{entry.note}</span>
+                )}
+              </div>
+            ))}
+            {history.length > 5 && (
+              <Text variant='meta' className='text-text-tertiary'>
+                +{history.length - 5} more
+              </Text>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* LLM Analysis */}
       <div>

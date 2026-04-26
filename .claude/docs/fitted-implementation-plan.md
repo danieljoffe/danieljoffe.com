@@ -32,18 +32,13 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 
 ## Tier 3: Medium Features (new UI, existing backend patterns)
 
-### 3.1 Target-suggested cloud in main targets UI
+### 3.1 ~~Target-suggested cloud in main targets UI~~ DONE
 
-- **Blueprint**: Suggested targets derived from master document, not just in onboarding
-- **Current**: `TargetSuggestions` only in onboarding wizard
-- **Work**: Add a "Suggest targets" action on the targets page that calls the same endpoint. Show suggestions in a modal or inline card.
-- **Files**: `TargetsList.tsx`, new suggestion component
+- Added "Suggest" button to targets page header and zero state. Calls `POST /api/targets/suggest`, displays suggestion cards with label, description, core skills, and one-click "Create Target" action.
 
-### 3.2 Action history / status timeline per job
+### 3.2 ~~Action history / status timeline per job~~ DONE
 
-- **Blueprint**: Every status change, resume generation, and user action logged with timestamps
-- **Work**: Check if backend logs status changes. Build a timeline component in job detail panel showing history.
-- **Files**: `JobDetailPanel.tsx`, new timeline component, potentially new proxy route
+- Added `GET /jobs/{posting_id}/status-history` backend endpoint querying `job_status_log`. Added proxy route. JobDetailPanel now shows a compact timeline (last 5 entries) after the status buttons, auto-refreshes on status change.
 
 ### 3.3 ~~Zip export for batch resumes~~ DONE (no changes needed)
 

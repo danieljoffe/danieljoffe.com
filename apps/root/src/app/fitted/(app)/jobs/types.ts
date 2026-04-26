@@ -141,3 +141,11 @@ export interface TailorResponse {
   record: TailoredResumeRecord;
   lint_warnings: LintViolation[];
 }
+
+export interface StatusLogEntry {
+  id: string;
+  old_status: string | null;
+  new_status: string;
+  note: string | null;
+  created_at: string;
+}
