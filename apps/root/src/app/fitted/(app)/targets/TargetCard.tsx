@@ -11,6 +11,7 @@ import type { JobTarget } from './types';
 interface TargetCardProps {
   target: JobTarget;
   onActivate: (id: string) => void;
+  onDeactivate: (id: string) => void;
   onDelete: (id: string) => void;
   onViewJobs: (id: string) => void;
 }
@@ -25,6 +26,7 @@ function countKeywords(target: JobTarget): number {
 export default function TargetCard({
   target,
   onActivate,
+  onDeactivate,
   onDelete,
   onViewJobs,
 }: TargetCardProps) {
@@ -72,7 +74,16 @@ export default function TargetCard({
           >
             View Jobs
           </Button>
-          {!target.is_active && (
+          {target.is_active ? (
+            <Button
+              name={`target-deactivate-${target.id}`}
+              variant='outline'
+              size='sm'
+              onClick={() => onDeactivate(target.id)}
+            >
+              Deactivate
+            </Button>
+          ) : (
             <Button
               name={`target-activate-${target.id}`}
               variant='outline'

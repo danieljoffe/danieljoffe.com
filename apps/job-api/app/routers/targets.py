@@ -160,13 +160,11 @@ async def suggest(
 
 
 @router.get("/active")
-async def get_active_target(
+async def get_active_targets(
     supabase: Client = Depends(get_supabase),
-) -> JobTarget | dict[str, None]:
-    target = crud.get_active(supabase, user_id=None)
-    if target is None:
-        return {"target": None}
-    return target
+) -> dict[str, list[JobTarget]]:
+    targets = crud.get_active(supabase, user_id=None)
+    return {"targets": targets}
 
 
 @router.get("/{target_id}")
@@ -206,6 +204,17 @@ async def activate_target(
     background_tasks.add_task(
         _activate_pipeline, supabase, llm, target
     )
+    return target
+
+
+@router.post("/{target_id}/deactivate")
+async def deactivate_target(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> JobTarget:
+    target = crud.set_inactive(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
     return target
 
 

@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from postgrest.types import CountMethod
 from supabase import Client
 
+from app.cache import job_list_cache, make_cache_key
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.http_client import get_http_client
 from app.models.schemas import (
@@ -55,6 +56,127 @@ _JP_SELECT_COLS = (
 )
 
 
+def _list_jobs_for_target_rpc(
+    supabase: Client,
+    *,
+    target_id: str,
+    offset: int,
+    page: int,
+    page_size: int,
+    sort: str,
+    ascending: bool,
+    min_score: int | None,
+    status: str | None,
+    company: str | None,
+    search: str | None,
+) -> dict[str, Any]:
+    """List jobs via server-side join RPC (single round-trip)."""
+    resp = supabase.rpc(
+        "get_target_jobs",
+        {
+            "p_target_id": target_id,
+            "p_min_score": min_score or 0,
+            "p_status": status,
+            "p_company": company,
+            "p_search": search,
+            "p_sort": sort,
+            "p_ascending": ascending,
+            "p_limit": page_size,
+            "p_offset": offset,
+        },
+    ).execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    total = rows[0]["total_count"] if rows else 0
+    # Strip the total_count helper column from each row
+    postings = [{k: v for k, v in r.items() if k != "total_count"} for r in rows]
+    return {"postings": postings, "total": total, "page": page, "page_size": page_size}
+
+
+def _list_jobs_for_target_two_query(
+    supabase: Client,
+    *,
+    target_id: str,
+    offset: int,
+    page: int,
+    page_size: int,
+    sort: str,
+    ascending: bool,
+    min_score: int | None,
+    status: str | None,
+    company: str | None,
+    search: str | None,
+) -> dict[str, Any]:
+    """Fallback: two-query pattern with pagination pushed to the scores layer."""
+    sort_col = "score" if sort == "score" else sort
+    ts_query = (
+        supabase.table("job_target_scores")
+        .select("job_posting_id, score, score_breakdown", count=CountMethod.exact)
+        .eq("target_id", target_id)
+        .eq("excluded", False)
+    )
+    if min_score is not None:
+        ts_query = ts_query.gte("score", min_score)
+
+    # Push sort + pagination to the scores query when sorting by score
+    if sort_col == "score":
+        ts_query = ts_query.order("score", desc=not ascending)
+    # For non-score sorts we still need all qualifying IDs (sorted in Python after join)
+    # but we can at least get the total count from Supabase
+    ts_resp = ts_query.execute()
+    ts_rows = cast(list[dict[str, Any]], ts_resp.data or [])
+
+    if not ts_rows:
+        return {"postings": [], "total": 0, "page": page, "page_size": page_size}
+
+    score_lookup = {r["job_posting_id"]: r for r in ts_rows}
+
+    # For score-sorted queries, paginate at the scores layer
+    if sort_col == "score" and not status and not company and not search:
+        page_ids = [r["job_posting_id"] for r in ts_rows[offset : offset + page_size]]
+        total = len(ts_rows) if ts_resp.count is None else ts_resp.count
+    else:
+        page_ids = list(score_lookup.keys())
+        total = None  # will be computed after posting-level filters
+
+    jp_query = (
+        supabase.table("job_postings")
+        .select(_JP_SELECT_COLS)
+        .in_("id", page_ids)
+    )
+    if status:
+        jp_query = jp_query.eq("status", status)
+    if company:
+        jp_query = jp_query.eq("company_name", company)
+    if search:
+        jp_query = jp_query.ilike("title", f"%{search}%")
+
+    jp_resp = jp_query.execute()
+    postings = list(jp_resp.data or [])
+
+    # Overlay target scores
+    for posting in postings:
+        p = cast(dict[str, Any], posting)
+        ts = score_lookup.get(p["id"])
+        if ts:
+            p["score"] = ts["score"]
+            p["score_breakdown"] = ts.get("score_breakdown")
+
+    # Sort + paginate in Python only when we couldn't do it server-side
+    if total is None or sort_col != "score":
+        def _sort_key(p: Any) -> Any:
+            val = cast(dict[str, Any], p).get(sort)
+            if val is None:
+                return 0 if sort == "score" else ""
+            return val
+
+        postings.sort(key=_sort_key, reverse=not ascending)
+        if total is None:
+            total = len(postings)
+            postings = postings[offset : offset + page_size]
+
+    return {"postings": postings, "total": total, "page": page, "page_size": page_size}
+
+
 def _list_jobs_for_target(
     supabase: Client,
     *,
@@ -71,64 +193,26 @@ def _list_jobs_for_target(
 ) -> dict[str, Any]:
     """List jobs for a target view, sorted/paginated by target-specific scores.
 
-    Queries job_target_scores first so pagination reflects target relevance,
-    then fetches posting details and overlays the target scores.
+    Tries the server-side RPC join first (single round-trip). Falls back to the
+    optimized two-query pattern if the RPC function hasn't been deployed yet.
     """
-    # Step 1: Get qualifying target scores (score >= min_score, not excluded)
-    ts_query = (
-        supabase.table("job_target_scores")
-        .select("job_posting_id, score, score_breakdown")
-        .eq("target_id", target_id)
-        .eq("excluded", False)
-    )
-    if min_score is not None:
-        ts_query = ts_query.gte("score", min_score)
-    ts_resp = ts_query.execute()
-    ts_rows = cast(list[dict[str, Any]], ts_resp.data or [])
-
-    if not ts_rows:
-        return {"postings": [], "total": 0, "page": page, "page_size": page_size}
-
-    score_lookup = {r["job_posting_id"]: r for r in ts_rows}
-    qualifying_ids = list(score_lookup.keys())
-
-    # Step 2: Fetch posting details for qualifying IDs
-    jp_query = (
-        supabase.table("job_postings")
-        .select(_JP_SELECT_COLS)
-        .in_("id", qualifying_ids)
-    )
-    if status:
-        jp_query = jp_query.eq("status", status)
-    if company:
-        jp_query = jp_query.eq("company_name", company)
-    if search:
-        jp_query = jp_query.ilike("title", f"%{search}%")
-
-    jp_resp = jp_query.execute()
-    postings = list(jp_resp.data or [])
-
-    # Overlay target scores onto posting rows
-    for posting in postings:
-        p = cast(dict[str, Any], posting)
-        ts = score_lookup.get(p["id"])
-        if ts:
-            p["score"] = ts["score"]
-            p["score_breakdown"] = ts.get("score_breakdown")
-
-    # Sort by requested field (score is now the target score)
-    def _sort_key(p: Any) -> Any:
-        val = cast(dict[str, Any], p).get(sort)
-        if val is None:
-            return 0 if sort == "score" else ""
-        return val
-
-    postings.sort(key=_sort_key, reverse=not ascending)
-
-    total = len(postings)
-    postings = postings[offset : offset + page_size]
-
-    return {"postings": postings, "total": total, "page": page, "page_size": page_size}
+    kwargs: dict[str, Any] = {
+        "target_id": target_id,
+        "offset": offset,
+        "page": page,
+        "page_size": page_size,
+        "sort": sort,
+        "ascending": ascending,
+        "min_score": min_score,
+        "status": status,
+        "company": company,
+        "search": search,
+    }
+    try:
+        return _list_jobs_for_target_rpc(supabase, **kwargs)
+    except Exception:
+        logger.debug("RPC get_target_jobs unavailable, falling back to two-query pattern")
+        return _list_jobs_for_target_two_query(supabase, **kwargs)
 
 
 @router.get("")
@@ -153,9 +237,26 @@ async def list_jobs(
     if target_id and min_score is None:
         min_score = 45
 
+    # Check cache (60s TTL — data only changes on poll/manual-add cycles)
+    cache_key = make_cache_key(
+        "jobs",
+        page=page,
+        page_size=page_size,
+        sort=sort,
+        order=order,
+        min_score=min_score,
+        status=status,
+        company=company,
+        search=search,
+        target_id=target_id,
+    )
+    cached: dict[str, Any] | None = job_list_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     # Target view: sort/paginate by target-specific scores
     if target_id:
-        return _list_jobs_for_target(
+        result = _list_jobs_for_target(
             supabase,
             target_id=target_id,
             offset=offset,
@@ -168,6 +269,8 @@ async def list_jobs(
             company=company,
             search=search,
         )
+        job_list_cache.set(cache_key, result)
+        return result
 
     # Global view
     query = supabase.table("job_postings").select(
@@ -187,12 +290,14 @@ async def list_jobs(
     query = query.order(sort, desc=not ascending).range(offset, offset + page_size - 1)
     resp = query.execute()
 
-    return {
+    global_result: dict[str, Any] = {
         "postings": list(resp.data or []),
         "total": resp.count or 0,
         "page": page,
         "page_size": page_size,
     }
+    job_list_cache.set(cache_key, global_result)
+    return global_result
 
 
 @router.post("/validate-url")
@@ -326,10 +431,10 @@ async def add_manual_job(
         data = cast(dict[str, Any], resp_db.data[0])
         posting_id = data.get("id")
 
-    # Score against active target (#502)
+    # Score against all active targets (#502)
     if posting_id and title:
-        active_target = get_active_target(supabase, user_id=None)
-        if active_target:
+        active_targets = get_active_target(supabase, user_id=None)
+        for active_target in active_targets:
             try:
                 target_score_and_upsert(
                     supabase,
@@ -340,6 +445,9 @@ async def add_manual_job(
                 )
             except Exception:
                 logger.exception("Target scoring failed for manual job %s", posting_id)
+
+    # Invalidate job list cache after adding a new posting
+    job_list_cache.invalidate()
 
     return ManualJobResponse(
         success=True,
@@ -362,6 +470,7 @@ async def rescore_for_target(
         raise HTTPException(status_code=404, detail="Target not found")
 
     scored = bulk_score_for_target(supabase, target)
+    job_list_cache.invalidate()
     return {"target_id": target_id, "jobs_scored": scored}
 
 
@@ -401,6 +510,7 @@ async def backfill_salary(
             break
         offset += batch_size
 
+    job_list_cache.invalidate()
     return {"updated": updated}
 
 
@@ -418,4 +528,5 @@ async def delete_job(
     if not resp.data:
         raise HTTPException(status_code=404, detail="Posting not found")
 
+    job_list_cache.invalidate()
     return {"success": True, "deleted_id": posting_id}

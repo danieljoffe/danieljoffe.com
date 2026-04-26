@@ -52,7 +52,7 @@ class TestManualJobEndpoint:
         """Prevent target scoring from firing in manual-job tests."""
         from app.routers import jobs as jobs_router
 
-        monkeypatch.setattr(jobs_router, "get_active_target", lambda *_a, **_kw: None)
+        monkeypatch.setattr(jobs_router, "get_active_target", lambda *_a, **_kw: [])
 
     @pytest.mark.asyncio
     async def test_happy_path_jsonld(self, mock_http_client):

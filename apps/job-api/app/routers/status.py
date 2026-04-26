@@ -4,6 +4,7 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
+from app.cache import job_list_cache
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.schemas import StatusUpdate
 
@@ -49,4 +50,5 @@ async def update_status(
         }
     ).eq("id", posting_id).execute()
 
+    job_list_cache.invalidate()
     return {"success": True, "old_status": old_status, "new_status": body.status}

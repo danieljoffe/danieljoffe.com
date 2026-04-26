@@ -279,11 +279,13 @@ async def _poll_one_source(
                 else:
                     summary["updated"] += 1
 
-            # Score upserted jobs against the active target (#502)
-            active_target = get_active_target(supabase, user_id=None)
-            if active_target:
+            # Score upserted jobs against all active targets (#502)
+            active_targets = get_active_target(supabase, user_id=None)
+            for active_target in active_targets:
 
-                async def _score_one(row_data: dict[str, Any]) -> None:
+                async def _score_one(
+                    row_data: dict[str, Any], target: JobTarget = active_target
+                ) -> None:
                     try:
                         await asyncio.to_thread(
                             target_score_and_upsert,
@@ -291,7 +293,7 @@ async def _poll_one_source(
                             job_posting_id=row_data["id"],
                             title=row_data.get("title", ""),
                             description_html=row_data.get("description_html", ""),
-                            target=active_target,
+                            target=target,
                         )
                     except Exception:
                         logger.exception(

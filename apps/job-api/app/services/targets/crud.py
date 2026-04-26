@@ -88,20 +88,19 @@ def list_all(supabase: Client, user_id: str | None) -> list[JobTarget]:
     return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
 
 
-def get_active(supabase: Client, user_id: str | None) -> JobTarget | None:
+def get_active(supabase: Client, user_id: str | None) -> list[JobTarget]:
+    """Return all active targets for this user."""
     query = (
         supabase.table(TARGETS_TABLE)
         .select("*")
         .eq("is_active", True)
-        .limit(1)
     )
     if user_id is not None:
         query = query.eq("user_id", user_id)
     else:
         query = query.is_("user_id", "null")
     resp = query.execute()
-    rows = cast(list[dict[str, Any]], resp.data or [])
-    return _parse_target(rows[0]) if rows else None
+    return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
 
 
 def update(
@@ -136,22 +135,22 @@ def delete(supabase: Client, target_id: str) -> bool:
 
 
 def set_active(supabase: Client, user_id: str | None, target_id: str) -> JobTarget | None:
-    """Deactivate all targets for this user, then activate the given one."""
-    # Deactivate all
-    deactivate_query = (
-        supabase.table(TARGETS_TABLE)
-        .update({"is_active": False, "updated_at": datetime.now(UTC).isoformat()})
-    )
-    if user_id is not None:
-        deactivate_query = deactivate_query.eq("user_id", user_id)
-    else:
-        deactivate_query = deactivate_query.is_("user_id", "null")
-    deactivate_query.execute()
-
-    # Activate the target
+    """Activate a single target (does not deactivate others)."""
     resp = (
         supabase.table(TARGETS_TABLE)
         .update({"is_active": True, "updated_at": datetime.now(UTC).isoformat()})
+        .eq("id", target_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return _parse_target(rows[0]) if rows else None
+
+
+def set_inactive(supabase: Client, target_id: str) -> JobTarget | None:
+    """Deactivate a single target."""
+    resp = (
+        supabase.table(TARGETS_TABLE)
+        .update({"is_active": False, "updated_at": datetime.now(UTC).isoformat()})
         .eq("id", target_id)
         .execute()
     )

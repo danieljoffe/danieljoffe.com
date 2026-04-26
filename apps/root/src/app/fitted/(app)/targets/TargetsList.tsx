@@ -60,6 +60,22 @@ export default function TargetsList() {
     [toast, fetchTargets]
   );
 
+  const handleDeactivate = useCallback(
+    async (id: string) => {
+      try {
+        const res = await fetch(`/api/targets/${id}/deactivate`, {
+          method: 'POST',
+        });
+        if (!res.ok) throw new Error('Deactivate failed');
+        toast({ variant: 'success', title: 'Target deactivated' });
+        fetchTargets();
+      } catch {
+        toast({ variant: 'error', title: 'Failed to deactivate target' });
+      }
+    },
+    [toast, fetchTargets]
+  );
+
   const handleDelete = useCallback(
     async (id: string) => {
       /* eslint-disable no-alert -- personal tool */
@@ -140,6 +156,7 @@ export default function TargetsList() {
               key={target.id}
               target={target}
               onActivate={handleActivate}
+              onDeactivate={handleDeactivate}
               onDelete={handleDelete}
               onViewJobs={handleViewJobs}
             />
