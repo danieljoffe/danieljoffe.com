@@ -95,6 +95,7 @@ export default function JobsListTable({
   } = useAdminTableFetch<JobPosting, JobsSortColumn>({
     endpoint: '/api/jobs',
     defaultSort: showScore ? 'score' : 'created_at',
+    defaultOrder: showScore ? 'desc' : 'asc',
     pageSize: 20,
     dataKey: 'postings',
     extraParams,

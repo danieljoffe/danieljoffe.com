@@ -2,10 +2,11 @@ import { useState } from 'react';
 
 export function useTableSort<T extends string>(
   defaultSort: T,
-  onSortChange?: () => void
+  onSortChange?: () => void,
+  defaultOrder: 'asc' | 'desc' = 'desc'
 ) {
   const [sort, setSort] = useState<T>(defaultSort);
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [order, setOrder] = useState<'asc' | 'desc'>(defaultOrder);
 
   function handleSort(column: T) {
     if (sort === column) {
