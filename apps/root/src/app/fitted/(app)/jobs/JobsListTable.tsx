@@ -44,6 +44,13 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
+const COLUMNS: { key: JobsSortColumn; label: string }[] = [
+  { key: 'score', label: 'Score' },
+  { key: 'title', label: 'Title' },
+  { key: 'company_name', label: 'Company' },
+  { key: 'created_at', label: 'Date' },
+];
+
 export default function JobsListTable({
   filters,
   selectedIds,
@@ -117,13 +124,6 @@ export default function JobsListTable({
       </Text>
     );
   }
-
-  const COLUMNS: { key: JobsSortColumn; label: string }[] = [
-    { key: 'score', label: 'Score' },
-    { key: 'title', label: 'Title' },
-    { key: 'company_name', label: 'Company' },
-    { key: 'created_at', label: 'Date' },
-  ];
 
   return (
     <div>

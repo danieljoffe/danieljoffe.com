@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useId } from 'react';
 import { Send } from 'lucide-react';
 import { Card } from '@danieljoffe.com/shared-ui/Card';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -21,15 +21,16 @@ interface Message {
   content: string;
 }
 
-let _msgId = 0;
-function nextMsgId(): string {
-  return `msg-${++_msgId}`;
-}
-
 export default function ConversationChat({
   onComplete,
   onSkip,
 }: ConversationChatProps) {
+  const idPrefix = useId();
+  const msgCountRef = useRef(0);
+  function nextMsgId(): string {
+    return `${idPrefix}-msg-${++msgCountRef.current}`;
+  }
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -122,6 +123,7 @@ export default function ConversationChat({
         setTimeout(onComplete, 800);
       }
     } catch (err) {
+      setDeriving(false);
       setError(
         err instanceof Error ? err.message : 'Something went wrong. Try again.'
       );
@@ -179,6 +181,7 @@ export default function ConversationChat({
         setTimeout(onComplete, 800);
       }
     } catch (err) {
+      setDeriving(false);
       setError(
         err instanceof Error ? err.message : 'Something went wrong. Try again.'
       );

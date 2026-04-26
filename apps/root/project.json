@@ -24,6 +24,7 @@
         "{projectRoot}/src/data/content/**/*.mdx",
         "{workspaceRoot}/scripts/validate-content.ts"
       ],
+      "outputs": [],
       "options": {
         "cwd": "{workspaceRoot}"
       }
