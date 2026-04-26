@@ -4,45 +4,31 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 
 ## Tier 1: Quick Fixes (frontend-only, no new architecture)
 
-### 1.1 Fix gap threshold mismatch (50% → 45%)
+### 1.1 ~~Fix gap threshold mismatch (50% → 45%)~~ DONE
 
-- **Blueprint**: Resume generation gate at 45%, 5-tier color scale
-- **Current**: UI warns at 50%, only 3 tiers (red/yellow/green)
-- **Work**: Update alert threshold to 45% in `DashboardPage.tsx`. Add orange and lime tiers to `GapTier` type and tier mapping helpers. Verify backend `gap_tracker.py` uses the same 5-tier scale.
-- **Files**: `DashboardPage.tsx`, `profile/types.ts`
+- Backend `_pct_to_tier()` threshold changed from 50% to 45%. Dashboard alert updated. Blueprint's 5-tier scale was aspirational — backend uses 3 tiers (red/yellow/green), frontend aligned.
 
-### 1.2 Add expanded job lifecycle statuses
+### 1.2 ~~Add expanded job lifecycle statuses~~ DONE
 
-- **Blueprint**: `new → saved → resume_draft → resume_ready → applied → interviewing → offer → rejected → archived`
-- **Current**: Only `new`, `saved`, `applied`, `rejected`, `archived`
-- **Work**: Add `resume_draft`, `resume_ready`, `interviewing`, `offer` to status type/options in frontend. Verify backend `status_log` supports them. Update status dropdown and any status filters.
-- **Files**: Jobs status types, `JobsListTable.tsx`, status filter options
+- Frontend already had all statuses. Backend `StatusUpdate` Literal updated to accept `resume_ready`, `interviewing`, `offer`.
 
-### 1.3 Verify skip button in onboarding
+### 1.3 ~~Verify skip button in onboarding~~ DONE (no changes needed)
 
-- **Blueprint**: "A skip button is always available"
-- **Work**: Read onboarding wizard, confirm skip exists on every step. Add if missing.
-- **Files**: `OnboardingWizard.tsx`
+- Skip button present on every step except CompletionScreen (final screen, correct behavior).
 
 ## Tier 2: Wiring & Verification (endpoints exist, need frontend connection)
 
-### 2.1 Verify .docx export end-to-end
+### 2.1 ~~Verify .docx export end-to-end~~ DONE (no changes needed)
 
-- **Blueprint**: Individual .docx download for approved resumes
-- **Work**: Check if backend has a docx rendering endpoint. If yes, wire download button in resume editor. If no, flag as blocked on backend.
-- **Files**: Resume editor, jobs API proxy routes
+- Fully implemented: `GET /tailor/resumes/{id}/download` (individual) + `POST /tailor/resumes/export-zip` (bulk). Frontend download button wired in ResumeEditor. Zip export wired in BatchActionBar.
 
-### 2.2 Verify batch size limits
+### 2.2 ~~Verify batch size limits~~ DONE
 
-- **Blueprint**: Default 5, warning above 5, larger batches processed in groups
-- **Work**: Check backend batch endpoint for limits. Add frontend warning when selecting >5 jobs for generation.
-- **Files**: `JobsList.tsx` batch generation UI
+- Backend enforces max 20 via Pydantic. Added frontend warning at >5 selections ("Large batch — may take a while") and disabled Generate button at >20 ("Max 20 per batch").
 
-### 2.3 Surface LLM cost per resume
+### 2.3 ~~Surface LLM cost per resume~~ DONE
 
-- **Blueprint**: Per-resume generation cost (tokens, model, dollars)
-- **Work**: Check if `llm_cost_log` is queryable per resume. If so, show cost in resume editor after generation.
-- **Files**: Resume editor, potentially new proxy route
+- `TailoredResumeRecord` already had `cost_usd`, `model`, `input_tokens`, `output_tokens`, `latency_ms`. Added metadata bar to ResumeEditor showing cost, token count, model, and latency.
 
 ## Tier 3: Medium Features (new UI, existing backend patterns)
 
@@ -59,11 +45,9 @@ Ordered from easiest to most challenging. Items marked with a decision icon need
 - **Work**: Check if backend logs status changes. Build a timeline component in job detail panel showing history.
 - **Files**: `JobDetailPanel.tsx`, new timeline component, potentially new proxy route
 
-### 3.3 Zip export for batch resumes
+### 3.3 ~~Zip export for batch resumes~~ DONE (no changes needed)
 
-- **Blueprint**: Select-all → bundled zip download
-- **Work**: Backend needs a zip endpoint (or frontend bundles individual downloads via JSZip). Add "Download All" button to approved resumes view.
-- **Files**: Jobs page, new download utility
+- Already implemented: `POST /tailor/resumes/export-zip` backend endpoint + "Export approved (.zip)" button in BatchActionBar.
 
 ## Tier 4: Significant Features (new backend + frontend work)
 

@@ -337,6 +337,27 @@ export default function ResumeEditor({
             </div>
           )}
 
+          {/* Generation metadata */}
+          {record && record.cost_usd > 0 && (
+            <div className='flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-surface-secondary px-3 py-2'>
+              <Text variant='meta' as='span'>
+                Cost: ${record.cost_usd.toFixed(4)}
+              </Text>
+              <Text variant='meta' as='span'>
+                Tokens:{' '}
+                {(record.input_tokens + record.output_tokens).toLocaleString()}
+              </Text>
+              {record.model && (
+                <Text variant='meta' as='span'>
+                  Model: {record.model}
+                </Text>
+              )}
+              <Text variant='meta' as='span'>
+                Latency: {(record.latency_ms / 1000).toFixed(1)}s
+              </Text>
+            </div>
+          )}
+
           {/* Summary */}
           <div>
             <Text variant='caption' className='mb-1'>

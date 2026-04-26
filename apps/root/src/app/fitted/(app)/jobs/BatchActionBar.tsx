@@ -1,6 +1,10 @@
 'use client';
 
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+
+const BATCH_WARN_THRESHOLD = 5;
+const BATCH_MAX = 20;
 
 interface BatchActionBarProps {
   selectedCount: number;
@@ -25,6 +29,9 @@ export default function BatchActionBar({
 }: BatchActionBarProps) {
   if (selectedCount === 0) return null;
 
+  const overMax = selectedCount > BATCH_MAX;
+  const showWarning = selectedCount > BATCH_WARN_THRESHOLD;
+
   return (
     <div
       role='status'
@@ -34,6 +41,13 @@ export default function BatchActionBar({
       <span className='text-sm font-medium text-text-primary'>
         {selectedCount} selected
       </span>
+      {showWarning && (
+        <Text variant='meta' className='text-warning'>
+          {overMax
+            ? `Max ${BATCH_MAX} per batch`
+            : 'Large batch — may take a while'}
+        </Text>
+      )}
       <Button
         name='batch-deselect'
         variant='outline'
@@ -47,7 +61,7 @@ export default function BatchActionBar({
         variant='primary'
         size='sm'
         onClick={onBatchGenerate}
-        disabled={generating}
+        disabled={generating || overMax}
       >
         {generating ? 'Generating...' : 'Generate resumes'}
       </Button>
