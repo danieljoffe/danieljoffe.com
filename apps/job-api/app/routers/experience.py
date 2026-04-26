@@ -100,9 +100,12 @@ async def upload_resume(
     content_type = file.content_type or ""
     filename = file.filename or "unknown"
 
-    file_bytes = await file.read()
+    MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+    file_bytes = await file.read(MAX_UPLOAD_BYTES + 1)
     if not file_bytes:
         raise HTTPException(status_code=422, detail="Empty file")
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 10 MB limit")
 
     try:
         parsed = await asyncio.to_thread(parse_resume, file_bytes, filename, content_type)

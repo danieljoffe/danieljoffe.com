@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     anthropic_max_retries: int = Field(default=2, ge=0, le=10)
 
     # URL validation — enable to validate job URLs during polling.
-    validate_poll_urls: bool = False
+    validate_poll_urls: bool = True
 
     # Firecrawl — set API key to enable JS-rendered page extraction fallback.
     firecrawl_api_key: str = Field(default="", repr=False)

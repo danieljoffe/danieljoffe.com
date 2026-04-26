@@ -65,6 +65,14 @@ def _make_external_id(careers_url: str, title: str, location: str | None) -> str
 
 async def fetch_firecrawl_jobs(careers_url: str) -> list[StandardJob]:
     """Scrape a careers page via Firecrawl and extract structured job listings."""
+    from app.services.validate import validate_format
+
+    cleaned = validate_format(careers_url)
+    if cleaned is None:
+        logger.warning("Invalid URL rejected — skipping crawl source %s", careers_url)
+        return []
+    careers_url = cleaned
+
     api_key = settings.firecrawl_api_key
     if not api_key:
         logger.warning("FIRECRAWL_API_KEY not set — skipping crawl source %s", careers_url)
