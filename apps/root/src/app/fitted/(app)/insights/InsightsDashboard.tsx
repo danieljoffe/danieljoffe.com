@@ -108,7 +108,11 @@ export default function InsightsDashboard() {
       )}
 
       {/* KPI cards */}
-      <div className='grid gap-4 grid-cols-2 lg:grid-cols-4'>
+      <div
+        className='grid gap-4 grid-cols-2 lg:grid-cols-4'
+        role='status'
+        aria-label={loading && !pipeline ? 'Loading insights' : undefined}
+      >
         {loading && !pipeline ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} variant='rectangular' height={100} />

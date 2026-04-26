@@ -266,8 +266,11 @@ export default function ScoringProfileEditor({
       </CardHeader>
       <CardContent className='flex flex-col gap-6'>
         {/* ---- Categories ---- */}
-        <section className='flex flex-col gap-4'>
-          <Heading variant='section' as='h3'>
+        <section
+          aria-labelledby='scoring-categories'
+          className='flex flex-col gap-4'
+        >
+          <Heading variant='section' as='h3' id='scoring-categories'>
             Categories
           </Heading>
 
@@ -291,6 +294,7 @@ export default function ScoringProfileEditor({
                       Weight:
                       <input
                         type='number'
+                        aria-label={`Weight for ${catName} category`}
                         value={cat.weight}
                         onChange={e =>
                           updateCategoryWeight(
@@ -401,8 +405,11 @@ export default function ScoringProfileEditor({
         </section>
 
         {/* ---- Seniority ---- */}
-        <section className='flex flex-col gap-3'>
-          <Heading variant='section' as='h3'>
+        <section
+          aria-labelledby='scoring-seniority'
+          className='flex flex-col gap-3'
+        >
+          <Heading variant='section' as='h3' id='scoring-seniority'>
             Seniority
           </Heading>
           <div className='flex items-center gap-3'>
@@ -429,14 +436,18 @@ export default function ScoringProfileEditor({
         </section>
 
         {/* ---- Domain ---- */}
-        <section className='flex flex-col gap-3'>
-          <Heading variant='section' as='h3'>
+        <section
+          aria-labelledby='scoring-domain'
+          className='flex flex-col gap-3'
+        >
+          <Heading variant='section' as='h3' id='scoring-domain'>
             Domain
           </Heading>
           <label className='flex items-center gap-1 text-xs text-text-secondary'>
             Weight:
             <input
               type='number'
+              aria-label='Domain weight'
               value={profile.domain.weight}
               onChange={e =>
                 updateDomain({
@@ -458,14 +469,18 @@ export default function ScoringProfileEditor({
         </section>
 
         {/* ---- Negative ---- */}
-        <section className='flex flex-col gap-3'>
-          <Heading variant='section' as='h3'>
+        <section
+          aria-labelledby='scoring-negative'
+          className='flex flex-col gap-3'
+        >
+          <Heading variant='section' as='h3' id='scoring-negative'>
             Negative Keywords
           </Heading>
           <label className='flex items-center gap-1 text-xs text-text-secondary'>
             Weight:
             <input
               type='number'
+              aria-label='Negative keywords weight'
               value={profile.negative.weight}
               onChange={e =>
                 updateNegative({
@@ -542,6 +557,7 @@ function TagList({
         <input
           type='text'
           placeholder={`Add ${label.toLowerCase()}`}
+          aria-label={`Add ${label.toLowerCase()}`}
           value={newValue}
           onChange={e => onNewValueChange(e.target.value)}
           onKeyDown={e => {

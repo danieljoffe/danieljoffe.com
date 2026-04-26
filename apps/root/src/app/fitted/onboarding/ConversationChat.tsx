@@ -200,7 +200,11 @@ export default function ConversationChat({
       </div>
 
       {/* Messages area */}
-      <Card padding='none' className='flex h-[400px] flex-col'>
+      <Card
+        padding='none'
+        className='flex h-[400px] flex-col'
+        aria-label='Conversation'
+      >
         <div ref={scrollRef} className='flex-1 overflow-y-auto p-4'>
           <div role='log' aria-live='polite' className='flex flex-col gap-3'>
             {messages.map(msg => (

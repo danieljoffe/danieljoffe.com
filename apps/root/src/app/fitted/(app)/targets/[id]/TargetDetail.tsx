@@ -121,6 +121,7 @@ export default function TargetDetail({ id }: TargetDetailProps) {
           <div className='flex items-center gap-2'>
             <input
               aria-label='Target label'
+              aria-describedby='label-edit-hint'
               value={labelDraft}
               onChange={e => setLabelDraft(e.target.value)}
               onKeyDown={e => {
@@ -135,6 +136,9 @@ export default function TargetDetail({ id }: TargetDetailProps) {
               autoFocus
               disabled={savingLabel}
             />
+            <span id='label-edit-hint' className='sr-only'>
+              Press Enter to save, Escape to cancel
+            </span>
             <Button
               name='target-label-save'
               variant='bare'
