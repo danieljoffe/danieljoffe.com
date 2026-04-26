@@ -29,6 +29,15 @@ Review changed files for performance implications in this Next.js 16 + React 19 
 - `next/image` with blurhash placeholders is the standard image pattern
 - Sentry tracing is enabled (avoid adding expensive spans in hot paths)
 
+## Review Protocol
+
+You receive a file manifest and diff hunks from the orchestrator.
+
+- **Deleted files**: Note if deletion affects performance (e.g., removing lazy loading or caching), but do not read them.
+- **Small changes (diff-only)**: Review the hunk. Read the full file only if you need surrounding context (e.g., to check if a new import is already dynamically loaded elsewhere).
+- **Larger changes**: Read the full file via `ctx_batch_execute` for files >50 lines.
+- Stay within your assigned file list. You receive only production `.ts`/`.tsx` files — no test files.
+
 ## Output
 
 Report issues with file path, line number, estimated impact (HIGH/MEDIUM/LOW), and fix recommendation.

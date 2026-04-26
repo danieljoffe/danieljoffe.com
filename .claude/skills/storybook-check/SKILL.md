@@ -20,11 +20,12 @@ Build Storybook for projects affected by current changes and report any broken s
 
 ## Instructions
 
-1. **Identify affected projects with Storybook targets:**
+1. **Detect base branch and identify affected projects:**
 
    ```bash
-   pnpm nx show projects --affected --base=origin/develop --type=lib
-   pnpm nx show projects --affected --base=origin/develop --type=app
+   BASE=$(gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "develop")
+   pnpm nx show projects --affected --base=origin/${BASE} --type=lib
+   pnpm nx show projects --affected --base=origin/${BASE} --type=app
    ```
 
    Cross-reference with projects that have a `build-storybook` target.
