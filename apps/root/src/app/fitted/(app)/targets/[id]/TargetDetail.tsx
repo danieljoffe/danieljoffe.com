@@ -50,9 +50,15 @@ export default function TargetDetail({ id }: TargetDetailProps) {
   }, [id, toast]);
 
   useEffect(() => {
-    Promise.all([fetchTarget(), fetchReferenceJDs()]).finally(() =>
-      setLoading(false)
-    );
+    let cancelled = false;
+
+    Promise.all([fetchTarget(), fetchReferenceJDs()]).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchTarget, fetchReferenceJDs]);
 
   const handleSaveLabel = useCallback(async () => {
@@ -121,6 +127,7 @@ export default function TargetDetail({ id }: TargetDetailProps) {
           <div className='flex items-center gap-2'>
             <input
               aria-label='Target label'
+              aria-describedby='label-edit-hint'
               value={labelDraft}
               onChange={e => setLabelDraft(e.target.value)}
               onKeyDown={e => {
@@ -135,6 +142,9 @@ export default function TargetDetail({ id }: TargetDetailProps) {
               autoFocus
               disabled={savingLabel}
             />
+            <span id='label-edit-hint' className='sr-only'>
+              Press Enter to save, Escape to cancel
+            </span>
             <Button
               name='target-label-save'
               variant='bare'

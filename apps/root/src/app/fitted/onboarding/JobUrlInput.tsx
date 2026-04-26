@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ExternalLink, CheckCircle, Briefcase } from 'lucide-react';
 import { Card } from '@danieljoffe.com/shared-ui/Card';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -26,6 +26,14 @@ export default function JobUrlInput({ onComplete, onSkip }: JobUrlInputProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [extracted, setExtracted] = useState<ExtractedJob | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -63,7 +71,7 @@ export default function JobUrlInput({ onComplete, onSkip }: JobUrlInputProps) {
           posting_id: data.posting_id,
         });
 
-        setTimeout(onComplete, 1500);
+        timerRef.current = setTimeout(onComplete, 1500);
       } catch (err) {
         setError(
           err instanceof Error

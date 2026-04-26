@@ -44,6 +44,13 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
+const COLUMNS: { key: JobsSortColumn; label: string }[] = [
+  { key: 'score', label: 'Score' },
+  { key: 'title', label: 'Title' },
+  { key: 'company_name', label: 'Company' },
+  { key: 'created_at', label: 'Date' },
+];
+
 export default function JobsListTable({
   filters,
   selectedIds,
@@ -69,6 +76,8 @@ export default function JobsListTable({
     page,
     setPage,
     totalPages,
+    sort: activeSort,
+    order: sortOrder,
     handleSort,
     sortIndicator,
   } = useAdminTableFetch<JobPosting, JobsSortColumn>({
@@ -118,17 +127,10 @@ export default function JobsListTable({
     );
   }
 
-  const COLUMNS: { key: JobsSortColumn; label: string }[] = [
-    { key: 'score', label: 'Score' },
-    { key: 'title', label: 'Title' },
-    { key: 'company_name', label: 'Company' },
-    { key: 'created_at', label: 'Date' },
-  ];
-
   return (
     <div>
       <div className='overflow-x-auto'>
-        <table className='w-full text-sm'>
+        <table className='w-full text-sm' aria-label='Job postings'>
           <thead>
             <tr className='border-b border-border text-left'>
               <th scope='col' className='px-3 py-2 w-10'>
@@ -141,7 +143,18 @@ export default function JobsListTable({
                 />
               </th>
               {COLUMNS.map(col => (
-                <th key={col.key} scope='col' className='px-3 py-2'>
+                <th
+                  key={col.key}
+                  scope='col'
+                  className='px-3 py-2'
+                  aria-sort={
+                    activeSort === col.key
+                      ? sortOrder === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : undefined
+                  }
+                >
                   <button
                     type='button'
                     className='flex items-center gap-1 font-medium text-text-secondary hover:text-text-primary'

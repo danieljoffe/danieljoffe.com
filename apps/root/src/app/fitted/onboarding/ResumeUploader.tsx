@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
 import { Card } from '@danieljoffe.com/shared-ui/Card';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -30,6 +30,14 @@ export default function ResumeUploader({
   const [error, setError] = useState<string | null>(null);
   const [uploaded, setUploaded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const upload = useCallback(
     async (file: File) => {
@@ -64,7 +72,7 @@ export default function ResumeUploader({
 
         setUploaded(true);
         // Brief delay to show success state before advancing
-        setTimeout(onComplete, 1200);
+        timerRef.current = setTimeout(onComplete, 1200);
       } catch (err) {
         setError(
           err instanceof Error
