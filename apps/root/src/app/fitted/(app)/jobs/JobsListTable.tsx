@@ -15,6 +15,7 @@ interface JobsListTableProps {
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
   refreshKey: number;
+  targetId: string | undefined;
 }
 
 function ScoreBadge({ score }: { score: number }) {
@@ -56,19 +57,21 @@ export default function JobsListTable({
   selectedIds,
   onSelectionChange,
   refreshKey,
+  targetId,
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState(0);
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
+    if (targetId) params.target_id = targetId;
     if (filters.minScore) params.min_score = filters.minScore;
     if (filters.status) params.status = filters.status;
     if (filters.search) params.search = filters.search;
     const combined = refreshKey + deleteKey;
     if (combined) params._r = String(combined);
     return params;
-  }, [filters, refreshKey, deleteKey]);
+  }, [targetId, filters, refreshKey, deleteKey]);
 
   const {
     data: postings,

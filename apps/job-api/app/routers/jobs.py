@@ -219,8 +219,8 @@ async def add_manual_job(
             needs_manual_fields=True,
         )
 
-    # Generate external_id from URL
-    external_id = hashlib.sha256(final_url.encode()).hexdigest()[:16]
+    # Generate external_id from URL — must be numeric (bigint column)
+    external_id = str(int(hashlib.sha256(final_url.encode()).hexdigest()[:15], 16))
 
     # Score the job
     score_result = score_job(title, description_html, keyword_config)

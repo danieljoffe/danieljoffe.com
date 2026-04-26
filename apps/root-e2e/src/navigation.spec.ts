@@ -157,8 +157,10 @@ test.describe('mobile navigation', () => {
     // normal Playwright clicks.
     const overlay = page.getByTestId('sheet-overlay');
     await overlay.dispatchEvent('click');
-    // The sheet uses translate-y transition to slide off-screen
-    await expect(sheet).toBeHidden();
+    // The sheet slides off-screen via translate-y-full and sets aria-hidden.
+    // Playwright's toBeHidden() requires display:none or visibility:hidden,
+    // so assert the semantic close state instead.
+    await expect(sheet).toHaveAttribute('aria-hidden', 'true');
   });
 
   test('navigates from More sheet', async ({ page }) => {

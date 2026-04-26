@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -17,13 +18,14 @@ export default function TargetsList() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchTargets = useCallback(async () => {
     try {
       const res = await fetch('/api/targets');
       if (!res.ok) throw new Error('Failed to fetch targets');
-      const data = (await res.json()) as JobTarget[];
-      setTargets(data);
+      const { targets } = (await res.json()) as { targets: JobTarget[] };
+      setTargets(targets);
     } catch {
       toast({ variant: 'error', title: 'Failed to load targets' });
     } finally {
@@ -67,6 +69,13 @@ export default function TargetsList() {
       }
     },
     [toast, fetchTargets]
+  );
+
+  const handleViewJobs = useCallback(
+    (id: string) => {
+      router.push(`/fitted/jobs?target=${id}`);
+    },
+    [router]
   );
 
   const handleCreated = useCallback(() => {
@@ -125,6 +134,7 @@ export default function TargetsList() {
               target={target}
               onActivate={handleActivate}
               onDelete={handleDelete}
+              onViewJobs={handleViewJobs}
             />
           ))}
         </div>
