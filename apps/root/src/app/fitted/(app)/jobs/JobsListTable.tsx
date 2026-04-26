@@ -46,8 +46,14 @@ function timeAgo(dateStr: string | null): string {
   return `${days}d ago`;
 }
 
-const COLUMNS: { key: JobsSortColumn; label: string }[] = [
+const TARGET_COLUMNS: { key: JobsSortColumn; label: string }[] = [
   { key: 'score', label: 'Score' },
+  { key: 'title', label: 'Title' },
+  { key: 'company_name', label: 'Company' },
+  { key: 'created_at', label: 'Posted' },
+];
+
+const GLOBAL_COLUMNS: { key: JobsSortColumn; label: string }[] = [
   { key: 'title', label: 'Title' },
   { key: 'company_name', label: 'Company' },
   { key: 'created_at', label: 'Posted' },
@@ -62,6 +68,8 @@ export default function JobsListTable({
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState(0);
+  const showScore = targetId !== undefined;
+  const columns = showScore ? TARGET_COLUMNS : GLOBAL_COLUMNS;
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -86,7 +94,7 @@ export default function JobsListTable({
     sortIndicator,
   } = useAdminTableFetch<JobPosting, JobsSortColumn>({
     endpoint: '/api/jobs',
-    defaultSort: 'score',
+    defaultSort: showScore ? 'score' : 'created_at',
     pageSize: 20,
     dataKey: 'postings',
     extraParams,
@@ -153,7 +161,7 @@ export default function JobsListTable({
                   className='accent-brand-500'
                 />
               </th>
-              {COLUMNS.map(col => (
+              {columns.map(col => (
                 <th
                   key={col.key}
                   scope='col'
@@ -228,9 +236,11 @@ export default function JobsListTable({
                       className='accent-brand-500'
                     />
                   </td>
-                  <td className='px-3 py-2'>
-                    <ScoreBadge score={job.score} />
-                  </td>
+                  {showScore && (
+                    <td className='px-3 py-2'>
+                      <ScoreBadge score={job.score} />
+                    </td>
+                  )}
                   <td className='px-3 py-2 font-medium'>
                     {job.absolute_url ? (
                       <a
@@ -262,7 +272,7 @@ export default function JobsListTable({
                 </tr>
                 {expandedId === job.id && (
                   <tr>
-                    <td colSpan={8} className='p-0'>
+                    <td colSpan={showScore ? 8 : 7} className='p-0'>
                       <JobDetailPanel
                         posting={job}
                         onDelete={() => {

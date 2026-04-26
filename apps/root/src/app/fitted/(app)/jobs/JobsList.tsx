@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
+import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
 import BatchActionBar from './BatchActionBar';
@@ -312,84 +315,103 @@ export default function JobsList({ targetId }: JobsListProps) {
             <Skeleton key={i} variant='rectangular' width={90} height={36} />
           ))}
         </div>
-      ) : targets.length > 0 ? (
-        <div className='border-b border-border'>
-          <div role='tablist' className='flex gap-1 overflow-x-auto'>
-            <button
-              role='tab'
-              aria-selected={activeTargetId === undefined}
-              onClick={() => handleTabChange(undefined)}
-              className={cn(
-                'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-                activeTargetId === undefined
-                  ? 'border-brand-500 text-brand-500'
-                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
-              )}
+      ) : targets.length === 0 ? (
+        <Card>
+          <CardContent className='flex flex-col items-center gap-3 py-12'>
+            <Text variant='body' as='p'>
+              No active targets. Activate a target to start seeing matched jobs.
+            </Text>
+            <Button
+              name='jobs-go-to-targets'
+              variant='primary'
+              size='sm'
+              as='link'
+              href='/fitted/targets'
             >
-              All Jobs
-            </button>
-            {targets.map(target => (
+              Go to Targets
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className='border-b border-border'>
+            <div role='tablist' className='flex gap-1 overflow-x-auto'>
               <button
-                key={target.id}
                 role='tab'
-                aria-selected={activeTargetId === target.id}
-                onClick={() => handleTabChange(target.id)}
+                aria-selected={activeTargetId === undefined}
+                onClick={() => handleTabChange(undefined)}
                 className={cn(
                   'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-                  activeTargetId === target.id
+                  activeTargetId === undefined
                     ? 'border-brand-500 text-brand-500'
                     : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
                 )}
               >
-                {target.label}
+                All Jobs
               </button>
-            ))}
+              {targets.map(target => (
+                <button
+                  key={target.id}
+                  role='tab'
+                  aria-selected={activeTargetId === target.id}
+                  onClick={() => handleTabChange(target.id)}
+                  className={cn(
+                    'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+                    activeTargetId === target.id
+                      ? 'border-brand-500 text-brand-500'
+                      : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
+                  )}
+                >
+                  {target.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      ) : null}
 
-      {activeTargetId && activationStatus === 'deriving' && (
-        <div className='flex items-center gap-2 text-sm text-text-secondary'>
-          <Spinner size='sm' aria-label='Analyzing target' />
-          <span>Analyzing target profile...</span>
-        </div>
+          {activeTargetId && activationStatus === 'deriving' && (
+            <div className='flex items-center gap-2 text-sm text-text-secondary'>
+              <Spinner size='sm' aria-label='Analyzing target' />
+              <span>Analyzing target profile...</span>
+            </div>
+          )}
+
+          {activeTargetId && activationStatus === 'polling' && (
+            <div className='flex items-center gap-2 text-sm text-text-secondary'>
+              <Spinner size='sm' aria-label='Searching for jobs' />
+              <span>Searching for matching jobs...</span>
+            </div>
+          )}
+
+          {activeTargetId && activationStatus === 'error' && (
+            <div className='text-sm text-error'>
+              Failed to load jobs for this target. Try switching tabs to retry.
+            </div>
+          )}
+
+          <JobsFilter filters={filters} onChange={setFilters} />
+
+          <JobsListTable
+            filters={filters}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            refreshKey={refreshKey}
+            targetId={activeTargetId}
+          />
+
+          <BatchActionBar
+            selectedCount={selectedIds.size}
+            onClear={() => setSelectedIds(new Set())}
+            onBatchGenerate={handleBatchGenerate}
+            onBatchDelete={handleBatchDelete}
+            onBatchExport={handleBatchExport}
+            generating={generating}
+            exporting={exporting}
+            hasApproved={selectedIds.size > 0}
+          />
+        </>
       )}
-
-      {activeTargetId && activationStatus === 'polling' && (
-        <div className='flex items-center gap-2 text-sm text-text-secondary'>
-          <Spinner size='sm' aria-label='Searching for jobs' />
-          <span>Searching for matching jobs...</span>
-        </div>
-      )}
-
-      {activeTargetId && activationStatus === 'error' && (
-        <div className='text-sm text-error'>
-          Failed to load jobs for this target. Try switching tabs to retry.
-        </div>
-      )}
-
-      <JobsFilter filters={filters} onChange={setFilters} />
-
-      <JobsListTable
-        filters={filters}
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        refreshKey={refreshKey}
-        targetId={activeTargetId}
-      />
-
-      <BatchActionBar
-        selectedCount={selectedIds.size}
-        onClear={() => setSelectedIds(new Set())}
-        onBatchGenerate={handleBatchGenerate}
-        onBatchDelete={handleBatchDelete}
-        onBatchExport={handleBatchExport}
-        generating={generating}
-        exporting={exporting}
-        hasApproved={selectedIds.size > 0}
-      />
     </div>
   );
 }
