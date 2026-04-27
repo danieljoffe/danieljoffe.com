@@ -92,6 +92,16 @@ class TargetReferenceJD(BaseModel):
     created_at: datetime
 
 
+# ---- Response shapes ---------------------------------------------------------
+
+
+class UserTargetWithTarget(BaseModel):
+    """A user's link to a target, paired with the full target data."""
+
+    user_target: UserTarget
+    target: JobTarget
+
+
 # ---- Request shapes (router inputs) ----------------------------------------
 
 

@@ -18,6 +18,7 @@ from app.models.targets import (
     TargetReferenceJD,
     TargetUpdate,
     UserTarget,
+    UserTargetWithTarget,
 )
 
 TARGETS_TABLE = "job_targets"
@@ -186,6 +187,108 @@ def set_inactive(supabase: Client, target_id: str) -> JobTarget | None:
     )
     rows = cast(list[dict[str, Any]], resp.data or [])
     return _parse_target(rows[0]) if rows else None
+
+
+# ---- User-scoped target queries ----------------------------------------------
+
+
+def list_for_user(supabase: Client, user_id: str) -> list[JobTarget]:
+    """Return all targets a user is linked to, ordered by creation date."""
+    ut_resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("target_id")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    ut_rows = cast(list[dict[str, Any]], ut_resp.data or [])
+    target_ids = [r["target_id"] for r in ut_rows]
+    if not target_ids:
+        return []
+
+    resp = (
+        supabase.table(TARGETS_TABLE)
+        .select("*")
+        .in_("id", target_ids)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
+
+
+def get_active_for_user(supabase: Client, user_id: str) -> list[JobTarget]:
+    """Return targets a user has active (is_active=True in user_targets)."""
+    ut_resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("target_id")
+        .eq("user_id", user_id)
+        .eq("is_active", True)
+        .execute()
+    )
+    ut_rows = cast(list[dict[str, Any]], ut_resp.data or [])
+    target_ids = [r["target_id"] for r in ut_rows]
+    if not target_ids:
+        return []
+
+    resp = (
+        supabase.table(TARGETS_TABLE)
+        .select("*")
+        .in_("id", target_ids)
+        .execute()
+    )
+    return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
+
+
+def get_user_target_ids(supabase: Client, user_id: str) -> set[str]:
+    """Return the set of target IDs a user is linked to (any status)."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("target_id")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return {r["target_id"] for r in rows}
+
+
+def list_user_targets_with_targets(
+    supabase: Client, user_id: str
+) -> list[UserTargetWithTarget]:
+    """Return a user's targets paired with their junction data (fit score, emphasis)."""
+    ut_resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("*")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    ut_rows = cast(list[dict[str, Any]], ut_resp.data or [])
+    if not ut_rows:
+        return []
+
+    target_ids = [r["target_id"] for r in ut_rows]
+    t_resp = (
+        supabase.table(TARGETS_TABLE)
+        .select("*")
+        .in_("id", target_ids)
+        .execute()
+    )
+    targets_by_id = {
+        cast(dict[str, Any], r)["id"]: _parse_target(cast(dict[str, Any], r))
+        for r in (t_resp.data or [])
+    }
+
+    results: list[UserTargetWithTarget] = []
+    for ut_row in ut_rows:
+        target = targets_by_id.get(ut_row["target_id"])
+        if target is None:
+            continue
+        results.append(
+            UserTargetWithTarget(
+                user_target=_parse_user_target(ut_row),
+                target=target,
+            )
+        )
+    return results
 
 
 # ---- User–Target junction CRUD ----------------------------------------------

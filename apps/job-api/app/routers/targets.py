@@ -22,6 +22,7 @@ from app.models.targets import (
     TargetReferenceJD,
     TargetSuggestions,
     TargetUpdate,
+    UserTargetWithTarget,
 )
 from app.models.schemas import PollResult
 from app.services.experience import optimized
@@ -165,6 +166,19 @@ async def get_active_targets(
 ) -> dict[str, list[JobTarget]]:
     targets = crud.get_active(supabase)
     return {"targets": targets}
+
+
+@router.get("/mine")
+async def get_my_targets(
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, list[UserTargetWithTarget]]:
+    """Return the current user's linked targets with fit scores.
+
+    Uses sentinel user_id '__system__' until multi-user auth is wired up.
+    """
+    user_id = "__system__"
+    items = crud.list_user_targets_with_targets(supabase, user_id)
+    return {"targets": items}
 
 
 @router.get("/{target_id}")
