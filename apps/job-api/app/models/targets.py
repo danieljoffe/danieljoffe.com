@@ -151,3 +151,20 @@ class TargetSuggestions(BaseModel):
     """LLM response containing 2-3 suggested targets."""
 
     suggestions: list[TargetSuggestion] = Field(default_factory=list)
+
+
+# ---- Match result shapes (suggest_and_match output) --------------------------
+
+
+class MatchedSuggestion(BaseModel):
+    """A suggestion that was matched to an existing target or flagged as new."""
+
+    suggestion: TargetSuggestion
+    matched_target: JobTarget | None = None
+    is_new: bool = True
+
+
+class MatchedSuggestions(BaseModel):
+    """Result of suggest_and_match: suggestions with match info."""
+
+    matches: list[MatchedSuggestion] = Field(default_factory=list)

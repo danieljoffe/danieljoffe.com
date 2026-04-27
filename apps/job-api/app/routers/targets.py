@@ -16,6 +16,7 @@ from supabase import Client
 from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_session
 from app.models.targets import (
     JobTarget,
+    MatchedSuggestions,
     ReferenceJDAdd,
     ScoringProfile,
     TargetCreate,
@@ -37,10 +38,8 @@ from app.services.targets.derive_profile_from_label import (
     derive_profile_from_label,
 )
 from app.services.targets.merge import merge_profiles
-from app.services.targets.suggest import (
-    DEFAULT_PURPOSE as SUGGEST_PURPOSE,
-    suggest_targets,
-)
+from app.services.targets.match import suggest_and_match
+from app.services.targets.suggest import DEFAULT_PURPOSE as SUGGEST_PURPOSE
 from app.services.validate import validate_job_url
 
 logger = logging.getLogger(__name__)
@@ -143,21 +142,28 @@ async def list_targets(
 async def suggest(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
-) -> TargetSuggestions:
-    """Suggest 2-3 targets from the user's OptimizedDoc."""
+) -> MatchedSuggestions:
+    """Suggest 2-3 targets, matched against existing targets.
+
+    Returns each suggestion paired with its matched target (if one exists)
+    or flagged as new. Excludes targets the user already has.
+    """
     doc = optimized.get_latest(supabase, user_id=None)
     if doc is None:
         raise HTTPException(status_code=404, detail="No experience profile found")
 
-    suggestions, result = await suggest_targets(llm, payload=doc.payload)
+    user_id = "__system__"
+    matched, result = await suggest_and_match(
+        supabase, llm, payload=doc.payload, user_id=user_id
+    )
     cost_log.record(
         supabase,
         user_id=None,
         purpose=SUGGEST_PURPOSE,
         result=result,
-        metadata={},
+        metadata={"user_id": user_id},
     )
-    return suggestions
+    return matched
 
 
 @router.get("/active")
