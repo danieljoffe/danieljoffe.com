@@ -18,24 +18,25 @@ import { emptyResumeEmphasis } from '../types';
 
 interface ResumeEmphasisEditorProps {
   target: JobTarget;
+  initialEmphasis: ResumeEmphasis | undefined;
   onSaved: () => void;
 }
 
 export default function ResumeEmphasisEditor({
   target,
+  initialEmphasis,
   onSaved,
 }: ResumeEmphasisEditorProps) {
-  const [emphasis, setEmphasis] = useState<ResumeEmphasis>(
-    () => target.resume_emphasis ?? emptyResumeEmphasis()
-  );
+  const baseEmphasis = initialEmphasis ?? emptyResumeEmphasis();
+  const [emphasis, setEmphasis] = useState<ResumeEmphasis>(() => baseEmphasis);
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
   const { toast } = useToast();
 
   const isDirty = useMemo(
-    () => JSON.stringify(emphasis) !== JSON.stringify(target.resume_emphasis),
-    [emphasis, target.resume_emphasis]
+    () => JSON.stringify(emphasis) !== JSON.stringify(baseEmphasis),
+    [emphasis, baseEmphasis]
   );
 
   const handleSave = useCallback(async () => {

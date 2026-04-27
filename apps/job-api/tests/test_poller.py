@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 from app.models.targets import (
     CategoryProfile,
     JobTarget,
-    ResumeEmphasis,
     ScoringProfile,
     SeniorityProfile,
 )
@@ -14,7 +13,6 @@ def _make_target(core_keywords: dict[str, int]) -> JobTarget:
     """Create a minimal target with the given core_skills keywords."""
     return JobTarget(
         id="test-target",
-        user_id=None,
         label="Test Target",
         scoring_profile=ScoringProfile(
             categories={
@@ -22,7 +20,6 @@ def _make_target(core_keywords: dict[str, int]) -> JobTarget:
             },
             seniority=SeniorityProfile(signals=["senior", "staff", "lead"]),
         ),
-        resume_emphasis=ResumeEmphasis(),
         search_keywords=[],
         is_active=True,
         created_at=datetime.now(UTC),

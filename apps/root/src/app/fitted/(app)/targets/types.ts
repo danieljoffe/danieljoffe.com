@@ -33,11 +33,26 @@ export interface ResumeEmphasis {
 
 export interface JobTarget {
   id: string;
-  user_id: string | null;
   label: string;
+  description: string | null;
+  normalized_label: string | null;
   scoring_profile: ScoringProfile;
+  search_keywords: string[];
+  activation_status: string;
+  profile_version: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserTarget {
+  id: string;
+  user_id: string;
+  target_id: string;
   resume_emphasis: ResumeEmphasis;
   is_active: boolean;
+  fit_score: number | null;
+  fit_score_reasoning: string | null;
   created_at: string;
   updated_at: string;
 }

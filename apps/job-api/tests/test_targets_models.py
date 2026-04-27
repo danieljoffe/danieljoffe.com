@@ -113,10 +113,8 @@ def test_target_update_partial():
 def test_job_target_from_dict():
     raw = {
         "id": "abc-123",
-        "user_id": None,
         "label": "Frontend",
         "scoring_profile": {"categories": {}},
-        "resume_emphasis": {},
         "is_active": True,
         "created_at": "2026-04-24T00:00:00Z",
         "updated_at": "2026-04-24T00:00:00Z",
@@ -124,6 +122,7 @@ def test_job_target_from_dict():
     t = JobTarget.model_validate(raw)
     assert t.id == "abc-123"
     assert t.scoring_profile.categories == {}
+    assert t.profile_version == 1
 
 
 def test_target_reference_jd_from_dict():

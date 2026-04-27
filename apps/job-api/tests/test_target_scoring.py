@@ -18,7 +18,6 @@ from app.models.targets import (
     DomainProfile,
     JobTarget,
     NegativeProfile,
-    ResumeEmphasis,
     ScoringProfile,
     SeniorityProfile,
 )
@@ -45,7 +44,6 @@ def _target(
         cats["core_skills"] = CategoryProfile(keywords=core, weight=2.0)
     return JobTarget(
         id=target_id,
-        user_id=None,
         label="Senior FE",
         scoring_profile=ScoringProfile(
             categories=cats,
@@ -53,7 +51,6 @@ def _target(
             domain=DomainProfile(signals=["fintech"], weight=0.5),
             negative=NegativeProfile(keywords=["junior"], weight=-10.0),
         ),
-        resume_emphasis=ResumeEmphasis(),
         is_active=True,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),

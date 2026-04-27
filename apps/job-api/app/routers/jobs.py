@@ -429,7 +429,7 @@ async def add_manual_job(
 
     # Score against all active targets (stages 1+2 inline for manual entry)
     if posting_id and title:
-        active_targets = get_active_target(supabase, user_id=None)
+        active_targets = get_active_target(supabase)
         parsed = parse_jd(description_html)
         for active_target in active_targets:
             try:

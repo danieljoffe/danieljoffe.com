@@ -190,7 +190,12 @@ export default function TargetDetail({ id }: TargetDetailProps) {
         onChanged={handleRefresh}
       />
 
-      <ResumeEmphasisEditor target={target} onSaved={fetchTarget} />
+      {/* TODO: Phase 6 — load initialEmphasis from user_targets */}
+      <ResumeEmphasisEditor
+        target={target}
+        initialEmphasis={undefined}
+        onSaved={fetchTarget}
+      />
     </div>
   );
 }

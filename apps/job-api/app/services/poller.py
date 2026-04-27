@@ -378,7 +378,7 @@ async def _poll_one_source(
         all_external_ids: set[str] = {job.external_id for job in jobs}
 
         # Fetch active targets once — used for title filtering and scoring
-        active_targets = get_active_target(supabase, user_id=None)
+        active_targets = get_active_target(supabase)
 
         rows_to_upsert: list[dict[str, Any]] = []
         for job in jobs:

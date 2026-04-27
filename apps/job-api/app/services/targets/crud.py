@@ -17,9 +17,11 @@ from app.models.targets import (
     TargetCreate,
     TargetReferenceJD,
     TargetUpdate,
+    UserTarget,
 )
 
 TARGETS_TABLE = "job_targets"
+USER_TARGETS_TABLE = "user_targets"
 REF_JDS_TABLE = "target_reference_jds"
 
 
@@ -27,13 +29,29 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
     """Parse a raw Supabase row into a JobTarget, handling JSONB fields."""
     return JobTarget(
         id=row["id"],
-        user_id=row.get("user_id"),
         label=row["label"],
+        description=row.get("description"),
+        normalized_label=row.get("normalized_label"),
         scoring_profile=ScoringProfile.model_validate(row.get("scoring_profile") or {}),
-        resume_emphasis=ResumeEmphasis.model_validate(row.get("resume_emphasis") or {}),
         search_keywords=row.get("search_keywords") or [],
         activation_status=row.get("activation_status") or "idle",
+        profile_version=row.get("profile_version", 1),
         is_active=row["is_active"],
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+    )
+
+
+def _parse_user_target(row: dict[str, Any]) -> UserTarget:
+    """Parse a raw Supabase row into a UserTarget."""
+    return UserTarget(
+        id=row["id"],
+        user_id=row["user_id"],
+        target_id=row["target_id"],
+        resume_emphasis=ResumeEmphasis.model_validate(row.get("resume_emphasis") or {}),
+        is_active=row["is_active"],
+        fit_score=row.get("fit_score"),
+        fit_score_reasoning=row.get("fit_score_reasoning"),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -55,12 +73,13 @@ def _parse_ref_jd(row: dict[str, Any]) -> TargetReferenceJD:
 # ---- Target CRUD -----------------------------------------------------------
 
 
-def create(supabase: Client, user_id: str | None, payload: TargetCreate) -> JobTarget:
+def create(supabase: Client, payload: TargetCreate) -> JobTarget:
+    normalized = payload.label.lower().strip()
     row: dict[str, Any] = {
-        "user_id": user_id,
         "label": payload.label,
+        "description": payload.description,
+        "normalized_label": normalized,
         "scoring_profile": payload.scoring_profile.model_dump(),
-        "resume_emphasis": payload.resume_emphasis.model_dump(),
         "search_keywords": payload.search_keywords,
     }
     resp = supabase.table(TARGETS_TABLE).insert(row).execute()
@@ -78,28 +97,29 @@ def get(supabase: Client, target_id: str) -> JobTarget | None:
     return _parse_target(rows[0]) if rows else None
 
 
-def list_all(supabase: Client, user_id: str | None) -> list[JobTarget]:
-    query = supabase.table(TARGETS_TABLE).select("*").order("created_at", desc=True)
-    if user_id is not None:
-        query = query.eq("user_id", user_id)
-    else:
-        query = query.is_("user_id", "null")
-    resp = query.execute()
+def list_all(supabase: Client) -> list[JobTarget]:
+    """Return all targets, ordered by creation date."""
+    resp = (
+        supabase.table(TARGETS_TABLE)
+        .select("*")
+        .order("created_at", desc=True)
+        .execute()
+    )
     return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
 
 
-def get_active(supabase: Client, user_id: str | None) -> list[JobTarget]:
-    """Return all active targets for this user."""
-    query = (
+def get_active(supabase: Client) -> list[JobTarget]:
+    """Return all globally active targets (active for any user).
+
+    The trigger on user_targets maintains job_targets.is_active, so this
+    query works without joining user_targets.
+    """
+    resp = (
         supabase.table(TARGETS_TABLE)
         .select("*")
         .eq("is_active", True)
+        .execute()
     )
-    if user_id is not None:
-        query = query.eq("user_id", user_id)
-    else:
-        query = query.is_("user_id", "null")
-    resp = query.execute()
     return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
 
 
@@ -109,16 +129,19 @@ def update(
     updates: dict[str, Any] = {"updated_at": datetime.now(UTC).isoformat()}
     if payload.label is not None:
         updates["label"] = payload.label
+        updates["normalized_label"] = payload.label.lower().strip()
+    if payload.description is not None:
+        updates["description"] = payload.description
     if payload.scoring_profile is not None:
         updates["scoring_profile"] = payload.scoring_profile.model_dump()
-    if payload.resume_emphasis is not None:
-        updates["resume_emphasis"] = payload.resume_emphasis.model_dump()
     if payload.search_keywords is not None:
         updates["search_keywords"] = payload.search_keywords
     if payload.activation_status is not None:
         updates["activation_status"] = payload.activation_status
     if payload.is_active is not None:
         updates["is_active"] = payload.is_active
+    if payload.profile_version is not None:
+        updates["profile_version"] = payload.profile_version
 
     resp = (
         supabase.table(TARGETS_TABLE).update(updates).eq("id", target_id).execute()
@@ -134,8 +157,12 @@ def delete(supabase: Client, target_id: str) -> bool:
     return bool(resp.data)
 
 
-def set_active(supabase: Client, user_id: str | None, target_id: str) -> JobTarget | None:
-    """Activate a single target (does not deactivate others)."""
+def set_active(supabase: Client, target_id: str) -> JobTarget | None:
+    """Directly set job_targets.is_active = True.
+
+    Prefer link_user_to_target() for multi-user flows — the DB trigger
+    will keep is_active in sync. This is kept for single-user / system use.
+    """
     resp = (
         supabase.table(TARGETS_TABLE)
         .update({"is_active": True, "updated_at": datetime.now(UTC).isoformat()})
@@ -147,7 +174,10 @@ def set_active(supabase: Client, user_id: str | None, target_id: str) -> JobTarg
 
 
 def set_inactive(supabase: Client, target_id: str) -> JobTarget | None:
-    """Deactivate a single target."""
+    """Directly set job_targets.is_active = False.
+
+    Prefer unlink/deactivate via user_targets for multi-user flows.
+    """
     resp = (
         supabase.table(TARGETS_TABLE)
         .update({"is_active": False, "updated_at": datetime.now(UTC).isoformat()})
@@ -156,6 +186,115 @@ def set_inactive(supabase: Client, target_id: str) -> JobTarget | None:
     )
     rows = cast(list[dict[str, Any]], resp.data or [])
     return _parse_target(rows[0]) if rows else None
+
+
+# ---- User–Target junction CRUD ----------------------------------------------
+
+
+def link_user_to_target(
+    supabase: Client,
+    *,
+    user_id: str,
+    target_id: str,
+    resume_emphasis: ResumeEmphasis | None = None,
+    is_active: bool = True,
+    fit_score: int | None = None,
+    fit_score_reasoning: str | None = None,
+) -> UserTarget:
+    """Link a user to a target (upsert). The DB trigger syncs job_targets.is_active."""
+    row: dict[str, Any] = {
+        "user_id": user_id,
+        "target_id": target_id,
+        "resume_emphasis": (resume_emphasis or ResumeEmphasis()).model_dump(),
+        "is_active": is_active,
+        "updated_at": datetime.now(UTC).isoformat(),
+    }
+    if fit_score is not None:
+        row["fit_score"] = fit_score
+    if fit_score_reasoning is not None:
+        row["fit_score_reasoning"] = fit_score_reasoning
+
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .upsert(row, on_conflict="user_id,target_id")
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError("Failed to upsert user_targets row")
+    return _parse_user_target(rows[0])
+
+
+def unlink_user_from_target(
+    supabase: Client, user_id: str, target_id: str
+) -> bool:
+    """Remove a user–target link. The DB trigger will deactivate the target
+    if no other users have it active."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .delete()
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    return bool(resp.data)
+
+
+def get_user_target(
+    supabase: Client, user_id: str, target_id: str
+) -> UserTarget | None:
+    """Get a specific user–target link."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("*")
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return _parse_user_target(rows[0]) if rows else None
+
+
+def list_user_targets(supabase: Client, user_id: str) -> list[UserTarget]:
+    """Return all targets linked to a user."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("*")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return [_parse_user_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
+
+
+def set_user_target_active(
+    supabase: Client, user_id: str, target_id: str
+) -> UserTarget | None:
+    """Activate a user's link to a target. The DB trigger syncs job_targets.is_active."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .update({"is_active": True, "updated_at": datetime.now(UTC).isoformat()})
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return _parse_user_target(rows[0]) if rows else None
+
+
+def set_user_target_inactive(
+    supabase: Client, user_id: str, target_id: str
+) -> UserTarget | None:
+    """Deactivate a user's link to a target. The DB trigger syncs job_targets.is_active."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .update({"is_active": False, "updated_at": datetime.now(UTC).isoformat()})
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return _parse_user_target(rows[0]) if rows else None
 
 
 # ---- Reference JD CRUD -----------------------------------------------------

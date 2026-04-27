@@ -127,14 +127,14 @@ async def create_target(
     body: TargetCreate,
     supabase: Client = Depends(get_supabase),
 ) -> JobTarget:
-    return crud.create(supabase, user_id=None, payload=body)
+    return crud.create(supabase, payload=body)
 
 
 @router.get("")
 async def list_targets(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, list[JobTarget]]:
-    targets = crud.list_all(supabase, user_id=None)
+    targets = crud.list_all(supabase)
     return {"targets": targets}
 
 
@@ -163,7 +163,7 @@ async def suggest(
 async def get_active_targets(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, list[JobTarget]]:
-    targets = crud.get_active(supabase, user_id=None)
+    targets = crud.get_active(supabase)
     return {"targets": targets}
 
 
@@ -197,7 +197,7 @@ async def activate_target(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
 ) -> JobTarget:
-    target = crud.set_active(supabase, user_id=None, target_id=target_id)
+    target = crud.set_active(supabase, target_id=target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
@@ -340,9 +340,7 @@ async def create_target_from_posting(
     absolute_url: str | None = posting.get("absolute_url")
 
     # Create the target
-    target = crud.create(
-        supabase, user_id=None, payload=TargetCreate(label=title)
-    )
+    target = crud.create(supabase, payload=TargetCreate(label=title))
 
     # Derive scoring profile from description if substantial
     jd_text = strip_html(description_html)
@@ -386,9 +384,7 @@ async def create_target_from_posting(
             )
 
     # Activate the target
-    activated = crud.set_active(
-        supabase, user_id=None, target_id=target.id
-    )
+    activated = crud.set_active(supabase, target_id=target.id)
     return activated or target
 
 

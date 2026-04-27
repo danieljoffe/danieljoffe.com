@@ -57,13 +57,28 @@ class ResumeEmphasis(BaseModel):
 
 class JobTarget(BaseModel):
     id: str
-    user_id: str | None = None
     label: str
+    description: str | None = None
+    normalized_label: str | None = None
     scoring_profile: ScoringProfile
-    resume_emphasis: ResumeEmphasis
     search_keywords: list[str] = Field(default_factory=list)
     activation_status: str = "idle"
+    profile_version: int = 1
     is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserTarget(BaseModel):
+    """Junction row linking a user to a shared target."""
+
+    id: str
+    user_id: str
+    target_id: str
+    resume_emphasis: ResumeEmphasis
+    is_active: bool
+    fit_score: int | None = None
+    fit_score_reasoning: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -82,18 +97,19 @@ class TargetReferenceJD(BaseModel):
 
 class TargetCreate(BaseModel):
     label: str = Field(min_length=1, max_length=200)
+    description: str | None = None
     scoring_profile: ScoringProfile = Field(default_factory=ScoringProfile)
-    resume_emphasis: ResumeEmphasis = Field(default_factory=ResumeEmphasis)
     search_keywords: list[str] = Field(default_factory=list)
 
 
 class TargetUpdate(BaseModel):
     label: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = None
     scoring_profile: ScoringProfile | None = None
-    resume_emphasis: ResumeEmphasis | None = None
     search_keywords: list[str] | None = None
     activation_status: str | None = None
     is_active: bool | None = None
+    profile_version: int | None = None
 
 
 class ReferenceJDAdd(BaseModel):

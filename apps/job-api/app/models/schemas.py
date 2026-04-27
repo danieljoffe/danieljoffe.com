@@ -131,5 +131,6 @@ class JobTargetScore(BaseModel):
     matched_keywords: list[str]
     excluded: bool
     scoring_status: ScoringStatus = "stage1"
+    scored_profile_version: int = 1
     created_at: datetime
     updated_at: datetime
