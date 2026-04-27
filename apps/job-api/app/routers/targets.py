@@ -318,6 +318,7 @@ async def derive_target_profile(
         TargetUpdate(
             scoring_profile=derived.scoring_profile,
             search_keywords=derived.search_keywords,
+            profile_version=target.profile_version + 1,
         ),
     )
     if updated is None:
@@ -507,13 +508,14 @@ async def add_reference_jd(
     all_ref_jds = crud.list_reference_jds(supabase, target_id)
     composite = merge_profiles([jd.extracted_profile for jd in all_ref_jds])
 
-    # Update target with merged profile + search keywords from latest derivation
+    # Update target with merged profile + search keywords, bump version for re-scoring
     updated = crud.update(
         supabase,
         target_id,
         TargetUpdate(
             scoring_profile=composite,
             search_keywords=derived.search_keywords,
+            profile_version=target.profile_version + 1,
         ),
     )
     if updated is None:

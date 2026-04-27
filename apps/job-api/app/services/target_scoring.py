@@ -47,6 +47,7 @@ def _parse_score(row: dict[str, Any]) -> JobTargetScore:
         matched_keywords=row.get("matched_keywords") or [],
         excluded=row.get("excluded", False),
         scoring_status=row.get("scoring_status", "stage1"),
+        scored_profile_version=row.get("scored_profile_version", 1),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -62,6 +63,7 @@ def _upsert_score(
     matched_keywords: list[str],
     excluded: bool,
     scoring_status: ScoringStatus,
+    scored_profile_version: int = 1,
 ) -> JobTargetScore:
     """Upsert a score row and return the parsed result."""
     row: dict[str, Any] = {
@@ -72,6 +74,7 @@ def _upsert_score(
         "matched_keywords": matched_keywords,
         "excluded": excluded,
         "scoring_status": scoring_status,
+        "scored_profile_version": scored_profile_version,
         "updated_at": datetime.now(UTC).isoformat(),
     }
     resp = (
@@ -112,6 +115,7 @@ def score_title_and_upsert(
         matched_keywords=result.matched_keywords,
         excluded=result.excluded,
         scoring_status="stage1",
+        scored_profile_version=target.profile_version,
     )
 
 
@@ -144,27 +148,30 @@ def score_and_upsert(
         matched_keywords=result.matched_keywords,
         excluded=result.excluded,
         scoring_status="stage2",
+        scored_profile_version=target.profile_version,
     )
 
 
 def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
-    """Re-score jobs that passed stage 1 for this target. Returns count scored.
+    """Re-score stale jobs for this target. Returns count scored.
 
-    Only fetches jobs with existing ``job_target_scores`` rows for this
-    target (i.e., jobs whose titles matched during stage 1). Used by the
-    re-score endpoint when a target's profile changes.
+    Only fetches jobs with existing ``job_target_scores`` rows whose
+    ``scored_profile_version`` is less than the target's current
+    ``profile_version`` (lazy re-scoring). Used by the re-score endpoint
+    when a target's profile changes.
     """
     batch_size = 500
     offset = 0
     total_scored = 0
 
-    # Fetch job IDs that have a score row for this target
+    # Fetch job IDs with stale scores for this target
     all_job_ids: list[str] = []
     while True:
         resp = (
             supabase.table(TABLE)
             .select("job_posting_id")
             .eq("target_id", target.id)
+            .lt("scored_profile_version", target.profile_version)
             .range(offset, offset + batch_size - 1)
             .execute()
         )
@@ -209,6 +216,7 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
                     "matched_keywords": result.matched_keywords,
                     "excluded": result.excluded,
                     "scoring_status": "stage2",
+                    "scored_profile_version": target.profile_version,
                     "updated_at": now,
                 }
             )

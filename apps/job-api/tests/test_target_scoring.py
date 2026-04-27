@@ -179,7 +179,8 @@ def test_bulk_score_for_target_scores_stage1_jobs(
             mock.execute.return_value.data = []
         return mock
 
-    supabase.table.return_value.select.return_value.eq.return_value.range.side_effect = (
+    # Chain: .select().eq().lt().range()
+    supabase.table.return_value.select.return_value.eq.return_value.lt.return_value.range.side_effect = (
         range_side_effect
     )
     supabase.table.return_value.select.return_value.in_.return_value.execute.return_value.data = (
@@ -193,11 +194,11 @@ def test_bulk_score_for_target_scores_stage1_jobs(
     assert count == 2
 
 
-def test_bulk_score_for_target_handles_no_stage1_jobs() -> None:
-    """Returns 0 when no jobs have stage 1 scores for this target."""
+def test_bulk_score_for_target_handles_no_stale_jobs() -> None:
+    """Returns 0 when no jobs have stale scores for this target."""
     supabase = MagicMock()
-    # No existing target score rows
-    supabase.table.return_value.select.return_value.eq.return_value.range.return_value.execute.return_value.data = []
+    # No stale score rows (chain: .select().eq().lt().range())
+    supabase.table.return_value.select.return_value.eq.return_value.lt.return_value.range.return_value.execute.return_value.data = []
 
     target = _target(core={"React": 3})
     count = bulk_score_for_target(supabase, target)
