@@ -23,6 +23,7 @@ from app.models.targets import (
     TargetReferenceJD,
     TargetSuggestions,
     TargetUpdate,
+    UserTarget,
     UserTargetWithTarget,
 )
 from app.models.schemas import PollResult
@@ -38,6 +39,10 @@ from app.services.targets.derive_profile_from_label import (
     derive_profile_from_label,
 )
 from app.services.targets.merge import merge_profiles
+from app.services.targets.fit_score import (
+    DEFAULT_PURPOSE as FIT_SCORE_PURPOSE,
+    derive_fit_score,
+)
 from app.services.targets.match import suggest_and_match
 from app.services.targets.suggest import DEFAULT_PURPOSE as SUGGEST_PURPOSE
 from app.services.validate import validate_job_url
@@ -236,6 +241,49 @@ async def deactivate_target(
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
     return target
+
+
+@router.post("/{target_id}/link")
+async def link_target(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> UserTarget:
+    """Link the current user to a target and derive a fit score.
+
+    Uses sentinel user_id '__system__' until multi-user auth is wired up.
+    """
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+
+    user_id = "__system__"
+
+    # Derive fit score if we have an experience profile
+    fit_score: int | None = None
+    fit_reasoning: str | None = None
+    doc = optimized.get_latest(supabase, user_id=None)
+    if doc is not None:
+        fit_result, result = await derive_fit_score(
+            llm, payload=doc.payload, target=target
+        )
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose=FIT_SCORE_PURPOSE,
+            result=result,
+            metadata={"target_id": target_id, "user_id": user_id},
+        )
+        fit_score = fit_result.fit_score
+        fit_reasoning = fit_result.reasoning
+
+    return crud.link_user_to_target(
+        supabase,
+        user_id=user_id,
+        target_id=target_id,
+        fit_score=fit_score,
+        fit_score_reasoning=fit_reasoning,
+    )
 
 
 @router.post("/{target_id}/derive-profile")
