@@ -13,13 +13,7 @@ import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
 import CreateTargetModal from './CreateTargetModal';
-import type { JobTarget } from './types';
-
-interface Suggestion {
-  label: string;
-  description: string;
-  core_skills: string[];
-}
+import type { JobTarget, MatchedSuggestion, MatchedSuggestions } from './types';
 
 export default function TargetsList() {
   const [targets, setTargets] = useState<JobTarget[]>([]);
@@ -108,11 +102,9 @@ export default function TargetsList() {
     fetchTargets();
   }, [fetchTargets]);
 
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<MatchedSuggestion[]>([]);
   const [suggesting, setSuggesting] = useState(false);
-  const [creatingSuggestion, setCreatingSuggestion] = useState<string | null>(
-    null
-  );
+  const [addingSuggestion, setAddingSuggestion] = useState<string | null>(null);
 
   const handleSuggest = useCallback(async () => {
     setSuggesting(true);
@@ -120,8 +112,8 @@ export default function TargetsList() {
     try {
       const res = await fetch('/api/targets/suggest', { method: 'POST' });
       if (!res.ok) throw new Error('Suggest failed');
-      const data = (await res.json()) as { suggestions: Suggestion[] };
-      setSuggestions(data.suggestions);
+      const data = (await res.json()) as MatchedSuggestions;
+      setSuggestions(data.matches);
     } catch {
       toast({ variant: 'error', title: 'Failed to generate suggestions' });
     } finally {
@@ -129,26 +121,48 @@ export default function TargetsList() {
     }
   }, [toast]);
 
-  const handleCreateFromSuggestion = useCallback(
-    async (suggestion: Suggestion) => {
-      setCreatingSuggestion(suggestion.label);
+  const handleAddSuggestion = useCallback(
+    async (match: MatchedSuggestion) => {
+      const label = match.suggestion.label;
+      setAddingSuggestion(label);
       try {
-        const res = await fetch('/api/targets', {
+        let targetId: string;
+
+        if (match.is_new) {
+          // Create a new target then link
+          const createRes = await fetch('/api/targets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              label,
+              description: match.suggestion.description,
+            }),
+          });
+          if (!createRes.ok) throw new Error('Create failed');
+          const created = (await createRes.json()) as JobTarget;
+          targetId = created.id;
+        } else {
+          targetId = match.matched_target!.id;
+        }
+
+        // Link the user to the target (derives fit score)
+        const linkRes = await fetch(`/api/targets/${targetId}/link`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ label: suggestion.label }),
         });
-        if (!res.ok) throw new Error('Create failed');
+        if (!linkRes.ok) throw new Error('Link failed');
+
         toast({
           variant: 'success',
-          title: `Target "${suggestion.label}" created`,
+          title: match.is_new
+            ? `Target "${label}" created`
+            : `Linked to "${label}"`,
         });
-        setSuggestions(prev => prev.filter(s => s.label !== suggestion.label));
+        setSuggestions(prev => prev.filter(s => s.suggestion.label !== label));
         fetchTargets();
       } catch {
-        toast({ variant: 'error', title: 'Failed to create target' });
+        toast({ variant: 'error', title: 'Failed to add target' });
       } finally {
-        setCreatingSuggestion(null);
+        setAddingSuggestion(null);
       }
     },
     [toast, fetchTargets]
@@ -227,18 +241,25 @@ export default function TargetsList() {
         <div className='flex flex-col gap-3'>
           <Text variant='caption'>Suggested targets from your experience</Text>
           <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-            {suggestions.map(s => (
-              <Card key={s.label} padding='none'>
+            {suggestions.map(match => (
+              <Card key={match.suggestion.label} padding='none'>
                 <CardContent className='p-4 flex flex-col gap-2'>
-                  <Text variant='body' className='font-medium'>
-                    {s.label}
-                  </Text>
+                  <div className='flex items-center gap-2'>
+                    <Text variant='body' className='font-medium'>
+                      {match.suggestion.label}
+                    </Text>
+                    {!match.is_new && (
+                      <Badge variant='default' size='sm'>
+                        Existing
+                      </Badge>
+                    )}
+                  </div>
                   <Text variant='caption' className='text-text-secondary'>
-                    {s.description}
+                    {match.suggestion.description}
                   </Text>
-                  {s.core_skills.length > 0 && (
+                  {match.suggestion.core_skills.length > 0 && (
                     <div className='flex flex-wrap gap-1'>
-                      {s.core_skills.map(skill => (
+                      {match.suggestion.core_skills.map(skill => (
                         <Badge key={skill} variant='default' size='sm'>
                           {skill}
                         </Badge>
@@ -246,16 +267,18 @@ export default function TargetsList() {
                     </div>
                   )}
                   <Button
-                    name={`create-suggestion-${s.label}`}
+                    name={`add-suggestion-${match.suggestion.label}`}
                     variant='primary'
                     size='sm'
-                    onClick={() => handleCreateFromSuggestion(s)}
-                    disabled={creatingSuggestion === s.label}
+                    onClick={() => handleAddSuggestion(match)}
+                    disabled={addingSuggestion === match.suggestion.label}
                     className='mt-1 self-start'
                   >
-                    {creatingSuggestion === s.label
-                      ? 'Creating...'
-                      : 'Create Target'}
+                    {addingSuggestion === match.suggestion.label
+                      ? 'Adding...'
+                      : match.is_new
+                        ? 'Create Target'
+                        : 'Add Target'}
                   </Button>
                 </CardContent>
               </Card>

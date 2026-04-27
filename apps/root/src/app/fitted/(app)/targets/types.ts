@@ -66,6 +66,22 @@ export interface TargetReferenceJD {
   created_at: string;
 }
 
+export interface TargetSuggestion {
+  label: string;
+  description: string;
+  core_skills: string[];
+}
+
+export interface MatchedSuggestion {
+  suggestion: TargetSuggestion;
+  matched_target: JobTarget | null;
+  is_new: boolean;
+}
+
+export interface MatchedSuggestions {
+  matches: MatchedSuggestion[];
+}
+
 export function emptyScoringProfile(): ScoringProfile {
   return {
     categories: {},
