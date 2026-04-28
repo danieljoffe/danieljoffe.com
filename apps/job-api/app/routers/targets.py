@@ -13,7 +13,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from postgrest.types import CountMethod
 from supabase import Client
 
-from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_session
+from app.dependencies import (
+    get_current_user_id,
+    get_llm_client,
+    get_supabase,
+    verify_api_key_or_session,
+)
 from app.models.targets import (
     JobTarget,
     MatchedSuggestions,
@@ -148,6 +153,7 @@ async def list_targets(
 async def suggest(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str = Depends(get_current_user_id),
 ) -> MatchedSuggestions:
     """Suggest 2-3 targets, matched against existing targets.
 
@@ -158,7 +164,6 @@ async def suggest(
     if doc is None:
         raise HTTPException(status_code=404, detail="No experience profile found")
 
-    user_id = "__system__"
     matched, result = await suggest_and_match(
         supabase, llm, payload=doc.payload, user_id=user_id
     )
@@ -183,12 +188,9 @@ async def get_active_targets(
 @router.get("/mine")
 async def get_my_targets(
     supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
 ) -> dict[str, list[UserTargetWithTarget]]:
-    """Return the current user's linked targets with fit scores.
-
-    Uses sentinel user_id '__system__' until multi-user auth is wired up.
-    """
-    user_id = "__system__"
+    """Return the current user's linked targets with fit scores."""
     items = crud.list_user_targets_with_targets(supabase, user_id)
     return {"targets": items}
 
@@ -222,13 +224,14 @@ async def activate_target(
     background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str = Depends(get_current_user_id),
 ) -> JobTarget:
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
     crud.link_user_to_target(
-        supabase, user_id="__system__", target_id=target_id, is_active=True
+        supabase, user_id=user_id, target_id=target_id, is_active=True
     )
     refreshed = crud.get(supabase, target_id) or target
 
@@ -242,13 +245,14 @@ async def activate_target(
 async def deactivate_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
 ) -> JobTarget:
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
     crud.set_user_target_inactive(
-        supabase, user_id="__system__", target_id=target_id
+        supabase, user_id=user_id, target_id=target_id
     )
     return crud.get(supabase, target_id) or target
 
@@ -258,16 +262,12 @@ async def link_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str = Depends(get_current_user_id),
 ) -> UserTarget:
-    """Link the current user to a target and derive a fit score.
-
-    Uses sentinel user_id '__system__' until multi-user auth is wired up.
-    """
+    """Link the current user to a target and derive a fit score."""
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
-
-    user_id = "__system__"
 
     # Derive fit score if we have an experience profile
     fit_score: int | None = None
@@ -301,17 +301,16 @@ async def update_target_emphasis(
     target_id: str,
     body: ResumeEmphasis,
     supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
 ) -> UserTarget:
     """Upsert the current user's resume_emphasis for a target.
 
-    Creates the user_targets link if it doesn't exist. Uses sentinel
-    user_id '__system__' until multi-user auth is wired up.
+    Creates the user_targets link if it doesn't exist.
     """
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
-    user_id = "__system__"
     return crud.update_user_target_emphasis(
         supabase, user_id=user_id, target_id=target_id, emphasis=body
     )

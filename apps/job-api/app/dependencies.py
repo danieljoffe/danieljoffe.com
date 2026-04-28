@@ -114,3 +114,42 @@ def verify_api_key_or_session(
                 if payload.get("sub") == "tools-admin":
                     return "session"
     raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# Single-admin user identifier used for per-user data (user_targets, etc.)
+# until multi-user auth lands. Matches the JWT `sub` claim minted by
+# apps/root/src/lib/adminSession.ts.
+SINGLE_USER_ID = "tools-admin"
+
+
+def get_current_user_id(
+    request: Request,
+    key: str | None = Security(api_key_header),
+    s: Settings = Depends(get_settings),
+) -> str:
+    """Return the stable user_id for the current request.
+
+    Today there's only one admin (sub=`tools-admin`), so this returns
+    `SINGLE_USER_ID` for both session and API-key callers. When real
+    multi-user auth lands, this will return the JWT sub directly so each
+    user gets their own user_targets rows.
+    """
+    if s.admin_session_secret and len(s.admin_session_secret) >= 32:
+        token = _extract_bearer_token(request)
+        if token:
+            try:
+                payload = jwt.decode(
+                    token,
+                    s.admin_session_secret,
+                    algorithms=["HS256"],
+                    options={"require": ["exp", "sub"]},
+                )
+            except jwt.PyJWTError:
+                pass
+            else:
+                sub = payload.get("sub")
+                if isinstance(sub, str) and sub:
+                    return sub
+    if _api_key_matches(key, s.job_api_key):
+        return SINGLE_USER_ID
+    raise HTTPException(status_code=401, detail="Unauthorized")
