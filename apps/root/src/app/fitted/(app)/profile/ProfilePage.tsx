@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
   Card,
@@ -11,7 +12,9 @@ import {
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import ConversationChatModal from '../../_components/ConversationChatModal';
 import type {
   Gap,
   GapHealthResult,
@@ -46,6 +49,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [optimized, setOptimized] = useState<OptimizedDoc | null>(null);
   const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -125,13 +129,24 @@ export default function ProfilePage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div>
-        <Heading variant='component' as='h1'>
-          Profile
-        </Heading>
-        <Text variant='body' className='mt-1 text-text-secondary'>
-          Your experience and career health
-        </Text>
+      <div className='flex items-start justify-between gap-3'>
+        <div>
+          <Heading variant='component' as='h1'>
+            Profile
+          </Heading>
+          <Text variant='body' className='mt-1 text-text-secondary'>
+            Your experience and career health
+          </Text>
+        </div>
+        <Button
+          name='profile-improve-ai'
+          variant='outline'
+          size='sm'
+          onClick={() => setChatOpen(true)}
+        >
+          <Sparkles className='size-4' aria-hidden />
+          <span>Improve with AI</span>
+        </Button>
       </div>
 
       {/* Experience */}
@@ -233,6 +248,12 @@ export default function ProfilePage() {
       {gapHealth && gapHealth.gaps.length > 0 && (
         <GapsList gaps={gapHealth.gaps} />
       )}
+
+      <ConversationChatModal
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        onComplete={fetchData}
+      />
     </div>
   );
 }

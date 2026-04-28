@@ -25,6 +25,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import ConversationChatModal from '../_components/ConversationChatModal';
 import type {
   GapHealthResult,
   GapTier,
@@ -78,6 +79,7 @@ export default function DashboardPage() {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -343,10 +345,23 @@ export default function DashboardPage() {
               aria-label='Document completeness'
             />
 
-            {gapHealth.gap_pct >= 45 && (
+            {gapHealth.tier === 'red' && (
               <Alert variant='warning'>
-                Resume generation is blocked until gaps are below 45%. Fill in
-                missing outcomes and metrics to unlock it.
+                <div className='flex flex-col items-start gap-2'>
+                  <span>
+                    Critical gaps detected. Generated resumes will be missing
+                    outcomes and metrics until you fill them in.
+                  </span>
+                  <Button
+                    name='dashboard-open-chat-from-alert'
+                    variant='outline'
+                    size='sm'
+                    onClick={() => setChatOpen(true)}
+                  >
+                    <Sparkles className='size-4' aria-hidden />
+                    <span>Answer questions to fill gaps</span>
+                  </Button>
+                </div>
               </Alert>
             )}
 
@@ -393,8 +408,7 @@ export default function DashboardPage() {
                 name='dashboard-improve-ai'
                 variant='outline'
                 size='sm'
-                as='link'
-                href='/fitted/onboarding'
+                onClick={() => setChatOpen(true)}
               >
                 <Sparkles className='size-4' aria-hidden />
                 <span>Improve with AI</span>
@@ -607,6 +621,12 @@ export default function DashboardPage() {
       </Card>
 
       {fileInput}
+
+      <ConversationChatModal
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        onComplete={fetchData}
+      />
     </div>
   );
 }

@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import ConversationChat from '../_components/ConversationChat';
 import PathChooser from './PathChooser';
 import ResumeUploader from './ResumeUploader';
 import JobUrlInput, { type JobData } from './JobUrlInput';
 import TargetSuggestions from './TargetSuggestions';
-import ConversationChat from './ConversationChat';
 import CompletionScreen from './CompletionScreen';
 
 export type OnboardingPath = 'A' | 'B' | 'C';
