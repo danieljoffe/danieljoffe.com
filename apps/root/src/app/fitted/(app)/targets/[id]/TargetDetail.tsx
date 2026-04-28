@@ -8,7 +8,12 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type { JobTarget, TargetReferenceJD } from '../types';
+import type {
+  JobTarget,
+  ResumeEmphasis,
+  TargetReferenceJD,
+  UserTargetWithTarget,
+} from '../types';
 import ScoringProfileEditor from './ScoringProfileEditor';
 import ReferenceJDList from './ReferenceJDList';
 import ResumeEmphasisEditor from './ResumeEmphasisEditor';
@@ -20,6 +25,9 @@ interface TargetDetailProps {
 export default function TargetDetail({ id }: TargetDetailProps) {
   const [target, setTarget] = useState<JobTarget | null>(null);
   const [referenceJDs, setReferenceJDs] = useState<TargetReferenceJD[]>([]);
+  const [userEmphasis, setUserEmphasis] = useState<ResumeEmphasis | undefined>(
+    undefined
+  );
   const [loading, setLoading] = useState(true);
   const [editingLabel, setEditingLabel] = useState(false);
   const [labelDraft, setLabelDraft] = useState('');
@@ -49,17 +57,35 @@ export default function TargetDetail({ id }: TargetDetailProps) {
     }
   }, [id, toast]);
 
+  const fetchUserEmphasis = useCallback(async () => {
+    try {
+      const res = await fetch('/api/targets/mine');
+      if (!res.ok) throw new Error('Failed to fetch user targets');
+      const { targets } = (await res.json()) as {
+        targets: UserTargetWithTarget[];
+      };
+      const link = targets.find(t => t.target.id === id);
+      setUserEmphasis(link?.user_target.resume_emphasis);
+    } catch {
+      // Non-fatal: editor will start from empty emphasis
+    }
+  }, [id]);
+
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([fetchTarget(), fetchReferenceJDs()]).finally(() => {
+    Promise.all([
+      fetchTarget(),
+      fetchReferenceJDs(),
+      fetchUserEmphasis(),
+    ]).finally(() => {
       if (!cancelled) setLoading(false);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [fetchTarget, fetchReferenceJDs]);
+  }, [fetchTarget, fetchReferenceJDs, fetchUserEmphasis]);
 
   const handleSaveLabel = useCallback(async () => {
     const trimmed = labelDraft.trim();
@@ -190,11 +216,10 @@ export default function TargetDetail({ id }: TargetDetailProps) {
         onChanged={handleRefresh}
       />
 
-      {/* TODO: Phase 6 — load initialEmphasis from user_targets */}
       <ResumeEmphasisEditor
         target={target}
-        initialEmphasis={undefined}
-        onSaved={fetchTarget}
+        initialEmphasis={userEmphasis}
+        onSaved={fetchUserEmphasis}
       />
     </div>
   );

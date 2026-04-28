@@ -57,6 +57,11 @@ export interface UserTarget {
   updated_at: string;
 }
 
+export interface UserTargetWithTarget {
+  user_target: UserTarget;
+  target: JobTarget;
+}
+
 export interface TargetReferenceJD {
   id: string;
   target_id: string;

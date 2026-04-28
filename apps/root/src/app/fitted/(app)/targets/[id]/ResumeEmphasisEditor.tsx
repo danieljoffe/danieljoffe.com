@@ -42,10 +42,10 @@ export default function ResumeEmphasisEditor({
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/targets/${target.id}`, {
+      const res = await fetch(`/api/targets/${target.id}/emphasis`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resume_emphasis: emphasis }),
+        body: JSON.stringify(emphasis),
       });
       if (!res.ok) throw new Error('Save failed');
       toast({ variant: 'success', title: 'Resume emphasis saved' });

@@ -400,6 +400,34 @@ def set_user_target_inactive(
     return _parse_user_target(rows[0]) if rows else None
 
 
+def update_user_target_emphasis(
+    supabase: Client,
+    user_id: str,
+    target_id: str,
+    emphasis: ResumeEmphasis,
+) -> UserTarget:
+    """Upsert the resume_emphasis for a user's link to a target.
+
+    Creates the link row if it doesn't exist; otherwise updates only the
+    emphasis (preserving fit_score, is_active, etc.).
+    """
+    row: dict[str, Any] = {
+        "user_id": user_id,
+        "target_id": target_id,
+        "resume_emphasis": emphasis.model_dump(),
+        "updated_at": datetime.now(UTC).isoformat(),
+    }
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .upsert(row, on_conflict="user_id,target_id")
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError("Failed to upsert user_targets emphasis row")
+    return _parse_user_target(rows[0])
+
+
 # ---- Reference JD CRUD -----------------------------------------------------
 
 
