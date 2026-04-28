@@ -10,6 +10,8 @@ import type { JobTarget } from './types';
 
 interface TargetCardProps {
   target: JobTarget;
+  fitScore: number | null;
+  fitScoreReasoning: string | null;
   onActivate: (id: string) => void;
   onDeactivate: (id: string) => void;
   onDelete: (id: string) => void;
@@ -23,8 +25,19 @@ function countKeywords(target: JobTarget): number {
   );
 }
 
+function fitScoreVariant(
+  score: number
+): 'success' | 'brand' | 'warning' | 'default' {
+  if (score >= 85) return 'success';
+  if (score >= 70) return 'brand';
+  if (score >= 50) return 'warning';
+  return 'default';
+}
+
 export default function TargetCard({
   target,
+  fitScore,
+  fitScoreReasoning,
   onActivate,
   onDeactivate,
   onDelete,
@@ -45,11 +58,22 @@ export default function TargetCard({
               {target.label}
             </Heading>
           </Link>
-          {target.is_active && (
-            <Badge variant='brand-solid' size='sm'>
-              Active
-            </Badge>
-          )}
+          <div className='flex items-center gap-1.5 flex-wrap justify-end'>
+            {fitScore !== null && (
+              <Badge
+                variant={fitScoreVariant(fitScore)}
+                size='sm'
+                title={fitScoreReasoning ?? undefined}
+              >
+                Fit {fitScore}
+              </Badge>
+            )}
+            {target.is_active && (
+              <Badge variant='brand-solid' size='sm'>
+                Active
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className='flex flex-wrap gap-x-4 gap-y-1'>

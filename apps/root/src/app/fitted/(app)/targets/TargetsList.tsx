@@ -13,10 +13,15 @@ import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
 import CreateTargetModal from './CreateTargetModal';
-import type { JobTarget, MatchedSuggestion, MatchedSuggestions } from './types';
+import type {
+  JobTarget,
+  MatchedSuggestion,
+  MatchedSuggestions,
+  UserTargetWithTarget,
+} from './types';
 
 export default function TargetsList() {
-  const [targets, setTargets] = useState<JobTarget[]>([]);
+  const [targets, setTargets] = useState<UserTargetWithTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const { toast } = useToast();
@@ -24,9 +29,11 @@ export default function TargetsList() {
 
   const fetchTargets = useCallback(async () => {
     try {
-      const res = await fetch('/api/targets');
+      const res = await fetch('/api/targets/mine');
       if (!res.ok) throw new Error('Failed to fetch targets');
-      const { targets } = (await res.json()) as { targets: JobTarget[] };
+      const { targets } = (await res.json()) as {
+        targets: UserTargetWithTarget[];
+      };
       setTargets(targets);
     } catch {
       toast({ variant: 'error', title: 'Failed to load targets' });
@@ -327,10 +334,12 @@ export default function TargetsList() {
         </Card>
       ) : (
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {targets.map(target => (
+          {targets.map(({ user_target, target }) => (
             <TargetCard
               key={target.id}
               target={target}
+              fitScore={user_target.fit_score}
+              fitScoreReasoning={user_target.fit_score_reasoning}
               onActivate={handleActivate}
               onDeactivate={handleDeactivate}
               onDelete={handleDelete}
