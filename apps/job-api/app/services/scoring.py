@@ -173,6 +173,7 @@ _CATEGORY_TO_FIELD: dict[str, str] = {
 }
 
 _SENIORITY_SIGNAL_WEIGHT = 2.0
+_TITLE_WEIGHT = 2.0
 _DEFAULT_NORMALIZER = 30.0
 
 
@@ -223,7 +224,6 @@ def score_job_with_profile(
 
     # Title as a high-weight implicit section
     title_lower = title.lower()
-    _TITLE_WEIGHT = 2.0
 
     # ---- Category keywords across sections ----
     for cat_name, cat_profile in profile.categories.items():
@@ -237,7 +237,7 @@ def score_job_with_profile(
                 keyword_points += kw_weight * cat_profile.weight * _TITLE_WEIGHT
                 matched = True
 
-            # Section matches (frequency × section weight)
+            # Section matches (frequency x section weight)
             for section in parsed.sections:
                 occurrences = _count_keyword_occurrences(keyword, section.text_lower)
                 if occurrences > 0:
@@ -296,11 +296,12 @@ def score_job_with_profile(
 
         # Check requirements-type sections only
         for section in parsed.sections:
-            if section.name in negative_sections:
-                if _keyword_or_alias_in_text(keyword, section.text_lower):
-                    breakdown.negative += profile.negative.weight
-                    excluded = True
-                    break
+            if section.name in negative_sections and _keyword_or_alias_in_text(
+                keyword, section.text_lower
+            ):
+                breakdown.negative += profile.negative.weight
+                excluded = True
+                break
 
     # Dynamic normalization
     raw = (

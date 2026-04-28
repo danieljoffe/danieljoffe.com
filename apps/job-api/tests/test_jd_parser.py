@@ -2,11 +2,9 @@
 
 from app.services.jd_parser import (
     SECTION_WEIGHTS,
-    JDSection,
     classify_heading,
     parse_jd,
 )
-
 
 # ---- classify_heading tests ------------------------------------------------
 

@@ -28,12 +28,15 @@ from app.services.extract import (
 from app.services.jd_parser import parse_jd
 from app.services.sanitize import sanitize_html
 from app.services.scoring import strip_html
-from app.services.target_scoring import bulk_score_for_target
 from app.services.target_scoring import (
-    score_and_upsert as target_score_and_upsert,
+    bulk_score_for_target,
     update_global_score,
 )
-from app.services.targets.crud import get as get_target, get_active as get_active_target
+from app.services.target_scoring import (
+    score_and_upsert as target_score_and_upsert,
+)
+from app.services.targets.crud import get as get_target
+from app.services.targets.crud import get_active as get_active_target
 from app.services.validate import (
     is_banned_domain,
     registrable_domain,

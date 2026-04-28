@@ -13,10 +13,6 @@ from typing import Any, cast
 
 from supabase import Client
 
-# Supabase .execute().data is typed as list[JSON] (a broad union).
-# In practice every row is a dict — this alias makes casts readable.
-Row = dict[str, Any]
-
 from app.models.insights import (
     CostBucket,
     FunnelStage,
@@ -30,6 +26,10 @@ from app.models.insights import (
     TargetInsights,
     WeeklyCount,
 )
+
+# Supabase .execute().data is typed as list[JSON] (a broad union).
+# In practice every row is a dict — this alias makes casts readable.
+Row = dict[str, Any]
 
 # Funnel stage ordering (used for consistent display)
 FUNNEL_ORDER = [
@@ -150,7 +150,10 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
 
 def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     # Fetch all targets for labels
-    targets_data = cast(list[Row], supabase.table("job_targets").select("id, label").execute().data or [])
+    targets_data = cast(
+        list[Row],
+        supabase.table("job_targets").select("id, label").execute().data or [],
+    )
     target_labels = {t["id"]: t["label"] for t in targets_data}
 
     # Fetch postings with target + score + status

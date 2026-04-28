@@ -25,9 +25,6 @@ from app.models.targets import (
     JobTarget,
     MatchedSuggestion,
     MatchedSuggestions,
-    ScoringProfile,
-    TargetSuggestion,
-    TargetSuggestions,
 )
 from app.services.llm.client import LLMClient
 from app.services.targets.crud import (

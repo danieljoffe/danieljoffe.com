@@ -5,7 +5,6 @@ triggers LLM-powered profile derivation and merges the result into the
 target's composite scoring profile.
 """
 
-import asyncio
 import logging
 from typing import Any, cast
 
@@ -19,6 +18,7 @@ from app.dependencies import (
     get_supabase,
     verify_api_key_or_session,
 )
+from app.models.schemas import PollResult
 from app.models.targets import (
     JobTarget,
     MatchedSuggestions,
@@ -27,12 +27,10 @@ from app.models.targets import (
     ScoringProfile,
     TargetCreate,
     TargetReferenceJD,
-    TargetSuggestions,
     TargetUpdate,
     UserTarget,
     UserTargetWithTarget,
 )
-from app.models.schemas import PollResult
 from app.services.experience import optimized
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
@@ -42,14 +40,18 @@ from app.services.targets import crud
 from app.services.targets.derive_profile import DEFAULT_PURPOSE, derive_profile_from_jd
 from app.services.targets.derive_profile_from_label import (
     DEFAULT_PURPOSE as DERIVE_LABEL_PURPOSE,
+)
+from app.services.targets.derive_profile_from_label import (
     derive_profile_from_label,
 )
-from app.services.targets.merge import merge_profiles
 from app.services.targets.fit_score import (
     DEFAULT_PURPOSE as FIT_SCORE_PURPOSE,
+)
+from app.services.targets.fit_score import (
     derive_fit_score,
 )
 from app.services.targets.match import suggest_and_match
+from app.services.targets.merge import merge_profiles
 from app.services.targets.suggest import DEFAULT_PURPOSE as SUGGEST_PURPOSE
 from app.services.validate import validate_job_url
 

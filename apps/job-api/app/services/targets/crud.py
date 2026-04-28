@@ -291,7 +291,7 @@ def list_user_targets_with_targets(
     return results
 
 
-# ---- User–Target junction CRUD ----------------------------------------------
+# ---- User-Target junction CRUD ----------------------------------------------
 
 
 def link_user_to_target(

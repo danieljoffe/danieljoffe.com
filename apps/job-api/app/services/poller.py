@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 from collections.abc import Callable, Coroutine
 from datetime import UTC, datetime
@@ -16,6 +17,8 @@ from app.services import notify
 from app.services.analysis.analyze import analyze_job
 from app.services.analysis.persistence import (
     get_cached as get_cached_analysis,
+)
+from app.services.analysis.persistence import (
     persist as persist_analysis,
 )
 from app.services.analysis.scoring import blend_scores, scorecard_to_numeric
@@ -24,22 +27,27 @@ from app.services.experience.optimized import get_latest as get_latest_optimized
 from app.services.extract import extract_salary_from_text
 from app.services.firecrawl import fetch_firecrawl_jobs
 from app.services.greenhouse import fetch_board_jobs
+from app.services.jd_parser import parse_jd
 from app.services.jsonld import fetch_jsonld_jobs
 from app.services.lever import fetch_lever_jobs
 from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import record as record_llm_cost
 from app.services.sanitize import sanitize_html
-from app.services.jd_parser import parse_jd
 from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
 from app.services.target_scoring import (
     batch_update_global_scores,
+)
+from app.services.target_scoring import (
     mark_complete as mark_target_scores_complete,
+)
+from app.services.target_scoring import (
     score_and_upsert as target_score_and_upsert,
+)
+from app.services.target_scoring import (
     score_title_and_upsert as target_title_score_and_upsert,
-    update_global_score,
 )
 from app.services.targets.crud import get_active as get_active_target
 from app.services.validate import validate_job_url
@@ -221,8 +229,8 @@ async def _validate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 async def _run_llm_scoring_for_row(
     supabase: Client,
     row_data: dict[str, Any],
-    optimized_doc: "OptimizedDoc",
-    llm: "LLMClient",
+    optimized_doc: OptimizedDoc,
+    llm: LLMClient,
 ) -> None:
     """Stage 3: Run LLM analysis and mark target scores as complete.
 
@@ -333,16 +341,14 @@ async def _run_llm_scoring_for_row(
             row_data.get("title", "?"),
         )
         # Still mark as complete on error — don't leave jobs stuck in stage2
-        try:
+        with contextlib.suppress(Exception):
             await asyncio.to_thread(mark_target_scores_complete, supabase, job_id)
-        except Exception:
-            pass
 
 
 async def _poll_one_source(
     source: dict[str, Any],
     supabase: Client,
-    optimized_doc: "OptimizedDoc | None" = None,
+    optimized_doc: OptimizedDoc | None = None,
 ) -> dict[str, Any]:
     """Poll a single job source. Returns a per-source summary dict.
 
@@ -635,7 +641,7 @@ async def _poll_one_source_for_target(
     source: dict[str, Any],
     supabase: Client,
     target: JobTarget,
-    optimized_doc: "OptimizedDoc | None" = None,
+    optimized_doc: OptimizedDoc | None = None,
 ) -> dict[str, Any]:
     """Poll a single source for a specific target. Three-stage pipeline."""
     summary: dict[str, Any] = {"polled": False, "new": 0, "updated": 0, "error": None}
