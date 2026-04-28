@@ -114,6 +114,14 @@ export default function TargetsList() {
       if (!res.ok) throw new Error('Suggest failed');
       const data = (await res.json()) as MatchedSuggestions;
       setSuggestions(data.matches);
+      if (data.matches.length === 0) {
+        toast({
+          variant: 'info',
+          title: 'No new suggestions',
+          description:
+            'Your existing targets already cover roles that fit your experience.',
+        });
+      }
     } catch {
       toast({ variant: 'error', title: 'Failed to generate suggestions' });
     } finally {
