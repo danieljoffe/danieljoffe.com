@@ -44,11 +44,13 @@ Current statuses (`new`, `saved`, `applied`, `rejected`, `archived`) need to exp
 
 ### 2. Scoring & Analysis
 
-- **List view**: Keyword score at a glance (v1, implemented — 5 categories, ~200 keywords, 0-100 scale)
-- **Detail view (LLM, not yet built)**: Click into a job → loading skeleton → LLM-generated analysis populates:
-  - **Scorecard**: Skills matched, skills missing, nice-to-haves, seniority fit, domain fit (each with confidence indicator)
-  - **Recommendation**: One-line judgment call ("Apply — strong technical fit, K8s gap is a nice-to-have not a blocker")
-- **v2 scoring**: Claude API-powered scoring to supplement/replace keyword matching (blocked on LLM client stabilization)
+- **Three-stage scoring pipeline** (target-relative, replaced the static keyword scorer):
+  - Stage 1: bidirectional keyword aliasing on the job title + first paragraph
+  - Stage 2: section-aware JD parser extracts requirements
+  - Stage 3: LLM scores against the target's scoring profile, blended 60% keyword / 40% LLM
+  - Pipeline is cached, batched, and concurrent (commit `220fe4f8`)
+- **List view**: Per-target score column, scoring status indicator (queued / scoring / scored / failed)
+- **Detail view**: Scorecard (skills matched/missing, seniority fit, domain fit, recommendation) generated on demand via Analyze button
 
 ### 3. Resume Tailoring (core value, #185 — in progress in parallel session)
 
@@ -136,10 +138,13 @@ A target is a lens the user applies to their entire job search. Each target repr
   - Resume generation knows which experience emphasis to use without asking every time
   - Works for any career direction, not just roles we anticipated
 
-- **Schema implications**:
-  - `job_targets` table: `id`, `user_id`, `label`, `scoring_profile` (JSONB), `resume_emphasis` (JSONB), `created_at`, `updated_at`
-  - `target_reference_jds` table: `id`, `target_id`, `jd_url`, `jd_text`, `extracted_profile` (JSONB), `created_at`
-  - `job_postings` gets a nullable `target_id` FK (a job can be unassigned or assigned to a target)
+- **Schema implications** (shared-targets architecture, feature/fitted):
+  - `job_targets` table: `id`, `label`, `normalized_label`, `description`, `scoring_profile` (JSONB), `search_keywords`, `is_active`, `profile_version`, `activation_status`, `created_at`, `updated_at`. Targets are shared entities, no `user_id`.
+  - `user_targets` junction: `id`, `user_id`, `target_id`, `resume_emphasis` (JSONB), `is_active`, `fit_score`, `fit_score_reasoning`, `created_at`, `updated_at`. Per-user link with LLM-derived fit score.
+  - Postgres trigger keeps `job_targets.is_active` in sync with any active `user_targets` row (poller continues to query global active flag).
+  - `target_reference_jds`: `id`, `target_id`, `jd_url`, `jd_text`, `extracted_profile` (JSONB), `created_at`
+  - `job_postings.target_id` nullable FK (unassigned or assigned to a target)
+  - `job_target_scores.scored_profile_version` for lazy re-scoring when `target.profile_version` bumps
   - Insights queries group by target
 
 - **Zero state**: No targets exist until the user creates one. The onboarding flow guides target creation (see Onboarding section). No job scoring or discovery runs until at least one target exists.
@@ -338,8 +343,13 @@ These are hard rules the system enforces:
 - [x] Settings page (notification preferences at /fitted/settings)
 - [x] v2 LLM-powered scoring (keyword pre-filter >= 40, LLM analysis, 60/40 blend)
 - [x] Firecrawl fallback (#407, three-tier cascade: HTTP → HTML parsing → Firecrawl)
-- [ ] Cover letter generation (future, shared renderer, document_type param in schema)
-- [ ] Multi-target UI (target switcher, cross-target insights)
+- [x] Three-stage scoring pipeline (keyword + section-aware JD parser + LLM, target-relative)
+- [x] Cover letter generation (UI + .docx export, shared renderer with document_type param)
+- [x] Shared targets architecture (Phase 1–6: schema + user_targets junction + matching + fit scores + profile versioning + UI)
+- [x] LLM-derived fit scores per user_target link (with reasoning, surfaced as badge in TargetsList)
+- [x] Profile versioning with lazy re-scoring (poller re-scores stale rows when target.profile_version bumps)
+- [x] Session-derived user_id (`get_current_user_id` extracts JWT sub, ready for multi-user)
+- [ ] Multi-target UI cross-target insights (per-target velocity / score-distribution comparison)
 - [ ] Per-target resume templates (future, one default template for v1)
 
 ## Migration Path
