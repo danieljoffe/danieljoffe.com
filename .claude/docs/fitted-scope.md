@@ -54,6 +54,8 @@ Current statuses (`new`, `saved`, `applied`, `rejected`, `archived`) need to exp
 
 ### 3. Resume Tailoring (core value, #185 — in progress in parallel session)
 
+<!-- TODO: CONTINUE HERE -->
+
 - **Experience document**: Single master document, authored conversationally (#185 onboarding + update chat). The tailor reads the optimized derivative, not the prose directly. The user can add inline annotations to control per-target behavior (e.g. "Don't include my helpdesk role on engineering resumes", "Emphasize the roadmap work for product manager targets"). Annotations are stored as part of the prose and parsed into structured metadata on the optimized doc during derivation.
 - **Batch generation**: Select multiple jobs → hit Generate → resumes produce one at a time. Default batch size: 5. Batches above 5 show a warning about processing time. Larger batches are accepted but processed in groups behind the scenes to avoid overwhelming the system.
 - **Draft → approve flow**: Each resume generates as a draft. User can free-text edit the entire draft. Approved resumes can be exported as .docx.
@@ -373,6 +375,28 @@ The current `/tools/admin/jobs/` dashboard becomes a data source for the admin. 
 13. **Resume reuse**: Within a target, existing resumes can be referenced for similar jobs. Falls back to master doc if variance is too high.
 14. **Onboarding**: Three paths (A: resume+role, B: resume only, C: from scratch). Skip button always available.
 15. **Master document**: Single source of truth. Multiple resume uploads merge into it. 45% gap threshold gates resume generation.
+
+## Manual Verification Checklist (PR #545 — shared targets)
+
+Automated checks are green (mypy, 626 unit tests, lint, frontend tsc, dashboard/jobs/targets browser walk all pass with zero console errors). The data plumbing for shared targets + fit scores is verified end-to-end. The remaining pieces require an authenticated browser and live LLM calls — walk these next time you're using the tool:
+
+**Golden path** (one role end-to-end):
+
+- [ ] `/fitted/targets` → click **Suggest** → confirm LLM-derived adjacent roles render with `existing` vs `new` badges, and roles you already have are excluded
+- [ ] Pick one suggested role → confirm it links via `POST /targets/{id}/link` and a fit score + reasoning is persisted on the `user_targets` row
+- [ ] `/fitted/targets` cards now show the fit-score badge for that target (existing pre–Phase 4 targets won't have one until they're re-linked or the score is back-filled)
+- [ ] Activate the target → confirm `job_targets.is_active` flips via the Postgres trigger and the poller picks it up on next cycle
+- [ ] `/fitted/jobs?target={id}` → pick a high-scoring posting → click **Tailor Resume** → confirm draft generates against the _target's_ scoring profile + _user's_ resume_emphasis (not a global blob)
+- [ ] Approve the draft → export `.docx` → spot-check that the emphasis fields applied
+- [ ] (Phase 5 sanity) edit the target's scoring profile → confirm `profile_version` bumps → next poll re-scores stale jobs lazily (`scored_profile_version < target.profile_version`)
+
+**Edge cases worth poking at:**
+
+- [ ] Suggest while signed in to a brand-new test account (no existing links) — confirm fit scores derive cleanly the first time
+- [ ] Two targets with similar scoring profiles → confirm `match.py` exact/trigram matching prefers the existing target instead of creating a duplicate
+- [ ] Deactivate the only active `user_targets` row for a target → trigger should flip `job_targets.is_active = false` and poller should stop fetching for it
+
+If any of these fail, the failure mode is most likely in `services/targets/match.py`, `services/targets/fit_score.py`, or the `sync_target_active` trigger — those are the newest surfaces.
 
 ## Open Questions
 
