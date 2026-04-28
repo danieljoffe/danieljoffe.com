@@ -61,8 +61,23 @@ class JobTarget(BaseModel):
     description: str | None = None
     normalized_label: str | None = None
     scoring_profile: ScoringProfile
-    search_keywords: list[str] = Field(default_factory=list)
-    activation_status: str = "idle"
+    search_keywords: list[str] = Field(
+        default_factory=list,
+        description=(
+            "ATS query keywords (Greenhouse q=, etc.). Distinct from "
+            "scoring_profile.categories.*.keywords, which weight JD text "
+            "during scoring — these drive which jobs get fetched in the "
+            "first place."
+        ),
+    )
+    activation_status: str = Field(
+        default="idle",
+        description=(
+            "Background pipeline state: idle | deriving | polling | ready "
+            "| error. Distinct from is_active, the user-facing toggle for "
+            "whether jobs should be queried for this target."
+        ),
+    )
     profile_version: int = 1
     is_active: bool
     created_at: datetime
