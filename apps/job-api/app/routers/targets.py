@@ -223,14 +223,19 @@ async def activate_target(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
 ) -> JobTarget:
-    target = crud.set_active(supabase, target_id=target_id)
+    target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
-    background_tasks.add_task(
-        _activate_pipeline, supabase, llm, target
+    crud.link_user_to_target(
+        supabase, user_id="__system__", target_id=target_id, is_active=True
     )
-    return target
+    refreshed = crud.get(supabase, target_id) or target
+
+    background_tasks.add_task(
+        _activate_pipeline, supabase, llm, refreshed
+    )
+    return refreshed
 
 
 @router.post("/{target_id}/deactivate")
@@ -238,10 +243,14 @@ async def deactivate_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> JobTarget:
-    target = crud.set_inactive(supabase, target_id)
+    target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
-    return target
+
+    crud.set_user_target_inactive(
+        supabase, user_id="__system__", target_id=target_id
+    )
+    return crud.get(supabase, target_id) or target
 
 
 @router.post("/{target_id}/link")

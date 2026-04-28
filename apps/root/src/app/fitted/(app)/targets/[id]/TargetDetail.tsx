@@ -50,8 +50,10 @@ export default function TargetDetail({ id }: TargetDetailProps) {
     try {
       const res = await fetch(`/api/targets/${id}/reference-jds`);
       if (!res.ok) throw new Error('Failed to fetch reference JDs');
-      const data = (await res.json()) as TargetReferenceJD[];
-      setReferenceJDs(data);
+      const payload = (await res.json()) as {
+        reference_jds: TargetReferenceJD[];
+      };
+      setReferenceJDs(payload.reference_jds);
     } catch {
       toast({ variant: 'error', title: 'Failed to load reference JDs' });
     }
