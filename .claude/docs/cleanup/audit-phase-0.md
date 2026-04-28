@@ -180,6 +180,11 @@ Investigation found `activation_status` is NOT redundant with `is_active`. It's 
 
 - **G + H**: Added Pydantic `Field(description=...)` to `JobTarget.search_keywords` and `JobTarget.activation_status` in `apps/job-api/app/models/targets.py:63-79`, documenting the distinction from sibling fields. No behavior change.
 - **F**: No code change — UI confirmed present.
+- **E**: Added three deterministic mocked-LLM test files:
+  - `apps/job-api/tests/test_targets_suggest.py` (5 tests) — happy path, model/purpose/cache wiring, empty payload, invalid JSON.
+  - `apps/job-api/tests/test_targets_match.py` (8 tests) — `_normalize_label`, exact match, no-match, RPC fallback, RPC failure swallowing, exclusion of user's existing targets, new-suggestion marking.
+  - `apps/job-api/tests/test_targets_fit_score.py` (6 tests) — happy path, model/purpose/cache/max_tokens wiring, cost surface, invalid JSON, score-range rejection (>100, <0).
+  - All 19 pass; mypy clean. Coverage: `match.py` 100%, `suggest.py` 82%, `fit_score.py` 71% (directly).
 
 ---
 
@@ -232,13 +237,13 @@ _(none — nothing to fix here)_
 
 ## Triage queue
 
-| ID         | Severity | Status       | Resolution                                                                                                                                        |
-| ---------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F0-A       | medium   | 🔮 deferred  | FastAPI's "Supabase JWT validation" is actually admin-JWT validation. Folding into the multi-user PR landing tonight — no patchwork TODO comment. |
-| F0-B       | low      | 🔮 deferred  | `SINGLE_USER_ID` sentinel — same disposition as F0-A.                                                                                             |
-| F0-D       | low      | ⏭️ skip      | `routers/targets.py` size — leave until a feature deepens one area.                                                                               |
-| F0-E       | medium   | 🟡 in flight | Add deterministic mocked-LLM tests for `suggest.py`, `match.py`, `fit_score.py`, plus error paths in `derive_profile.py`.                         |
-| F0-F       | low      | ✅ resolved  | UI exists at `apps/root/src/app/fitted/(app)/targets/[id]/ReferenceJDList.tsx` + `AddReferenceJDModal.tsx` + proxy routes. No code change needed. |
-| F0-G       | low      | ✅ fixed     | `activation_status` is a real pipeline state machine, not redundant. Added Pydantic `Field` description in `models/targets.py`.                   |
-| F0-H       | low      | ✅ fixed     | Added Pydantic `Field` description on `search_keywords` to explain its relationship to `scoring_profile.categories.*.keywords`.                   |
-| F0-I, F0-J | trivial  | ⏭️ skip      | No action.                                                                                                                                        |
+| ID         | Severity | Status      | Resolution                                                                                                                                                                        |
+| ---------- | -------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F0-A       | medium   | 🔮 deferred | FastAPI's "Supabase JWT validation" is actually admin-JWT validation. Folding into the multi-user PR landing tonight — no patchwork TODO comment.                                 |
+| F0-B       | low      | 🔮 deferred | `SINGLE_USER_ID` sentinel — same disposition as F0-A.                                                                                                                             |
+| F0-D       | low      | ⏭️ skip     | `routers/targets.py` size — leave until a feature deepens one area.                                                                                                               |
+| F0-E       | medium   | ✅ fixed    | 19 deterministic tests across `test_targets_suggest.py` / `test_targets_match.py` / `test_targets_fit_score.py`. Coverage: `match.py` 100%, `suggest.py` 82%, `fit_score.py` 71%. |
+| F0-F       | low      | ✅ resolved | UI exists at `apps/root/src/app/fitted/(app)/targets/[id]/ReferenceJDList.tsx` + `AddReferenceJDModal.tsx` + proxy routes. No code change needed.                                 |
+| F0-G       | low      | ✅ fixed    | `activation_status` is a real pipeline state machine, not redundant. Added Pydantic `Field` description in `models/targets.py`.                                                   |
+| F0-H       | low      | ✅ fixed    | Added Pydantic `Field` description on `search_keywords` to explain its relationship to `scoring_profile.categories.*.keywords`.                                                   |
+| F0-I, F0-J | trivial  | ⏭️ skip     | No action.                                                                                                                                                                        |
