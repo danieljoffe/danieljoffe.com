@@ -61,7 +61,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
+            # gh pr view --json files truncates at 100 files; use the paginated REST endpoint instead.
+            CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --paginate --jq '.[].filename')
           else
             CHANGED=$(git diff --name-only "${{ steps.shas.outputs.base }}" "${{ steps.shas.outputs.head }}")
           fi
