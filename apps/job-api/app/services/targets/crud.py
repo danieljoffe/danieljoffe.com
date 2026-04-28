@@ -304,11 +304,24 @@ def link_user_to_target(
     fit_score: int | None = None,
     fit_score_reasoning: str | None = None,
 ) -> UserTarget:
-    """Link a user to a target (upsert). The DB trigger syncs job_targets.is_active."""
+    """Link a user to a target (upsert). The DB trigger syncs job_targets.is_active.
+
+    Existing rows preserve their resume_emphasis when ``resume_emphasis`` is not
+    explicitly supplied — the upsert only writes the fields it received, so
+    re-linking a target never wipes the user's saved emphasis.
+    """
+    existing = get_user_target(supabase, user_id=user_id, target_id=target_id)
+    if resume_emphasis is None:
+        emphasis_payload = (
+            existing.resume_emphasis if existing else ResumeEmphasis()
+        ).model_dump()
+    else:
+        emphasis_payload = resume_emphasis.model_dump()
+
     row: dict[str, Any] = {
         "user_id": user_id,
         "target_id": target_id,
-        "resume_emphasis": (resume_emphasis or ResumeEmphasis()).model_dump(),
+        "resume_emphasis": emphasis_payload,
         "is_active": is_active,
         "updated_at": datetime.now(UTC).isoformat(),
     }

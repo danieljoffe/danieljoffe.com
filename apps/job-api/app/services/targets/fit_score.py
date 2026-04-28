@@ -46,7 +46,7 @@ not just the label.
 
 class FitScoreResult(BaseModel):
     fit_score: int = Field(ge=0, le=100)
-    reasoning: str = Field(max_length=500)
+    reasoning: str = Field(max_length=1500)
 
 
 def _build_prompt(payload: OptimizedPayload, target: JobTarget) -> str:
