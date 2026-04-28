@@ -26,8 +26,6 @@ from app.models.conversation import (
     TurnResult,
 )
 from app.models.experience import (
-    Annotation,
-    AnnotationCreate,
     ConversationType,
     OptimizedDoc,
     OptimizedDocUpsert,
@@ -314,40 +312,6 @@ async def get_gap_health(
     if doc is None:
         return gap_tracker.gap_health(OptimizedPayload())
     return gap_tracker.gap_health(doc.payload)
-
-
-# ---- Annotations (#499) ---------------------------------------------------
-
-
-@router.get("/annotations")
-async def list_annotations(
-    supabase: Client = Depends(get_supabase),
-) -> dict[str, list[Annotation]]:
-    return {"annotations": annotations.list_annotations(supabase, user_id=None)}
-
-
-@router.post("/annotations", status_code=201)
-async def add_annotation(
-    body: AnnotationCreate,
-    supabase: Client = Depends(get_supabase),
-) -> OptimizedDoc:
-    try:
-        return annotations.add_annotation(supabase, user_id=None, body=body)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-
-
-@router.delete("/annotations/{annotation_id}")
-async def delete_annotation(
-    annotation_id: str,
-    supabase: Client = Depends(get_supabase),
-) -> OptimizedDoc:
-    try:
-        return annotations.remove_annotation(
-            supabase, user_id=None, annotation_id=annotation_id
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 # ---- Preferences ----------------------------------------------------------
