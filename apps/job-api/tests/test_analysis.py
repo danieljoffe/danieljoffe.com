@@ -325,10 +325,7 @@ async def test_router_cache_hit_skips_llm(
 
     try:
         tc = TestClient(app)
-        resp = tc.post(
-            "/analysis/job-1",
-            json={"job_description": "We want a React engineer."},
-        )
+        resp = tc.post("/analysis/job-1")
         assert resp.status_code == 200
         data = resp.json()
         assert data["id"] == "rec-analysis-1"
@@ -359,10 +356,10 @@ async def test_router_cache_miss_runs_llm_and_persists(
 
     llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _valid_analysis_json()})
 
-    # Mock job posting existence check
+    # Mock job posting existence check (now includes description_html)
     supabase = MagicMock()
     supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value.data = [
-        {"id": "job-1"}
+        {"id": "job-1", "description_html": "We want a React engineer."}
     ]
 
     from fastapi.testclient import TestClient
@@ -375,10 +372,7 @@ async def test_router_cache_miss_runs_llm_and_persists(
 
     try:
         tc = TestClient(app)
-        resp = tc.post(
-            "/analysis/job-1",
-            json={"job_description": "We want a React engineer."},
-        )
+        resp = tc.post("/analysis/job-1")
         assert resp.status_code == 200
         data = resp.json()
         assert data["id"] == "rec-analysis-1"
@@ -407,12 +401,41 @@ async def test_router_missing_optimized_doc_returns_404(
 
     try:
         tc = TestClient(app)
-        resp = tc.post(
-            "/analysis/job-1",
-            json={"job_description": "JD text"},
-        )
+        resp = tc.post("/analysis/job-1")
         assert resp.status_code == 404
         assert "optimized doc" in resp.json()["detail"].lower()
+    finally:
+        app.dependency_overrides.clear()
+
+
+async def test_router_empty_description_returns_422(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A job with no description_html should 422, not silently call the LLM."""
+    monkeypatch.setattr(persistence_mod, "get_cached", lambda *_a, **_kw: None)
+
+    from app.services.experience import optimized as opt_mod
+
+    monkeypatch.setattr(opt_mod, "get_latest", lambda *_a, **_kw: _optimized_doc())
+
+    supabase = MagicMock()
+    supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value.data = [
+        {"id": "job-1", "description_html": ""}
+    ]
+
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    app.dependency_overrides[get_supabase] = lambda: supabase
+    app.dependency_overrides[get_llm_client] = lambda: MockLLMClient()
+    app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+
+    try:
+        tc = TestClient(app)
+        resp = tc.post("/analysis/job-1")
+        assert resp.status_code == 422
+        assert "description" in resp.json()["detail"].lower()
     finally:
         app.dependency_overrides.clear()
 
@@ -439,10 +462,7 @@ async def test_router_missing_job_posting_returns_404(
 
     try:
         tc = TestClient(app)
-        resp = tc.post(
-            "/analysis/job-1",
-            json={"job_description": "JD text"},
-        )
+        resp = tc.post("/analysis/job-1")
         assert resp.status_code == 404
         assert "job posting" in resp.json()["detail"].lower()
     finally:

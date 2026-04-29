@@ -80,8 +80,6 @@ export default function JobDetailPanel({
     try {
       const res = await fetch(`/api/jobs/analysis/${posting.id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_description: '' }),
       });
       if (res.ok) {
         const data = (await res.json()) as JobAnalysis;

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
 from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_session
-from app.models.analysis import AnalyzeRequest, JobAnalysisRecord
+from app.models.analysis import JobAnalysisRecord
 from app.services.analysis import persistence
 from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job
 from app.services.experience import optimized
@@ -26,7 +26,6 @@ router = APIRouter(
 @router.post("/{job_id}")
 async def create_analysis(
     job_id: str,
-    body: AnalyzeRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
 ) -> JobAnalysisRecord:
@@ -43,10 +42,10 @@ async def create_analysis(
             detail="No optimized doc found. Derive one via POST /experience/derive first.",
         )
 
-    # 3. Verify job posting exists
+    # 3. Fetch job posting (existence + description in one round-trip)
     resp = (
         supabase.table("job_postings")
-        .select("id")
+        .select("id, description_html")
         .eq("id", job_id)
         .limit(1)
         .execute()
@@ -54,12 +53,18 @@ async def create_analysis(
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise HTTPException(status_code=404, detail="Job posting not found.")
+    description_html = rows[0].get("description_html") or ""
+    if not description_html.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Job posting has no description to analyze.",
+        )
 
     # 4. Run LLM analysis
     analysis, llm_result = await analyze_job(
         llm,
         optimized=current_optimized.payload,
-        job_description=body.job_description,
+        job_description=description_html,
     )
 
     # 5. Log cost
