@@ -66,7 +66,6 @@ export default function CoverLetterSection({
           job_posting_id: jobPostingId,
           company_name: companyName,
           role_title: roleTitle,
-          contact: {},
         }),
       });
 

@@ -173,7 +173,6 @@ export default function JobsList({ targetId }: JobsListProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           job_posting_ids: [...selectedIds],
-          contact: {},
         }),
       });
 

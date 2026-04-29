@@ -27,6 +27,15 @@ interface NotificationPreferences {
   email: string | null;
 }
 
+interface IdentityFields {
+  name: string | null;
+  email: string | null;
+  phone_number: string | null;
+  location: string | null;
+  linkedin_url: string | null;
+  website_url: string | null;
+}
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,11 +50,23 @@ export default function SettingsPage() {
   const [smsDailyLimit, setSmsDailyLimit] = useState('5');
   const [phoneNumber, setPhoneNumber] = useState('');
 
+  // Profile identity (F3-A): contact info used for resume + cover-letter headers.
+  const [identity, setIdentity] = useState<IdentityFields | null>(null);
+  const [identityName, setIdentityName] = useState('');
+  const [identityEmail, setIdentityEmail] = useState('');
+  const [identityPhone, setIdentityPhone] = useState('');
+  const [identityLocation, setIdentityLocation] = useState('');
+  const [identityLinkedin, setIdentityLinkedin] = useState('');
+  const [identityWebsite, setIdentityWebsite] = useState('');
+
   const fetchPrefs = useCallback(async () => {
     try {
-      const res = await fetch('/api/profile/notifications');
-      if (res.ok) {
-        const data = (await res.json()) as NotificationPreferences;
+      const [prefsRes, identityRes] = await Promise.all([
+        fetch('/api/profile/notifications'),
+        fetch('/api/profile/identity'),
+      ]);
+      if (prefsRes.ok) {
+        const data = (await prefsRes.json()) as NotificationPreferences;
         setPrefs(data);
         setEmailEnabled(data.job_notifications_enabled);
         setEmailThreshold(String(data.job_score_threshold));
@@ -54,10 +75,20 @@ export default function SettingsPage() {
         setSmsDailyLimit(String(data.sms_daily_limit));
         setPhoneNumber(data.phone_number ?? '');
       }
+      if (identityRes.ok) {
+        const data = (await identityRes.json()) as IdentityFields;
+        setIdentity(data);
+        setIdentityName(data.name ?? '');
+        setIdentityEmail(data.email ?? '');
+        setIdentityPhone(data.phone_number ?? '');
+        setIdentityLocation(data.location ?? '');
+        setIdentityLinkedin(data.linkedin_url ?? '');
+        setIdentityWebsite(data.website_url ?? '');
+      }
     } catch {
       toast({
         variant: 'error',
-        title: 'Failed to load notification settings',
+        title: 'Failed to load settings',
       });
     } finally {
       setLoading(false);
@@ -71,7 +102,7 @@ export default function SettingsPage() {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const body: Record<string, unknown> = {
+      const notifBody: Record<string, unknown> = {
         job_notifications_enabled: emailEnabled,
         job_score_threshold: parseInt(emailThreshold, 10) || 100,
         sms_notifications_enabled: smsEnabled,
@@ -79,16 +110,35 @@ export default function SettingsPage() {
         sms_daily_limit: parseInt(smsDailyLimit, 10) || 5,
       };
       if (phoneNumber.trim()) {
-        body.phone_number = phoneNumber.trim();
+        notifBody.phone_number = phoneNumber.trim();
       }
-      const res = await fetch('/api/profile/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error('Save failed');
-      const data = (await res.json()) as NotificationPreferences;
-      setPrefs(data);
+      const identityBody: Record<string, unknown> = {
+        name: identityName.trim(),
+        email: identityEmail.trim(),
+        phone_number: identityPhone.trim(),
+        location: identityLocation.trim(),
+        linkedin_url: identityLinkedin.trim(),
+        website_url: identityWebsite.trim(),
+      };
+
+      const [notifRes, identityRes] = await Promise.all([
+        fetch('/api/profile/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(notifBody),
+        }),
+        fetch('/api/profile/identity', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(identityBody),
+        }),
+      ]);
+      if (!notifRes.ok || !identityRes.ok) throw new Error('Save failed');
+
+      const notifData = (await notifRes.json()) as NotificationPreferences;
+      const identityData = (await identityRes.json()) as IdentityFields;
+      setPrefs(notifData);
+      setIdentity(identityData);
       toast({ variant: 'success', title: 'Settings saved' });
     } catch {
       toast({ variant: 'error', title: 'Failed to save settings' });
@@ -102,10 +152,16 @@ export default function SettingsPage() {
     smsThreshold,
     smsDailyLimit,
     phoneNumber,
+    identityName,
+    identityEmail,
+    identityPhone,
+    identityLocation,
+    identityLinkedin,
+    identityWebsite,
     toast,
   ]);
 
-  const hasChanges =
+  const hasNotifChanges =
     prefs !== null &&
     (emailEnabled !== prefs.job_notifications_enabled ||
       emailThreshold !== String(prefs.job_score_threshold) ||
@@ -113,6 +169,17 @@ export default function SettingsPage() {
       smsThreshold !== String(prefs.sms_score_threshold) ||
       smsDailyLimit !== String(prefs.sms_daily_limit) ||
       phoneNumber !== (prefs.phone_number ?? ''));
+
+  const hasIdentityChanges =
+    identity !== null &&
+    (identityName !== (identity.name ?? '') ||
+      identityEmail !== (identity.email ?? '') ||
+      identityPhone !== (identity.phone_number ?? '') ||
+      identityLocation !== (identity.location ?? '') ||
+      identityLinkedin !== (identity.linkedin_url ?? '') ||
+      identityWebsite !== (identity.website_url ?? ''));
+
+  const hasChanges = hasNotifChanges || hasIdentityChanges;
 
   if (loading) {
     return (
@@ -158,6 +225,62 @@ export default function SettingsPage() {
           )}
         </Button>
       </div>
+
+      {/* Profile (resume + cover-letter contact info) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-4'>
+          <Text variant='caption' className='text-text-secondary'>
+            Used as the contact header on every generated resume and cover
+            letter. Name is required before you can generate.
+          </Text>
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <Input
+              label='Name'
+              value={identityName}
+              onChange={e => setIdentityName(e.target.value)}
+              placeholder='Daniel Joffe'
+              required
+            />
+            <Input
+              label='Email'
+              type='email'
+              value={identityEmail}
+              onChange={e => setIdentityEmail(e.target.value)}
+              placeholder='you@example.com'
+            />
+            <Input
+              label='Phone'
+              type='tel'
+              value={identityPhone}
+              onChange={e => setIdentityPhone(e.target.value)}
+              placeholder='+1 555 123 4567'
+            />
+            <Input
+              label='Location'
+              value={identityLocation}
+              onChange={e => setIdentityLocation(e.target.value)}
+              placeholder='Brooklyn, NY'
+            />
+            <Input
+              label='LinkedIn URL'
+              type='url'
+              value={identityLinkedin}
+              onChange={e => setIdentityLinkedin(e.target.value)}
+              placeholder='https://linkedin.com/in/...'
+            />
+            <Input
+              label='Website'
+              type='url'
+              value={identityWebsite}
+              onChange={e => setIdentityWebsite(e.target.value)}
+              placeholder='https://danieljoffe.com'
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Email Notifications */}
       <Card>
