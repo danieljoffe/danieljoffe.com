@@ -168,9 +168,7 @@ export default function TargetsList() {
 
         toast({
           variant: 'success',
-          title: match.is_new
-            ? `Target "${label}" created`
-            : `Linked to "${label}"`,
+          title: `Added "${label}"`,
         });
         setSuggestions(prev => prev.filter(s => s.suggestion.label !== label));
         fetchTargets();
@@ -311,9 +309,9 @@ export default function TargetsList() {
               <Card key={match.suggestion.label} padding='none'>
                 <CardContent className='p-4 flex flex-col gap-2'>
                   <div className='flex items-center gap-2'>
-                    <Text variant='body' className='font-medium'>
+                    <Heading variant='cardTitle'>
                       {match.suggestion.label}
-                    </Text>
+                    </Heading>
                     {!match.is_new && (
                       <Badge variant='default' size='sm'>
                         Existing
@@ -342,9 +340,7 @@ export default function TargetsList() {
                   >
                     {addingSuggestion === match.suggestion.label
                       ? 'Adding...'
-                      : match.is_new
-                        ? 'Create Target'
-                        : 'Add Target'}
+                      : 'Add Target'}
                   </Button>
                 </CardContent>
               </Card>
