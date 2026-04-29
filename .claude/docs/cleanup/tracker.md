@@ -17,7 +17,7 @@ Parent issue: [#493 — Fitted Job Search Command Center](https://github.com/dan
 | 0           | Phase 0 — Foundation               | #494 #495 #496      | [audit-phase-0.md](./audit-phase-0.md) | ✅ complete |
 | 1           | Phase 1 — Experience               | #497 #498 #499      | [audit-phase-1.md](./audit-phase-1.md) | ✅ complete |
 | 2           | Phase 2 — Scoring & Manual         | #500 #501 #502      | [audit-phase-2.md](./audit-phase-2.md) | ✅ complete |
-| 3           | Phase 3 — Resume Pipeline          | #503 #504 #505      | _pending_                              | ⏳          |
+| 3           | Phase 3 — Resume Pipeline          | #503 #504 #505      | [audit-phase-3.md](./audit-phase-3.md) | ✅ complete |
 | 4           | Phase 4 — Fitted UI                | #506 #507 #508 #509 | _pending_                              | ⏳          |
 | 5           | Phase 5 — Notifications & Insights | #510 #511 #512      | _pending_                              | ⏳          |
 | Related     | —                                  | #407 (Firecrawl)    | _pending_                              | ⏳          |

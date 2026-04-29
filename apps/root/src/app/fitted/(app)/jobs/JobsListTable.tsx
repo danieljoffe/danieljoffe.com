@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -23,6 +23,9 @@ interface JobsListTableProps {
   onSelectionChange: (ids: Set<string>) => void;
   refreshKey: number;
   targetId: string | undefined;
+  /** Surfaces the current page's postings so the parent can derive selection
+   * facts like "are any selected jobs already approved?" (F3-I). */
+  onPostingsLoaded?: ((postings: JobPosting[]) => void) | undefined;
 }
 
 function ScoreBadge({
@@ -89,6 +92,7 @@ export default function JobsListTable({
   onSelectionChange,
   refreshKey,
   targetId,
+  onPostingsLoaded,
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState(0);
@@ -124,6 +128,10 @@ export default function JobsListTable({
     dataKey: 'postings',
     extraParams,
   });
+
+  useEffect(() => {
+    onPostingsLoaded?.(postings);
+  }, [postings, onPostingsLoaded]);
 
   const allOnPageSelected =
     postings.length > 0 && postings.every(p => selectedIds.has(p.id));

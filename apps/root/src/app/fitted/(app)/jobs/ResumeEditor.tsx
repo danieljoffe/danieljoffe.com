@@ -9,6 +9,8 @@ import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
   LintViolation,
+  ResumeVersion,
+  ResumeVersionsResponse,
   TailoredResumePayload,
   TailoredResumeRecord,
   TailorResponse,
@@ -35,7 +37,14 @@ export default function ResumeEditor({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [readapting, setReadapting] = useState(false);
   const [lintWarnings, setLintWarnings] = useState<LintViolation[]>([]);
+
+  // F3-H: version history (free tier capped — see backend FREE_TIER_VERSION_CAP).
+  const [versions, setVersions] = useState<ResumeVersion[] | null>(null);
+  const [versionCap, setVersionCap] = useState<number>(5);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [versionsOpen, setVersionsOpen] = useState(false);
 
   // Editable fields
   const [summary, setSummary] = useState('');
@@ -80,8 +89,94 @@ export default function ResumeEditor({
   useEffect(() => {
     if (isOpen) {
       loadResume();
+    } else {
+      // Reset transient UI state when modal closes so the next open is clean.
+      setVersions(null);
+      setVersionsOpen(false);
     }
   }, [isOpen, loadResume]);
+
+  const loadVersions = useCallback(async () => {
+    if (!record) return;
+    setVersionsLoading(true);
+    try {
+      const res = await fetch(`/api/jobs/tailor/${record.id}/versions`);
+      if (!res.ok) {
+        toast({ variant: 'error', title: 'Failed to load version history' });
+        return;
+      }
+      const data = (await res.json()) as ResumeVersionsResponse;
+      setVersions(data.versions);
+      setVersionCap(data.cap);
+    } catch {
+      toast({ variant: 'error', title: 'Network error loading versions' });
+    } finally {
+      setVersionsLoading(false);
+    }
+  }, [record, toast]);
+
+  function toggleVersions() {
+    const next = !versionsOpen;
+    setVersionsOpen(next);
+    if (next && versions === null) {
+      loadVersions();
+    }
+  }
+
+  function restoreVersion(version: ResumeVersion) {
+    setSummary(version.payload.summary);
+    setSkills([...version.payload.skills]);
+    setExperience(
+      version.payload.experience.map(r => ({
+        ...r,
+        bullets: r.bullets.map(b => ({ ...b })),
+      }))
+    );
+    markDirty();
+    setVersionsOpen(false);
+    toast({
+      variant: 'info',
+      title: 'Version loaded — Save to keep changes',
+    });
+  }
+
+  async function handleReadapt() {
+    if (!record || !record.job_posting_id) return;
+    /* eslint-disable no-alert -- personal tool, native confirm is fine */
+    if (
+      !window.confirm(
+        'Re-generate this resume from scratch? Current draft will be saved as a version first.'
+      )
+    )
+      /* eslint-enable no-alert */
+      return;
+
+    setReadapting(true);
+    try {
+      const res = await fetch('/api/jobs/tailor/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_description: record.jd_snapshot,
+          job_posting_id: record.job_posting_id,
+          force_fresh: true,
+        }),
+      });
+      if (!res.ok) {
+        toast({ variant: 'error', title: 'Re-adapt failed' });
+        return;
+      }
+      toast({ variant: 'success', title: 'Resume re-adapted with AI' });
+      // Reload the freshly generated record (replaces the cloned one in
+      // by-job lookup).
+      await loadResume();
+      setVersions(null);
+    } catch {
+      toast({ variant: 'error', title: 'Network error re-adapting resume' });
+    } finally {
+      setReadapting(false);
+    }
+  }
 
   function markDirty() {
     setDirty(true);
@@ -262,6 +357,8 @@ export default function ResumeEditor({
 
   const isApproved =
     record?.approved_at !== null && record?.approved_at !== undefined;
+  const isReused =
+    record?.warnings?.includes('reused_from_similar_job') ?? false;
 
   return (
     <Modal
@@ -281,6 +378,17 @@ export default function ResumeEditor({
             Download .docx
           </Button>
           <div className='flex gap-2'>
+            {isReused && !isApproved && (
+              <Button
+                name='readapt-resume'
+                variant='outline'
+                size='sm'
+                onClick={handleReadapt}
+                disabled={readapting || loading || saving || approving}
+              >
+                {readapting ? 'Re-adapting...' : 'Re-adapt with AI'}
+              </Button>
+            )}
             <Button
               name='save-draft'
               variant='outline'
@@ -339,8 +447,22 @@ export default function ResumeEditor({
             </div>
           )}
 
-          {/* Generation metadata */}
-          {record && record.cost_usd > 0 && (
+          {/* F3-G: reuse provenance banner — clones cost $0 and skip the LLM. */}
+          {isReused && (
+            <div className='rounded-md bg-info/10 border border-info/30 p-3 flex items-start gap-2'>
+              <Badge variant='info' size='sm'>
+                Reused
+              </Badge>
+              <Text variant='meta' className='text-text-secondary'>
+                Cloned from a similar job — no LLM cost. Edit freely or click
+                &ldquo;Re-adapt with AI&rdquo; below to regenerate from scratch.
+              </Text>
+            </div>
+          )}
+
+          {/* Generation metadata — render even on $0 (reuse) so the cost is
+              visible. F3-G. */}
+          {record && (
             <div className='flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-surface-secondary px-3 py-2'>
               <Text variant='meta' as='span'>
                 Cost: ${record.cost_usd.toFixed(4)}
@@ -357,6 +479,89 @@ export default function ResumeEditor({
               <Text variant='meta' as='span'>
                 Latency: {(record.latency_ms / 1000).toFixed(1)}s
               </Text>
+            </div>
+          )}
+
+          {/* F3-H: version history (capped at FREE_TIER_VERSION_CAP). */}
+          {record && (
+            <div className='rounded-md border border-border'>
+              <button
+                type='button'
+                onClick={toggleVersions}
+                className='w-full flex items-center justify-between px-3 py-2 text-left hover:bg-surface-secondary'
+                aria-expanded={versionsOpen}
+                aria-controls='version-history-panel'
+              >
+                <Text variant='caption' as='span'>
+                  Version history{versions ? ` (${versions.length})` : ''}
+                </Text>
+                <Text variant='meta' as='span' className='text-text-tertiary'>
+                  {versionsOpen ? 'Hide' : 'Show'}
+                </Text>
+              </button>
+              {versionsOpen && (
+                <div
+                  id='version-history-panel'
+                  className='border-t border-border px-3 py-2 space-y-2'
+                >
+                  <Text variant='meta' className='text-text-tertiary'>
+                    Free tier keeps the last {versionCap} versions. Older edits
+                    are dropped automatically.
+                  </Text>
+                  {versionsLoading && (
+                    <div className='flex justify-center py-2'>
+                      <Spinner size='sm' />
+                    </div>
+                  )}
+                  {!versionsLoading &&
+                    versions !== null &&
+                    versions.length === 0 && (
+                      <Text variant='meta' className='text-text-tertiary'>
+                        No prior versions yet.
+                      </Text>
+                    )}
+                  {!versionsLoading &&
+                    versions !== null &&
+                    versions.length > 0 && (
+                      <ul className='space-y-1'>
+                        {versions.map(v => (
+                          <li
+                            key={v.id}
+                            className='flex items-center justify-between gap-2 text-sm'
+                          >
+                            <span className='flex items-center gap-2'>
+                              <Badge
+                                variant={
+                                  v.source === 'initial'
+                                    ? 'default'
+                                    : v.source === 'llm_adapt'
+                                      ? 'info'
+                                      : 'success'
+                                }
+                                size='sm'
+                              >
+                                {v.source.replace('_', ' ')}
+                              </Badge>
+                              <Text variant='meta' as='span'>
+                                {new Date(v.created_at).toLocaleString()}
+                              </Text>
+                            </span>
+                            {!isApproved && (
+                              <Button
+                                name={`restore-version-${v.id}`}
+                                variant='ghost'
+                                size='sm'
+                                onClick={() => restoreVersion(v)}
+                              >
+                                Load
+                              </Button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                </div>
+              )}
             </div>
           )}
 

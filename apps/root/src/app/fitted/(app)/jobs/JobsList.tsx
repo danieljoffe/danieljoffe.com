@@ -13,7 +13,7 @@ import { cn } from '@/lib/cn';
 import BatchActionBar from './BatchActionBar';
 import JobsFilter from './JobsFilter';
 import JobsListTable from './JobsListTable';
-import type { JobsFilterState } from './types';
+import type { JobPosting, JobsFilterState } from './types';
 
 interface TargetTab {
   id: string;
@@ -46,7 +46,11 @@ export default function JobsList({ targetId }: JobsListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<
+    { completed: number; total: number } | undefined
+  >(undefined);
   const [exporting, setExporting] = useState(false);
+  const [visiblePostings, setVisiblePostings] = useState<JobPosting[]>([]);
   const [targets, setTargets] = useState<TargetTab[]>([]);
   const [targetsLoading, setTargetsLoading] = useState(true);
   const [activeTargetId, setActiveTargetId] = useState<string | undefined>(
@@ -188,7 +192,11 @@ export default function JobsList({ targetId }: JobsListProps) {
         return;
       }
 
-      const { batch_id } = (await res.json()) as { batch_id: string };
+      const { batch_id, total } = (await res.json()) as {
+        batch_id: string;
+        total: number;
+      };
+      setBatchProgress({ completed: 0, total });
 
       // Poll for completion — clear any stale interval first
       if (pollRef.current) clearInterval(pollRef.current);
@@ -204,10 +212,17 @@ export default function JobsList({ targetId }: JobsListProps) {
             total: number;
           };
 
+          // F3-B: surface live progress in the action bar
+          setBatchProgress({
+            completed: batch.completed + batch.failed,
+            total: batch.total,
+          });
+
           if (batch.status === 'completed' || batch.status === 'failed') {
             clearInterval(pollRef.current);
             pollRef.current = undefined;
             setGenerating(false);
+            setBatchProgress(undefined);
             setSelectedIds(new Set());
             setRefreshKey(k => k + 1);
 
@@ -230,6 +245,7 @@ export default function JobsList({ targetId }: JobsListProps) {
     } catch {
       toast({ variant: 'error', title: 'Network error starting batch' });
       setGenerating(false);
+      setBatchProgress(undefined);
     }
   }, [selectedIds, toast]);
 
@@ -408,6 +424,7 @@ export default function JobsList({ targetId }: JobsListProps) {
             onSelectionChange={setSelectedIds}
             refreshKey={refreshKey}
             targetId={activeTargetId}
+            onPostingsLoaded={setVisiblePostings}
           />
 
           <BatchActionBar
@@ -418,7 +435,10 @@ export default function JobsList({ targetId }: JobsListProps) {
             onBatchExport={handleBatchExport}
             generating={generating}
             exporting={exporting}
-            hasApproved={selectedIds.size > 0}
+            hasApproved={visiblePostings.some(
+              p => selectedIds.has(p.id) && p.status === 'resume_ready'
+            )}
+            batchProgress={batchProgress}
           />
         </>
       )}

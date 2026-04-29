@@ -176,3 +176,18 @@ export interface StatusLogEntry {
   note: string | null;
   created_at: string;
 }
+
+export type ResumeVersionSource = 'initial' | 'user_edit' | 'llm_adapt';
+
+export interface ResumeVersion {
+  id: string;
+  resume_id: string;
+  payload: TailoredResumePayload;
+  source: ResumeVersionSource;
+  created_at: string;
+}
+
+export interface ResumeVersionsResponse {
+  versions: ResumeVersion[];
+  cap: number;
+}
