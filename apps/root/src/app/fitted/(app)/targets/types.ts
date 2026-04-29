@@ -62,6 +62,12 @@ export interface UserTargetWithTarget {
   target: JobTarget;
 }
 
+export interface CreateOrLinkResult {
+  user_target: UserTarget;
+  target: JobTarget;
+  was_matched: boolean;
+}
+
 export interface TargetReferenceJD {
   id: string;
   target_id: string;

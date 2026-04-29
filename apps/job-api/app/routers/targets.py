@@ -21,12 +21,15 @@ from app.dependencies import (
 )
 from app.models.schemas import PollResult
 from app.models.targets import (
+    CreateOrLinkResult,
     JobTarget,
     MatchedSuggestions,
     ReferenceJDAdd,
     ResumeEmphasis,
     ScoringProfile,
     TargetCreate,
+    TargetFromManual,
+    TargetFromUrl,
     TargetReferenceJD,
     TargetUpdate,
     UserTarget,
@@ -43,7 +46,7 @@ from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.poller import poll_sources_for_target
 from app.services.scoring import strip_html
-from app.services.targets import crud
+from app.services.targets import crud, from_input
 from app.services.targets.derive_profile import DEFAULT_PURPOSE, derive_profile_from_jd
 from app.services.targets.derive_profile_from_label import (
     DEFAULT_PURPOSE as DERIVE_LABEL_PURPOSE,
@@ -148,6 +151,80 @@ async def create_target(
     supabase: Client = Depends(get_supabase),
 ) -> JobTarget:
     return crud.create(supabase, payload=body)
+
+
+@router.post("/from-manual")
+async def create_target_from_manual(
+    body: TargetFromManual,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    user_id: str = Depends(get_current_user_id),
+) -> CreateOrLinkResult:
+    """Create-or-link a target from user-typed title + description.
+
+    LLM normalizes the input into a canonical ``TargetSuggestion``, matches
+    against existing targets, and either links the user to the match or
+    creates a new target (with a profile derived from label + experience)
+    and links the user. The user always ends up with a ``user_targets`` row.
+    """
+    doc = optimized.get_latest(supabase, user_id=None)
+    if doc is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No experience profile found — complete onboarding first",
+        )
+    return await from_input.from_manual(
+        supabase,
+        llm,
+        user_id=user_id,
+        label=body.label,
+        description=body.description,
+        payload=doc.payload,
+    )
+
+
+@router.post("/from-url")
+async def create_target_from_url(
+    body: TargetFromUrl,
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    user_id: str = Depends(get_current_user_id),
+) -> CreateOrLinkResult:
+    """Create-or-link a target from a JD URL.
+
+    Validates and fetches the URL, extracts title + JD text, derives a
+    scoring profile via LLM, then matches against existing targets. On
+    match the JD is appended as a reference and the composite profile is
+    re-merged (corpus building); on no match a new target is created. The
+    user is always linked.
+    """
+    doc = optimized.get_latest(supabase, user_id=None)
+    if doc is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No experience profile found — complete onboarding first",
+        )
+
+    vr = await validate_job_url(body.jd_url)
+    if not vr.is_valid:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid JD URL: {vr.rejection_reason}",
+        )
+    final_url = vr.final_url
+
+    extracted_title, jd_text = await _fetch_jd_from_url(final_url)
+
+    return await from_input.from_url(
+        supabase,
+        llm,
+        user_id=user_id,
+        final_url=final_url,
+        extracted_title=extracted_title,
+        jd_text=jd_text,
+        label_override=body.label,
+        payload=doc.payload,
+    )
 
 
 @router.get("")
@@ -499,8 +576,11 @@ async def create_target_from_posting(
 # ---- Reference JDs ---------------------------------------------------------
 
 
-async def _fetch_jd_text_from_url(url: str) -> str:
+async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     """Fetch a JD page and run the extraction cascade (JSON-LD → meta → Firecrawl).
+
+    Returns ``(title, jd_text)``. The title comes from the same extraction
+    pipeline and may be ``None`` if no JSON-LD/meta tag was present.
 
     Raises ``HTTPException`` if the fetch fails or no usable description can
     be extracted. The minimum-length requirement matches ``ReferenceJDAdd``
@@ -534,7 +614,7 @@ async def _fetch_jd_text_from_url(url: str) -> str:
                 "Try pasting the JD text directly."
             ),
         )
-    return jd_text
+    return extraction.title, jd_text
 
 
 @router.post("/{target_id}/reference-jds")
@@ -572,7 +652,7 @@ async def add_reference_jd(
             raise HTTPException(
                 status_code=422, detail="Either jd_text or jd_url is required"
             )
-        body.jd_text = await _fetch_jd_text_from_url(body.jd_url)
+        _, body.jd_text = await _fetch_jd_from_url(body.jd_url)
 
     # Derive profile from JD via LLM
     derived, result = await derive_profile_from_jd(

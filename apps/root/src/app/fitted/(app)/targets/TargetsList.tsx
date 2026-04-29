@@ -12,13 +12,22 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
-import CreateTargetModal from './CreateTargetModal';
+import CreateTargetModal, {
+  type ManualSubmission,
+  type UrlSubmission,
+} from './CreateTargetModal';
+import PendingTargetCard from './PendingTargetCard';
 import type {
   JobTarget,
   MatchedSuggestion,
   MatchedSuggestions,
   UserTargetWithTarget,
 } from './types';
+
+interface PendingTarget {
+  id: string;
+  label: string;
+}
 
 export default function TargetsList() {
   const [targets, setTargets] = useState<UserTargetWithTarget[]>([]);
@@ -103,11 +112,63 @@ export default function TargetsList() {
     [router]
   );
 
-  const handleCreated = useCallback(() => {
-    setModalOpen(false);
-    setSuggestions([]);
-    fetchTargets();
-  }, [fetchTargets]);
+  const [pendingTargets, setPendingTargets] = useState<PendingTarget[]>([]);
+
+  const runCreate = useCallback(
+    async (
+      endpoint: '/api/targets/from-manual' | '/api/targets/from-url',
+      body: object,
+      pendingLabel: string
+    ) => {
+      const pendingId =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `pending-${Date.now()}-${Math.random()}`;
+      setPendingTargets(p => [...p, { id: pendingId, label: pendingLabel }]);
+      setModalOpen(false);
+      setSuggestions([]);
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          throw new Error(
+            (err as Record<string, string> | null)?.detail ??
+              'Failed to add target'
+          );
+        }
+        await res.json();
+        toast({ variant: 'success', title: 'Target added' });
+        fetchTargets();
+      } catch (e) {
+        toast({
+          variant: 'error',
+          title: e instanceof Error ? e.message : 'Failed to add target',
+        });
+      } finally {
+        setPendingTargets(p => p.filter(t => t.id !== pendingId));
+      }
+    },
+    [toast, fetchTargets]
+  );
+
+  const handleSubmitManual = useCallback(
+    (payload: ManualSubmission) => {
+      void runCreate('/api/targets/from-manual', payload, payload.label);
+    },
+    [runCreate]
+  );
+
+  const handleSubmitUrl = useCallback(
+    (payload: UrlSubmission) => {
+      void runCreate('/api/targets/from-url', payload, payload.label ?? '');
+    },
+    [runCreate]
+  );
 
   const [suggestions, setSuggestions] = useState<MatchedSuggestion[]>([]);
   const [suggesting, setSuggesting] = useState(false);
@@ -211,13 +272,15 @@ export default function TargetsList() {
     );
   }
 
+  const hasContent = targets.length > 0 || pendingTargets.length > 0;
+
   return (
     <div className='flex flex-col gap-6'>
       <div className='flex items-center justify-between'>
         <Heading variant='hero' as='h1'>
           Targets
         </Heading>
-        {targets.length > 0 && (
+        {hasContent && (
           <Button
             name='target-create'
             variant='primary'
@@ -230,7 +293,7 @@ export default function TargetsList() {
         )}
       </div>
 
-      {targets.length === 0 ? (
+      {!hasContent ? (
         <Card>
           <CardContent className='flex flex-col items-center gap-3 py-12'>
             <Text variant='body' as='p'>
@@ -263,6 +326,9 @@ export default function TargetsList() {
       ) : (
         <>
           <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {pendingTargets.map(p => (
+              <PendingTargetCard key={p.id} label={p.label} />
+            ))}
             {targets.map(({ user_target, target }) => (
               <TargetCard
                 key={target.id}
@@ -352,7 +418,8 @@ export default function TargetsList() {
       <CreateTargetModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onCreated={handleCreated}
+        onSubmitManual={handleSubmitManual}
+        onSubmitUrl={handleSubmitUrl}
       />
     </div>
   );

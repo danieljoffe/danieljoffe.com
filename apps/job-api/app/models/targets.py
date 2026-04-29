@@ -117,6 +117,18 @@ class UserTargetWithTarget(BaseModel):
     target: JobTarget
 
 
+class CreateOrLinkResult(BaseModel):
+    """Outcome of a from-input flow.
+
+    ``was_matched`` indicates whether the LLM-normalized input collided with
+    an existing shared target — useful for the frontend to vary the toast.
+    """
+
+    user_target: UserTarget
+    target: JobTarget
+    was_matched: bool
+
+
 # ---- Request shapes (router inputs) ----------------------------------------
 
 
@@ -135,6 +147,29 @@ class TargetUpdate(BaseModel):
     activation_status: str | None = None
     is_active: bool | None = None
     profile_version: int | None = None
+
+
+class TargetFromManual(BaseModel):
+    """Create a target from user-typed title + description.
+
+    The LLM normalizes the input into a standardized ``TargetSuggestion``
+    shape before matching against existing targets, so created and suggested
+    targets share the same canonical format.
+    """
+
+    label: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class TargetFromUrl(BaseModel):
+    """Create a target from a JD URL.
+
+    The label is optional — when omitted, the job title extracted from the
+    page is used. Falls back to "Untitled Target" if neither is available.
+    """
+
+    jd_url: str
+    label: str | None = Field(default=None, max_length=200)
 
 
 class ReferenceJDAdd(BaseModel):
