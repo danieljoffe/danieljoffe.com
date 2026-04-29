@@ -52,6 +52,7 @@ from app.services.tailor import (
     persistence,
     run_cover_letter_pipeline,
     run_tailor_pipeline,
+    versions,
 )
 from app.services.tailor.contact import resolve_contact
 from app.services.tailor.reuse import (
@@ -432,6 +433,22 @@ async def get_tailored_resume(
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
     return row
+
+
+@router.get("/resumes/{resume_id}/versions")
+async def list_resume_versions(
+    resume_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    """Return up to FREE_TIER_VERSION_CAP recent payload snapshots (F3-H)."""
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored resume not found")
+    history = versions.list_for_resume(supabase, resume_id)
+    return {
+        "versions": [v.model_dump(mode="json") for v in history],
+        "cap": versions.FREE_TIER_VERSION_CAP,
+    }
 
 
 @router.get("/resumes/{resume_id}/download")
