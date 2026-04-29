@@ -9,7 +9,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
-import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
+// import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
@@ -49,7 +49,7 @@ export default function Index() {
           HERO
           ══════════════════════════════════ */}
       <Section padding='none'>
-        <GridBg />
+        {/* <GridBg /> */}
         <div className='relative space-y-6'>
           <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
             <span className='flex items-center gap-1.5'>

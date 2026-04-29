@@ -5,13 +5,7 @@ import { Section } from '@danieljoffe.com/shared-ui/Section';
 export default function Loading() {
   return (
     <PageLayout>
-      <Section
-        background='alt'
-        overflow='hidden'
-        center
-        padding='lg'
-        className='text-center'
-      >
+      <Section overflow='hidden' center padding='lg' className='text-center'>
         <div className='flex flex-col gap-6 items-center'>
           {/* Heading */}
           <div className='space-y-3 w-full'>
