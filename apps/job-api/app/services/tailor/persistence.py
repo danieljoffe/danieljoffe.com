@@ -24,6 +24,7 @@ from app.models.tailor import (
     TailoredResume,
     TailoredResumeRecord,
 )
+from app.services.tailor import versions
 
 TABLE = "tailored_resumes"
 STORAGE_BUCKET = "tailored-resumes"
@@ -69,7 +70,15 @@ def insert_row(supabase: Client, row: dict[str, Any]) -> TailoredResumeRecord:
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError("Failed to insert tailored_resumes row")
-    return TailoredResumeRecord.model_validate(rows[0])
+    record = TailoredResumeRecord.model_validate(rows[0])
+    # F3-H: capture the initial payload as version 1.
+    versions.record(
+        supabase,
+        resume_id=record.id,
+        payload=record.payload,
+        source="initial",
+    )
+    return record
 
 
 def persist(
@@ -152,8 +161,19 @@ def update_payload(
     resume_id: str,
     payload_dict: dict[str, Any],
     storage_path: str | None = None,
+    version_source: versions.VersionSource = "user_edit",
 ) -> TailoredResumeRecord:
-    """Update the payload JSONB and set updated_at. Optionally update storage_path."""
+    """Update the payload JSONB and set updated_at. Optionally update storage_path.
+
+    Records a version snapshot before the update lands so history is captured
+    even if the live update fails between snapshot and commit (F3-H).
+    """
+    versions.record(
+        supabase,
+        resume_id=resume_id,
+        payload=payload_dict,
+        source=version_source,
+    )
     updates: dict[str, Any] = {
         "payload": payload_dict,
         "updated_at": "now()",

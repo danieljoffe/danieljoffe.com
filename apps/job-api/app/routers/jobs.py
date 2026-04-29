@@ -368,8 +368,10 @@ async def add_manual_job(
     # Tier 3: Firecrawl fallback if extraction found nothing
     if extraction.tier == "none":
         fc_result = await _extract_from_firecrawl(final_url)
-        if fc_result:
+        if fc_result.tier != "none":
             extraction = fc_result
+        else:
+            warnings.extend(fc_result.warnings)
 
     warnings.extend(extraction.warnings)
 
@@ -517,6 +519,27 @@ async def backfill_salary(
 
     job_list_cache.invalidate()
     return {"updated": updated}
+
+
+@router.get("/{posting_id}")
+async def get_job(
+    posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    resp = (
+        supabase.table("job_postings")
+        .select(_JP_SELECT_COLS)
+        .eq("id", posting_id)
+        .limit(1)
+        .execute()
+    )
+    rows = resp.data or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="Posting not found")
+    row = rows[0]
+    if not isinstance(row, dict):
+        raise HTTPException(status_code=500, detail="Unexpected response shape")
+    return row
 
 
 @router.delete("/{posting_id}")

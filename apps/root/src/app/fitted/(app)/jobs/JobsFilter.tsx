@@ -51,7 +51,7 @@ export default function JobsFilter({ filters, onChange }: JobsFilterProps) {
           onChange={e => onChange({ ...filters, status: e.target.value })}
         />
       </div>
-      <div className='flex-1 min-w-[200px]'>
+      <div className='flex-1 min-w-50'>
         <Input
           label='Search'
           size='sm'

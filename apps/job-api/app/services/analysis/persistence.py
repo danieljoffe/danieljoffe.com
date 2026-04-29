@@ -1,7 +1,9 @@
 """Cache CRUD for job_analyses table.
 
-One analysis per (user, job_posting) pair. Subsequent requests for the
-same pair return the cached row without re-running the LLM.
+The cache key is (job_posting_id, target_id, optimized_doc_id) so that
+re-deriving the master doc or switching targets naturally invalidates
+prior rows. Each (job, target, optimized version) combination runs the
+LLM at most once.
 """
 
 from __future__ import annotations
@@ -19,13 +21,18 @@ TABLE = "job_analyses"
 def get_cached(
     supabase: Client,
     job_posting_id: str,
+    *,
+    target_id: str,
+    optimized_doc_id: str,
     user_id: str | None,
 ) -> JobAnalysisRecord | None:
-    """Return the most recent analysis for this job+user, or None."""
+    """Return the cached analysis for this (job, target, optimized) combo, or None."""
     query = (
         supabase.table(TABLE)
         .select("*")
         .eq("job_posting_id", job_posting_id)
+        .eq("target_id", target_id)
+        .eq("optimized_doc_id", optimized_doc_id)
         .order("created_at", desc=True)
         .limit(1)
     )
@@ -45,6 +52,7 @@ def persist(
     supabase: Client,
     *,
     job_posting_id: str,
+    target_id: str,
     user_id: str | None,
     optimized_doc_id: str | None,
     analysis: JobAnalysis,
@@ -53,6 +61,7 @@ def persist(
     """Insert one job_analyses row."""
     row: dict[str, Any] = {
         "job_posting_id": job_posting_id,
+        "target_id": target_id,
         "user_id": user_id,
         "optimized_doc_id": optimized_doc_id,
         "scorecard": analysis.scorecard.model_dump(mode="json"),

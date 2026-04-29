@@ -1,7 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  FileText,
+  Pencil,
+  RefreshCw,
+  Save,
+  Sparkles,
+  Upload,
+  X,
+} from 'lucide-react';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
   Card,
@@ -10,30 +19,27 @@ import {
   CardTitle,
 } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
-import { Select } from '@danieljoffe.com/shared-ui/Select';
+import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import ConversationChatModal from '../../_components/ConversationChatModal';
 import type {
-  Annotation,
-  AnnotationAction,
-  AnnotationRefType,
   Gap,
   GapHealthResult,
+  GapTier,
   OptimizedDoc,
   OptimizedResponse,
+  ProseDoc,
+  ProseResponse,
 } from './types';
 import {
-  ANNOTATION_ACTIONS,
-  ANNOTATION_ACTION_LABELS,
-  ANNOTATION_REF_TYPE_LABELS,
-  ANNOTATION_REF_TYPES,
   GAP_KIND_LABELS,
   GAP_KIND_WEIGHTS,
   hasOptimized,
+  hasProse,
 } from './types';
 
 // -- Helpers ------------------------------------------------------------------
@@ -56,21 +62,46 @@ function gapBadgeVariant(kind: string): 'error' | 'warning' | 'default' {
   return 'default';
 }
 
+function tierToProgressVariant(tier: GapTier): 'error' | 'accent' | 'success' {
+  if (tier === 'red') return 'error';
+  if (tier === 'yellow') return 'accent';
+  return 'success';
+}
+
+function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
+  if (tier === 'red') return 'error';
+  if (tier === 'yellow') return 'warning';
+  return 'success';
+}
+
+const ACCEPTED_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 // -- Component ----------------------------------------------------------------
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [optimized, setOptimized] = useState<OptimizedDoc | null>(null);
   const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
-  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [prose, setProse] = useState<ProseDoc | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [deriving, setDeriving] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     try {
-      const [optRes, ghRes, annRes] = await Promise.all([
+      const [optRes, ghRes, proseRes] = await Promise.all([
         fetch('/api/career/experience/optimized'),
         fetch('/api/career/experience/gap-health'),
-        fetch('/api/career/experience/annotations'),
+        fetch('/api/career/experience/prose'),
       ]);
 
       if (optRes.ok) {
@@ -82,9 +113,9 @@ export default function ProfilePage() {
         setGapHealth((await ghRes.json()) as GapHealthResult);
       }
 
-      if (annRes.ok) {
-        const data = (await annRes.json()) as { annotations: Annotation[] };
-        setAnnotations(data.annotations);
+      if (proseRes.ok) {
+        const body = (await proseRes.json()) as ProseResponse;
+        setProse(hasProse(body) ? body : null);
       }
     } catch {
       toast({ variant: 'error', title: 'Failed to load profile data' });
@@ -97,44 +128,125 @@ export default function ProfilePage() {
     fetchData();
   }, [fetchData]);
 
-  const handleAddAnnotation = useCallback(
-    async (body: {
-      action: AnnotationAction;
-      ref_type: AnnotationRefType;
-      ref_value: string;
-      target_label: string | undefined;
-      reason: string | undefined;
-    }) => {
+  const handleUpload = useCallback(
+    async (file: File) => {
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        toast({ variant: 'error', title: 'Please upload a PDF or DOCX file' });
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast({ variant: 'error', title: 'File must be under 10 MB' });
+        return;
+      }
+
+      setUploading(true);
       try {
-        const res = await fetch('/api/career/experience/annotations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(
+          '/api/career/experience/upload-resume?auto_derive=true',
+          { method: 'POST', body: formData }
+        );
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(
+            (data as Record<string, string> | null)?.detail ??
+              `Upload failed (${res.status})`
+          );
+        }
+        toast({ variant: 'success', title: 'Resume uploaded and processed' });
+        await fetchData();
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title: err instanceof Error ? err.message : 'Upload failed',
         });
-        if (!res.ok) throw new Error('Failed to add annotation');
-        toast({ variant: 'success', title: 'Annotation added' });
-        fetchData();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to add annotation' });
+      } finally {
+        setUploading(false);
       }
     },
-    [toast, fetchData]
+    [fetchData, toast]
   );
 
-  const handleDeleteAnnotation = useCallback(
-    async (id: string) => {
-      try {
-        const res = await fetch(`/api/career/experience/annotations/${id}`, {
-          method: 'DELETE',
-        });
-        if (!res.ok) throw new Error('Failed to remove annotation');
-        toast({ variant: 'success', title: 'Annotation removed' });
-        fetchData();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to remove annotation' });
-      }
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleUpload(file);
+      e.target.value = '';
     },
-    [toast, fetchData]
+    [handleUpload]
+  );
+
+  const handleDerive = useCallback(async () => {
+    setDeriving(true);
+    try {
+      const res = await fetch('/api/career/experience/derive', {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error('Derive failed');
+      toast({
+        variant: 'success',
+        title: 'Profile re-derived from experience',
+      });
+      await fetchData();
+    } catch {
+      toast({ variant: 'error', title: 'Failed to re-derive profile' });
+    } finally {
+      setDeriving(false);
+    }
+  }, [fetchData, toast]);
+
+  const handleEditStart = useCallback(() => {
+    setDraft(prose?.content ?? '');
+    setEditing(true);
+  }, [prose]);
+
+  const handleEditCancel = useCallback(() => {
+    setEditing(false);
+    setDraft('');
+  }, []);
+
+  const handleSaveProse = useCallback(async () => {
+    if (!draft.trim()) {
+      toast({ variant: 'error', title: 'Document cannot be empty' });
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch('/api/career/experience/prose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: draft }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          (data as Record<string, string> | null)?.detail ??
+            `Save failed (${res.status})`
+        );
+      }
+      toast({ variant: 'success', title: 'Master document saved' });
+      setEditing(false);
+      await fetchData();
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title: err instanceof Error ? err.message : 'Save failed',
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, fetchData, toast]);
+
+  const fileInput = (
+    <input
+      ref={fileInputRef}
+      type='file'
+      accept='.pdf,.docx'
+      onChange={handleFileChange}
+      className='hidden'
+      aria-hidden='true'
+    />
   );
 
   // -- Loading state ----------------------------------------------------------
@@ -146,16 +258,16 @@ export default function ProfilePage() {
           <Skeleton variant='text' size='lg' className='w-32' />
           <Skeleton variant='text' className='mt-2 w-56' />
         </div>
-        <Skeleton variant='rectangular' height={200} />
-        <Skeleton variant='rectangular' height={200} />
         <Skeleton variant='rectangular' height={140} />
+        <Skeleton variant='rectangular' height={200} />
+        <Skeleton variant='rectangular' height={200} />
       </div>
     );
   }
 
   // -- Zero state -------------------------------------------------------------
 
-  if (!optimized) {
+  if (!optimized && !prose) {
     return (
       <div className='flex flex-col gap-6'>
         <div>
@@ -163,23 +275,58 @@ export default function ProfilePage() {
             Profile
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
-            Your experience and career health
+            Your master experience document and derived skills
           </Text>
         </div>
 
-        <Card className='p-8 text-center'>
-          <Text variant='body' className='text-text-secondary'>
-            No profile data yet. Upload a resume or start a conversation from
-            the Dashboard to get started.
-          </Text>
+        <Card>
+          <CardContent className='flex flex-col items-center gap-4 py-12'>
+            <Upload className='size-12 text-text-tertiary' aria-hidden />
+            <Text variant='body' as='p' className='text-center'>
+              Upload your resume to build your master experience document.
+            </Text>
+            <div className='flex items-center gap-3'>
+              <Button
+                name='profile-upload-resume'
+                variant='primary'
+                size='sm'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <Spinner size='sm' aria-label='Uploading' />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className='size-4' aria-hidden />
+                    <span>Upload Resume</span>
+                  </>
+                )}
+              </Button>
+              <Button
+                name='profile-start-conversation'
+                variant='outline'
+                size='sm'
+                as='link'
+                href='/fitted/onboarding'
+              >
+                <Sparkles className='size-4' aria-hidden />
+                <span>Start with AI</span>
+              </Button>
+            </div>
+          </CardContent>
         </Card>
+
+        {fileInput}
       </div>
     );
   }
 
   // -- Main layout ------------------------------------------------------------
 
-  const { payload } = optimized;
+  const payload = optimized?.payload;
   const roleGapRefs = new Set(
     gapHealth?.gaps
       .filter(g => g.ref && g.kind.startsWith('role.'))
@@ -188,17 +335,221 @@ export default function ProfilePage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div>
-        <Heading variant='component' as='h1'>
-          Profile
-        </Heading>
-        <Text variant='body' className='mt-1 text-text-secondary'>
-          Your experience and career health
-        </Text>
+      <div className='flex items-start justify-between gap-3'>
+        <div>
+          <Heading variant='component' as='h1'>
+            Profile
+          </Heading>
+          <Text variant='body' className='mt-1 text-text-secondary'>
+            Your master experience document and derived skills
+          </Text>
+        </div>
+        <Button
+          name='profile-improve-ai'
+          variant='outline'
+          size='sm'
+          onClick={() => setChatOpen(true)}
+        >
+          <Sparkles className='size-4' aria-hidden />
+          <span>Improve with AI</span>
+        </Button>
       </div>
 
+      {/* Document Health */}
+      {gapHealth && (
+        <Card>
+          <CardHeader>
+            <div className='flex items-center justify-between'>
+              <CardTitle>Document Health</CardTitle>
+              <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
+                {Math.round(100 - gapHealth.gap_pct)}% complete
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className='flex flex-col gap-4'>
+            <ProgressBar
+              value={Math.round(100 - gapHealth.gap_pct)}
+              variant={tierToProgressVariant(gapHealth.tier)}
+              size='lg'
+              aria-label='Document completeness'
+            />
+
+            {gapHealth.tier === 'red' && (
+              <Alert variant='warning'>
+                <div className='flex flex-col items-start gap-2'>
+                  <span>
+                    Critical gaps detected. Generated resumes will be missing
+                    outcomes and metrics until you fill them in.
+                  </span>
+                  <Button
+                    name='profile-open-chat-from-alert'
+                    variant='outline'
+                    size='sm'
+                    onClick={() => setChatOpen(true)}
+                  >
+                    <Sparkles className='size-4' aria-hidden />
+                    <span>Answer questions to fill gaps</span>
+                  </Button>
+                </div>
+              </Alert>
+            )}
+
+            <div className='flex flex-wrap items-center gap-2'>
+              <Button
+                name='profile-upload'
+                variant='outline'
+                size='sm'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <Spinner size='sm' aria-label='Uploading' />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className='size-4' aria-hidden />
+                    <span>Upload Resume</span>
+                  </>
+                )}
+              </Button>
+              <Button
+                name='profile-derive'
+                variant='outline'
+                size='sm'
+                onClick={handleDerive}
+                disabled={deriving}
+              >
+                {deriving ? (
+                  <>
+                    <Spinner size='sm' aria-label='Re-deriving' />
+                    <span>Re-deriving...</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className='size-4' aria-hidden />
+                    <span>Re-derive</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Master Document */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-center justify-between'>
+            <CardTitle>
+              <FileText className='mr-2 inline size-5' aria-hidden />
+              Master Document
+            </CardTitle>
+            {prose && (
+              <Text variant='meta' as='span'>
+                v{prose.version} &middot;{' '}
+                {new Date(prose.created_at).toLocaleDateString()}
+              </Text>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-3'>
+          {editing ? (
+            <>
+              <textarea
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
+                placeholder='Paste or type your master experience document here...'
+              />
+              <div className='flex items-center gap-2'>
+                <Button
+                  name='profile-save-prose'
+                  variant='primary'
+                  size='sm'
+                  onClick={handleSaveProse}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <>
+                      <Spinner size='sm' aria-label='Saving' />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className='size-4' aria-hidden />
+                      <span>Save</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  name='profile-save-derive'
+                  variant='outline'
+                  size='sm'
+                  onClick={async () => {
+                    await handleSaveProse();
+                    if (draft.trim()) await handleDerive();
+                  }}
+                  disabled={saving || deriving}
+                >
+                  {saving || deriving ? (
+                    <>
+                      <Spinner size='sm' aria-label='Processing' />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className='size-4' aria-hidden />
+                      <span>Save &amp; Re-derive</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  name='profile-cancel-edit'
+                  variant='outline'
+                  size='sm'
+                  onClick={handleEditCancel}
+                  disabled={saving}
+                >
+                  <X className='size-4' aria-hidden />
+                  <span>Cancel</span>
+                </Button>
+              </div>
+            </>
+          ) : prose ? (
+            <>
+              <div className='max-h-[400px] overflow-y-auto rounded-md border border-border bg-surface-secondary p-3'>
+                <pre className='whitespace-pre-wrap font-mono text-sm text-text-primary'>
+                  {prose.content}
+                </pre>
+              </div>
+              <div className='flex items-center gap-2'>
+                <Button
+                  name='profile-edit-prose'
+                  variant='outline'
+                  size='sm'
+                  onClick={handleEditStart}
+                >
+                  <Pencil className='size-4' aria-hidden />
+                  <span>Edit</span>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className='flex flex-col items-center gap-3 py-6'>
+              <FileText className='size-10 text-text-tertiary' aria-hidden />
+              <Text variant='body' as='p' className='text-center'>
+                No master document yet. Upload a resume or start a conversation
+                to create one.
+              </Text>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Experience */}
-      {payload.roles.length > 0 && (
+      {payload && payload.roles.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Experience</CardTitle>
@@ -261,7 +612,7 @@ export default function ProfilePage() {
       )}
 
       {/* Skills */}
-      {payload.skills.length > 0 && (
+      {payload && payload.skills.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Skills</CardTitle>
@@ -292,300 +643,23 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      {/* Annotations */}
-      <AnnotationsSection
-        annotations={annotations}
-        optimized={optimized}
-        onAdd={handleAddAnnotation}
-        onDelete={handleDeleteAnnotation}
-      />
-
       {/* Gaps */}
       {gapHealth && gapHealth.gaps.length > 0 && (
         <GapsList gaps={gapHealth.gaps} />
       )}
+
+      {fileInput}
+
+      <ConversationChatModal
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        onComplete={fetchData}
+      />
     </div>
   );
 }
 
 // -- Sub-components -----------------------------------------------------------
-
-const ACTION_BADGE_VARIANT: Record<
-  AnnotationAction,
-  'success' | 'error' | 'warning'
-> = {
-  emphasize: 'success',
-  exclude: 'error',
-  'de-emphasize': 'warning',
-};
-
-function AnnotationsSection({
-  annotations,
-  optimized,
-  onAdd,
-  onDelete,
-}: {
-  annotations: Annotation[];
-  optimized: OptimizedDoc | null;
-  onAdd: (body: {
-    action: AnnotationAction;
-    ref_type: AnnotationRefType;
-    ref_value: string;
-    target_label: string | undefined;
-    reason: string | undefined;
-  }) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
-}) {
-  const [showForm, setShowForm] = useState(false);
-
-  // Build ref_value options from the optimized doc
-  const refOptions = buildRefOptions(optimized);
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className='flex items-center justify-between'>
-          <CardTitle>Annotations</CardTitle>
-          <Button
-            name='add-annotation'
-            variant='outline'
-            size='sm'
-            onClick={() => setShowForm(s => !s)}
-          >
-            <Plus className='size-4' aria-hidden />
-            <span>{showForm ? 'Cancel' : 'Add'}</span>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className='flex flex-col gap-3'>
-        {showForm && (
-          <AddAnnotationForm
-            refOptions={refOptions}
-            onSubmit={async body => {
-              await onAdd(body);
-              setShowForm(false);
-            }}
-          />
-        )}
-
-        {annotations.length === 0 && !showForm ? (
-          <Text variant='caption' className='text-text-secondary'>
-            No annotations yet. Add annotations to control how your experience
-            is emphasized or excluded during resume tailoring.
-          </Text>
-        ) : (
-          <div className='flex flex-col divide-y divide-border'>
-            {annotations.map(ann => (
-              <div
-                key={ann.id}
-                className='flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0'
-              >
-                <div className='flex flex-col gap-1 min-w-0'>
-                  <div className='flex flex-wrap items-center gap-1.5'>
-                    <Badge variant={ACTION_BADGE_VARIANT[ann.action]} size='sm'>
-                      {ANNOTATION_ACTION_LABELS[ann.action]}
-                    </Badge>
-                    <Badge variant='default' size='sm'>
-                      {ANNOTATION_REF_TYPE_LABELS[ann.ref_type]}
-                    </Badge>
-                    <Text variant='body' className='text-sm font-medium'>
-                      {ann.ref_value}
-                    </Text>
-                  </div>
-                  {ann.target_label && (
-                    <Text variant='meta' className='text-text-tertiary'>
-                      Target: {ann.target_label}
-                    </Text>
-                  )}
-                  {ann.reason && (
-                    <Text variant='caption' className='text-text-secondary'>
-                      {ann.reason}
-                    </Text>
-                  )}
-                </div>
-                <Button
-                  name={`delete-annotation-${ann.id}`}
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => onDelete(ann.id)}
-                  aria-label={`Remove annotation: ${ann.action} ${ann.ref_value}`}
-                >
-                  <Trash2 className='size-4 text-text-tertiary' aria-hidden />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-interface RefOption {
-  value: string;
-  label: string;
-  type: AnnotationRefType;
-}
-
-function buildRefOptions(optimized: OptimizedDoc | null): RefOption[] {
-  if (!optimized) return [];
-  const options: RefOption[] = [];
-
-  for (const role of optimized.payload.roles) {
-    options.push({
-      value: role.id,
-      label: `${role.title} at ${role.company}`,
-      type: 'role',
-    });
-  }
-
-  for (const skill of optimized.payload.skills) {
-    options.push({
-      value: skill.name,
-      label: skill.name,
-      type: 'skill',
-    });
-  }
-
-  for (const outcome of optimized.payload.outcomes) {
-    const label =
-      outcome.description.length > 60
-        ? `${outcome.description.slice(0, 60)}...`
-        : outcome.description;
-    options.push({
-      value: outcome.description,
-      label,
-      type: 'outcome',
-    });
-  }
-
-  return options;
-}
-
-function AddAnnotationForm({
-  refOptions,
-  onSubmit,
-}: {
-  refOptions: RefOption[];
-  onSubmit: (body: {
-    action: AnnotationAction;
-    ref_type: AnnotationRefType;
-    ref_value: string;
-    target_label: string | undefined;
-    reason: string | undefined;
-  }) => Promise<void>;
-}) {
-  const [action, setAction] = useState<AnnotationAction>('emphasize');
-  const [refType, setRefType] = useState<AnnotationRefType>('role');
-  const [refValue, setRefValue] = useState('');
-  const [targetLabel, setTargetLabel] = useState('');
-  const [reason, setReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  // Filter ref options by selected type
-  const filteredOptions = refOptions.filter(o => o.type === refType);
-
-  // Auto-select first option when type changes
-  useEffect(() => {
-    const first = refOptions.find(o => o.type === refType);
-    setRefValue(first?.value ?? '');
-  }, [refType, refOptions]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!refValue.trim()) return;
-    setSubmitting(true);
-    try {
-      await onSubmit({
-        action,
-        ref_type: refType,
-        ref_value: refValue.trim(),
-        target_label: targetLabel.trim() || undefined,
-        reason: reason.trim() || undefined,
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className='flex flex-col gap-3 rounded-lg border border-border bg-surface-secondary p-3'
-    >
-      <div className='grid gap-3 sm:grid-cols-3'>
-        <Select
-          label='Action'
-          value={action}
-          onChange={e => setAction(e.target.value as AnnotationAction)}
-          options={ANNOTATION_ACTIONS.map(a => ({
-            value: a,
-            label: ANNOTATION_ACTION_LABELS[a],
-          }))}
-        />
-        <Select
-          label='Type'
-          value={refType}
-          onChange={e => setRefType(e.target.value as AnnotationRefType)}
-          options={ANNOTATION_REF_TYPES.map(t => ({
-            value: t,
-            label: ANNOTATION_REF_TYPE_LABELS[t],
-          }))}
-        />
-        {filteredOptions.length > 0 ? (
-          <Select
-            label='Item'
-            value={refValue}
-            onChange={e => setRefValue(e.target.value)}
-            options={filteredOptions.map(o => ({
-              value: o.value,
-              label: o.label,
-            }))}
-          />
-        ) : (
-          <Input
-            label='Item'
-            value={refValue}
-            onChange={e => setRefValue(e.target.value)}
-            placeholder={`Enter ${refType} name`}
-          />
-        )}
-      </div>
-      <div className='grid gap-3 sm:grid-cols-2'>
-        <Input
-          label='Target (optional)'
-          value={targetLabel}
-          onChange={e => setTargetLabel(e.target.value)}
-          placeholder='Leave blank for all targets'
-          helperText='Limit to a specific job target'
-        />
-        <Input
-          label='Reason (optional)'
-          value={reason}
-          onChange={e => setReason(e.target.value)}
-          placeholder='Why this annotation?'
-        />
-      </div>
-      <div className='flex justify-end'>
-        <Button
-          name='submit-annotation'
-          variant='primary'
-          size='sm'
-          disabled={submitting || !refValue.trim()}
-        >
-          {submitting ? (
-            <>
-              <Spinner size='sm' aria-label='Adding' />
-              <span>Adding...</span>
-            </>
-          ) : (
-            'Add Annotation'
-          )}
-        </Button>
-      </div>
-    </form>
-  );
-}
 
 function GapsList({ gaps }: { gaps: Gap[] }) {
   const visible = gaps.slice(0, 10);

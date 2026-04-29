@@ -15,6 +15,8 @@ interface BatchActionBarProps {
   generating: boolean;
   exporting: boolean;
   hasApproved: boolean;
+  /** F3-B: live counter shown while a batch is processing (n of N completed). */
+  batchProgress?: { completed: number; total: number } | undefined;
 }
 
 export default function BatchActionBar({
@@ -26,11 +28,18 @@ export default function BatchActionBar({
   generating,
   exporting,
   hasApproved,
+  batchProgress,
 }: BatchActionBarProps) {
   if (selectedCount === 0) return null;
 
   const overMax = selectedCount > BATCH_MAX;
   const showWarning = selectedCount > BATCH_WARN_THRESHOLD;
+  const generatingLabel =
+    generating && batchProgress
+      ? `Generating ${batchProgress.completed} of ${batchProgress.total}…`
+      : generating
+        ? 'Generating…'
+        : 'Generate resumes';
 
   return (
     <div
@@ -63,7 +72,7 @@ export default function BatchActionBar({
         onClick={onBatchGenerate}
         disabled={generating || overMax}
       >
-        {generating ? 'Generating...' : 'Generate resumes'}
+        {generatingLabel}
       </Button>
       {hasApproved && (
         <Button

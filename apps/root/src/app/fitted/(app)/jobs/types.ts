@@ -14,9 +14,14 @@ export type JobStatus = (typeof JOB_STATUSES)[number];
 
 export type ScoringStatus = 'stage1' | 'stage2' | 'complete';
 
+// Sentinel UUID for jobs added via POST /jobs/manual.
+// Mirrors `MANUAL_SOURCE_ID` in apps/job-api/app/services/extract.py.
+export const MANUAL_SOURCE_ID = '00000000-0000-4000-a000-000000000001';
+
 export interface JobPosting {
   id: string;
   external_id: string;
+  source_id: string;
   title: string;
   company_name: string;
   location: string | null;
@@ -170,4 +175,19 @@ export interface StatusLogEntry {
   new_status: string;
   note: string | null;
   created_at: string;
+}
+
+export type ResumeVersionSource = 'initial' | 'user_edit' | 'llm_adapt';
+
+export interface ResumeVersion {
+  id: string;
+  resume_id: string;
+  payload: TailoredResumePayload;
+  source: ResumeVersionSource;
+  created_at: string;
+}
+
+export interface ResumeVersionsResponse {
+  versions: ResumeVersion[];
+  cap: number;
 }

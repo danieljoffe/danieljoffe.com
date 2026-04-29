@@ -8,7 +8,7 @@ are cached in the `job_analyses` table.
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class SkillMatch(BaseModel):
@@ -40,6 +40,7 @@ class JobAnalysisRecord(BaseModel):
 
     id: str
     job_posting_id: str
+    target_id: str
     user_id: str | None
     optimized_doc_id: str | None
     scorecard: Scorecard
@@ -48,9 +49,3 @@ class JobAnalysisRecord(BaseModel):
     cost_usd: float
     latency_ms: int
     created_at: datetime
-
-
-class AnalyzeRequest(BaseModel):
-    """Router request body. The JD text comes from the frontend."""
-
-    job_description: str = Field(min_length=1, max_length=100_000)

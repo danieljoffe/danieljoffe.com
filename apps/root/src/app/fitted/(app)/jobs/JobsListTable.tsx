@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -15,6 +15,7 @@ import type {
   JobsSortColumn,
   ScoringStatus,
 } from './types';
+import { MANUAL_SOURCE_ID } from './types';
 
 interface JobsListTableProps {
   filters: JobsFilterState;
@@ -22,6 +23,9 @@ interface JobsListTableProps {
   onSelectionChange: (ids: Set<string>) => void;
   refreshKey: number;
   targetId: string | undefined;
+  /** Surfaces the current page's postings so the parent can derive selection
+   * facts like "are any selected jobs already approved?" (F3-I). */
+  onPostingsLoaded?: ((postings: JobPosting[]) => void) | undefined;
 }
 
 function ScoreBadge({
@@ -88,6 +92,7 @@ export default function JobsListTable({
   onSelectionChange,
   refreshKey,
   targetId,
+  onPostingsLoaded,
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState(0);
@@ -123,6 +128,10 @@ export default function JobsListTable({
     dataKey: 'postings',
     extraParams,
   });
+
+  useEffect(() => {
+    onPostingsLoaded?.(postings);
+  }, [postings, onPostingsLoaded]);
 
   const allOnPageSelected =
     postings.length > 0 && postings.every(p => selectedIds.has(p.id));
@@ -269,19 +278,24 @@ export default function JobsListTable({
                     </td>
                   )}
                   <td className='px-3 py-2 font-medium'>
-                    {job.absolute_url ? (
-                      <a
-                        href={job.absolute_url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-brand-500 hover:text-brand-600'
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {job.title}
-                      </a>
-                    ) : (
-                      job.title
-                    )}
+                    <span className='inline-flex items-center gap-2'>
+                      {job.absolute_url ? (
+                        <a
+                          href={job.absolute_url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-brand-500 hover:text-brand-600'
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {job.title}
+                        </a>
+                      ) : (
+                        job.title
+                      )}
+                      {job.source_id === MANUAL_SOURCE_ID && (
+                        <Badge variant='info'>Discovered</Badge>
+                      )}
+                    </span>
                   </td>
                   <td className='px-3 py-2'>{job.company_name}</td>
                   <td className='px-3 py-2 text-text-tertiary'>
@@ -302,6 +316,7 @@ export default function JobsListTable({
                     <td colSpan={showScore ? 8 : 7} className='p-0'>
                       <JobDetailPanel
                         posting={job}
+                        targetId={targetId}
                         onDelete={() => {
                           setExpandedId(null);
                           setDeleteKey(k => k + 1);

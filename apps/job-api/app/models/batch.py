@@ -37,7 +37,8 @@ class BatchRequest(BaseModel):
     """Router input for POST /tailor/batch."""
 
     job_posting_ids: list[str] = Field(min_length=1, max_length=20)
-    contact: ContactInfo
+    contact: ContactInfo | None = None
+    """Optional override; backend resolves from user_profiles when absent (F3-A)."""
     resume_type: ResumeType | None = None
     page_budget: Literal[1, 2] = 2
     force_fresh: bool = False

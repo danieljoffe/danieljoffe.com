@@ -226,3 +226,35 @@ def validate_annotation_refs(
             valid.append(a)
 
     return valid
+
+
+def _annotation_key(a: Annotation) -> tuple[str, str, str, str]:
+    """Identity tuple for dedup. Excludes id/reason — same directive collapses
+    even if the LLM phrased the reason differently across derivations."""
+    return (
+        a.action,
+        a.ref_type,
+        a.ref_value.lower(),
+        (a.target_label or "").lower(),
+    )
+
+
+def merge_annotations(
+    *annotation_lists: list[Annotation],
+) -> list[Annotation]:
+    """Merge annotation lists in order, dropping duplicates by identity tuple.
+
+    Earlier lists win on collision — used to give carried-forward annotations
+    (with stable ids) priority over freshly LLM-derived ones (which got fresh
+    uuids and would otherwise create churn for downstream consumers).
+    """
+    seen: set[tuple[str, str, str, str]] = set()
+    merged: list[Annotation] = []
+    for annotations in annotation_lists:
+        for a in annotations:
+            key = _annotation_key(a)
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(a)
+    return merged

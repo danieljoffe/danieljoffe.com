@@ -7,6 +7,7 @@ Two-doc content model:
 Chunks, turns, and preferences support retrieval, chat, and persistent style bias.
 """
 
+import uuid
 from datetime import datetime
 from typing import Literal
 
@@ -51,9 +52,13 @@ class Skill(BaseModel):
 
 
 class Annotation(BaseModel):
-    """User directive for per-target emphasis or exclusion (#499)."""
+    """User directive for per-target emphasis or exclusion (#499).
 
-    id: str
+    `id` defaults to a fresh UUID so the LLM (in derive.py) can omit it
+    when extracting annotations from prose comments — the server fills it in.
+    """
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     action: AnnotationAction
     ref_type: AnnotationRefType
     ref_value: str

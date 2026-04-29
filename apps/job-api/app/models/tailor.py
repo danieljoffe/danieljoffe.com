@@ -85,7 +85,8 @@ class TailorRequest(BaseModel):
     """Router input shape for POST /tailor/resume."""
 
     job_description: str = Field(min_length=1, max_length=20_000)
-    contact: ContactInfo
+    contact: ContactInfo | None = None
+    """Optional override; backend resolves from user_profiles when absent (F3-A)."""
     critique: str | None = Field(default=None, max_length=5_000)
     resume_type: ResumeType | None = None
     page_budget: Literal[1, 2] = 2
@@ -151,7 +152,8 @@ class CoverLetterRequest(BaseModel):
     job_description: str = Field(min_length=1, max_length=20_000)
     company_name: str = Field(min_length=1, max_length=200)
     role_title: str | None = Field(default=None, max_length=200)
-    contact: ContactInfo
+    contact: ContactInfo | None = None
+    """Optional override; backend resolves from user_profiles when absent (F3-A)."""
     critique: str | None = Field(default=None, max_length=5_000)
     job_posting_id: str | None = None
     target_label: str | None = None

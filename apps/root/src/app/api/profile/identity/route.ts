@@ -5,16 +5,16 @@ export async function GET() {
   if (!(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  return proxyToFastAPI('/experience/annotations');
+  return proxyToFastAPI('/profile/identity');
 }
 
-export async function POST(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   if (!(await verifyJobsAccess())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const body = await request.json();
-  return proxyToFastAPI('/experience/annotations', {
-    method: 'POST',
+  return proxyToFastAPI('/profile/identity', {
+    method: 'PATCH',
     body,
   });
 }

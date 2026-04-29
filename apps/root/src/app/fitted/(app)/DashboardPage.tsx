@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
-  Upload,
-  RefreshCw,
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  FileEdit,
+  Send,
   Sparkles,
-  FileText,
-  Pencil,
-  Save,
-  X,
+  Star,
 } from 'lucide-react';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
   Card,
@@ -19,29 +19,53 @@ import {
   CardTitle,
 } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type {
-  GapHealthResult,
-  GapTier,
-  OptimizedDoc,
-  OptimizedResponse,
-  ProseDoc,
-  ProseResponse,
-} from './profile/types';
-import { hasOptimized, hasProse } from './profile/types';
+import type { GapHealthResult, GapTier } from './profile/types';
+import type { JobPosting } from './jobs/types';
 
-// -- Helpers ------------------------------------------------------------------
-
-function tierToProgressVariant(tier: GapTier): 'error' | 'accent' | 'success' {
-  if (tier === 'red') return 'error';
-  if (tier === 'yellow') return 'accent';
-  return 'success';
+interface JobsListResponse {
+  postings: JobPosting[];
+  total: number;
+  page: number;
+  page_size: number;
 }
+
+interface PipelineStat {
+  status: 'new' | 'saved' | 'resume_draft' | 'applied';
+  label: string;
+  icon: React.ReactNode;
+  href: string;
+}
+
+const PIPELINE_STATS: PipelineStat[] = [
+  {
+    status: 'new',
+    label: 'New matches',
+    icon: <Star className='size-4' aria-hidden />,
+    href: '/fitted/jobs?status=new',
+  },
+  {
+    status: 'saved',
+    label: 'Saved',
+    icon: <Briefcase className='size-4' aria-hidden />,
+    href: '/fitted/jobs?status=saved',
+  },
+  {
+    status: 'resume_draft',
+    label: 'Drafts',
+    icon: <FileEdit className='size-4' aria-hidden />,
+    href: '/fitted/jobs?status=resume_draft',
+  },
+  {
+    status: 'applied',
+    label: 'Applied',
+    icon: <Send className='size-4' aria-hidden />,
+    href: '/fitted/jobs?status=applied',
+  },
+];
 
 function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
   if (tier === 'red') return 'error';
@@ -49,59 +73,54 @@ function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
   return 'success';
 }
 
-function formatDateRange(start: string, end: string | null): string {
-  const fmt = (iso: string) => {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
-  };
-  return end
-    ? `${fmt(start)} \u2013 ${fmt(end)}`
-    : `${fmt(start)} \u2013 Present`;
+function scoreBadgeVariant(score: number): 'success' | 'brand' | 'default' {
+  if (score >= 80) return 'success';
+  if (score >= 60) return 'brand';
+  return 'default';
 }
-
-const ACCEPTED_TYPES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-];
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 // -- Component ----------------------------------------------------------------
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [optimized, setOptimized] = useState<OptimizedDoc | null>(null);
+  const [topMatches, setTopMatches] = useState<JobPosting[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
-  const [prose, setProse] = useState<ProseDoc | null>(null);
-  const [deriving, setDeriving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState('');
-  const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [hasProfile, setHasProfile] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     try {
-      const [optRes, ghRes, proseRes] = await Promise.all([
-        fetch('/api/career/experience/optimized'),
+      const [topRes, healthRes, ...countResponses] = await Promise.all([
+        fetch('/api/jobs?status=new&sort=score&order=desc&page_size=5'),
         fetch('/api/career/experience/gap-health'),
-        fetch('/api/career/experience/prose'),
+        ...PIPELINE_STATS.map(s =>
+          fetch(`/api/jobs?status=${s.status}&page_size=1`)
+        ),
       ]);
 
-      if (optRes.ok) {
-        const body = (await optRes.json()) as OptimizedResponse;
-        setOptimized(hasOptimized(body) ? body : null);
+      if (topRes.ok) {
+        const data = (await topRes.json()) as JobsListResponse;
+        setTopMatches(data.postings ?? []);
       }
 
-      if (ghRes.ok) {
-        setGapHealth((await ghRes.json()) as GapHealthResult);
+      if (healthRes.ok) {
+        const data = (await healthRes.json()) as GapHealthResult;
+        setGapHealth(data);
+        setHasProfile(true);
       }
 
-      if (proseRes.ok) {
-        const body = (await proseRes.json()) as ProseResponse;
-        setProse(hasProse(body) ? body : null);
-      }
+      const newCounts: Record<string, number> = {};
+      await Promise.all(
+        countResponses.map(async (res, i) => {
+          if (res.ok) {
+            const data = (await res.json()) as JobsListResponse;
+            const stat = PIPELINE_STATS[i];
+            if (stat) newCounts[stat.status] = data.total ?? 0;
+          }
+        })
+      );
+      setCounts(newCounts);
     } catch {
       toast({ variant: 'error', title: 'Failed to load dashboard data' });
     } finally {
@@ -113,127 +132,6 @@ export default function DashboardPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleUpload = useCallback(
-    async (file: File) => {
-      if (!ACCEPTED_TYPES.includes(file.type)) {
-        toast({ variant: 'error', title: 'Please upload a PDF or DOCX file' });
-        return;
-      }
-      if (file.size > MAX_FILE_SIZE) {
-        toast({ variant: 'error', title: 'File must be under 10 MB' });
-        return;
-      }
-
-      setUploading(true);
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch(
-          '/api/career/experience/upload-resume?auto_derive=true',
-          { method: 'POST', body: formData }
-        );
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(
-            (data as Record<string, string> | null)?.detail ??
-              `Upload failed (${res.status})`
-          );
-        }
-        toast({ variant: 'success', title: 'Resume uploaded and processed' });
-        await fetchData();
-      } catch (err) {
-        toast({
-          variant: 'error',
-          title: err instanceof Error ? err.message : 'Upload failed',
-        });
-      } finally {
-        setUploading(false);
-      }
-    },
-    [fetchData, toast]
-  );
-
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) handleUpload(file);
-      e.target.value = '';
-    },
-    [handleUpload]
-  );
-
-  const handleDerive = useCallback(async () => {
-    setDeriving(true);
-    try {
-      const res = await fetch('/api/career/experience/derive', {
-        method: 'POST',
-      });
-      if (!res.ok) throw new Error('Derive failed');
-      toast({
-        variant: 'success',
-        title: 'Profile re-derived from experience',
-      });
-      await fetchData();
-    } catch {
-      toast({ variant: 'error', title: 'Failed to re-derive profile' });
-    } finally {
-      setDeriving(false);
-    }
-  }, [fetchData, toast]);
-
-  const handleEditStart = useCallback(() => {
-    setDraft(prose?.content ?? '');
-    setEditing(true);
-  }, [prose]);
-
-  const handleEditCancel = useCallback(() => {
-    setEditing(false);
-    setDraft('');
-  }, []);
-
-  const handleSaveProse = useCallback(async () => {
-    if (!draft.trim()) {
-      toast({ variant: 'error', title: 'Document cannot be empty' });
-      return;
-    }
-    setSaving(true);
-    try {
-      const res = await fetch('/api/career/experience/prose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: draft }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(
-          (data as Record<string, string> | null)?.detail ??
-            `Save failed (${res.status})`
-        );
-      }
-      toast({ variant: 'success', title: 'Master document saved' });
-      setEditing(false);
-      await fetchData();
-    } catch (err) {
-      toast({
-        variant: 'error',
-        title: err instanceof Error ? err.message : 'Save failed',
-      });
-    } finally {
-      setSaving(false);
-    }
-  }, [draft, fetchData, toast]);
-
-  const fileInput = (
-    <input
-      ref={fileInputRef}
-      type='file'
-      accept='.pdf,.docx'
-      onChange={handleFileChange}
-      className='hidden'
-      aria-hidden='true'
-    />
-  );
-
   // -- Loading state ----------------------------------------------------------
 
   if (loading) {
@@ -243,16 +141,19 @@ export default function DashboardPage() {
           <Skeleton variant='text' size='lg' className='w-32' />
           <Skeleton variant='text' className='mt-2 w-56' />
         </div>
-        <Skeleton variant='rectangular' height={120} />
-        <Skeleton variant='rectangular' height={200} />
-        <Skeleton variant='rectangular' height={300} />
+        <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+          {[0, 1, 2, 3].map(i => (
+            <Skeleton key={i} variant='rectangular' height={88} />
+          ))}
+        </div>
+        <Skeleton variant='rectangular' height={320} />
       </div>
     );
   }
 
   // -- Zero state -------------------------------------------------------------
 
-  if (!optimized) {
+  if (!hasProfile) {
     return (
       <div className='flex flex-col gap-6'>
         <div>
@@ -260,35 +161,26 @@ export default function DashboardPage() {
             Dashboard
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
-            Your career documents at a glance
+            Your job search at a glance
           </Text>
         </div>
 
         <Card>
           <CardContent className='flex flex-col items-center gap-4 py-12'>
-            <Upload className='size-12 text-text-tertiary' aria-hidden />
+            <Sparkles className='size-12 text-text-tertiary' aria-hidden />
             <Text variant='body' as='p' className='text-center'>
-              Upload your resume to build your master experience document.
+              Build your profile so we can score and match incoming jobs.
             </Text>
             <div className='flex items-center gap-3'>
               <Button
-                name='dashboard-upload-resume'
+                name='dashboard-go-profile'
                 variant='primary'
                 size='sm'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+                as='link'
+                href='/fitted/profile'
               >
-                {uploading ? (
-                  <>
-                    <Spinner size='sm' aria-label='Uploading' />
-                    <span>Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className='size-4' aria-hidden />
-                    <span>Upload Resume</span>
-                  </>
-                )}
+                <span>Set up profile</span>
+                <ArrowRight className='size-4' aria-hidden />
               </Button>
               <Button
                 name='dashboard-start-conversation'
@@ -303,310 +195,116 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-
-        {fileInput}
       </div>
     );
   }
 
   // -- Main layout ------------------------------------------------------------
 
-  const { payload } = optimized;
-
   return (
     <div className='flex flex-col gap-6'>
-      <div>
-        <Heading variant='component' as='h1'>
-          Dashboard
-        </Heading>
-        <Text variant='body' className='mt-1 text-text-secondary'>
-          Your career documents at a glance
-        </Text>
+      <div className='flex items-start justify-between gap-3'>
+        <div>
+          <Heading variant='component' as='h1'>
+            Dashboard
+          </Heading>
+          <Text variant='body' className='mt-1 text-text-secondary'>
+            Your job search at a glance
+          </Text>
+        </div>
+        {gapHealth && (
+          <Link
+            href='/fitted/profile'
+            className='group flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2 transition-colors hover:bg-surface-tertiary'
+          >
+            <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
+              Profile {Math.round(100 - gapHealth.gap_pct)}%
+            </Badge>
+            <ArrowRight
+              className='size-4 text-text-tertiary transition-transform group-hover:translate-x-0.5'
+              aria-hidden
+            />
+          </Link>
+        )}
       </div>
 
-      {/* Document Health */}
-      {gapHealth && (
-        <Card>
-          <CardHeader>
-            <div className='flex items-center justify-between'>
-              <CardTitle>Document Health</CardTitle>
-              <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
-                {Math.round(100 - gapHealth.gap_pct)}% complete
-              </Badge>
+      {/* Pipeline stats */}
+      <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+        {PIPELINE_STATS.map(stat => (
+          <Link
+            key={stat.status}
+            href={stat.href}
+            className='group flex flex-col gap-2 rounded-lg border border-border bg-surface-secondary p-4 transition-colors hover:border-brand hover:bg-surface-tertiary'
+          >
+            <div className='flex items-center gap-2 text-text-secondary group-hover:text-text-primary'>
+              {stat.icon}
+              <Text variant='caption' className='text-text-secondary'>
+                {stat.label}
+              </Text>
             </div>
-          </CardHeader>
-          <CardContent className='flex flex-col gap-4'>
-            <ProgressBar
-              value={Math.round(100 - gapHealth.gap_pct)}
-              variant={tierToProgressVariant(gapHealth.tier)}
-              size='lg'
-              aria-label='Document completeness'
-            />
+            <Text variant='body' as='span' className='text-2xl font-semibold'>
+              {counts[stat.status] ?? 0}
+            </Text>
+          </Link>
+        ))}
+      </div>
 
-            {gapHealth.gap_pct >= 45 && (
-              <Alert variant='warning'>
-                Resume generation is blocked until gaps are below 45%. Fill in
-                missing outcomes and metrics to unlock it.
-              </Alert>
-            )}
-
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button
-                name='dashboard-upload'
-                variant='outline'
-                size='sm'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Spinner size='sm' aria-label='Uploading' />
-                    <span>Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className='size-4' aria-hidden />
-                    <span>Upload Resume</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                name='dashboard-derive'
-                variant='outline'
-                size='sm'
-                onClick={handleDerive}
-                disabled={deriving}
-              >
-                {deriving ? (
-                  <>
-                    <Spinner size='sm' aria-label='Re-deriving' />
-                    <span>Re-deriving...</span>
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className='size-4' aria-hidden />
-                    <span>Re-derive</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                name='dashboard-improve-ai'
-                variant='outline'
-                size='sm'
-                as='link'
-                href='/fitted/onboarding'
-              >
-                <Sparkles className='size-4' aria-hidden />
-                <span>Improve with AI</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Master Document */}
+      {/* Top matches */}
       <Card>
         <CardHeader>
           <div className='flex items-center justify-between'>
             <CardTitle>
-              <FileText className='mr-2 inline size-5' aria-hidden />
-              Master Document
+              <Star className='mr-2 inline size-5' aria-hidden />
+              Top matches
             </CardTitle>
-            {prose && (
-              <Text variant='meta' as='span'>
-                v{prose.version} &middot;{' '}
-                {new Date(prose.created_at).toLocaleDateString()}
-              </Text>
-            )}
+            <Link
+              href='/fitted/jobs'
+              className='inline-flex items-center gap-1 text-sm text-brand-500 hover:underline'
+            >
+              View all jobs
+              <ArrowRight className='size-3.5' aria-hidden />
+            </Link>
           </div>
         </CardHeader>
-        <CardContent className='flex flex-col gap-3'>
-          {editing ? (
-            <>
-              <textarea
-                value={draft}
-                onChange={e => setDraft(e.target.value)}
-                className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
-                placeholder='Paste or type your master experience document here...'
+        <CardContent className='flex flex-col divide-y divide-border'>
+          {topMatches.length === 0 ? (
+            <div className='flex flex-col items-center gap-3 py-8 text-center'>
+              <CheckCircle2
+                className='size-10 text-text-tertiary'
+                aria-hidden
               />
-              <div className='flex items-center gap-2'>
-                <Button
-                  name='dashboard-save-prose'
-                  variant='primary'
-                  size='sm'
-                  onClick={handleSaveProse}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <>
-                      <Spinner size='sm' aria-label='Saving' />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className='size-4' aria-hidden />
-                      <span>Save</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='dashboard-save-derive'
-                  variant='outline'
-                  size='sm'
-                  onClick={async () => {
-                    await handleSaveProse();
-                    if (draft.trim()) await handleDerive();
-                  }}
-                  disabled={saving || deriving}
-                >
-                  {saving || deriving ? (
-                    <>
-                      <Spinner size='sm' aria-label='Processing' />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className='size-4' aria-hidden />
-                      <span>Save &amp; Re-derive</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='dashboard-cancel-edit'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleEditCancel}
-                  disabled={saving}
-                >
-                  <X className='size-4' aria-hidden />
-                  <span>Cancel</span>
-                </Button>
-              </div>
-            </>
-          ) : prose ? (
-            <>
-              <div className='max-h-[400px] overflow-y-auto rounded-md border border-border bg-surface-secondary p-3'>
-                <pre className='whitespace-pre-wrap font-mono text-sm text-text-primary'>
-                  {prose.content}
-                </pre>
-              </div>
-              <div className='flex items-center gap-2'>
-                <Button
-                  name='dashboard-edit-prose'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleEditStart}
-                >
-                  <Pencil className='size-4' aria-hidden />
-                  <span>Edit</span>
-                </Button>
-              </div>
-            </>
+              <Text variant='body' className='text-text-secondary'>
+                No new matches right now. We&apos;ll notify you as fresh roles
+                come in.
+              </Text>
+            </div>
           ) : (
-            <div className='flex flex-col items-center gap-3 py-6'>
-              <FileText className='size-10 text-text-tertiary' aria-hidden />
-              <Text variant='body' as='p' className='text-center'>
-                No master document yet. Upload a resume or start a conversation
-                to create one.
-              </Text>
-            </div>
+            topMatches.map(posting => (
+              <Link
+                key={posting.id}
+                href={`/fitted/jobs/${posting.id}`}
+                className='group flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 transition-colors hover:bg-surface-tertiary -mx-3 px-3 rounded-md'
+              >
+                <div className='min-w-0 flex-1'>
+                  <Text
+                    variant='body'
+                    className='truncate font-medium group-hover:text-brand-500'
+                  >
+                    {posting.title}
+                  </Text>
+                  <Text variant='caption' className='text-text-secondary'>
+                    {posting.company_name}
+                    {posting.location ? ` · ${posting.location}` : ''}
+                  </Text>
+                </div>
+                <Badge variant={scoreBadgeVariant(posting.score)} size='sm'>
+                  {posting.score}
+                </Badge>
+              </Link>
+            ))
           )}
         </CardContent>
       </Card>
-
-      {/* Derived Document */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Derived Document</CardTitle>
-        </CardHeader>
-        <CardContent className='flex flex-col gap-6'>
-          {/* Experience */}
-          {payload.roles.length > 0 && (
-            <div className='flex flex-col gap-1'>
-              <Text variant='body' className='font-medium'>
-                Experience
-              </Text>
-              <div className='flex flex-col divide-y divide-border'>
-                {payload.roles.map(role => (
-                  <div
-                    key={role.id}
-                    className='flex flex-col gap-2 py-3 first:pt-2 last:pb-0'
-                  >
-                    <div className='flex items-start justify-between gap-2'>
-                      <div>
-                        <Text variant='body' className='font-medium'>
-                          {role.title}
-                        </Text>
-                        <Text variant='caption' className='text-text-secondary'>
-                          {role.company} &middot;{' '}
-                          {formatDateRange(role.start, role.end)}
-                        </Text>
-                      </div>
-                    </div>
-                    {role.summary && (
-                      <Text variant='caption' className='text-text-secondary'>
-                        {role.summary}
-                      </Text>
-                    )}
-                    {role.skills.length > 0 && (
-                      <div className='flex flex-wrap gap-1'>
-                        {role.skills.map(skill => (
-                          <Badge key={skill} variant='default' size='sm'>
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Skills */}
-          {payload.skills.length > 0 && (
-            <div className='flex flex-col gap-1'>
-              <Text variant='body' className='font-medium'>
-                Skills
-              </Text>
-              <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-                {payload.skills.map(skill => (
-                  <div
-                    key={skill.name}
-                    className='flex items-center justify-between rounded-md border border-border px-3 py-2'
-                  >
-                    <Text variant='body' className='text-sm'>
-                      {skill.name}
-                    </Text>
-                    {skill.evidence_refs.length > 0 ? (
-                      <Badge variant='default' size='sm'>
-                        {skill.evidence_refs.length} evidence
-                      </Badge>
-                    ) : (
-                      <Badge variant='error' size='sm'>
-                        No evidence
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {payload.roles.length === 0 && payload.skills.length === 0 && (
-            <Text
-              variant='body'
-              as='p'
-              className='py-4 text-center text-text-secondary'
-            >
-              No derived content yet. Save your master document and re-derive to
-              populate this section.
-            </Text>
-          )}
-        </CardContent>
-      </Card>
-
-      {fileInput}
     </div>
   );
 }

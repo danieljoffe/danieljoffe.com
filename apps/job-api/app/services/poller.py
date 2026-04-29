@@ -231,12 +231,17 @@ async def _run_llm_scoring_for_row(
     row_data: dict[str, Any],
     optimized_doc: OptimizedDoc,
     llm: LLMClient,
+    target: JobTarget,
 ) -> None:
     """Stage 3: Run LLM analysis and mark target scores as complete.
 
     Fetches the current global score (set by stage 2) for the threshold
     check. Blends keyword and LLM scores, updates global score, and
     marks all target scores for this job as 'complete'.
+
+    Cache key is (job_posting_id, target.id, optimized_doc.id) — the
+    same row is reused by the user-facing analysis flow when viewing
+    the job under this target.
 
     Silently falls back to keyword-only score on any error.
     """
@@ -265,10 +270,15 @@ async def _run_llm_scoring_for_row(
             logger.exception("Failed to mark scores complete for job %s", job_id)
         return
 
-    # Check LLM cache — skip re-analysis if this job was already analyzed
+    # Check LLM cache — skip re-analysis if this job+target+optimized was already done
     try:
         cached = await asyncio.to_thread(
-            get_cached_analysis, supabase, job_id, None
+            get_cached_analysis,
+            supabase,
+            job_id,
+            target_id=target.id,
+            optimized_doc_id=optimized_doc.id,
+            user_id=None,
         )
         if cached is not None:
             llm_score = scorecard_to_numeric(cached.scorecard)
@@ -305,6 +315,7 @@ async def _run_llm_scoring_for_row(
             persist_analysis,
             supabase,
             job_posting_id=job_id,
+            target_id=target.id,
             user_id=None,
             optimized_doc_id=optimized_doc.id,
             analysis=analysis,
@@ -527,14 +538,20 @@ async def _poll_one_source(
                     logger.exception("Batch global score update failed after stage 2")
 
             # ---- Stage 3: LLM scoring for qualified jobs (concurrent) ----
-            if optimized_doc is not None:
+            # Cache key is (job, target, optimized) — pick the first active
+            # target as the canonical one for the poller's cache row. The
+            # user-facing analysis flow re-uses the same row when viewing
+            # the job under that target, and runs its own LLM call for
+            # other targets on demand.
+            if optimized_doc is not None and active_targets:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
+                primary_target = active_targets[0]
 
                 async def _llm_one(row_data: dict[str, Any]) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
-                            supabase, row_data, optimized_doc, llm
+                            supabase, row_data, optimized_doc, llm, primary_target
                         )
 
                 await asyncio.gather(
@@ -767,7 +784,7 @@ async def _poll_one_source_for_target(
                 async def _llm_one_t(row_data: dict[str, Any]) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
-                            supabase, row_data, optimized_doc, llm
+                            supabase, row_data, optimized_doc, llm, target
                         )
 
                 await asyncio.gather(

@@ -46,6 +46,15 @@ Output must match this schema:
       "value": "the measurement, or null",
       "role_ref": "role.id this outcome belongs to"
     }
+  ],
+  "annotations": [
+    {
+      "action": "emphasize | exclude | de-emphasize",
+      "ref_type": "role | skill | outcome",
+      "ref_value": "the role.id, skill.name, or outcome description substring this targets",
+      "target_label": "target role label this applies to, or null for all targets",
+      "reason": "short paraphrase of the user's stated reason, or null"
+    }
   ]
 }
 
@@ -55,6 +64,32 @@ Rules:
 - Quantified outcomes (with metric + value) are higher-signal than unquantified ones.
 - If a detail is ambiguous or missing, leave the field null rather than guessing.
 - Role ids should be stable slugs the user can reference later.
+
+Deduplication:
+- The prose may contain repeated content from multiple resume uploads or edits.
+- Produce ONE Role per unique (company, title, start) tuple. Merge skills and \
+outcome_refs across duplicates.
+- Produce ONE Skill per canonical name. Take the maximum years_value across mentions.
+- Drop outcomes whose description is substantively identical to another (paraphrase \
+matches count as duplicates).
+
+Annotations from inline HTML comments:
+- Scan the prose for HTML comments (`<!-- ... -->`) that express user directives \
+about emphasis, exclusion, or de-emphasis. Examples:
+  - `<!-- exclude my helpdesk role from frontend resumes -->`
+  - `<!-- emphasize React work for frontend targets -->`
+  - `<!-- de-emphasize pre-2017 bullets -->`
+  - `<!-- exclude this skill: jQuery -->`
+- For each such directive, emit an `annotations` entry. Map natural language to:
+  - `action`: emphasize | exclude | de-emphasize (infer from verbs)
+  - `ref_type`: role | skill | outcome (infer from the noun)
+  - `ref_value`: the role.id, exact skill name, or a distinctive substring of \
+the outcome description
+  - `target_label`: if the directive mentions a target role ("for frontend", \
+"on engineering resumes"), capture it; otherwise null (= applies to all targets)
+  - `reason`: optional paraphrase of why
+- Omit the `id` field — the server generates one.
+- If no inline directives are present, return an empty annotations array.
 
 Return ONLY the JSON object. No prose, no code fences."""
 
