@@ -64,6 +64,8 @@ export function Section({
     children
   );
 
+  const isElevated = background === 'elevated';
+
   return (
     <section
       ref={ref}
@@ -74,6 +76,10 @@ export function Section({
         overflowClasses[overflow],
         center && 'flex flex-col justify-center',
         fullWidth && 'w-full',
+        // Elevated sections float inside their parent — pull off the edges
+        // and add internal horizontal padding so content isn't flush to the
+        // card surface.
+        isElevated && 'max-w-[calc(100%-2rem)] mx-auto px-4 sm:px-6 md:px-8',
         className
       )}
       {...rest}

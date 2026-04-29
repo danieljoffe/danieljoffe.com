@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Section } from '@danieljoffe.com/shared-ui/Section';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import {
   BASE_FIELD,
@@ -42,82 +44,90 @@ export default function MagicLinkForm() {
 
   if (formState === 'sent') {
     return (
-      <div className='flex flex-col items-center justify-center min-h-[60vh]'>
-        <div className='rounded-lg border border-border bg-surface-elevated w-full max-w-sm'>
-          <div className='p-6'>
-            <div className='flex flex-col gap-4'>
-              <Heading variant='component' as='h2' className='text-center'>
-                Check your email
-              </Heading>
-              <Text variant='body' className='text-center'>
-                A magic link has been sent to{' '}
-                <span className='font-medium text-fg'>{email}</span>. Click the
-                link in the email to sign in.
-              </Text>
-              <Button
-                name='fitted-back-to-login'
-                variant='secondary'
-                onClick={() => {
-                  setFormState('idle');
-                  setEmail('');
-                }}
-              >
-                Use a different email
-              </Button>
-            </div>
+      <PageLayout>
+        <Section padding='none'>
+          <div className='text-center space-y-2'>
+            <Heading variant='section' as='h1'>
+              Check your email
+            </Heading>
+            <Text variant='body'>
+              A magic link has been sent to{' '}
+              <span className='font-medium text-text-primary'>{email}</span>.
+              Click the link in the email to sign in.
+            </Text>
           </div>
-        </div>
-      </div>
+        </Section>
+
+        <Section background='elevated' padding='lg'>
+          <div className='max-w-sm mx-auto'>
+            <Button
+              name='fitted-back-to-login'
+              variant='secondary'
+              className='w-full'
+              onClick={() => {
+                setFormState('idle');
+                setEmail('');
+              }}
+            >
+              Use a different email
+            </Button>
+          </div>
+        </Section>
+      </PageLayout>
     );
   }
 
   return (
-    <div className='flex flex-col items-center justify-center min-h-[60vh]'>
-      <div className='rounded-lg border border-border bg-surface-elevated w-full max-w-sm'>
-        <div className='p-6'>
-          <form onSubmit={handleSubmit}>
-            <div className='flex flex-col gap-4'>
-              <Heading variant='component' as='h2' className='text-center'>
-                Sign in to Fitted
-              </Heading>
-              <Text variant='body' className='text-center'>
-                Enter your email to receive a magic link.
-              </Text>
-              <input
-                type='email'
-                placeholder='you@example.com'
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                aria-label='Email address'
-                aria-describedby={
-                  formState === 'error' ? 'login-error' : undefined
-                }
-                autoFocus
-                required
-                data-sentry-mask
-                className={cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER)}
-              />
-              {formState === 'error' && (
-                <Text
-                  variant='error'
-                  className='text-center'
-                  role='alert'
-                  id='login-error'
-                >
-                  {error}
-                </Text>
-              )}
-              <Button
-                type='submit'
-                name='fitted-sign-in'
-                disabled={formState === 'loading' || !email}
-              >
-                {formState === 'loading' ? 'Sending...' : 'Send magic link'}
-              </Button>
-            </div>
-          </form>
+    <PageLayout>
+      <Section
+        background='elevated'
+        padding='lg'
+        center
+        className='rounded-lg border border-border gap-4'
+      >
+        <div className='text-center space-y-2'>
+          <Heading variant='section' as='h1'>
+            Sign in to Fitted
+          </Heading>
+          <Text variant='body'>Enter your email to receive a magic link.</Text>
         </div>
-      </div>
-    </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className='flex flex-col gap-4'>
+            <input
+              type='email'
+              placeholder='you@example.com'
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              aria-label='Email address'
+              aria-describedby={
+                formState === 'error' ? 'login-error' : undefined
+              }
+              autoFocus
+              required
+              data-sentry-mask
+              className={cn(BASE_FIELD, FIELD_PADDING, FIELD_PLACEHOLDER)}
+            />
+            {formState === 'error' && (
+              <Text
+                variant='error'
+                className='text-center'
+                role='alert'
+                id='login-error'
+              >
+                {error}
+              </Text>
+            )}
+            <Button
+              type='submit'
+              name='fitted-sign-in'
+              disabled={formState === 'loading' || !email}
+            >
+              {formState === 'loading' ? 'Sending...' : 'Send magic link'}
+            </Button>
+          </div>
+        </form>
+      </Section>
+    </PageLayout>
   );
 }
