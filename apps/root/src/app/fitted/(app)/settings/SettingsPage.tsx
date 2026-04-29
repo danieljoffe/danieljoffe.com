@@ -17,6 +17,22 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 
+async function extractFastApiError(res: Response): Promise<string | null> {
+  if (res.ok) return null;
+  try {
+    const body = (await res.clone().json()) as { detail?: unknown };
+    if (Array.isArray(body.detail)) {
+      const first = body.detail[0] as { msg?: string } | undefined;
+      if (first?.msg) return first.msg.replace(/^Value error,\s*/, '');
+    } else if (typeof body.detail === 'string') {
+      return body.detail;
+    }
+  } catch {
+    // not JSON / no body — fall through
+  }
+  return null;
+}
+
 interface NotificationPreferences {
   job_notifications_enabled: boolean;
   job_score_threshold: number;
@@ -133,7 +149,14 @@ export default function SettingsPage() {
           body: JSON.stringify(identityBody),
         }),
       ]);
-      if (!notifRes.ok || !identityRes.ok) throw new Error('Save failed');
+      if (!notifRes.ok || !identityRes.ok) {
+        const message =
+          (await extractFastApiError(notifRes)) ||
+          (await extractFastApiError(identityRes)) ||
+          'Failed to save settings';
+        toast({ variant: 'error', title: message });
+        return;
+      }
 
       const notifData = (await notifRes.json()) as NotificationPreferences;
       const identityData = (await identityRes.json()) as IdentityFields;
