@@ -220,89 +220,17 @@ export default function TargetsList() {
           Targets
         </Heading>
         {targets.length > 0 && (
-          <div className='flex items-center gap-2'>
-            <Button
-              name='target-suggest'
-              variant='outline'
-              size='sm'
-              onClick={handleSuggest}
-              disabled={suggesting}
-            >
-              {suggesting ? (
-                <>
-                  <Spinner size='sm' aria-label='Suggesting' />
-                  <span>Suggesting...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className='size-4' aria-hidden />
-                  <span>Suggest</span>
-                </>
-              )}
-            </Button>
-            <Button
-              name='target-create'
-              variant='primary'
-              size='sm'
-              onClick={() => setModalOpen(true)}
-            >
-              <Plus className='size-4' aria-hidden />
-              <span>New Target</span>
-            </Button>
-          </div>
+          <Button
+            name='target-create'
+            variant='primary'
+            size='sm'
+            onClick={() => setModalOpen(true)}
+          >
+            <Plus className='size-4' aria-hidden />
+            <span>Create Target</span>
+          </Button>
         )}
       </div>
-
-      {/* AI Suggestions */}
-      {suggestions.length > 0 && (
-        <div className='flex flex-col gap-3'>
-          <Text variant='caption'>Suggested targets from your experience</Text>
-          <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-            {suggestions.map(match => (
-              <Card key={match.suggestion.label} padding='none'>
-                <CardContent className='p-4 flex flex-col gap-2'>
-                  <div className='flex items-center gap-2'>
-                    <Text variant='body' className='font-medium'>
-                      {match.suggestion.label}
-                    </Text>
-                    {!match.is_new && (
-                      <Badge variant='default' size='sm'>
-                        Existing
-                      </Badge>
-                    )}
-                  </div>
-                  <Text variant='caption' className='text-text-secondary'>
-                    {match.suggestion.description}
-                  </Text>
-                  {match.suggestion.core_skills.length > 0 && (
-                    <div className='flex flex-wrap gap-1'>
-                      {match.suggestion.core_skills.map(skill => (
-                        <Badge key={skill} variant='default' size='sm'>
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  <Button
-                    name={`add-suggestion-${match.suggestion.label}`}
-                    variant='primary'
-                    size='sm'
-                    onClick={() => handleAddSuggestion(match)}
-                    disabled={addingSuggestion === match.suggestion.label}
-                    className='mt-1 self-start'
-                  >
-                    {addingSuggestion === match.suggestion.label
-                      ? 'Adding...'
-                      : match.is_new
-                        ? 'Create Target'
-                        : 'Add Target'}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
 
       {targets.length === 0 ? (
         <Card>
@@ -335,20 +263,96 @@ export default function TargetsList() {
           </CardContent>
         </Card>
       ) : (
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {targets.map(({ user_target, target }) => (
-            <TargetCard
-              key={target.id}
-              target={target}
-              fitScore={user_target.fit_score}
-              fitScoreReasoning={user_target.fit_score_reasoning}
-              onActivate={handleActivate}
-              onDeactivate={handleDeactivate}
-              onDelete={handleDelete}
-              onViewJobs={handleViewJobs}
-            />
-          ))}
-        </div>
+        <>
+          <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {targets.map(({ user_target, target }) => (
+              <TargetCard
+                key={target.id}
+                target={target}
+                fitScore={user_target.fit_score}
+                fitScoreReasoning={user_target.fit_score_reasoning}
+                onActivate={handleActivate}
+                onDeactivate={handleDeactivate}
+                onDelete={handleDelete}
+                onViewJobs={handleViewJobs}
+              />
+            ))}
+          </div>
+
+          <div className='flex items-center justify-center'>
+            <Button
+              name='target-suggest'
+              variant='outline'
+              size='sm'
+              onClick={handleSuggest}
+              disabled={suggesting}
+            >
+              {suggesting ? (
+                <>
+                  <Spinner size='sm' aria-label='Suggesting' />
+                  <span>Suggesting...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className='size-4' aria-hidden />
+                  <span>Suggest from Experience</span>
+                </>
+              )}
+            </Button>
+          </div>
+
+          {suggestions.length > 0 && (
+            <div className='flex flex-col gap-3'>
+              <Text variant='caption'>
+                Suggested targets from your experience
+              </Text>
+              <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
+                {suggestions.map(match => (
+                  <Card key={match.suggestion.label} padding='none'>
+                    <CardContent className='p-4 flex flex-col gap-2'>
+                      <div className='flex items-center gap-2'>
+                        <Text variant='body' className='font-medium'>
+                          {match.suggestion.label}
+                        </Text>
+                        {!match.is_new && (
+                          <Badge variant='default' size='sm'>
+                            Existing
+                          </Badge>
+                        )}
+                      </div>
+                      <Text variant='caption' className='text-text-secondary'>
+                        {match.suggestion.description}
+                      </Text>
+                      {match.suggestion.core_skills.length > 0 && (
+                        <div className='flex flex-wrap gap-1'>
+                          {match.suggestion.core_skills.map(skill => (
+                            <Badge key={skill} variant='default' size='sm'>
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <Button
+                        name={`add-suggestion-${match.suggestion.label}`}
+                        variant='primary'
+                        size='sm'
+                        onClick={() => handleAddSuggestion(match)}
+                        disabled={addingSuggestion === match.suggestion.label}
+                        className='mt-1 self-start'
+                      >
+                        {addingSuggestion === match.suggestion.label
+                          ? 'Adding...'
+                          : match.is_new
+                            ? 'Create Target'
+                            : 'Add Target'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <CreateTargetModal
