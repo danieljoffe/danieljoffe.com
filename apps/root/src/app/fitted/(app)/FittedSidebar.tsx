@@ -145,7 +145,7 @@ export default function FittedSidebar() {
   return (
     <>
       {/* Mobile top bar */}
-      <header className='md:hidden sticky top-0 z-30 flex items-center justify-between border-b border-border bg-surface/95 backdrop-blur-md px-4 h-14'>
+      <header className='md:hidden sticky top-0 z-30 flex items-center border-b border-border bg-surface/95 backdrop-blur-md px-4 h-14'>
         <button
           ref={hamburgerRef}
           onClick={() => setMobileOpen(true)}
@@ -155,8 +155,9 @@ export default function FittedSidebar() {
         >
           <Menu className='size-5' aria-hidden />
         </button>
-        <span className='text-sm font-semibold text-text-primary'>Fitted</span>
-        <DarkModeToggle />
+        <span className='ml-3 text-sm font-semibold text-text-primary'>
+          Fitted
+        </span>
       </header>
 
       {/* Mobile backdrop */}

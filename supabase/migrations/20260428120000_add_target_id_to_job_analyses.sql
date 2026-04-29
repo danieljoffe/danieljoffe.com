@@ -5,9 +5,12 @@
 -- and conflated analyses across targets.
 --
 -- job_analyses is a derived cache (regenerates from the LLM on demand),
--- so it's safe to truncate before adding the NOT NULL column.
+-- so it's safe to clear before adding the NOT NULL column. We use DELETE
+-- (not TRUNCATE) because job_postings.llm_analysis_id references
+-- job_analyses(id) with ON DELETE SET NULL — DELETE honors that action,
+-- TRUNCATE refuses regardless of the FK clause.
 
-TRUNCATE TABLE job_analyses;
+DELETE FROM job_analyses;
 
 ALTER TABLE job_analyses
   ADD COLUMN target_id UUID NOT NULL REFERENCES job_targets(id) ON DELETE CASCADE;

@@ -521,6 +521,27 @@ async def backfill_salary(
     return {"updated": updated}
 
 
+@router.get("/{posting_id}")
+async def get_job(
+    posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    resp = (
+        supabase.table("job_postings")
+        .select(_JP_SELECT_COLS)
+        .eq("id", posting_id)
+        .limit(1)
+        .execute()
+    )
+    rows = resp.data or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="Posting not found")
+    row = rows[0]
+    if not isinstance(row, dict):
+        raise HTTPException(status_code=500, detail="Unexpected response shape")
+    return row
+
+
 @router.delete("/{posting_id}")
 async def delete_job(
     posting_id: str,

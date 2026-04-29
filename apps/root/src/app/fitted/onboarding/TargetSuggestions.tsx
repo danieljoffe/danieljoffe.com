@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { CheckCircle, Target } from 'lucide-react';
+import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Card } from '@danieljoffe.com/shared-ui/Card';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
@@ -9,18 +10,17 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
+import type {
+  JobTarget,
+  MatchedSuggestion,
+  MatchedSuggestions,
+} from '@/app/fitted/(app)/targets/types';
 import type { JobData } from './JobUrlInput';
 
 interface TargetSuggestionsProps {
   onComplete: () => void;
   onSkip: () => void;
   jobData?: JobData | null;
-}
-
-interface Suggestion {
-  label: string;
-  description: string;
-  core_skills: string[];
 }
 
 export default function TargetSuggestions({
@@ -31,7 +31,7 @@ export default function TargetSuggestions({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createdLabel, setCreatedLabel] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<MatchedSuggestion[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState(false);
   const [createdCount, setCreatedCount] = useState(0);
@@ -86,13 +86,11 @@ export default function TargetSuggestions({
       try {
         const res = await fetch('/api/targets/suggest', { method: 'POST' });
         if (!res.ok) throw new Error('Failed to load suggestions');
-        const data = (await res.json()) as {
-          suggestions: Suggestion[];
-        };
-        if (!cancelled && data.suggestions?.length > 0) {
-          setSuggestions(data.suggestions);
+        const data = (await res.json()) as MatchedSuggestions;
+        if (!cancelled && data.matches?.length > 0) {
+          setSuggestions(data.matches);
           // Pre-select all suggestions
-          setSelected(new Set(data.suggestions.map(s => s.label)));
+          setSelected(new Set(data.matches.map(m => m.suggestion.label)));
         }
       } catch {
         if (!cancelled)
@@ -131,15 +129,31 @@ export default function TargetSuggestions({
     setCreating(true);
     let created = 0;
 
-    for (const suggestion of suggestions) {
-      if (!selected.has(suggestion.label)) continue;
+    for (const match of suggestions) {
+      if (!selected.has(match.suggestion.label)) continue;
       try {
-        const res = await fetch('/api/targets', {
+        let targetId: string;
+
+        if (match.is_new) {
+          const createRes = await fetch('/api/targets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              label: match.suggestion.label,
+              description: match.suggestion.description,
+            }),
+          });
+          if (!createRes.ok) continue;
+          const createdTarget = (await createRes.json()) as JobTarget;
+          targetId = createdTarget.id;
+        } else {
+          targetId = match.matched_target!.id;
+        }
+
+        const linkRes = await fetch(`/api/targets/${targetId}/link`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ label: suggestion.label }),
         });
-        if (res.ok) created++;
+        if (linkRes.ok) created++;
       } catch {
         // Continue creating remaining targets
       }
@@ -233,7 +247,8 @@ export default function TargetSuggestions({
         </div>
 
         <div className='flex flex-col gap-3'>
-          {suggestions.map(suggestion => {
+          {suggestions.map(match => {
+            const { suggestion } = match;
             const isSelected = selected.has(suggestion.label);
             return (
               <Card
@@ -274,9 +289,16 @@ export default function TargetSuggestions({
                     )}
                   </div>
                   <div className='flex-1'>
-                    <Text variant='body' className='font-medium'>
-                      {suggestion.label}
-                    </Text>
+                    <div className='flex items-center gap-2'>
+                      <Text variant='body' className='font-medium'>
+                        {suggestion.label}
+                      </Text>
+                      {!match.is_new && (
+                        <Badge variant='default' size='sm'>
+                          Existing
+                        </Badge>
+                      )}
+                    </div>
                     <Text
                       variant='caption'
                       className='mt-0.5 text-text-secondary'
