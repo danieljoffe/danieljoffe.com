@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -9,9 +10,9 @@ import {
   User,
   BarChart3,
   Settings,
-  Menu,
-  X,
+  MoreHorizontal,
   LogOut,
+  X,
 } from 'lucide-react';
 import { Sidebar, type SidebarItem } from '@danieljoffe.com/shared-ui/Sidebar';
 import Button from '@/components/Button';
@@ -20,47 +21,65 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { createAuthBrowserClient } from '@/lib/supabase/auth-client';
 import DarkModeToggle from '@/components/Nav/DarkModeToggle';
 
-const NAV_ITEMS: (SidebarItem & { href: string })[] = [
+type Icon = typeof LayoutDashboard;
+type NavItem = SidebarItem & { href: string; lucide: Icon };
+
+const NAV_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
     href: '/fitted',
+    lucide: LayoutDashboard,
     icon: <LayoutDashboard className='size-4' aria-hidden />,
   },
   {
     id: 'jobs',
     label: 'Jobs',
     href: '/fitted/jobs',
+    lucide: Briefcase,
     icon: <Briefcase className='size-4' aria-hidden />,
   },
   {
     id: 'targets',
     label: 'Targets',
     href: '/fitted/targets',
+    lucide: Target,
     icon: <Target className='size-4' aria-hidden />,
   },
   {
     id: 'profile',
     label: 'Profile',
     href: '/fitted/profile',
+    lucide: User,
     icon: <User className='size-4' aria-hidden />,
   },
   {
     id: 'insights',
     label: 'Insights',
     href: '/fitted/insights',
+    lucide: BarChart3,
     icon: <BarChart3 className='size-4' aria-hidden />,
   },
   {
     id: 'settings',
     label: 'Settings',
     href: '/fitted/settings',
+    lucide: Settings,
     icon: <Settings className='size-4' aria-hidden />,
   },
 ];
 
+// Mobile shows the four daily-use tabs + More; the sheet picks up the rest.
+const MOBILE_PRIMARY_IDS = ['dashboard', 'jobs', 'targets', 'profile'] as const;
+const PRIMARY_ITEMS = MOBILE_PRIMARY_IDS.flatMap(id => {
+  const item = NAV_ITEMS.find(n => n.id === id);
+  return item ? [item] : [];
+});
+const MORE_ITEMS = NAV_ITEMS.filter(
+  n => !MOBILE_PRIMARY_IDS.includes(n.id as (typeof MOBILE_PRIMARY_IDS)[number])
+);
+
 function activeIdFrom(pathname: string): string | undefined {
-  // Exact match for dashboard, prefix match for others
   if (pathname === '/fitted' || pathname === '/fitted/') return 'dashboard';
   const match = NAV_ITEMS.find(
     item => item.id !== 'dashboard' && pathname.startsWith(item.href)
@@ -71,41 +90,31 @@ function activeIdFrom(pathname: string): string | undefined {
 export default function FittedSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const hamburgerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useFocusTrap(mobileOpen) as React.RefObject<HTMLDivElement>;
-
   const activeId = activeIdFrom(pathname ?? '') ?? '';
+  const isMoreActive = MORE_ITEMS.some(item => item.id === activeId);
 
-  const handleSelect = useCallback(
-    (id: string) => {
-      const item = NAV_ITEMS.find(n => n.id === id);
-      if (item) {
-        setMobileOpen(false);
-        router.push(item.href);
-      }
-    },
-    [router]
-  );
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useFocusTrap(sheetOpen) as React.RefObject<HTMLDivElement>;
 
-  const closeMobile = useCallback(() => {
-    setMobileOpen(false);
-    hamburgerRef.current?.focus();
+  const closeSheet = useCallback(() => {
+    setSheetOpen(false);
+    moreButtonRef.current?.focus();
   }, []);
 
   // Close on Escape
   useEffect(() => {
-    if (!mobileOpen) return;
+    if (!sheetOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMobile();
+      if (e.key === 'Escape') closeSheet();
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [mobileOpen, closeMobile]);
+  }, [sheetOpen, closeSheet]);
 
-  // Lock body scroll when mobile sidebar is open
+  // Lock body scroll when sheet is open
   useEffect(() => {
-    if (mobileOpen) {
+    if (sheetOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -113,14 +122,32 @@ export default function FittedSidebar() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [mobileOpen]);
+  }, [sheetOpen]);
+
+  const handleSheetLink = useCallback(
+    (href: string) => {
+      setSheetOpen(false);
+      requestAnimationFrame(() => router.push(href));
+    },
+    [router]
+  );
 
   async function handleSignOut() {
+    setSheetOpen(false);
     const supabase = createAuthBrowserClient();
     await supabase.auth.signOut();
     router.replace('/fitted/login');
     router.refresh();
   }
+
+  // --- Desktop sidebar ---
+  const handleDesktopSelect = useCallback(
+    (id: string) => {
+      const item = NAV_ITEMS.find(n => n.id === id);
+      if (item) router.push(item.href);
+    },
+    [router]
+  );
 
   const sidebarHeader = (
     <span className='text-sm font-semibold text-text-primary'>Fitted</span>
@@ -144,75 +171,150 @@ export default function FittedSidebar() {
 
   return (
     <>
-      {/* Mobile top bar */}
-      <header className='md:hidden sticky top-0 z-30 flex items-center border-b border-border bg-surface/95 backdrop-blur-md px-4 h-14'>
-        <button
-          ref={hamburgerRef}
-          onClick={() => setMobileOpen(true)}
-          aria-expanded={mobileOpen}
-          aria-label='Open navigation'
-          className='p-2 -ml-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-tertiary transition-colors'
-        >
-          <Menu className='size-5' aria-hidden />
-        </button>
-        <span className='ml-3 text-sm font-semibold text-text-primary'>
-          Fitted
-        </span>
-      </header>
-
-      {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          className='md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity'
-          onClick={closeMobile}
-          aria-hidden='true'
-        />
-      )}
-
-      {/* Mobile slide-in panel */}
-      <div
-        ref={panelRef}
-        role='dialog'
-        aria-label='Navigation'
-        aria-modal='true'
-        aria-hidden={!mobileOpen}
-        inert={!mobileOpen ? true : undefined}
-        className={cn(
-          'md:hidden fixed inset-y-0 left-0 z-50 w-60 transform transition-transform duration-300 ease-out',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        <div className='flex items-center justify-end p-2 absolute top-0 right-0 z-10'>
-          <Button
-            name='fitted-close-nav'
-            variant='bare'
-            size='sm'
-            iconOnly
-            onClick={closeMobile}
-            aria-label='Close navigation'
-            className='rounded-lg text-text-tertiary hover:text-text-primary'
-          >
-            <X className='size-4' />
-          </Button>
-        </div>
+      {/* Desktop sidebar — unchanged */}
+      <div className='hidden md:block'>
         <Sidebar
           items={NAV_ITEMS}
           activeId={activeId}
-          onSelect={handleSelect}
+          onSelect={handleDesktopSelect}
           header={sidebarHeader}
           footer={sidebarFooter}
         />
       </div>
 
-      {/* Desktop sidebar */}
-      <div className='hidden md:block'>
-        <Sidebar
-          items={NAV_ITEMS}
-          activeId={activeId}
-          onSelect={handleSelect}
-          header={sidebarHeader}
-          footer={sidebarFooter}
+      {/* Mobile bottom bar */}
+      <div
+        className='md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-md border-t border-border/60'
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <nav
+          className='flex items-stretch justify-around h-14'
+          aria-label='Fitted mobile navigation'
+        >
+          {PRIMARY_ITEMS.map(item => {
+            const Icon = item.lucide;
+            const active = activeId === item.id;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors',
+                  active
+                    ? 'text-brand-500'
+                    : 'text-text-tertiary active:text-text-primary'
+                )}
+              >
+                <Icon className='h-5 w-5' aria-hidden='true' />
+                {item.label}
+              </Link>
+            );
+          })}
+
+          <Button
+            name='fitted-mobile-more'
+            variant='bare'
+            ref={moreButtonRef}
+            onClick={sheetOpen ? closeSheet : () => setSheetOpen(true)}
+            aria-expanded={sheetOpen}
+            aria-label={sheetOpen ? 'Close more menu' : 'Open more menu'}
+            className={cn(
+              'flex flex-col items-center justify-center flex-1 gap-0.5 p-0 rounded-none hover:scale-100 text-[10px] font-medium transition-colors cursor-pointer',
+              isMoreActive || sheetOpen
+                ? 'text-brand-500'
+                : 'text-text-tertiary active:text-text-primary'
+            )}
+          >
+            <MoreHorizontal className='h-5 w-5' aria-hidden='true' />
+            More
+          </Button>
+        </nav>
+      </div>
+
+      {/* Mobile backdrop */}
+      {sheetOpen && (
+        <div
+          className='md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity'
+          onClick={closeSheet}
+          aria-hidden='true'
         />
+      )}
+
+      {/* Mobile bottom sheet — slides up from above the bar */}
+      <div
+        ref={sheetRef}
+        role='dialog'
+        aria-label='More navigation'
+        aria-modal='true'
+        aria-hidden={!sheetOpen}
+        inert={!sheetOpen ? true : undefined}
+        className={cn(
+          'md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
+          sheetOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
+        )}
+        style={{
+          paddingBottom: sheetOpen
+            ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 1.25rem)'
+            : undefined,
+        }}
+      >
+        <div className='flex items-center justify-between mb-3'>
+          <span className='text-xs font-semibold text-text-tertiary uppercase tracking-wider'>
+            More
+          </span>
+          <div className='flex items-center gap-1'>
+            <DarkModeToggle />
+            <Button
+              name='fitted-close-more'
+              variant='bare'
+              size='sm'
+              iconOnly
+              onClick={closeSheet}
+              aria-label='Close more menu'
+              className='rounded-lg text-text-tertiary hover:text-text-primary'
+            >
+              <X className='h-4 w-4' />
+            </Button>
+          </div>
+        </div>
+        <nav aria-label='More links'>
+          <ul className='space-y-1'>
+            {MORE_ITEMS.map(item => {
+              const Icon = item.lucide;
+              const active = activeId === item.id;
+              return (
+                <li key={item.id}>
+                  <Button
+                    name={`fitted-more-${item.id}`}
+                    variant='bare'
+                    onClick={() => handleSheetLink(item.href)}
+                    className={cn(
+                      'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer',
+                      active
+                        ? 'text-brand-500 bg-surface-tertiary'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+                    )}
+                  >
+                    <Icon className='h-4 w-4' aria-hidden='true' />
+                    {item.label}
+                  </Button>
+                </li>
+              );
+            })}
+            <li>
+              <Button
+                name='fitted-more-sign-out'
+                variant='bare'
+                onClick={handleSignOut}
+                className='w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+              >
+                <LogOut className='h-4 w-4' aria-hidden='true' />
+                Sign out
+              </Button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </>
   );
