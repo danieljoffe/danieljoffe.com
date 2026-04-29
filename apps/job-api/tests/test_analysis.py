@@ -67,6 +67,20 @@ def _optimized_payload() -> OptimizedPayload:
     )
 
 
+def _job_target() -> Any:
+    from app.models.targets import JobTarget, ScoringProfile
+
+    return JobTarget(
+        id="tgt-1",
+        label="Senior Frontend Engineer",
+        description="Lead FE engineer at consumer-facing companies",
+        scoring_profile=ScoringProfile(),
+        is_active=True,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+
+
 def _optimized_doc() -> OptimizedDoc:
     return OptimizedDoc(
         id="opt-1",
@@ -117,6 +131,7 @@ def _analysis_record_row(record_id: str = "rec-analysis-1") -> dict[str, Any]:
     return {
         "id": record_id,
         "job_posting_id": "job-1",
+        "target_id": "tgt-1",
         "user_id": None,
         "optimized_doc_id": "opt-1",
         "scorecard": _valid_analysis().scorecard.model_dump(mode="json"),
@@ -138,13 +153,12 @@ def _make_supabase_mock(
     supabase.table.return_value.insert.return_value.execute.return_value.data = (
         insert_data or []
     )
-    # select chain (for get_cached / job posting check)
-    supabase.table.return_value.select.return_value.eq.return_value.order.return_value.limit.return_value.is_.return_value.execute.return_value.data = (
-        select_data or []
+    # select chain (get_cached uses .eq * 3 → .order → .limit → .is_/.eq → .execute)
+    cached_chain = (
+        supabase.table.return_value.select.return_value.eq.return_value.eq.return_value.eq.return_value.order.return_value.limit.return_value
     )
-    supabase.table.return_value.select.return_value.eq.return_value.order.return_value.limit.return_value.eq.return_value.execute.return_value.data = (
-        select_data or []
-    )
+    cached_chain.is_.return_value.execute.return_value.data = select_data or []
+    cached_chain.eq.return_value.execute.return_value.data = select_data or []
     return supabase
 
 
@@ -229,14 +243,18 @@ def test_build_user_message_omits_target_when_none() -> None:
 
 def test_get_cached_returns_none_on_empty() -> None:
     supabase = _make_supabase_mock(select_data=[])
-    result = persistence_mod.get_cached(supabase, "job-1", user_id=None)
+    result = persistence_mod.get_cached(
+        supabase, "job-1", target_id="tgt-1", optimized_doc_id="opt-1", user_id=None
+    )
     assert result is None
 
 
 def test_get_cached_returns_record_when_exists() -> None:
     row = _analysis_record_row()
     supabase = _make_supabase_mock(select_data=[row])
-    result = persistence_mod.get_cached(supabase, "job-1", user_id=None)
+    result = persistence_mod.get_cached(
+        supabase, "job-1", target_id="tgt-1", optimized_doc_id="opt-1", user_id=None
+    )
     assert result is not None
     assert result.id == "rec-analysis-1"
     assert result.recommendation.startswith("Apply")
@@ -256,6 +274,7 @@ def test_persist_inserts_and_returns_record() -> None:
     record = persistence_mod.persist(
         supabase,
         job_posting_id="job-1",
+        target_id="tgt-1",
         user_id=None,
         optimized_doc_id="opt-1",
         analysis=_valid_analysis(),
@@ -280,6 +299,7 @@ def test_persist_raises_on_empty_insert() -> None:
         persistence_mod.persist(
             supabase,
             job_posting_id="job-1",
+            target_id="tgt-1",
             user_id=None,
             optimized_doc_id="opt-1",
             analysis=_valid_analysis(),
@@ -312,6 +332,10 @@ async def test_router_cache_hit_skips_llm(
         persistence_mod, "get_cached", lambda *_a, **_kw: cached_record
     )
 
+    from app.services.experience import optimized as opt_mod
+
+    monkeypatch.setattr(opt_mod, "get_latest", lambda *_a, **_kw: _optimized_doc())
+
     llm = MockLLMClient()
     supabase = MagicMock()
 
@@ -325,7 +349,7 @@ async def test_router_cache_hit_skips_llm(
 
     try:
         tc = TestClient(app)
-        resp = tc.post("/analysis/job-1")
+        resp = tc.post("/analysis/job-1?target_id=tgt-1")
         assert resp.status_code == 200
         data = resp.json()
         assert data["id"] == "rec-analysis-1"
@@ -354,6 +378,11 @@ async def test_router_cache_miss_runs_llm_and_persists(
 
     monkeypatch.setattr(opt_mod, "get_latest", lambda *_a, **_kw: _optimized_doc())
 
+    # Mock targets_crud.get (used to build target_context)
+    from app.services.targets import crud as targets_crud_mod
+
+    monkeypatch.setattr(targets_crud_mod, "get", lambda *_a, **_kw: _job_target())
+
     llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _valid_analysis_json()})
 
     # Mock job posting existence check (now includes description_html)
@@ -372,7 +401,7 @@ async def test_router_cache_miss_runs_llm_and_persists(
 
     try:
         tc = TestClient(app)
-        resp = tc.post("/analysis/job-1")
+        resp = tc.post("/analysis/job-1?target_id=tgt-1")
         assert resp.status_code == 200
         data = resp.json()
         assert data["id"] == "rec-analysis-1"
@@ -401,7 +430,7 @@ async def test_router_missing_optimized_doc_returns_404(
 
     try:
         tc = TestClient(app)
-        resp = tc.post("/analysis/job-1")
+        resp = tc.post("/analysis/job-1?target_id=tgt-1")
         assert resp.status_code == 404
         assert "optimized doc" in resp.json()["detail"].lower()
     finally:
@@ -418,6 +447,10 @@ async def test_router_empty_description_returns_422(
 
     monkeypatch.setattr(opt_mod, "get_latest", lambda *_a, **_kw: _optimized_doc())
 
+    from app.services.targets import crud as targets_crud_mod
+
+    monkeypatch.setattr(targets_crud_mod, "get", lambda *_a, **_kw: _job_target())
+
     supabase = MagicMock()
     supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value.data = [
         {"id": "job-1", "description_html": ""}
@@ -433,7 +466,7 @@ async def test_router_empty_description_returns_422(
 
     try:
         tc = TestClient(app)
-        resp = tc.post("/analysis/job-1")
+        resp = tc.post("/analysis/job-1?target_id=tgt-1")
         assert resp.status_code == 422
         assert "description" in resp.json()["detail"].lower()
     finally:
@@ -449,6 +482,10 @@ async def test_router_missing_job_posting_returns_404(
 
     monkeypatch.setattr(opt_mod, "get_latest", lambda *_a, **_kw: _optimized_doc())
 
+    from app.services.targets import crud as targets_crud_mod
+
+    monkeypatch.setattr(targets_crud_mod, "get", lambda *_a, **_kw: _job_target())
+
     supabase = MagicMock()
     supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value.data = []
 
@@ -462,9 +499,40 @@ async def test_router_missing_job_posting_returns_404(
 
     try:
         tc = TestClient(app)
-        resp = tc.post("/analysis/job-1")
+        resp = tc.post("/analysis/job-1?target_id=tgt-1")
         assert resp.status_code == 404
         assert "job posting" in resp.json()["detail"].lower()
+    finally:
+        app.dependency_overrides.clear()
+
+
+async def test_router_missing_target_returns_404(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Unknown target_id returns 404, not a silent LLM call."""
+    monkeypatch.setattr(persistence_mod, "get_cached", lambda *_a, **_kw: None)
+
+    from app.services.experience import optimized as opt_mod
+
+    monkeypatch.setattr(opt_mod, "get_latest", lambda *_a, **_kw: _optimized_doc())
+
+    from app.services.targets import crud as targets_crud_mod
+
+    monkeypatch.setattr(targets_crud_mod, "get", lambda *_a, **_kw: None)
+
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    app.dependency_overrides[get_supabase] = lambda: MagicMock()
+    app.dependency_overrides[get_llm_client] = lambda: MockLLMClient()
+    app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+
+    try:
+        tc = TestClient(app)
+        resp = tc.post("/analysis/job-1?target_id=missing")
+        assert resp.status_code == 404
+        assert "target" in resp.json()["detail"].lower()
     finally:
         app.dependency_overrides.clear()
 

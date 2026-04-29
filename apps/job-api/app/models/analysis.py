@@ -40,6 +40,7 @@ class JobAnalysisRecord(BaseModel):
 
     id: str
     job_posting_id: str
+    target_id: str
     user_id: str | None
     optimized_doc_id: str | None
     scorecard: Scorecard

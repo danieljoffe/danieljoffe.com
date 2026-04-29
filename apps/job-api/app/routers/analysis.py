@@ -1,11 +1,13 @@
 """Analysis router.
 
-POST /analysis/{job_id}  — run or return cached LLM analysis for a job posting.
+POST /analysis/{job_id}?target_id=...  — run or return cached LLM
+analysis for a job posting against a specific target. Cache key is
+(job_posting_id, target_id, optimized_doc_id).
 """
 
 from typing import Any, cast
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
 from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_session
@@ -15,6 +17,7 @@ from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job
 from app.services.experience import optimized
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
+from app.services.targets import crud as targets_crud
 
 router = APIRouter(
     prefix="/analysis",
@@ -26,15 +29,11 @@ router = APIRouter(
 @router.post("/{job_id}")
 async def create_analysis(
     job_id: str,
+    target_id: str = Query(..., description="Target the user is viewing the job under"),
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
 ) -> JobAnalysisRecord:
-    # 1. Check cache
-    cached = persistence.get_cached(supabase, job_id, user_id=None)
-    if cached is not None:
-        return cached
-
-    # 2. Fetch optimized doc
+    # 1. Fetch optimized doc (needed for cache key)
     current_optimized = optimized.get_latest(supabase, user_id=None)
     if current_optimized is None:
         raise HTTPException(
@@ -42,7 +41,23 @@ async def create_analysis(
             detail="No optimized doc found. Derive one via POST /experience/derive first.",
         )
 
-    # 3. Fetch job posting (existence + description in one round-trip)
+    # 2. Check cache — keyed on (job, target, optimized version)
+    cached = persistence.get_cached(
+        supabase,
+        job_id,
+        target_id=target_id,
+        optimized_doc_id=current_optimized.id,
+        user_id=None,
+    )
+    if cached is not None:
+        return cached
+
+    # 3. Fetch target (existence check + context for the LLM)
+    target = targets_crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found.")
+
+    # 4. Fetch job posting (existence + description in one round-trip)
     resp = (
         supabase.table("job_postings")
         .select("id, description_html")
@@ -60,14 +75,19 @@ async def create_analysis(
             detail="Job posting has no description to analyze.",
         )
 
-    # 4. Run LLM analysis
+    # 5. Run LLM analysis with target context
+    target_context = (
+        f"Target: {target.label}"
+        + (f"\nDescription: {target.description}" if target.description else "")
+    )
     analysis, llm_result = await analyze_job(
         llm,
         optimized=current_optimized.payload,
         job_description=description_html,
+        target_context=target_context,
     )
 
-    # 5. Log cost
+    # 6. Log cost
     cost_log.record(
         supabase,
         user_id=None,
@@ -75,14 +95,16 @@ async def create_analysis(
         result=llm_result,
         metadata={
             "job_posting_id": job_id,
+            "target_id": target_id,
             "optimized_doc_id": current_optimized.id,
         },
     )
 
-    # 6. Persist
+    # 7. Persist
     record = persistence.persist(
         supabase,
         job_posting_id=job_id,
+        target_id=target_id,
         user_id=None,
         optimized_doc_id=current_optimized.id,
         analysis=analysis,

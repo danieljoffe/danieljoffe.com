@@ -308,6 +308,7 @@ export default function JobsListTable({
                     <td colSpan={showScore ? 8 : 7} className='p-0'>
                       <JobDetailPanel
                         posting={job}
+                        targetId={targetId}
                         onDelete={() => {
                           setExpandedId(null);
                           setDeleteKey(k => k + 1);

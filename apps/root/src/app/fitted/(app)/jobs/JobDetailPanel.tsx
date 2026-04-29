@@ -17,12 +17,14 @@ import {
 
 interface JobDetailPanelProps {
   posting: JobPosting;
+  targetId: string | undefined;
   onDelete: (() => void) | undefined;
   onStatusChange: ((status: string) => void) | undefined;
 }
 
 export default function JobDetailPanel({
   posting,
+  targetId,
   onDelete,
   onStatusChange,
 }: JobDetailPanelProps) {
@@ -74,13 +76,15 @@ export default function JobDetailPanel({
     }
   }
 
-  async function handleAnalyze() {
+  const runAnalysis = useCallback(async () => {
+    if (!targetId) return;
     setAnalyzing(true);
     setAnalysisError(null);
     try {
-      const res = await fetch(`/api/jobs/analysis/${posting.id}`, {
-        method: 'POST',
-      });
+      const res = await fetch(
+        `/api/jobs/analysis/${posting.id}?target_id=${encodeURIComponent(targetId)}`,
+        { method: 'POST' }
+      );
       if (res.ok) {
         const data = (await res.json()) as JobAnalysis;
         setAnalysis(data);
@@ -92,7 +96,16 @@ export default function JobDetailPanel({
     } finally {
       setAnalyzing(false);
     }
-  }
+  }, [posting.id, targetId]);
+
+  // Auto-trigger analysis on first open when a target is selected.
+  // Cache hit returns instantly; cache miss runs the LLM exactly once
+  // per (job, target, optimized version).
+  useEffect(() => {
+    if (targetId && !analysis && !analyzing && !analysisError) {
+      runAnalysis();
+    }
+  }, [targetId, analysis, analyzing, analysisError, runAnalysis]);
 
   async function handleDelete() {
     /* eslint-disable no-alert -- personal tool, native confirm is fine */
@@ -253,6 +266,10 @@ export default function JobDetailPanel({
           </div>
         ) : analyzing ? (
           <Skeleton variant='text' lines={3} />
+        ) : !targetId ? (
+          <Text variant='meta' className='text-text-tertiary'>
+            Select a target to see analysis for this job.
+          </Text>
         ) : (
           <div>
             {analysisError && (
@@ -264,9 +281,9 @@ export default function JobDetailPanel({
               name='analyze-job'
               variant='secondary'
               size='sm'
-              onClick={handleAnalyze}
+              onClick={runAnalysis}
             >
-              Analyze
+              Retry analysis
             </Button>
           </div>
         )}
