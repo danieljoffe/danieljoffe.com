@@ -15,6 +15,7 @@ import type {
   JobsSortColumn,
   ScoringStatus,
 } from './types';
+import { MANUAL_SOURCE_ID } from './types';
 
 interface JobsListTableProps {
   filters: JobsFilterState;
@@ -269,19 +270,24 @@ export default function JobsListTable({
                     </td>
                   )}
                   <td className='px-3 py-2 font-medium'>
-                    {job.absolute_url ? (
-                      <a
-                        href={job.absolute_url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-brand-500 hover:text-brand-600'
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {job.title}
-                      </a>
-                    ) : (
-                      job.title
-                    )}
+                    <span className='inline-flex items-center gap-2'>
+                      {job.absolute_url ? (
+                        <a
+                          href={job.absolute_url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-brand-500 hover:text-brand-600'
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {job.title}
+                        </a>
+                      ) : (
+                        job.title
+                      )}
+                      {job.source_id === MANUAL_SOURCE_ID && (
+                        <Badge variant='info'>Discovered</Badge>
+                      )}
+                    </span>
                   </td>
                   <td className='px-3 py-2'>{job.company_name}</td>
                   <td className='px-3 py-2 text-text-tertiary'>

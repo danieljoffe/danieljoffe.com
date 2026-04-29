@@ -368,8 +368,10 @@ async def add_manual_job(
     # Tier 3: Firecrawl fallback if extraction found nothing
     if extraction.tier == "none":
         fc_result = await _extract_from_firecrawl(final_url)
-        if fc_result:
+        if fc_result.tier != "none":
             extraction = fc_result
+        else:
+            warnings.extend(fc_result.warnings)
 
     warnings.extend(extraction.warnings)
 

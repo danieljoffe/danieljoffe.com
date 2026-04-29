@@ -178,12 +178,16 @@ def _extract_from_html_meta(html: str, url: str) -> ExtractionResult | None:
     )
 
 
-async def _extract_from_firecrawl(url: str) -> ExtractionResult | None:
-    """Tier 3: Use Firecrawl API for JS-rendered pages (gated)."""
+async def _extract_from_firecrawl(url: str) -> ExtractionResult:
+    """Tier 3: Use Firecrawl API for JS-rendered pages (gated).
+
+    Always returns ExtractionResult. On failure, tier="none" and warnings
+    explain why so the caller can surface them to the user.
+    """
     from app.config import settings
 
     if not settings.firecrawl_api_key:
-        return None
+        return ExtractionResult(tier="none", warnings=["firecrawl_unavailable"])
 
     try:
         from app.http_client import get_http_client
@@ -196,22 +200,25 @@ async def _extract_from_firecrawl(url: str) -> ExtractionResult | None:
             timeout=15.0,
         )
         if resp.status_code != 200:
-            return None
+            return ExtractionResult(
+                tier="none", warnings=[f"firecrawl_failed:http_{resp.status_code}"]
+            )
 
         data = resp.json().get("data", {})
         fc_html = data.get("html", "")
         if not fc_html:
-            return None
+            return ExtractionResult(tier="none", warnings=["firecrawl_failed:empty_html"])
 
         # Run tiers 1+2 on the Firecrawl-rendered HTML
         result = _extract_from_jsonld(fc_html) or _extract_from_html_meta(fc_html, url)
         if result:
             result.tier = "firecrawl"
-        return result
+            return result
+        return ExtractionResult(tier="none", warnings=["firecrawl_failed:no_metadata"])
 
     except Exception:
         logger.exception("Firecrawl extraction failed for %s", url)
-        return None
+        return ExtractionResult(tier="none", warnings=["firecrawl_failed:exception"])
 
 
 def extract_job_from_html(html: str, url: str) -> ExtractionResult:
