@@ -18,7 +18,6 @@ import CreateTargetModal, {
 } from './CreateTargetModal';
 import PendingTargetCard from './PendingTargetCard';
 import type {
-  JobTarget,
   MatchedSuggestion,
   MatchedSuggestions,
   UserTargetWithTarget,
@@ -202,11 +201,8 @@ export default function TargetsList() {
       const label = match.suggestion.label;
       setAddingSuggestion(label);
       try {
-        let targetId: string;
-
         if (match.is_new) {
-          // Create a new target then link
-          const createRes = await fetch('/api/targets', {
+          const res = await fetch('/api/targets/from-manual', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -214,18 +210,21 @@ export default function TargetsList() {
               description: match.suggestion.description,
             }),
           });
-          if (!createRes.ok) throw new Error('Create failed');
-          const created = (await createRes.json()) as JobTarget;
-          targetId = created.id;
+          if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            throw new Error(
+              (err as Record<string, string> | null)?.detail ??
+                'Failed to add target'
+            );
+          }
+          await res.json();
         } else {
-          targetId = match.matched_target!.id;
+          const targetId = match.matched_target!.id;
+          const linkRes = await fetch(`/api/targets/${targetId}/link`, {
+            method: 'POST',
+          });
+          if (!linkRes.ok) throw new Error('Link failed');
         }
-
-        // Link the user to the target (derives fit score)
-        const linkRes = await fetch(`/api/targets/${targetId}/link`, {
-          method: 'POST',
-        });
-        if (!linkRes.ok) throw new Error('Link failed');
 
         toast({
           variant: 'success',
@@ -233,8 +232,11 @@ export default function TargetsList() {
         });
         setSuggestions(prev => prev.filter(s => s.suggestion.label !== label));
         fetchTargets();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to add target' });
+      } catch (e) {
+        toast({
+          variant: 'error',
+          title: e instanceof Error ? e.message : 'Failed to add target',
+        });
       } finally {
         setAddingSuggestion(null);
       }
