@@ -8,6 +8,7 @@ target's composite scoring profile.
 import logging
 from typing import Any, cast
 
+import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from postgrest.types import CountMethod
 from supabase import Client
@@ -31,7 +32,13 @@ from app.models.targets import (
     UserTarget,
     UserTargetWithTarget,
 )
+from app.http_client import get_http_client
 from app.services.experience import optimized
+from app.services.extract import (
+    ExtractionResult,
+    _extract_from_firecrawl,
+    extract_job_from_html,
+)
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.poller import poll_sources_for_target
@@ -492,6 +499,44 @@ async def create_target_from_posting(
 # ---- Reference JDs ---------------------------------------------------------
 
 
+async def _fetch_jd_text_from_url(url: str) -> str:
+    """Fetch a JD page and run the extraction cascade (JSON-LD → meta → Firecrawl).
+
+    Raises ``HTTPException`` if the fetch fails or no usable description can
+    be extracted. The minimum-length requirement matches ``ReferenceJDAdd``
+    so the downstream LLM has enough signal to derive a profile.
+    """
+    client = get_http_client()
+    try:
+        resp = await client.get(url)
+        final_url = str(resp.url)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=400, detail="Failed to fetch JD URL") from exc
+
+    html = resp.text if resp.status_code == 200 else ""
+    extraction: ExtractionResult
+    if html:
+        extraction = extract_job_from_html(html, final_url)
+    else:
+        extraction = ExtractionResult(tier="none", warnings=["fetch_non_200"])
+
+    if extraction.tier == "none" or not extraction.description_html:
+        fc = await _extract_from_firecrawl(final_url)
+        if fc.tier != "none":
+            extraction = fc
+
+    jd_text = extraction.description_html or ""
+    if len(jd_text) < 50:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Could not extract a job description from that URL. "
+                "Try pasting the JD text directly."
+            ),
+        )
+    return jd_text
+
+
 @router.post("/{target_id}/reference-jds")
 async def add_reference_jd(
     target_id: str,
@@ -499,7 +544,13 @@ async def add_reference_jd(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
 ) -> JobTarget:
-    """Add a reference JD, derive a scoring profile via LLM, and merge."""
+    """Add a reference JD, derive a scoring profile via LLM, and merge.
+
+    Accepts either ``jd_text`` (>=50 chars) or ``jd_url``. When only the URL
+    is provided, the server fetches the page and extracts JD text via the
+    same cascade used by ``POST /jobs/manual`` (JSON-LD → meta tags →
+    Firecrawl).
+    """
     # Verify target exists
     target = crud.get(supabase, target_id)
     if target is None:
@@ -514,6 +565,14 @@ async def add_reference_jd(
                 detail=f"Invalid JD URL: {vr.rejection_reason}",
             )
         body.jd_url = vr.final_url
+
+    # If no jd_text, fetch + extract from the URL
+    if not body.jd_text:
+        if not body.jd_url:
+            raise HTTPException(
+                status_code=422, detail="Either jd_text or jd_url is required"
+            )
+        body.jd_text = await _fetch_jd_text_from_url(body.jd_url)
 
     # Derive profile from JD via LLM
     derived, result = await derive_profile_from_jd(

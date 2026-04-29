@@ -8,7 +8,7 @@ while keeping the original intact for backward compatibility.
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ---- Scoring Profile schema ------------------------------------------------
 
@@ -138,10 +138,23 @@ class TargetUpdate(BaseModel):
 
 
 class ReferenceJDAdd(BaseModel):
-    """Add a reference JD to a target. Triggers profile derivation + merge."""
+    """Add a reference JD to a target. Triggers profile derivation + merge.
 
-    jd_text: str = Field(min_length=50, max_length=100_000)
+    Either `jd_text` (>=50 chars) or `jd_url` must be provided. When only
+    `jd_url` is given, the server fetches the page and extracts JD text via
+    the same pipeline used by `POST /jobs/manual`.
+    """
+
+    jd_text: str | None = Field(default=None, max_length=100_000)
     jd_url: str | None = None
+
+    @model_validator(mode="after")
+    def _require_text_or_url(self) -> "ReferenceJDAdd":
+        if not self.jd_text and not self.jd_url:
+            raise ValueError("Either jd_text or jd_url is required")
+        if self.jd_text is not None and len(self.jd_text) < 50:
+            raise ValueError("jd_text must be at least 50 characters")
+        return self
 
 
 # ---- Suggestion shapes (LLM output) ----------------------------------------
