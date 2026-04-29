@@ -130,7 +130,7 @@ export default function TargetDetail({ id }: TargetDetailProps) {
   if (!target) {
     return (
       <div className='flex flex-col items-center gap-4 py-20'>
-        <Heading variant='component' as='h1'>
+        <Heading variant='hero' as='h1'>
           Target not found
         </Heading>
         <Link href='/fitted/targets' className='text-brand-500 hover:underline'>
@@ -187,7 +187,7 @@ export default function TargetDetail({ id }: TargetDetailProps) {
           </div>
         ) : (
           <div className='flex items-center gap-2'>
-            <Heading variant='component' as='h1'>
+            <Heading variant='hero' as='h1'>
               {target.label}
             </Heading>
             <Button

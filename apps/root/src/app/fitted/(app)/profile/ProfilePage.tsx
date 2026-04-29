@@ -271,7 +271,7 @@ export default function ProfilePage() {
     return (
       <div className='flex flex-col gap-6'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Profile
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
@@ -337,7 +337,7 @@ export default function ProfilePage() {
     <div className='flex flex-col gap-6'>
       <div className='flex items-start justify-between gap-3'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Profile
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>

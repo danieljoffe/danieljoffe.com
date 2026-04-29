@@ -10,6 +10,7 @@ import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
+import type { UserTargetWithTarget } from '../targets/types';
 import BatchActionBar from './BatchActionBar';
 import JobsFilter from './JobsFilter';
 import JobsListTable from './JobsListTable';
@@ -18,7 +19,6 @@ import type { JobPosting, JobsFilterState } from './types';
 interface TargetTab {
   id: string;
   label: string;
-  is_active: boolean;
 }
 
 const INITIAL_FILTERS: JobsFilterState = {
@@ -62,19 +62,22 @@ export default function JobsList({ targetId }: JobsListProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  // Fetch targets for tab bar
+  // Fetch targets for tab bar — uses the per-user link so tabs reflect
+  // what THIS user has active, not what's globally active across users.
   useEffect(() => {
     async function fetchTargets() {
       try {
-        const res = await fetch('/api/targets');
+        const res = await fetch('/api/targets/mine');
         if (!res.ok) return;
-        const data = (await res.json()) as {
-          targets: TargetTab[];
+        const { targets } = (await res.json()) as {
+          targets: UserTargetWithTarget[];
         };
-        const activeTargets = data.targets.filter(t => t.is_active);
+        const activeTargets: TargetTab[] = targets
+          .filter(t => t.user_target.is_active)
+          .map(t => ({ id: t.target.id, label: t.target.label }));
         setTargets(activeTargets);
         if (targetId && !activeTargets.some(t => t.id === targetId)) {
-          // URL target is not active — redirect to All Jobs
+          // URL target is not active for this user — redirect to All Jobs
           setActiveTargetId(undefined);
           setFilters(INITIAL_FILTERS);
           router.replace('/fitted/jobs', { scroll: false });
@@ -331,7 +334,7 @@ export default function JobsList({ targetId }: JobsListProps) {
 
   return (
     <div className='flex flex-col gap-6'>
-      <Heading variant='component' as='h1'>
+      <Heading variant='hero' as='h1'>
         Jobs
       </Heading>
 

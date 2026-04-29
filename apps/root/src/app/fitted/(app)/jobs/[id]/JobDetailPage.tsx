@@ -85,7 +85,7 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
           >
             <ArrowLeft className='size-5' aria-hidden />
           </Link>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Job not found
           </Heading>
         </div>
@@ -114,7 +114,7 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
         </Link>
         <div className='flex-1 min-w-0'>
           <div className='flex flex-wrap items-center gap-2'>
-            <Heading variant='component' as='h1' className='break-words'>
+            <Heading variant='component' as='h1' className='wrap-break-word'>
               {posting.title}
             </Heading>
             {isManual && (

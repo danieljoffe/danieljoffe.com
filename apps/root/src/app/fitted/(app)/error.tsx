@@ -26,7 +26,7 @@ export default function FittedError({
 
   return (
     <div className='flex flex-col gap-6'>
-      <Heading variant='component' as='h1'>
+      <Heading variant='hero' as='h1'>
         Something went wrong
       </Heading>
       <Card>

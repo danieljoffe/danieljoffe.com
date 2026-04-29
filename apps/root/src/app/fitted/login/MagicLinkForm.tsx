@@ -45,9 +45,9 @@ export default function MagicLinkForm() {
   if (formState === 'sent') {
     return (
       <PageLayout>
-        <Section padding='none'>
+        <Section padding='none' center className='gap-4'>
           <div className='text-center space-y-2'>
-            <Heading variant='section' as='h1'>
+            <Heading variant='hero' as='h1'>
               Check your email
             </Heading>
             <Text variant='body'>
@@ -56,9 +56,7 @@ export default function MagicLinkForm() {
               Click the link in the email to sign in.
             </Text>
           </div>
-        </Section>
 
-        <Section background='elevated' padding='lg'>
           <div className='max-w-sm mx-auto'>
             <Button
               name='fitted-back-to-login'
@@ -86,7 +84,7 @@ export default function MagicLinkForm() {
         className='rounded-lg border border-border gap-4'
       >
         <div className='text-center space-y-2'>
-          <Heading variant='section' as='h1'>
+          <Heading variant='hero' as='h1'>
             Sign in to Fitted
           </Heading>
           <Text variant='body'>Enter your email to receive a magic link.</Text>

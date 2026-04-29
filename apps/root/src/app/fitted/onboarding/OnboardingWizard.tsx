@@ -68,7 +68,7 @@ export default function OnboardingWizard() {
       <div className='w-full max-w-2xl'>
         {/* Header */}
         <div className='mb-8 text-center'>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Welcome to Fitted
           </Heading>
           <Text variant='body' className='mt-2 text-text-secondary'>

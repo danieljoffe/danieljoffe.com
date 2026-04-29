@@ -10,6 +10,7 @@ import {
   Send,
   Sparkles,
   Star,
+  Target,
 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
@@ -25,6 +26,7 @@ import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type { GapHealthResult, GapTier } from './profile/types';
 import type { JobPosting } from './jobs/types';
+import type { UserTargetWithTarget } from './targets/types';
 
 interface JobsListResponse {
   postings: JobPosting[];
@@ -87,17 +89,20 @@ export default function DashboardPage() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean>(false);
+  const [hasActiveTargets, setHasActiveTargets] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     try {
-      const [topRes, healthRes, ...countResponses] = await Promise.all([
-        fetch('/api/jobs?status=new&sort=score&order=desc&page_size=5'),
-        fetch('/api/career/experience/gap-health'),
-        ...PIPELINE_STATS.map(s =>
-          fetch(`/api/jobs?status=${s.status}&page_size=1`)
-        ),
-      ]);
+      const [topRes, healthRes, targetsRes, ...countResponses] =
+        await Promise.all([
+          fetch('/api/jobs?status=new&sort=score&order=desc&page_size=5'),
+          fetch('/api/career/experience/gap-health'),
+          fetch('/api/targets/mine'),
+          ...PIPELINE_STATS.map(s =>
+            fetch(`/api/jobs?status=${s.status}&page_size=1`)
+          ),
+        ]);
 
       if (topRes.ok) {
         const data = (await topRes.json()) as JobsListResponse;
@@ -108,6 +113,13 @@ export default function DashboardPage() {
         const data = (await healthRes.json()) as GapHealthResult;
         setGapHealth(data);
         setHasProfile(true);
+      }
+
+      if (targetsRes.ok) {
+        const { targets } = (await targetsRes.json()) as {
+          targets: UserTargetWithTarget[];
+        };
+        setHasActiveTargets(targets.some(t => t.user_target.is_active));
       }
 
       const newCounts: Record<string, number> = {};
@@ -157,7 +169,7 @@ export default function DashboardPage() {
     return (
       <div className='flex flex-col gap-6'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Dashboard
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
@@ -199,13 +211,48 @@ export default function DashboardPage() {
     );
   }
 
+  if (!hasActiveTargets) {
+    return (
+      <div className='flex flex-col gap-6'>
+        <div>
+          <Heading variant='hero' as='h1'>
+            Dashboard
+          </Heading>
+          <Text variant='body' className='mt-1 text-text-secondary'>
+            Your job search at a glance
+          </Text>
+        </div>
+
+        <Card>
+          <CardContent className='flex flex-col items-center gap-4 py-12'>
+            <Target className='size-12 text-text-tertiary' aria-hidden />
+            <Text variant='body' as='p' className='text-center'>
+              Activate a target so we can match incoming jobs to the roles
+              you&apos;re actually pursuing.
+            </Text>
+            <Button
+              name='dashboard-go-targets'
+              variant='primary'
+              size='sm'
+              as='link'
+              href='/fitted/targets'
+            >
+              <span>Manage targets</span>
+              <ArrowRight className='size-4' aria-hidden />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // -- Main layout ------------------------------------------------------------
 
   return (
     <div className='flex flex-col gap-6'>
       <div className='flex items-start justify-between gap-3'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Dashboard
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>

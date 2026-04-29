@@ -221,7 +221,7 @@ export default function SettingsPage() {
     <div className='flex flex-col gap-6'>
       <div className='flex items-center justify-between'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Settings
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>

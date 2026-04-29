@@ -11,7 +11,7 @@ export default function FittedInsights() {
   return (
     <div className='flex flex-col gap-6'>
       <div>
-        <Heading variant='component' as='h1'>
+        <Heading variant='hero' as='h1'>
           Insights
         </Heading>
         <Text variant='body' className='mt-1 text-text-secondary'>

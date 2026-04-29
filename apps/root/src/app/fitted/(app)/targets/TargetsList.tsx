@@ -216,7 +216,7 @@ export default function TargetsList() {
   return (
     <div className='flex flex-col gap-6'>
       <div className='flex items-center justify-between'>
-        <Heading variant='component' as='h1'>
+        <Heading variant='hero' as='h1'>
           Targets
         </Heading>
         <div className='flex items-center gap-2'>
