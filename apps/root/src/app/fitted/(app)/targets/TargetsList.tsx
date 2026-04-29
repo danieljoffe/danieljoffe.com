@@ -239,7 +239,7 @@ export default function TargetsList() {
               No targets yet. Create your first target to start scoring jobs
               against a specific role profile.
             </Text>
-            <div className='flex items-center gap-3'>
+            <div className='flex flex-col items-stretch gap-3 sm:flex-row sm:items-center'>
               <Button
                 name='target-create-empty'
                 variant='primary'
