@@ -219,36 +219,38 @@ export default function TargetsList() {
         <Heading variant='hero' as='h1'>
           Targets
         </Heading>
-        <div className='flex items-center gap-2'>
-          <Button
-            name='target-suggest'
-            variant='outline'
-            size='sm'
-            onClick={handleSuggest}
-            disabled={suggesting}
-          >
-            {suggesting ? (
-              <>
-                <Spinner size='sm' aria-label='Suggesting' />
-                <span>Suggesting...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className='size-4' aria-hidden />
-                <span>Suggest</span>
-              </>
-            )}
-          </Button>
-          <Button
-            name='target-create'
-            variant='primary'
-            size='sm'
-            onClick={() => setModalOpen(true)}
-          >
-            <Plus className='size-4' aria-hidden />
-            <span>New Target</span>
-          </Button>
-        </div>
+        {targets.length > 0 && (
+          <div className='flex items-center gap-2'>
+            <Button
+              name='target-suggest'
+              variant='outline'
+              size='sm'
+              onClick={handleSuggest}
+              disabled={suggesting}
+            >
+              {suggesting ? (
+                <>
+                  <Spinner size='sm' aria-label='Suggesting' />
+                  <span>Suggesting...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className='size-4' aria-hidden />
+                  <span>Suggest</span>
+                </>
+              )}
+            </Button>
+            <Button
+              name='target-create'
+              variant='primary'
+              size='sm'
+              onClick={() => setModalOpen(true)}
+            >
+              <Plus className='size-4' aria-hidden />
+              <span>New Target</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* AI Suggestions */}
