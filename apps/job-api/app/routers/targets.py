@@ -600,9 +600,11 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     else:
         extraction = ExtractionResult(tier="none", warnings=["fetch_non_200"])
 
-    if extraction.tier == "none" or not extraction.description_html:
+    if extraction.tier == "none" or len(extraction.description_html or "") < 50:
         fc = await _extract_from_firecrawl(final_url)
-        if fc.tier != "none":
+        if fc.tier != "none" and len(fc.description_html or "") >= len(
+            extraction.description_html or ""
+        ):
             extraction = fc
 
     jd_text = extraction.description_html or ""

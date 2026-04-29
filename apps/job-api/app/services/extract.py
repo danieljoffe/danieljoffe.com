@@ -24,14 +24,16 @@ logger = logging.getLogger(__name__)
 
 MANUAL_SOURCE_ID = "00000000-0000-4000-a000-000000000001"
 
-# Patterns for finding job description content areas
+# Patterns for finding job description content areas.
+# Matches BEM (job__description), kebab (job-description), and plain (jobdescription).
 _JOB_CONTENT_SELECTORS = [
-    {"class_": re.compile(r"job[-_]?description", re.I)},
-    {"class_": re.compile(r"job[-_]?details", re.I)},
+    {"class_": re.compile(r"job[-_]*description", re.I)},
+    {"class_": re.compile(r"job[-_]*details", re.I)},
+    {"class_": re.compile(r"job[-_]*post[-_]*container", re.I)},
     {"class_": re.compile(r"responsibilities", re.I)},
     {"class_": re.compile(r"qualifications", re.I)},
-    {"id": re.compile(r"job[-_]?description", re.I)},
-    {"id": re.compile(r"job[-_]?details", re.I)},
+    {"id": re.compile(r"job[-_]*description", re.I)},
+    {"id": re.compile(r"job[-_]*details", re.I)},
 ]
 
 
@@ -194,10 +196,10 @@ async def _extract_from_firecrawl(url: str) -> ExtractionResult:
 
         client = get_http_client()
         resp = await client.post(
-            "https://api.firecrawl.dev/v1/scrape",
+            "https://api.firecrawl.dev/v2/scrape",
             json={"url": url, "formats": ["html"]},
             headers={"Authorization": f"Bearer {settings.firecrawl_api_key}"},
-            timeout=15.0,
+            timeout=30.0,
         )
         if resp.status_code != 200:
             return ExtractionResult(
