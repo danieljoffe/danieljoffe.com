@@ -53,6 +53,7 @@ from app.services.tailor import (
     run_cover_letter_pipeline,
     run_tailor_pipeline,
 )
+from app.services.tailor.contact import resolve_contact
 from app.services.tailor.reuse import (
     clone_resume_for_job,
     extract_profile_keywords,
@@ -143,6 +144,7 @@ async def create_tailored_resume(
 
     prefs_row = preferences.get(supabase, user_id=None)
     prefs_payload = prefs_row.payload if prefs_row else None
+    contact = await resolve_contact(supabase, body.contact)
 
     result = await run_tailor_pipeline(
         supabase,
@@ -150,7 +152,7 @@ async def create_tailored_resume(
         user_id=None,
         optimized=current_optimized,
         job_description=body.job_description,
-        contact=body.contact,
+        contact=contact,
         preferences=prefs_payload,
         critique=body.critique,
         resume_type=body.resume_type or "generic",
@@ -209,6 +211,7 @@ async def create_tailored_cover_letter(
 
     prefs_row = preferences.get(supabase, user_id=None)
     prefs_payload = prefs_row.payload if prefs_row else None
+    contact = await resolve_contact(supabase, body.contact)
 
     result = await run_cover_letter_pipeline(
         supabase,
@@ -217,7 +220,7 @@ async def create_tailored_cover_letter(
         optimized=current_optimized,
         job_description=body.job_description,
         company_name=body.company_name,
-        contact=body.contact,
+        contact=contact,
         role_title=body.role_title,
         preferences=prefs_payload,
         critique=body.critique,
@@ -497,6 +500,7 @@ async def create_batch_resumes(
 
     prefs_row = preferences.get(supabase, user_id=None)
     prefs_payload = prefs_row.payload if prefs_row else None
+    contact = await resolve_contact(supabase, body.contact)
 
     batch = create_batch(
         supabase,
@@ -512,7 +516,7 @@ async def create_batch_resumes(
         user_id=None,
         optimized=current_optimized,
         job_postings=postings,
-        contact=body.contact,
+        contact=contact,
         preferences=prefs_payload,
         resume_type=body.resume_type or "generic",
         page_budget=body.page_budget,
