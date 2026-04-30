@@ -278,7 +278,7 @@ async def upload_resume(
 
 
 @router.get("/optimized")
-async def get_optimized(
+def get_optimized(
     supabase: Client = Depends(get_supabase),
 ) -> OptimizedDoc | dict[str, None]:
     doc = optimized.get_latest(supabase, user_id=None)
@@ -368,7 +368,7 @@ async def derive_optimized(
 
 
 @router.get("/gap-health")
-async def get_gap_health(
+def get_gap_health(
     supabase: Client = Depends(get_supabase),
 ) -> GapHealthResult:
     doc = optimized.get_latest(supabase, user_id=None)

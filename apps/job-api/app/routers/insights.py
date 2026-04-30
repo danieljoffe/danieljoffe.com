@@ -35,8 +35,13 @@ def _since(period: str) -> datetime | None:
     return datetime.now(UTC) - timedelta(days=days)
 
 
+# Handlers are sync `def` so FastAPI runs each request in a threadpool worker.
+# These endpoints make multiple sync supabase `.execute()` calls; using `async
+# def` would block the event loop and serialize concurrent requests.
+
+
 @router.get("/pipeline")
-async def pipeline_insights(
+def pipeline_insights(
     period: str = Query("30d", pattern=r"^(7d|30d|90d|all)$"),
     supabase: Client = Depends(get_supabase),
 ) -> PipelineInsights:
@@ -44,7 +49,7 @@ async def pipeline_insights(
 
 
 @router.get("/targets")
-async def target_insights(
+def target_insights(
     period: str = Query("30d", pattern=r"^(7d|30d|90d|all)$"),
     supabase: Client = Depends(get_supabase),
 ) -> TargetInsights:
@@ -52,7 +57,7 @@ async def target_insights(
 
 
 @router.get("/skills-cost")
-async def skills_cost_insights(
+def skills_cost_insights(
     period: str = Query("30d", pattern=r"^(7d|30d|90d|all)$"),
     supabase: Client = Depends(get_supabase),
 ) -> SkillsCostInsights:

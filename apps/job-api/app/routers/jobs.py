@@ -221,8 +221,14 @@ def _list_jobs_for_target(
         return _list_jobs_for_target_two_query(supabase, **kwargs)
 
 
+# Sync `def` so FastAPI runs each request in a threadpool worker. The body
+# makes multiple blocking supabase `.execute()` calls; `async def` would block
+# the event loop and serialize concurrent /jobs reads (verified by 2026-04-30
+# load test — see .claude/docs/cleanup/load-test-findings-2026-04-30.md).
+
+
 @router.get("")
-async def list_jobs(
+def list_jobs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     sort: str = Query("score", pattern="^(score|created_at|company_name|title)$"),

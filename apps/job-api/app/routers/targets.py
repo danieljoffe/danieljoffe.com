@@ -227,7 +227,7 @@ async def create_target_from_url(
 
 
 @router.get("")
-async def list_targets(
+def list_targets(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, list[JobTarget]]:
     targets = crud.list_all(supabase)
@@ -263,7 +263,7 @@ async def suggest(
 
 
 @router.get("/active")
-async def get_active_targets(
+def get_active_targets(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, list[JobTarget]]:
     targets = crud.get_active(supabase)
@@ -271,7 +271,7 @@ async def get_active_targets(
 
 
 @router.get("/mine")
-async def get_my_targets(
+def get_my_targets(
     supabase: Client = Depends(get_supabase),
     user_id: str = Depends(get_current_user_id),
 ) -> dict[str, list[UserTargetWithTarget]]:
@@ -281,7 +281,7 @@ async def get_my_targets(
 
 
 @router.get("/{target_id}")
-async def get_target(
+def get_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> JobTarget:
@@ -292,7 +292,7 @@ async def get_target(
 
 
 @router.patch("/{target_id}")
-async def update_target(
+def update_target(
     target_id: str,
     body: TargetUpdate,
     supabase: Client = Depends(get_supabase),
