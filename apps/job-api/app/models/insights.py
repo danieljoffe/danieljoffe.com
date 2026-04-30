@@ -68,6 +68,21 @@ class SkillFrequency(BaseModel):
     missing_count: int
 
 
+class MissingSkill(BaseModel):
+    """A skill the user is consistently missing, ranked by impact.
+
+    *priority_score* is the sum of llm_score across jobs missing this skill;
+    skills missing in many high-scoring jobs rank highest. When no job has
+    a score, the priority falls back to *missing_count* so ranking remains
+    stable.
+    """
+
+    skill: str
+    missing_count: int
+    avg_job_score: float | None
+    priority_score: float
+
+
 class CostBucket(BaseModel):
     week_start: date
     total_cost: float
@@ -82,7 +97,7 @@ class PurposeCost(BaseModel):
 
 class SkillsCostInsights(BaseModel):
     top_skills: list[SkillFrequency]
-    top_missing: list[str]
+    top_missing: list[MissingSkill]
     cost_over_time: list[CostBucket]
     cost_by_purpose: list[PurposeCost]
     total_cost: float

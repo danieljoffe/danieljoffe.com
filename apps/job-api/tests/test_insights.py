@@ -235,7 +235,81 @@ class TestComputeSkillsCost:
         assert skill_map["Docker"].missing_count == 2
 
         # Docker is never matched → should be in top_missing
-        assert "Docker" in result.top_missing
+        missing_skills = [m.skill for m in result.top_missing]
+        assert "Docker" in missing_skills
+
+    def test_top_missing_ranked_by_score_weighted_priority(self):
+        """A skill missing from one 90-score job outranks a skill missing
+        from two 30-score jobs, since 90 > 30+30."""
+        analyses = [
+            {
+                "job_posting_id": "high-1",
+                "scorecard": {
+                    "skills_matched": [],
+                    "skills_missing": ["Kubernetes"],
+                },
+                "created_at": _ts(_NOW),
+            },
+            {
+                "job_posting_id": "low-1",
+                "scorecard": {
+                    "skills_matched": [],
+                    "skills_missing": ["Rust"],
+                },
+                "created_at": _ts(_NOW),
+            },
+            {
+                "job_posting_id": "low-2",
+                "scorecard": {
+                    "skills_matched": [],
+                    "skills_missing": ["Rust"],
+                },
+                "created_at": _ts(_NOW),
+            },
+        ]
+        postings = [
+            {"id": "high-1", "llm_score": 90.0, "created_at": _ts(_NOW)},
+            {"id": "low-1", "llm_score": 30.0, "created_at": _ts(_NOW)},
+            {"id": "low-2", "llm_score": 30.0, "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_analyses": analyses, "job_postings": postings})
+        result = compute_skills_cost(sb, since=None)
+
+        skills = [m.skill for m in result.top_missing]
+        assert skills[0] == "Kubernetes"  # priority 90 beats 60
+        assert skills[1] == "Rust"
+
+        kubernetes = next(m for m in result.top_missing if m.skill == "Kubernetes")
+        assert kubernetes.missing_count == 1
+        assert kubernetes.avg_job_score == 90.0
+        assert kubernetes.priority_score == 90.0
+
+        rust = next(m for m in result.top_missing if m.skill == "Rust")
+        assert rust.missing_count == 2
+        assert rust.avg_job_score == 30.0
+        assert rust.priority_score == 60.0
+
+    def test_top_missing_falls_back_to_count_when_no_scores(self):
+        """If no posting has llm_score, ranking should still produce a
+        stable order using missing_count."""
+        analyses = [
+            {
+                "job_posting_id": "p1",
+                "scorecard": {"skills_matched": [], "skills_missing": ["A", "A", "B"]},
+                "created_at": _ts(_NOW),
+            },
+        ]
+        # postings with no llm_score
+        postings = [{"id": "p1", "llm_score": None, "created_at": _ts(_NOW)}]
+        sb = _mock_supabase({"job_analyses": analyses, "job_postings": postings})
+        result = compute_skills_cost(sb, since=None)
+
+        by_skill = {m.skill: m for m in result.top_missing}
+        assert by_skill["A"].avg_job_score is None
+        assert by_skill["A"].priority_score == 2.0  # missing_count fallback
+        assert by_skill["B"].priority_score == 1.0
+        # A ranks above B
+        assert result.top_missing[0].skill == "A"
 
     def test_cost_over_time(self):
         resume_costs = [

@@ -16,6 +16,7 @@ from supabase import Client
 from app.models.insights import (
     CostBucket,
     FunnelStage,
+    MissingSkill,
     PipelineInsights,
     PurposeCost,
     ScoreBucket,
@@ -248,10 +249,23 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
 
 def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostInsights:
     # Fetch analyses for skill extraction
-    aq = supabase.table("job_analyses").select("scorecard, created_at")
+    aq = supabase.table("job_analyses").select("job_posting_id, scorecard, created_at")
     if since:
         aq = aq.gte("created_at", since.isoformat())
     analyses = cast(list[Row], aq.execute().data or [])
+
+    # Fetch posting scores so we can rank skill gaps by impact (sum of
+    # llm_score across jobs missing the skill). Postings without a score
+    # contribute to missing_count but not priority_score.
+    pq = supabase.table("job_postings").select("id, llm_score")
+    if since:
+        pq = pq.gte("created_at", since.isoformat())
+    posting_rows = cast(list[Row], pq.execute().data or [])
+    posting_scores: dict[str, float] = {}
+    for p in posting_rows:
+        score = p.get("llm_score")
+        if score is not None:
+            posting_scores[str(p["id"])] = float(score)
 
     # Fetch LLM cost log
     cq = supabase.table("llm_cost_log").select("purpose, cost_usd, created_at")
@@ -269,20 +283,31 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
     # --- Skill frequencies ---
     matched_counts: Counter[str] = Counter()
     missing_counts: Counter[str] = Counter()
+    missing_score_sum: defaultdict[str, float] = defaultdict(float)
+    missing_score_count: Counter[str] = Counter()
 
     for a in analyses:
         scorecard = a.get("scorecard")
         if not isinstance(scorecard, dict):
             continue
+        posting_id = a.get("job_posting_id")
+        score = posting_scores.get(str(posting_id)) if posting_id else None
+
         for sm in scorecard.get("skills_matched", []):
             if isinstance(sm, dict) and sm.get("name"):
                 if sm.get("matched"):
                     matched_counts[sm["name"]] += 1
                 else:
                     missing_counts[sm["name"]] += 1
+                    if score is not None:
+                        missing_score_sum[sm["name"]] += score
+                        missing_score_count[sm["name"]] += 1
         for skill_name in scorecard.get("skills_missing", []):
             if isinstance(skill_name, str):
                 missing_counts[skill_name] += 1
+                if score is not None:
+                    missing_score_sum[skill_name] += score
+                    missing_score_count[skill_name] += 1
 
     # Combine and rank by total frequency
     all_skills = set(matched_counts.keys()) | set(missing_counts.keys())
@@ -299,14 +324,34 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
         reverse=True,
     )[:15]
 
-    # Top missing (skills never matched).
-    # Limitation: skills are treated as binary present/absent per analysis.
-    # A skill matched in some jobs but missing in others is excluded here even
-    # though it might still represent a meaningful gap. Ranking is by raw
-    # missing count, not weighted by job score.
-    pure_missing = [
-        s for s, _ in missing_counts.most_common(10) if matched_counts.get(s, 0) == 0
-    ]
+    # Top missing (skills never matched), ranked by score-weighted priority.
+    # priority_score = sum(llm_score for jobs missing this skill); skills
+    # missing in many high-scoring jobs rank highest. When no job has a
+    # score, fall back to raw missing_count so ranking stays stable.
+    # Limitation: skills are still treated as binary present/absent per
+    # analysis — a skill matched in some jobs but missing in others is
+    # excluded entirely.
+    pure_missing_skills = [s for s in missing_counts if matched_counts.get(s, 0) == 0]
+    missing_records = []
+    for skill in pure_missing_skills:
+        count = missing_counts[skill]
+        score_count = missing_score_count[skill]
+        score_sum = missing_score_sum[skill]
+        avg = (score_sum / score_count) if score_count > 0 else None
+        priority = score_sum if score_count > 0 else float(count)
+        missing_records.append(
+            MissingSkill(
+                skill=skill,
+                missing_count=count,
+                avg_job_score=avg,
+                priority_score=round(priority, 4),
+            )
+        )
+    pure_missing = sorted(
+        missing_records,
+        key=lambda r: r.priority_score,
+        reverse=True,
+    )[:10]
 
     # --- Cost over time ---
     week_cost: defaultdict[date, float] = defaultdict(float)

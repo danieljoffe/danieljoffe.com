@@ -59,6 +59,13 @@ export interface SkillFrequency {
   missing_count: number;
 }
 
+export interface MissingSkill {
+  skill: string;
+  missing_count: number;
+  avg_job_score: number | null;
+  priority_score: number;
+}
+
 export interface CostBucket {
   week_start: string;
   total_cost: number;
@@ -73,7 +80,7 @@ export interface PurposeCost {
 
 export interface SkillsCostInsights {
   top_skills: SkillFrequency[];
-  top_missing: string[];
+  top_missing: MissingSkill[];
   cost_over_time: CostBucket[];
   cost_by_purpose: PurposeCost[];
   total_cost: number;

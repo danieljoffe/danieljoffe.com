@@ -27,6 +27,9 @@ const SkillFrequencyChart = dynamic(
   () => import('./charts/SkillFrequencyChart'),
   { ssr: false }
 );
+const TopSkillGaps = dynamic(() => import('./charts/TopSkillGaps'), {
+  ssr: false,
+});
 const TargetComparisonChart = dynamic(
   () => import('./charts/TargetComparisonChart'),
   { ssr: false }
@@ -318,6 +321,25 @@ export default function InsightsDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Top Skill Gaps — ranked recommendations, full width */}
+      <Card aria-busy={showSkillFreqSkeleton}>
+        <CardHeader>
+          <div className='flex items-baseline gap-4'>
+            <CardTitle>Top Skill Gaps</CardTitle>
+            <Text variant='meta'>
+              Skills you&apos;re missing, ranked by impact on high-scoring jobs
+            </Text>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {showSkillFreqSkeleton ? (
+            <Skeleton variant='rectangular' height={180} />
+          ) : (
+            <TopSkillGaps data={skillsCost?.top_missing ?? []} />
+          )}
+        </CardContent>
+      </Card>
 
       {/* LLM Cost — full width */}
       <Card aria-busy={showCostSkeleton}>
