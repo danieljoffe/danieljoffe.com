@@ -69,7 +69,6 @@ export default function ComparisonHeader({
   return (
     <Section
       aria-labelledby='comparison-header-heading'
-      background='alt'
       overflow='hidden'
       center
     >

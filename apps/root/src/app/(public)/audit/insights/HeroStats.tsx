@@ -20,11 +20,7 @@ export default function HeroStats({ data }: HeroStatsProps) {
   const scoreColor = getScoreColor(data.avgOverallScore);
 
   return (
-    <Section
-      aria-labelledby='insights-hero-heading'
-      background='alt'
-      padding='lg'
-    >
+    <Section aria-labelledby='insights-hero-heading' padding='lg'>
       <div className='text-center mb-12'>
         <Heading variant='hero' as='h1' id='insights-hero-heading'>
           Audit Insights

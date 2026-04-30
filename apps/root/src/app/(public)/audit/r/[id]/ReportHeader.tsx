@@ -31,12 +31,7 @@ export default function ReportHeader({
   const grade = gradeOverall ? GRADE_MAP[gradeOverall] : null;
 
   return (
-    <Section
-      background='alt'
-      center
-      overflow='hidden'
-      aria-labelledby='report-header-heading'
-    >
+    <Section center overflow='hidden' aria-labelledby='report-header-heading'>
       <div className='flex items-center justify-between'>
         <Link
           href='/audit'
