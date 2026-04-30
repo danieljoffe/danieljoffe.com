@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import logging
 from datetime import UTC, datetime
@@ -438,22 +439,36 @@ async def add_manual_job(
         data = cast(dict[str, Any], resp_db.data[0])
         posting_id = data.get("id")
 
-    # Score against all active targets (stages 1+2 inline for manual entry)
+    # Score against all active targets (stages 1+2 inline for manual entry).
+    # Each per-target scoring call is independent and IO-bound (the Supabase
+    # SDK is sync, so we hand each one to the threadpool and gather). For 10
+    # active targets this turns ~10 sequential round-trips into ~1 wall-time.
     if posting_id and title:
         active_targets = get_active_target(supabase)
         parsed = parse_jd(description_html)
-        for active_target in active_targets:
-            try:
-                target_score_and_upsert(
+        results = await asyncio.gather(
+            *[
+                asyncio.to_thread(
+                    target_score_and_upsert,
                     supabase,
                     job_posting_id=posting_id,
                     title=title,
                     description_html=description_html,
-                    target=active_target,
+                    target=t,
                     parsed_jd=parsed,
                 )
-            except Exception:
-                logger.exception("Target scoring failed for manual job %s", posting_id)
+                for t in active_targets
+            ],
+            return_exceptions=True,
+        )
+        for t, result in zip(active_targets, results, strict=True):
+            if isinstance(result, BaseException):
+                logger.error(
+                    "Target scoring failed for manual job %s target %s",
+                    posting_id,
+                    t.id,
+                    exc_info=result,
+                )
         try:
             update_global_score(supabase, posting_id)
         except Exception:
