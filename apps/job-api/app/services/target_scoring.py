@@ -283,8 +283,9 @@ def batch_update_global_scores(
     """Recompute job_postings.score for many jobs in fewer DB round-trips.
 
     Fetches all target scores for the given IDs in one query (chunked to
-    avoid URL length limits), computes averages in Python, then updates
-    each job's global score.
+    avoid URL length limits), computes averages in Python, then writes
+    every new score in a single `bulk_update_job_scores` RPC instead of
+    one UPDATE per job.
     """
     if not job_posting_ids:
         return
@@ -312,13 +313,15 @@ def batch_update_global_scores(
         if not row.get("excluded", False):
             scores_by_job[row["job_posting_id"]].append(row["score"])
 
-    # Update each job's global score
-    for job_id in unique_ids:
-        job_scores = scores_by_job.get(job_id, [])
-        avg_score = round(sum(job_scores) / len(job_scores)) if job_scores else 0
-        supabase.table("job_postings").update({"score": avg_score}).eq(
-            "id", job_id
-        ).execute()
+    updates: list[dict[str, Any]] = [
+        {
+            "id": job_id,
+            "score": round(sum(scs) / len(scs)) if (scs := scores_by_job.get(job_id, [])) else 0,
+        }
+        for job_id in unique_ids
+    ]
+    if updates:
+        supabase.rpc("bulk_update_job_scores", {"p_updates": updates}).execute()
 
 
 def mark_complete(supabase: Client, job_posting_id: str) -> None:

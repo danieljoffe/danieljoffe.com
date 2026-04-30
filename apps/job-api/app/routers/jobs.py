@@ -506,7 +506,12 @@ async def rescore_for_target(
 async def backfill_salary(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
-    """One-off: extract salary from description_html for jobs missing salary_text."""
+    """One-off: extract salary from description_html for jobs missing salary_text.
+
+    Per batch of 500, extract salaries in Python then write all rows in a
+    single `bulk_update_job_salaries` RPC — turns ~N row-by-row UPDATEs
+    into one statement per batch.
+    """
     batch_size = 500
     offset = 0
     updated = 0
@@ -523,16 +528,20 @@ async def backfill_salary(
         if not rows:
             break
 
+        updates: list[dict[str, Any]] = []
         for row in rows:
             html = row.get("description_html") or ""
             if not html:
                 continue
             salary = extract_salary_from_text(strip_html(html))
             if salary:
-                supabase.table("job_postings").update(
-                    {"salary_text": salary}
-                ).eq("id", row["id"]).execute()
-                updated += 1
+                updates.append({"id": row["id"], "salary_text": salary})
+
+        if updates:
+            supabase.rpc(
+                "bulk_update_job_salaries", {"p_updates": updates}
+            ).execute()
+            updated += len(updates)
 
         if len(rows) < batch_size:
             break
