@@ -28,9 +28,12 @@ class TestConsolidateProse:
     async def test_short_content_skips_llm(self) -> None:
         content = "Just a short bio paragraph."
         llm = MockLLMClient()
-        consolidated, result = await consolidate_prose(llm, content=content)
+        consolidated, result, fallback_reason = await consolidate_prose(
+            llm, content=content
+        )
         assert consolidated == content
         assert result is None
+        assert fallback_reason is None
         assert llm.calls == []
 
     async def test_calls_llm_for_long_content(self) -> None:
@@ -47,17 +50,19 @@ class TestConsolidateProse:
         # happened) but above the MIN_OUTPUT_RATIO floor so the safety
         # fallback doesn't trigger.
         clean_unit = "Senior Frontend Engineer at Acme. Built React apps.\n"
-        # Make clean ~50% of bloated to clear the 0.20 floor with margin.
         from app.services.experience.consolidate import MIN_OUTPUT_RATIO
 
         target_chars = int(len(bloated) * (MIN_OUTPUT_RATIO + 0.30))
         clean = clean_unit * (target_chars // len(clean_unit) + 1)
         llm = MockLLMClient(scripted={DEFAULT_PURPOSE: clean})
 
-        consolidated, result = await consolidate_prose(llm, content=bloated)
+        consolidated, result, fallback_reason = await consolidate_prose(
+            llm, content=bloated
+        )
         assert consolidated == clean.strip()
         assert len(consolidated) < len(bloated)
         assert result is not None
+        assert fallback_reason is None
         assert llm.calls and llm.calls[0]["purpose"] == DEFAULT_PURPOSE
 
     async def test_short_llm_output_falls_back_to_input(self) -> None:
@@ -66,9 +71,41 @@ class TestConsolidateProse:
         too_short = "Engineer."
         llm = MockLLMClient(scripted={DEFAULT_PURPOSE: too_short})
 
-        consolidated, result = await consolidate_prose(llm, content=long_doc)
+        consolidated, result, fallback_reason = await consolidate_prose(
+            llm, content=long_doc
+        )
         assert consolidated == long_doc  # safety fallback
         assert result is not None  # but LLM call still made (for cost log)
+        assert fallback_reason == "output_too_short"
+
+    async def test_heavy_dedup_clears_floor(self) -> None:
+        # Eight near-identical resume copies — legitimately consolidates to
+        # ~12% of input length. Floor was 0.20 (broken: tripped the safety
+        # net on real workloads); now 0.05, which lets this through.
+        resume_unit = (
+            "Daniel Joffe — Senior Engineer\n"
+            "FightCamp: cut FCP from 10s to 2s. Internet Brands: built React "
+            "library adopted by 80% of apps. Winc: shipped self-serve CMS.\n"
+            "Skills: React, TypeScript, Next.js, Supabase.\n"
+        ) * 3  # make each copy big enough that 8 copies clear MIN_CONSOLIDATE_CHARS
+        bloated = (resume_unit + "--- [Uploaded Resume: r.pdf]\n") * 8
+        consolidated_one_copy = resume_unit  # ~1/8 of input
+        llm = MockLLMClient(scripted={DEFAULT_PURPOSE: consolidated_one_copy})
+
+        # Sanity: the test only exercises the LLM path if input clears the
+        # short-circuit threshold.
+        assert len(bloated) >= MIN_CONSOLIDATE_CHARS
+
+        consolidated, result, fallback_reason = await consolidate_prose(
+            llm, content=bloated
+        )
+
+        # The 12%-ish output must NOT trip the floor.
+        assert consolidated == consolidated_one_copy.strip()
+        assert fallback_reason is None
+        assert result is not None
+        ratio = len(consolidated) / len(bloated)
+        assert ratio < 0.20, "test setup invalid: dedup too small to be meaningful"
 
 
 # ---------------------------------------------------------------------------
@@ -182,8 +219,8 @@ class TestConsolidateEndpoint:
             "app.services.llm.cost_log.record", MagicMock()
         )
 
-        # Set scripted output above the MIN_OUTPUT_RATIO floor by extending it.
-        # MIN_OUTPUT_RATIO=0.20, so 25% of bloated length is safe.
+        # Set scripted output well above the MIN_OUTPUT_RATIO floor (0.05);
+        # 25% of bloated length keeps a wide safety margin.
         scripted_clean = clean + " More detail. " * (
             (len(bloated) // 4) // len(" More detail. ")
         )

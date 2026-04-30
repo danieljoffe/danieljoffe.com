@@ -191,9 +191,16 @@ class ProseConsolidateResponse(BaseModel):
     the LLM returned a doc roughly the same length, suggesting nothing was
     deduped. The frontend uses it to surface a "no duplicates found" hint
     instead of a generic success toast.
+
+    ``fallback_reason`` is populated when the consolidation safety net fired
+    and the original input was returned in place of the LLM output (e.g. the
+    LLM produced a too-short result that looked like a summary). When present,
+    ``no_op`` will also be true; the field lets callers distinguish "nothing
+    to dedupe" from "we threw away the LLM's answer."
     """
 
     prose: ProseDoc
     chars_before: int
     chars_after: int
     no_op: bool
+    fallback_reason: str | None = None

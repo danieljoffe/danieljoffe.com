@@ -14,8 +14,13 @@ duplicates themselves.
 
 from __future__ import annotations
 
+import logging
+from typing import Literal
+
 from app.models.llm import LLMResult, Message, ModelId
 from app.services.llm.client import LLMClient
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL: ModelId = "claude-sonnet-4-6"
 DEFAULT_PURPOSE = "experience.prose_consolidate"
@@ -29,7 +34,15 @@ MIN_CONSOLIDATE_CHARS = 4_000
 # Output guardrails. The LLM is expected to shrink the doc, but a result that
 # collapses to almost nothing means it likely paraphrased the whole thing into
 # a summary instead of merging duplicates. Reject and fall back to the input.
-MIN_OUTPUT_RATIO = 0.20
+#
+# A doc with 8 near-identical resume copies legitimately consolidates to ~12%
+# of input length, so the floor must sit well below that. 0.05 still catches
+# the "LLM returned a one-line summary" case without throwing away valid
+# heavy-dedup runs. Pair with the `fallback_reason` signal in the response so
+# the caller can tell when the safety net fired.
+MIN_OUTPUT_RATIO = 0.05
+
+FallbackReason = Literal["output_too_short"]
 
 # Conversely, if the output is nearly the same length as the input, the LLM
 # didn't actually consolidate anything. We still persist it (the version is
@@ -70,18 +83,20 @@ async def consolidate_prose(
     content: str,
     model: ModelId = DEFAULT_MODEL,
     purpose: str = DEFAULT_PURPOSE,
-) -> tuple[str, LLMResult | None]:
+) -> tuple[str, LLMResult | None, FallbackReason | None]:
     """Run consolidation on a prose doc.
 
-    Returns ``(consolidated_text, llm_result)``. If the input is too short to
-    benefit from consolidation, returns ``(content, None)`` with no LLM call.
+    Returns ``(consolidated_text, llm_result, fallback_reason)``. If the input
+    is too short to benefit from consolidation, returns ``(content, None, None)``
+    with no LLM call.
 
     Safety net: if the LLM output is suspiciously short (likely paraphrased
     rather than consolidated), falls back to the original ``content`` so user
-    facts are never silently lost.
+    facts are never silently lost. ``fallback_reason`` records which guard
+    fired so callers can surface the rejection in logs and the response.
     """
     if len(content) < MIN_CONSOLIDATE_CHARS:
-        return content, None
+        return content, None, None
 
     result = await llm.complete(
         model=model,
@@ -94,9 +109,16 @@ async def consolidate_prose(
 
     consolidated = result.content.strip()
     if len(consolidated) < len(content) * MIN_OUTPUT_RATIO:
-        return content, result
+        logger.warning(
+            "consolidate_prose: output below MIN_OUTPUT_RATIO floor, "
+            "falling back to input (input=%d chars, output=%d chars, floor=%.2f)",
+            len(content),
+            len(consolidated),
+            MIN_OUTPUT_RATIO,
+        )
+        return content, result, "output_too_short"
 
-    return consolidated, result
+    return consolidated, result, None
 
 
 def is_no_op(*, before: str, after: str) -> bool:

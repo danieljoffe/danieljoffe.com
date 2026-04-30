@@ -100,32 +100,38 @@ async def consolidate_prose(
     if latest is None:
         raise HTTPException(status_code=404, detail="no prose doc to consolidate")
 
-    consolidated, result = await consolidate.consolidate_prose(
+    consolidated, result, fallback_reason = await consolidate.consolidate_prose(
         llm, content=latest.content
     )
     if result is not None:
+        metadata: dict[str, str | int | float | bool] = {
+            "prose_doc_id": latest.id,
+            "prose_version": latest.version,
+            "chars_before": len(latest.content),
+            "chars_after": len(consolidated),
+        }
+        if fallback_reason is not None:
+            metadata["fallback_reason"] = fallback_reason
         cost_log.record(
             supabase,
             user_id=None,
             purpose=consolidate.DEFAULT_PURPOSE,
             result=result,
-            metadata={
-                "prose_doc_id": latest.id,
-                "prose_version": latest.version,
-                "chars_before": len(latest.content),
-                "chars_after": len(consolidated),
-            },
+            metadata=metadata,
         )
 
     no_op = consolidate.is_no_op(before=latest.content, after=consolidated)
     if no_op and consolidated == latest.content:
-        # Nothing to persist — either too short to consolidate, or the LLM
-        # returned the input unchanged. Return the existing version as-is.
+        # Nothing to persist — either too short to consolidate, the LLM
+        # returned the input unchanged, or the safety net rejected the LLM
+        # output. Return the existing version as-is, with fallback_reason
+        # set when the rejection path was taken.
         return ProseConsolidateResponse(
             prose=latest,
             chars_before=len(latest.content),
             chars_after=len(latest.content),
             no_op=True,
+            fallback_reason=fallback_reason,
         )
 
     new_doc = prose.create_version(supabase, user_id=None, content=consolidated)
@@ -134,6 +140,7 @@ async def consolidate_prose(
         chars_before=len(latest.content),
         chars_after=len(consolidated),
         no_op=no_op,
+        fallback_reason=fallback_reason,
     )
 
 
