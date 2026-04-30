@@ -335,24 +335,13 @@ export default function ProfilePage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-start justify-between gap-3'>
-        <div>
-          <Heading variant='hero' as='h1'>
-            Profile
-          </Heading>
-          <Text variant='body' className='mt-1 text-text-secondary'>
-            Your master experience document and derived skills
-          </Text>
-        </div>
-        <Button
-          name='profile-improve-ai'
-          variant='outline'
-          size='sm'
-          onClick={() => setChatOpen(true)}
-        >
-          <Sparkles className='size-4' aria-hidden />
-          <span>Improve with AI</span>
-        </Button>
+      <div>
+        <Heading variant='hero' as='h1'>
+          Profile
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Your master experience document and derived skills
+        </Text>
       </div>
 
       {/* Document Health */}
@@ -374,25 +363,37 @@ export default function ProfilePage() {
               aria-label='Document completeness'
             />
 
-            {gapHealth.tier === 'red' && (
-              <Alert variant='warning'>
-                <div className='flex flex-col items-start gap-2'>
-                  <span>
-                    Critical gaps detected. Generated resumes will be missing
-                    outcomes and metrics until you fill them in.
-                  </span>
+            {gapHealth.gaps.length > 0 &&
+              (() => {
+                const count = gapHealth.gaps.length;
+                const cta = (
                   <Button
-                    name='profile-open-chat-from-alert'
+                    name='profile-answer-questions'
                     variant='outline'
                     size='sm'
                     onClick={() => setChatOpen(true)}
                   >
                     <Sparkles className='size-4' aria-hidden />
-                    <span>Answer questions to fill gaps</span>
+                    <span>
+                      Answer {count} {count === 1 ? 'question' : 'questions'} to
+                      fill gaps
+                    </span>
                   </Button>
-                </div>
-              </Alert>
-            )}
+                );
+                return gapHealth.tier === 'red' ? (
+                  <Alert variant='warning'>
+                    <div className='flex flex-col items-start gap-2'>
+                      <span>
+                        Critical gaps detected. Generated resumes will be
+                        missing outcomes and metrics until you fill them in.
+                      </span>
+                      {cta}
+                    </div>
+                  </Alert>
+                ) : (
+                  cta
+                );
+              })()}
 
             <div className='flex flex-wrap items-center gap-2'>
               <Button

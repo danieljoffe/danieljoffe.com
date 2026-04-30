@@ -19,7 +19,7 @@ export default function ConversationChatModal({
       isOpen={isOpen}
       onClose={onClose}
       size='lg'
-      title='Improve your profile'
+      title='Fill in profile details'
     >
       <ConversationChat
         onComplete={() => {
