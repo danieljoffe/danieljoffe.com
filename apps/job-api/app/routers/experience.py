@@ -325,10 +325,23 @@ async def derive_optimized(
 ) -> OptimizedDoc:
     """Read the latest prose doc, derive an OptimizedPayload via LLM,
     persist it as a new optimized version, embed its chunks, and log cost.
+
+    Short-circuits when the latest LLM-sourced optimized doc already points
+    at this prose doc — repeat derives on unchanged prose are a 40s no-op
+    otherwise. User-edited optimized docs (source="user_edit") never
+    short-circuit; the user has explicitly asked to regenerate.
     """
     prose_doc = prose.get_latest(supabase, user_id=None)
     if prose_doc is None:
         raise HTTPException(status_code=404, detail="no prose doc to derive from")
+
+    previous = optimized.get_latest(supabase, user_id=None)
+    if (
+        previous is not None
+        and previous.prose_doc_id == prose_doc.id
+        and previous.source == "llm"
+    ):
+        return previous
 
     payload, result = await derive.derive_from_prose(
         llm,
@@ -344,7 +357,6 @@ async def derive_optimized(
 
     # Carry forward annotations from the previous doc and merge with any
     # the LLM extracted from inline prose comments this round (#499).
-    previous = optimized.get_latest(supabase, user_id=None)
     carried = (
         annotations.validate_annotation_refs(
             previous.payload.annotations, payload
