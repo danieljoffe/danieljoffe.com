@@ -64,7 +64,7 @@ The Fitted Insights page is well-architected with clear separation of concerns (
 
 ## Product gaps (not bugs, but worth considering)
 
-- **Drill-down to evidence** — Clicking a funnel bar should filter jobs to that stage. Right now charts are read-only.
+- **[FIXED] Drill-down to evidence** — Funnel and score-distribution charts now expose a chip-row of `<Link>` drill-ins below the visual. Clicking a stage navigates to `/fitted/jobs?status=<stage>`; clicking a score bucket navigates to `/fitted/jobs?minScore=<lo>`. The jobs page parses both params and seeds the initial filter state. Real anchors (not Recharts onClick) so keyboard and screen-reader users get the same path as mouse users.
 - **Comparative periods** — No "this month vs last month" or trend-over-trend.
 - **Exportable reports** — No CSV/PDF export. Useful for job coaches.
 - **Skill gap prioritization** — "Top missing skills" doesn't rank by frequency × job score, so users can't tell which gap matters most.

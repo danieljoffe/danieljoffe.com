@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Bar,
   BarChart,
@@ -13,6 +14,9 @@ import {
 import type { FunnelStage } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
 import { CHART_COLORS } from './colors';
+
+const DRILL_LINK_CLASS =
+  'inline-flex items-center rounded-full bg-surface-tertiary px-2 py-0.5 text-xs text-text-primary tabular-nums hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1';
 
 interface FunnelChartProps {
   data: FunnelStage[];
@@ -66,39 +70,64 @@ export default function FunnelChart({ data }: FunnelChartProps) {
     { header: 'Jobs', render: row => row.count },
   ];
 
+  const drillStages = formatted.filter(row => row.count > 0);
+
   return (
-    <ChartFigure
-      ariaLabel='Pipeline funnel: jobs by stage'
-      rows={formatted}
-      columns={columns}
-      rowKey={row => row.stage}
-    >
-      <ResponsiveContainer width='100%' height={250}>
-        <BarChart data={formatted} layout='vertical'>
-          <CartesianGrid
-            strokeDasharray='3 3'
-            stroke={CHART_COLORS.grid}
-            horizontal={false}
-          />
-          <XAxis type='number' allowDecimals={false} tick={{ fontSize: 12 }} />
-          <YAxis
-            type='category'
-            dataKey='label'
-            width={70}
-            tick={{ fontSize: 12 }}
-          />
-          <Tooltip contentStyle={{ fontSize: 12 }} />
-          <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>
-            {formatted.map((entry, i) => (
-              <Cell
-                key={entry.stage}
-                fill={STAGE_COLORS[i % STAGE_COLORS.length]}
-                fillOpacity={0.85}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartFigure>
+    <>
+      <ChartFigure
+        ariaLabel='Pipeline funnel: jobs by stage'
+        rows={formatted}
+        columns={columns}
+        rowKey={row => row.stage}
+      >
+        <ResponsiveContainer width='100%' height={250}>
+          <BarChart data={formatted} layout='vertical'>
+            <CartesianGrid
+              strokeDasharray='3 3'
+              stroke={CHART_COLORS.grid}
+              horizontal={false}
+            />
+            <XAxis
+              type='number'
+              allowDecimals={false}
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis
+              type='category'
+              dataKey='label'
+              width={70}
+              tick={{ fontSize: 12 }}
+            />
+            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>
+              {formatted.map((entry, i) => (
+                <Cell
+                  key={entry.stage}
+                  fill={STAGE_COLORS[i % STAGE_COLORS.length]}
+                  fillOpacity={0.85}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartFigure>
+      {drillStages.length > 0 && (
+        <nav
+          aria-label='View jobs by stage'
+          className='mt-3 flex flex-wrap items-center gap-1.5'
+        >
+          <span className='text-xs text-text-tertiary'>View jobs:</span>
+          {drillStages.map(row => (
+            <Link
+              key={row.stage}
+              href={`/fitted/jobs?status=${row.stage}`}
+              className={DRILL_LINK_CLASS}
+            >
+              {row.label} ({row.count})
+            </Link>
+          ))}
+        </nav>
+      )}
+    </>
   );
 }

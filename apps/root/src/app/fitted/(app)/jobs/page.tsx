@@ -20,6 +20,21 @@ export default async function FittedJobsPage({
   const initialStatus: JobStatus | '' = STATUS_SET.has(rawStatus)
     ? (rawStatus as JobStatus)
     : '';
+  const rawMinScore =
+    typeof params.minScore === 'string' ? params.minScore : '';
+  const parsedMinScore = Number.parseInt(rawMinScore, 10);
+  const initialMinScore =
+    Number.isFinite(parsedMinScore) &&
+    parsedMinScore >= 0 &&
+    parsedMinScore <= 100
+      ? String(parsedMinScore)
+      : '';
 
-  return <JobsList targetId={targetId} initialStatus={initialStatus} />;
+  return (
+    <JobsList
+      targetId={targetId}
+      initialStatus={initialStatus}
+      initialMinScore={initialMinScore}
+    />
+  );
 }

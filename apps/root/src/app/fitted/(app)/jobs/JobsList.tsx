@@ -38,12 +38,21 @@ const BATCH_POLL_INTERVAL = 3000;
 interface JobsListProps {
   targetId: string | undefined;
   initialStatus?: string;
+  initialMinScore?: string;
 }
 
-export default function JobsList({ targetId, initialStatus }: JobsListProps) {
+export default function JobsList({
+  targetId,
+  initialStatus,
+  initialMinScore,
+}: JobsListProps) {
   const [filters, setFilters] = useState<JobsFilterState>(() => {
     const base = targetId ? TARGET_FILTERS : INITIAL_FILTERS;
-    return initialStatus ? { ...base, status: initialStatus } : base;
+    return {
+      ...base,
+      ...(initialStatus ? { status: initialStatus } : {}),
+      ...(initialMinScore ? { minScore: initialMinScore } : {}),
+    };
   });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
