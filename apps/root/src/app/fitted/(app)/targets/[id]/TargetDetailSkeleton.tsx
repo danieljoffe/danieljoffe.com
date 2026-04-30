@@ -34,14 +34,6 @@ export default function TargetDetailSkeleton() {
           <Skeleton variant='rectangular' height={56} />
         </CardContent>
       </Card>
-
-      <Card padding='none'>
-        <CardContent className='p-4 flex flex-col gap-3'>
-          <Skeleton width={180} size='lg' />
-          <Skeleton lines={3} size='sm' />
-          <Skeleton variant='rectangular' width={100} height={32} />
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -19,7 +19,6 @@ from app.models.llm import LLMResult, LLMUsage
 from app.models.targets import (
     DerivedTarget,
     JobTarget,
-    ResumeEmphasis,
     ScoringProfile,
     TargetCreate,
     TargetReferenceJD,
@@ -79,7 +78,6 @@ def _user_target(
         id="ut-1",
         user_id=user_id,
         target_id=target_id,
-        resume_emphasis=ResumeEmphasis(),
         is_active=False,
         fit_score=fit_score,
         fit_score_reasoning="Strong fit.",

@@ -12,7 +12,6 @@ from supabase import Client
 
 from app.models.targets import (
     JobTarget,
-    ResumeEmphasis,
     ScoringProfile,
     TargetCreate,
     TargetReferenceJD,
@@ -49,7 +48,6 @@ def _parse_user_target(row: dict[str, Any]) -> UserTarget:
         id=row["id"],
         user_id=row["user_id"],
         target_id=row["target_id"],
-        resume_emphasis=ResumeEmphasis.model_validate(row.get("resume_emphasis") or {}),
         is_active=row["is_active"],
         fit_score=row.get("fit_score"),
         fit_score_reasoning=row.get("fit_score_reasoning"),
@@ -253,7 +251,7 @@ def get_user_target_ids(supabase: Client, user_id: str) -> set[str]:
 def list_user_targets_with_targets(
     supabase: Client, user_id: str
 ) -> list[UserTargetWithTarget]:
-    """Return a user's targets paired with their junction data (fit score, emphasis)."""
+    """Return a user's targets paired with their junction data (fit score)."""
     ut_resp = (
         supabase.table(USER_TARGETS_TABLE)
         .select("*")
@@ -299,29 +297,14 @@ def link_user_to_target(
     *,
     user_id: str,
     target_id: str,
-    resume_emphasis: ResumeEmphasis | None = None,
     is_active: bool = True,
     fit_score: int | None = None,
     fit_score_reasoning: str | None = None,
 ) -> UserTarget:
-    """Link a user to a target (upsert). The DB trigger syncs job_targets.is_active.
-
-    Existing rows preserve their resume_emphasis when ``resume_emphasis`` is not
-    explicitly supplied — the upsert only writes the fields it received, so
-    re-linking a target never wipes the user's saved emphasis.
-    """
-    existing = get_user_target(supabase, user_id=user_id, target_id=target_id)
-    if resume_emphasis is None:
-        emphasis_payload = (
-            existing.resume_emphasis if existing else ResumeEmphasis()
-        ).model_dump()
-    else:
-        emphasis_payload = resume_emphasis.model_dump()
-
+    """Link a user to a target (upsert). The DB trigger syncs job_targets.is_active."""
     row: dict[str, Any] = {
         "user_id": user_id,
         "target_id": target_id,
-        "resume_emphasis": emphasis_payload,
         "is_active": is_active,
         "updated_at": datetime.now(UTC).isoformat(),
     }
@@ -411,34 +394,6 @@ def set_user_target_inactive(
     )
     rows = cast(list[dict[str, Any]], resp.data or [])
     return _parse_user_target(rows[0]) if rows else None
-
-
-def update_user_target_emphasis(
-    supabase: Client,
-    user_id: str,
-    target_id: str,
-    emphasis: ResumeEmphasis,
-) -> UserTarget:
-    """Upsert the resume_emphasis for a user's link to a target.
-
-    Creates the link row if it doesn't exist; otherwise updates only the
-    emphasis (preserving fit_score, is_active, etc.).
-    """
-    row: dict[str, Any] = {
-        "user_id": user_id,
-        "target_id": target_id,
-        "resume_emphasis": emphasis.model_dump(),
-        "updated_at": datetime.now(UTC).isoformat(),
-    }
-    resp = (
-        supabase.table(USER_TARGETS_TABLE)
-        .upsert(row, on_conflict="user_id,target_id")
-        .execute()
-    )
-    rows = cast(list[dict[str, Any]], resp.data or [])
-    if not rows:
-        raise RuntimeError("Failed to upsert user_targets emphasis row")
-    return _parse_user_target(rows[0])
 
 
 # ---- Reference JD CRUD -----------------------------------------------------

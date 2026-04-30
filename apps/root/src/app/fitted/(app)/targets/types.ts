@@ -25,12 +25,6 @@ export interface ScoringProfile {
   negative: NegativeProfile;
 }
 
-export interface ResumeEmphasis {
-  focus_skills: string[];
-  focus_outcomes: string[];
-  tone: string | null;
-}
-
 export interface JobTarget {
   id: string;
   label: string;
@@ -49,7 +43,6 @@ export interface UserTarget {
   id: string;
   user_id: string;
   target_id: string;
-  resume_emphasis: ResumeEmphasis;
   is_active: boolean;
   fit_score: number | null;
   fit_score_reasoning: string | null;
@@ -99,13 +92,5 @@ export function emptyScoringProfile(): ScoringProfile {
     seniority: { level: null, signals: [] },
     domain: { signals: [], weight: 0.5 },
     negative: { keywords: [], weight: -10 },
-  };
-}
-
-export function emptyResumeEmphasis(): ResumeEmphasis {
-  return {
-    focus_skills: [],
-    focus_outcomes: [],
-    tone: null,
   };
 }

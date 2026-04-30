@@ -44,14 +44,6 @@ class ScoringProfile(BaseModel):
     negative: NegativeProfile = Field(default_factory=NegativeProfile)
 
 
-class ResumeEmphasis(BaseModel):
-    """Hints for the tailor about what to emphasize for this target."""
-
-    focus_skills: list[str] = Field(default_factory=list)
-    focus_outcomes: list[str] = Field(default_factory=list)
-    tone: str | None = None
-
-
 # ---- Row models (DB read shapes) -------------------------------------------
 
 
@@ -90,7 +82,6 @@ class UserTarget(BaseModel):
     id: str
     user_id: str
     target_id: str
-    resume_emphasis: ResumeEmphasis
     is_active: bool
     fit_score: int | None = None
     fit_score_reasoning: str | None = None

@@ -25,7 +25,6 @@ from app.models.targets import (
     JobTarget,
     MatchedSuggestions,
     ReferenceJDAdd,
-    ResumeEmphasis,
     ScoringProfile,
     TargetCreate,
     TargetFromManual,
@@ -379,26 +378,6 @@ async def link_target(
         target_id=target_id,
         fit_score=fit_score,
         fit_score_reasoning=fit_reasoning,
-    )
-
-
-@router.patch("/{target_id}/emphasis")
-async def update_target_emphasis(
-    target_id: str,
-    body: ResumeEmphasis,
-    supabase: Client = Depends(get_supabase),
-    user_id: str = Depends(get_current_user_id),
-) -> UserTarget:
-    """Upsert the current user's resume_emphasis for a target.
-
-    Creates the user_targets link if it doesn't exist.
-    """
-    target = crud.get(supabase, target_id)
-    if target is None:
-        raise HTTPException(status_code=404, detail="Target not found")
-
-    return crud.update_user_target_emphasis(
-        supabase, user_id=user_id, target_id=target_id, emphasis=body
     )
 
 
