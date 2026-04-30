@@ -20,6 +20,17 @@ class FunnelStage(BaseModel):
     count: int
 
 
+class PipelinePeriodKpis(BaseModel):
+    """Top-line KPIs for a single time window — emitted twice when the
+    request asks for a comparison against the prior period."""
+
+    total_applications: int
+    total_interviews: int
+    total_offers: int
+    response_rate: float | None
+    avg_days_to_response: float | None
+
+
 class PipelineInsights(BaseModel):
     total_applications: int
     total_interviews: int
@@ -28,6 +39,10 @@ class PipelineInsights(BaseModel):
     avg_days_to_response: float | None
     velocity: list[WeeklyCount]
     funnel: list[FunnelStage]
+    # KPIs for the immediately-prior window of the same length. None when
+    # period='all' (no meaningful prior) or when the window pre-dates any
+    # data.
+    previous: PipelinePeriodKpis | None = None
 
 
 # ── Targets endpoint ─────────────────────────────────────────────────────────

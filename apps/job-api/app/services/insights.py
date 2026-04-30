@@ -18,6 +18,7 @@ from app.models.insights import (
     FunnelStage,
     MissingSkill,
     PipelineInsights,
+    PipelinePeriodKpis,
     PurposeCost,
     ScoreBucket,
     ScoreTrendPoint,
@@ -63,40 +64,43 @@ def _parse_dt(value: str) -> datetime:
 # ── Pipeline ─────────────────────────────────────────────────────────────────
 
 
-def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsights:
-    # Fetch job postings
+def _fetch_postings_window(
+    supabase: Client, since: datetime | None, until: datetime | None
+) -> list[Row]:
     q = supabase.table("job_postings").select("id, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
-    postings = cast(list[Row], q.execute().data or [])
+    if until:
+        q = q.lt("created_at", until.isoformat())
+    return cast(list[Row], q.execute().data or [])
 
-    # Fetch status log for response-time calculation
-    sq = supabase.table("job_status_log").select("posting_id, old_status, new_status, created_at")
+
+def _fetch_status_logs_window(
+    supabase: Client, since: datetime | None, until: datetime | None
+) -> list[Row]:
+    sq = supabase.table("job_status_log").select(
+        "posting_id, old_status, new_status, created_at"
+    )
     if since:
         sq = sq.gte("created_at", since.isoformat())
-    status_logs = cast(list[Row], sq.execute().data or [])
+    if until:
+        sq = sq.lt("created_at", until.isoformat())
+    return cast(list[Row], sq.execute().data or [])
 
-    # Fetch tailored resumes for velocity
-    rq = supabase.table("tailored_resumes").select("job_posting_id, created_at")
-    if since:
-        rq = rq.gte("created_at", since.isoformat())
-    rq = rq.eq("document_type", "resume")
-    resumes = cast(list[Row], rq.execute().data or [])
 
-    # --- Funnel counts ---
+def _kpis_from(postings: list[Row], status_logs: list[Row]) -> PipelinePeriodKpis:
+    """Pure aggregation: derive the 5 top-line KPIs from already-fetched
+    postings + status logs for one window. Used for both the current and
+    prior periods so the math stays in one place."""
     status_counts: Counter[str] = Counter()
     for p in postings:
         status_counts[p["status"]] += 1
 
-    funnel = [FunnelStage(stage=s, count=status_counts.get(s, 0)) for s in FUNNEL_ORDER]
-
-    # --- Top-line KPIs ---
     total_applications = sum(status_counts.get(s, 0) for s in APPLIED_STATUSES)
     total_interviews = status_counts.get("interviewing", 0) + status_counts.get("offer", 0)
     total_offers = status_counts.get("offer", 0)
     response_rate = (total_interviews / total_applications) if total_applications > 0 else None
 
-    # --- Avg days from applied → interviewing ---
     applied_times: dict[str, datetime] = {}
     interview_times: dict[str, datetime] = {}
     for log in status_logs:
@@ -114,6 +118,51 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
             if delta >= 0:
                 response_days.append(delta)
     avg_days = (sum(response_days) / len(response_days)) if response_days else None
+
+    return PipelinePeriodKpis(
+        total_applications=total_applications,
+        total_interviews=total_interviews,
+        total_offers=total_offers,
+        response_rate=round(response_rate, 3) if response_rate is not None else None,
+        avg_days_to_response=round(avg_days, 1) if avg_days is not None else None,
+    )
+
+
+def compute_pipeline(
+    supabase: Client,
+    since: datetime | None,
+    prior_window: tuple[datetime, datetime] | None = None,
+) -> PipelineInsights:
+    """Compute pipeline insights for the current window. When *prior_window*
+    is supplied as ``(prior_since, prior_until)``, also compute the same KPIs
+    over that window so the dashboard can render trend deltas. Velocity and
+    funnel are scoped to the current window only."""
+    postings = _fetch_postings_window(supabase, since, None)
+    status_logs = _fetch_status_logs_window(supabase, since, None)
+
+    # Fetch tailored resumes for velocity (current window only)
+    rq = supabase.table("tailored_resumes").select("job_posting_id, created_at")
+    if since:
+        rq = rq.gte("created_at", since.isoformat())
+    rq = rq.eq("document_type", "resume")
+    resumes = cast(list[Row], rq.execute().data or [])
+
+    # --- Funnel counts ---
+    status_counts: Counter[str] = Counter()
+    for p in postings:
+        status_counts[p["status"]] += 1
+    funnel = [FunnelStage(stage=s, count=status_counts.get(s, 0)) for s in FUNNEL_ORDER]
+
+    # --- Top-line KPIs (current window) ---
+    current = _kpis_from(postings, status_logs)
+
+    # --- Prior-period KPIs (only when caller asked for a comparison) ---
+    previous: PipelinePeriodKpis | None = None
+    if prior_window is not None:
+        prior_since, prior_until = prior_window
+        prior_postings = _fetch_postings_window(supabase, prior_since, prior_until)
+        prior_logs = _fetch_status_logs_window(supabase, prior_since, prior_until)
+        previous = _kpis_from(prior_postings, prior_logs)
 
     # --- Weekly velocity ---
     week_resumes: Counter[date] = Counter()
@@ -136,13 +185,14 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
     ]
 
     return PipelineInsights(
-        total_applications=total_applications,
-        total_interviews=total_interviews,
-        total_offers=total_offers,
-        response_rate=round(response_rate, 3) if response_rate is not None else None,
-        avg_days_to_response=round(avg_days, 1) if avg_days is not None else None,
+        total_applications=current.total_applications,
+        total_interviews=current.total_interviews,
+        total_offers=current.total_offers,
+        response_rate=current.response_rate,
+        avg_days_to_response=current.avg_days_to_response,
         velocity=velocity,
         funnel=funnel,
+        previous=previous,
     )
 
 

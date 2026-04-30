@@ -117,6 +117,30 @@ function formatDays(value: number | null): string {
   return `${value.toFixed(1)}d`;
 }
 
+/** Percentage change between two integer counts. Returns undefined when the
+ * prior value is missing or zero (any pct change is undefined). */
+function pctChange(
+  curr: number,
+  prev: number | null | undefined
+): number | undefined {
+  if (prev === null || prev === undefined || prev === 0) return undefined;
+  return Math.round(((curr - prev) / prev) * 100);
+}
+
+/** Absolute delta between two numeric KPIs, rounded to *digits* decimals.
+ * Returns undefined if either side is missing. */
+function absDelta(
+  curr: number | null,
+  prev: number | null | undefined,
+  digits: number
+): number | undefined {
+  if (curr === null || prev === null || prev === undefined) return undefined;
+  const factor = 10 ** digits;
+  return Math.round((curr - prev) * factor) / factor;
+}
+
+const PRIOR_LABEL = 'vs prior period';
+
 const RELATIVE_TIME = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
 function formatFreshness(fetchedAt: number | undefined): string | undefined {
@@ -252,24 +276,81 @@ export default function InsightsDashboard() {
             <KpiSkeleton title='Avg Days to Response' />
           </>
         ) : (
-          <>
-            <StatsCard
-              title='Applications'
-              value={pipeline?.total_applications ?? 0}
-            />
-            <StatsCard
-              title='Interviews'
-              value={pipeline?.total_interviews ?? 0}
-            />
-            <StatsCard
-              title='Response Rate'
-              value={formatPct(pipeline?.response_rate ?? null)}
-            />
-            <StatsCard
-              title='Avg Days to Response'
-              value={formatDays(pipeline?.avg_days_to_response ?? null)}
-            />
-          </>
+          (() => {
+            const prev = pipeline?.previous ?? null;
+            const applicationsChange = prev
+              ? pctChange(
+                  pipeline?.total_applications ?? 0,
+                  prev.total_applications
+                )
+              : undefined;
+            const interviewsChange = prev
+              ? pctChange(
+                  pipeline?.total_interviews ?? 0,
+                  prev.total_interviews
+                )
+              : undefined;
+            // Response rate compared in percentage points (curr - prev) * 100.
+            const responseRatePp =
+              prev && pipeline?.response_rate !== null
+                ? absDelta(
+                    (pipeline?.response_rate ?? 0) * 100,
+                    prev.response_rate !== null
+                      ? prev.response_rate * 100
+                      : null,
+                    1
+                  )
+                : undefined;
+            // Avg days delta is absolute days, lower is better.
+            const avgDaysDelta = prev
+              ? absDelta(
+                  pipeline?.avg_days_to_response ?? null,
+                  prev.avg_days_to_response,
+                  1
+                )
+              : undefined;
+            return (
+              <>
+                <StatsCard
+                  title='Applications'
+                  value={pipeline?.total_applications ?? 0}
+                  {...(applicationsChange !== undefined
+                    ? { change: applicationsChange, changeLabel: PRIOR_LABEL }
+                    : {})}
+                />
+                <StatsCard
+                  title='Interviews'
+                  value={pipeline?.total_interviews ?? 0}
+                  {...(interviewsChange !== undefined
+                    ? { change: interviewsChange, changeLabel: PRIOR_LABEL }
+                    : {})}
+                />
+                <StatsCard
+                  title='Response Rate'
+                  value={formatPct(pipeline?.response_rate ?? null)}
+                  {...(responseRatePp !== undefined
+                    ? {
+                        change: responseRatePp,
+                        changeUnit: 'pp',
+                        changeLabel: PRIOR_LABEL,
+                      }
+                    : {})}
+                />
+                <StatsCard
+                  title='Avg Days to Response'
+                  value={formatDays(pipeline?.avg_days_to_response ?? null)}
+                  {...(avgDaysDelta !== undefined
+                    ? {
+                        change: avgDaysDelta,
+                        changeUnit: 'd',
+                        invertChange: true,
+                        changeLabel: PRIOR_LABEL,
+                      }
+                    : {})}
+                />
+              </>
+            );
+          })()
         )}
       </div>
 

@@ -34,7 +34,7 @@ def _mock_supabase(tables: dict[str, list[dict]]) -> MagicMock:
         result.data = tables.get(name, [])
 
         # Every chainable method returns the same table mock
-        for method in ("select", "eq", "gte", "lte", "order", "limit", "neq", "in_"):
+        for method in ("select", "eq", "gte", "lt", "lte", "order", "limit", "neq", "in_"):
             getattr(tbl, method).return_value = tbl
         tbl.execute.return_value = result
         return tbl
@@ -126,6 +126,31 @@ class TestComputePipeline:
         assert len(result.velocity) >= 1
         total_resumes = sum(v.resumes_generated for v in result.velocity)
         assert total_resumes == 3
+
+    def test_previous_is_none_without_prior_window(self):
+        sb = _mock_supabase({})
+        result = compute_pipeline(sb, since=None)
+        assert result.previous is None
+
+    def test_previous_populated_when_prior_window_supplied(self):
+        # Mock supabase ignores filter args, so both windows resolve to the
+        # same row set. We're asserting that a prior_window triggers the
+        # second aggregation pass — not the math, which is covered above.
+        postings = [
+            {"id": "1", "status": "applied", "created_at": _ts(_NOW)},
+            {"id": "2", "status": "interviewing", "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_postings": postings})
+        prior_until = _NOW - timedelta(days=30)
+        prior_since = _NOW - timedelta(days=60)
+        result = compute_pipeline(
+            sb, since=_NOW - timedelta(days=30), prior_window=(prior_since, prior_until)
+        )
+        assert result.previous is not None
+        assert result.previous.total_applications == 2
+        assert result.previous.total_interviews == 1
+        assert result.previous.total_offers == 0
+        assert result.previous.response_rate == 0.5
 
 
 # ===========================================================================

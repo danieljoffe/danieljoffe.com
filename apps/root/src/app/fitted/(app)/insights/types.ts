@@ -13,6 +13,14 @@ export interface FunnelStage {
   count: number;
 }
 
+export interface PipelinePeriodKpis {
+  total_applications: number;
+  total_interviews: number;
+  total_offers: number;
+  response_rate: number | null;
+  avg_days_to_response: number | null;
+}
+
 export interface PipelineInsights {
   total_applications: number;
   total_interviews: number;
@@ -21,6 +29,7 @@ export interface PipelineInsights {
   avg_days_to_response: number | null;
   velocity: WeeklyCount[];
   funnel: FunnelStage[];
+  previous: PipelinePeriodKpis | null;
 }
 
 // ── Targets ────��──────────────────────────────────���─────────────────────────

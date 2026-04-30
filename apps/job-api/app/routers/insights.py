@@ -35,6 +35,19 @@ def _since(period: str) -> datetime | None:
     return datetime.now(UTC) - timedelta(days=days)
 
 
+def _prior_window(period: str) -> tuple[datetime, datetime] | None:
+    """Return ``(prior_since, prior_until)`` covering the period of equal length
+    immediately before the current window. Returns None for ``'all'`` (no
+    meaningful prior)."""
+    days = _PERIOD_DAYS.get(period)
+    if days is None:
+        return None
+    now = datetime.now(UTC)
+    prior_until = now - timedelta(days=days)
+    prior_since = now - timedelta(days=days * 2)
+    return (prior_since, prior_until)
+
+
 # Handlers are sync `def` so FastAPI runs each request in a threadpool worker.
 # These endpoints make multiple sync supabase `.execute()` calls; using `async
 # def` would block the event loop and serialize concurrent requests.
@@ -45,7 +58,7 @@ def pipeline_insights(
     period: str = Query("30d", pattern=r"^(7d|30d|90d|all)$"),
     supabase: Client = Depends(get_supabase),
 ) -> PipelineInsights:
-    return compute_pipeline(supabase, _since(period))
+    return compute_pipeline(supabase, _since(period), _prior_window(period))
 
 
 @router.get("/targets")

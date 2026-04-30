@@ -65,7 +65,7 @@ The Fitted Insights page is well-architected with clear separation of concerns (
 ## Product gaps (not bugs, but worth considering)
 
 - **[FIXED] Drill-down to evidence** — Funnel and score-distribution charts now expose a chip-row of `<Link>` drill-ins below the visual. Clicking a stage navigates to `/fitted/jobs?status=<stage>`; clicking a score bucket navigates to `/fitted/jobs?minScore=<lo>`. The jobs page parses both params and seeds the initial filter state. Real anchors (not Recharts onClick) so keyboard and screen-reader users get the same path as mouse users.
-- **Comparative periods** — No "this month vs last month" or trend-over-trend.
+- **[FIXED] Comparative periods** — Pipeline endpoint now returns a `previous` block (same five top-line KPIs over the immediately-prior window of equal length, omitted for `period='all'`). The four KPI StatsCards render `↑/↓` deltas vs the prior period: applications & interviews as % change, response rate in pp, avg days to response in days with `invertChange` semantics (lower is better → green).
 - **Exportable reports** — No CSV/PDF export. Useful for job coaches.
 - **Skill gap prioritization** — "Top missing skills" doesn't rank by frequency × job score, so users can't tell which gap matters most.
 - **Pre-computed insights** — Computed on-demand per request. For 90-day periods on multi-user, scan thousands of rows. Consider daily materialized views or a background job.

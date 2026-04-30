@@ -8,6 +8,11 @@ export interface StatsCardProps {
   value: string | number;
   change?: number;
   changeLabel?: string;
+  /** Unit suffix appended after the change number. Defaults to '%'. */
+  changeUnit?: string;
+  /** When true, a negative change is treated as good (green). Useful for
+   * metrics where lower is better — e.g. "avg days to response". */
+  invertChange?: boolean;
   icon?: ReactNode;
   className?: string;
 }
@@ -17,10 +22,13 @@ export function StatsCard({
   value,
   change,
   changeLabel,
+  changeUnit = '%',
+  invertChange = false,
   icon,
   className,
 }: StatsCardProps) {
-  const isPositive = change !== undefined && change >= 0;
+  const isPositiveDirection = change !== undefined && change >= 0;
+  const isGood = invertChange ? !isPositiveDirection : isPositiveDirection;
 
   return (
     <div
@@ -48,19 +56,30 @@ export function StatsCard({
       </div>
       {change !== undefined && (
         <div className='mt-3 flex items-center gap-1.5 text-xs'>
-          {isPositive ? (
-            <TrendingUp className='h-3.5 w-3.5 text-success' />
+          {isPositiveDirection ? (
+            <TrendingUp
+              className={cn(
+                'h-3.5 w-3.5',
+                isGood ? 'text-success' : 'text-error'
+              )}
+            />
           ) : (
-            <TrendingDown className='h-3.5 w-3.5 text-error' />
+            <TrendingDown
+              className={cn(
+                'h-3.5 w-3.5',
+                isGood ? 'text-success' : 'text-error'
+              )}
+            />
           )}
           <span
             className={cn(
               'font-medium',
-              isPositive ? 'text-success' : 'text-error'
+              isGood ? 'text-success' : 'text-error'
             )}
           >
-            {isPositive ? '+' : ''}
-            {change}%
+            {isPositiveDirection ? '+' : ''}
+            {change}
+            {changeUnit}
           </span>
           {changeLabel && (
             <span className='text-text-tertiary'>{changeLabel}</span>
