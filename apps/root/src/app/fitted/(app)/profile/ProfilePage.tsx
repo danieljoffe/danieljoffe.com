@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FileText,
+  Layers,
   Pencil,
   RefreshCw,
   Save,
@@ -93,6 +94,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [consolidating, setConsolidating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -193,6 +195,47 @@ export default function ProfilePage() {
       toast({ variant: 'error', title: 'Failed to re-derive profile' });
     } finally {
       setDeriving(false);
+    }
+  }, [fetchData, toast]);
+
+  const handleConsolidate = useCallback(async () => {
+    setConsolidating(true);
+    try {
+      const res = await fetch('/api/career/experience/prose/consolidate', {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          (data as Record<string, string> | null)?.detail ??
+            `Consolidate failed (${res.status})`
+        );
+      }
+      const body = (await res.json()) as {
+        no_op: boolean;
+        chars_before: number;
+        chars_after: number;
+      };
+      if (body.no_op) {
+        toast({
+          variant: 'info',
+          title: 'No duplicates found in master document',
+        });
+      } else {
+        const removed = body.chars_before - body.chars_after;
+        toast({
+          variant: 'success',
+          title: `Consolidated — removed ${removed.toLocaleString()} characters of duplicate content`,
+        });
+      }
+      await fetchData();
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title: err instanceof Error ? err.message : 'Consolidate failed',
+      });
+    } finally {
+      setConsolidating(false);
     }
   }, [fetchData, toast]);
 
@@ -464,7 +507,7 @@ export default function ProfilePage() {
                 className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
                 placeholder='Paste or type your master experience document here...'
               />
-              <div className='flex items-center gap-2'>
+              <div className='flex flex-wrap items-center gap-2'>
                 <Button
                   name='profile-save-prose'
                   variant='primary'
@@ -481,6 +524,28 @@ export default function ProfilePage() {
                     <>
                       <Save className='size-4' aria-hidden />
                       <span>Save</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  name='profile-save-consolidate'
+                  variant='outline'
+                  size='sm'
+                  onClick={async () => {
+                    await handleSaveProse();
+                    if (draft.trim()) await handleConsolidate();
+                  }}
+                  disabled={saving || consolidating}
+                >
+                  {saving || consolidating ? (
+                    <>
+                      <Spinner size='sm' aria-label='Processing' />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Layers className='size-4' aria-hidden />
+                      <span>Save &amp; Consolidate</span>
                     </>
                   )}
                 </Button>
@@ -525,7 +590,7 @@ export default function ProfilePage() {
                   {prose.content}
                 </pre>
               </div>
-              <div className='flex items-center gap-2'>
+              <div className='flex flex-wrap items-center gap-2'>
                 <Button
                   name='profile-edit-prose'
                   variant='outline'
@@ -534,6 +599,26 @@ export default function ProfilePage() {
                 >
                   <Pencil className='size-4' aria-hidden />
                   <span>Edit</span>
+                </Button>
+                <Button
+                  name='profile-consolidate-prose'
+                  variant='outline'
+                  size='sm'
+                  onClick={handleConsolidate}
+                  disabled={consolidating}
+                  title='Merge duplicate sections from past resume uploads'
+                >
+                  {consolidating ? (
+                    <>
+                      <Spinner size='sm' aria-label='Consolidating' />
+                      <span>Consolidating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Layers className='size-4' aria-hidden />
+                      <span>Consolidate</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </>

@@ -182,3 +182,18 @@ class ResumeUploadResponse(BaseModel):
     filename: str
     warnings: list[str] = []
     optimized_doc_id: str | None = None
+
+
+class ProseConsolidateResponse(BaseModel):
+    """Result of running consolidation on the master prose doc.
+
+    ``no_op`` is true when the input was either too short to consolidate or
+    the LLM returned a doc roughly the same length, suggesting nothing was
+    deduped. The frontend uses it to surface a "no duplicates found" hint
+    instead of a generic success toast.
+    """
+
+    prose: ProseDoc
+    chars_before: int
+    chars_after: int
+    no_op: bool

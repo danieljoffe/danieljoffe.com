@@ -7,13 +7,10 @@ doc -> chunks, all cost-logged.
 """
 
 import asyncio
-import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from supabase import Client
-
-_log = logging.getLogger("app.experience")
 
 from app.dependencies import (
     get_embeddings_client,
@@ -35,6 +32,7 @@ from app.models.experience import (
     OptimizedPayload,
     Preferences,
     PreferencesUpsert,
+    ProseConsolidateResponse,
     ProseDoc,
     ProseDocCreate,
     ResumeUploadResponse,
@@ -45,6 +43,7 @@ from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import (
     annotations,
     chunks,
+    consolidate,
     derive,
     gap_tracker,
     optimized,
@@ -84,6 +83,58 @@ async def create_prose(
     supabase: Client = Depends(get_supabase),
 ) -> ProseDoc:
     return prose.create_version(supabase, user_id=None, content=body.content)
+
+
+@router.post("/prose/consolidate")
+async def consolidate_prose(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> ProseConsolidateResponse:
+    """LLM-dedupe the latest prose doc and persist as a new version.
+
+    Older docs that grew via naive concat-with-divider on each upload often
+    contain multiple near-identical resume copies. This pass merges them.
+    The result is always a new version — the original stays in history.
+    """
+    latest = prose.get_latest(supabase, user_id=None)
+    if latest is None:
+        raise HTTPException(status_code=404, detail="no prose doc to consolidate")
+
+    consolidated, result = await consolidate.consolidate_prose(
+        llm, content=latest.content
+    )
+    if result is not None:
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose=consolidate.DEFAULT_PURPOSE,
+            result=result,
+            metadata={
+                "prose_doc_id": latest.id,
+                "prose_version": latest.version,
+                "chars_before": len(latest.content),
+                "chars_after": len(consolidated),
+            },
+        )
+
+    no_op = consolidate.is_no_op(before=latest.content, after=consolidated)
+    if no_op and consolidated == latest.content:
+        # Nothing to persist — either too short to consolidate, or the LLM
+        # returned the input unchanged. Return the existing version as-is.
+        return ProseConsolidateResponse(
+            prose=latest,
+            chars_before=len(latest.content),
+            chars_after=len(latest.content),
+            no_op=True,
+        )
+
+    new_doc = prose.create_version(supabase, user_id=None, content=consolidated)
+    return ProseConsolidateResponse(
+        prose=new_doc,
+        chars_before=len(latest.content),
+        chars_after=len(consolidated),
+        no_op=no_op,
+    )
 
 
 # ---- Resume upload --------------------------------------------------------
@@ -404,26 +455,14 @@ async def conversation_turn(
     """Run one orchestrated turn. Persists user + assistant turns,
     appends to prose doc if the LLM determined fresh content was shared.
     """
-    try:
-        return await orchestrator.handle_turn(
-            supabase,
-            llm,
-            user_id=None,
-            conversation_type=body.conversation_type,
-            user_content=body.content,
-            skipped=body.skipped,
-        )
-    except Exception:
-        _log.exception(
-            "conversation_turn failed (skipped=%s, conv=%s, content_len=%d)",
-            body.skipped,
-            body.conversation_type,
-            len(body.content),
-        )
-        raise HTTPException(
-            status_code=500,
-            detail="Conversation turn failed — see server logs for traceback.",
-        )
+    return await orchestrator.handle_turn(
+        supabase,
+        llm,
+        user_id=None,
+        conversation_type=body.conversation_type,
+        user_content=body.content,
+        skipped=body.skipped,
+    )
 
 
 @router.post("/conversation/reset")
