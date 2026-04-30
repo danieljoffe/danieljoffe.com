@@ -63,9 +63,21 @@ Expect: `/insights/*` p50 from 7s → ~1s, RPS from 5 → 20+.
 
 The audit flagged this; the data confirms it. 570 calls in 30s for a row that changes hourly at most. A request-scoped LRU (FastAPI `Depends` with `lru_cache(maxsize=1)` on a request-bound key) eliminates duplicates within a single endpoint call.
 
-### 3. EXPLAIN the `experience_chunks` paginated SELECT
+### 3. ~~EXPLAIN the `experience_chunks` paginated SELECT~~ — phantom finding
 
-359ms mean for paginated reads is high. Likely needs `(optimized_doc_id, id)` composite or to project away the `embedding` column when the caller doesn't need it. One quick `EXPLAIN ANALYZE` will tell us which.
+Investigated and **closed without action**. The 359ms paginated SELECT is the
+Supabase Studio dashboard's table-browser query (recognizable by the
+`_base_query / octet_length(col::text) > N then left(col, N) || ...` row-preview
+shape). The application never `SELECT`s from `experience_chunks` — only
+`DELETE` + `INSERT` in `chunks.py`.
+
+The same caveat applies to the **four "variants" of `job_postings` paginated
+SELECT** in the secondary findings: same `_base_query` shape, four different
+sort orders from clicking column headers in the dashboard. Not application
+queries.
+
+Lesson: filter `pg_stat_statements` by `query NOT LIKE '%_base_query%'` next
+time to exclude dashboard noise.
 
 ## Skipped / deferred
 
