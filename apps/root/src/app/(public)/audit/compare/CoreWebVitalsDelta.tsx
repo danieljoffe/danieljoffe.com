@@ -96,12 +96,7 @@ export default function CoreWebVitalsDelta({
   ];
 
   return (
-    <Section
-      aria-labelledby='cwv-delta-heading'
-      background='alt'
-      overflow='hidden'
-      center
-    >
+    <Section aria-labelledby='cwv-delta-heading' overflow='hidden' center>
       <Heading variant='section' as='h2' id='cwv-delta-heading'>
         Core Web Vitals
       </Heading>

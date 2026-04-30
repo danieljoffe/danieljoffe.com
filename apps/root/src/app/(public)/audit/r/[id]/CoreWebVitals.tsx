@@ -102,12 +102,7 @@ export default function CoreWebVitals({
   ];
 
   return (
-    <Section
-      aria-labelledby='core-web-vitals-heading'
-      background='alt'
-      overflow='hidden'
-      center
-    >
+    <Section aria-labelledby='core-web-vitals-heading' overflow='hidden' center>
       <Heading variant='section' as='h2' id='core-web-vitals-heading'>
         Core Web Vitals
       </Heading>

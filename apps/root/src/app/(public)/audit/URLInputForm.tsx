@@ -198,7 +198,6 @@ export default function URLInputForm() {
           <Button
             type='submit'
             name='audit-submit'
-            size='md'
             disabled={state.phase === 'submitting'}
             className='w-full'
           >
@@ -220,7 +219,6 @@ export default function URLInputForm() {
             type='button'
             name='retry-scan'
             variant='bare'
-            size='sm'
             onClick={() => setState({ phase: 'idle' })}
             className='block mt-2 text-sm font-medium underline hover:no-underline'
           >

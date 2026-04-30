@@ -83,7 +83,6 @@ export default function ScanPending({
     return (
       <Section
         aria-labelledby='scan-failed-heading'
-        background='alt'
         overflow='hidden'
         center
         padding='lg'
@@ -113,7 +112,7 @@ export default function ScanPending({
   }
 
   return (
-    <Section background='alt' overflow='hidden' center padding='lg'>
+    <Section overflow='hidden' center padding='lg'>
       <div className='flex flex-col gap-6 items-center max-w-md mx-auto'>
         <ScanProgress url={url} device={device} />
       </div>

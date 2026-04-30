@@ -7,7 +7,6 @@ export default function CTASection() {
   return (
     <Section
       aria-labelledby='cta-heading'
-      background='alt'
       center
       overflow='hidden'
       padding='lg'
