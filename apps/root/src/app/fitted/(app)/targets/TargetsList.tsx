@@ -18,8 +18,10 @@ import CreateTargetModal, {
 } from './CreateTargetModal';
 import PendingTargetCard from './PendingTargetCard';
 import type {
+  CreateOrLinkResult,
   MatchedSuggestion,
   MatchedSuggestions,
+  UserTarget,
   UserTargetWithTarget,
 } from './types';
 
@@ -140,9 +142,25 @@ export default function TargetsList() {
               'Failed to add target'
           );
         }
-        await res.json();
-        toast({ variant: 'success', title: 'Target added' });
-        fetchTargets();
+        const result = (await res.json()) as CreateOrLinkResult;
+        const alreadyLinked = targets.some(
+          t => t.target.id === result.target.id
+        );
+        toast({
+          variant: 'success',
+          title: result.was_matched
+            ? alreadyLinked
+              ? `Already in your targets: ${result.target.label}`
+              : `Linked to existing target: ${result.target.label}`
+            : `Target added: ${result.target.label}`,
+        });
+        // Use the response directly so the new card shows even if /mine
+        // is slow or fails. Replace any existing entry with the same
+        // target id (covers the was_matched=true relink path).
+        setTargets(prev => [
+          { user_target: result.user_target, target: result.target },
+          ...prev.filter(t => t.target.id !== result.target.id),
+        ]);
       } catch (e) {
         toast({
           variant: 'error',
@@ -152,7 +170,7 @@ export default function TargetsList() {
         setPendingTargets(p => p.filter(t => t.id !== pendingId));
       }
     },
-    [toast, fetchTargets]
+    [toast, targets]
   );
 
   const handleSubmitManual = useCallback(
@@ -201,6 +219,7 @@ export default function TargetsList() {
       const label = match.suggestion.label;
       setAddingSuggestion(label);
       try {
+        let entry: UserTargetWithTarget;
         if (match.is_new) {
           const res = await fetch('/api/targets/from-manual', {
             method: 'POST',
@@ -217,13 +236,16 @@ export default function TargetsList() {
                 'Failed to add target'
             );
           }
-          await res.json();
+          const result = (await res.json()) as CreateOrLinkResult;
+          entry = { user_target: result.user_target, target: result.target };
         } else {
-          const targetId = match.matched_target!.id;
-          const linkRes = await fetch(`/api/targets/${targetId}/link`, {
+          const matchedTarget = match.matched_target!;
+          const linkRes = await fetch(`/api/targets/${matchedTarget.id}/link`, {
             method: 'POST',
           });
           if (!linkRes.ok) throw new Error('Link failed');
+          const userTarget = (await linkRes.json()) as UserTarget;
+          entry = { user_target: userTarget, target: matchedTarget };
         }
 
         toast({
@@ -231,7 +253,10 @@ export default function TargetsList() {
           title: `Added "${label}"`,
         });
         setSuggestions(prev => prev.filter(s => s.suggestion.label !== label));
-        fetchTargets();
+        setTargets(prev => [
+          entry,
+          ...prev.filter(t => t.target.id !== entry.target.id),
+        ]);
       } catch (e) {
         toast({
           variant: 'error',
@@ -241,7 +266,7 @@ export default function TargetsList() {
         setAddingSuggestion(null);
       }
     },
-    [toast, fetchTargets]
+    [toast]
   );
 
   if (loading) {

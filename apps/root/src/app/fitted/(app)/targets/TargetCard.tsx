@@ -52,7 +52,7 @@ export default function TargetCard({
         <div className='flex items-start justify-between gap-2'>
           <Link
             href={`/fitted/targets/${target.id}`}
-            className='hover:underline'
+            className='hover:underline flex-1'
           >
             <Heading variant='cardTitle' as='h3'>
               {target.label}
@@ -78,9 +78,10 @@ export default function TargetCard({
 
         <div className='flex flex-wrap gap-x-4 gap-y-1'>
           <Text variant='caption' as='span'>
-            {categoryCount} {categoryCount === 1 ? 'category' : 'categories'}
+            {categoryCount} {categoryCount === 1 ? 'category' : 'categories'},
           </Text>
           <Text variant='caption' as='span'>
+            {' '}
             {keywordCount} {keywordCount === 1 ? 'keyword' : 'keywords'}
           </Text>
         </div>

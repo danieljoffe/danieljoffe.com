@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '@/app/api/jobs/proxy';
+import {
+  LLM_TIMEOUT_MS,
+  verifyJobsAccess,
+  proxyToFastAPI,
+} from '@/app/api/jobs/proxy';
 
 export async function GET(
   _request: NextRequest,
@@ -21,8 +25,10 @@ export async function POST(
   }
   const { id } = await params;
   const body = await request.json();
+  // LLM derive + merge can run long.
   return proxyToFastAPI(`/targets/${id}/reference-jds`, {
     method: 'POST',
     body,
+    timeoutMs: LLM_TIMEOUT_MS,
   });
 }

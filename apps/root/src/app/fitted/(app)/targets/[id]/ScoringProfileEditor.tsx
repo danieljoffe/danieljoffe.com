@@ -285,9 +285,9 @@ export default function ScoringProfileEditor({
                     <Text variant='label' as='span'>
                       {catName}
                     </Text>
-                    <Badge variant='default' size='sm'>
+                    {/* <Badge variant='default' size='sm'>
                       {Object.keys(cat.keywords).length} keywords
-                    </Badge>
+                    </Badge> */}
                   </div>
                   <div className='flex items-center gap-2'>
                     <label className='flex items-center gap-1 text-xs text-text-secondary'>
