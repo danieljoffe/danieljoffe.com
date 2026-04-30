@@ -9,6 +9,7 @@ from typing import Any, cast
 
 from supabase import Client
 
+from app.cache import TTLCache
 from app.models.experience import (
     OptimizedDoc,
     OptimizedDocSource,
@@ -17,15 +18,32 @@ from app.models.experience import (
 
 TABLE = "experience_optimized_docs"
 
+# The optimized doc is read on most endpoints (tailor, analysis, derive,
+# suggest, target create) but mutates only when a new version is created.
+# A short TTL cache turns most hits into in-memory dict lookups; the cache
+# is invalidated synchronously in create_version().
+_doc_cache: TTLCache = TTLCache(ttl=60.0, max_size=8)
+
+
+def _cache_key(user_id: str | None) -> str:
+    return f"optimized_latest:{user_id or '__null__'}"
+
 
 def get_latest(supabase: Client, user_id: str | None) -> OptimizedDoc | None:
+    cache_key = _cache_key(user_id)
+    cached: OptimizedDoc | None = _doc_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     query = supabase.table(TABLE).select("*").order("version", desc=True).limit(1)
     query = query.is_("user_id", "null") if user_id is None else query.eq("user_id", user_id)
     resp = query.execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         return None
-    return OptimizedDoc.model_validate(rows[0])
+    doc = OptimizedDoc.model_validate(rows[0])
+    _doc_cache.set(cache_key, doc)
+    return doc
 
 
 def list_versions(supabase: Client, user_id: str | None, limit: int = 50) -> list[OptimizedDoc]:
@@ -63,4 +81,6 @@ def create_version(
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError("Failed to insert optimized doc version")
-    return OptimizedDoc.model_validate(rows[0])
+    doc = OptimizedDoc.model_validate(rows[0])
+    _doc_cache.invalidate(_cache_key(user_id))
+    return doc

@@ -88,6 +88,21 @@ Same load profile (30s, 25 VUs):
 
 Throughput: **5 → 85 RPS** (17× improvement). 2562 requests, 10 errors (0.4%).
 
+## After fix #2 — TTL cache for `optimized.get_latest`
+
+Audit said "multiple calls per request"; investigation showed each handler
+calls `get_latest` exactly once. The real cost was Pydantic validation of
+the deeply-nested `OptimizedPayload` on every hit (1.1ms DB read, ~250ms
+validation). Module-level `TTLCache(ttl=60s)` caches the validated model;
+`create_version` invalidates synchronously.
+
+| Endpoint                     | p50 before fix #2 | p50 after fix #2 | speedup |
+| ---------------------------- | ----------------- | ---------------- | ------- |
+| `GET /experience/optimized`  | 253ms             | 8.8ms            | **29×** |
+| `GET /experience/gap-health` | 258ms             | 3.9ms            | **66×** |
+
+Errors held steady at 0.2% (same supabase pool connection-drop noise).
+
 The errors were `httpx.RemoteProtocolError: Server disconnected` from the
 shared supabase client's connection pool dropping connections under burst.
 Below the noise floor for production traffic (typical 1-5 RPS) — deferred.
