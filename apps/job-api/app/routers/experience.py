@@ -142,13 +142,22 @@ async def upload_resume(
         warnings.append("storage_upload_failed")
         storage_path = ""
 
-    # Merge into prose doc
+    # Merge into prose doc — semantic merge via LLM (#497).
     existing = prose.get_latest(supabase, user_id=None)
-    merged = merge_into_prose(
-        existing.content if existing else None,
-        parsed,
+    merged, merge_result = await merge_into_prose(
+        llm,
+        existing_content=existing.content if existing else None,
+        parsed=parsed,
     )
     prose_doc = prose.create_version(supabase, user_id=None, content=merged)
+    if merge_result is not None:
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose="experience.ingest_merge",
+            result=merge_result,
+            metadata={"prose_doc_id": prose_doc.id, "filename": filename},
+        )
 
     # Track the upload
     upload_row: dict[str, Any] = {

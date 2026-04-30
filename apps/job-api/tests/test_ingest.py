@@ -6,7 +6,11 @@ import io
 
 import pytest
 
-from app.services.ingest.merge import merge_into_prose
+from app.services.ingest.merge import (
+    DEFAULT_PURPOSE as MERGE_PURPOSE,
+    MIN_PRESERVATION_RATIO,
+    merge_into_prose,
+)
 from app.services.ingest.parse import (
     ACCEPTED_CONTENT_TYPES,
     MAX_FILE_SIZE,
@@ -16,6 +20,7 @@ from app.services.ingest.parse import (
     parse_pdf,
     parse_resume,
 )
+from app.services.llm.mock import MockLLMClient
 
 # ---------------------------------------------------------------------------
 # Helpers — create minimal valid PDF / DOCX bytes
@@ -159,41 +164,81 @@ class TestParseResume:
 
 
 class TestMergeIntoProse:
-    def test_first_upload_no_existing(self):
+    async def test_first_upload_no_existing_skips_llm(self):
         parsed = ParsedResume(
             text="My resume content",
             source_filename="resume.pdf",
             file_type="pdf",
         )
-        result = merge_into_prose(None, parsed)
-        assert result == "My resume content"
+        llm = MockLLMClient()
+        merged, result = await merge_into_prose(
+            llm, existing_content=None, parsed=parsed
+        )
+        assert merged == "My resume content"
+        assert result is None
+        assert llm.calls == []  # no LLM call on first upload
 
-    def test_first_upload_empty_existing(self):
+    async def test_first_upload_empty_existing_skips_llm(self):
         parsed = ParsedResume(
             text="My resume content",
             source_filename="resume.pdf",
             file_type="pdf",
         )
-        result = merge_into_prose("", parsed)
-        assert result == "My resume content"
+        llm = MockLLMClient()
+        merged, result = await merge_into_prose(
+            llm, existing_content="   ", parsed=parsed
+        )
+        assert merged == "My resume content"
+        assert result is None
+        assert llm.calls == []
 
-    def test_merge_with_existing(self):
+    async def test_merge_with_existing_calls_llm_and_returns_merged(self):
+        existing = (
+            "Frontend Developer\nSentry\nSanta Monica\n"
+            "did very cool stuff\nThere was other cool stuff I did"
+        )
         parsed = ParsedResume(
-            text="New resume text",
+            text=(
+                "Frontend Developer\nSentry\nSanta Monica\n"
+                "did very cool stuff\nI also did some awesome stuff"
+            ),
             source_filename="second.docx",
             file_type="docx",
         )
-        result = merge_into_prose("Existing prose content", parsed)
-        assert result.startswith("Existing prose content")
-        assert "---" in result
-        assert "[Uploaded Resume: second.docx]" in result
-        assert "New resume text" in result
+        merged_doc = (
+            "Frontend Developer\nSentry\nSanta Monica\n"
+            "did very cool stuff\nThere was other cool stuff I did\n"
+            "I also did some awesome stuff"
+        )
+        llm = MockLLMClient(scripted={MERGE_PURPOSE: merged_doc})
 
-    def test_preserves_filename_in_header(self):
+        merged, result = await merge_into_prose(
+            llm, existing_content=existing, parsed=parsed
+        )
+
+        assert merged == merged_doc
+        assert result is not None
+        assert llm.calls and llm.calls[0]["purpose"] == MERGE_PURPOSE
+
+    async def test_short_llm_output_falls_back_to_legacy_concat(self):
+        existing = "x" * 1000  # something the LLM-output threshold can fail
         parsed = ParsedResume(
-            text="Content",
-            source_filename="Daniel_Joffe_Resume_2026.pdf",
+            text="brand new line",
+            source_filename="resume.pdf",
             file_type="pdf",
         )
-        result = merge_into_prose("Old content", parsed)
-        assert "Daniel_Joffe_Resume_2026.pdf" in result
+        # Mock returns a paraphrase shorter than MIN_PRESERVATION_RATIO * existing
+        too_short = "y" * int(len(existing) * MIN_PRESERVATION_RATIO - 10)
+        llm = MockLLMClient(scripted={MERGE_PURPOSE: too_short})
+
+        merged, result = await merge_into_prose(
+            llm, existing_content=existing, parsed=parsed
+        )
+
+        # Should NOT be the paraphrased output — should be the legacy
+        # divider-concat fallback that preserves both inputs intact.
+        assert too_short not in merged
+        assert merged.startswith(existing)
+        assert "[Uploaded Resume: resume.pdf]" in merged
+        assert "brand new line" in merged
+        assert result is not None  # LLM was still called (cost logged)
