@@ -1,12 +1,16 @@
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.types import Receive, Scope, Send
 
 from app.config import settings
 from app.http_client import close_http_client
+
+_log = logging.getLogger("app")
 from app.routers import (
     analysis,
     experience,
@@ -59,6 +63,27 @@ app.add_middleware(
     _HealthBypassTrustedHost,
     allowed_hosts=settings.allowed_hosts_list,
 )
+
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    """Log full traceback and return a JSON 500.
+
+    Without this, Starlette's default handler returns plain-text
+    ``Internal Server Error``, which trips the proxy's non-JSON branch.
+    """
+    _log.exception(
+        "unhandled exception on %s %s", request.method, request.url.path
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": f"{type(exc).__name__}: {exc}",
+            "path": request.url.path,
+        },
+    )
+
 
 app.include_router(analysis.router)
 app.include_router(experience.router)

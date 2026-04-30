@@ -17,6 +17,11 @@ from app.services.llm.client import LLMClient, complete_json
 DEFAULT_MODEL: ModelId = "claude-sonnet-4-6"
 DEFAULT_PURPOSE = "experience.derive"
 
+# OptimizedPayload JSON for a multi-page narrative can run thousands of
+# tokens (roles + skills + outcomes + annotations + summary). The default
+# 4096 was truncating mid-output; bump to give room for realistic prose.
+DEFAULT_MAX_TOKENS = 16_384
+
 SYSTEM_PROMPT = """You are an extraction engine. Given a first-person career \
 narrative, produce a strictly structured JSON projection.
 
@@ -100,6 +105,7 @@ async def derive_from_prose(
     prose_text: str,
     model: ModelId = DEFAULT_MODEL,
     purpose: str = DEFAULT_PURPOSE,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
 ) -> tuple[OptimizedPayload, LLMResult]:
     """Run the derivation. Returns (payload, result) so callers can cost-log."""
     return await complete_json(
@@ -109,5 +115,6 @@ async def derive_from_prose(
         messages=[Message(role="user", content=prose_text)],
         schema=OptimizedPayload,
         purpose=purpose,
+        max_tokens=max_tokens,
         cache_system=True,
     )
