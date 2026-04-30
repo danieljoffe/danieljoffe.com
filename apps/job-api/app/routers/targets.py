@@ -691,6 +691,10 @@ async def delete_reference_jd(
     supabase: Client = Depends(get_supabase),
 ) -> JobTarget:
     """Delete a reference JD and re-merge the remaining profiles."""
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+
     deleted = crud.delete_reference_jd(supabase, ref_jd_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Reference JD not found")
@@ -702,10 +706,14 @@ async def delete_reference_jd(
     else:
         composite = ScoringProfile()
 
+    # Bump profile_version so lazy re-scoring picks up the change
     updated = crud.update(
         supabase,
         target_id,
-        TargetUpdate(scoring_profile=composite),
+        TargetUpdate(
+            scoring_profile=composite,
+            profile_version=target.profile_version + 1,
+        ),
     )
     if updated is None:
         raise HTTPException(status_code=404, detail="Target not found")
