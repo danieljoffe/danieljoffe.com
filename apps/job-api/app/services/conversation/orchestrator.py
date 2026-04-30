@@ -114,7 +114,9 @@ async def handle_turn(
         prose_doc_id=current_prose.id if current_prose else None,
     )
 
-    messages = _history_as_messages(history, user_content)
+    messages = _history_as_messages(
+        history, "[skipped question]" if skipped else user_content
+    )
     if current_prose and current_prose.content.strip():
         messages.insert(
             0,

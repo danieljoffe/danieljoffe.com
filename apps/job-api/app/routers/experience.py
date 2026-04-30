@@ -7,10 +7,13 @@ doc -> chunks, all cost-logged.
 """
 
 import asyncio
+import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from supabase import Client
+
+_log = logging.getLogger("app.experience")
 
 from app.dependencies import (
     get_embeddings_client,
@@ -392,14 +395,26 @@ async def conversation_turn(
     """Run one orchestrated turn. Persists user + assistant turns,
     appends to prose doc if the LLM determined fresh content was shared.
     """
-    return await orchestrator.handle_turn(
-        supabase,
-        llm,
-        user_id=None,
-        conversation_type=body.conversation_type,
-        user_content=body.content,
-        skipped=body.skipped,
-    )
+    try:
+        return await orchestrator.handle_turn(
+            supabase,
+            llm,
+            user_id=None,
+            conversation_type=body.conversation_type,
+            user_content=body.content,
+            skipped=body.skipped,
+        )
+    except Exception:
+        _log.exception(
+            "conversation_turn failed (skipped=%s, conv=%s, content_len=%d)",
+            body.skipped,
+            body.conversation_type,
+            len(body.content),
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Conversation turn failed — see server logs for traceback.",
+        )
 
 
 @router.post("/conversation/reset")

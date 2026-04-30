@@ -9,6 +9,7 @@ on top — see `complete_json` below. Consumers that need a typed object
 use that; everyone else uses `complete`.
 """
 
+import re
 from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
@@ -16,6 +17,18 @@ from pydantic import BaseModel
 from app.models.llm import LLMResult, Message, ModelId
 
 T = TypeVar("T", bound=BaseModel)
+
+_FENCE_RE = re.compile(r"^\s*```(?:json)?\s*\n(.*?)\n```\s*$", re.DOTALL | re.IGNORECASE)
+
+
+def _strip_markdown_fence(content: str) -> str:
+    """Strip a leading ```json ... ``` (or plain ```) wrapper if present.
+
+    Haiku occasionally wraps JSON output in a markdown code fence despite
+    being told not to. Stripping defensively keeps schema validation happy.
+    """
+    match = _FENCE_RE.match(content)
+    return match.group(1) if match else content
 
 
 class LLMClient(Protocol):
@@ -74,5 +87,5 @@ async def complete_json(
         max_tokens=max_tokens,
         cache_system=cache_system,
     )
-    parsed = schema.model_validate_json(result.content)
+    parsed = schema.model_validate_json(_strip_markdown_fence(result.content))
     return parsed, result
