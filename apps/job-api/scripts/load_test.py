@@ -41,8 +41,8 @@ ENDPOINTS: list[tuple[str, str]] = [
     ("GET", "/targets"),
     ("GET", "/targets/mine"),
     ("GET", "/targets/active"),
-    ("GET", "/career/experience/optimized"),
-    ("GET", "/career/experience/gap-health"),
+    ("GET", "/experience/optimized"),
+    ("GET", "/experience/gap-health"),
 ]
 
 
