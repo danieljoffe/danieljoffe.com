@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { RefreshCw } from 'lucide-react';
+import { Download, RefreshCw } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { StatsCard } from '@danieljoffe.com/shared-ui/StatsCard';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useInsights } from '@/hooks/useInsights';
+import { downloadInsightsCsv } from './exportCsv';
 import type { Period } from './types';
 
 const CostChart = dynamic(() => import('./charts/CostChart'), { ssr: false });
@@ -135,14 +136,25 @@ function formatFreshness(fetchedAt: number | undefined): string | undefined {
   return `Updated ${RELATIVE_TIME.format(-diffDay, 'day')}`;
 }
 
+const TOOLBAR_BUTTON_CLASS = [
+  'inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm',
+  'bg-surface text-text-primary hover:bg-surface-tertiary transition-colors',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+  'disabled:opacity-50 disabled:cursor-not-allowed',
+].join(' ');
+
 function FreshnessBar({
   fetchedAt,
   loadingAny,
+  hasAnyData,
   onRefresh,
+  onDownload,
 }: {
   fetchedAt: number | undefined;
   loadingAny: boolean;
+  hasAnyData: boolean;
   onRefresh: () => void;
+  onDownload: () => void;
 }) {
   const label = formatFreshness(fetchedAt);
   return (
@@ -154,15 +166,20 @@ function FreshnessBar({
       )}
       <button
         type='button'
+        onClick={onDownload}
+        disabled={loadingAny || !hasAnyData}
+        aria-label='Download insights as CSV'
+        className={TOOLBAR_BUTTON_CLASS}
+      >
+        <Download className='h-4 w-4' aria-hidden='true' />
+        <span className='hidden sm:inline'>Download</span>
+      </button>
+      <button
+        type='button'
         onClick={onRefresh}
         disabled={loadingAny}
         aria-label='Refresh insights'
-        className={[
-          'inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm',
-          'bg-surface text-text-primary hover:bg-surface-tertiary transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-        ].join(' ')}
+        className={TOOLBAR_BUTTON_CLASS}
       >
         <RefreshCw
           className={['h-4 w-4', loadingAny ? 'animate-spin' : ''].join(' ')}
@@ -187,6 +204,12 @@ export default function InsightsDashboard() {
   const showSkillFreqSkeleton = loading.skillsCost && !skillsCost;
   const showCostSkeleton = loading.skillsCost && !skillsCost;
 
+  const handleDownload = useCallback(() => {
+    downloadInsightsCsv({ period, pipeline, targets, skillsCost });
+  }, [period, pipeline, targets, skillsCost]);
+
+  const hasAnyData = Boolean(pipeline ?? targets ?? skillsCost);
+
   return (
     <div className='space-y-6'>
       {/* Toolbar: period filter + freshness/refresh */}
@@ -195,7 +218,9 @@ export default function InsightsDashboard() {
         <FreshnessBar
           fetchedAt={fetchedAt}
           loadingAny={loading.any}
+          hasAnyData={hasAnyData}
           onRefresh={refresh}
+          onDownload={handleDownload}
         />
       </div>
 
