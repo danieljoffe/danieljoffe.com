@@ -4,6 +4,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -53,6 +54,7 @@ export default function VelocityChart({ data }: VelocityChartProps) {
             labelFormatter={label => formatWeek(String(label))}
             contentStyle={{ fontSize: 12 }}
           />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
           <Area
             type='monotone'
             dataKey='resumes_generated'

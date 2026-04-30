@@ -4,7 +4,7 @@
 
 The Fitted Insights page is well-architected with clear separation of concerns (frontend → proxy → FastAPI backend). The dashboard displays 6 charts across pipeline, target, and cost metrics, with skeleton loading states and basic error handling. There are accessibility gaps (focus management, keyboard navigation in charts), missing data-freshness indicators, incomplete validation in the proxy layer, and several optimization opportunities (memoization, query efficiency, cost-logging consistency).
 
-**Status (2026-04-30):** all six HIGH items shipped — see "Fixes applied" at bottom. MED items partially addressed (formatters hoisted, KPI skeleton sized, error banner now lists failed endpoints, period filter labelled). MED items still open: pre-computed insights / materialized views, manual exporting, drill-downs.
+**Status (2026-04-30):** all six HIGH items shipped, six MED items shipped, and all eight LOW items shipped — see annotations below. The remaining open work is the product-gap section (drill-downs, comparative periods, exports, skill-gap prioritization, pre-computed insights).
 
 ---
 
@@ -44,21 +44,21 @@ The Fitted Insights page is well-architected with clear separation of concerns (
 
 ## Low-priority issues / nits
 
-- **[LOW] UX** — `FunnelChart.tsx:20–28` — `STAGE_LABELS` will display raw enum keys for any backend status it doesn't know about. Add a fallback `formatLabel(key)` that title-cases the slug.
+- **[LOW][FIXED] UX** — FunnelChart now falls back to a `formatLabel(slug)` helper that title-cases unknown statuses (e.g. `interview_followup` → `Interview Followup`) instead of leaking raw enum keys.
 
-- **[LOW] UX** — `SkillFrequencyChart.tsx:38–39` — Height is `Math.max(250, data.length * 30)`. With 100+ skills the chart could exceed viewport. Cap height and add scroll/pagination.
+- **[LOW][FIXED] UX** — SkillFrequencyChart wraps the visual in `max-h-[600px] overflow-y-auto`, so the chart caps at viewport-friendly height and scrolls if the corpus grows beyond the server-side cap of 15 skills.
 
-- **[LOW] Performance** — `ScoreDistributionChart.tsx:50–56` — `Cell` components keyed by index. Use `entry.bucket` as the stable key.
+- **[LOW][FIXED] Performance** — ScoreDistributionChart `<Cell>` already keyed by `entry.bucket` (closing as already correct).
 
-- **[LOW] Type safety** — `InsightsDashboard.tsx:179–182` — `targets?.score_distribution ?? []` silently produces an empty array if the shape changes. Add a runtime guard or zod schema.
+- **[LOW][FIXED] Type safety** — `useInsights` now runs a per-endpoint shape validator on success (`validatePipeline` / `validateTargets` / `validateSkillsCost`). Shape mismatches throw an `InsightsFetchError` with `kind: 'shape'`, which marks the endpoint as failed and surfaces in the error banner instead of silently rendering empty arrays.
 
-- **[LOW] Accessibility** — `TargetComparisonChart.tsx:43` — Tooltip exposes all data keys including computed display fields. Filter visible fields explicitly.
+- **[LOW][FIXED] Accessibility** — TargetComparisonChart's Tooltip uses an explicit `formatter` that whitelists `Avg Score` and `Conversion %`; any other series returns `null`, so computed/internal fields can't leak into the tooltip.
 
-- **[LOW] UX** — `InsightsDashboard.tsx:143–154` — VelocityChart container has no title/legend explaining "resumes generated" vs "applications submitted." Add a subtitle.
+- **[LOW][FIXED] UX** — VelocityChart now renders a `<Legend>`, so the resumes vs applications series are labelled without hovering. CardTitle stays the same.
 
-- **[LOW] Code quality** — `useInsights.ts:27–31` — Generic `fetchJSON` flattens timeout/parse/network errors into a single `Error`. Add discriminated error types.
+- **[LOW][FIXED] Code quality** — `fetchJSON` now throws `InsightsFetchError` with a discriminated `info` payload (`kind: 'http' | 'network' | 'parse' | 'shape'`). Consumers can branch on `err.info.kind`; the hook still collapses to `failedEndpoints` for the banner.
 
-- **[LOW] Backend** — `insights.py:301–305` — "Top missing skills" treats skills as binary present/absent. Doesn't account for skills missing in some jobs but matched in others. Document the limitation.
+- **[LOW][FIXED] Backend** — `compute_skills_cost` now documents the binary present/absent treatment of missing skills (and the lack of frequency × score weighting) inline at the `pure_missing` block.
 
 ---
 

@@ -59,7 +59,14 @@ export default function TargetComparisonChart({
             tick={{ fontSize: 12 }}
             unit='%'
           />
-          <Tooltip contentStyle={{ fontSize: 12 }} />
+          <Tooltip
+            contentStyle={{ fontSize: 12 }}
+            formatter={(value, name) => {
+              if (name === 'Avg Score') return [String(value), name];
+              if (name === 'Conversion %') return [`${value}%`, name];
+              return null;
+            }}
+          />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar
             yAxisId='score'

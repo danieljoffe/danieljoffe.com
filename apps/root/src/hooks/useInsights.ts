@@ -41,10 +41,102 @@ export interface InsightsData {
   refresh: () => void;
 }
 
-async function fetchJSON<T>(url: string, signal: AbortSignal): Promise<T> {
-  const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return res.json() as Promise<T>;
+/**
+ * Discriminated error info attached to {@link InsightsFetchError}.
+ *
+ * - `http`: the request reached the server but it returned a non-2xx status.
+ * - `network`: the fetch itself threw (offline, DNS failure, etc.).
+ * - `parse`: the response body couldn't be parsed as JSON.
+ * - `shape`: the JSON parsed but didn't match the expected schema.
+ */
+export type InsightsFetchErrorInfo =
+  | { kind: 'http'; status: number; statusText: string }
+  | { kind: 'network'; cause: unknown }
+  | { kind: 'parse'; cause: unknown }
+  | { kind: 'shape'; field: string };
+
+export class InsightsFetchError extends Error {
+  readonly info: InsightsFetchErrorInfo;
+  constructor(info: InsightsFetchErrorInfo) {
+    super(
+      info.kind === 'http'
+        ? `${info.status} ${info.statusText}`
+        : info.kind === 'shape'
+          ? `Unexpected response shape: ${info.field}`
+          : info.kind
+    );
+    this.name = 'InsightsFetchError';
+    this.info = info;
+  }
+}
+
+async function fetchJSON<T>(
+  url: string,
+  signal: AbortSignal,
+  validate: (value: unknown) => T
+): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, { signal });
+  } catch (cause) {
+    if (cause instanceof Error && cause.name === 'AbortError') throw cause;
+    throw new InsightsFetchError({ kind: 'network', cause });
+  }
+  if (!res.ok) {
+    throw new InsightsFetchError({
+      kind: 'http',
+      status: res.status,
+      statusText: res.statusText,
+    });
+  }
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch (cause) {
+    throw new InsightsFetchError({ kind: 'parse', cause });
+  }
+  return validate(json);
+}
+
+function asObject(value: unknown, field: string): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new InsightsFetchError({ kind: 'shape', field });
+  }
+  return value as Record<string, unknown>;
+}
+
+function requireArray(
+  obj: Record<string, unknown>,
+  key: string,
+  root: string
+): void {
+  if (!Array.isArray(obj[key])) {
+    throw new InsightsFetchError({ kind: 'shape', field: `${root}.${key}` });
+  }
+}
+
+function validatePipeline(value: unknown): PipelineInsights {
+  const o = asObject(value, 'pipeline');
+  requireArray(o, 'velocity', 'pipeline');
+  requireArray(o, 'funnel', 'pipeline');
+  return value as PipelineInsights;
+}
+
+function validateTargets(value: unknown): TargetInsights {
+  const o = asObject(value, 'targets');
+  requireArray(o, 'targets', 'targets');
+  requireArray(o, 'score_distribution', 'targets');
+  requireArray(o, 'score_trend', 'targets');
+  return value as TargetInsights;
+}
+
+function validateSkillsCost(value: unknown): SkillsCostInsights {
+  const o = asObject(value, 'skillsCost');
+  requireArray(o, 'top_skills', 'skillsCost');
+  requireArray(o, 'top_missing', 'skillsCost');
+  requireArray(o, 'cost_over_time', 'skillsCost');
+  requireArray(o, 'cost_by_purpose', 'skillsCost');
+  return value as SkillsCostInsights;
 }
 
 const INITIAL_LOADING = {
@@ -87,7 +179,8 @@ export function useInsights(period: Period): InsightsData {
 
       const fetchPipeline = fetchJSON<PipelineInsights>(
         `/api/jobs/insights/pipeline${qs}`,
-        controller.signal
+        controller.signal,
+        validatePipeline
       )
         .then(value => {
           if (requestRef.current !== requestId) return;
@@ -113,7 +206,8 @@ export function useInsights(period: Period): InsightsData {
 
       const fetchTargets = fetchJSON<TargetInsights>(
         `/api/jobs/insights/targets${qs}`,
-        controller.signal
+        controller.signal,
+        validateTargets
       )
         .then(value => {
           if (requestRef.current !== requestId) return;
@@ -139,7 +233,8 @@ export function useInsights(period: Period): InsightsData {
 
       const fetchSkillsCost = fetchJSON<SkillsCostInsights>(
         `/api/jobs/insights/skills-cost${qs}`,
-        controller.signal
+        controller.signal,
+        validateSkillsCost
       )
         .then(value => {
           if (requestRef.current !== requestId) return;

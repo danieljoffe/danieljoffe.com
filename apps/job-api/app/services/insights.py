@@ -299,7 +299,11 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
         reverse=True,
     )[:15]
 
-    # Top missing (skills never matched)
+    # Top missing (skills never matched).
+    # Limitation: skills are treated as binary present/absent per analysis.
+    # A skill matched in some jobs but missing in others is excluded here even
+    # though it might still represent a meaningful gap. Ranking is by raw
+    # missing count, not weighted by job score.
     pure_missing = [
         s for s, _ in missing_counts.most_common(10) if matched_counts.get(s, 0) == 0
     ]

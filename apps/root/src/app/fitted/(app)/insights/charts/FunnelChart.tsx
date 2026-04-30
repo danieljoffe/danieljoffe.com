@@ -28,6 +28,14 @@ const STAGE_LABELS: Record<string, string> = {
   offer: 'Offer',
 };
 
+function formatLabel(slug: string): string {
+  return slug
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
 /** Gradient from brand → success across the funnel. */
 const STAGE_COLORS = [
   CHART_COLORS.brand,
@@ -50,7 +58,7 @@ export default function FunnelChart({ data }: FunnelChartProps) {
 
   const formatted = data.map(d => ({
     ...d,
-    label: STAGE_LABELS[d.stage] ?? d.stage,
+    label: STAGE_LABELS[d.stage] ?? formatLabel(d.stage),
   }));
 
   const columns: ChartColumn<(typeof formatted)[number]>[] = [
