@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Pencil } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
@@ -17,6 +16,7 @@ import type {
 import ScoringProfileEditor from './ScoringProfileEditor';
 import ReferenceJDList from './ReferenceJDList';
 import ResumeEmphasisEditor from './ResumeEmphasisEditor';
+import TargetDetailSkeleton from './TargetDetailSkeleton';
 
 interface TargetDetailProps {
   id: string;
@@ -120,11 +120,7 @@ export default function TargetDetail({ id }: TargetDetailProps) {
   }, [fetchTarget, fetchReferenceJDs]);
 
   if (loading) {
-    return (
-      <div className='flex items-center justify-center py-20'>
-        <Spinner size='lg' />
-      </div>
-    );
+    return <TargetDetailSkeleton />;
   }
 
   if (!target) {
