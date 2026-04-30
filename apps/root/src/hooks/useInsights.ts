@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   Period,
   PipelineInsights,
@@ -13,15 +13,32 @@ interface InsightsState {
   pipeline: PipelineInsights | undefined;
   targets: TargetInsights | undefined;
   skillsCost: SkillsCostInsights | undefined;
-  error: string | undefined;
+  pipelineLoading: boolean;
+  targetsLoading: boolean;
+  skillsCostLoading: boolean;
+  pipelineFailed: boolean;
+  targetsFailed: boolean;
+  skillsCostFailed: boolean;
+  fetchedAt: number | undefined;
 }
 
-interface InsightsData {
+export interface InsightsLoading {
+  pipeline: boolean;
+  targets: boolean;
+  skillsCost: boolean;
+  any: boolean;
+  all: boolean;
+}
+
+export interface InsightsData {
   pipeline: PipelineInsights | undefined;
   targets: TargetInsights | undefined;
   skillsCost: SkillsCostInsights | undefined;
-  loading: boolean;
+  loading: InsightsLoading;
   error: string | undefined;
+  failedEndpoints: string[];
+  fetchedAt: number | undefined;
+  refresh: () => void;
 }
 
 async function fetchJSON<T>(url: string, signal: AbortSignal): Promise<T> {
@@ -30,11 +47,20 @@ async function fetchJSON<T>(url: string, signal: AbortSignal): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+const INITIAL_LOADING = {
+  pipelineLoading: true,
+  targetsLoading: true,
+  skillsCostLoading: true,
+  pipelineFailed: false,
+  targetsFailed: false,
+  skillsCostFailed: false,
+};
+
 /**
- * Fetches all 3 insights endpoints in parallel when the period changes.
- *
- * Loading state is derived (not set synchronously inside the effect) to
- * satisfy the react-hooks/set-state-in-effect lint rule.
+ * Fetches the three insights endpoints in parallel and tracks their
+ * loading + error state independently so the UI can render each card's
+ * skeleton/empty/error state in isolation. Returns a memoized object so
+ * consumers can `useMemo` keyed on slices without referential thrash.
  */
 export function useInsights(period: Period): InsightsData {
   const [state, setState] = useState<InsightsState>({
@@ -42,75 +68,148 @@ export function useInsights(period: Period): InsightsData {
     pipeline: undefined,
     targets: undefined,
     skillsCost: undefined,
-    error: undefined,
+    fetchedAt: undefined,
+    ...INITIAL_LOADING,
   });
   const requestRef = useRef(0);
-
-  // Loading is true when the requested period doesn't match the last fetched one
-  const loading = state.period !== period || state.pipeline === undefined;
+  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
     const requestId = ++requestRef.current;
 
-    async function doFetch() {
+    // Wrapped in async so the setState calls run after the effect body
+    // returns — avoids the react-hooks/set-state-in-effect lint rule.
+    async function run() {
+      setState(s => ({ ...s, period, ...INITIAL_LOADING }));
+
       const qs = `?period=${period}`;
-      const results = await Promise.allSettled([
-        fetchJSON<PipelineInsights>(
-          `/api/jobs/insights/pipeline${qs}`,
-          controller.signal
-        ),
-        fetchJSON<TargetInsights>(
-          `/api/jobs/insights/targets${qs}`,
-          controller.signal
-        ),
-        fetchJSON<SkillsCostInsights>(
-          `/api/jobs/insights/skills-cost${qs}`,
-          controller.signal
-        ),
-      ]);
 
-      // Bail if a newer request superseded this one
-      if (requestRef.current !== requestId) return;
+      const fetchPipeline = fetchJSON<PipelineInsights>(
+        `/api/jobs/insights/pipeline${qs}`,
+        controller.signal
+      )
+        .then(value => {
+          if (requestRef.current !== requestId) return;
+          setState(s => ({
+            ...s,
+            pipeline: value,
+            pipelineLoading: false,
+            pipelineFailed: false,
+            fetchedAt: Date.now(),
+          }));
+        })
+        .catch((err: unknown) => {
+          if (controller.signal.aborted) return;
+          if (requestRef.current !== requestId) return;
+          if (err instanceof Error && err.name === 'AbortError') return;
+          setState(s => ({
+            ...s,
+            pipelineLoading: false,
+            pipelineFailed: true,
+            fetchedAt: Date.now(),
+          }));
+        });
 
-      const [pipelineResult, targetsResult, skillsCostResult] = results;
-      const failures = results.filter(r => r.status === 'rejected');
+      const fetchTargets = fetchJSON<TargetInsights>(
+        `/api/jobs/insights/targets${qs}`,
+        controller.signal
+      )
+        .then(value => {
+          if (requestRef.current !== requestId) return;
+          setState(s => ({
+            ...s,
+            targets: value,
+            targetsLoading: false,
+            targetsFailed: false,
+            fetchedAt: Date.now(),
+          }));
+        })
+        .catch((err: unknown) => {
+          if (controller.signal.aborted) return;
+          if (requestRef.current !== requestId) return;
+          if (err instanceof Error && err.name === 'AbortError') return;
+          setState(s => ({
+            ...s,
+            targetsLoading: false,
+            targetsFailed: true,
+            fetchedAt: Date.now(),
+          }));
+        });
 
-      let error: string | undefined;
-      if (failures.length === results.length) {
-        error = 'Failed to load insights data';
-      } else if (failures.length > 0) {
-        error = 'Some insights data failed to load';
-      }
+      const fetchSkillsCost = fetchJSON<SkillsCostInsights>(
+        `/api/jobs/insights/skills-cost${qs}`,
+        controller.signal
+      )
+        .then(value => {
+          if (requestRef.current !== requestId) return;
+          setState(s => ({
+            ...s,
+            skillsCost: value,
+            skillsCostLoading: false,
+            skillsCostFailed: false,
+            fetchedAt: Date.now(),
+          }));
+        })
+        .catch((err: unknown) => {
+          if (controller.signal.aborted) return;
+          if (requestRef.current !== requestId) return;
+          if (err instanceof Error && err.name === 'AbortError') return;
+          setState(s => ({
+            ...s,
+            skillsCostLoading: false,
+            skillsCostFailed: true,
+            fetchedAt: Date.now(),
+          }));
+        });
 
-      setState({
-        period,
-        pipeline:
-          pipelineResult.status === 'fulfilled'
-            ? pipelineResult.value
-            : undefined,
-        targets:
-          targetsResult.status === 'fulfilled'
-            ? targetsResult.value
-            : undefined,
-        skillsCost:
-          skillsCostResult.status === 'fulfilled'
-            ? skillsCostResult.value
-            : undefined,
-        error,
-      });
+      await Promise.all([fetchPipeline, fetchTargets, fetchSkillsCost]);
     }
 
-    doFetch();
-
+    void run();
     return () => controller.abort();
-  }, [period]);
+  }, [period, refreshTick]);
 
-  return {
-    pipeline: state.pipeline,
-    targets: state.targets,
-    skillsCost: state.skillsCost,
-    loading,
-    error: state.error,
-  };
+  const refresh = useCallback(() => {
+    setRefreshTick(t => t + 1);
+  }, []);
+
+  return useMemo<InsightsData>(() => {
+    const failedEndpoints: string[] = [];
+    if (state.pipelineFailed) failedEndpoints.push('Pipeline');
+    if (state.targetsFailed) failedEndpoints.push('Targets');
+    if (state.skillsCostFailed) failedEndpoints.push('Skills & cost');
+
+    let error: string | undefined;
+    if (failedEndpoints.length === 3) {
+      error = 'Failed to load insights data.';
+    } else if (failedEndpoints.length > 0) {
+      error = `Some insights data failed to load: ${failedEndpoints.join(', ')}.`;
+    }
+
+    const loading: InsightsLoading = {
+      pipeline: state.pipelineLoading,
+      targets: state.targetsLoading,
+      skillsCost: state.skillsCostLoading,
+      any:
+        state.pipelineLoading ||
+        state.targetsLoading ||
+        state.skillsCostLoading,
+      all:
+        state.pipelineLoading &&
+        state.targetsLoading &&
+        state.skillsCostLoading,
+    };
+
+    return {
+      pipeline: state.pipeline,
+      targets: state.targets,
+      skillsCost: state.skillsCost,
+      loading,
+      error,
+      failedEndpoints,
+      fetchedAt: state.fetchedAt,
+      refresh,
+    };
+  }, [state, refresh]);
 }

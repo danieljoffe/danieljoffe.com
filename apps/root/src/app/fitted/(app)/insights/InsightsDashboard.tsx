@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { RefreshCw } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -41,6 +42,8 @@ const PERIODS: { id: Period; label: string }[] = [
   { id: 'all', label: 'All' },
 ];
 
+const PERIOD_FILTER_LABEL_ID = 'insights-period-label';
+
 function PeriodFilter({
   value,
   onChange,
@@ -49,34 +52,55 @@ function PeriodFilter({
   onChange: (p: Period) => void;
 }) {
   return (
-    <div
-      role='group'
-      aria-label='Time period'
-      className='flex gap-1 p-1 bg-surface-tertiary rounded-lg'
-    >
-      {PERIODS.map(p => (
-        <button
-          key={p.id}
-          type='button'
-          onClick={() => onChange(p.id)}
-          aria-pressed={value === p.id}
-          className={[
-            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-            value === p.id
-              ? 'bg-surface text-text-primary shadow-sm'
-              : 'text-text-secondary hover:text-text-primary',
-          ].join(' ')}
-        >
-          {p.label}
-        </button>
-      ))}
+    <div className='flex items-center gap-3'>
+      <Text
+        as='span'
+        variant='caption'
+        id={PERIOD_FILTER_LABEL_ID}
+        className='text-text-secondary'
+      >
+        Period
+      </Text>
+      <div
+        role='group'
+        aria-labelledby={PERIOD_FILTER_LABEL_ID}
+        className='flex gap-1 p-1 bg-surface-tertiary rounded-lg'
+      >
+        {PERIODS.map(p => (
+          <button
+            key={p.id}
+            type='button'
+            onClick={() => onChange(p.id)}
+            aria-pressed={value === p.id}
+            className={[
+              'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+              value === p.id
+                ? 'bg-surface text-text-primary shadow-sm'
+                : 'text-text-secondary hover:text-text-primary',
+            ].join(' ')}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
 function ChartSkeleton() {
   return <Skeleton variant='rectangular' height={250} />;
+}
+
+function KpiSkeleton({ title }: { title: string }) {
+  // Mirrors StatsCard's structure (p-6, caption, value text-2xl) so the
+  // layout doesn't shift when real values land. See libs/shared/ui/src/lib/StatsCard.tsx.
+  return (
+    <div className='p-6 bg-surface-elevated border border-border rounded-xl shadow-xs'>
+      <Text variant='caption'>{title}</Text>
+      <Skeleton variant='text' size='lg' className='mt-1.5 w-24' />
+    </div>
+  );
 }
 
 function formatPct(value: number | null): string {
@@ -89,18 +113,95 @@ function formatDays(value: number | null): string {
   return `${value.toFixed(1)}d`;
 }
 
+const RELATIVE_TIME = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+function formatFreshness(fetchedAt: number | undefined): string | undefined {
+  if (fetchedAt === undefined) return undefined;
+  const diffMs = Date.now() - fetchedAt;
+  const diffSec = Math.round(diffMs / 1000);
+  if (diffSec < 5) return 'Updated just now';
+  if (diffSec < 60)
+    return `Updated ${RELATIVE_TIME.format(-diffSec, 'second')}`;
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60)
+    return `Updated ${RELATIVE_TIME.format(-diffMin, 'minute')}`;
+  const diffHour = Math.round(diffMin / 60);
+  if (diffHour < 24)
+    return `Updated ${RELATIVE_TIME.format(-diffHour, 'hour')}`;
+  const diffDay = Math.round(diffHour / 24);
+  return `Updated ${RELATIVE_TIME.format(-diffDay, 'day')}`;
+}
+
+function FreshnessBar({
+  fetchedAt,
+  loadingAny,
+  onRefresh,
+}: {
+  fetchedAt: number | undefined;
+  loadingAny: boolean;
+  onRefresh: () => void;
+}) {
+  const label = formatFreshness(fetchedAt);
+  return (
+    <div className='flex items-center gap-3 text-text-secondary'>
+      {label && (
+        <Text as='span' variant='meta'>
+          {label}
+        </Text>
+      )}
+      <button
+        type='button'
+        onClick={onRefresh}
+        disabled={loadingAny}
+        aria-label='Refresh insights'
+        className={[
+          'inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm',
+          'bg-surface text-text-primary hover:bg-surface-tertiary transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' ')}
+      >
+        <RefreshCw
+          className={['h-4 w-4', loadingAny ? 'animate-spin' : ''].join(' ')}
+          aria-hidden='true'
+        />
+        <span className='hidden sm:inline'>Refresh</span>
+      </button>
+    </div>
+  );
+}
+
 export default function InsightsDashboard() {
   const [period, setPeriod] = useState<Period>('30d');
-  const { pipeline, targets, skillsCost, loading, error } = useInsights(period);
+  const { pipeline, targets, skillsCost, loading, error, fetchedAt, refresh } =
+    useInsights(period);
+
+  const showKpiSkeleton = loading.pipeline && !pipeline;
+  const showVelocitySkeleton = loading.pipeline && !pipeline;
+  const showFunnelSkeleton = loading.pipeline && !pipeline;
+  const showScoreDistSkeleton = loading.targets && !targets;
+  const showTargetCmpSkeleton = loading.targets && !targets;
+  const showSkillFreqSkeleton = loading.skillsCost && !skillsCost;
+  const showCostSkeleton = loading.skillsCost && !skillsCost;
 
   return (
     <div className='space-y-6'>
-      {/* Period filter */}
-      <PeriodFilter value={period} onChange={setPeriod} />
+      {/* Toolbar: period filter + freshness/refresh */}
+      <div className='flex items-center justify-between gap-4 flex-wrap'>
+        <PeriodFilter value={period} onChange={setPeriod} />
+        <FreshnessBar
+          fetchedAt={fetchedAt}
+          loadingAny={loading.any}
+          onRefresh={refresh}
+        />
+      </div>
 
       {/* Error banner */}
       {error && (
-        <div className='rounded-md bg-error-light border border-error/30 p-3'>
+        <div
+          role='alert'
+          className='rounded-md bg-error-light border border-error/30 p-3'
+        >
           <Text variant='body' className='text-error'>
             {error}
           </Text>
@@ -111,12 +212,17 @@ export default function InsightsDashboard() {
       <div
         className='grid gap-4 grid-cols-2 lg:grid-cols-4'
         role='status'
-        aria-label={loading && !pipeline ? 'Loading insights' : undefined}
+        aria-live='polite'
+        aria-busy={showKpiSkeleton}
+        aria-label='Pipeline summary'
       >
-        {loading && !pipeline ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} variant='rectangular' height={100} />
-          ))
+        {showKpiSkeleton ? (
+          <>
+            <KpiSkeleton title='Applications' />
+            <KpiSkeleton title='Interviews' />
+            <KpiSkeleton title='Response Rate' />
+            <KpiSkeleton title='Avg Days to Response' />
+          </>
         ) : (
           <>
             <StatsCard
@@ -140,12 +246,12 @@ export default function InsightsDashboard() {
       </div>
 
       {/* Application velocity — full width */}
-      <Card>
+      <Card aria-busy={showVelocitySkeleton}>
         <CardHeader>
           <CardTitle>Application Velocity</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && !pipeline ? (
+          {showVelocitySkeleton ? (
             <ChartSkeleton />
           ) : (
             <VelocityChart data={pipeline?.velocity ?? []} />
@@ -155,12 +261,12 @@ export default function InsightsDashboard() {
 
       {/* Two-column row: Funnel + Score Distribution */}
       <div className='grid gap-6 grid-cols-1 lg:grid-cols-2'>
-        <Card>
+        <Card aria-busy={showFunnelSkeleton}>
           <CardHeader>
             <CardTitle>Pipeline Funnel</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading && !pipeline ? (
+            {showFunnelSkeleton ? (
               <ChartSkeleton />
             ) : (
               <FunnelChart data={pipeline?.funnel ?? []} />
@@ -168,12 +274,12 @@ export default function InsightsDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card aria-busy={showScoreDistSkeleton}>
           <CardHeader>
             <CardTitle>Score Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading && !targets ? (
+            {showScoreDistSkeleton ? (
               <ChartSkeleton />
             ) : (
               <ScoreDistributionChart
@@ -186,12 +292,12 @@ export default function InsightsDashboard() {
 
       {/* Two-column row: Target Comparison + Skill Frequency */}
       <div className='grid gap-6 grid-cols-1 lg:grid-cols-2'>
-        <Card>
+        <Card aria-busy={showTargetCmpSkeleton}>
           <CardHeader>
             <CardTitle>Target Comparison</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading && !targets ? (
+            {showTargetCmpSkeleton ? (
               <ChartSkeleton />
             ) : (
               <TargetComparisonChart data={targets?.targets ?? []} />
@@ -199,12 +305,12 @@ export default function InsightsDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card aria-busy={showSkillFreqSkeleton}>
           <CardHeader>
             <CardTitle>Skill Frequency</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading && !skillsCost ? (
+            {showSkillFreqSkeleton ? (
               <ChartSkeleton />
             ) : (
               <SkillFrequencyChart data={skillsCost?.top_skills ?? []} />
@@ -214,7 +320,7 @@ export default function InsightsDashboard() {
       </div>
 
       {/* LLM Cost — full width */}
-      <Card>
+      <Card aria-busy={showCostSkeleton}>
         <CardHeader>
           <div className='flex items-baseline gap-4'>
             <CardTitle>LLM Cost</CardTitle>
@@ -228,7 +334,7 @@ export default function InsightsDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading && !skillsCost ? (
+          {showCostSkeleton ? (
             <ChartSkeleton />
           ) : (
             <CostChart data={skillsCost?.cost_over_time ?? []} />

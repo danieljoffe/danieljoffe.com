@@ -11,20 +11,19 @@ import {
   YAxis,
 } from 'recharts';
 import type { CostBucket } from '../types';
+import { ChartFigure, type ChartColumn } from './ChartFigure';
 import { CHART_COLORS } from './colors';
+import { formatCost, formatWeek } from './format';
 
 interface CostChartProps {
   data: CostBucket[];
 }
 
-function formatWeek(value: string) {
-  const d = new Date(value);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatCost(value: number) {
-  return `$${value.toFixed(2)}`;
-}
+const COLUMNS: ChartColumn<CostBucket>[] = [
+  { header: 'Week', render: row => formatWeek(row.week_start) },
+  { header: 'Cost', render: row => formatCost(row.total_cost) },
+  { header: 'Resumes', render: row => row.resume_count },
+];
 
 export default function CostChart({ data }: CostChartProps) {
   if (data.length === 0) {
@@ -36,9 +35,11 @@ export default function CostChart({ data }: CostChartProps) {
   }
 
   return (
-    <div
-      role='img'
-      aria-label='Cost chart showing weekly LLM spend and resume count'
+    <ChartFigure
+      ariaLabel='LLM cost: weekly spend and resume count'
+      rows={data}
+      columns={COLUMNS}
+      rowKey={row => row.week_start}
     >
       <ResponsiveContainer width='100%' height={250}>
         <AreaChart data={data}>
@@ -87,6 +88,6 @@ export default function CostChart({ data }: CostChartProps) {
           />
         </AreaChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFigure>
   );
 }

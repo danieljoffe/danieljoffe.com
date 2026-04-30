@@ -4,41 +4,41 @@
 
 The Fitted Insights page is well-architected with clear separation of concerns (frontend → proxy → FastAPI backend). The dashboard displays 6 charts across pipeline, target, and cost metrics, with skeleton loading states and basic error handling. There are accessibility gaps (focus management, keyboard navigation in charts), missing data-freshness indicators, incomplete validation in the proxy layer, and several optimization opportunities (memoization, query efficiency, cost-logging consistency).
 
+**Status (2026-04-30):** all six HIGH items shipped — see "Fixes applied" at bottom. MED items partially addressed (formatters hoisted, KPI skeleton sized, error banner now lists failed endpoints, period filter labelled). MED items still open: pre-computed insights / materialized views, manual exporting, drill-downs.
+
 ---
 
 ## High-priority issues
 
-- **[HIGH] Accessibility** — `InsightsDashboard.tsx:113–114` — `role='status'` on KPI cards lacks `aria-live`, so screen reader users won't be notified when loading completes. Add `aria-live='polite'`.
+- **[HIGH][FIXED] Accessibility** — KPI grid was `role='status'` without `aria-live`. Now `role='status'` + `aria-live='polite'` + `aria-busy` toggling on the skeleton-vs-data branch (`InsightsDashboard.tsx`). Each chart card also gets `aria-busy` while its source endpoint is loading.
 
-- **[HIGH] Performance** — `InsightsDashboard.tsx:92–115` — Three independent parallel API calls are fetched, but `useInsights()` doesn't memoize its return value. Parent re-renders trigger refetches. Memoize with `useMemo` keyed on `period`.
+- **[HIGH][FIXED] Performance** — `useInsights()` now wraps its return in `useMemo` keyed on the underlying state object + a stable `refresh` callback, so consumers don't refetch on parent re-renders. `loading` is exposed as a per-endpoint flag bag (`{pipeline, targets, skillsCost, any, all}`).
 
-- **[HIGH] Accessibility** — `VelocityChart.tsx:38–72`, `FunnelChart.tsx:60–87`, all chart components — Charts use `role='img'` with aria-label but Recharts tooltips are not keyboard accessible. Implement keyboard navigation to cycle through data points, or provide a tabular fallback `<table>` (`<VisuallyHidden>` data table).
+- **[HIGH][FIXED] Accessibility** — All six charts now wrap their Recharts visual in `ChartFigure` (`apps/root/src/app/fitted/(app)/insights/charts/ChartFigure.tsx`): a `<figure>` with `aria-label`, the visual marked `aria-hidden`, and an `sr-only <table>` of the underlying data. SR users get the full numbers; sighted users get the chart unchanged.
 
-- **[HIGH] Data model / API** — `useInsights.ts:50` — Loading state derived as `state.period !== period || state.pipeline === undefined`. If pipeline loads but targets fails, loading flips to false while one tile is still missing. Use a per-endpoint loading flag.
+- **[HIGH][FIXED] Data model / API** — `useInsights` now tracks `pipelineLoading / targetsLoading / skillsCostLoading` independently. Each endpoint flips its own loading flag on settle, so a slow targets fetch can't hide the pipeline KPIs that already arrived.
 
-- **[HIGH] Product gap** — Page displays no "last updated" timestamp. For a job-search dashboard, users need to know when metrics were recalculated. Add a freshness badge on the period selector.
+- **[HIGH][FIXED] Product gap** — Toolbar above the dashboard now shows a freshness badge ("Updated just now / N minutes ago") plus a Refresh button that bumps a tick to re-trigger `useInsights`. Stale data is kept visible during refresh so the screen doesn't go blank.
 
-- **[HIGH] Backend** — `insights.py:56–70` — No query-parameter validation in the proxy layer (`proxy.ts`). FastAPI returns a 400 for invalid `?period=`, but the proxy passes it through as a generic JSON error. Return a typed error response with a `code` field so the UI can distinguish bad input from backend failure.
+- **[HIGH][FIXED] Backend** — Each of the three `/api/jobs/insights/*` routes now calls `validatePeriod(request)` before forwarding, rejecting unknown values with `{ error, code: 'invalid_period' }` at status 400. Backend reachability errors stay as 503 from `proxy.ts`, so the UI can distinguish the two.
 
 ---
 
 ## Medium-priority issues
 
-- **[MED] Accessibility** — `InsightsDashboard.tsx:44–76` (PeriodFilter) — `role='group'` container needs `aria-labelledby` linking to a visible heading.
+- **[MED][FIXED] Accessibility** — PeriodFilter now exposes a visible "Period" caption with `aria-labelledby` pointing at it, replacing the prior `aria-label`.
 
-- **[MED] Performance** — `VelocityChart.tsx:19–22`, `CostChart.tsx:20–27`, `FunnelChart.tsx:50–53` — Date formatters defined inside component bodies and called every render. Move to module-level constants or memoize.
+- **[MED][FIXED] Performance** — Date and currency formatters moved to `apps/root/src/app/fitted/(app)/insights/charts/format.ts` with module-scope `Intl.DateTimeFormat` / `Intl.NumberFormat` instances reused across ticks.
 
-- **[MED] UX** — `InsightsDashboard.tsx:116–119` — KPI skeleton rectangles don't match final card height/padding. Layout shift when data loads. Match dimensions exactly.
+- **[MED][FIXED] UX** — KPI skeleton replaced with a `<KpiSkeleton>` that mirrors `StatsCard`'s structure (same `p-6`, caption, value rows) so swapping skeleton → data no longer shifts layout.
 
-- **[MED] DB** — `insights.py:67–70` (compute_pipeline) — `job_postings` query joins status logs by `posting_id` without a composite index. Add `CREATE INDEX idx_job_status_log_posting_created ON job_status_log(posting_id, created_at);`.
+- **[MED][FIXED] DB** — `compute_pipeline` filters `job_status_log` by `created_at` only (the per-posting grouping happens in Python). Added `idx_job_status_log_created_at(created_at DESC)` in `20260430120003_add_insights_query_indexes.sql`. `idx_llm_cost_log_created_at` already existed in the original create migration — no change needed.
 
-- **[MED] DB** — `insights.py:256–260` (compute_skills_cost) — `llm_cost_log` filters on `created_at >= since`. Add `CREATE INDEX idx_llm_cost_log_created_at ON llm_cost_log(created_at DESC);`.
+- **[MED] Code quality** — `formatPct()` / `formatDays()` already typed `(value: number | null) => string`. Closing this finding as already correct.
 
-- **[MED] Code quality** — `InsightsDashboard.tsx:82–90` — `formatPct()` / `formatDays()` return `'--'` for null but TypeScript doesn't enforce null-checking at call sites. Type as `(value: number | null) => string`.
+- **[MED][FIXED] UX** — Error banner now reports `'Some insights data failed to load: Pipeline, Targets'` (or similar), pulled from `failedEndpoints` on the hook's return. Banner also gets `role='alert'` for SR announcement.
 
-- **[MED] UX** — `InsightsDashboard.tsx:102–108` — Error banner doesn't distinguish "all endpoints failed" vs "one of three failed." List which endpoints are unavailable.
-
-- **[MED] Product gap** — No manual refresh button. Users who suspect stale data have no way to force a recalculation without changing the period.
+- **[MED][FIXED] Product gap** — Refresh button added to the toolbar, paired with the freshness badge. Disabled while any endpoint is loading; the icon spins during refresh.
 
 ---
 

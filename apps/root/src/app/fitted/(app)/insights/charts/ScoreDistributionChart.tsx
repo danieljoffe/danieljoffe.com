@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { ScoreBucket } from '../types';
+import { ChartFigure, type ChartColumn } from './ChartFigure';
 import { CHART_COLORS } from './colors';
 
 interface ScoreDistributionChartProps {
@@ -24,6 +25,11 @@ function bucketColor(bucket: string): string {
   return CHART_COLORS.error;
 }
 
+const COLUMNS: ChartColumn<ScoreBucket>[] = [
+  { header: 'Score range', render: row => row.bucket },
+  { header: 'Jobs', render: row => row.count },
+];
+
 export default function ScoreDistributionChart({
   data,
 }: ScoreDistributionChartProps) {
@@ -36,9 +42,11 @@ export default function ScoreDistributionChart({
   }
 
   return (
-    <div
-      role='img'
-      aria-label='Score distribution chart showing job counts by score range'
+    <ChartFigure
+      ariaLabel='Score distribution: job counts by score range'
+      rows={data}
+      columns={COLUMNS}
+      rowKey={row => row.bucket}
     >
       <ResponsiveContainer width='100%' height={250}>
         <BarChart data={data}>
@@ -47,9 +55,9 @@ export default function ScoreDistributionChart({
           <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
           <Tooltip contentStyle={{ fontSize: 12 }} />
           <Bar dataKey='count' name='Jobs' radius={[4, 4, 0, 0]}>
-            {data.map((entry, i) => (
+            {data.map(entry => (
               <Cell
-                key={i}
+                key={entry.bucket}
                 fill={bucketColor(entry.bucket)}
                 fillOpacity={0.8}
               />
@@ -57,6 +65,6 @@ export default function ScoreDistributionChart({
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFigure>
   );
 }

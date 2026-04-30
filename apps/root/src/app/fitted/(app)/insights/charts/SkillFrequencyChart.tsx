@@ -11,11 +11,18 @@ import {
   YAxis,
 } from 'recharts';
 import type { SkillFrequency } from '../types';
+import { ChartFigure, type ChartColumn } from './ChartFigure';
 import { CHART_COLORS } from './colors';
 
 interface SkillFrequencyChartProps {
   data: SkillFrequency[];
 }
+
+const COLUMNS: ChartColumn<SkillFrequency>[] = [
+  { header: 'Skill', render: row => row.skill },
+  { header: 'Matched', render: row => row.matched_count },
+  { header: 'Missing', render: row => row.missing_count },
+];
 
 export default function SkillFrequencyChart({
   data,
@@ -29,9 +36,11 @@ export default function SkillFrequencyChart({
   }
 
   return (
-    <div
-      role='img'
-      aria-label='Skill frequency chart showing matched versus missing skills'
+    <ChartFigure
+      ariaLabel='Skill frequency: matched versus missing skills across analyzed jobs'
+      rows={data}
+      columns={COLUMNS}
+      rowKey={row => row.skill}
     >
       <ResponsiveContainer
         width='100%'
@@ -69,6 +78,6 @@ export default function SkillFrequencyChart({
           />
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFigure>
   );
 }

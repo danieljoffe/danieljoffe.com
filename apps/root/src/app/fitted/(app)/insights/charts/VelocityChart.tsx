@@ -10,16 +10,19 @@ import {
   YAxis,
 } from 'recharts';
 import type { WeeklyCount } from '../types';
+import { ChartFigure, type ChartColumn } from './ChartFigure';
 import { CHART_COLORS } from './colors';
+import { formatWeek } from './format';
 
 interface VelocityChartProps {
   data: WeeklyCount[];
 }
 
-function formatWeek(value: string) {
-  const d = new Date(value);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+const COLUMNS: ChartColumn<WeeklyCount>[] = [
+  { header: 'Week', render: row => formatWeek(row.week_start) },
+  { header: 'Resumes', render: row => row.resumes_generated },
+  { header: 'Applications', render: row => row.applications_submitted },
+];
 
 export default function VelocityChart({ data }: VelocityChartProps) {
   if (data.length === 0) {
@@ -31,9 +34,11 @@ export default function VelocityChart({ data }: VelocityChartProps) {
   }
 
   return (
-    <div
-      role='img'
-      aria-label='Application velocity chart showing resumes generated and applications submitted over time'
+    <ChartFigure
+      ariaLabel='Application velocity: resumes generated and applications submitted per week'
+      rows={data}
+      columns={COLUMNS}
+      rowKey={row => row.week_start}
     >
       <ResponsiveContainer width='100%' height={250}>
         <AreaChart data={data}>
@@ -68,6 +73,6 @@ export default function VelocityChart({ data }: VelocityChartProps) {
           />
         </AreaChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFigure>
   );
 }

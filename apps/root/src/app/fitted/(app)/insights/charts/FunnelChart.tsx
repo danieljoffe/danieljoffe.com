@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { FunnelStage } from '../types';
+import { ChartFigure, type ChartColumn } from './ChartFigure';
 import { CHART_COLORS } from './colors';
 
 interface FunnelChartProps {
@@ -52,10 +53,17 @@ export default function FunnelChart({ data }: FunnelChartProps) {
     label: STAGE_LABELS[d.stage] ?? d.stage,
   }));
 
+  const columns: ChartColumn<(typeof formatted)[number]>[] = [
+    { header: 'Stage', render: row => row.label },
+    { header: 'Jobs', render: row => row.count },
+  ];
+
   return (
-    <div
-      role='img'
-      aria-label='Pipeline funnel chart showing job counts by stage'
+    <ChartFigure
+      ariaLabel='Pipeline funnel: jobs by stage'
+      rows={formatted}
+      columns={columns}
+      rowKey={row => row.stage}
     >
       <ResponsiveContainer width='100%' height={250}>
         <BarChart data={formatted} layout='vertical'>
@@ -73,9 +81,9 @@ export default function FunnelChart({ data }: FunnelChartProps) {
           />
           <Tooltip contentStyle={{ fontSize: 12 }} />
           <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>
-            {formatted.map((_, i) => (
+            {formatted.map((entry, i) => (
               <Cell
-                key={i}
+                key={entry.stage}
                 fill={STAGE_COLORS[i % STAGE_COLORS.length]}
                 fillOpacity={0.85}
               />
@@ -83,6 +91,6 @@ export default function FunnelChart({ data }: FunnelChartProps) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartFigure>
   );
 }
