@@ -6,6 +6,11 @@ bytes + cost metadata. This module handles:
 - inserting the metadata row with a document_type discriminator,
 - reading rows back for listing / download endpoints.
 
+Markdown is the new source of truth: every persist() also writes
+`payload_md` (canonical markdown serialization) and
+`docx_payload_md_hash` (cache key for the rendered .docx). The
+structured `payload` JSONB column stays in place during transition.
+
 Lint failures do NOT reach this module — the router returns 422 before
 anything gets persisted.
 """
@@ -25,6 +30,7 @@ from app.models.tailor import (
     TailoredResume,
     TailoredResumeRecord,
 )
+from app.services.docx.pandoc_render import md_payload_hash
 from app.services.tailor import versions
 
 TABLE = "tailored_resumes"
@@ -66,7 +72,12 @@ def download_docx(supabase: Client, storage_path: str) -> bytes:
     return supabase.storage.from_(STORAGE_BUCKET).download(storage_path)
 
 
-def insert_row(supabase: Client, row: dict[str, Any]) -> TailoredResumeRecord:
+def insert_row(
+    supabase: Client,
+    row: dict[str, Any],
+    *,
+    payload_md: str | None = None,
+) -> TailoredResumeRecord:
     resp = supabase.table(TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
@@ -78,6 +89,7 @@ def insert_row(supabase: Client, row: dict[str, Any]) -> TailoredResumeRecord:
         resume_id=record.id,
         payload=record.payload,
         source="initial",
+        payload_md=payload_md,
     )
     return record
 
@@ -88,6 +100,7 @@ def persist(
     user_id: str | None,
     job_posting_id: str | None,
     resume: TailoredResume,
+    payload_md: str,
     job_description: str,
     warnings: list[str],
     llm_result: LLMResult,
@@ -102,6 +115,8 @@ def persist(
         "jd_snapshot": job_description,
         "jd_snapshot_hash": jd_hash(job_description),
         "payload": resume.model_dump(mode="json"),
+        "payload_md": payload_md,
+        "docx_payload_md_hash": md_payload_hash(payload_md),
         "storage_path": storage_path,
         "warnings": warnings,
         "model": llm_result.model,
@@ -110,7 +125,7 @@ def persist(
         "cost_usd": llm_result.cost_usd,
         "latency_ms": llm_result.latency_ms,
     }
-    return insert_row(supabase, row)
+    return insert_row(supabase, row, payload_md=payload_md)
 
 
 def persist_cover_letter(
@@ -119,6 +134,7 @@ def persist_cover_letter(
     user_id: str | None,
     job_posting_id: str | None,
     letter: TailoredCoverLetter,
+    payload_md: str,
     job_description: str,
     warnings: list[str],
     llm_result: LLMResult,
@@ -137,6 +153,8 @@ def persist_cover_letter(
         "jd_snapshot": job_description,
         "jd_snapshot_hash": jd_hash(job_description),
         "payload": letter.model_dump(mode="json"),
+        "payload_md": payload_md,
+        "docx_payload_md_hash": md_payload_hash(payload_md),
         "storage_path": storage_path,
         "warnings": warnings,
         "model": llm_result.model,
@@ -145,7 +163,7 @@ def persist_cover_letter(
         "cost_usd": llm_result.cost_usd,
         "latency_ms": llm_result.latency_ms,
     }
-    return insert_row(supabase, row)
+    return insert_row(supabase, row, payload_md=payload_md)
 
 
 def get(supabase: Client, resume_id: str) -> TailoredResumeRecord | None:
@@ -186,6 +204,76 @@ def update_payload(
     if not rows:
         raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
+
+
+def update_payload_md(
+    supabase: Client,
+    resume_id: str,
+    payload_md: str,
+    *,
+    version_source: versions.VersionSource = "user_edit",
+) -> TailoredResumeRecord:
+    """Update the markdown payload and invalidate the cached docx hash.
+
+    The next download endpoint call will detect the hash mismatch and
+    re-render via pandoc, then update both the storage_path bytes and
+    docx_payload_md_hash. We don't re-render eagerly here so save is
+    cheap (no pandoc subprocess on every keystroke / autosave).
+
+    A version snapshot is recorded before the update lands so history
+    is captured even if the live update fails between snapshot and
+    commit (F3-H).
+    """
+    versions.record(
+        supabase,
+        resume_id=resume_id,
+        payload={},
+        source=version_source,
+        payload_md=payload_md,
+    )
+    new_hash = md_payload_hash(payload_md)
+    updates: dict[str, Any] = {
+        "payload_md": payload_md,
+        # Invalidate the docx cache: we set the hash to a sentinel that
+        # the download endpoint will detect as "render needed". We
+        # explicitly DO NOT set the new hash here — it's set after
+        # pandoc renders successfully so a failed render doesn't leave
+        # the hash claiming bytes that don't exist.
+        "docx_payload_md_hash": None,
+        "updated_at": "now()",
+    }
+    resp = supabase.table(TABLE).update(updates).eq("id", resume_id).execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
+    record = TailoredResumeRecord.model_validate(rows[0])
+    # Return the freshly-computed hash via a side channel — caller may
+    # render and persist immediately. Not stored on the row until the
+    # render lands. (Currently unused; kept for symmetry with the
+    # render-on-download path.)
+    _ = new_hash
+    return record
+
+
+def mark_docx_rendered(
+    supabase: Client,
+    resume_id: str,
+    *,
+    storage_path: str,
+    payload_md_hash: str,
+) -> None:
+    """Record that the docx for `payload_md_hash` is uploaded to storage_path.
+
+    Called after a successful pandoc render + storage upload so future
+    downloads can serve the cached bytes when the markdown hasn't
+    changed.
+    """
+    supabase.table(TABLE).update(
+        {
+            "storage_path": storage_path,
+            "docx_payload_md_hash": payload_md_hash,
+        }
+    ).eq("id", resume_id).execute()
 
 
 def mark_job_resume_draft(supabase: Client, job_posting_id: str) -> None:

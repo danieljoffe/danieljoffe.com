@@ -39,9 +39,15 @@ from app.models.tailor import (
     TailorRequest,
     TailorResponse,
 )
+from app.services.ats_lint import lint_markdown
 from app.services.ats_lint.linter import lint_docx
 from app.services.batch import create_batch, get_batch, process_batch
-from app.services.docx.renderer import render_docx
+from app.services.docx.pandoc_render import (
+    PandocNotInstalled,
+    PandocRenderError,
+    md_payload_hash,
+    md_to_docx,
+)
 from app.services.experience import gap_tracker, optimized, preferences
 from app.services.llm.client import LLMClient
 from app.services.tailor import (
@@ -347,7 +353,11 @@ async def edit_tailored_resume(
     body: ResumeEditRequest,
     supabase: Client = Depends(get_supabase),
 ) -> TailorResponse:
-    """Edit a draft resume. Rejected if already approved."""
+    """Edit a draft resume's markdown. Rejected if already approved.
+
+    The .docx isn't re-rendered eagerly — saving is cheap and the
+    download endpoint detects a stale hash to re-render lazily.
+    """
     row = persistence.get(supabase, resume_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
@@ -356,25 +366,7 @@ async def edit_tailored_resume(
     if row.approved_at is not None:
         raise HTTPException(status_code=409, detail="resume already approved — cannot edit")
 
-    current = row.as_resume()
-
-    # Merge non-None fields from the edit request
-    updates: dict[str, Any] = {}
-    if body.summary is not None:
-        updates["summary"] = body.summary
-    if body.skills is not None:
-        updates["skills"] = body.skills
-    if body.experience is not None:
-        updates["experience"] = body.experience
-    if body.education is not None:
-        updates["education"] = body.education
-
-    updated = current.model_copy(update=updates)
-
-    # Re-render and re-lint
-    docx_bytes = render_docx(updated)
-    lint_result = lint_docx(docx_bytes, document_type="resume")
-
+    lint_result = lint_markdown(body.markdown, document_type="resume")
     if lint_result.errors:
         raise HTTPException(
             status_code=422,
@@ -384,18 +376,7 @@ async def edit_tailored_resume(
             },
         )
 
-    # Persist updated payload and re-upload .docx
-    new_payload = updated.model_dump(mode="json")
-    storage_path = persistence.upload_docx(
-        supabase,
-        user_id=row.user_id,
-        resume_id=resume_id,
-        docx_bytes=docx_bytes,
-    )
-    record = persistence.update_payload(
-        supabase, resume_id, new_payload, storage_path=storage_path
-    )
-
+    record = persistence.update_payload_md(supabase, resume_id, body.markdown)
     return TailorResponse(record=record, lint_warnings=lint_result.warnings)
 
 
@@ -464,12 +445,68 @@ async def download_tailored_resume(
     row = persistence.get(supabase, resume_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
-    if not row.storage_path:
-        raise HTTPException(status_code=404, detail="no .docx persisted for this resume")
-    try:
-        data = persistence.download_docx(supabase, row.storage_path)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"storage fetch failed: {exc}") from exc
+
+    expected_hash = md_payload_hash(row.payload_md) if row.payload_md else None
+    cache_fresh = (
+        row.storage_path is not None
+        and expected_hash is not None
+        and row.docx_payload_md_hash == expected_hash
+    )
+
+    if not cache_fresh:
+        if not row.payload_md:
+            if not row.storage_path:
+                raise HTTPException(
+                    status_code=404, detail="no .docx persisted for this resume"
+                )
+            # Legacy row with cached docx but no markdown — serve cached bytes.
+            try:
+                data = persistence.download_docx(supabase, row.storage_path)
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=502, detail=f"storage fetch failed: {exc}"
+                ) from exc
+            filename = f"{row.id}.docx"
+            return Response(
+                content=data,
+                media_type=persistence.DOCX_CONTENT_TYPE,
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
+
+        try:
+            data = md_to_docx(row.payload_md)
+        except PandocNotInstalled as exc:
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+        except PandocRenderError as exc:
+            raise HTTPException(
+                status_code=500, detail=f"docx render failed: {exc}"
+            ) from exc
+
+        try:
+            storage_path = persistence.upload_docx(
+                supabase,
+                user_id=row.user_id,
+                resume_id=resume_id,
+                docx_bytes=data,
+            )
+            persistence.mark_docx_rendered(
+                supabase,
+                resume_id,
+                storage_path=storage_path,
+                payload_md_hash=expected_hash or md_payload_hash(row.payload_md),
+            )
+        except Exception:
+            # Fall through and serve the freshly-rendered bytes regardless;
+            # next download will retry the cache write.
+            pass
+    else:
+        try:
+            data = persistence.download_docx(supabase, row.storage_path)  # type: ignore[arg-type]
+        except Exception as exc:
+            raise HTTPException(
+                status_code=502, detail=f"storage fetch failed: {exc}"
+            ) from exc
+
     filename = f"{row.id}.docx"
     return Response(
         content=data,

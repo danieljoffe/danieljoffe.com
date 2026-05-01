@@ -39,6 +39,7 @@ def record(
     resume_id: str,
     payload: dict[str, Any],
     source: VersionSource,
+    payload_md: str | None = None,
 ) -> None:
     """Insert a version snapshot then prune anything beyond the free-tier cap.
 
@@ -46,13 +47,14 @@ def record(
     payload write that the caller is doing alongside this. The caller catches
     exceptions; here we only raise if the insert itself fails.
     """
-    supabase.table(VERSIONS_TABLE).insert(
-        {
-            "resume_id": resume_id,
-            "payload": payload,
-            "source": source,
-        }
-    ).execute()
+    row: dict[str, Any] = {
+        "resume_id": resume_id,
+        "payload": payload,
+        "source": source,
+    }
+    if payload_md is not None:
+        row["payload_md"] = payload_md
+    supabase.table(VERSIONS_TABLE).insert(row).execute()
     _prune(supabase, resume_id=resume_id, keep=FREE_TIER_VERSION_CAP)
 
 

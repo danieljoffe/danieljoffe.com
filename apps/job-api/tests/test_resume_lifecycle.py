@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from app.models.ats_lint import LintResult, LintViolation
+from app.models.ats_lint import LintResult
 from app.models.tailor import (
     BulkExportRequest,
     ContactInfo,
@@ -78,19 +78,17 @@ def _make_record(
 
 
 class TestResumeEditRequestValidation:
-    def test_valid_partial_update(self) -> None:
-        req = ResumeEditRequest(summary="New summary")
-        assert req.summary == "New summary"
-        assert req.skills is None
-        assert req.experience is None
+    def test_valid_markdown(self) -> None:
+        req = ResumeEditRequest(markdown="# Daniel\n\n## Experience\n\n- did things")
+        assert req.markdown.startswith("# Daniel")
 
-    def test_rejects_empty_summary(self) -> None:
+    def test_rejects_empty_markdown(self) -> None:
         with pytest.raises(ValidationError):
-            ResumeEditRequest(summary="")
+            ResumeEditRequest(markdown="")
 
-    def test_rejects_too_long_summary(self) -> None:
+    def test_rejects_too_long_markdown(self) -> None:
         with pytest.raises(ValidationError):
-            ResumeEditRequest(summary="x" * 601)
+            ResumeEditRequest(markdown="x" * 50_001)
 
 
 class TestBulkExportRequestValidation:
@@ -329,9 +327,10 @@ class TestSingleResumeStatusBump:
 
 
 class TestEditResume:
+    _GOOD_MD = "# Daniel Joffe\n\n## Experience\n\n### Engineer — Acme\n\n- Did things\n"
+
     @pytest.mark.asyncio
     async def test_edit_success(self) -> None:
-
         from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
@@ -344,25 +343,13 @@ class TestEditResume:
                 return_value=record,
             ),
             patch(
-                "app.routers.tailor.render_docx",
-                return_value=b"fake-docx-bytes",
-            ),
-            patch(
-                "app.routers.tailor.lint_docx",
-                return_value=LintResult(ok=True, violations=[]),
-            ),
-            patch(
-                "app.services.tailor.persistence.upload_docx",
-                return_value="anon/rec-1.docx",
-            ),
-            patch(
-                "app.services.tailor.persistence.update_payload",
+                "app.services.tailor.persistence.update_payload_md",
                 return_value=updated_record,
             ),
         ):
             result = await tailor_router.edit_tailored_resume(
                 resume_id="rec-1",
-                body=ResumeEditRequest(summary="Updated summary"),
+                body=ResumeEditRequest(markdown=self._GOOD_MD),
                 supabase=supabase,
             )
 
@@ -382,7 +369,7 @@ class TestEditResume:
         ):
             await tailor_router.edit_tailored_resume(
                 resume_id="nonexistent",
-                body=ResumeEditRequest(summary="New"),
+                body=ResumeEditRequest(markdown=self._GOOD_MD),
                 supabase=supabase,
             )
         assert exc_info.value.status_code == 404
@@ -402,7 +389,7 @@ class TestEditResume:
         ):
             await tailor_router.edit_tailored_resume(
                 resume_id="rec-1",
-                body=ResumeEditRequest(summary="New"),
+                body=ResumeEditRequest(markdown=self._GOOD_MD),
                 supabase=supabase,
             )
         assert exc_info.value.status_code == 409
@@ -422,13 +409,13 @@ class TestEditResume:
         ):
             await tailor_router.edit_tailored_resume(
                 resume_id="rec-1",
-                body=ResumeEditRequest(summary="New"),
+                body=ResumeEditRequest(markdown=self._GOOD_MD),
                 supabase=supabase,
             )
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_edit_lint_failure(self) -> None:
+    async def test_edit_lint_failure_missing_experience(self) -> None:
         from fastapi import HTTPException
 
         from app.routers import tailor as tailor_router
@@ -436,30 +423,16 @@ class TestEditResume:
         supabase = MagicMock()
         record = _make_record()
 
+        # No `## Experience` heading -> markdown lint blocks the save.
+        bad_md = "# Daniel Joffe\n\n## Skills\n\nPython\n"
+
         with (
             patch("app.services.tailor.persistence.get", return_value=record),
-            patch(
-                "app.routers.tailor.render_docx",
-                return_value=b"fake-docx-bytes",
-            ),
-            patch(
-                "app.routers.tailor.lint_docx",
-                return_value=LintResult(
-                    ok=False,
-                    violations=[
-                        LintViolation(
-                            code="page_overflow",
-                            message="Too many pages",
-                            severity="error",
-                        )
-                    ],
-                ),
-            ),
             pytest.raises(HTTPException) as exc_info,
         ):
             await tailor_router.edit_tailored_resume(
                 resume_id="rec-1",
-                body=ResumeEditRequest(summary="New"),
+                body=ResumeEditRequest(markdown=bad_md),
                 supabase=supabase,
             )
         assert exc_info.value.status_code == 422

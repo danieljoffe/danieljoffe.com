@@ -127,6 +127,8 @@ def clone_resume_for_job(
         "jd_snapshot": job_description,
         "jd_snapshot_hash": jd_hash(job_description),
         "payload": source.payload,
+        "payload_md": source.payload_md,
+        "docx_payload_md_hash": source.docx_payload_md_hash,
         "storage_path": source.storage_path,
         "warnings": [*source.warnings, "reused_from_similar_job"],
         "model": source.model,
@@ -136,4 +138,4 @@ def clone_resume_for_job(
         "latency_ms": 0,
         "source_resume_id": source.id,
     }
-    return insert_row(supabase, row)
+    return insert_row(supabase, row, payload_md=source.payload_md)
