@@ -11,6 +11,7 @@ import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
+import StatusIndicator from './StatusIndicator';
 import {
   formatStatus,
   JOB_STATUSES,
@@ -228,9 +229,7 @@ export default function JobDetailPanel({
                   })}
                 </span>
                 <span>&rarr;</span>
-                <Badge variant='default' size='sm'>
-                  {entry.new_status.replace('_', ' ')}
-                </Badge>
+                <StatusIndicator status={entry.new_status} />
                 {entry.note && (
                   <span className='truncate italic'>{entry.note}</span>
                 )}

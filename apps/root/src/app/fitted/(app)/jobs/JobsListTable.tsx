@@ -10,14 +10,14 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
+import StatusIndicator from './StatusIndicator';
 import type {
   JobPosting,
   JobsFilterState,
-  JobStatus,
   JobsSortColumn,
   ScoringStatus,
 } from './types';
-import { formatStatus, MANUAL_SOURCE_ID, STATUS_VARIANT } from './types';
+import { MANUAL_SOURCE_ID } from './types';
 
 function hasResume(status: string): boolean {
   return status === 'resume_draft' || status === 'resume_ready';
@@ -54,11 +54,6 @@ function ScoreBadge({
       )}
     </span>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const variant = STATUS_VARIANT[status as JobStatus] ?? 'default';
-  return <Badge variant={variant}>{formatStatus(status)}</Badge>;
 }
 
 function timeAgo(dateStr: string | null): string {
@@ -183,6 +178,12 @@ export default function JobsListTable({
                   className='accent-brand-500'
                 />
               </th>
+              <th
+                scope='col'
+                className='px-3 py-2 font-medium text-text-secondary'
+              >
+                Status
+              </th>
               {COLUMNS.map(col => (
                 <th
                   key={col.key}
@@ -211,12 +212,6 @@ export default function JobsListTable({
                 className='px-3 py-2 font-medium text-text-secondary'
               >
                 Salary
-              </th>
-              <th
-                scope='col'
-                className='px-3 py-2 font-medium text-text-secondary'
-              >
-                Status
               </th>
               <th
                 scope='col'
@@ -259,6 +254,20 @@ export default function JobsListTable({
                     />
                   </td>
                   <td className='px-3 py-2'>
+                    <div className='flex items-center gap-2'>
+                      <StatusIndicator status={job.status} />
+                      {hasResume(job.status) && (
+                        <Link
+                          href={`/fitted/jobs/${job.id}/resume`}
+                          onClick={e => e.stopPropagation()}
+                          className='text-xs text-brand-500 hover:text-brand-600 underline'
+                        >
+                          Review
+                        </Link>
+                      )}
+                    </div>
+                  </td>
+                  <td className='px-3 py-2'>
                     <ScoreBadge
                       score={job.score}
                       scoringStatus={job.scoring_status}
@@ -290,20 +299,6 @@ export default function JobsListTable({
                   </td>
                   <td className='px-3 py-2 text-text-tertiary'>
                     {job.salary_text ?? '\u2014'}
-                  </td>
-                  <td className='px-3 py-2'>
-                    <div className='flex items-center gap-2'>
-                      <StatusBadge status={job.status} />
-                      {hasResume(job.status) && (
-                        <Link
-                          href={`/fitted/jobs/${job.id}/resume`}
-                          onClick={e => e.stopPropagation()}
-                          className='text-xs text-brand-500 hover:text-brand-600 underline'
-                        >
-                          Review
-                        </Link>
-                      )}
-                    </div>
                   </td>
                   <td className='px-3 py-2 text-text-tertiary truncate max-w-[150px]'>
                     {job.location ?? '\u2014'}

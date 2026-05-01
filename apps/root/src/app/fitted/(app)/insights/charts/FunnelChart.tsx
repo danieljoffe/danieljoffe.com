@@ -11,9 +11,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type { JobStatus } from '../../jobs/types';
 import type { FunnelStage } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS } from './colors';
+import { CHART_COLORS, STATUS_CHART_COLOR } from './colors';
 
 const DRILL_LINK_CLASS =
   'inline-flex items-center rounded-full bg-surface-tertiary px-2 py-0.5 text-xs text-text-primary tabular-nums hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1';
@@ -43,15 +44,9 @@ function formatLabel(slug: string): string {
     .join(' ');
 }
 
-/** Gradient from brand → success across the visible funnel stages. */
-const STAGE_COLORS = [
-  CHART_COLORS.brand,
-  CHART_COLORS.info,
-  CHART_COLORS.info,
-  CHART_COLORS.warning,
-  CHART_COLORS.success,
-  CHART_COLORS.success,
-];
+function stageFill(stage: string): string {
+  return STATUS_CHART_COLOR[stage as JobStatus] ?? CHART_COLORS.muted;
+}
 
 export default function FunnelChart({ data }: FunnelChartProps) {
   const visible = data.filter(d => !HIDDEN_STAGES.has(d.stage));
@@ -105,10 +100,10 @@ export default function FunnelChart({ data }: FunnelChartProps) {
             />
             <Tooltip contentStyle={{ fontSize: 12 }} />
             <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>
-              {formatted.map((entry, i) => (
+              {formatted.map(entry => (
                 <Cell
                   key={entry.stage}
-                  fill={STAGE_COLORS[i % STAGE_COLORS.length]}
+                  fill={stageFill(entry.stage)}
                   fillOpacity={0.85}
                 />
               ))}
