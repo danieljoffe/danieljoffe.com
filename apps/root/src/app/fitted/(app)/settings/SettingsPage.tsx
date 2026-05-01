@@ -54,9 +54,11 @@ interface IdentityFields {
   website_url: string | null;
 }
 
+type Section = 'profile' | 'email' | 'sms';
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<Section | null>(null);
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const { toast } = useToast();
 
@@ -69,7 +71,6 @@ export default function SettingsPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
 
   // Profile identity (F3-A): contact info used for resume + cover-letter headers.
-  const [identity, setIdentity] = useState<IdentityFields | null>(null);
   const [identityName, setIdentityName] = useState('');
   const [identityEmail, setIdentityEmail] = useState('');
   const [identityPhone, setIdentityPhone] = useState('');
@@ -95,7 +96,6 @@ export default function SettingsPage() {
       }
       if (identityRes.ok) {
         const data = (await identityRes.json()) as IdentityFields;
-        setIdentity(data);
         setIdentityName(data.name ?? '');
         setIdentityEmail(data.email ?? '');
         setIdentityPhone(data.phone_number ?? '');
@@ -117,20 +117,37 @@ export default function SettingsPage() {
     fetchPrefs();
   }, [fetchPrefs]);
 
-  const handleSave = useCallback(async () => {
-    setSaving(true);
-    try {
-      const notifBody: Record<string, unknown> = {
-        job_notifications_enabled: emailEnabled,
-        job_score_threshold: parseInt(emailThreshold, 10) || 100,
-        sms_notifications_enabled: smsEnabled,
-        sms_score_threshold: parseInt(smsThreshold, 10) || 100,
-        sms_daily_limit: parseInt(smsDailyLimit, 10) || 5,
-      };
-      if (phoneNumber.trim()) {
-        notifBody.phone_number = phoneNumber.trim();
+  const patchNotifications = useCallback(
+    async (section: 'email' | 'sms', body: Record<string, unknown>) => {
+      setSavingSection(section);
+      try {
+        const res = await fetch('/api/profile/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const message =
+            (await extractFastApiError(res)) ?? 'Failed to save settings';
+          toast({ variant: 'error', title: message });
+          return;
+        }
+        const data = (await res.json()) as NotificationPreferences;
+        setPrefs(data);
+        toast({ variant: 'success', title: 'Settings saved' });
+      } catch {
+        toast({ variant: 'error', title: 'Failed to save settings' });
+      } finally {
+        setSavingSection(null);
       }
-      const identityBody: Record<string, unknown> = {
+    },
+    [toast]
+  );
+
+  const handleSaveProfile = useCallback(async () => {
+    setSavingSection('profile');
+    try {
+      const body: Record<string, unknown> = {
         name: identityName.trim(),
         email: identityEmail.trim(),
         phone_number: identityPhone.trim(),
@@ -138,45 +155,33 @@ export default function SettingsPage() {
         linkedin_url: identityLinkedin.trim(),
         website_url: identityWebsite.trim(),
       };
-
-      const [notifRes, identityRes] = await Promise.all([
-        fetch('/api/profile/notifications', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(notifBody),
-        }),
-        fetch('/api/profile/identity', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(identityBody),
-        }),
-      ]);
-      if (!notifRes.ok || !identityRes.ok) {
+      const res = await fetch('/api/profile/identity', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
         const message =
-          (await extractFastApiError(notifRes)) ||
-          (await extractFastApiError(identityRes)) ||
-          'Failed to save settings';
+          (await extractFastApiError(res)) ?? 'Failed to save profile';
         toast({ variant: 'error', title: message });
         return;
       }
-
-      const notifData = (await notifRes.json()) as NotificationPreferences;
-      const identityData = (await identityRes.json()) as IdentityFields;
-      setPrefs(notifData);
-      setIdentity(identityData);
-      toast({ variant: 'success', title: 'Settings saved' });
+      const data = (await res.json()) as IdentityFields;
+      // Re-sync from server response so normalized values (e.g. E.164 phone)
+      // replace the typed input.
+      setIdentityName(data.name ?? '');
+      setIdentityEmail(data.email ?? '');
+      setIdentityPhone(data.phone_number ?? '');
+      setIdentityLocation(data.location ?? '');
+      setIdentityLinkedin(data.linkedin_url ?? '');
+      setIdentityWebsite(data.website_url ?? '');
+      toast({ variant: 'success', title: 'Profile saved' });
     } catch {
-      toast({ variant: 'error', title: 'Failed to save settings' });
+      toast({ variant: 'error', title: 'Failed to save profile' });
     } finally {
-      setSaving(false);
+      setSavingSection(null);
     }
   }, [
-    emailEnabled,
-    emailThreshold,
-    smsEnabled,
-    smsThreshold,
-    smsDailyLimit,
-    phoneNumber,
     identityName,
     identityEmail,
     identityPhone,
@@ -186,25 +191,30 @@ export default function SettingsPage() {
     toast,
   ]);
 
-  const hasNotifChanges =
-    prefs !== null &&
-    (emailEnabled !== prefs.job_notifications_enabled ||
-      emailThreshold !== String(prefs.job_score_threshold) ||
-      smsEnabled !== prefs.sms_notifications_enabled ||
-      smsThreshold !== String(prefs.sms_score_threshold) ||
-      smsDailyLimit !== String(prefs.sms_daily_limit) ||
-      phoneNumber !== (prefs.phone_number ?? ''));
+  const handleSaveEmail = useCallback(async () => {
+    await patchNotifications('email', {
+      job_notifications_enabled: emailEnabled,
+      job_score_threshold: parseInt(emailThreshold, 10) || 100,
+    });
+  }, [emailEnabled, emailThreshold, patchNotifications]);
 
-  const hasIdentityChanges =
-    identity !== null &&
-    (identityName !== (identity.name ?? '') ||
-      identityEmail !== (identity.email ?? '') ||
-      identityPhone !== (identity.phone_number ?? '') ||
-      identityLocation !== (identity.location ?? '') ||
-      identityLinkedin !== (identity.linkedin_url ?? '') ||
-      identityWebsite !== (identity.website_url ?? ''));
-
-  const hasChanges = hasNotifChanges || hasIdentityChanges;
+  const handleSaveSms = useCallback(async () => {
+    const body: Record<string, unknown> = {
+      sms_notifications_enabled: smsEnabled,
+      sms_score_threshold: parseInt(smsThreshold, 10) || 100,
+      sms_daily_limit: parseInt(smsDailyLimit, 10) || 5,
+    };
+    if (phoneNumber.trim()) {
+      body.phone_number = phoneNumber.trim();
+    }
+    await patchNotifications('sms', body);
+  }, [
+    smsEnabled,
+    smsThreshold,
+    smsDailyLimit,
+    phoneNumber,
+    patchNotifications,
+  ]);
 
   const emailAvailable = prefs?.email_available ?? false;
   const smsAvailable = prefs?.sms_available ?? false;
@@ -222,42 +232,53 @@ export default function SettingsPage() {
     );
   }
 
+  const renderSaveButton = (
+    section: Section,
+    onClick: () => void,
+    disabled: boolean
+  ) => {
+    const isSaving = savingSection === section;
+    return (
+      <Button
+        name={`save-${section}`}
+        variant='primary'
+        size='sm'
+        onClick={onClick}
+        disabled={isSaving || disabled}
+      >
+        {isSaving ? (
+          <>
+            <Spinner size='sm' aria-label='Saving' />
+            <span>Saving...</span>
+          </>
+        ) : (
+          <>
+            <Save className='size-4' aria-hidden />
+            <span>Save</span>
+          </>
+        )}
+      </Button>
+    );
+  };
+
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <Heading variant='hero' as='h1'>
-            Settings
-          </Heading>
-          <Text variant='body' className='mt-1 text-text-secondary'>
-            Notification preferences and alerts
-          </Text>
-        </div>
-        <Button
-          name='save-settings'
-          variant='primary'
-          size='sm'
-          onClick={handleSave}
-          disabled={saving || !hasChanges}
-        >
-          {saving ? (
-            <>
-              <Spinner size='sm' aria-label='Saving' />
-              <span>Saving...</span>
-            </>
-          ) : (
-            <>
-              <Save className='size-4' aria-hidden />
-              <span>Save</span>
-            </>
-          )}
-        </Button>
+      <div>
+        <Heading variant='hero' as='h1'>
+          Settings
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Notification preferences and alerts
+        </Text>
       </div>
 
       {/* Profile (resume + cover-letter contact info) */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
+          <div className='flex items-center justify-between'>
+            <CardTitle>Profile</CardTitle>
+            {renderSaveButton('profile', handleSaveProfile, false)}
+          </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
           <Text variant='caption' className='text-text-secondary'>
@@ -269,7 +290,7 @@ export default function SettingsPage() {
               label='Name'
               value={identityName}
               onChange={e => setIdentityName(e.target.value)}
-              placeholder='Daniel Joffe'
+              placeholder='Full name'
               autoComplete='name'
               required
             />
@@ -278,7 +299,7 @@ export default function SettingsPage() {
               type='email'
               value={identityEmail}
               onChange={e => setIdentityEmail(e.target.value)}
-              placeholder='you@example.com'
+              placeholder='name@example.com'
               autoComplete='email'
               inputMode='email'
             />
@@ -287,7 +308,7 @@ export default function SettingsPage() {
               type='tel'
               value={identityPhone}
               onChange={e => setIdentityPhone(e.target.value)}
-              placeholder='+1 555 123 4567'
+              placeholder='+1 555 555 5555'
               autoComplete='tel'
               inputMode='tel'
             />
@@ -295,7 +316,7 @@ export default function SettingsPage() {
               label='Location'
               value={identityLocation}
               onChange={e => setIdentityLocation(e.target.value)}
-              placeholder='Brooklyn, NY'
+              placeholder='City, State'
               autoComplete='address-level2'
             />
             <Input
@@ -303,7 +324,7 @@ export default function SettingsPage() {
               type='url'
               value={identityLinkedin}
               onChange={e => setIdentityLinkedin(e.target.value)}
-              placeholder='https://linkedin.com/in/...'
+              placeholder='https://linkedin.com/in/username'
               autoComplete='url'
               inputMode='url'
             />
@@ -312,7 +333,7 @@ export default function SettingsPage() {
               type='url'
               value={identityWebsite}
               onChange={e => setIdentityWebsite(e.target.value)}
-              placeholder='https://danieljoffe.com'
+              placeholder='https://example.com'
               autoComplete='url'
               inputMode='url'
             />
@@ -323,14 +344,17 @@ export default function SettingsPage() {
       {/* Email Notifications */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
             <CardTitle>Email Notifications</CardTitle>
-            <Switch
-              checked={emailEnabled && emailAvailable}
-              onChange={setEmailEnabled}
-              label='Enabled'
-              disabled={!emailAvailable}
-            />
+            <div className='flex items-center gap-3'>
+              <Switch
+                checked={emailEnabled && emailAvailable}
+                onChange={setEmailEnabled}
+                label='Enabled'
+                disabled={!emailAvailable}
+              />
+              {renderSaveButton('email', handleSaveEmail, !emailAvailable)}
+            </div>
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
@@ -365,14 +389,17 @@ export default function SettingsPage() {
       {/* SMS Notifications */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
             <CardTitle>SMS Notifications</CardTitle>
-            <Switch
-              checked={smsEnabled && smsAvailable}
-              onChange={setSmsEnabled}
-              label='Enabled'
-              disabled={!smsAvailable}
-            />
+            <div className='flex items-center gap-3'>
+              <Switch
+                checked={smsEnabled && smsAvailable}
+                onChange={setSmsEnabled}
+                label='Enabled'
+                disabled={!smsAvailable}
+              />
+              {renderSaveButton('sms', handleSaveSms, !smsAvailable)}
+            </div>
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
@@ -392,7 +419,7 @@ export default function SettingsPage() {
               type='tel'
               value={phoneNumber}
               onChange={e => setPhoneNumber(e.target.value)}
-              placeholder='+1 555 123 4567'
+              placeholder='+1 555 555 5555'
               helperText='Include country code'
               autoComplete='tel'
               inputMode='tel'
