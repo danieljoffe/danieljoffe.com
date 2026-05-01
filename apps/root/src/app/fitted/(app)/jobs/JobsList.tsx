@@ -13,7 +13,7 @@ import { cn } from '@/lib/cn';
 import type { UserTargetWithTarget } from '../targets/types';
 import BatchActionBar from './BatchActionBar';
 import JobsFilter from './JobsFilter';
-import JobsListTable from './JobsListTable';
+import JobsListView from './JobsListView';
 import type { JobPosting, JobsFilterState } from './types';
 
 interface TargetTab {
@@ -443,7 +443,7 @@ export default function JobsList({
 
           <JobsFilter filters={filters} onChange={setFilters} />
 
-          <JobsListTable
+          <JobsListView
             filters={filters}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}

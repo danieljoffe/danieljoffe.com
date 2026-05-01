@@ -1,0 +1,144 @@
+'use client';
+
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
+import JobsListMobile from './JobsListMobile';
+import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
+
+// Desktop table is heavier (inline expand panel, full table layout, recharts-free
+// but still pulls JobDetailPanel + history). Phones never need it — load only
+// when the viewport is md+.
+const JobsListTable = dynamic(() => import('./JobsListTable'), {
+  ssr: false,
+  loading: () => (
+    <div className='space-y-3' aria-label='Loading jobs'>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className='flex items-center gap-3 px-3 py-2'>
+          <Skeleton variant='rectangular' width={40} height={24} />
+          <Skeleton width='40%' size='sm' />
+          <Skeleton width='20%' size='sm' />
+          <Skeleton width='10%' size='sm' />
+        </div>
+      ))}
+    </div>
+  ),
+});
+
+const DESKTOP_QUERY = '(min-width: 768px)';
+
+function subscribeMedia(callback: () => void): () => void {
+  const mq = window.matchMedia(DESKTOP_QUERY);
+  mq.addEventListener('change', callback);
+  return () => mq.removeEventListener('change', callback);
+}
+
+function getIsDesktop(): boolean {
+  return window.matchMedia(DESKTOP_QUERY).matches;
+}
+
+function useIsDesktop(): boolean {
+  return useSyncExternalStore(
+    subscribeMedia,
+    getIsDesktop,
+    () => false // SSR / hydration default — render mobile shell, swap on client
+  );
+}
+
+interface JobsListViewProps {
+  filters: JobsFilterState;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
+  refreshKey: number;
+  targetId: string | undefined;
+  onPostingsLoaded?: ((postings: JobPosting[]) => void) | undefined;
+}
+
+export default function JobsListView({
+  filters,
+  selectedIds,
+  onSelectionChange,
+  refreshKey,
+  targetId,
+  onPostingsLoaded,
+}: JobsListViewProps) {
+  const [deleteKey, setDeleteKey] = useState(0);
+  const isDesktop = useIsDesktop();
+
+  const extraParams = useMemo(() => {
+    const params: Record<string, string> = {};
+    if (targetId) params.target_id = targetId;
+    if (filters.minScore) params.min_score = filters.minScore;
+    if (filters.status) params.status = filters.status;
+    if (filters.search) params.search = filters.search;
+    const combined = refreshKey + deleteKey;
+    if (combined) params._r = String(combined);
+    return params;
+  }, [targetId, filters, refreshKey, deleteKey]);
+
+  const {
+    data: postings,
+    loading,
+    page,
+    setPage,
+    totalPages,
+    sort,
+    order,
+    handleSort,
+    sortIndicator,
+    refetch,
+  } = useAdminTableFetch<JobPosting, JobsSortColumn>({
+    endpoint: '/api/jobs',
+    defaultSort: 'score',
+    defaultOrder: 'desc',
+    pageSize: 20,
+    dataKey: 'postings',
+    extraParams,
+  });
+
+  useEffect(() => {
+    onPostingsLoaded?.(postings);
+  }, [postings, onPostingsLoaded]);
+
+  function handleRefetch() {
+    setDeleteKey(k => k + 1);
+    refetch();
+  }
+
+  if (isDesktop) {
+    return (
+      <JobsListTable
+        postings={postings}
+        loading={loading}
+        page={page}
+        setPage={setPage}
+        totalPages={totalPages}
+        sort={sort}
+        order={order}
+        handleSort={handleSort}
+        sortIndicator={sortIndicator}
+        selectedIds={selectedIds}
+        onSelectionChange={onSelectionChange}
+        targetId={targetId}
+        onRefetch={handleRefetch}
+      />
+    );
+  }
+
+  return (
+    <JobsListMobile
+      postings={postings}
+      loading={loading}
+      page={page}
+      setPage={setPage}
+      totalPages={totalPages}
+      sort={sort}
+      order={order}
+      handleSort={handleSort}
+      selectedIds={selectedIds}
+      onSelectionChange={onSelectionChange}
+      onRefetch={handleRefetch}
+    />
+  );
+}
