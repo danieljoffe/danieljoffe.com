@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download, Lock, RotateCcw } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -23,20 +22,33 @@ interface ResumeReviewPageProps {
   jobPostingId: string;
 }
 
+const AUTOSAVE_DEBOUNCE_MS = 1500;
+
+type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
+
+function slugify(value: string): string {
+  return (
+    value
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'resume'
+  );
+}
+
 export default function ResumeReviewPage({
   jobPostingId,
 }: ResumeReviewPageProps) {
-  const router = useRouter();
   const { toast } = useToast();
 
   const [posting, setPosting] = useState<JobPosting | null>(null);
   const [record, setRecord] = useState<TailoredResumeRecord | null>(null);
   const [markdown, setMarkdown] = useState('');
-  const [dirty, setDirty] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
   const [readapting, setReadapting] = useState(false);
   const [lintWarnings, setLintWarnings] = useState<LintViolation[]>([]);
@@ -66,7 +78,7 @@ export default function ResumeReviewPage({
       setPosting(job);
       setRecord(resume);
       setMarkdown(resume.payload_md ?? '');
-      setDirty(false);
+      setSaveStatus('idle');
     } catch {
       toast({ variant: 'error', title: 'Network error loading resume' });
     } finally {
@@ -103,15 +115,22 @@ export default function ResumeReviewPage({
     if (next && versions === null) loadVersions();
   }
 
-  async function persistMarkdown(): Promise<boolean> {
+  const inflightRef = useRef(false);
+  const persistMarkdown = useCallback(async (): Promise<boolean> => {
     if (!record) return false;
-    setSaving(true);
+    // Single-flight: a slow PATCH overlapping the next debounce tick would
+    // race to overwrite the row. Skip; the next keystroke or explicit
+    // flushPendingSave will retry.
+    if (inflightRef.current) return false;
+    inflightRef.current = true;
+    const sentMarkdown = markdown;
+    setSaveStatus('saving');
     setLintWarnings([]);
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown }),
+        body: JSON.stringify({ markdown: sentMarkdown }),
       });
       if (res.status === 422) {
         const err = await res.json();
@@ -119,30 +138,98 @@ export default function ResumeReviewPage({
         if (err.detail?.violations) {
           setLintWarnings(err.detail.violations as LintViolation[]);
         }
+        setSaveStatus('error');
         return false;
       }
       if (!res.ok) {
         toast({ variant: 'error', title: 'Failed to save changes' });
+        setSaveStatus('error');
         return false;
       }
       const data = (await res.json()) as TailorResponse;
       setRecord(data.record);
-      setMarkdown(data.record.payload_md ?? markdown);
       setLintWarnings(data.lint_warnings);
-      setDirty(false);
+      // Only adopt server-normalized markdown if the user hasn't typed
+      // since we sent — otherwise their in-flight edits would be lost.
+      setMarkdown(curr =>
+        curr === sentMarkdown ? (data.record.payload_md ?? curr) : curr
+      );
+      // Likewise, only flip to 'saved' if no new edit pushed us back to
+      // 'pending' during the in-flight fetch.
+      setSaveStatus(prev => (prev === 'saving' ? 'saved' : prev));
       return true;
     } catch {
       toast({ variant: 'error', title: 'Network error saving draft' });
+      setSaveStatus('error');
       return false;
     } finally {
-      setSaving(false);
+      inflightRef.current = false;
     }
-  }
+  }, [record, markdown, toast]);
 
-  async function handleSave() {
-    const ok = await persistMarkdown();
-    if (ok) toast({ variant: 'success', title: 'Draft saved' });
-  }
+  // Debounced auto-save: every keystroke moves saveStatus to 'pending';
+  // 1.5s of quiet then flushes a PATCH.
+  useEffect(() => {
+    if (saveStatus !== 'pending') return;
+    const timer = setTimeout(() => {
+      persistMarkdown();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [markdown, saveStatus, persistMarkdown]);
+
+  // Session-end checkpoint: snapshot the current markdown into version
+  // history when the user navigates away. Uses sendBeacon so the browser
+  // delivers the request even after the tab is gone. Server-side dedup
+  // keeps the 5-version cap from being eaten by no-op closes.
+  const sessionStateRef = useRef({
+    saveStatus,
+    markdown,
+    recordId: record?.id ?? null,
+  });
+  useEffect(() => {
+    sessionStateRef.current = {
+      saveStatus,
+      markdown,
+      recordId: record?.id ?? null,
+    };
+  });
+  useEffect(() => {
+    const flush = () => {
+      const {
+        saveStatus: status,
+        markdown: md,
+        recordId,
+      } = sessionStateRef.current;
+      if (!recordId || status === 'idle') return;
+      const url = `/api/jobs/tailor/${recordId}/checkpoint`;
+      const carryUnsaved = status === 'pending' || status === 'error';
+      const payload = carryUnsaved ? JSON.stringify({ markdown: md }) : '{}';
+      navigator.sendBeacon(
+        url,
+        new Blob([payload], { type: 'application/json' })
+      );
+    };
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, []);
+
+  const flushPendingSave = useCallback(async (): Promise<boolean> => {
+    if (saveStatus === 'pending' || saveStatus === 'saving') {
+      return persistMarkdown();
+    }
+    return saveStatus !== 'error';
+  }, [saveStatus, persistMarkdown]);
+
+  const recordCheckpoint = useCallback(async (): Promise<void> => {
+    if (!record) return;
+    try {
+      await fetch(`/api/jobs/tailor/${record.id}/checkpoint`, {
+        method: 'POST',
+      });
+    } catch {
+      // Checkpoint is best-effort — don't block approve/readapt on it.
+    }
+  }, [record]);
 
   async function handleApprove() {
     if (!record) return;
@@ -156,6 +243,13 @@ export default function ResumeReviewPage({
       return;
     setApproving(true);
     try {
+      const ok = await flushPendingSave();
+      if (!ok) {
+        setApproving(false);
+        return;
+      }
+      // Snapshot the about-to-be-locked draft into version history.
+      await recordCheckpoint();
       const res = await fetch(`/api/jobs/tailor/${record.id}/approve`, {
         method: 'POST',
       });
@@ -163,8 +257,9 @@ export default function ResumeReviewPage({
         toast({ variant: 'error', title: 'Failed to approve resume' });
         return;
       }
+      const approved = (await res.json()) as TailoredResumeRecord;
+      setRecord(approved);
       toast({ variant: 'success', title: 'Resume approved' });
-      router.push(`/fitted/jobs/${jobPostingId}`);
     } catch {
       toast({ variant: 'error', title: 'Network error approving resume' });
     } finally {
@@ -174,10 +269,8 @@ export default function ResumeReviewPage({
 
   async function handleDownload() {
     if (!record || !posting) return;
-    if (dirty) {
-      const ok = await persistMarkdown();
-      if (!ok) return;
-    }
+    const ok = await flushPendingSave();
+    if (!ok) return;
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}/download`);
       if (!res.ok) {
@@ -188,7 +281,10 @@ export default function ResumeReviewPage({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${posting.company_name.replace(/\s+/g, '_')}_resume.docx`;
+      const userSlug = slugify(record.payload.contact.name);
+      const companySlug = slugify(posting.company_name);
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = `${userSlug}-${companySlug}-${date}.docx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -207,6 +303,10 @@ export default function ResumeReviewPage({
       return;
     setReadapting(true);
     try {
+      // Snapshot the current draft before regenerating so users can
+      // restore it from version history if the new generation is worse.
+      await flushPendingSave();
+      await recordCheckpoint();
       const res = await fetch('/api/jobs/tailor/resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -244,12 +344,8 @@ export default function ResumeReviewPage({
       return;
     }
     setMarkdown(md);
-    setDirty(true);
+    setSaveStatus('pending');
     setVersionsOpen(false);
-    toast({
-      variant: 'info',
-      title: 'Version loaded — Save to keep changes',
-    });
   }
 
   if (notFound) {
@@ -431,73 +527,103 @@ export default function ResumeReviewPage({
       </div>
 
       <div>
-        <Text variant='caption' className='mb-1'>
-          Resume markdown
-        </Text>
+        <div className='mb-1 flex items-center justify-between gap-2'>
+          <Text variant='caption' as='span'>
+            Resume markdown
+          </Text>
+          <div className='flex items-center gap-1'>
+            <Button
+              name='download-docx'
+              variant='ghost'
+              size='sm'
+              iconOnly
+              aria-label='Download resume as .docx'
+              title='Download .docx'
+              onClick={handleDownload}
+              disabled={saveStatus === 'saving'}
+            >
+              <Download className='h-4 w-4' aria-hidden='true' />
+            </Button>
+            <Button
+              name='readapt-resume'
+              variant='ghost'
+              size='sm'
+              iconOnly
+              aria-label={
+                isApproved
+                  ? 'Generate a new resume from scratch with AI'
+                  : 'Re-adapt resume with AI'
+              }
+              title={isApproved ? 'Generate new with AI' : 'Re-adapt with AI'}
+              onClick={handleReadapt}
+              disabled={
+                readapting || approving || saveStatus === 'saving' || isApproved
+              }
+            >
+              <RotateCcw className='h-4 w-4' aria-hidden='true' />
+            </Button>
+            <Button
+              name='approve-resume'
+              variant='ghost'
+              size='sm'
+              iconOnly
+              aria-label={
+                isApproved ? 'Resume approved and locked' : 'Approve and lock'
+              }
+              title={isApproved ? 'Approved & locked' : 'Approve & lock'}
+              onClick={handleApprove}
+              disabled={
+                approving ||
+                isApproved ||
+                saveStatus === 'pending' ||
+                saveStatus === 'saving' ||
+                saveStatus === 'error'
+              }
+            >
+              <Lock className='h-4 w-4' aria-hidden='true' />
+            </Button>
+          </div>
+        </div>
         <textarea
           aria-label='Resume markdown'
-          className='min-h-[60vh] w-full resize-y rounded-md border border-border bg-surface p-4 font-mono text-sm leading-relaxed'
+          className='min-h-[60vh] w-full resize-y rounded-md border border-border bg-surface p-4 font-mono text-sm leading-relaxed disabled:cursor-not-allowed disabled:opacity-60'
           value={markdown}
           onChange={e => {
             setMarkdown(e.target.value);
-            setDirty(true);
+            setSaveStatus('pending');
           }}
-          disabled={isApproved}
+          disabled={isApproved || readapting || approving}
           spellCheck
         />
-        <Text variant='meta' className='text-right text-text-tertiary'>
-          {markdown.length.toLocaleString()} chars
-        </Text>
-      </div>
-
-      <div className='flex flex-wrap items-center justify-between gap-2'>
-        <Button
-          name='download-docx'
-          variant='secondary'
-          size='sm'
-          onClick={handleDownload}
-          disabled={saving}
-        >
-          {saving && dirty ? 'Saving...' : 'Download .docx'}
-        </Button>
-        <div className='flex flex-wrap gap-2'>
-          <Button
-            name='readapt-resume'
-            variant='outline'
-            size='sm'
-            onClick={handleReadapt}
-            disabled={readapting || saving || approving}
+        <div className='flex items-center justify-between gap-2'>
+          <Text
+            variant='meta'
+            as='span'
+            className='text-text-tertiary'
+            aria-live='polite'
           >
-            {readapting
-              ? 'Generating...'
-              : isApproved
-                ? 'Generate New'
-                : 'Re-adapt with AI'}
-          </Button>
-          <Button
-            name='save-draft'
-            variant='outline'
-            size='sm'
-            onClick={handleSave}
-            disabled={saving || isApproved || !dirty}
-          >
-            {saving ? 'Saving...' : 'Save Draft'}
-          </Button>
-          <Button
-            name='approve-resume'
-            variant='primary'
-            size='sm'
-            onClick={handleApprove}
-            disabled={approving || isApproved || dirty}
-          >
-            {approving
-              ? 'Approving...'
-              : isApproved
-                ? 'Approved'
-                : 'Approve & Lock'}
-          </Button>
+            {!isApproved && saveLabel(saveStatus)}
+          </Text>
+          <Text variant='meta' as='span' className='text-text-tertiary'>
+            {markdown.length.toLocaleString()} chars
+          </Text>
         </div>
       </div>
     </main>
   );
+}
+
+function saveLabel(status: SaveStatus): string {
+  switch (status) {
+    case 'idle':
+      return '';
+    case 'pending':
+      return 'Editing — autosave pending';
+    case 'saving':
+      return 'Saving...';
+    case 'saved':
+      return 'Saved';
+    case 'error':
+      return 'Save failed — keep typing to retry';
+  }
 }

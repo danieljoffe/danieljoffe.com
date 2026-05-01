@@ -659,8 +659,11 @@ _GOOD_MD = "# Daniel Joffe\n\n## Experience\n\n### Engineer — Acme\n\n- Did th
 
 class TestUpdatePayloadMd:
     """`update_payload_md` is the persistence half of PATCH /resumes/{id}.
-    It writes the markdown, sets docx_payload_md_hash to NULL so the next
-    download triggers a re-render, and snapshots the version with payload_md.
+    It writes the markdown and sets docx_payload_md_hash to NULL so the
+    next download triggers a re-render. Version snapshots are NOT taken
+    here — autosave fires on every keystroke (debounced), and snapshotting
+    each one would flood the free-tier cap. Snapshots come from explicit
+    `versions.checkpoint` calls (session-end flush, pre-approve, pre-readapt).
     """
 
     def test_invalidates_docx_cache_hash(self) -> None:
@@ -679,9 +682,150 @@ class TestUpdatePayloadMd:
         update_call = supabase.table.return_value.update.call_args[0][0]
         assert update_call["payload_md"] == _GOOD_MD
         assert update_call["docx_payload_md_hash"] is None
-        # Version snapshot carries payload_md so history shows markdown edits.
-        assert mock_record.call_args.kwargs["payload_md"] == _GOOD_MD
-        assert mock_record.call_args.kwargs["source"] == "user_edit"
+        # No version snapshot — those come from `versions.checkpoint`.
+        mock_record.assert_not_called()
+
+
+class TestCheckpointEndpoint:
+    """POST /tailor/resumes/{id}/checkpoint — writes a `user_edit` version
+    snapshot of the current draft. Two callers:
+    - `navigator.sendBeacon` on pagehide (with `markdown` body): flushes
+      a not-yet-saved edit before snapshotting.
+    - Explicit pre-approve / pre-readapt (no body): snapshot whatever is
+      already in the row.
+
+    Dedup is critical: routine autosave produces many no-op checkpoints
+    that would otherwise blow through the 5-version free-tier cap in a
+    single editing session.
+    """
+
+    @pytest.mark.asyncio
+    async def test_no_body_snapshots_current_state(self) -> None:
+        from app.routers import tailor as tailor_router
+        from app.models.tailor import ResumeCheckpointRequest
+
+        supabase = MagicMock()
+        record = _make_record(payload_md=_GOOD_MD)
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.services.tailor.versions.checkpoint",
+                return_value=True,
+            ) as mock_checkpoint,
+            patch(
+                "app.services.tailor.persistence.update_payload_md"
+            ) as mock_update,
+        ):
+            result = await tailor_router.checkpoint_tailored_resume(
+                resume_id="rec-1",
+                body=ResumeCheckpointRequest(),
+                supabase=supabase,
+            )
+
+        assert result == {"recorded": True}
+        mock_update.assert_not_called()
+        mock_checkpoint.assert_called_once_with(supabase, "rec-1")
+
+    @pytest.mark.asyncio
+    async def test_body_with_markdown_saves_then_checkpoints(self) -> None:
+        from app.routers import tailor as tailor_router
+        from app.models.tailor import ResumeCheckpointRequest
+
+        supabase = MagicMock()
+        record = _make_record(payload_md="old md")
+        new_md = "# New\n\n## Experience\n\n### Eng — Acme\n\n- Did things\n"
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.services.tailor.persistence.update_payload_md"
+            ) as mock_update,
+            patch(
+                "app.services.tailor.versions.checkpoint",
+                return_value=True,
+            ) as mock_checkpoint,
+        ):
+            await tailor_router.checkpoint_tailored_resume(
+                resume_id="rec-1",
+                body=ResumeCheckpointRequest(markdown=new_md),
+                supabase=supabase,
+            )
+
+        # Save lands first so checkpoint reads the fresh markdown.
+        mock_update.assert_called_once_with(supabase, "rec-1", new_md)
+        mock_checkpoint.assert_called_once_with(supabase, "rec-1")
+
+    @pytest.mark.asyncio
+    async def test_body_with_invalid_markdown_returns_422(self) -> None:
+        from fastapi import HTTPException
+
+        from app.routers import tailor as tailor_router
+        from app.models.tailor import ResumeCheckpointRequest
+
+        supabase = MagicMock()
+        record = _make_record()
+        # No `## Experience` heading — fails markdown lint.
+        bad_md = "# Daniel\n\n## Skills\n\nPython\n"
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.services.tailor.versions.checkpoint"
+            ) as mock_checkpoint,
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            await tailor_router.checkpoint_tailored_resume(
+                resume_id="rec-1",
+                body=ResumeCheckpointRequest(markdown=bad_md),
+                supabase=supabase,
+            )
+
+        assert exc_info.value.status_code == 422
+        mock_checkpoint.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_approved_resume_skips_checkpoint(self) -> None:
+        from app.routers import tailor as tailor_router
+        from app.models.tailor import ResumeCheckpointRequest
+
+        supabase = MagicMock()
+        record = _make_record(approved_at=_NOW)
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.services.tailor.versions.checkpoint"
+            ) as mock_checkpoint,
+        ):
+            result = await tailor_router.checkpoint_tailored_resume(
+                resume_id="rec-1",
+                body=ResumeCheckpointRequest(),
+                supabase=supabase,
+            )
+
+        assert result == {"recorded": False, "reason": "approved"}
+        mock_checkpoint.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_not_found_returns_404(self) -> None:
+        from fastapi import HTTPException
+
+        from app.routers import tailor as tailor_router
+        from app.models.tailor import ResumeCheckpointRequest
+
+        supabase = MagicMock()
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=None),
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            await tailor_router.checkpoint_tailored_resume(
+                resume_id="missing",
+                body=ResumeCheckpointRequest(),
+                supabase=supabase,
+            )
+        assert exc_info.value.status_code == 404
 
 
 class TestMarkDocxRendered:

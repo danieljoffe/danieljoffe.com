@@ -114,6 +114,18 @@ class ResumeEditRequest(BaseModel):
     markdown: str = Field(min_length=1, max_length=50_000)
 
 
+class ResumeCheckpointRequest(BaseModel):
+    """Optional in-flight markdown to flush before checkpointing.
+
+    The frontend uses this for `navigator.sendBeacon` on pagehide so an
+    edit that hasn't yet been autosaved still lands in the version
+    snapshot. When omitted, the endpoint just snapshots whatever is
+    currently in the row.
+    """
+
+    markdown: str | None = Field(default=None, max_length=50_000)
+
+
 class CoverLetterParagraph(BaseModel):
     """One paragraph of cover-letter prose."""
 

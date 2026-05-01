@@ -33,6 +33,7 @@ from app.models.tailor import (
     BulkExportRequest,
     CoverLetterRequest,
     GapGateFailureResponse,
+    ResumeCheckpointRequest,
     ResumeEditRequest,
     TailoredResumeRecord,
     TailorLintFailureResponse,
@@ -378,6 +379,48 @@ async def edit_tailored_resume(
 
     record = persistence.update_payload_md(supabase, resume_id, body.markdown)
     return TailorResponse(record=record, lint_warnings=lint_result.warnings)
+
+
+@router.post("/resumes/{resume_id}/checkpoint")
+async def checkpoint_tailored_resume(
+    resume_id: str,
+    body: ResumeCheckpointRequest | None = None,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    """Snapshot a draft resume's current markdown into version history.
+
+    Two callers:
+    - `navigator.sendBeacon` on pagehide, with `markdown` in the body, so
+      a debounced autosave that hasn't yet flushed still lands in
+      history before the page goes away.
+    - Pre-approve / pre-readapt explicit checkpoints, with no body.
+
+    Idempotent via dedup: if the latest snapshot already matches, no
+    new row is written.
+    """
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored resume not found")
+    if row.document_type != "resume":
+        raise HTTPException(status_code=400, detail="only resumes can be checkpointed")
+    if row.approved_at is not None:
+        # Approved resumes are locked — nothing new to snapshot.
+        return {"recorded": False, "reason": "approved"}
+
+    if body and body.markdown:
+        lint_result = lint_markdown(body.markdown, document_type="resume")
+        if lint_result.errors:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "ok": False,
+                    "violations": [v.model_dump() for v in lint_result.violations],
+                },
+            )
+        persistence.update_payload_md(supabase, resume_id, body.markdown)
+
+    recorded = versions.checkpoint(supabase, resume_id)
+    return {"recorded": recorded}
 
 
 @router.post("/resumes/{resume_id}/approve")

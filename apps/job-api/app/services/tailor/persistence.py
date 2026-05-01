@@ -210,8 +210,6 @@ def update_payload_md(
     supabase: Client,
     resume_id: str,
     payload_md: str,
-    *,
-    version_source: versions.VersionSource = "user_edit",
 ) -> TailoredResumeRecord:
     """Update the markdown payload and invalidate the cached docx hash.
 
@@ -220,25 +218,17 @@ def update_payload_md(
     docx_payload_md_hash. We don't re-render eagerly here so save is
     cheap (no pandoc subprocess on every keystroke / autosave).
 
-    A version snapshot is recorded before the update lands so history
-    is captured even if the live update fails between snapshot and
-    commit (F3-H).
+    Autosave is deliberately decoupled from version history: callers
+    that need a snapshot (session-end flush, before approve, before
+    re-adapt) call `versions.checkpoint` separately. That keeps the
+    free-tier version cap from being flooded by routine keystrokes.
     """
-    versions.record(
-        supabase,
-        resume_id=resume_id,
-        payload={},
-        source=version_source,
-        payload_md=payload_md,
-    )
-    new_hash = md_payload_hash(payload_md)
     updates: dict[str, Any] = {
         "payload_md": payload_md,
-        # Invalidate the docx cache: we set the hash to a sentinel that
-        # the download endpoint will detect as "render needed". We
-        # explicitly DO NOT set the new hash here — it's set after
-        # pandoc renders successfully so a failed render doesn't leave
-        # the hash claiming bytes that don't exist.
+        # Invalidate the docx cache: NULL signals "render needed" to the
+        # download endpoint. We explicitly DO NOT set the new hash here —
+        # it's set after pandoc renders successfully so a failed render
+        # doesn't leave the hash claiming bytes that don't exist.
         "docx_payload_md_hash": None,
         "updated_at": "now()",
     }
@@ -246,13 +236,7 @@ def update_payload_md(
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
-    record = TailoredResumeRecord.model_validate(rows[0])
-    # Return the freshly-computed hash via a side channel — caller may
-    # render and persist immediately. Not stored on the row until the
-    # render lands. (Currently unused; kept for symmetry with the
-    # render-on-download path.)
-    _ = new_hash
-    return record
+    return TailoredResumeRecord.model_validate(rows[0])
 
 
 def mark_docx_rendered(
