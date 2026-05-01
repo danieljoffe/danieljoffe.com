@@ -435,6 +435,12 @@ export default function JobsList({
             </div>
           )}
 
+          {!activeTargetId && targets.length > 0 && (
+            <Text variant='meta' className='text-text-tertiary'>
+              Pick a target tab to see LLM job-fit analysis on each posting.
+            </Text>
+          )}
+
           <JobsFilter filters={filters} onChange={setFilters} />
 
           <JobsListTable

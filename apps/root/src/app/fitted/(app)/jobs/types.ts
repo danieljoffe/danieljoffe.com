@@ -1,3 +1,5 @@
+import type { BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
+
 export const JOB_STATUSES = [
   'new',
   'saved',
@@ -11,6 +13,34 @@ export const JOB_STATUSES = [
 ] as const;
 
 export type JobStatus = (typeof JOB_STATUSES)[number];
+
+export const STATUS_VARIANT: Record<JobStatus, BadgeVariant> = {
+  new: 'default',
+  saved: 'info',
+  resume_draft: 'info',
+  resume_ready: 'success',
+  applied: 'success',
+  interviewing: 'warning',
+  offer: 'warning',
+  rejected: 'error',
+  archived: 'default',
+};
+
+export const STATUS_DOT_CLASS: Record<JobStatus, string> = {
+  new: 'bg-text-tertiary',
+  saved: 'bg-info',
+  resume_draft: 'bg-info',
+  resume_ready: 'bg-success',
+  applied: 'bg-success',
+  interviewing: 'bg-warning',
+  offer: 'bg-warning',
+  rejected: 'bg-error',
+  archived: 'bg-text-tertiary',
+};
+
+export function formatStatus(status: string): string {
+  return status.replace(/_/g, ' ');
+}
 
 export type ScoringStatus = 'stage1' | 'stage2' | 'complete';
 

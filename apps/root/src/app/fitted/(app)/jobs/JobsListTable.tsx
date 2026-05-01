@@ -13,10 +13,11 @@ import JobDetailPanel from './JobDetailPanel';
 import type {
   JobPosting,
   JobsFilterState,
+  JobStatus,
   JobsSortColumn,
   ScoringStatus,
 } from './types';
-import { MANUAL_SOURCE_ID } from './types';
+import { formatStatus, MANUAL_SOURCE_ID, STATUS_VARIANT } from './types';
 
 function hasResume(status: string): boolean {
   return status === 'resume_draft' || status === 'resume_ready';
@@ -56,17 +57,8 @@ function ScoreBadge({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const variant =
-    status === 'applied' || status === 'resume_ready'
-      ? 'success'
-      : status === 'saved' || status === 'resume_draft'
-        ? 'info'
-        : status === 'interviewing' || status === 'offer'
-          ? 'warning'
-          : status === 'rejected'
-            ? 'error'
-            : 'default';
-  return <Badge variant={variant}>{status.replace(/_/g, ' ')}</Badge>;
+  const variant = STATUS_VARIANT[status as JobStatus] ?? 'default';
+  return <Badge variant={variant}>{formatStatus(status)}</Badge>;
 }
 
 function timeAgo(dateStr: string | null): string {
@@ -323,6 +315,7 @@ export default function JobsListTable({
                       <JobDetailPanel
                         posting={job}
                         targetId={targetId}
+                        viewFullHref={`/fitted/jobs/${job.id}`}
                         onDelete={() => {
                           setExpandedId(null);
                           setDeleteKey(k => k + 1);

@@ -1,22 +1,30 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { ChevronDown, Maximize2 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { cn } from '@/lib/cn';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
 import {
+  formatStatus,
   JOB_STATUSES,
+  STATUS_DOT_CLASS,
   type JobAnalysis,
   type JobPosting,
+  type JobStatus,
   type StatusLogEntry,
 } from './types';
 
 interface JobDetailPanelProps {
   posting: JobPosting;
   targetId: string | undefined;
+  viewFullHref: string | undefined;
   onDelete: (() => void) | undefined;
   onStatusChange: ((status: string) => void) | undefined;
 }
@@ -24,6 +32,7 @@ interface JobDetailPanelProps {
 export default function JobDetailPanel({
   posting,
   targetId,
+  viewFullHref,
   onDelete,
   onStatusChange,
 }: JobDetailPanelProps) {
@@ -154,25 +163,45 @@ export default function JobDetailPanel({
         )}
       </div>
 
-      {/* Status buttons */}
+      {/* Status dropdown */}
       <div>
         <Text variant='caption' className='mb-1'>
           Status
         </Text>
-        <div className='flex flex-wrap gap-2'>
-          {JOB_STATUSES.map(s => (
-            <Button
-              key={s}
-              name={`status-${s}`}
-              variant={status === s ? 'primary' : 'outline'}
-              size='sm'
-              disabled={updating || status === s}
-              onClick={() => updateStatus(s)}
+        <Dropdown
+          trigger={
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
+                updating
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-surface-tertiary'
+              )}
+              aria-disabled={updating || undefined}
             >
-              {s.replace('_', ' ')}
-            </Button>
-          ))}
-        </div>
+              <span
+                className={cn(
+                  'size-2 rounded-full',
+                  STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
+                )}
+                aria-hidden
+              />
+              <span className='capitalize'>{formatStatus(status)}</span>
+              <ChevronDown className='size-4 text-text-tertiary' aria-hidden />
+            </span>
+          }
+          items={JOB_STATUSES.map<DropdownItem>(s => ({
+            label: formatStatus(s),
+            icon: (
+              <span
+                className={cn('size-2 rounded-full', STATUS_DOT_CLASS[s])}
+                aria-hidden
+              />
+            ),
+            disabled: updating || status === s,
+            onClick: () => updateStatus(s),
+          }))}
+        />
       </div>
 
       {/* Status History */}
@@ -213,79 +242,78 @@ export default function JobDetailPanel({
         </div>
       )}
 
-      {/* LLM Analysis */}
-      <div>
-        <Text variant='caption' className='mb-1'>
-          LLM Analysis
-        </Text>
-        {analysis ? (
-          <div className='space-y-2'>
-            <Text variant='body'>{analysis.recommendation}</Text>
-            <div className='flex flex-wrap gap-2'>
-              <Badge
-                variant={
-                  analysis.scorecard.seniority_fit === 'strong'
-                    ? 'success'
-                    : analysis.scorecard.seniority_fit === 'moderate'
-                      ? 'warning'
-                      : 'error'
-                }
-                size='sm'
-              >
-                Seniority: {analysis.scorecard.seniority_fit}
-              </Badge>
-              <Badge
-                variant={
-                  analysis.scorecard.domain_fit === 'strong'
-                    ? 'success'
-                    : analysis.scorecard.domain_fit === 'moderate'
-                      ? 'warning'
-                      : 'error'
-                }
-                size='sm'
-              >
-                Domain: {analysis.scorecard.domain_fit}
-              </Badge>
-            </div>
-            {analysis.scorecard.skills_missing.length > 0 && (
-              <div>
-                <Text variant='meta' className='mb-1'>
-                  Missing skills
-                </Text>
-                <div className='flex flex-wrap gap-1'>
-                  {analysis.scorecard.skills_missing.map(skill => (
-                    <Badge key={skill} variant='error' size='sm'>
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : analyzing ? (
-          <Skeleton variant='text' lines={3} />
-        ) : !targetId ? (
-          <Text variant='meta' className='text-text-tertiary'>
-            Select a target to see analysis for this job.
+      {/* LLM Analysis — only when a target is selected. The "pick a target"
+          hint lives at the list level so it shows once, not per-row. */}
+      {targetId && (
+        <div>
+          <Text variant='caption' className='mb-1'>
+            LLM Analysis
           </Text>
-        ) : (
-          <div>
-            {analysisError && (
-              <Text variant='error' className='mb-2'>
-                {analysisError}
-              </Text>
-            )}
-            <Button
-              name='analyze-job'
-              variant='secondary'
-              size='sm'
-              onClick={runAnalysis}
-            >
-              Retry analysis
-            </Button>
-          </div>
-        )}
-      </div>
+          {analysis ? (
+            <div className='space-y-2'>
+              <Text variant='body'>{analysis.recommendation}</Text>
+              <div className='flex flex-wrap gap-2'>
+                <Badge
+                  variant={
+                    analysis.scorecard.seniority_fit === 'strong'
+                      ? 'success'
+                      : analysis.scorecard.seniority_fit === 'moderate'
+                        ? 'warning'
+                        : 'error'
+                  }
+                  size='sm'
+                >
+                  Seniority: {analysis.scorecard.seniority_fit}
+                </Badge>
+                <Badge
+                  variant={
+                    analysis.scorecard.domain_fit === 'strong'
+                      ? 'success'
+                      : analysis.scorecard.domain_fit === 'moderate'
+                        ? 'warning'
+                        : 'error'
+                  }
+                  size='sm'
+                >
+                  Domain: {analysis.scorecard.domain_fit}
+                </Badge>
+              </div>
+              {analysis.scorecard.skills_missing.length > 0 && (
+                <div>
+                  <Text variant='meta' className='mb-1'>
+                    Missing skills
+                  </Text>
+                  <div className='flex flex-wrap gap-1'>
+                    {analysis.scorecard.skills_missing.map(skill => (
+                      <Badge key={skill} variant='error' size='sm'>
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : analyzing ? (
+            <Skeleton variant='text' lines={3} />
+          ) : (
+            <div>
+              {analysisError && (
+                <Text variant='error' className='mb-2'>
+                  {analysisError}
+                </Text>
+              )}
+              <Button
+                name='analyze-job'
+                variant='secondary'
+                size='sm'
+                onClick={runAnalysis}
+              >
+                Retry analysis
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Resume lifecycle */}
       {(status === 'resume_draft' || status === 'resume_ready') && (
@@ -333,7 +361,19 @@ export default function JobDetailPanel({
       )}
 
       {/* Actions */}
-      <div className='flex gap-2'>
+      <div className='flex flex-wrap gap-2'>
+        {viewFullHref && (
+          <Button
+            as='link'
+            href={viewFullHref}
+            variant='secondary'
+            size='sm'
+            name='view-full-job'
+          >
+            <Maximize2 className='size-4' aria-hidden />
+            Open full view
+          </Button>
+        )}
         {posting.absolute_url && (
           <Button
             as='link'

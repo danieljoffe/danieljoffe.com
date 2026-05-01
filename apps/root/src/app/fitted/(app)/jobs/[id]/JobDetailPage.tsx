@@ -145,6 +145,7 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
         <JobDetailPanel
           posting={posting}
           targetId={targetId}
+          viewFullHref={undefined}
           onDelete={handleDelete}
           onStatusChange={handleStatusChange}
         />
