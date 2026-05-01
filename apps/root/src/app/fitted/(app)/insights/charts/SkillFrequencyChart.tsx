@@ -30,7 +30,8 @@ export default function SkillFrequencyChart({
   if (data.length === 0) {
     return (
       <p className='text-sm text-text-secondary py-8 text-center'>
-        No skill data yet
+        No skill data yet. Analyze a few job postings to see which skills are
+        showing up.
       </p>
     );
   }
@@ -41,7 +42,7 @@ export default function SkillFrequencyChart({
 
   return (
     <ChartFigure
-      ariaLabel='Skill frequency: matched versus missing skills across analyzed jobs'
+      ariaLabel='Skill mentions: matched versus missing skills across analyzed jobs'
       rows={data}
       columns={COLUMNS}
       rowKey={row => row.skill}

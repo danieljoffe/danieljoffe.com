@@ -31,27 +31,32 @@ export function ChartFigure<T>({
   return (
     <figure aria-label={ariaLabel} className='m-0'>
       <div aria-hidden='true'>{children}</div>
-      <table className='sr-only'>
-        <caption>{ariaLabel}</caption>
-        <thead>
-          <tr>
-            {columns.map(c => (
-              <th key={c.header} scope='col'>
-                {c.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={rowKey(row, i)}>
+      {/* `sr-only` on a wrapping div reliably clips the table; applied
+          directly to <table>, the intrinsic table-layout width can leak
+          past the 1px constraint and stretch the page on mobile. */}
+      <div className='sr-only'>
+        <table>
+          <caption>{ariaLabel}</caption>
+          <thead>
+            <tr>
               {columns.map(c => (
-                <td key={c.header}>{c.render(row)}</td>
+                <th key={c.header} scope='col'>
+                  {c.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={rowKey(row, i)}>
+                {columns.map(c => (
+                  <td key={c.header}>{c.render(row)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

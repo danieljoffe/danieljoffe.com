@@ -36,7 +36,7 @@ export default function VelocityChart({ data }: VelocityChartProps) {
 
   return (
     <ChartFigure
-      ariaLabel='Application velocity: resumes generated and applications submitted per week'
+      ariaLabel='Weekly activity: resumes generated and applications submitted per week'
       rows={data}
       columns={COLUMNS}
       rowKey={row => row.week_start}

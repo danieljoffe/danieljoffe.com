@@ -40,6 +40,7 @@ const TARGETS: TargetInsights = {
   ],
   score_distribution: [{ bucket: '70-79', count: 4 }],
   score_trend: [{ week_start: '2026-04-13', avg_score: 71.2 }],
+  unscored_count: 7,
 };
 
 const SKILLS_COST: SkillsCostInsights = {
@@ -81,12 +82,12 @@ describe('buildInsightsCsv', () => {
     expect(csv).toContain('Generated at,2026-04-30T12:00:00.000Z');
     expect(csv).toContain('## Pipeline summary');
     expect(csv).toContain('## Pipeline funnel');
-    expect(csv).toContain('## Application velocity');
+    expect(csv).toContain('## Weekly activity');
     expect(csv).toContain('## Target comparison');
     expect(csv).toContain('## Score distribution');
     expect(csv).toContain('## Score trend');
-    expect(csv).toContain('## Skill frequency');
-    expect(csv).toContain('## Top skill gaps');
+    expect(csv).toContain('## Skill mentions');
+    expect(csv).toContain('## What to learn next');
     expect(csv).toContain('## LLM cost over time');
     expect(csv).toContain('## LLM cost by purpose');
   });
@@ -114,7 +115,19 @@ describe('buildInsightsCsv', () => {
 
     expect(csv).toContain('## Pipeline summary');
     expect(csv).not.toContain('## Target comparison');
-    expect(csv).not.toContain('## Skill frequency');
+    expect(csv).not.toContain('## Skill mentions');
+  });
+
+  it('appends unscored count as the final score-distribution row', () => {
+    const csv = buildInsightsCsv({
+      period: '30d',
+      pipeline: undefined,
+      targets: TARGETS,
+      skillsCost: undefined,
+      generatedAt: FIXED_DATE,
+    });
+
+    expect(csv).toContain('Unscored,7');
   });
 
   it('renders null avg_job_score as an empty cell', () => {

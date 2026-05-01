@@ -23,7 +23,6 @@ interface FunnelChartProps {
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  new: 'New',
   saved: 'Saved',
   resume_draft: 'Draft',
   resume_ready: 'Ready',
@@ -31,6 +30,10 @@ const STAGE_LABELS: Record<string, string> = {
   interviewing: 'Interview',
   offer: 'Offer',
 };
+
+// `new` is the default state on creation, not a real funnel step —
+// filter it so the chart reflects intentional progression only.
+const HIDDEN_STAGES = new Set(['new']);
 
 function formatLabel(slug: string): string {
   return slug
@@ -40,9 +43,8 @@ function formatLabel(slug: string): string {
     .join(' ');
 }
 
-/** Gradient from brand → success across the funnel. */
+/** Gradient from brand → success across the visible funnel stages. */
 const STAGE_COLORS = [
-  CHART_COLORS.brand,
   CHART_COLORS.brand,
   CHART_COLORS.info,
   CHART_COLORS.info,
@@ -52,15 +54,18 @@ const STAGE_COLORS = [
 ];
 
 export default function FunnelChart({ data }: FunnelChartProps) {
-  if (data.length === 0 || data.every(d => d.count === 0)) {
+  const visible = data.filter(d => !HIDDEN_STAGES.has(d.stage));
+
+  if (visible.length === 0 || visible.every(d => d.count === 0)) {
     return (
       <p className='text-sm text-text-secondary py-8 text-center'>
-        No pipeline data yet
+        Save jobs and update their status as you progress to see your funnel
+        build out.
       </p>
     );
   }
 
-  const formatted = data.map(d => ({
+  const formatted = visible.map(d => ({
     ...d,
     label: STAGE_LABELS[d.stage] ?? formatLabel(d.stage),
   }));

@@ -83,7 +83,7 @@ export function buildInsightsCsv(input: {
     });
 
     sections.push({
-      title: 'Application velocity',
+      title: 'Weekly activity',
       headers: ['Week', 'Resumes generated', 'Applications submitted'],
       rows: p.velocity.map(v => [
         v.week_start,
@@ -118,7 +118,10 @@ export function buildInsightsCsv(input: {
     sections.push({
       title: 'Score distribution',
       headers: ['Score range', 'Count'],
-      rows: t.score_distribution.map(b => [b.bucket, b.count]),
+      rows: [
+        ...t.score_distribution.map(b => [b.bucket, b.count]),
+        ['Unscored', t.unscored_count],
+      ],
     });
 
     sections.push({
@@ -131,7 +134,7 @@ export function buildInsightsCsv(input: {
   if (input.skillsCost) {
     const s = input.skillsCost;
     sections.push({
-      title: 'Skill frequency',
+      title: 'Skill mentions',
       headers: ['Skill', 'Matched', 'Missing'],
       rows: s.top_skills.map(sk => [
         sk.skill,
@@ -141,7 +144,7 @@ export function buildInsightsCsv(input: {
     });
 
     sections.push({
-      title: 'Top skill gaps',
+      title: 'What to learn next',
       headers: ['Skill', 'Missing in N jobs', 'Avg job score', 'Priority'],
       rows: s.top_missing.map(m => [
         m.skill,

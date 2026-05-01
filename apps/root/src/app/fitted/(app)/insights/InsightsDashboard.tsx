@@ -354,10 +354,15 @@ export default function InsightsDashboard() {
         )}
       </div>
 
-      {/* Application velocity — full width */}
+      {/* Weekly activity — full width */}
       <Card aria-busy={showVelocitySkeleton}>
         <CardHeader>
-          <CardTitle>Application Velocity</CardTitle>
+          <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
+            <CardTitle>Weekly Activity</CardTitle>
+            <Text variant='meta'>
+              Resumes drafted vs applications submitted, per week
+            </Text>
+          </div>
         </CardHeader>
         <CardContent>
           {showVelocitySkeleton ? (
@@ -393,6 +398,7 @@ export default function InsightsDashboard() {
             ) : (
               <ScoreDistributionChart
                 data={targets?.score_distribution ?? []}
+                unscoredCount={targets?.unscored_count ?? 0}
               />
             )}
           </CardContent>
@@ -403,7 +409,12 @@ export default function InsightsDashboard() {
       <div className='grid gap-6 grid-cols-1 lg:grid-cols-2'>
         <Card aria-busy={showTargetCmpSkeleton}>
           <CardHeader>
-            <CardTitle>Target Comparison</CardTitle>
+            <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
+              <CardTitle>Target Comparison</CardTitle>
+              <Text variant='meta'>
+                Avg score and interview conversion across your saved targets
+              </Text>
+            </div>
           </CardHeader>
           <CardContent>
             {showTargetCmpSkeleton ? (
@@ -416,7 +427,12 @@ export default function InsightsDashboard() {
 
         <Card aria-busy={showSkillFreqSkeleton}>
           <CardHeader>
-            <CardTitle>Skill Frequency</CardTitle>
+            <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
+              <CardTitle>Skill Mentions</CardTitle>
+              <Text variant='meta'>
+                How often each skill appears across your analyzed jobs
+              </Text>
+            </div>
           </CardHeader>
           <CardContent>
             {showSkillFreqSkeleton ? (
@@ -428,11 +444,11 @@ export default function InsightsDashboard() {
         </Card>
       </div>
 
-      {/* Top Skill Gaps — ranked recommendations, full width */}
+      {/* What to Learn Next — ranked recommendations, full width */}
       <Card aria-busy={showSkillFreqSkeleton}>
         <CardHeader>
-          <div className='flex items-baseline gap-4'>
-            <CardTitle>Top Skill Gaps</CardTitle>
+          <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
+            <CardTitle>What to Learn Next</CardTitle>
             <Text variant='meta'>
               Skills you&apos;re missing, ranked by impact on high-scoring jobs
             </Text>

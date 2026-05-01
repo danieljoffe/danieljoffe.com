@@ -214,11 +214,21 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     postings = cast(list[Row], q.execute().data or [])
 
     # --- Per-target aggregation ---
+    # Targets with no jobs in the window are dropped from the response
+    # (they're noise in the comparison chart). Postings with no signal
+    # — null OR zero score — are tracked separately as unscored_count
+    # so they don't bloat the 0-10 bucket of the distribution. (A
+    # legitimate score of 0 is vanishingly rare; in practice 0 means
+    # "default value, never scored".)
     target_jobs: defaultdict[str, list[Row]] = defaultdict(list)
-    all_scores: list[int] = []
+    scored_values: list[int] = []
+    unscored_count = 0
     for p in postings:
-        score = p.get("score") or 0
-        all_scores.append(score)
+        score = p.get("score")
+        if score is None or score == 0:
+            unscored_count += 1
+        else:
+            scored_values.append(int(score))
         tid = p.get("target_id")
         if tid and tid in target_labels:
             target_jobs[tid].append(p)
@@ -227,17 +237,6 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     for tid, label in target_labels.items():
         jobs = target_jobs.get(tid, [])
         if not jobs:
-            comparisons.append(
-                TargetComparison(
-                    target_id=tid,
-                    target_label=label,
-                    job_count=0,
-                    avg_score=0.0,
-                    applied_count=0,
-                    interview_count=0,
-                    conversion_rate=None,
-                )
-            )
             continue
         scores = [j.get("score", 0) or 0 for j in jobs]
         applied = sum(1 for j in jobs if j["status"] in APPLIED_STATUSES)
@@ -256,9 +255,9 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
             )
         )
 
-    # --- Score distribution ---
+    # --- Score distribution (excluding unscored postings) ---
     bucket_counts: Counter[str] = Counter()
-    for s in all_scores:
+    for s in scored_values:
         clamped = max(0, min(s, 100))
         bucket_idx = min(clamped // 10, 9)
         lo = bucket_idx * 10
@@ -273,11 +272,13 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
         for lo in range(0, 100, 10)
     ]
 
-    # --- Score trend by week ---
+    # --- Score trend by week (scored postings only) ---
     week_scores: defaultdict[date, list[int]] = defaultdict(list)
     for p in postings:
-        score = p.get("score") or 0
-        week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(score)
+        score = p.get("score")
+        if score is None:
+            continue
+        week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(int(score))
 
     score_trend = sorted(
         [
@@ -291,6 +292,7 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
         targets=comparisons,
         score_distribution=buckets,
         score_trend=score_trend,
+        unscored_count=unscored_count,
     )
 
 

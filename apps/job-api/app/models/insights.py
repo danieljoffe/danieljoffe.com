@@ -72,6 +72,10 @@ class TargetInsights(BaseModel):
     targets: list[TargetComparison]
     score_distribution: list[ScoreBucket]
     score_trend: list[ScoreTrendPoint]
+    # Postings without an LLM score yet — surfaced separately so the
+    # 0-10 bucket reflects only genuinely-low-scoring jobs, not the
+    # backlog of unscored ones.
+    unscored_count: int = 0
 
 
 # ── Skills + Cost endpoint ───────────────────────────────────────────────────

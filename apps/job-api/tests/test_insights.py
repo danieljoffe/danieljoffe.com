@@ -182,6 +182,38 @@ class TestComputeTargets:
         assert be.job_count == 1
         assert be.avg_score == 90.0
 
+    def test_targets_with_no_jobs_are_filtered_out(self):
+        targets = [
+            {"id": "t1", "label": "Frontend"},
+            {"id": "t2", "label": "Backend"},
+            {"id": "t3", "label": "DevOps"},  # no postings — should be dropped
+        ]
+        postings = [
+            {"id": "1", "target_id": "t1", "score": 80, "status": "new", "created_at": _ts(_NOW)},
+            {"id": "2", "target_id": "t2", "score": 70, "status": "new", "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_targets": targets, "job_postings": postings})
+        result = compute_targets(sb, since=None)
+
+        labels = {t.target_label for t in result.targets}
+        assert labels == {"Frontend", "Backend"}
+        assert "DevOps" not in labels
+
+    def test_unscored_postings_excluded_from_distribution(self):
+        """Postings with score=None bump unscored_count, not the 0-10 bucket."""
+        postings = [
+            {"id": "1", "target_id": None, "score": None, "status": "new", "created_at": _ts(_NOW)},
+            {"id": "2", "target_id": None, "score": None, "status": "new", "created_at": _ts(_NOW)},
+            {"id": "3", "target_id": None, "score": 5, "status": "new", "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_postings": postings})
+        result = compute_targets(sb, since=None)
+
+        assert result.unscored_count == 2
+        bucket_map = {b.bucket: b.count for b in result.score_distribution}
+        # Only the score=5 row contributes to 0-10
+        assert bucket_map["0-10"] == 1
+
     def test_score_distribution(self):
         postings = [
             {"id": "1", "target_id": None, "score": 15, "status": "new", "created_at": _ts(_NOW)},
@@ -203,6 +235,7 @@ class TestComputeTargets:
         assert result.targets == []
         assert len(result.score_distribution) == 10  # Always 10 buckets
         assert result.score_trend == []
+        assert result.unscored_count == 0
 
     def test_score_trend(self):
         postings = [

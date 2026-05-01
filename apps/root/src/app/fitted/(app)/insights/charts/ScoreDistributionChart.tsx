@@ -17,6 +17,7 @@ import { CHART_COLORS } from './colors';
 
 interface ScoreDistributionChartProps {
   data: ScoreBucket[];
+  unscoredCount?: number;
 }
 
 const DRILL_LINK_CLASS =
@@ -40,12 +41,21 @@ const COLUMNS: ChartColumn<ScoreBucket>[] = [
 
 export default function ScoreDistributionChart({
   data,
+  unscoredCount = 0,
 }: ScoreDistributionChartProps) {
-  if (data.length === 0 || data.every(d => d.count === 0)) {
+  const hasScored = data.length > 0 && data.some(d => d.count > 0);
+
+  if (!hasScored) {
     return (
-      <p className='text-sm text-text-secondary py-8 text-center'>
-        No score data yet
-      </p>
+      <div className='py-8 text-center'>
+        <p className='text-sm text-text-secondary'>No scored jobs yet.</p>
+        {unscoredCount > 0 && (
+          <p className='mt-1 text-sm text-text-secondary'>
+            {unscoredCount} {unscoredCount === 1 ? 'job is' : 'jobs are'}{' '}
+            waiting to be scored.
+          </p>
+        )}
+      </div>
     );
   }
 
@@ -95,6 +105,12 @@ export default function ScoreDistributionChart({
             </Link>
           ))}
         </nav>
+      )}
+      {unscoredCount > 0 && (
+        <p className='mt-3 text-xs text-text-tertiary'>
+          {unscoredCount} {unscoredCount === 1 ? 'job is' : 'jobs are'} waiting
+          to be scored — not shown above.
+        </p>
       )}
     </>
   );

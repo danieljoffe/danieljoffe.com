@@ -58,6 +58,7 @@ export interface TargetInsights {
   targets: TargetComparison[];
   score_distribution: ScoreBucket[];
   score_trend: ScoreTrendPoint[];
+  unscored_count: number;
 }
 
 // ── Skills + Cost ─────��─────────────────────────────────────────────────────
