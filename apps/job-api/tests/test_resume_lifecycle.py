@@ -184,6 +184,28 @@ class TestPersistenceHelpers:
         result = get_by_job(supabase, "nonexistent")
         assert result is None
 
+    def test_get_by_job_filters_by_document_type(self) -> None:
+        """Cover letter lookup must scope to document_type='cover_letter' so
+        a resume on the same job posting doesn't shadow it."""
+        from app.services.tailor.persistence import get_by_job
+
+        supabase = MagicMock()
+        chain = supabase.table.return_value.select.return_value
+        chain = chain.eq.return_value.eq.return_value
+        chain.order.return_value.limit.return_value.execute.return_value.data = []
+
+        get_by_job(supabase, "job-1", document_type="cover_letter")
+
+        # Walk the .eq() calls and assert both the job + the document_type
+        # filter were issued.
+        eq_calls = supabase.table.return_value.select.return_value.eq.call_args_list
+        nested_eq_calls = (
+            supabase.table.return_value.select.return_value.eq.return_value.eq.call_args_list
+        )
+        all_eq_args = [c.args for c in eq_calls + nested_eq_calls]
+        assert ("job_posting_id", "job-1") in all_eq_args
+        assert ("document_type", "cover_letter") in all_eq_args
+
     def test_mark_job_resume_draft_updates_status(self) -> None:
         from app.services.tailor.persistence import mark_job_resume_draft
 
@@ -399,24 +421,37 @@ class TestEditResume:
         assert exc_info.value.status_code == 409
 
     @pytest.mark.asyncio
-    async def test_edit_rejected_for_cover_letter(self) -> None:
-        from fastapi import HTTPException
-
+    async def test_edit_succeeds_for_cover_letter(self) -> None:
+        """Cover letters share the markdown editor + autosave path; the
+        linter skips resume-specific section name checks for them, so a
+        plain prose body that would fail resume lint is still valid here."""
         from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
         record = _make_record(document_type="cover_letter")
+        # Plain cover letter prose (no `## Experience` heading) — would
+        # fail the resume linter, must pass the cover letter linter.
+        cover_md = (
+            "# Daniel Joffe\n\n"
+            "Dear Hiring Manager,\n\n"
+            "I'm writing to apply for the role.\n\n"
+            "Sincerely,\nDaniel\n"
+        )
 
         with (
             patch("app.services.tailor.persistence.get", return_value=record),
-            pytest.raises(HTTPException) as exc_info,
+            patch(
+                "app.services.tailor.persistence.update_payload_md",
+                return_value=record,
+            ),
         ):
-            await tailor_router.edit_tailored_resume(
+            result = await tailor_router.edit_tailored_resume(
                 resume_id="rec-1",
-                body=ResumeEditRequest(markdown=self._GOOD_MD),
+                body=ResumeEditRequest(markdown=cover_md),
                 supabase=supabase,
             )
-        assert exc_info.value.status_code == 400
+
+        assert result.record == record
 
     @pytest.mark.asyncio
     async def test_edit_lint_failure_missing_experience(self) -> None:
@@ -509,23 +544,33 @@ class TestApproveResume:
         assert exc_info.value.status_code == 404
 
     @pytest.mark.asyncio
-    async def test_approve_rejected_for_cover_letter(self) -> None:
-        from fastapi import HTTPException
-
+    async def test_approve_cover_letter_does_not_advance_job_status(self) -> None:
+        """Approving a cover letter locks it but must not flip the linked
+        job posting to resume_ready — that's a resume-only side effect."""
         from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
         record = _make_record(document_type="cover_letter")
+        approved_record = _make_record(
+            document_type="cover_letter", approved_at=_NOW
+        )
 
         with (
             patch("app.services.tailor.persistence.get", return_value=record),
-            pytest.raises(HTTPException) as exc_info,
+            patch(
+                "app.services.tailor.persistence.approve",
+                return_value=approved_record,
+            ),
         ):
-            await tailor_router.approve_tailored_resume(
+            result = await tailor_router.approve_tailored_resume(
                 resume_id="rec-1",
                 supabase=supabase,
             )
-        assert exc_info.value.status_code == 400
+
+        assert result.approved_at is not None
+        # No job_postings.update — cover letters don't drive job status.
+        for call in supabase.table.call_args_list:
+            assert call.args[0] != "job_postings"
 
 
 # ---------------------------------------------------------------------------

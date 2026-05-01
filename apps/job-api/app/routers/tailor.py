@@ -301,6 +301,18 @@ async def get_resume_by_job(
     return row
 
 
+@router.get("/cover-letters/by-job/{job_posting_id}")
+async def get_cover_letter_by_job(
+    job_posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TailoredResumeRecord:
+    """Most recent cover letter for a given job posting."""
+    row = persistence.get_by_job(supabase, job_posting_id, document_type="cover_letter")
+    if row is None:
+        raise HTTPException(status_code=404, detail="no cover letter found for this job posting")
+    return row
+
+
 @router.post("/resumes/export-zip")
 async def export_resumes_zip(
     body: BulkExportRequest,
@@ -361,13 +373,11 @@ async def edit_tailored_resume(
     """
     row = persistence.get(supabase, resume_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="tailored resume not found")
-    if row.document_type != "resume":
-        raise HTTPException(status_code=400, detail="only resumes can be edited")
+        raise HTTPException(status_code=404, detail="tailored document not found")
     if row.approved_at is not None:
-        raise HTTPException(status_code=409, detail="resume already approved — cannot edit")
+        raise HTTPException(status_code=409, detail="document already approved — cannot edit")
 
-    lint_result = lint_markdown(body.markdown, document_type="resume")
+    lint_result = lint_markdown(body.markdown, document_type=row.document_type)
     if lint_result.errors:
         raise HTTPException(
             status_code=422,
@@ -400,15 +410,13 @@ async def checkpoint_tailored_resume(
     """
     row = persistence.get(supabase, resume_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="tailored resume not found")
-    if row.document_type != "resume":
-        raise HTTPException(status_code=400, detail="only resumes can be checkpointed")
+        raise HTTPException(status_code=404, detail="tailored document not found")
     if row.approved_at is not None:
-        # Approved resumes are locked — nothing new to snapshot.
+        # Approved documents are locked — nothing new to snapshot.
         return {"recorded": False, "reason": "approved"}
 
     if body and body.markdown:
-        lint_result = lint_markdown(body.markdown, document_type="resume")
+        lint_result = lint_markdown(body.markdown, document_type=row.document_type)
         if lint_result.errors:
             raise HTTPException(
                 status_code=422,
@@ -428,12 +436,10 @@ async def approve_tailored_resume(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> TailoredResumeRecord:
-    """Approve (lock) a resume. Idempotent if already approved."""
+    """Approve (lock) a tailored resume or cover letter. Idempotent if already approved."""
     row = persistence.get(supabase, resume_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="tailored resume not found")
-    if row.document_type != "resume":
-        raise HTTPException(status_code=400, detail="only resumes can be approved")
+        raise HTTPException(status_code=404, detail="tailored document not found")
 
     # Idempotent: if already approved, just return it
     if row.approved_at is not None:
@@ -441,8 +447,9 @@ async def approve_tailored_resume(
 
     record = persistence.approve(supabase, resume_id)
 
-    # Advance linked job posting to resume_ready
-    if row.job_posting_id:
+    # Resume approval also advances the linked job posting to resume_ready;
+    # cover letters don't drive job status.
+    if row.document_type == "resume" and row.job_posting_id:
         supabase.table("job_postings").update(
             {"status": "resume_ready"}
         ).eq("id", row.job_posting_id).execute()

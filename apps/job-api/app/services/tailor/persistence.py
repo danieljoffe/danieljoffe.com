@@ -288,13 +288,15 @@ def approve(supabase: Client, resume_id: str) -> TailoredResumeRecord:
 def get_by_job(
     supabase: Client,
     job_posting_id: str,
+    *,
+    document_type: DocumentType = "resume",
 ) -> TailoredResumeRecord | None:
-    """Fetch the most recent resume for a job posting."""
+    """Fetch the most recent tailored document of a given type for a job posting."""
     resp = (
         supabase.table(TABLE)
         .select("*")
         .eq("job_posting_id", job_posting_id)
-        .eq("document_type", "resume")
+        .eq("document_type", document_type)
         .order("created_at", desc=True)
         .limit(1)
         .execute()
