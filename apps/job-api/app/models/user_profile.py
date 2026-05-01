@@ -38,6 +38,12 @@ class NotificationPreferences(BaseModel):
     sms_daily_limit: int = 5
     phone_number: str | None = None
     email: str | None = None
+    # Server-derived: false when the operator hasn't configured the
+    # corresponding provider credentials. The frontend uses these to
+    # disable the toggles; the PATCH handler rejects attempts to enable
+    # a channel whose backend isn't reachable.
+    email_available: bool = True
+    sms_available: bool = True
 
 
 class NotificationPreferencesUpdate(BaseModel):

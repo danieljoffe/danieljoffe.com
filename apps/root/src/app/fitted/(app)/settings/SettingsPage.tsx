@@ -41,6 +41,8 @@ interface NotificationPreferences {
   sms_daily_limit: number;
   phone_number: string | null;
   email: string | null;
+  email_available: boolean;
+  sms_available: boolean;
 }
 
 interface IdentityFields {
@@ -204,6 +206,9 @@ export default function SettingsPage() {
 
   const hasChanges = hasNotifChanges || hasIdentityChanges;
 
+  const emailAvailable = prefs?.email_available ?? false;
+  const smsAvailable = prefs?.sms_available ?? false;
+
   if (loading) {
     return (
       <div className='flex flex-col gap-6'>
@@ -265,6 +270,7 @@ export default function SettingsPage() {
               value={identityName}
               onChange={e => setIdentityName(e.target.value)}
               placeholder='Daniel Joffe'
+              autoComplete='name'
               required
             />
             <Input
@@ -273,6 +279,8 @@ export default function SettingsPage() {
               value={identityEmail}
               onChange={e => setIdentityEmail(e.target.value)}
               placeholder='you@example.com'
+              autoComplete='email'
+              inputMode='email'
             />
             <Input
               label='Phone'
@@ -280,12 +288,15 @@ export default function SettingsPage() {
               value={identityPhone}
               onChange={e => setIdentityPhone(e.target.value)}
               placeholder='+1 555 123 4567'
+              autoComplete='tel'
+              inputMode='tel'
             />
             <Input
               label='Location'
               value={identityLocation}
               onChange={e => setIdentityLocation(e.target.value)}
               placeholder='Brooklyn, NY'
+              autoComplete='address-level2'
             />
             <Input
               label='LinkedIn URL'
@@ -293,6 +304,8 @@ export default function SettingsPage() {
               value={identityLinkedin}
               onChange={e => setIdentityLinkedin(e.target.value)}
               placeholder='https://linkedin.com/in/...'
+              autoComplete='url'
+              inputMode='url'
             />
             <Input
               label='Website'
@@ -300,6 +313,8 @@ export default function SettingsPage() {
               value={identityWebsite}
               onChange={e => setIdentityWebsite(e.target.value)}
               placeholder='https://danieljoffe.com'
+              autoComplete='url'
+              inputMode='url'
             />
           </div>
         </CardContent>
@@ -311,9 +326,10 @@ export default function SettingsPage() {
           <div className='flex items-center justify-between'>
             <CardTitle>Email Notifications</CardTitle>
             <Switch
-              checked={emailEnabled}
+              checked={emailEnabled && emailAvailable}
               onChange={setEmailEnabled}
               label='Enabled'
+              disabled={!emailAvailable}
             />
           </div>
         </CardHeader>
@@ -322,6 +338,12 @@ export default function SettingsPage() {
             Get email alerts when new jobs score above your threshold. Powered
             by Resend.
           </Text>
+          {!emailAvailable && (
+            <Text variant='meta' className='text-text-tertiary'>
+              Email notifications are unavailable until the operator configures
+              the email provider credentials.
+            </Text>
+          )}
           {prefs?.email && (
             <Text variant='meta' className='text-text-tertiary'>
               Sending to: {prefs.email}
@@ -334,7 +356,7 @@ export default function SettingsPage() {
               value={emailThreshold}
               onChange={e => setEmailThreshold(e.target.value)}
               helperText='Minimum job score to trigger an email alert (0-200)'
-              disabled={!emailEnabled}
+              disabled={!emailEnabled || !emailAvailable}
             />
           </div>
         </CardContent>
@@ -346,9 +368,10 @@ export default function SettingsPage() {
           <div className='flex items-center justify-between'>
             <CardTitle>SMS Notifications</CardTitle>
             <Switch
-              checked={smsEnabled}
+              checked={smsEnabled && smsAvailable}
               onChange={setSmsEnabled}
               label='Enabled'
+              disabled={!smsAvailable}
             />
           </div>
         </CardHeader>
@@ -357,6 +380,12 @@ export default function SettingsPage() {
             Get text messages for high-scoring jobs with a deep link to view and
             act immediately. Powered by Twilio.
           </Text>
+          {!smsAvailable && (
+            <Text variant='meta' className='text-text-tertiary'>
+              SMS notifications are unavailable until the operator configures
+              Twilio credentials.
+            </Text>
+          )}
           <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
             <Input
               label='Phone number'
@@ -365,7 +394,9 @@ export default function SettingsPage() {
               onChange={e => setPhoneNumber(e.target.value)}
               placeholder='+1 555 123 4567'
               helperText='Include country code'
-              disabled={!smsEnabled}
+              autoComplete='tel'
+              inputMode='tel'
+              disabled={!smsEnabled || !smsAvailable}
             />
             <Input
               label='Score threshold'
@@ -373,7 +404,7 @@ export default function SettingsPage() {
               value={smsThreshold}
               onChange={e => setSmsThreshold(e.target.value)}
               helperText='Minimum score for SMS (0-200)'
-              disabled={!smsEnabled}
+              disabled={!smsEnabled || !smsAvailable}
             />
             <Input
               label='Daily limit'
@@ -381,7 +412,7 @@ export default function SettingsPage() {
               value={smsDailyLimit}
               onChange={e => setSmsDailyLimit(e.target.value)}
               helperText='Max texts per day (1-50)'
-              disabled={!smsEnabled}
+              disabled={!smsEnabled || !smsAvailable}
             />
           </div>
         </CardContent>
