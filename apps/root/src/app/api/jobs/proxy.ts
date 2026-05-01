@@ -106,6 +106,72 @@ export async function proxyToFastAPI(
 }
 
 /**
+ * Forward a request and stream the FastAPI response body straight through.
+ * Used for SSE endpoints where each upstream chunk should reach the browser
+ * as it arrives — `proxyToFastAPI` would buffer the full body and defeat
+ * the point of streaming.
+ *
+ * The caller's `Request.signal` is passed to fetch so that a client-side
+ * disconnect (closed EventSource, navigated-away tab) cancels the upstream
+ * fetch instead of leaving the LLM call running.
+ */
+export async function proxyStreamingToFastAPI(
+  path: string,
+  request: Request,
+  options: { method?: string; body?: unknown } = {}
+): Promise<NextResponse> {
+  const { method = 'POST', body } = options;
+  const url = `${JOB_API_URL}${path}`;
+  const sessionToken = await readAdminSessionToken();
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: {
+        'x-api-key': JOB_API_KEY,
+        'Content-Type': 'application/json',
+        ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+      },
+      body: body ? JSON.stringify(body) : null,
+      signal: request.signal,
+    });
+  } catch (err) {
+    const detail =
+      process.env.NODE_ENV !== 'production' && err instanceof Error
+        ? { message: err.message }
+        : undefined;
+    return NextResponse.json(
+      { error: 'Job API unavailable', ...(detail ? { detail } : {}) },
+      { status: 503 }
+    );
+  }
+
+  // Non-streaming error path: surface upstream errors as JSON before any
+  // SSE frames. The upstream emits text/event-stream only on success.
+  if (!res.ok || !res.body) {
+    const text = await res.text();
+    try {
+      return NextResponse.json(JSON.parse(text), { status: res.status });
+    } catch {
+      return NextResponse.json(
+        { error: 'Upstream error', upstreamStatus: res.status },
+        { status: res.status || 502 }
+      );
+    }
+  }
+
+  return new NextResponse(res.body, {
+    status: 200,
+    headers: {
+      'Content-Type': res.headers.get('Content-Type') ?? 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'X-Accel-Buffering': 'no',
+    },
+  });
+}
+
+/**
  * Forward a multipart/form-data request to the FastAPI backend.
  *
  * Unlike `proxyToFastAPI` (which JSON-serializes the body), this passes

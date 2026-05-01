@@ -2,6 +2,7 @@
 
 import json
 from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -225,3 +226,161 @@ class TestDeriveEndpoint:
         assert result is new_doc
         assert len(llm.calls) == 1  # LLM was called
         assert llm.calls[0]["purpose"] == DEFAULT_PURPOSE
+
+
+# ---------------------------------------------------------------------------
+# Endpoint: POST /experience/derive/stream
+# ---------------------------------------------------------------------------
+
+
+def _parse_sse(raw: bytes) -> list[tuple[str, dict[str, Any]]]:
+    """Parse an SSE byte stream into (event_name, data_dict) tuples."""
+    events: list[tuple[str, dict[str, Any]]] = []
+    for frame in raw.decode("utf-8").split("\n\n"):
+        if not frame.strip():
+            continue
+        event_name = ""
+        data = ""
+        for line in frame.split("\n"):
+            if line.startswith("event: "):
+                event_name = line[len("event: ") :]
+            elif line.startswith("data: "):
+                data = line[len("data: ") :]
+        events.append((event_name, json.loads(data)))
+    return events
+
+
+async def _drain(streaming_response: object) -> bytes:
+    body_iterator = getattr(streaming_response, "body_iterator")
+    chunks: list[bytes] = []
+    async for chunk in body_iterator:
+        chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))
+    return b"".join(chunks)
+
+
+class TestDeriveStreamEndpoint:
+    @pytest.mark.asyncio
+    async def test_404_when_no_prose(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from fastapi import HTTPException
+
+        from app.routers import experience as exp_router
+
+        monkeypatch.setattr(
+            "app.services.experience.prose.get_latest", lambda *a, **kw: None
+        )
+
+        with pytest.raises(HTTPException) as exc_info:
+            await exp_router.derive_optimized_stream(
+                supabase=MagicMock(),
+                llm=MockLLMClient(),
+                embeddings=MagicMock(),
+            )
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_cached_path_emits_single_done_event(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Skip-when-unchanged: stream emits exactly one done event with cached=true."""
+        from app.routers import experience as exp_router
+
+        prose_doc = ProseDoc(
+            id="prose-1",
+            user_id=None,
+            version=3,
+            content="some prose",
+            created_at=datetime.now(UTC),
+        )
+        cached = OptimizedDoc(
+            id="opt-1",
+            user_id=None,
+            prose_doc_id="prose-1",
+            version=5,
+            payload=OptimizedPayload(),
+            markdown_view=None,
+            source="llm",
+            created_at=datetime.now(UTC),
+        )
+
+        monkeypatch.setattr(
+            "app.services.experience.prose.get_latest", lambda *a, **kw: prose_doc
+        )
+        monkeypatch.setattr(
+            "app.services.experience.optimized.get_latest", lambda *a, **kw: cached
+        )
+
+        llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_payload_json()})
+        response = await exp_router.derive_optimized_stream(
+            supabase=MagicMock(), llm=llm, embeddings=MagicMock()
+        )
+
+        events = _parse_sse(await _drain(response))
+        assert len(events) == 1
+        name, data = events[0]
+        assert name == "done"
+        assert data["cached"] is True
+        assert data["doc"]["id"] == "opt-1"
+        assert llm.calls == []  # streaming bypassed
+
+    @pytest.mark.asyncio
+    async def test_full_stream_emits_deltas_then_done(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Fresh derive: deltas precede a done event with the persisted doc."""
+        from app.routers import experience as exp_router
+
+        prose_doc = ProseDoc(
+            id="prose-1",
+            user_id=None,
+            version=3,
+            content="some prose",
+            created_at=datetime.now(UTC),
+        )
+        new_doc = OptimizedDoc(
+            id="opt-2",
+            user_id=None,
+            prose_doc_id="prose-1",
+            version=6,
+            payload=OptimizedPayload(),
+            markdown_view=None,
+            source="llm",
+            created_at=datetime.now(UTC),
+        )
+
+        monkeypatch.setattr(
+            "app.services.experience.prose.get_latest", lambda *a, **kw: prose_doc
+        )
+        monkeypatch.setattr(
+            "app.services.experience.optimized.get_latest", lambda *a, **kw: None
+        )
+        monkeypatch.setattr(
+            "app.services.experience.optimized.create_version",
+            lambda *a, **kw: new_doc,
+        )
+
+        async def fake_upsert(*a: object, **kw: object) -> None:
+            return None
+
+        monkeypatch.setattr(
+            "app.services.experience.chunks.upsert_for_optimized", fake_upsert
+        )
+        monkeypatch.setattr("app.services.llm.cost_log.record", MagicMock())
+
+        llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_payload_json()})
+        response = await exp_router.derive_optimized_stream(
+            supabase=MagicMock(), llm=llm, embeddings=MagicMock()
+        )
+
+        events = _parse_sse(await _drain(response))
+
+        delta_events = [e for e in events if e[0] == "delta"]
+        done_events = [e for e in events if e[0] == "done"]
+        assert len(delta_events) > 0
+        assert len(done_events) == 1
+        # Reassembled deltas must match the scripted JSON output.
+        joined = "".join(str(e[1]["text"]) for e in delta_events)
+        assert joined == _sample_payload_json()
+        # Done event carries the persisted doc, not cached.
+        _, done_data = done_events[0]
+        assert done_data["cached"] is False
+        assert done_data["doc"]["id"] == "opt-2"

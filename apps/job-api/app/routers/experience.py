@@ -7,9 +7,13 @@ doc -> chunks, all cost-logged.
 """
 
 import asyncio
+import json
+from collections.abc import AsyncIterator
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import ValidationError
 from supabase import Client
 
 from app.dependencies import (
@@ -54,8 +58,9 @@ from app.services.experience import (
 from app.services.ingest import merge_into_prose, parse_resume
 from app.services.ingest.parse import ParseError
 from app.services.ingest.storage import upload_file
+from app.models.llm import Message
 from app.services.llm import cost_log
-from app.services.llm.client import LLMClient
+from app.services.llm.client import LLMClient, strip_markdown_fence
 
 router = APIRouter(
     prefix="/experience",
@@ -381,6 +386,136 @@ async def derive_optimized(
         user_id=None,
     )
     return doc
+
+
+def _sse_event(event: str, data: dict[str, Any]) -> bytes:
+    """Format a Server-Sent Events frame.
+
+    The blank line that follows ``data:`` terminates the event. ``data`` is
+    JSON-encoded as a single line — the SSE spec disallows raw newlines in
+    a single ``data:`` field, and ``json.dumps`` defaults to compact output
+    so we satisfy that automatically.
+    """
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n".encode()
+
+
+@router.post("/derive/stream")
+async def derive_optimized_stream(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+) -> StreamingResponse:
+    """Streaming variant of /derive.
+
+    Emits SSE frames for each LLM text delta so the client can render fields
+    progressively (a 40s wall-clock derive becomes "watch the resume appear"
+    instead of a 40s spinner). Concludes with a single ``done`` event whose
+    payload is the persisted ``OptimizedDoc``. Same skip-when-unchanged
+    short-circuit as /derive — when triggered, the response contains a
+    single ``done`` event with ``cached: true`` and no deltas.
+
+    Errors that occur after the response stream opens are surfaced via an
+    ``error`` SSE event rather than as an HTTP error code, since headers
+    have already been sent. Pre-flight errors (missing prose) still come
+    back as HTTP 404 before any SSE frame is written.
+    """
+    prose_doc = prose.get_latest(supabase, user_id=None)
+    if prose_doc is None:
+        raise HTTPException(status_code=404, detail="no prose doc to derive from")
+
+    previous = optimized.get_latest(supabase, user_id=None)
+
+    async def generate() -> AsyncIterator[bytes]:
+        if (
+            previous is not None
+            and previous.prose_doc_id == prose_doc.id
+            and previous.source == "llm"
+        ):
+            yield _sse_event(
+                "done",
+                {"doc": previous.model_dump(mode="json"), "cached": True},
+            )
+            return
+
+        buffered_text: list[str] = []
+        result = None
+        async for event in llm.stream(
+            model=derive.DEFAULT_MODEL,
+            system=derive.SYSTEM_PROMPT,
+            messages=[Message(role="user", content=prose_doc.content)],
+            purpose=derive.DEFAULT_PURPOSE,
+            max_tokens=derive.DEFAULT_MAX_TOKENS,
+            cache_system=True,
+        ):
+            if event.type == "delta":
+                buffered_text.append(event.text)
+                yield _sse_event("delta", {"text": event.text})
+            else:
+                result = event.result
+
+        if result is None:
+            yield _sse_event(
+                "error", {"detail": "stream ended without a final event"}
+            )
+            return
+
+        try:
+            payload = OptimizedPayload.model_validate_json(
+                strip_markdown_fence(result.content)
+            )
+        except ValidationError as exc:
+            yield _sse_event("error", {"detail": f"invalid payload: {exc}"})
+            return
+
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose=derive.DEFAULT_PURPOSE,
+            result=result,
+            metadata={
+                "prose_doc_id": prose_doc.id,
+                "prose_version": prose_doc.version,
+                "streamed": True,
+            },
+        )
+
+        carried = (
+            annotations.validate_annotation_refs(
+                previous.payload.annotations, payload
+            )
+            if previous and previous.payload.annotations
+            else []
+        )
+        merged = annotations.merge_annotations(carried, payload.annotations)
+        payload = payload.model_copy(update={"annotations": merged})
+
+        doc = optimized.create_version(
+            supabase,
+            user_id=None,
+            payload=payload,
+            prose_doc_id=prose_doc.id,
+            source="llm",
+        )
+        await chunks.upsert_for_optimized(
+            supabase,
+            embeddings,
+            doc,
+            user_id=None,
+        )
+
+        yield _sse_event(
+            "done",
+            {"doc": doc.model_dump(mode="json"), "cached": False},
+        )
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",  # disable nginx response buffering
+        },
+    )
 
 
 # ---- Gap health (#498) ----------------------------------------------------

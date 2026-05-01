@@ -10,18 +10,19 @@ use that; everyone else uses `complete`.
 """
 
 import re
+from collections.abc import AsyncIterator
 from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
-from app.models.llm import LLMResult, Message, ModelId
+from app.models.llm import LLMResult, LLMStreamEvent, Message, ModelId
 
 T = TypeVar("T", bound=BaseModel)
 
 _FENCE_RE = re.compile(r"^\s*```(?:json)?\s*\n(.*?)\n```\s*$", re.DOTALL | re.IGNORECASE)
 
 
-def _strip_markdown_fence(content: str) -> str:
+def strip_markdown_fence(content: str) -> str:
     """Strip a leading ```json ... ``` (or plain ```) wrapper if present.
 
     Haiku occasionally wraps JSON output in a markdown code fence despite
@@ -59,6 +60,25 @@ class LLMClient(Protocol):
         """
         ...
 
+    def stream(
+        self,
+        *,
+        model: ModelId,
+        system: str,
+        messages: list[Message],
+        purpose: str,
+        max_tokens: int = 4096,
+        cache_system: bool = False,
+    ) -> AsyncIterator[LLMStreamEvent]:
+        """Stream a completion.
+
+        Yields ``LLMStreamDelta`` for each text chunk, then a single
+        ``LLMStreamFinal`` containing the full ``LLMResult`` (content, usage,
+        cost, latency). Same args as :meth:`complete` — implementations are
+        free to share the underlying API call.
+        """
+        ...
+
 
 async def complete_json(
     client: LLMClient,
@@ -87,5 +107,5 @@ async def complete_json(
         max_tokens=max_tokens,
         cache_system=cache_system,
     )
-    parsed = schema.model_validate_json(_strip_markdown_fence(result.content))
+    parsed = schema.model_validate_json(strip_markdown_fence(result.content))
     return parsed, result

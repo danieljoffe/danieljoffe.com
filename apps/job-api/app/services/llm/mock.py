@@ -15,9 +15,17 @@ apply real pricing so cost-log rows look sensible when inspected.
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 
-from app.models.llm import LLMResult, LLMUsage, Message, ModelId
+from app.models.llm import (
+    LLMResult,
+    LLMStreamDelta,
+    LLMStreamEvent,
+    LLMStreamFinal,
+    LLMUsage,
+    Message,
+    ModelId,
+)
 from app.services.llm.pricing import calculate_cost
 
 
@@ -92,6 +100,64 @@ class MockLLMClient:
             usage=usage,
             cost_usd=cost,
             latency_ms=self._default_latency_ms,
+        )
+
+    async def stream(
+        self,
+        *,
+        model: ModelId,
+        system: str,
+        messages: list[Message],
+        purpose: str,
+        max_tokens: int = 4096,
+        cache_system: bool = False,
+    ) -> AsyncIterator[LLMStreamEvent]:
+        """Mock streaming: yields the scripted response in fixed-size chunks
+        and finishes with a single final event. Mirrors the cost/usage shape
+        of `complete` so consumers can use either interchangeably.
+        """
+        if not messages:
+            raise ValueError("MockLLMClient.stream requires at least one message")
+
+        latest_user = next(
+            (m.content for m in reversed(messages) if m.role == "user"),
+            messages[-1].content,
+        )
+
+        response_text = self._render_response(purpose, latest_user, messages)
+
+        chunk_size = 32
+        for i in range(0, len(response_text), chunk_size):
+            yield LLMStreamDelta(text=response_text[i : i + chunk_size])
+
+        usage = LLMUsage(
+            input_tokens=_approx_tokens(system) + sum(_approx_tokens(m.content) for m in messages),
+            output_tokens=_approx_tokens(response_text),
+            cache_read_input_tokens=0,
+            cache_creation_input_tokens=_approx_tokens(system) if cache_system else 0,
+        )
+        cost = calculate_cost(model, usage)
+
+        self.calls.append(
+            {
+                "model": model,
+                "purpose": purpose,
+                "system_len": len(system),
+                "messages_count": len(messages),
+                "cache_system": cache_system,
+                "max_tokens": max_tokens,
+                "streamed": True,
+            }
+        )
+
+        yield LLMStreamFinal(
+            result=LLMResult(
+                content=response_text,
+                model=model,
+                usage=usage,
+                cost_usd=cost,
+                latency_ms=self._default_latency_ms,
+            )
         )
 
     def _render_response(

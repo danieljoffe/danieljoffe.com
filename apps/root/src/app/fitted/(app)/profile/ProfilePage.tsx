@@ -25,6 +25,8 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { consumeSse } from '@/lib/consumeSse';
+import { parsePartialJson } from '@/lib/parsePartialJson';
 import { useToast } from '@/state/Toast/ToastProvider';
 import ConversationChatModal from '../../_components/ConversationChatModal';
 import type {
@@ -32,9 +34,13 @@ import type {
   GapHealthResult,
   GapTier,
   OptimizedDoc,
+  OptimizedPayload,
   OptimizedResponse,
+  Outcome,
   ProseDoc,
   ProseResponse,
+  Role,
+  Skill,
 } from './types';
 import {
   GAP_KIND_LABELS,
@@ -75,6 +81,16 @@ function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
   return 'success';
 }
 
+// Mid-stream the parser may produce role/skill/outcome objects that have only
+// some fields populated. Use a permissive shape so the render can guard each
+// field rather than asserting Role/Skill/Outcome exactness on a partial parse.
+type DisplayPayload = {
+  summary: string | null;
+  roles: Partial<Role>[];
+  skills: Partial<Skill>[];
+  outcomes: Partial<Outcome>[];
+};
+
 const ACCEPTED_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -91,6 +107,8 @@ export default function ProfilePage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deriving, setDeriving] = useState(false);
+  const [streamingPayload, setStreamingPayload] =
+    useState<Partial<OptimizedPayload> | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
@@ -181,20 +199,46 @@ export default function ProfilePage() {
 
   const handleDerive = useCallback(async () => {
     setDeriving(true);
+    setStreamingPayload(null);
+    let buffered = '';
+    let cached = false;
     try {
-      const res = await fetch('/api/career/experience/derive', {
+      const res = await fetch('/api/career/experience/derive/stream', {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Derive failed');
+
+      let streamError: string | null = null;
+      await consumeSse(res, (event, data) => {
+        if (event === 'delta') {
+          const text = (data as { text?: string }).text ?? '';
+          buffered += text;
+          const parsed = parsePartialJson<Partial<OptimizedPayload>>(buffered);
+          if (parsed) setStreamingPayload(parsed);
+        } else if (event === 'done') {
+          const payload = data as { doc: OptimizedDoc; cached?: boolean };
+          setOptimized(payload.doc);
+          cached = Boolean(payload.cached);
+        } else if (event === 'error') {
+          streamError =
+            (data as { detail?: string }).detail ?? 'derive stream error';
+        }
+      });
+
+      if (streamError) throw new Error(streamError);
+
       toast({
-        variant: 'success',
-        title: 'Profile re-derived from experience',
+        variant: cached ? 'info' : 'success',
+        title: cached
+          ? 'Profile already up to date'
+          : 'Profile re-derived from experience',
       });
       await fetchData();
     } catch {
       toast({ variant: 'error', title: 'Failed to re-derive profile' });
     } finally {
       setDeriving(false);
+      setStreamingPayload(null);
     }
   }, [fetchData, toast]);
 
@@ -369,7 +413,17 @@ export default function ProfilePage() {
 
   // -- Main layout ------------------------------------------------------------
 
-  const payload = optimized?.payload;
+  // While streaming, render parsed-so-far fields with empty defaults; this lets
+  // the user see the resume materialize instead of staring at a spinner. Once
+  // the `done` event lands, we swap back to the persisted optimized doc.
+  const payload: DisplayPayload | undefined = streamingPayload
+    ? {
+        summary: streamingPayload.summary ?? null,
+        roles: (streamingPayload.roles ?? []) as Partial<Role>[],
+        skills: (streamingPayload.skills ?? []) as Partial<Skill>[],
+        outcomes: (streamingPayload.outcomes ?? []) as Partial<Outcome>[],
+      }
+    : optimized?.payload;
   const roleGapRefs = new Set(
     gapHealth?.gaps
       .filter(g => g.ref && g.kind.startsWith('role.'))
@@ -386,6 +440,18 @@ export default function ProfilePage() {
           Your master experience document and derived skills
         </Text>
       </div>
+
+      {deriving && (
+        <Alert variant='info' aria-live='polite'>
+          <div className='flex items-center gap-2'>
+            <Spinner size='sm' aria-label='Generating' />
+            <span>
+              Generating profile from your master document — fields below update
+              as they stream in. Editing is locked until generation completes.
+            </span>
+          </div>
+        </Alert>
+      )}
 
       {/* Document Health */}
       {gapHealth && (
@@ -636,30 +702,36 @@ export default function ProfilePage() {
 
       {/* Experience */}
       {payload && payload.roles.length > 0 && (
-        <Card>
+        <Card aria-busy={deriving || undefined}>
           <CardHeader>
             <CardTitle>Experience</CardTitle>
           </CardHeader>
           <CardContent className='flex flex-col divide-y divide-border'>
-            {payload.roles.map(role => {
+            {payload.roles.map((role, idx) => {
               const outcomeCount =
                 payload.outcomes.filter(o => o.role_ref === role.id).length +
-                role.outcome_refs.length;
-              const hasGap = roleGapRefs.has(role.id);
+                (role.outcome_refs?.length ?? 0);
+              const hasGap = role.id ? roleGapRefs.has(role.id) : false;
+              const dateRange =
+                role.start !== undefined
+                  ? formatDateRange(role.start, role.end ?? null)
+                  : '';
+              const skills = role.skills ?? [];
 
               return (
                 <div
-                  key={role.id}
+                  key={role.id ?? `role-${idx}`}
                   className='flex flex-col gap-2 py-3 first:pt-0 last:pb-0'
                 >
                   <div className='flex items-start justify-between gap-2'>
                     <div>
                       <Text variant='body' className='font-medium'>
-                        {role.title}
+                        {role.title ?? ''}
                       </Text>
                       <Text variant='caption' className='text-text-secondary'>
-                        {role.company} &middot;{' '}
-                        {formatDateRange(role.start, role.end)}
+                        {role.company ?? ''}
+                        {role.company && dateRange ? ' · ' : ''}
+                        {dateRange}
                       </Text>
                     </div>
                     <div className='flex shrink-0 items-center gap-1.5'>
@@ -681,9 +753,9 @@ export default function ProfilePage() {
                       {role.summary}
                     </Text>
                   )}
-                  {role.skills.length > 0 && (
+                  {skills.length > 0 && (
                     <div className='flex flex-wrap gap-1'>
-                      {role.skills.map(skill => (
+                      {skills.map(skill => (
                         <Badge key={skill} variant='default' size='sm'>
                           {skill}
                         </Badge>
@@ -699,31 +771,34 @@ export default function ProfilePage() {
 
       {/* Skills */}
       {payload && payload.skills.length > 0 && (
-        <Card>
+        <Card aria-busy={deriving || undefined}>
           <CardHeader>
             <CardTitle>Skills</CardTitle>
           </CardHeader>
           <CardContent>
             <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-              {payload.skills.map(skill => (
-                <div
-                  key={skill.name}
-                  className='flex items-center justify-between rounded-md border border-border px-3 py-2'
-                >
-                  <Text variant='body' className='text-sm'>
-                    {skill.name}
-                  </Text>
-                  {skill.evidence_refs.length > 0 ? (
-                    <Badge variant='default' size='sm'>
-                      {skill.evidence_refs.length} evidence
-                    </Badge>
-                  ) : (
-                    <Badge variant='error' size='sm'>
-                      No evidence
-                    </Badge>
-                  )}
-                </div>
-              ))}
+              {payload.skills.map((skill, idx) => {
+                const evidenceCount = skill.evidence_refs?.length ?? 0;
+                return (
+                  <div
+                    key={skill.name ?? `skill-${idx}`}
+                    className='flex items-center justify-between rounded-md border border-border px-3 py-2'
+                  >
+                    <Text variant='body' className='text-sm'>
+                      {skill.name ?? ''}
+                    </Text>
+                    {evidenceCount > 0 ? (
+                      <Badge variant='default' size='sm'>
+                        {evidenceCount} evidence
+                      </Badge>
+                    ) : (
+                      <Badge variant='error' size='sm'>
+                        No evidence
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
