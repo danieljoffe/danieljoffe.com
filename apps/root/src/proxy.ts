@@ -12,6 +12,18 @@ import {
 import { isProduction } from '@/utils/helpers';
 
 const ADMIN_SESSION_COOKIE = 'admin_session';
+const FITTED_DEFAULT = '/fitted';
+
+/**
+ * Constrains `next` to a same-origin relative path. Anything else
+ * (absolute URL, protocol-relative `//evil.com`, missing leading `/`)
+ * falls back to /fitted so the redirect can't be abused.
+ */
+function safeNext(value: string | null): string {
+  if (!value) return FITTED_DEFAULT;
+  if (!value.startsWith('/') || value.startsWith('//')) return FITTED_DEFAULT;
+  return value;
+}
 
 function getAdminSecret(): Uint8Array | null {
   const secret = process.env['ADMIN_SESSION_SECRET'];
@@ -107,27 +119,33 @@ async function handleFittedAuth(
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   // Allow login and auth callback routes without authentication
   if (
     pathname.startsWith('/fitted/login') ||
     pathname.startsWith('/fitted/auth')
   ) {
-    // If user is already logged in and visiting login, redirect to /fitted
+    // If user is already logged in and visiting login, send them to the
+    // requested destination (or /fitted as fallback). `safeNext` guards
+    // against an attacker-controlled `next` becoming an open redirect.
     if (user && pathname.startsWith('/fitted/login')) {
       const url = request.nextUrl.clone();
-      url.pathname = '/fitted';
+      url.pathname = safeNext(request.nextUrl.searchParams.get('next'));
+      url.search = '';
       return NextResponse.redirect(url);
     }
     supabaseResponse.headers.set('Content-Security-Policy', cspValue);
     return supabaseResponse;
   }
 
-  // Redirect unauthenticated users to login
+  // Redirect unauthenticated users to login, preserving the page they
+  // tried to reach so the magic-link callback can return them there.
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = '/fitted/login';
+    url.search = '';
+    url.searchParams.set('next', pathname + search);
     return NextResponse.redirect(url);
   }
 
@@ -176,9 +194,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // /fitted/* runs on prefetches too, so prefetched RSC payloads for
+    // protected routes get the redirect instead of caching the dashboard
+    // shell client-side.
+    { source: '/fitted/:path*' },
     {
       source:
-        '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|fitted).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },

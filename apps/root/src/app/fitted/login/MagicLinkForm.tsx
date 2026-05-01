@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
 import { Section } from '@danieljoffe.com/shared-ui/Section';
@@ -16,15 +16,39 @@ import { createAuthBrowserClient } from '@/lib/supabase/auth-client';
 
 type FormState = 'idle' | 'loading' | 'sent' | 'error';
 
-export default function MagicLinkForm() {
+interface MagicLinkFormProps {
+  next: string | undefined;
+}
+
+const NEXT_COOKIE = 'fitted_login_next';
+const NEXT_COOKIE_MAX_AGE_S = 600;
+
+/**
+ * Stash `next` in a short-lived cookie instead of appending it to
+ * `emailRedirectTo`. Adding a query string to the redirect URL forces
+ * Supabase to treat it as a different URL and — depending on the
+ * project's Redirect URL allowlist — silently fall back to the Site URL
+ * (production), dropping `next` and breaking dev login. The cookie sits
+ * alongside the request, the callback reads it after exchanging the
+ * code, then clears it.
+ */
+function stashNextInCookie(next: string): void {
+  document.cookie = `${NEXT_COOKIE}=${encodeURIComponent(next)}; max-age=${NEXT_COOKIE_MAX_AGE_S}; path=/; samesite=lax`;
+}
+
+export default function MagicLinkForm({ next }: MagicLinkFormProps) {
   const [email, setEmail] = useState('');
   const [formState, setFormState] = useState<FormState>('idle');
   const [error, setError] = useState('');
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormState('loading');
     setError('');
+
+    if (next) {
+      stashNextInCookie(next);
+    }
 
     const supabase = createAuthBrowserClient();
     const { error: authError } = await supabase.auth.signInWithOtp({
