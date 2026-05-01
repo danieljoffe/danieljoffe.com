@@ -117,7 +117,7 @@ export default function JobCard({
       role='button'
       aria-label={`${job.title} at ${job.company_name}`}
     >
-      <header className='flex items-center justify-between gap-2'>
+      <header className='flex items-start justify-between gap-2'>
         <div className='flex min-w-0 items-center gap-2'>
           <input
             type='checkbox'
@@ -125,16 +125,12 @@ export default function JobCard({
             onChange={onSelectToggle}
             onClick={e => e.stopPropagation()}
             aria-label={`Select ${job.title}`}
-            className='shrink-0 accent-brand-500'
+            className='mt-0.5 shrink-0 accent-brand-500'
           />
-          <span className='truncate text-xs font-medium text-text-secondary'>
-            {job.company_name}
+          <ScoreBadge score={job.score} scoringStatus={job.scoring_status} />
+          <span className='truncate text-sm font-medium leading-tight text-text-primary'>
+            {job.title}
           </span>
-          {job.source_id === MANUAL_SOURCE_ID && (
-            <Badge variant='info' size='sm'>
-              Discovered
-            </Badge>
-          )}
         </div>
         <div onClick={e => e.stopPropagation()}>
           <Dropdown
@@ -149,26 +145,37 @@ export default function JobCard({
         </div>
       </header>
 
-      <div className='flex items-start justify-between gap-2'>
-        <div className='flex min-w-0 items-start gap-2'>
-          <ScoreBadge score={job.score} scoringStatus={job.scoring_status} />
-          <span className='truncate text-sm font-medium leading-tight text-text-primary'>
-            {job.title}
-          </span>
-        </div>
-        <StatusIndicator status={job.status} className='shrink-0' />
-      </div>
+      <hr className='-mx-3 border-border' />
 
-      <dl className='grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs'>
+      <dl className='grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs'>
+        <dt className='text-text-tertiary'>Company</dt>
+        <dd className='flex min-w-0 items-center justify-end gap-2 text-text-secondary'>
+          <span className='truncate font-medium'>{job.company_name}</span>
+          {job.source_id === MANUAL_SOURCE_ID && (
+            <Badge variant='info' size='sm'>
+              Discovered
+            </Badge>
+          )}
+        </dd>
         <dt className='text-text-tertiary'>Location</dt>
-        <dd className='truncate text-text-secondary'>{job.location ?? '—'}</dd>
+        <dd className='truncate text-right text-text-secondary'>
+          {job.location ?? '—'}
+        </dd>
         <dt className='text-text-tertiary'>Salary</dt>
-        <dd className='truncate text-text-secondary'>
+        <dd className='truncate text-right text-text-secondary'>
           {job.salary_text ?? '—'}
         </dd>
         <dt className='text-text-tertiary'>Posted</dt>
-        <dd className='text-text-secondary'>{timeAgo(job.created_at)}</dd>
+        <dd className='text-right text-text-secondary'>
+          {timeAgo(job.created_at)}
+        </dd>
       </dl>
+
+      <hr className='-mx-3 border-border' />
+
+      <div className='flex justify-end'>
+        <StatusIndicator status={job.status} />
+      </div>
     </article>
   );
 }
