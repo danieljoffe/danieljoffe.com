@@ -50,6 +50,8 @@ def _make_record(
     document_type: str = "resume",
     storage_path: str | None = "anon/rec-1.docx",
     job_posting_id: str | None = "job-1",
+    payload_md: str | None = None,
+    docx_payload_md_hash: str | None = None,
 ) -> TailoredResumeRecord:
     return TailoredResumeRecord(
         id="rec-1",
@@ -60,6 +62,8 @@ def _make_record(
         jd_snapshot="JD text",
         jd_snapshot_hash="abc123",
         payload=_RESUME.model_dump(),
+        payload_md=payload_md,
+        docx_payload_md_hash=docx_payload_md_hash,
         storage_path=storage_path,
         warnings=[],
         model="claude-sonnet-4-6",
@@ -643,3 +647,262 @@ class TestGetByJob:
                 supabase=supabase,
             )
         assert exc_info.value.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Markdown payload + docx cache invalidation
+# ---------------------------------------------------------------------------
+
+
+_GOOD_MD = "# Daniel Joffe\n\n## Experience\n\n### Engineer — Acme\n\n- Did things\n"
+
+
+class TestUpdatePayloadMd:
+    """`update_payload_md` is the persistence half of PATCH /resumes/{id}.
+    It writes the markdown, sets docx_payload_md_hash to NULL so the next
+    download triggers a re-render, and snapshots the version with payload_md.
+    """
+
+    def test_invalidates_docx_cache_hash(self) -> None:
+        from app.services.tailor.persistence import update_payload_md
+
+        supabase = MagicMock()
+        updated = _make_record(payload_md=_GOOD_MD, docx_payload_md_hash=None)
+        supabase.table.return_value.update.return_value.eq.return_value.execute.return_value.data = [
+            updated.model_dump(mode="json")
+        ]
+
+        with patch("app.services.tailor.versions.record") as mock_record:
+            update_payload_md(supabase, "rec-1", _GOOD_MD)
+
+        # Update payload includes the markdown and explicitly NULLs the cache hash.
+        update_call = supabase.table.return_value.update.call_args[0][0]
+        assert update_call["payload_md"] == _GOOD_MD
+        assert update_call["docx_payload_md_hash"] is None
+        # Version snapshot carries payload_md so history shows markdown edits.
+        assert mock_record.call_args.kwargs["payload_md"] == _GOOD_MD
+        assert mock_record.call_args.kwargs["source"] == "user_edit"
+
+
+class TestMarkDocxRendered:
+    """Atomically writes the rendered storage_path + the markdown hash that
+    produced it. Guarantees `docx_payload_md_hash != None` only after a
+    real upload exists at storage_path.
+    """
+
+    def test_writes_both_storage_path_and_hash(self) -> None:
+        from app.services.tailor.persistence import mark_docx_rendered
+
+        supabase = MagicMock()
+        mark_docx_rendered(
+            supabase,
+            "rec-1",
+            storage_path="anon/rec-1.docx",
+            payload_md_hash="hash-xyz",
+        )
+
+        update_call = supabase.table.return_value.update.call_args[0][0]
+        assert update_call["storage_path"] == "anon/rec-1.docx"
+        assert update_call["docx_payload_md_hash"] == "hash-xyz"
+        supabase.table.return_value.update.return_value.eq.assert_called_with(
+            "id", "rec-1"
+        )
+
+
+class TestDownloadCache:
+    """Hash-based cache invalidation in GET /resumes/{id}/download.
+
+    Behaviour matrix:
+    - cache fresh (hash matches): serve cached bytes, no pandoc call.
+    - cache stale: re-render via pandoc, mark_docx_rendered, return new bytes.
+    - legacy row (no payload_md, has storage_path): serve cached bytes.
+    - no payload_md AND no storage_path: 404.
+    """
+
+    @pytest.mark.asyncio
+    async def test_cache_fresh_serves_cached_bytes(self) -> None:
+        from app.routers import tailor as tailor_router
+        from app.services.docx.pandoc_render import md_payload_hash
+
+        supabase = MagicMock()
+        record = _make_record(
+            payload_md=_GOOD_MD,
+            docx_payload_md_hash=md_payload_hash(_GOOD_MD),
+            storage_path="anon/rec-1.docx",
+        )
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.services.tailor.persistence.download_docx",
+                return_value=b"PKcached-bytes",
+            ) as mock_download,
+            patch("app.routers.tailor.md_to_docx") as mock_render,
+            patch(
+                "app.services.tailor.persistence.mark_docx_rendered"
+            ) as mock_mark,
+        ):
+            response = await tailor_router.download_tailored_resume(
+                resume_id="rec-1",
+                supabase=supabase,
+            )
+
+        assert response.body == b"PKcached-bytes"
+        mock_download.assert_called_once_with(supabase, "anon/rec-1.docx")
+        mock_render.assert_not_called()
+        mock_mark.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_cache_stale_rerenders_and_marks(self) -> None:
+        from app.routers import tailor as tailor_router
+
+        supabase = MagicMock()
+        # Stale: stored hash doesn't match what payload_md hashes to now.
+        record = _make_record(
+            payload_md=_GOOD_MD,
+            docx_payload_md_hash="stale-hash",
+            storage_path="anon/rec-1.docx",
+        )
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.routers.tailor.md_to_docx",
+                return_value=b"PKfresh-bytes",
+            ) as mock_render,
+            patch(
+                "app.services.tailor.persistence.upload_docx",
+                return_value="anon/rec-1.docx",
+            ),
+            patch(
+                "app.services.tailor.persistence.mark_docx_rendered"
+            ) as mock_mark,
+        ):
+            response = await tailor_router.download_tailored_resume(
+                resume_id="rec-1",
+                supabase=supabase,
+            )
+
+        assert response.body == b"PKfresh-bytes"
+        mock_render.assert_called_once_with(_GOOD_MD)
+        # mark_docx_rendered receives the freshly computed hash, not the stale one.
+        from app.services.docx.pandoc_render import md_payload_hash
+
+        mock_mark.assert_called_once_with(
+            supabase,
+            "rec-1",
+            storage_path="anon/rec-1.docx",
+            payload_md_hash=md_payload_hash(_GOOD_MD),
+        )
+
+    @pytest.mark.asyncio
+    async def test_cache_stale_render_succeeds_even_if_upload_fails(self) -> None:
+        """If storage upload errors, the user still gets the freshly rendered
+        bytes — the docx isn't lost. Next download retries the cache write.
+        """
+        from app.routers import tailor as tailor_router
+
+        supabase = MagicMock()
+        record = _make_record(
+            payload_md=_GOOD_MD,
+            docx_payload_md_hash=None,
+            storage_path=None,
+        )
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.routers.tailor.md_to_docx",
+                return_value=b"PKfresh-bytes",
+            ),
+            patch(
+                "app.services.tailor.persistence.upload_docx",
+                side_effect=RuntimeError("storage down"),
+            ),
+        ):
+            response = await tailor_router.download_tailored_resume(
+                resume_id="rec-1",
+                supabase=supabase,
+            )
+
+        assert response.body == b"PKfresh-bytes"
+
+    @pytest.mark.asyncio
+    async def test_legacy_row_serves_cached_bytes(self) -> None:
+        """Pre-backfill rows with storage_path but no payload_md still work."""
+        from app.routers import tailor as tailor_router
+
+        supabase = MagicMock()
+        record = _make_record(
+            payload_md=None,
+            docx_payload_md_hash=None,
+            storage_path="anon/rec-1.docx",
+        )
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.services.tailor.persistence.download_docx",
+                return_value=b"PKlegacy-bytes",
+            ) as mock_download,
+            patch("app.routers.tailor.md_to_docx") as mock_render,
+        ):
+            response = await tailor_router.download_tailored_resume(
+                resume_id="rec-1",
+                supabase=supabase,
+            )
+
+        assert response.body == b"PKlegacy-bytes"
+        mock_download.assert_called_once_with(supabase, "anon/rec-1.docx")
+        mock_render.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_no_md_no_storage_returns_404(self) -> None:
+        from fastapi import HTTPException
+
+        from app.routers import tailor as tailor_router
+
+        supabase = MagicMock()
+        record = _make_record(
+            payload_md=None,
+            docx_payload_md_hash=None,
+            storage_path=None,
+        )
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            await tailor_router.download_tailored_resume(
+                resume_id="rec-1",
+                supabase=supabase,
+            )
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_pandoc_missing_returns_500(self) -> None:
+        from fastapi import HTTPException
+
+        from app.routers import tailor as tailor_router
+        from app.services.docx.pandoc_render import PandocNotInstalled
+
+        supabase = MagicMock()
+        record = _make_record(
+            payload_md=_GOOD_MD,
+            docx_payload_md_hash=None,
+            storage_path=None,
+        )
+
+        with (
+            patch("app.services.tailor.persistence.get", return_value=record),
+            patch(
+                "app.routers.tailor.md_to_docx",
+                side_effect=PandocNotInstalled("pandoc missing"),
+            ),
+            pytest.raises(HTTPException) as exc_info,
+        ):
+            await tailor_router.download_tailored_resume(
+                resume_id="rec-1",
+                supabase=supabase,
+            )
+        assert exc_info.value.status_code == 500
