@@ -236,7 +236,8 @@ def list_jobs(
     order: str = Query("desc", pattern="^(asc|desc)$"),
     min_score: int | None = Query(None, ge=0, le=100),
     status: str | None = Query(
-        None, pattern="^(new|saved|applied|rejected|archived|resume_draft)$"
+        None,
+        pattern="^(new|saved|resume_draft|resume_ready|applied|interviewing|offer|rejected|archived)$",
     ),
     company: str | None = Query(None, max_length=200),
     search: str | None = Query(None, max_length=200),
