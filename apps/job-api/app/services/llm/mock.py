@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncIterator, Callable
+from typing import Any
 
 from app.models.llm import (
     LLMResult,
@@ -95,6 +96,73 @@ class MockLLMClient:
         )
 
         return LLMResult(
+            content=response_text,
+            model=model,
+            usage=usage,
+            cost_usd=cost,
+            latency_ms=self._default_latency_ms,
+        )
+
+    async def complete_tool_use(
+        self,
+        *,
+        model: ModelId,
+        system: str,
+        messages: list[Message],
+        tool_name: str,
+        tool_description: str,
+        tool_input_schema: dict[str, Any],
+        purpose: str,
+        max_tokens: int = 4096,
+        cache_system: bool = False,
+    ) -> tuple[dict[str, Any], LLMResult]:
+        """Mock structured-output. Scripted responses are parsed as JSON
+        and returned as the tool input dict; echo mode returns a small
+        echo dict. Tests that script invalid JSON exercise the error path
+        the real client would also raise on (server-side schema rejection
+        or tool_use absence).
+        """
+        if not messages:
+            raise ValueError(
+                "MockLLMClient.complete_tool_use requires at least one message"
+            )
+
+        latest_user = next(
+            (m.content for m in reversed(messages) if m.role == "user"),
+            messages[-1].content,
+        )
+        response_text = self._render_response(purpose, latest_user, messages)
+        # Will raise json.JSONDecodeError if scripted text is not valid JSON
+        # — mirrors the real client failing when the model emits no tool_use.
+        tool_input = json.loads(response_text)
+        if not isinstance(tool_input, dict):
+            raise ValueError(
+                f"Scripted response for {purpose!r} must decode to a JSON object, "
+                f"got {type(tool_input).__name__}"
+            )
+
+        usage = LLMUsage(
+            input_tokens=_approx_tokens(system)
+            + sum(_approx_tokens(m.content) for m in messages),
+            output_tokens=_approx_tokens(response_text),
+            cache_read_input_tokens=0,
+            cache_creation_input_tokens=_approx_tokens(system) if cache_system else 0,
+        )
+        cost = calculate_cost(model, usage)
+
+        self.calls.append(
+            {
+                "model": model,
+                "purpose": purpose,
+                "system_len": len(system),
+                "messages_count": len(messages),
+                "cache_system": cache_system,
+                "max_tokens": max_tokens,
+                "tool_name": tool_name,
+            }
+        )
+
+        return tool_input, LLMResult(
             content=response_text,
             model=model,
             usage=usage,
