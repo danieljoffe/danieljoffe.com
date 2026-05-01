@@ -1,7 +1,6 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -18,10 +17,6 @@ import type {
   ScoringStatus,
 } from './types';
 import { MANUAL_SOURCE_ID } from './types';
-
-function hasResume(status: string): boolean {
-  return status === 'resume_draft' || status === 'resume_ready';
-}
 
 interface JobsListTableProps {
   filters: JobsFilterState;
@@ -254,18 +249,7 @@ export default function JobsListTable({
                     />
                   </td>
                   <td className='px-3 py-2'>
-                    <div className='flex items-center gap-2'>
-                      <StatusIndicator status={job.status} />
-                      {hasResume(job.status) && (
-                        <Link
-                          href={`/fitted/jobs/${job.id}/resume`}
-                          onClick={e => e.stopPropagation()}
-                          className='text-xs text-brand-500 hover:text-brand-600 underline'
-                        >
-                          Review
-                        </Link>
-                      )}
-                    </div>
+                    <StatusIndicator status={job.status} />
                   </td>
                   <td className='px-3 py-2'>
                     <ScoreBadge
