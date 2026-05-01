@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { ChevronDown, ChevronUp, Download, RotateCcw } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -11,6 +12,17 @@ import type {
   TailoredResumeRecord,
   TailorResponse,
 } from './types';
+
+function slugify(value: string): string {
+  return (
+    value
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'cover-letter'
+  );
+}
 
 interface CoverLetterSectionProps {
   jobPostingId: string;
@@ -116,7 +128,11 @@ export default function CoverLetterSection({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${companyName.replace(/\s+/g, '_')}_cover_letter.docx`;
+      const payload = record.payload as CoverLetterPayload;
+      const userSlug = slugify(payload.contact.name);
+      const companySlug = slugify(companyName);
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = `${userSlug}-${companySlug}-cover-letter-${date}.docx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -145,9 +161,57 @@ export default function CoverLetterSection({
 
   return (
     <div>
-      <Text variant='caption' className='mb-1'>
-        Cover Letter
-      </Text>
+      <div className='mb-1 flex items-center justify-between gap-2'>
+        <Text variant='caption' as='span'>
+          Cover Letter
+        </Text>
+        {record && payload && (
+          <div className='flex items-center gap-1'>
+            <Button
+              name='toggle-cover-letter'
+              variant='ghost'
+              size='sm'
+              iconOnly
+              aria-label={
+                expanded ? 'Collapse cover letter' : 'Expand cover letter'
+              }
+              aria-expanded={expanded}
+              title={expanded ? 'Collapse' : 'Expand'}
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? (
+                <ChevronUp className='h-4 w-4' aria-hidden='true' />
+              ) : (
+                <ChevronDown className='h-4 w-4' aria-hidden='true' />
+              )}
+            </Button>
+            <Button
+              name='download-cover-letter'
+              variant='ghost'
+              size='sm'
+              iconOnly
+              aria-label='Download cover letter as .docx'
+              title='Download .docx'
+              onClick={handleDownload}
+              disabled={generating}
+            >
+              <Download className='h-4 w-4' aria-hidden='true' />
+            </Button>
+            <Button
+              name='regenerate-cover-letter'
+              variant='ghost'
+              size='sm'
+              iconOnly
+              aria-label='Regenerate cover letter with AI'
+              title='Regenerate with AI'
+              onClick={handleGenerate}
+              disabled={generating}
+            >
+              <RotateCcw className='h-4 w-4' aria-hidden='true' />
+            </Button>
+          </div>
+        )}
+      </div>
 
       {!record && !generating && (
         <Button
@@ -169,36 +233,9 @@ export default function CoverLetterSection({
 
       {record && payload && (
         <div className='space-y-2'>
-          <div className='flex items-center gap-2'>
-            <Badge variant='success' size='sm'>
-              Generated
-            </Badge>
-            <Button
-              name='toggle-cover-letter'
-              variant='ghost'
-              size='sm'
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? 'Collapse' : 'Expand'}
-            </Button>
-            <Button
-              name='download-cover-letter'
-              variant='secondary'
-              size='sm'
-              onClick={handleDownload}
-            >
-              Download .docx
-            </Button>
-            <Button
-              name='regenerate-cover-letter'
-              variant='outline'
-              size='sm'
-              onClick={handleGenerate}
-              disabled={generating}
-            >
-              Regenerate
-            </Button>
-          </div>
+          <Badge variant='success' size='sm'>
+            Generated
+          </Badge>
 
           {/* Generation metadata */}
           {record.cost_usd > 0 && (

@@ -354,7 +354,7 @@ export default function ResumeReviewPage({
         <Heading variant='hero' as='h1'>
           Resume not found
         </Heading>
-        <Text>
+        <Text variant='body'>
           We couldn&rsquo;t find a resume for this job. Generate one from the
           job page first.
         </Text>
