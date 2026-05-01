@@ -103,8 +103,8 @@ export default function ResumeReviewPage({
     if (next && versions === null) loadVersions();
   }
 
-  async function handleSave() {
-    if (!record) return;
+  async function persistMarkdown(): Promise<boolean> {
+    if (!record) return false;
     setSaving(true);
     setLintWarnings([]);
     try {
@@ -119,23 +119,29 @@ export default function ResumeReviewPage({
         if (err.detail?.violations) {
           setLintWarnings(err.detail.violations as LintViolation[]);
         }
-        return;
+        return false;
       }
       if (!res.ok) {
         toast({ variant: 'error', title: 'Failed to save changes' });
-        return;
+        return false;
       }
       const data = (await res.json()) as TailorResponse;
       setRecord(data.record);
       setMarkdown(data.record.payload_md ?? markdown);
       setLintWarnings(data.lint_warnings);
       setDirty(false);
-      toast({ variant: 'success', title: 'Draft saved' });
+      return true;
     } catch {
       toast({ variant: 'error', title: 'Network error saving draft' });
+      return false;
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSave() {
+    const ok = await persistMarkdown();
+    if (ok) toast({ variant: 'success', title: 'Draft saved' });
   }
 
   async function handleApprove() {
@@ -168,6 +174,10 @@ export default function ResumeReviewPage({
 
   async function handleDownload() {
     if (!record || !posting) return;
+    if (dirty) {
+      const ok = await persistMarkdown();
+      if (!ok) return;
+    }
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}/download`);
       if (!res.ok) {
@@ -188,12 +198,11 @@ export default function ResumeReviewPage({
 
   async function handleReadapt() {
     if (!record || !record.job_posting_id) return;
+    const message = isApproved
+      ? 'Generate a new resume from scratch? This will replace the approved resume — the current one stays in version history but will no longer be the active draft.'
+      : 'Re-generate this resume from scratch? Current draft is saved as a version first.';
     /* eslint-disable no-alert -- personal tool, native confirm is fine */
-    if (
-      !window.confirm(
-        'Re-generate this resume from scratch? Current draft is saved as a version first.'
-      )
-    )
+    if (!window.confirm(message))
       /* eslint-enable no-alert */
       return;
     setReadapting(true);
@@ -246,7 +255,9 @@ export default function ResumeReviewPage({
   if (notFound) {
     return (
       <main className='mx-auto max-w-4xl p-6'>
-        <Heading level={1}>Resume not found</Heading>
+        <Heading variant='hero' as='h1'>
+          Resume not found
+        </Heading>
         <Text>
           We couldn&rsquo;t find a resume for this job. Generate one from the
           job page first.
@@ -292,8 +303,10 @@ export default function ResumeReviewPage({
       </div>
 
       <div>
-        <Heading level={1}>Review Resume</Heading>
-        <Text className='text-text-secondary'>
+        <Heading variant='hero' as='h1'>
+          Review Resume
+        </Heading>
+        <Text variant='body' className='text-text-secondary'>
           {posting.title} &mdash; {posting.company_name}
         </Text>
       </div>
@@ -443,21 +456,24 @@ export default function ResumeReviewPage({
           variant='secondary'
           size='sm'
           onClick={handleDownload}
+          disabled={saving}
         >
-          Download .docx
+          {saving && dirty ? 'Saving...' : 'Download .docx'}
         </Button>
         <div className='flex flex-wrap gap-2'>
-          {isReused && !isApproved && (
-            <Button
-              name='readapt-resume'
-              variant='outline'
-              size='sm'
-              onClick={handleReadapt}
-              disabled={readapting || saving || approving}
-            >
-              {readapting ? 'Re-adapting...' : 'Re-adapt with AI'}
-            </Button>
-          )}
+          <Button
+            name='readapt-resume'
+            variant='outline'
+            size='sm'
+            onClick={handleReadapt}
+            disabled={readapting || saving || approving}
+          >
+            {readapting
+              ? 'Generating...'
+              : isApproved
+                ? 'Generate New'
+                : 'Re-adapt with AI'}
+          </Button>
           <Button
             name='save-draft'
             variant='outline'
