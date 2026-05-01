@@ -1,16 +1,15 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import Button from '@/components/Button';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
-import ResumeEditor from './ResumeEditor';
 import type {
   JobPosting,
   JobsFilterState,
@@ -96,7 +95,6 @@ export default function JobsListTable({
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState(0);
-  const [resumeJob, setResumeJob] = useState<JobPosting | null>(null);
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -305,17 +303,13 @@ export default function JobsListTable({
                     <div className='flex items-center gap-2'>
                       <StatusBadge status={job.status} />
                       {hasResume(job.status) && (
-                        <Button
-                          name='review-resume'
-                          variant='ghost'
-                          size='sm'
-                          onClick={e => {
-                            e.stopPropagation();
-                            setResumeJob(job);
-                          }}
+                        <Link
+                          href={`/fitted/jobs/${job.id}/resume`}
+                          onClick={e => e.stopPropagation()}
+                          className='text-xs text-brand-500 hover:text-brand-600 underline'
                         >
                           Review
-                        </Button>
+                        </Link>
                       )}
                     </div>
                   </td>
@@ -351,19 +345,6 @@ export default function JobsListTable({
             onPageChange={setPage}
           />
         </div>
-      )}
-      {resumeJob && (
-        <ResumeEditor
-          jobPostingId={resumeJob.id}
-          companyName={resumeJob.company_name}
-          jobTitle={resumeJob.title}
-          isOpen={true}
-          onClose={() => setResumeJob(null)}
-          onApproved={() => {
-            setResumeJob(null);
-            setDeleteKey(k => k + 1);
-          }}
-        />
       )}
     </div>
   );

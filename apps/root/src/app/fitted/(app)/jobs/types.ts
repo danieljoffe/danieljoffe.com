@@ -132,6 +132,8 @@ export interface TailoredResumeRecord {
   jd_snapshot: string;
   jd_snapshot_hash: string;
   payload: TailoredResumePayload | CoverLetterPayload;
+  payload_md: string | null;
+  docx_payload_md_hash: string | null;
   storage_path: string | null;
   warnings: string[];
   model: string | null;

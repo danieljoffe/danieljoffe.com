@@ -7,7 +7,6 @@ import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
-import ResumeEditor from './ResumeEditor';
 import {
   JOB_STATUSES,
   type JobAnalysis,
@@ -34,7 +33,6 @@ export default function JobDetailPanel({
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
   const [history, setHistory] = useState<StatusLogEntry[]>([]);
   const { toast } = useToast();
 
@@ -297,10 +295,11 @@ export default function JobDetailPanel({
           </Text>
           {status === 'resume_draft' && (
             <Button
-              name='review-resume'
+              as='link'
+              href={`/fitted/jobs/${posting.id}/resume`}
               variant='primary'
               size='sm'
-              onClick={() => setShowEditor(true)}
+              name='review-resume'
             >
               Review Resume
             </Button>
@@ -311,26 +310,16 @@ export default function JobDetailPanel({
                 Approved
               </Badge>
               <Button
-                name='download-approved-resume'
+                as='link'
+                href={`/fitted/jobs/${posting.id}/resume`}
                 variant='secondary'
                 size='sm'
-                onClick={() => setShowEditor(true)}
+                name='view-approved-resume'
               >
                 View / Download
               </Button>
             </div>
           )}
-          <ResumeEditor
-            jobPostingId={posting.id}
-            companyName={posting.company_name}
-            jobTitle={posting.title}
-            isOpen={showEditor}
-            onClose={() => setShowEditor(false)}
-            onApproved={() => {
-              setStatus('resume_ready');
-              onStatusChange?.('resume_ready');
-            }}
-          />
         </div>
       )}
 
