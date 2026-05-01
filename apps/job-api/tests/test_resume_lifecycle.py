@@ -182,6 +182,146 @@ class TestPersistenceHelpers:
         result = get_by_job(supabase, "nonexistent")
         assert result is None
 
+    def test_mark_job_resume_draft_updates_status(self) -> None:
+        from app.services.tailor.persistence import mark_job_resume_draft
+
+        supabase = MagicMock()
+        mark_job_resume_draft(supabase, "job-42")
+
+        supabase.table.assert_called_with("job_postings")
+        update_call = supabase.table.return_value.update.call_args
+        payload = update_call[0][0]
+        assert payload["status"] == "resume_draft"
+        assert "updated_at" in payload
+        supabase.table.return_value.update.return_value.eq.assert_called_with(
+            "id", "job-42"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Single-resume status bump
+# ---------------------------------------------------------------------------
+
+
+class TestSingleResumeStatusBump:
+    """POST /tailor/resume must advance job_postings.status to 'resume_draft'
+    after a successful generation. Without this the JobDetailPanel never
+    shows the 'Review Resume' button — the resume exists in the DB but is
+    invisible to the user.
+    """
+
+    @pytest.mark.asyncio
+    async def test_full_generation_marks_job_resume_draft(self) -> None:
+        from app.models.tailor import TailorRequest
+        from app.routers import tailor as tailor_router
+        from app.services.tailor import PipelineSuccess
+
+        supabase = MagicMock()
+        llm = MagicMock()
+        record = _make_record()
+
+        success = PipelineSuccess(
+            record=record,
+            resume=_RESUME,
+            warnings=[],
+            lint=LintResult(ok=True, violations=[]),
+            llm_result=MagicMock(),
+        )
+
+        with (
+            patch("app.routers.tailor.optimized") as mock_opt,
+            patch("app.routers.tailor.preferences") as mock_prefs,
+            patch(
+                "app.routers.tailor.resolve_contact",
+                return_value=_CONTACT,
+            ),
+            patch(
+                "app.routers.tailor.run_tailor_pipeline",
+                return_value=success,
+            ),
+            patch(
+                "app.services.tailor.persistence.mark_job_resume_draft"
+            ) as mock_mark,
+        ):
+            mock_opt.get_latest.return_value = MagicMock(
+                payload=MagicMock(roles=[MagicMock()], outcomes=[MagicMock()])
+            )
+            mock_prefs.get.return_value = None
+            # Bypass the structural gap gate — we're testing the post-success path.
+            with patch(
+                "app.routers.tailor.gap_tracker.can_generate",
+                return_value=MagicMock(ok=True),
+            ):
+                # force_fresh skips the reuse short-circuit so we hit the full
+                # generation branch deterministically.
+                await tailor_router.create_tailored_resume(
+                    body=TailorRequest(
+                        job_description="Build things.",
+                        contact=_CONTACT,
+                        job_posting_id="job-1",
+                        force_fresh=True,
+                    ),
+                    supabase=supabase,
+                    llm=llm,
+                )
+
+        mock_mark.assert_called_once_with(supabase, "job-1")
+
+    @pytest.mark.asyncio
+    async def test_no_status_bump_when_job_posting_id_missing(self) -> None:
+        """One-off generations without a linked job (e.g. preview from a JD
+        paste) should not touch any job_postings row."""
+        from app.models.tailor import TailorRequest
+        from app.routers import tailor as tailor_router
+        from app.services.tailor import PipelineSuccess
+
+        supabase = MagicMock()
+        llm = MagicMock()
+        record = _make_record(job_posting_id=None)
+
+        success = PipelineSuccess(
+            record=record,
+            resume=_RESUME,
+            warnings=[],
+            lint=LintResult(ok=True, violations=[]),
+            llm_result=MagicMock(),
+        )
+
+        with (
+            patch("app.routers.tailor.optimized") as mock_opt,
+            patch("app.routers.tailor.preferences") as mock_prefs,
+            patch(
+                "app.routers.tailor.resolve_contact",
+                return_value=_CONTACT,
+            ),
+            patch(
+                "app.routers.tailor.run_tailor_pipeline",
+                return_value=success,
+            ),
+            patch(
+                "app.services.tailor.persistence.mark_job_resume_draft"
+            ) as mock_mark,
+        ):
+            mock_opt.get_latest.return_value = MagicMock(
+                payload=MagicMock(roles=[MagicMock()], outcomes=[MagicMock()])
+            )
+            mock_prefs.get.return_value = None
+            with patch(
+                "app.routers.tailor.gap_tracker.can_generate",
+                return_value=MagicMock(ok=True),
+            ):
+                await tailor_router.create_tailored_resume(
+                    body=TailorRequest(
+                        job_description="Build things.",
+                        contact=_CONTACT,
+                        force_fresh=True,
+                    ),
+                    supabase=supabase,
+                    llm=llm,
+                )
+
+        mock_mark.assert_not_called()
+
 
 # ---------------------------------------------------------------------------
 # Edit endpoint

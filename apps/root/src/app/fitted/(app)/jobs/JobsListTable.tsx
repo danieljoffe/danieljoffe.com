@@ -6,9 +6,11 @@ import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import Button from '@/components/Button';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
+import ResumeEditor from './ResumeEditor';
 import type {
   JobPosting,
   JobsFilterState,
@@ -16,6 +18,10 @@ import type {
   ScoringStatus,
 } from './types';
 import { MANUAL_SOURCE_ID } from './types';
+
+function hasResume(status: string): boolean {
+  return status === 'resume_draft' || status === 'resume_ready';
+}
 
 interface JobsListTableProps {
   filters: JobsFilterState;
@@ -90,6 +96,7 @@ export default function JobsListTable({
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState(0);
+  const [resumeJob, setResumeJob] = useState<JobPosting | null>(null);
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -295,7 +302,22 @@ export default function JobsListTable({
                     {job.salary_text ?? '\u2014'}
                   </td>
                   <td className='px-3 py-2'>
-                    <StatusBadge status={job.status} />
+                    <div className='flex items-center gap-2'>
+                      <StatusBadge status={job.status} />
+                      {hasResume(job.status) && (
+                        <Button
+                          name='review-resume'
+                          variant='ghost'
+                          size='sm'
+                          onClick={e => {
+                            e.stopPropagation();
+                            setResumeJob(job);
+                          }}
+                        >
+                          Review
+                        </Button>
+                      )}
+                    </div>
                   </td>
                   <td className='px-3 py-2 text-text-tertiary truncate max-w-[150px]'>
                     {job.location ?? '\u2014'}
@@ -329,6 +351,19 @@ export default function JobsListTable({
             onPageChange={setPage}
           />
         </div>
+      )}
+      {resumeJob && (
+        <ResumeEditor
+          jobPostingId={resumeJob.id}
+          companyName={resumeJob.company_name}
+          jobTitle={resumeJob.title}
+          isOpen={true}
+          onClose={() => setResumeJob(null)}
+          onApproved={() => {
+            setResumeJob(null);
+            setDeleteKey(k => k + 1);
+          }}
+        />
       )}
     </div>
   );

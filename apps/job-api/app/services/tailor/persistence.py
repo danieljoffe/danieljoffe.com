@@ -13,6 +13,7 @@ anything gets persisted.
 from __future__ import annotations
 
 import hashlib
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from supabase import Client
@@ -185,6 +186,22 @@ def update_payload(
     if not rows:
         raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
+
+
+def mark_job_resume_draft(supabase: Client, job_posting_id: str) -> None:
+    """Advance a job posting to status='resume_draft'.
+
+    Called after a tailored resume is persisted (single, batch, or reuse
+    clone). Idempotent — re-running with an already-draft job is a no-op
+    update. We unconditionally set the status because re-generation
+    supersedes any prior draft/approval.
+    """
+    supabase.table("job_postings").update(
+        {
+            "status": "resume_draft",
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+    ).eq("id", job_posting_id).execute()
 
 
 def approve(supabase: Client, resume_id: str) -> TailoredResumeRecord:

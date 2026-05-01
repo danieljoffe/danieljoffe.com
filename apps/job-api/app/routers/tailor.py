@@ -138,6 +138,9 @@ async def create_tailored_resume(
                                 job_description=body.job_description,
                                 user_id=None,
                             )
+                            persistence.mark_job_resume_draft(
+                                supabase, body.job_posting_id
+                            )
                             return TailorResponse(
                                 record=cloned,
                                 lint_warnings=[],
@@ -173,6 +176,8 @@ async def create_tailored_resume(
 
     if not isinstance(result, PipelineSuccess):
         raise HTTPException(status_code=500, detail="Unexpected pipeline result")
+    if body.job_posting_id:
+        persistence.mark_job_resume_draft(supabase, body.job_posting_id)
     return TailorResponse(
         record=result.record,
         lint_warnings=result.lint.warnings,

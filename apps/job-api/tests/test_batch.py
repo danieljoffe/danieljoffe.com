@@ -385,10 +385,15 @@ class TestBatchProcessing:
             llm_result=_LLM_RESULT,
         )
 
-        with patch(
-            "app.services.batch.run_tailor_pipeline",
-            new_callable=AsyncMock,
-            return_value=success,
+        with (
+            patch(
+                "app.services.batch.run_tailor_pipeline",
+                new_callable=AsyncMock,
+                return_value=success,
+            ),
+            patch(
+                "app.services.tailor.persistence.mark_job_resume_draft"
+            ) as mock_mark,
         ):
             await process_batch(
                 supabase,
@@ -403,9 +408,7 @@ class TestBatchProcessing:
                 page_budget=2,
             )
 
-        # Verify job_postings status was updated
-        # The mock chain makes this hard to assert precisely, but
-        # we verify no exception was raised during the status update
+        mock_mark.assert_called_once_with(supabase, "job-1")
 
 
 # ---------------------------------------------------------------------------
