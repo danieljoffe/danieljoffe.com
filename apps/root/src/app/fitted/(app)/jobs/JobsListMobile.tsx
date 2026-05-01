@@ -1,14 +1,11 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ChevronDown } from 'lucide-react';
-import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
-import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useToast } from '@/state/Toast/ToastProvider';
 import JobCard from './JobCard';
-import type { JobPosting, JobsSortColumn } from './types';
+import type { JobPosting } from './types';
 
 interface JobsListMobileProps {
   postings: JobPosting[];
@@ -16,27 +13,10 @@ interface JobsListMobileProps {
   page: number;
   setPage: (p: number) => void;
   totalPages: number;
-  sort: JobsSortColumn;
-  order: 'asc' | 'desc';
-  handleSort: (col: JobsSortColumn) => void;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
   onRefetch: () => void;
 }
-
-const SORT_LABEL: Record<JobsSortColumn, string> = {
-  score: 'Score',
-  title: 'Title',
-  company_name: 'Company',
-  created_at: 'Posted',
-};
-
-const SORT_COLUMNS: JobsSortColumn[] = [
-  'score',
-  'title',
-  'company_name',
-  'created_at',
-];
 
 export default function JobsListMobile({
   postings,
@@ -44,9 +24,6 @@ export default function JobsListMobile({
   page,
   setPage,
   totalPages,
-  sort,
-  order,
-  handleSort,
   selectedIds,
   onSelectionChange,
   onRefetch,
@@ -77,19 +54,6 @@ export default function JobsListMobile({
     }
   }
 
-  const sortItems: DropdownItem[] = SORT_COLUMNS.map(col => ({
-    label: SORT_LABEL[col],
-    icon:
-      sort === col ? (
-        order === 'asc' ? (
-          <ArrowUp className='size-4' aria-hidden />
-        ) : (
-          <ArrowDown className='size-4' aria-hidden />
-        )
-      ) : undefined,
-    onClick: () => handleSort(col),
-  }));
-
   if (loading && postings.length === 0) {
     return (
       <div className='flex flex-col gap-3' aria-label='Loading jobs'>
@@ -117,19 +81,6 @@ export default function JobsListMobile({
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='flex items-center justify-end'>
-        <Dropdown
-          trigger={
-            <span className='inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs text-text-primary'>
-              Sort: {SORT_LABEL[sort]} {order === 'asc' ? '↑' : '↓'}
-              <ChevronDown className='size-3 text-text-tertiary' aria-hidden />
-            </span>
-          }
-          items={sortItems}
-          align='right'
-        />
-      </div>
-
       <ul className='flex flex-col gap-3'>
         {postings.map(job => (
           <li key={job.id}>

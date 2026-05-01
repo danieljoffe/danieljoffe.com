@@ -12,7 +12,6 @@ import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
 import type { UserTargetWithTarget } from '../targets/types';
 import BatchActionBar from './BatchActionBar';
-import JobsFilter from './JobsFilter';
 import JobsListView from './JobsListView';
 import type { JobPosting, JobsFilterState } from './types';
 
@@ -441,10 +440,9 @@ export default function JobsList({
             </Text>
           )}
 
-          <JobsFilter filters={filters} onChange={setFilters} />
-
           <JobsListView
             filters={filters}
+            onFiltersChange={setFilters}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             refreshKey={refreshKey}

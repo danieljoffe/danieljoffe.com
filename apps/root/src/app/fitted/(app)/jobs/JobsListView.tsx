@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
+import JobsFilter from './JobsFilter';
 import JobsListMobile from './JobsListMobile';
 import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
 
@@ -48,6 +49,7 @@ function useIsDesktop(): boolean {
 
 interface JobsListViewProps {
   filters: JobsFilterState;
+  onFiltersChange: (f: JobsFilterState) => void;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
   refreshKey: number;
@@ -57,6 +59,7 @@ interface JobsListViewProps {
 
 export default function JobsListView({
   filters,
+  onFiltersChange,
   selectedIds,
   onSelectionChange,
   refreshKey,
@@ -106,39 +109,43 @@ export default function JobsListView({
     refetch();
   }
 
-  if (isDesktop) {
-    return (
-      <JobsListTable
-        postings={postings}
-        loading={loading}
-        page={page}
-        setPage={setPage}
-        totalPages={totalPages}
+  return (
+    <div className='flex flex-col gap-4'>
+      <JobsFilter
+        filters={filters}
+        onChange={onFiltersChange}
         sort={sort}
         order={order}
         handleSort={handleSort}
-        sortIndicator={sortIndicator}
-        selectedIds={selectedIds}
-        onSelectionChange={onSelectionChange}
-        targetId={targetId}
-        onRefetch={handleRefetch}
       />
-    );
-  }
-
-  return (
-    <JobsListMobile
-      postings={postings}
-      loading={loading}
-      page={page}
-      setPage={setPage}
-      totalPages={totalPages}
-      sort={sort}
-      order={order}
-      handleSort={handleSort}
-      selectedIds={selectedIds}
-      onSelectionChange={onSelectionChange}
-      onRefetch={handleRefetch}
-    />
+      {isDesktop ? (
+        <JobsListTable
+          postings={postings}
+          loading={loading}
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
+          sort={sort}
+          order={order}
+          handleSort={handleSort}
+          sortIndicator={sortIndicator}
+          selectedIds={selectedIds}
+          onSelectionChange={onSelectionChange}
+          targetId={targetId}
+          onRefetch={handleRefetch}
+        />
+      ) : (
+        <JobsListMobile
+          postings={postings}
+          loading={loading}
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
+          selectedIds={selectedIds}
+          onSelectionChange={onSelectionChange}
+          onRefetch={handleRefetch}
+        />
+      )}
+    </div>
   );
 }
