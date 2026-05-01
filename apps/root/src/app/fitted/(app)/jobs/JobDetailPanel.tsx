@@ -181,7 +181,7 @@ export default function JobDetailPanel({
             >
               <span
                 className={cn(
-                  'size-2 rounded-full',
+                  'inline-block size-2 rounded-full',
                   STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
                 )}
                 aria-hidden
@@ -194,7 +194,10 @@ export default function JobDetailPanel({
             label: formatStatus(s),
             icon: (
               <span
-                className={cn('size-2 rounded-full', STATUS_DOT_CLASS[s])}
+                className={cn(
+                  'inline-block size-2 rounded-full',
+                  STATUS_DOT_CLASS[s]
+                )}
                 aria-hidden
               />
             ),
