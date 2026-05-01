@@ -1,24 +1,18 @@
 """Deterministic ATS format linter over rendered `.docx` bytes.
 
+Markdown is the source of truth for the document structure; the
+markdown linter (markdown_linter.py) owns the heading/section rules.
+This module is the byte-level safety net — it catches issues the
+markdown text can't see (text frames, image entries, shape XML,
+malformed archive).
+
 Rules (Greenhouse-floor):
 - valid_docx (error)          — opens as a valid zipped OOXML package
 - no_tables (error)           — `doc.tables` empty
 - no_inline_images (error)    — no `word/media/*` entries in the zip
 - no_text_frames (error)      — no `txbx` in document XML
 - no_shapes (error)           — no `w:drawing` / `w:pict` in document XML
-- experience_heading (error)  — at least one Heading 1 named "Experience"
-                                (resume only — skipped for cover letters)
-- standard_headings (warning) — every Heading 1 in {Summary, Experience, Skills, Education}
-                                (resume only — skipped for cover letters)
 - page_count (warning/error)  — ~paragraph count heuristic: > 80 warn, > 120 error
-
-Document type matters for the heading rules: cover letters don't use
-Heading 1 at all, so enforcing "Experience" would fail every cover
-letter. Pass `document_type="cover_letter"` to skip the heading rules.
-
-The renderer module already avoids these failure modes by construction.
-The linter is the safety net — it catches the case where the renderer
-is extended and accidentally reintroduces one.
 """
 
 from __future__ import annotations
@@ -31,7 +25,6 @@ from docx import Document
 
 from app.models.ats_lint import LintResult, LintViolation
 
-_ALLOWED_HEADING_1_NAMES = {"Summary", "Experience", "Skills", "Education"}
 _PAGE_COUNT_WARN_AT = 80
 _PAGE_COUNT_ERROR_AT = 120
 
@@ -56,15 +49,6 @@ def _zip_entries(data: bytes) -> list[str]:
             return zf.namelist()
     except zipfile.BadZipFile:
         return []
-
-
-def _heading_1_texts(doc: object) -> list[str]:
-    out: list[str] = []
-    for para in doc.paragraphs:  # type: ignore[attr-defined]
-        style = getattr(para.style, "name", "") or ""
-        if style == "Heading 1":
-            out.append(para.text)
-    return out
 
 
 def _non_empty_paragraph_count(doc: object) -> int:
@@ -142,36 +126,6 @@ def lint_docx(
                 severity="error",
             )
         )
-
-    # Heading rules are resume-only. Cover letters are prose — they
-    # intentionally have no Heading 1, so enforcing Experience would
-    # false-positive on every letter.
-    if document_type == "resume":
-        headings = _heading_1_texts(doc)
-        if "Experience" not in headings:
-            violations.append(
-                LintViolation(
-                    code="experience_heading",
-                    message=(
-                        'Missing required Heading 1 "Experience". ATS parsers key '
-                        "off standard section names."
-                    ),
-                    severity="error",
-                )
-            )
-
-        non_standard = [h for h in headings if h not in _ALLOWED_HEADING_1_NAMES]
-        if non_standard:
-            violations.append(
-                LintViolation(
-                    code="standard_headings",
-                    message=(
-                        f"Non-standard Heading 1(s): {sorted(set(non_standard))}. "
-                        f"Expected a subset of {sorted(_ALLOWED_HEADING_1_NAMES)}."
-                    ),
-                    severity="warning",
-                )
-            )
 
     # page_count
     paragraph_count = _non_empty_paragraph_count(doc)
