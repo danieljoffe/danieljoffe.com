@@ -45,54 +45,61 @@ export default function BatchActionBar({
     <div
       role='status'
       aria-live='polite'
-      className='fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-lg'
+      // Mobile: span the viewport width with edge padding and stack
+      // status + actions vertically so buttons don't overflow.
+      // Desktop: shrink-to-content, centered, single row.
+      className='fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] left-3 right-3 z-50 flex flex-col gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 shadow-lg md:bottom-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:flex-row md:items-center md:gap-3 md:px-4 md:py-3'
     >
-      <span className='text-sm font-medium text-text-primary'>
-        {selectedCount} selected
-      </span>
-      {showWarning && (
-        <Text variant='meta' className='text-warning'>
-          {overMax
-            ? `Max ${BATCH_MAX} per batch`
-            : 'Large batch — may take a while'}
-        </Text>
-      )}
-      <Button
-        name='batch-deselect'
-        variant='outline'
-        size='sm'
-        onClick={onClear}
-      >
-        Deselect all
-      </Button>
-      <Button
-        name='batch-generate'
-        variant='primary'
-        size='sm'
-        onClick={onBatchGenerate}
-        disabled={generating || overMax}
-      >
-        {generatingLabel}
-      </Button>
-      {hasApproved && (
+      <div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
+        <span className='text-sm font-medium text-text-primary'>
+          {selectedCount} selected
+        </span>
+        {showWarning && (
+          <Text variant='meta' className='text-warning'>
+            {overMax
+              ? `Max ${BATCH_MAX} per batch`
+              : 'Large batch — may take a while'}
+          </Text>
+        )}
+      </div>
+      <div className='flex flex-wrap items-center gap-2 md:gap-3'>
         <Button
-          name='batch-export'
-          variant='secondary'
+          name='batch-deselect'
+          variant='outline'
           size='sm'
-          onClick={onBatchExport}
-          disabled={exporting}
+          onClick={onClear}
         >
-          {exporting ? 'Exporting...' : 'Export approved (.zip)'}
+          Deselect
         </Button>
-      )}
-      <Button
-        name='batch-delete'
-        variant='error'
-        size='sm'
-        onClick={onBatchDelete}
-      >
-        Delete selected
-      </Button>
+        <Button
+          name='batch-generate'
+          variant='primary'
+          size='sm'
+          onClick={onBatchGenerate}
+          disabled={generating || overMax}
+        >
+          {generatingLabel}
+        </Button>
+        {hasApproved && (
+          <Button
+            name='batch-export'
+            variant='secondary'
+            size='sm'
+            onClick={onBatchExport}
+            disabled={exporting}
+          >
+            {exporting ? 'Exporting...' : 'Export (.zip)'}
+          </Button>
+        )}
+        <Button
+          name='batch-delete'
+          variant='error'
+          size='sm'
+          onClick={onBatchDelete}
+        >
+          Delete
+        </Button>
+      </div>
     </div>
   );
 }

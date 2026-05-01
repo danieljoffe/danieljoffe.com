@@ -343,8 +343,13 @@ export default function JobsList({
     setRefreshKey(k => k + 1);
   }, [selectedIds, toast]);
 
+  // When the action bar is visible it overlaps the bottom of the table /
+  // pagination. Mobile bar is two-row (~5.5rem) + gap, desktop is single-row
+  // (~3.25rem). Reserve enough space at each breakpoint to scroll past it.
+  const bottomPadClass = selectedIds.size > 0 ? 'pb-28 md:pb-20' : '';
+
   return (
-    <div className='flex flex-col gap-6'>
+    <div className={`flex flex-col gap-6 ${bottomPadClass}`}>
       <Heading variant='hero' as='h1'>
         Jobs
       </Heading>
