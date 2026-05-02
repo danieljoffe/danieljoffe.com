@@ -7,11 +7,16 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = Field(default="", repr=False)
-    job_api_key: str = Field(default="", repr=False)
+    wyrdfold_api_key: str = Field(default="", repr=False)
     admin_session_secret: str = Field(default="", repr=False)
     greenhouse_delay_ms: int = Field(default=200, ge=0, le=10_000)
     score_normalizer: int = 30
     allowed_hosts: str = ""
+
+    # Sentry — leave DSN empty to disable (local dev, tests).
+    sentry_dsn: str = Field(default="", repr=False)
+    sentry_environment: str = "development"
+    sentry_traces_sample_rate: float = Field(default=0.1, ge=0.0, le=1.0)
 
     # Twilio SMS — set all three to enable SMS notifications (#511).
     twilio_account_sid: str = ""

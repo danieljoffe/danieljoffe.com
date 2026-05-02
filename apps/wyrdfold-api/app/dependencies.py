@@ -56,7 +56,7 @@ def verify_api_key(
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
-    if not _api_key_matches(key, s.job_api_key):
+    if not _api_key_matches(key, s.wyrdfold_api_key):
         raise HTTPException(status_code=401, detail="Invalid API key")
     return key or ""
 
@@ -96,7 +96,7 @@ def verify_api_key_or_session(
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
-    if _api_key_matches(key, s.job_api_key):
+    if _api_key_matches(key, s.wyrdfold_api_key):
         return "api-key"
     if s.admin_session_secret and len(s.admin_session_secret) >= 32:
         token = _extract_bearer_token(request)
@@ -150,6 +150,6 @@ def get_current_user_id(
                 sub = payload.get("sub")
                 if isinstance(sub, str) and sub:
                     return sub
-    if _api_key_matches(key, s.job_api_key):
+    if _api_key_matches(key, s.wyrdfold_api_key):
         return SINGLE_USER_ID
     raise HTTPException(status_code=401, detail="Unauthorized")

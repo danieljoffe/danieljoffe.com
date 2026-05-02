@@ -11,6 +11,7 @@ from starlette.types import Receive, Scope, Send
 
 from app.config import settings
 from app.http_client import close_http_client
+from app.observability import init_sentry
 from app.routers import (
     analysis,
     experience,
@@ -31,6 +32,8 @@ if not settings.allowed_hosts_list:
     raise RuntimeError(
         "ALLOWED_HOSTS must be set (comma-separated host allowlist). Use '*' only in local dev."
     )
+
+init_sentry()
 
 
 @asynccontextmanager

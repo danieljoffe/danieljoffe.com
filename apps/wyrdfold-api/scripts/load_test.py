@@ -12,8 +12,8 @@ patterns so we can identify hot/slow queries:
 
 Usage:
 
-    JOB_API_BASE_URL=http://localhost:8000 \
-    JOB_API_KEY=$(grep JOB_API_KEY .env.local | cut -d= -f2) \
+    WYRDFOLD_API_BASE_URL=http://localhost:8001 \
+    WYRDFOLD_API_KEY=$(grep WYRDFOLD_API_KEY .env.local | cut -d= -f2) \
     uv run python scripts/load_test.py --duration 30 --vus 25
 
 Reset stats before a fresh run:
@@ -149,13 +149,13 @@ def main() -> None:
     parser.add_argument("--vus", type=int, default=20, help="virtual users (default 20)")
     parser.add_argument(
         "--base-url",
-        default=os.environ.get("JOB_API_BASE_URL", "http://localhost:8000"),
+        default=os.environ.get("WYRDFOLD_API_BASE_URL", "http://localhost:8001"),
     )
-    parser.add_argument("--api-key", default=os.environ.get("JOB_API_KEY", ""))
+    parser.add_argument("--api-key", default=os.environ.get("WYRDFOLD_API_KEY", ""))
     args = parser.parse_args()
 
     if not args.api_key:
-        print("warning: no JOB_API_KEY set — protected endpoints will return 401")
+        print("warning: no WYRDFOLD_API_KEY set — protected endpoints will return 401")
 
     asyncio.run(_run(args.base_url, args.api_key, args.duration, args.vus))
 
