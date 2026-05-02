@@ -5,4 +5,4 @@ description = "Workspace root — not a publishable package"
 requires-python = ">=3.11"
 
 [tool.uv.workspace]
-members = ["apps/job-api", "apps/audit-api"]
+members = ["apps/job-api", "apps/audit-api", "apps/wyrdfold-api"]
