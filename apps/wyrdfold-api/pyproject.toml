@@ -20,6 +20,7 @@ dependencies = [
   "anthropic>=0.40",
   "voyageai>=0.3",
   "twilio>=9.0",
+  "sentry-sdk[fastapi]>=2.19",
 ]
 
 [dependency-groups]

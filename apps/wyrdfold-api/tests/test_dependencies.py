@@ -30,7 +30,7 @@ def _make_request(headers: dict[str, str] | None = None) -> Request:
 
 
 def _settings(api_key: str = "testkey", secret: str = SECRET) -> Settings:
-    return Settings(job_api_key=api_key, admin_session_secret=secret)
+    return Settings(wyrdfold_api_key=api_key, admin_session_secret=secret)
 
 
 def _mint(sub: str = "tools-admin", secret: str = SECRET) -> str:
