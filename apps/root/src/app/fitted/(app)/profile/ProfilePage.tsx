@@ -4,12 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FileText,
   Layers,
-  Pencil,
   RefreshCw,
   Save,
   Sparkles,
   Upload,
-  X,
 } from 'lucide-react';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
@@ -109,7 +107,6 @@ export default function ProfilePage() {
   const [deriving, setDeriving] = useState(false);
   const [streamingPayload, setStreamingPayload] =
     useState<Partial<OptimizedPayload> | null>(null);
-  const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const [consolidating, setConsolidating] = useState(false);
@@ -147,6 +144,10 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    setDraft(prose?.content ?? '');
+  }, [prose]);
 
   const handleUpload = useCallback(
     async (file: File) => {
@@ -283,16 +284,6 @@ export default function ProfilePage() {
     }
   }, [fetchData, toast]);
 
-  const handleEditStart = useCallback(() => {
-    setDraft(prose?.content ?? '');
-    setEditing(true);
-  }, [prose]);
-
-  const handleEditCancel = useCallback(() => {
-    setEditing(false);
-    setDraft('');
-  }, []);
-
   const handleSaveProse = useCallback(async () => {
     if (!draft.trim()) {
       toast({ variant: 'error', title: 'Document cannot be empty' });
@@ -313,7 +304,6 @@ export default function ProfilePage() {
         );
       }
       toast({ variant: 'success', title: 'Master document saved' });
-      setEditing(false);
       await fetchData();
     } catch (err) {
       toast({
@@ -468,7 +458,7 @@ export default function ProfilePage() {
             <ProgressBar
               value={Math.round(100 - gapHealth.gap_pct)}
               variant={tierToProgressVariant(gapHealth.tier)}
-              size='lg'
+              size='sm'
               aria-label='Document completeness'
             />
           </CardContent>
@@ -492,161 +482,98 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-3'>
-          {!editing && (
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button
-                name='profile-upload'
-                variant='outline'
-                size='sm'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Spinner size='sm' aria-label='Uploading' />
-                    <span>Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className='size-4' aria-hidden />
-                    <span>Upload Resume</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-          {editing ? (
-            <>
-              <textarea
-                value={draft}
-                onChange={e => setDraft(e.target.value)}
-                className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
-                placeholder='Paste or type your master experience document here...'
-              />
-              <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  name='profile-save-prose'
-                  variant='primary'
-                  size='sm'
-                  onClick={handleSaveProse}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <>
-                      <Spinner size='sm' aria-label='Saving' />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className='size-4' aria-hidden />
-                      <span>Save</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='profile-save-consolidate'
-                  variant='outline'
-                  size='sm'
-                  onClick={async () => {
-                    await handleSaveProse();
-                    if (draft.trim()) await handleConsolidate();
-                  }}
-                  disabled={saving || consolidating}
-                >
-                  {saving || consolidating ? (
-                    <>
-                      <Spinner size='sm' aria-label='Processing' />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Layers className='size-4' aria-hidden />
-                      <span>Save &amp; Consolidate</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='profile-save-derive'
-                  variant='outline'
-                  size='sm'
-                  onClick={async () => {
-                    await handleSaveProse();
-                    if (draft.trim()) await handleDerive();
-                  }}
-                  disabled={saving || deriving}
-                >
-                  {saving || deriving ? (
-                    <>
-                      <Spinner size='sm' aria-label='Processing' />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className='size-4' aria-hidden />
-                      <span>Save &amp; Re-derive</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='profile-cancel-edit'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleEditCancel}
-                  disabled={saving}
-                >
-                  <X className='size-4' aria-hidden />
-                  <span>Cancel</span>
-                </Button>
-              </div>
-            </>
-          ) : prose ? (
-            <>
-              <div className='max-h-[400px] overflow-y-auto rounded-md border border-border bg-surface-secondary p-3'>
-                <pre className='whitespace-pre-wrap font-mono text-sm text-text-primary'>
-                  {prose.content}
-                </pre>
-              </div>
-              <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  name='profile-edit-prose'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleEditStart}
-                >
-                  <Pencil className='size-4' aria-hidden />
-                  <span>Edit</span>
-                </Button>
-                <Button
-                  name='profile-consolidate-prose'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleConsolidate}
-                  disabled={consolidating}
-                  title='Merge duplicate sections from past resume uploads'
-                >
-                  {consolidating ? (
-                    <>
-                      <Spinner size='sm' aria-label='Consolidating' />
-                      <span>Consolidating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Layers className='size-4' aria-hidden />
-                      <span>Consolidate</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className='flex flex-col items-center gap-3 py-6'>
-              <FileText className='size-10 text-text-tertiary' aria-hidden />
-              <Text variant='body' as='p' className='text-center'>
-                No master document yet. Upload a resume or start a conversation
-                to create one.
-              </Text>
-            </div>
-          )}
+          <div className='flex flex-wrap items-center gap-2'>
+            <Button
+              name='profile-upload'
+              variant='outline'
+              size='sm'
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <>
+                  <Spinner size='sm' aria-label='Uploading' />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className='size-4' aria-hidden />
+                  <span>Upload Resume</span>
+                </>
+              )}
+            </Button>
+            <Button
+              name='profile-consolidate-prose'
+              variant='outline'
+              size='sm'
+              onClick={handleConsolidate}
+              disabled={consolidating || !prose}
+              title='Merge duplicate sections from past resume uploads'
+            >
+              {consolidating ? (
+                <>
+                  <Spinner size='sm' aria-label='Consolidating' />
+                  <span>Consolidating...</span>
+                </>
+              ) : (
+                <>
+                  <Layers className='size-4' aria-hidden />
+                  <span>Consolidate</span>
+                </>
+              )}
+            </Button>
+          </div>
+          <textarea
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
+            placeholder='Paste or type your master experience document here...'
+          />
+          <div className='flex flex-wrap items-center gap-2'>
+            <Button
+              name='profile-save-prose'
+              variant='primary'
+              size='sm'
+              onClick={handleSaveProse}
+              disabled={
+                saving || !draft.trim() || draft === (prose?.content ?? '')
+              }
+            >
+              {saving ? (
+                <>
+                  <Spinner size='sm' aria-label='Saving' />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className='size-4' aria-hidden />
+                  <span>Save</span>
+                </>
+              )}
+            </Button>
+            <Button
+              name='profile-save-derive'
+              variant='outline'
+              size='sm'
+              onClick={async () => {
+                await handleSaveProse();
+                if (draft.trim()) await handleDerive();
+              }}
+              disabled={saving || deriving || !draft.trim()}
+            >
+              {saving || deriving ? (
+                <>
+                  <Spinner size='sm' aria-label='Processing' />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className='size-4' aria-hidden />
+                  <span>Save &amp; Re-derive</span>
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
