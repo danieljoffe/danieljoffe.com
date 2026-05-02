@@ -127,7 +127,7 @@ export default function ViolationsSection({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Section aria-labelledby='violations-heading' background='alt'>
+    <Section aria-labelledby='violations-heading'>
       <Heading variant='section' as='h2' id='violations-heading'>
         Top Violations
       </Heading>

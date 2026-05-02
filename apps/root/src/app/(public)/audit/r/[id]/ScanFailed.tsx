@@ -14,7 +14,6 @@ export default function ScanFailed({ url, errorMessage }: ScanFailedProps) {
   return (
     <Section
       aria-labelledby='scan-failed-heading'
-      background='alt'
       overflow='hidden'
       center
       padding='lg'

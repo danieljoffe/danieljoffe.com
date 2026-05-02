@@ -20,7 +20,6 @@ export default function ScanHero({
   return (
     <Section
       aria-labelledby='audit-hero-heading'
-      background='alt'
       overflow='hidden'
       center
       padding='lg'

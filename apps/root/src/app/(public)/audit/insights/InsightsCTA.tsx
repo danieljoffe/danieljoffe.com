@@ -15,7 +15,6 @@ export default function InsightsCTA({
   return (
     <Section
       aria-labelledby='insights-cta-heading'
-      background='alt'
       padding='lg'
       className='text-center'
     >
