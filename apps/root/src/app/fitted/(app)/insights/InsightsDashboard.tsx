@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Download, RefreshCw } from 'lucide-react';
+import { Download } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -12,7 +12,9 @@ import {
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { StatsCard } from '@danieljoffe.com/shared-ui/StatsCard';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import Button from '@/components/Button';
 import { useInsights } from '@/hooks/useInsights';
+import { cn } from '@/lib/cn';
 import { downloadInsightsCsv } from './exportCsv';
 import type { Period } from './types';
 
@@ -46,8 +48,6 @@ const PERIODS: { id: Period; label: string }[] = [
   { id: 'all', label: 'All' },
 ];
 
-const PERIOD_FILTER_LABEL_ID = 'insights-period-label';
-
 function PeriodFilter({
   value,
   onChange,
@@ -56,38 +56,28 @@ function PeriodFilter({
   onChange: (p: Period) => void;
 }) {
   return (
-    <div className='flex items-center gap-3'>
-      <Text
-        as='span'
-        variant='caption'
-        id={PERIOD_FILTER_LABEL_ID}
-        className='text-text-secondary'
-      >
-        Period
-      </Text>
-      <div
-        role='group'
-        aria-labelledby={PERIOD_FILTER_LABEL_ID}
-        className='flex gap-1 p-1 bg-surface-tertiary rounded-lg'
-      >
-        {PERIODS.map(p => (
-          <button
-            key={p.id}
-            type='button'
-            onClick={() => onChange(p.id)}
-            aria-pressed={value === p.id}
-            className={[
-              'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-              value === p.id
-                ? 'bg-surface text-text-primary shadow-sm'
-                : 'text-text-secondary hover:text-text-primary',
-            ].join(' ')}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+    <div
+      role='group'
+      aria-label='Period'
+      className='flex w-full gap-1 p-1 bg-surface-tertiary rounded-lg'
+    >
+      {PERIODS.map(p => (
+        <button
+          key={p.id}
+          type='button'
+          onClick={() => onChange(p.id)}
+          aria-pressed={value === p.id}
+          className={cn(
+            'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+            value === p.id
+              ? 'bg-surface text-text-primary shadow-sm'
+              : 'text-text-secondary hover:text-text-primary'
+          )}
+        >
+          {p.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -97,12 +87,12 @@ function ChartSkeleton() {
 }
 
 function KpiSkeleton({ title }: { title: string }) {
-  // Mirrors StatsCard's structure (p-6, caption, value text-2xl) so the
-  // layout doesn't shift when real values land. See libs/shared/ui/src/lib/StatsCard.tsx.
+  // Mirrors StatsCard's responsive structure so the layout doesn't shift when
+  // real values land. See libs/shared/ui/src/lib/StatsCard.tsx.
   return (
-    <div className='p-6 bg-surface-elevated border border-border rounded-xl shadow-xs'>
+    <div className='p-3 sm:p-6 bg-surface-elevated border border-border rounded-xl shadow-xs'>
       <Text variant='caption'>{title}</Text>
-      <Skeleton variant='text' size='lg' className='mt-1.5 w-24' />
+      <Skeleton variant='text' size='lg' className='mt-1 sm:mt-1.5 w-24' />
     </div>
   );
 }
@@ -141,84 +131,9 @@ function absDelta(
 
 const PRIOR_LABEL = 'vs prior period';
 
-const RELATIVE_TIME = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-
-function formatFreshness(fetchedAt: number | undefined): string | undefined {
-  if (fetchedAt === undefined) return undefined;
-  const diffMs = Date.now() - fetchedAt;
-  const diffSec = Math.round(diffMs / 1000);
-  if (diffSec < 5) return 'Updated just now';
-  if (diffSec < 60)
-    return `Updated ${RELATIVE_TIME.format(-diffSec, 'second')}`;
-  const diffMin = Math.round(diffSec / 60);
-  if (diffMin < 60)
-    return `Updated ${RELATIVE_TIME.format(-diffMin, 'minute')}`;
-  const diffHour = Math.round(diffMin / 60);
-  if (diffHour < 24)
-    return `Updated ${RELATIVE_TIME.format(-diffHour, 'hour')}`;
-  const diffDay = Math.round(diffHour / 24);
-  return `Updated ${RELATIVE_TIME.format(-diffDay, 'day')}`;
-}
-
-const TOOLBAR_BUTTON_CLASS = [
-  'inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm',
-  'bg-surface text-text-primary hover:bg-surface-tertiary transition-colors',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-  'disabled:opacity-50 disabled:cursor-not-allowed',
-].join(' ');
-
-function FreshnessBar({
-  fetchedAt,
-  loadingAny,
-  hasAnyData,
-  onRefresh,
-  onDownload,
-}: {
-  fetchedAt: number | undefined;
-  loadingAny: boolean;
-  hasAnyData: boolean;
-  onRefresh: () => void;
-  onDownload: () => void;
-}) {
-  const label = formatFreshness(fetchedAt);
-  return (
-    <div className='flex items-center gap-3 text-text-secondary'>
-      {label && (
-        <Text as='span' variant='meta'>
-          {label}
-        </Text>
-      )}
-      <button
-        type='button'
-        onClick={onDownload}
-        disabled={loadingAny || !hasAnyData}
-        aria-label='Download insights as CSV'
-        className={TOOLBAR_BUTTON_CLASS}
-      >
-        <Download className='h-4 w-4' aria-hidden='true' />
-        <span className='hidden sm:inline'>Download</span>
-      </button>
-      <button
-        type='button'
-        onClick={onRefresh}
-        disabled={loadingAny}
-        aria-label='Refresh insights'
-        className={TOOLBAR_BUTTON_CLASS}
-      >
-        <RefreshCw
-          className={['h-4 w-4', loadingAny ? 'animate-spin' : ''].join(' ')}
-          aria-hidden='true'
-        />
-        <span className='hidden sm:inline'>Refresh</span>
-      </button>
-    </div>
-  );
-}
-
 export default function InsightsDashboard() {
   const [period, setPeriod] = useState<Period>('30d');
-  const { pipeline, targets, skillsCost, loading, error, fetchedAt, refresh } =
-    useInsights(period);
+  const { pipeline, targets, skillsCost, loading, error } = useInsights(period);
 
   const showKpiSkeleton = loading.pipeline && !pipeline;
   const showVelocitySkeleton = loading.pipeline && !pipeline;
@@ -236,17 +151,8 @@ export default function InsightsDashboard() {
 
   return (
     <div className='space-y-6'>
-      {/* Toolbar: period filter + freshness/refresh */}
-      <div className='flex items-center justify-between gap-4 flex-wrap'>
-        <PeriodFilter value={period} onChange={setPeriod} />
-        <FreshnessBar
-          fetchedAt={fetchedAt}
-          loadingAny={loading.any}
-          hasAnyData={hasAnyData}
-          onRefresh={refresh}
-          onDownload={handleDownload}
-        />
-      </div>
+      {/* Period filter — full-width */}
+      <PeriodFilter value={period} onChange={setPeriod} />
 
       {/* Error banner */}
       {error && (
@@ -485,6 +391,20 @@ export default function InsightsDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Download — bottom of page */}
+      <div className='flex justify-center pt-2'>
+        <Button
+          name='insights-download'
+          variant='outline'
+          size='sm'
+          onClick={handleDownload}
+          disabled={loading.any || !hasAnyData}
+        >
+          <Download className='size-4' aria-hidden />
+          <span>Download insights</span>
+        </Button>
+      </div>
     </div>
   );
 }

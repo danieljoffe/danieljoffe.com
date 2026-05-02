@@ -33,7 +33,7 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        'p-6 bg-surface-elevated border border-border rounded-xl shadow-xs',
+        'p-3 sm:p-6 bg-surface-elevated border border-border rounded-xl shadow-xs',
         className
       )}
     >
@@ -43,7 +43,7 @@ export function StatsCard({
           <Text
             variant='bodyLg'
             as='p'
-            className='mt-1.5 text-2xl font-semibold tracking-tight'
+            className='mt-1 sm:mt-1.5 text-lg sm:text-2xl font-semibold tracking-tight'
           >
             {value}
           </Text>

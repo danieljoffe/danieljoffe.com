@@ -1,18 +1,7 @@
 'use client';
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import type { SkillFrequency } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS } from './colors';
 
 interface SkillFrequencyChartProps {
   data: SkillFrequency[];
@@ -23,6 +12,35 @@ const COLUMNS: ChartColumn<SkillFrequency>[] = [
   { header: 'Matched', render: row => row.matched_count },
   { header: 'Missing', render: row => row.missing_count },
 ];
+
+function SkillRow({ row, max }: { row: SkillFrequency; max: number }) {
+  const total = row.matched_count + row.missing_count;
+  const matchedPct = max === 0 ? 0 : (row.matched_count / max) * 100;
+  const missingPct = max === 0 ? 0 : (row.missing_count / max) * 100;
+
+  return (
+    <li className='flex flex-col gap-1.5'>
+      <div className='flex items-baseline justify-between gap-3'>
+        <span className='text-sm font-medium text-text-primary truncate'>
+          {row.skill}
+        </span>
+        <span className='text-xs text-text-secondary tabular-nums shrink-0'>
+          {row.matched_count}/{total}
+        </span>
+      </div>
+      <div className='flex h-2 w-full overflow-hidden rounded-full bg-surface-elevated'>
+        <div
+          className='h-full bg-success'
+          style={{ width: `${matchedPct}%` }}
+        />
+        <div
+          className='h-full bg-error/70'
+          style={{ width: `${missingPct}%` }}
+        />
+      </div>
+    </li>
+  );
+}
 
 export default function SkillFrequencyChart({
   data,
@@ -36,9 +54,10 @@ export default function SkillFrequencyChart({
     );
   }
 
-  // Cap the visible viewport at 600px and let the container scroll. Rows
-  // stay 30px tall so density matches the rest of the dashboard.
-  const innerHeight = Math.max(250, data.length * 30);
+  const max = data.reduce(
+    (acc, row) => Math.max(acc, row.matched_count + row.missing_count),
+    0
+  );
 
   return (
     <ChartFigure
@@ -47,44 +66,22 @@ export default function SkillFrequencyChart({
       columns={COLUMNS}
       rowKey={row => row.skill}
     >
-      <div className='max-h-[600px] overflow-y-auto'>
-        <ResponsiveContainer width='100%' height={innerHeight}>
-          <BarChart data={data} layout='vertical'>
-            <CartesianGrid
-              strokeDasharray='3 3'
-              stroke={CHART_COLORS.grid}
-              horizontal={false}
-            />
-            <XAxis
-              type='number'
-              allowDecimals={false}
-              tick={{ fontSize: 12 }}
-            />
-            <YAxis
-              type='category'
-              dataKey='skill'
-              width={120}
-              tick={{ fontSize: 11 }}
-            />
-            <Tooltip contentStyle={{ fontSize: 12 }} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar
-              dataKey='matched_count'
-              name='Matched'
-              stackId='a'
-              fill={CHART_COLORS.success}
-              radius={[0, 0, 0, 0]}
-            />
-            <Bar
-              dataKey='missing_count'
-              name='Missing'
-              stackId='a'
-              fill={CHART_COLORS.error}
-              fillOpacity={0.7}
-              radius={[0, 4, 4, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className='flex flex-col gap-3'>
+        <div className='flex items-center gap-4 text-xs text-text-secondary'>
+          <span className='inline-flex items-center gap-1.5'>
+            <span className='size-2.5 rounded-sm bg-success' aria-hidden />
+            Matched
+          </span>
+          <span className='inline-flex items-center gap-1.5'>
+            <span className='size-2.5 rounded-sm bg-error/70' aria-hidden />
+            Missing
+          </span>
+        </div>
+        <ul className='flex max-h-[600px] flex-col gap-3 overflow-y-auto pr-1'>
+          {data.map(row => (
+            <SkillRow key={row.skill} row={row} max={max} />
+          ))}
+        </ul>
       </div>
     </ChartFigure>
   );
