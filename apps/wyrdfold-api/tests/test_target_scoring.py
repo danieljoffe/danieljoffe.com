@@ -244,7 +244,7 @@ def test_list_jobs_without_target_returns_global_view(
     """Global view queries jobs directly with global scores."""
     from fastapi.testclient import TestClient
 
-    from app.dependencies import get_supabase, verify_api_key_or_session
+    from app.dependencies import get_supabase, verify_api_key_or_jwt
     from app.main import app
 
     def _fluent_mock(data: list[dict]) -> MagicMock:
@@ -269,7 +269,7 @@ def test_list_jobs_without_target_returns_global_view(
     supabase.table.return_value = jp_mock
 
     app.dependency_overrides[get_supabase] = lambda: supabase
-    app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
 
     try:
         tc = TestClient(app)
@@ -288,7 +288,7 @@ def test_list_jobs_with_target_overlays_target_score(
 ) -> None:
     from fastapi.testclient import TestClient
 
-    from app.dependencies import get_supabase, verify_api_key_or_session
+    from app.dependencies import get_supabase, verify_api_key_or_jwt
     from app.main import app
 
     def _fluent_mock(data: list[dict]) -> MagicMock:
@@ -330,7 +330,7 @@ def test_list_jobs_with_target_overlays_target_score(
     )
 
     app.dependency_overrides[get_supabase] = lambda: supabase
-    app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
 
     try:
         tc = TestClient(app)
@@ -353,7 +353,7 @@ def test_rescore_endpoint_returns_count(
 ) -> None:
     from fastapi.testclient import TestClient
 
-    from app.dependencies import get_supabase, verify_api_key_or_session
+    from app.dependencies import get_supabase, verify_api_key_or_jwt
     from app.main import app
     from app.routers import jobs as jobs_router
 
@@ -363,7 +363,7 @@ def test_rescore_endpoint_returns_count(
 
     supabase = MagicMock()
     app.dependency_overrides[get_supabase] = lambda: supabase
-    app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
 
     try:
         tc = TestClient(app)
@@ -381,7 +381,7 @@ def test_rescore_endpoint_missing_target_returns_404(
 ) -> None:
     from fastapi.testclient import TestClient
 
-    from app.dependencies import get_supabase, verify_api_key_or_session
+    from app.dependencies import get_supabase, verify_api_key_or_jwt
     from app.main import app
     from app.routers import jobs as jobs_router
 
@@ -389,7 +389,7 @@ def test_rescore_endpoint_missing_target_returns_404(
 
     supabase = MagicMock()
     app.dependency_overrides[get_supabase] = lambda: supabase
-    app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
 
     try:
         tc = TestClient(app)

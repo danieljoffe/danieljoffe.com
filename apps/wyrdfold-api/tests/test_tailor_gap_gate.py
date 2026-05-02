@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.main import app
 from app.models.experience import (
     OptimizedDoc,
@@ -61,7 +61,7 @@ def _high_gap_pct_but_structural_ok() -> OptimizedPayload:
 class TestGapGateResume:
     @pytest.fixture(autouse=True)
     def _overrides(self):
-        app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+        app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
         app.dependency_overrides[get_supabase] = lambda: MagicMock()
         yield
         app.dependency_overrides.clear()

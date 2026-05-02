@@ -27,7 +27,7 @@ from supabase import Client
 from app.dependencies import (
     get_llm_client,
     get_supabase,
-    verify_api_key_or_session,
+    verify_api_key_or_jwt,
 )
 from app.models.batch import BatchJob, BatchRequest, BatchResponse
 from app.models.tailor import (
@@ -71,7 +71,7 @@ from app.services.tailor.reuse import (
 router = APIRouter(
     prefix="/tailor",
     tags=["tailor"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 @router.post(

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.main import app
 
 
@@ -32,7 +32,7 @@ def client_factory():
     def _make(supabase: MagicMock, *, authed: bool = True) -> TestClient:
         app.dependency_overrides[get_supabase] = lambda: supabase
         if authed:
-            app.dependency_overrides[verify_api_key_or_session] = lambda: "test"
+            app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
         c = TestClient(app)
         return c
 

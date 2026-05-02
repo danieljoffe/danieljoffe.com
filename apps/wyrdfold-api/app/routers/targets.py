@@ -17,7 +17,7 @@ from app.dependencies import (
     get_current_user_id,
     get_llm_client,
     get_supabase,
-    verify_api_key_or_session,
+    verify_api_key_or_jwt,
 )
 from app.http_client import get_http_client
 from app.models.schemas import PollResult
@@ -69,7 +69,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/targets",
     tags=["targets"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 

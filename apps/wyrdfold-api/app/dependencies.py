@@ -14,6 +14,13 @@ if TYPE_CHECKING:
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
+# Sentinel user_id returned for api-key callers (cron / poller / batch jobs).
+# Real users authenticate via Supabase JWT and `get_current_user_id` returns
+# their JWT `sub` (a UUID). Phase 3b.3 will thread these per-user IDs through
+# the service layer; until then api-key callers stay single-tenant under this
+# label, matching the legacy `tools-admin` value to avoid orphaning rows.
+SINGLE_USER_ID = "tools-admin"
+
 
 def get_settings() -> Settings:
     return settings
@@ -68,58 +75,62 @@ def _extract_bearer_token(request: Request) -> str | None:
     return auth.split(" ", 1)[1].strip() or None
 
 
-def verify_session_jwt(
+def _decode_supabase_jwt(token: str, secret: str) -> dict[str, object]:
+    """Decode an HS256 Supabase access token.
+
+    Raises ``HTTPException(401)`` on any verification failure. ``sub`` and
+    ``exp`` are required so the token always identifies an account and a
+    deadline.
+    """
+    try:
+        payload: dict[str, object] = jwt.decode(
+            token,
+            secret,
+            algorithms=["HS256"],
+            options={"require": ["exp", "sub"]},
+            # Supabase signs access tokens with aud="authenticated".
+            audience="authenticated",
+        )
+    except jwt.PyJWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid auth token") from exc
+    sub = payload.get("sub")
+    if not isinstance(sub, str) or not sub:
+        raise HTTPException(status_code=401, detail="Invalid auth token")
+    return payload
+
+
+def verify_supabase_jwt(
     request: Request,
     s: Settings = Depends(get_settings),
 ) -> str:
-    if not s.admin_session_secret or len(s.admin_session_secret) < 32:
-        raise HTTPException(status_code=503, detail="Session auth not configured")
+    """Require a valid Supabase Bearer token. Returns the user's `sub`."""
+    if not s.supabase_jwt_secret:
+        raise HTTPException(status_code=503, detail="JWT auth not configured")
     token = _extract_bearer_token(request)
     if not token:
-        raise HTTPException(status_code=401, detail="Missing session token")
-    try:
-        payload = jwt.decode(
-            token,
-            s.admin_session_secret,
-            algorithms=["HS256"],
-            options={"require": ["exp", "sub"]},
-        )
-    except jwt.PyJWTError as exc:
-        raise HTTPException(status_code=401, detail="Invalid session token") from exc
-    if payload.get("sub") != "tools-admin":
-        raise HTTPException(status_code=401, detail="Invalid session token")
+        raise HTTPException(status_code=401, detail="Missing auth token")
+    payload = _decode_supabase_jwt(token, s.supabase_jwt_secret)
     return str(payload["sub"])
 
 
-def verify_api_key_or_session(
+def verify_api_key_or_jwt(
     request: Request,
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
+    """Accept either the shared API key (cron) or a Supabase JWT (user)."""
     if _api_key_matches(key, s.wyrdfold_api_key):
         return "api-key"
-    if s.admin_session_secret and len(s.admin_session_secret) >= 32:
+    if s.supabase_jwt_secret:
         token = _extract_bearer_token(request)
         if token:
             try:
-                payload = jwt.decode(
-                    token,
-                    s.admin_session_secret,
-                    algorithms=["HS256"],
-                    options={"require": ["exp", "sub"]},
-                )
-            except jwt.PyJWTError:
+                _decode_supabase_jwt(token, s.supabase_jwt_secret)
+            except HTTPException:
                 pass
             else:
-                if payload.get("sub") == "tools-admin":
-                    return "session"
+                return "jwt"
     raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-# Single-admin user identifier used for per-user data (user_targets, etc.)
-# until multi-user auth lands. Matches the JWT `sub` claim minted by
-# apps/root/src/lib/adminSession.ts.
-SINGLE_USER_ID = "tools-admin"
 
 
 def get_current_user_id(
@@ -129,27 +140,20 @@ def get_current_user_id(
 ) -> str:
     """Return the stable user_id for the current request.
 
-    Today there's only one admin (sub=`tools-admin`), so this returns
-    `SINGLE_USER_ID` for both session and API-key callers. When real
-    multi-user auth lands, this will return the JWT sub directly so each
-    user gets their own user_targets rows.
+    Supabase JWT callers get their `sub` (a UUID). API-key callers (cron,
+    poller, batch) get the ``SINGLE_USER_ID`` sentinel — Phase 3b.3 will
+    replace the sentinel with proper per-user routing for cron jobs that
+    iterate users explicitly.
     """
-    if s.admin_session_secret and len(s.admin_session_secret) >= 32:
+    if s.supabase_jwt_secret:
         token = _extract_bearer_token(request)
         if token:
             try:
-                payload = jwt.decode(
-                    token,
-                    s.admin_session_secret,
-                    algorithms=["HS256"],
-                    options={"require": ["exp", "sub"]},
-                )
-            except jwt.PyJWTError:
+                payload = _decode_supabase_jwt(token, s.supabase_jwt_secret)
+            except HTTPException:
                 pass
             else:
-                sub = payload.get("sub")
-                if isinstance(sub, str) and sub:
-                    return sub
+                return str(payload["sub"])
     if _api_key_matches(key, s.wyrdfold_api_key):
         return SINGLE_USER_ID
     raise HTTPException(status_code=401, detail="Unauthorized")

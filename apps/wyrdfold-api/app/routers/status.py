@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
 from app.cache import job_list_cache
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.models.schemas import StatusUpdate
 
 router = APIRouter(
     prefix="/jobs",
     tags=["status"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 
