@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyJobsAccess, proxyToFastAPI } from '@/app/api/jobs/proxy';
+import {
+  LLM_TIMEOUT_MS,
+  verifyJobsAccess,
+  proxyToFastAPI,
+} from '@/app/api/jobs/proxy';
 
 export async function POST(
   _request: NextRequest,
@@ -9,5 +13,9 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const { id } = await params;
-  return proxyToFastAPI(`/targets/${id}/link`, { method: 'POST' });
+  // LLM fit-score derivation can run long.
+  return proxyToFastAPI(`/targets/${id}/link`, {
+    method: 'POST',
+    timeoutMs: LLM_TIMEOUT_MS,
+  });
 }

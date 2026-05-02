@@ -34,7 +34,7 @@ def _mock_supabase(tables: dict[str, list[dict]]) -> MagicMock:
         result.data = tables.get(name, [])
 
         # Every chainable method returns the same table mock
-        for method in ("select", "eq", "gte", "lte", "order", "limit", "neq", "in_"):
+        for method in ("select", "eq", "gte", "lt", "lte", "order", "limit", "neq", "in_"):
             getattr(tbl, method).return_value = tbl
         tbl.execute.return_value = result
         return tbl
@@ -127,6 +127,31 @@ class TestComputePipeline:
         total_resumes = sum(v.resumes_generated for v in result.velocity)
         assert total_resumes == 3
 
+    def test_previous_is_none_without_prior_window(self):
+        sb = _mock_supabase({})
+        result = compute_pipeline(sb, since=None)
+        assert result.previous is None
+
+    def test_previous_populated_when_prior_window_supplied(self):
+        # Mock supabase ignores filter args, so both windows resolve to the
+        # same row set. We're asserting that a prior_window triggers the
+        # second aggregation pass — not the math, which is covered above.
+        postings = [
+            {"id": "1", "status": "applied", "created_at": _ts(_NOW)},
+            {"id": "2", "status": "interviewing", "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_postings": postings})
+        prior_until = _NOW - timedelta(days=30)
+        prior_since = _NOW - timedelta(days=60)
+        result = compute_pipeline(
+            sb, since=_NOW - timedelta(days=30), prior_window=(prior_since, prior_until)
+        )
+        assert result.previous is not None
+        assert result.previous.total_applications == 2
+        assert result.previous.total_interviews == 1
+        assert result.previous.total_offers == 0
+        assert result.previous.response_rate == 0.5
+
 
 # ===========================================================================
 # Targets
@@ -157,6 +182,38 @@ class TestComputeTargets:
         assert be.job_count == 1
         assert be.avg_score == 90.0
 
+    def test_targets_with_no_jobs_are_filtered_out(self):
+        targets = [
+            {"id": "t1", "label": "Frontend"},
+            {"id": "t2", "label": "Backend"},
+            {"id": "t3", "label": "DevOps"},  # no postings — should be dropped
+        ]
+        postings = [
+            {"id": "1", "target_id": "t1", "score": 80, "status": "new", "created_at": _ts(_NOW)},
+            {"id": "2", "target_id": "t2", "score": 70, "status": "new", "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_targets": targets, "job_postings": postings})
+        result = compute_targets(sb, since=None)
+
+        labels = {t.target_label for t in result.targets}
+        assert labels == {"Frontend", "Backend"}
+        assert "DevOps" not in labels
+
+    def test_unscored_postings_excluded_from_distribution(self):
+        """Postings with score=None bump unscored_count, not the 0-10 bucket."""
+        postings = [
+            {"id": "1", "target_id": None, "score": None, "status": "new", "created_at": _ts(_NOW)},
+            {"id": "2", "target_id": None, "score": None, "status": "new", "created_at": _ts(_NOW)},
+            {"id": "3", "target_id": None, "score": 5, "status": "new", "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_postings": postings})
+        result = compute_targets(sb, since=None)
+
+        assert result.unscored_count == 2
+        bucket_map = {b.bucket: b.count for b in result.score_distribution}
+        # Only the score=5 row contributes to 0-10
+        assert bucket_map["0-10"] == 1
+
     def test_score_distribution(self):
         postings = [
             {"id": "1", "target_id": None, "score": 15, "status": "new", "created_at": _ts(_NOW)},
@@ -178,6 +235,7 @@ class TestComputeTargets:
         assert result.targets == []
         assert len(result.score_distribution) == 10  # Always 10 buckets
         assert result.score_trend == []
+        assert result.unscored_count == 0
 
     def test_score_trend(self):
         postings = [
@@ -235,7 +293,81 @@ class TestComputeSkillsCost:
         assert skill_map["Docker"].missing_count == 2
 
         # Docker is never matched → should be in top_missing
-        assert "Docker" in result.top_missing
+        missing_skills = [m.skill for m in result.top_missing]
+        assert "Docker" in missing_skills
+
+    def test_top_missing_ranked_by_score_weighted_priority(self):
+        """A skill missing from one 90-score job outranks a skill missing
+        from two 30-score jobs, since 90 > 30+30."""
+        analyses = [
+            {
+                "job_posting_id": "high-1",
+                "scorecard": {
+                    "skills_matched": [],
+                    "skills_missing": ["Kubernetes"],
+                },
+                "created_at": _ts(_NOW),
+            },
+            {
+                "job_posting_id": "low-1",
+                "scorecard": {
+                    "skills_matched": [],
+                    "skills_missing": ["Rust"],
+                },
+                "created_at": _ts(_NOW),
+            },
+            {
+                "job_posting_id": "low-2",
+                "scorecard": {
+                    "skills_matched": [],
+                    "skills_missing": ["Rust"],
+                },
+                "created_at": _ts(_NOW),
+            },
+        ]
+        postings = [
+            {"id": "high-1", "llm_score": 90.0, "created_at": _ts(_NOW)},
+            {"id": "low-1", "llm_score": 30.0, "created_at": _ts(_NOW)},
+            {"id": "low-2", "llm_score": 30.0, "created_at": _ts(_NOW)},
+        ]
+        sb = _mock_supabase({"job_analyses": analyses, "job_postings": postings})
+        result = compute_skills_cost(sb, since=None)
+
+        skills = [m.skill for m in result.top_missing]
+        assert skills[0] == "Kubernetes"  # priority 90 beats 60
+        assert skills[1] == "Rust"
+
+        kubernetes = next(m for m in result.top_missing if m.skill == "Kubernetes")
+        assert kubernetes.missing_count == 1
+        assert kubernetes.avg_job_score == 90.0
+        assert kubernetes.priority_score == 90.0
+
+        rust = next(m for m in result.top_missing if m.skill == "Rust")
+        assert rust.missing_count == 2
+        assert rust.avg_job_score == 30.0
+        assert rust.priority_score == 60.0
+
+    def test_top_missing_falls_back_to_count_when_no_scores(self):
+        """If no posting has llm_score, ranking should still produce a
+        stable order using missing_count."""
+        analyses = [
+            {
+                "job_posting_id": "p1",
+                "scorecard": {"skills_matched": [], "skills_missing": ["A", "A", "B"]},
+                "created_at": _ts(_NOW),
+            },
+        ]
+        # postings with no llm_score
+        postings = [{"id": "p1", "llm_score": None, "created_at": _ts(_NOW)}]
+        sb = _mock_supabase({"job_analyses": analyses, "job_postings": postings})
+        result = compute_skills_cost(sb, since=None)
+
+        by_skill = {m.skill: m for m in result.top_missing}
+        assert by_skill["A"].avg_job_score is None
+        assert by_skill["A"].priority_score == 2.0  # missing_count fallback
+        assert by_skill["B"].priority_score == 1.0
+        # A ranks above B
+        assert result.top_missing[0].skill == "A"
 
     def test_cost_over_time(self):
         resume_costs = [

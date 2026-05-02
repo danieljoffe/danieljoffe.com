@@ -20,6 +20,17 @@ class FunnelStage(BaseModel):
     count: int
 
 
+class PipelinePeriodKpis(BaseModel):
+    """Top-line KPIs for a single time window — emitted twice when the
+    request asks for a comparison against the prior period."""
+
+    total_applications: int
+    total_interviews: int
+    total_offers: int
+    response_rate: float | None
+    avg_days_to_response: float | None
+
+
 class PipelineInsights(BaseModel):
     total_applications: int
     total_interviews: int
@@ -28,6 +39,10 @@ class PipelineInsights(BaseModel):
     avg_days_to_response: float | None
     velocity: list[WeeklyCount]
     funnel: list[FunnelStage]
+    # KPIs for the immediately-prior window of the same length. None when
+    # period='all' (no meaningful prior) or when the window pre-dates any
+    # data.
+    previous: PipelinePeriodKpis | None = None
 
 
 # ── Targets endpoint ─────────────────────────────────────────────────────────
@@ -57,6 +72,10 @@ class TargetInsights(BaseModel):
     targets: list[TargetComparison]
     score_distribution: list[ScoreBucket]
     score_trend: list[ScoreTrendPoint]
+    # Postings without an LLM score yet — surfaced separately so the
+    # 0-10 bucket reflects only genuinely-low-scoring jobs, not the
+    # backlog of unscored ones.
+    unscored_count: int = 0
 
 
 # ── Skills + Cost endpoint ───────────────────────────────────────────────────
@@ -66,6 +85,21 @@ class SkillFrequency(BaseModel):
     skill: str
     matched_count: int
     missing_count: int
+
+
+class MissingSkill(BaseModel):
+    """A skill the user is consistently missing, ranked by impact.
+
+    *priority_score* is the sum of llm_score across jobs missing this skill;
+    skills missing in many high-scoring jobs rank highest. When no job has
+    a score, the priority falls back to *missing_count* so ranking remains
+    stable.
+    """
+
+    skill: str
+    missing_count: int
+    avg_job_score: float | None
+    priority_score: float
 
 
 class CostBucket(BaseModel):
@@ -82,7 +116,7 @@ class PurposeCost(BaseModel):
 
 class SkillsCostInsights(BaseModel):
     top_skills: list[SkillFrequency]
-    top_missing: list[str]
+    top_missing: list[MissingSkill]
     cost_over_time: list[CostBucket]
     cost_by_purpose: list[PurposeCost]
     total_cost: float

@@ -104,12 +104,26 @@ class TailorRequest(BaseModel):
 
 
 class ResumeEditRequest(BaseModel):
-    """Partial update to a draft resume. Contact, source refs, resume_type locked."""
+    """Markdown edit to a draft resume.
 
-    summary: str | None = Field(default=None, min_length=1, max_length=600)
-    skills: list[str] | None = None
-    experience: list[TailoredRole] | None = None
-    education: list[TailoredEducation] | None = None
+    Markdown is the source of truth — the user freely edits text, the
+    backend lints and stores it, and the docx gets re-rendered lazily
+    on download (hash-cached).
+    """
+
+    markdown: str = Field(min_length=1, max_length=50_000)
+
+
+class ResumeCheckpointRequest(BaseModel):
+    """Optional in-flight markdown to flush before checkpointing.
+
+    The frontend uses this for `navigator.sendBeacon` on pagehide so an
+    edit that hasn't yet been autosaved still lands in the version
+    snapshot. When omitted, the endpoint just snapshots whatever is
+    currently in the row.
+    """
+
+    markdown: str | None = Field(default=None, max_length=50_000)
 
 
 class CoverLetterParagraph(BaseModel):
@@ -183,6 +197,8 @@ class TailoredResumeRecord(BaseModel):
     jd_snapshot: str
     jd_snapshot_hash: str
     payload: dict[str, Any]
+    payload_md: str | None = None
+    docx_payload_md_hash: str | None = None
     storage_path: str | None
     warnings: list[str]
     model: str | None

@@ -1,31 +1,35 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
-import type {
-  JobPosting,
-  JobsFilterState,
-  JobsSortColumn,
-  ScoringStatus,
+import StatusIndicator from './StatusIndicator';
+import {
+  MANUAL_SOURCE_ID,
+  type JobPosting,
+  type JobsSortColumn,
+  type ScoringStatus,
 } from './types';
-import { MANUAL_SOURCE_ID } from './types';
 
 interface JobsListTableProps {
-  filters: JobsFilterState;
+  postings: JobPosting[];
+  loading: boolean;
+  page: number;
+  setPage: (p: number) => void;
+  totalPages: number;
+  sort: JobsSortColumn;
+  order: 'asc' | 'desc';
+  handleSort: (col: JobsSortColumn) => void;
+  sortIndicator: (col: JobsSortColumn) => string;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
-  refreshKey: number;
-  targetId: string | undefined;
-  /** Surfaces the current page's postings so the parent can derive selection
-   * facts like "are any selected jobs already approved?" (F3-I). */
-  onPostingsLoaded?: ((postings: JobPosting[]) => void) | undefined;
+  analysisTargetId: string | undefined;
+  onRefetch: () => void;
 }
 
 function ScoreBadge({
@@ -50,22 +54,8 @@ function ScoreBadge({
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const variant =
-    status === 'applied' || status === 'resume_ready'
-      ? 'success'
-      : status === 'saved' || status === 'resume_draft'
-        ? 'info'
-        : status === 'interviewing' || status === 'offer'
-          ? 'warning'
-          : status === 'rejected'
-            ? 'error'
-            : 'default';
-  return <Badge variant={variant}>{status.replace(/_/g, ' ')}</Badge>;
-}
-
 function timeAgo(dateStr: string | null): string {
-  if (!dateStr) return '\u2014';
+  if (!dateStr) return '—';
   const diff = Date.now() - new Date(dateStr).getTime();
   const days = Math.floor(diff / 86400000);
   if (days === 0) return 'today';
@@ -73,65 +63,29 @@ function timeAgo(dateStr: string | null): string {
   return `${days}d ago`;
 }
 
-const TARGET_COLUMNS: { key: JobsSortColumn; label: string }[] = [
+const COLUMNS: { key: JobsSortColumn; label: string }[] = [
   { key: 'score', label: 'Score' },
   { key: 'title', label: 'Title' },
   { key: 'company_name', label: 'Company' },
   { key: 'created_at', label: 'Posted' },
 ];
 
-const GLOBAL_COLUMNS: { key: JobsSortColumn; label: string }[] = [
-  { key: 'title', label: 'Title' },
-  { key: 'company_name', label: 'Company' },
-  { key: 'created_at', label: 'Posted' },
-];
-
 export default function JobsListTable({
-  filters,
+  postings,
+  loading,
+  page,
+  setPage,
+  totalPages,
+  sort: activeSort,
+  order: sortOrder,
+  handleSort,
+  sortIndicator,
   selectedIds,
   onSelectionChange,
-  refreshKey,
-  targetId,
-  onPostingsLoaded,
+  analysisTargetId,
+  onRefetch,
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [deleteKey, setDeleteKey] = useState(0);
-  const showScore = targetId !== undefined;
-  const columns = showScore ? TARGET_COLUMNS : GLOBAL_COLUMNS;
-
-  const extraParams = useMemo(() => {
-    const params: Record<string, string> = {};
-    if (targetId) params.target_id = targetId;
-    if (filters.minScore) params.min_score = filters.minScore;
-    if (filters.status) params.status = filters.status;
-    if (filters.search) params.search = filters.search;
-    const combined = refreshKey + deleteKey;
-    if (combined) params._r = String(combined);
-    return params;
-  }, [targetId, filters, refreshKey, deleteKey]);
-
-  const {
-    data: postings,
-    loading,
-    page,
-    setPage,
-    totalPages,
-    sort: activeSort,
-    order: sortOrder,
-    handleSort,
-    sortIndicator,
-  } = useAdminTableFetch<JobPosting, JobsSortColumn>({
-    endpoint: '/api/jobs',
-    defaultSort: showScore ? 'score' : 'created_at',
-    defaultOrder: 'desc',
-    pageSize: 20,
-    dataKey: 'postings',
-    extraParams,
-  });
-
-  useEffect(() => {
-    onPostingsLoaded?.(postings);
-  }, [postings, onPostingsLoaded]);
 
   const allOnPageSelected =
     postings.length > 0 && postings.every(p => selectedIds.has(p.id));
@@ -194,7 +148,13 @@ export default function JobsListTable({
                   className='accent-brand-500'
                 />
               </th>
-              {columns.map(col => (
+              <th
+                scope='col'
+                className='px-3 py-2 font-medium text-text-secondary'
+              >
+                Status
+              </th>
+              {COLUMNS.map(col => (
                 <th
                   key={col.key}
                   scope='col'
@@ -222,12 +182,6 @@ export default function JobsListTable({
                 className='px-3 py-2 font-medium text-text-secondary'
               >
                 Salary
-              </th>
-              <th
-                scope='col'
-                className='px-3 py-2 font-medium text-text-secondary'
-              >
-                Status
               </th>
               <th
                 scope='col'
@@ -269,14 +223,15 @@ export default function JobsListTable({
                       className='accent-brand-500'
                     />
                   </td>
-                  {showScore && (
-                    <td className='px-3 py-2'>
-                      <ScoreBadge
-                        score={job.score}
-                        scoringStatus={job.scoring_status}
-                      />
-                    </td>
-                  )}
+                  <td className='px-3 py-2'>
+                    <StatusIndicator status={job.status} />
+                  </td>
+                  <td className='px-3 py-2'>
+                    <ScoreBadge
+                      score={job.score}
+                      scoringStatus={job.scoring_status}
+                    />
+                  </td>
                   <td className='px-3 py-2 font-medium'>
                     <span className='inline-flex items-center gap-2'>
                       {job.absolute_url ? (
@@ -302,26 +257,24 @@ export default function JobsListTable({
                     {timeAgo(job.created_at)}
                   </td>
                   <td className='px-3 py-2 text-text-tertiary'>
-                    {job.salary_text ?? '\u2014'}
-                  </td>
-                  <td className='px-3 py-2'>
-                    <StatusBadge status={job.status} />
+                    {job.salary_text ?? '—'}
                   </td>
                   <td className='px-3 py-2 text-text-tertiary truncate max-w-[150px]'>
-                    {job.location ?? '\u2014'}
+                    {job.location ?? '—'}
                   </td>
                 </tr>
                 {expandedId === job.id && (
                   <tr>
-                    <td colSpan={showScore ? 8 : 7} className='p-0'>
+                    <td colSpan={8} className='p-0'>
                       <JobDetailPanel
                         posting={job}
-                        targetId={targetId}
+                        targetId={analysisTargetId}
+                        viewFullHref={`/fitted/jobs/${job.id}`}
                         onDelete={() => {
                           setExpandedId(null);
-                          setDeleteKey(k => k + 1);
+                          onRefetch();
                         }}
-                        onStatusChange={() => setDeleteKey(k => k + 1)}
+                        onStatusChange={() => onRefetch()}
                       />
                     </td>
                   </tr>

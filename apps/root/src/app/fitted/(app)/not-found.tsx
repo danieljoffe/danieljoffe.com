@@ -6,7 +6,7 @@ import Button from '@/components/Button';
 export default function FittedNotFound() {
   return (
     <div className='flex flex-col gap-6'>
-      <Heading variant='component' as='h1'>
+      <Heading variant='hero' as='h1'>
         Page not found
       </Heading>
       <Card>

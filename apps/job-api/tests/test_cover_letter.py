@@ -366,25 +366,15 @@ def test_render_cover_letter_has_no_heading_1() -> None:
 
 # ---------------------------------------------------------------------------
 # lint_docx document_type awareness
+# Heading-level rules moved to markdown_linter.py (see test_pandoc_smoke.py).
 # ---------------------------------------------------------------------------
 
 
-def test_lint_cover_letter_skips_experience_heading_rule() -> None:
+def test_lint_cover_letter_passes_byte_level_rules() -> None:
     letter = _valid_letter()
     result = lint_docx(render_cover_letter_docx(letter), document_type="cover_letter")
-    codes = {v.code for v in result.violations}
-    assert "experience_heading" not in codes
-    assert "standard_headings" not in codes
     assert result.ok is True
-
-
-def test_lint_resume_still_requires_experience_heading() -> None:
-    """Regression check — the default document_type stays 'resume'."""
-    letter = _valid_letter()
-    # Render as cover letter (no headings), then lint as resume — must fail.
-    result = lint_docx(render_cover_letter_docx(letter))
-    codes = {v.code for v in result.errors}
-    assert "experience_heading" in codes
+    assert result.violations == []
 
 
 def test_lint_cover_letter_still_catches_tables() -> None:

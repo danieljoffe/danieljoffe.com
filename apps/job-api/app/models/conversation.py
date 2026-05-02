@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.models.experience import AnnotationAction, AnnotationRefType, ConversationType
 
@@ -29,8 +29,14 @@ class TurnRequest(BaseModel):
     """Client payload for POST /experience/conversation/turn."""
 
     conversation_type: ConversationType
-    content: str = Field(min_length=1, max_length=50_000)
+    content: str = Field(default="", max_length=50_000)
     skipped: bool = False
+
+    @model_validator(mode="after")
+    def _require_content_unless_skipped(self) -> "TurnRequest":
+        if not self.skipped and not self.content:
+            raise ValueError("content is required when skipped is false")
+        return self
 
 
 class LLMAnnotationDirective(BaseModel):

@@ -10,21 +10,17 @@ import {
   Send,
   Sparkles,
   Star,
+  Target,
 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
+import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type { GapHealthResult, GapTier } from './profile/types';
 import type { JobPosting } from './jobs/types';
+import type { UserTargetWithTarget } from './targets/types';
 
 interface JobsListResponse {
   postings: JobPosting[];
@@ -67,12 +63,6 @@ const PIPELINE_STATS: PipelineStat[] = [
   },
 ];
 
-function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
-  if (tier === 'red') return 'error';
-  if (tier === 'yellow') return 'warning';
-  return 'success';
-}
-
 function scoreBadgeVariant(score: number): 'success' | 'brand' | 'default' {
   if (score >= 80) return 'success';
   if (score >= 60) return 'brand';
@@ -85,19 +75,21 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [topMatches, setTopMatches] = useState<JobPosting[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
-  const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean>(false);
+  const [hasActiveTargets, setHasActiveTargets] = useState<boolean>(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     try {
-      const [topRes, healthRes, ...countResponses] = await Promise.all([
-        fetch('/api/jobs?status=new&sort=score&order=desc&page_size=5'),
-        fetch('/api/career/experience/gap-health'),
-        ...PIPELINE_STATS.map(s =>
-          fetch(`/api/jobs?status=${s.status}&page_size=1`)
-        ),
-      ]);
+      const [topRes, healthRes, targetsRes, ...countResponses] =
+        await Promise.all([
+          fetch('/api/jobs?status=new&sort=score&order=desc&page_size=5'),
+          fetch('/api/career/experience/gap-health'),
+          fetch('/api/targets/mine'),
+          ...PIPELINE_STATS.map(s =>
+            fetch(`/api/jobs?status=${s.status}&page_size=1`)
+          ),
+        ]);
 
       if (topRes.ok) {
         const data = (await topRes.json()) as JobsListResponse;
@@ -105,9 +97,14 @@ export default function DashboardPage() {
       }
 
       if (healthRes.ok) {
-        const data = (await healthRes.json()) as GapHealthResult;
-        setGapHealth(data);
         setHasProfile(true);
+      }
+
+      if (targetsRes.ok) {
+        const { targets } = (await targetsRes.json()) as {
+          targets: UserTargetWithTarget[];
+        };
+        setHasActiveTargets(targets.some(t => t.user_target.is_active));
       }
 
       const newCounts: Record<string, number> = {};
@@ -157,7 +154,7 @@ export default function DashboardPage() {
     return (
       <div className='flex flex-col gap-6'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Dashboard
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
@@ -199,33 +196,52 @@ export default function DashboardPage() {
     );
   }
 
-  // -- Main layout ------------------------------------------------------------
-
-  return (
-    <div className='flex flex-col gap-6'>
-      <div className='flex items-start justify-between gap-3'>
+  if (!hasActiveTargets) {
+    return (
+      <div className='flex flex-col gap-6'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Dashboard
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
             Your job search at a glance
           </Text>
         </div>
-        {gapHealth && (
-          <Link
-            href='/fitted/profile'
-            className='group flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2 transition-colors hover:bg-surface-tertiary'
-          >
-            <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
-              Profile {Math.round(100 - gapHealth.gap_pct)}%
-            </Badge>
-            <ArrowRight
-              className='size-4 text-text-tertiary transition-transform group-hover:translate-x-0.5'
-              aria-hidden
-            />
-          </Link>
-        )}
+
+        <Card>
+          <CardContent className='flex flex-col items-center gap-4 py-12'>
+            <Target className='size-12 text-text-tertiary' aria-hidden />
+            <Text variant='body' as='p' className='text-center'>
+              Activate a target so we can match incoming jobs to the roles
+              you&apos;re actually pursuing.
+            </Text>
+            <Button
+              name='dashboard-go-targets'
+              variant='primary'
+              size='sm'
+              as='link'
+              href='/fitted/targets'
+            >
+              <span>Manage targets</span>
+              <ArrowRight className='size-4' aria-hidden />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // -- Main layout ------------------------------------------------------------
+
+  return (
+    <div className='flex flex-col gap-6'>
+      <div>
+        <Heading variant='hero' as='h1'>
+          Dashboard
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Your job search at a glance
+        </Text>
       </div>
 
       {/* Pipeline stats */}
@@ -234,7 +250,7 @@ export default function DashboardPage() {
           <Link
             key={stat.status}
             href={stat.href}
-            className='group flex flex-col gap-2 rounded-lg border border-border bg-surface-secondary p-4 transition-colors hover:border-brand hover:bg-surface-tertiary'
+            className='group flex flex-col gap-1 rounded-lg border border-border bg-surface-secondary p-3 transition-colors hover:border-brand hover:bg-surface-tertiary sm:gap-2 sm:p-4'
           >
             <div className='flex items-center gap-2 text-text-secondary group-hover:text-text-primary'>
               {stat.icon}
@@ -242,7 +258,11 @@ export default function DashboardPage() {
                 {stat.label}
               </Text>
             </div>
-            <Text variant='body' as='span' className='text-2xl font-semibold'>
+            <Text
+              variant='body'
+              as='span'
+              className='text-lg font-semibold sm:text-2xl'
+            >
               {counts[stat.status] ?? 0}
             </Text>
           </Link>
@@ -250,25 +270,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Top matches */}
-      <Card>
-        <CardHeader>
-          <div className='flex items-center justify-between'>
-            <CardTitle>
-              <Star className='mr-2 inline size-5' aria-hidden />
-              Top matches
-            </CardTitle>
-            <Link
-              href='/fitted/jobs'
-              className='inline-flex items-center gap-1 text-sm text-brand-500 hover:underline'
-            >
-              View all jobs
-              <ArrowRight className='size-3.5' aria-hidden />
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent className='flex flex-col divide-y divide-border'>
-          {topMatches.length === 0 ? (
-            <div className='flex flex-col items-center gap-3 py-8 text-center'>
+      <section className='flex flex-col gap-3'>
+        <Heading variant='component' as='h2'>
+          Top matches
+        </Heading>
+        {topMatches.length === 0 ? (
+          <Card>
+            <CardContent className='flex flex-col items-center gap-3 py-8 text-center'>
               <CheckCircle2
                 className='size-10 text-text-tertiary'
                 aria-hidden
@@ -277,34 +285,43 @@ export default function DashboardPage() {
                 No new matches right now. We&apos;ll notify you as fresh roles
                 come in.
               </Text>
-            </div>
-          ) : (
-            topMatches.map(posting => (
+            </CardContent>
+          </Card>
+        ) : (
+          <div className='flex flex-col gap-2'>
+            {topMatches.map(posting => (
               <Link
                 key={posting.id}
                 href={`/fitted/jobs/${posting.id}`}
-                className='group flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 transition-colors hover:bg-surface-tertiary -mx-3 px-3 rounded-md'
+                className='group flex min-w-0 items-start gap-3 rounded-xl border border-border bg-surface-elevated p-3 transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
               >
+                <Badge
+                  variant={scoreBadgeVariant(posting.score)}
+                  size='sm'
+                  className='shrink-0'
+                >
+                  {posting.score}
+                </Badge>
                 <div className='min-w-0 flex-1'>
                   <Text
                     variant='body'
-                    className='truncate font-medium group-hover:text-brand-500'
+                    className='truncate text-sm font-semibold leading-tight group-hover:text-brand-500'
                   >
                     {posting.title}
                   </Text>
-                  <Text variant='caption' className='text-text-secondary'>
+                  <Text
+                    variant='caption'
+                    className='truncate text-text-secondary'
+                  >
                     {posting.company_name}
                     {posting.location ? ` · ${posting.location}` : ''}
                   </Text>
                 </div>
-                <Badge variant={scoreBadgeVariant(posting.score)} size='sm'>
-                  {posting.score}
-                </Badge>
               </Link>
-            ))
-          )}
-        </CardContent>
-      </Card>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

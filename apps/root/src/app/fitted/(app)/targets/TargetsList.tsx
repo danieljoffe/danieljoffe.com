@@ -12,13 +12,23 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
-import CreateTargetModal from './CreateTargetModal';
+import CreateTargetModal, {
+  type ManualSubmission,
+  type UrlSubmission,
+} from './CreateTargetModal';
+import PendingTargetCard from './PendingTargetCard';
 import type {
-  JobTarget,
+  CreateOrLinkResult,
   MatchedSuggestion,
   MatchedSuggestions,
+  UserTarget,
   UserTargetWithTarget,
 } from './types';
+
+interface PendingTarget {
+  id: string;
+  label: string;
+}
 
 export default function TargetsList() {
   const [targets, setTargets] = useState<UserTargetWithTarget[]>([]);
@@ -103,11 +113,79 @@ export default function TargetsList() {
     [router]
   );
 
-  const handleCreated = useCallback(() => {
-    setModalOpen(false);
-    setSuggestions([]);
-    fetchTargets();
-  }, [fetchTargets]);
+  const [pendingTargets, setPendingTargets] = useState<PendingTarget[]>([]);
+
+  const runCreate = useCallback(
+    async (
+      endpoint: '/api/targets/from-manual' | '/api/targets/from-url',
+      body: object,
+      pendingLabel: string
+    ) => {
+      const pendingId =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `pending-${Date.now()}-${Math.random()}`;
+      setPendingTargets(p => [...p, { id: pendingId, label: pendingLabel }]);
+      setModalOpen(false);
+      setSuggestions([]);
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          throw new Error(
+            (err as Record<string, string> | null)?.detail ??
+              'Failed to add target'
+          );
+        }
+        const result = (await res.json()) as CreateOrLinkResult;
+        const alreadyLinked = targets.some(
+          t => t.target.id === result.target.id
+        );
+        toast({
+          variant: 'success',
+          title: result.was_matched
+            ? alreadyLinked
+              ? `Already in your targets: ${result.target.label}`
+              : `Linked to existing target: ${result.target.label}`
+            : `Target added: ${result.target.label}`,
+        });
+        // Use the response directly so the new card shows even if /mine
+        // is slow or fails. Replace any existing entry with the same
+        // target id (covers the was_matched=true relink path).
+        setTargets(prev => [
+          { user_target: result.user_target, target: result.target },
+          ...prev.filter(t => t.target.id !== result.target.id),
+        ]);
+      } catch (e) {
+        toast({
+          variant: 'error',
+          title: e instanceof Error ? e.message : 'Failed to add target',
+        });
+      } finally {
+        setPendingTargets(p => p.filter(t => t.id !== pendingId));
+      }
+    },
+    [toast, targets]
+  );
+
+  const handleSubmitManual = useCallback(
+    (payload: ManualSubmission) => {
+      void runCreate('/api/targets/from-manual', payload, payload.label);
+    },
+    [runCreate]
+  );
+
+  const handleSubmitUrl = useCallback(
+    (payload: UrlSubmission) => {
+      void runCreate('/api/targets/from-url', payload, payload.label ?? '');
+    },
+    [runCreate]
+  );
 
   const [suggestions, setSuggestions] = useState<MatchedSuggestion[]>([]);
   const [suggesting, setSuggesting] = useState(false);
@@ -141,11 +219,9 @@ export default function TargetsList() {
       const label = match.suggestion.label;
       setAddingSuggestion(label);
       try {
-        let targetId: string;
-
+        let entry: UserTargetWithTarget;
         if (match.is_new) {
-          // Create a new target then link
-          const createRes = await fetch('/api/targets', {
+          const res = await fetch('/api/targets/from-manual', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -153,34 +229,44 @@ export default function TargetsList() {
               description: match.suggestion.description,
             }),
           });
-          if (!createRes.ok) throw new Error('Create failed');
-          const created = (await createRes.json()) as JobTarget;
-          targetId = created.id;
+          if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            throw new Error(
+              (err as Record<string, string> | null)?.detail ??
+                'Failed to add target'
+            );
+          }
+          const result = (await res.json()) as CreateOrLinkResult;
+          entry = { user_target: result.user_target, target: result.target };
         } else {
-          targetId = match.matched_target!.id;
+          const matchedTarget = match.matched_target!;
+          const linkRes = await fetch(`/api/targets/${matchedTarget.id}/link`, {
+            method: 'POST',
+          });
+          if (!linkRes.ok) throw new Error('Link failed');
+          const userTarget = (await linkRes.json()) as UserTarget;
+          entry = { user_target: userTarget, target: matchedTarget };
         }
-
-        // Link the user to the target (derives fit score)
-        const linkRes = await fetch(`/api/targets/${targetId}/link`, {
-          method: 'POST',
-        });
-        if (!linkRes.ok) throw new Error('Link failed');
 
         toast({
           variant: 'success',
-          title: match.is_new
-            ? `Target "${label}" created`
-            : `Linked to "${label}"`,
+          title: `Added "${label}"`,
         });
         setSuggestions(prev => prev.filter(s => s.suggestion.label !== label));
-        fetchTargets();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to add target' });
+        setTargets(prev => [
+          entry,
+          ...prev.filter(t => t.target.id !== entry.target.id),
+        ]);
+      } catch (e) {
+        toast({
+          variant: 'error',
+          title: e instanceof Error ? e.message : 'Failed to add target',
+        });
       } finally {
         setAddingSuggestion(null);
       }
     },
-    [toast, fetchTargets]
+    [toast]
   );
 
   if (loading) {
@@ -193,17 +279,13 @@ export default function TargetsList() {
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} padding='none'>
-              <CardContent className='p-4 flex flex-col gap-3'>
-                <Skeleton width='70%' size='lg' />
-                <div className='flex gap-4'>
-                  <Skeleton width={90} size='sm' />
-                  <Skeleton width={80} size='sm' />
-                </div>
-                <Skeleton width={130} size='sm' />
-                <div className='flex gap-2 pt-1'>
-                  <Skeleton variant='rectangular' width={80} height={32} />
-                  <Skeleton variant='rectangular' width={80} height={32} />
-                  <Skeleton variant='rectangular' width={60} height={32} />
+              <CardContent className='flex flex-col gap-2.5 p-4'>
+                <Skeleton width='70%' size='sm' />
+                <hr className='-mx-4 border-border' />
+                <Skeleton variant='text' lines={3} />
+                <hr className='-mx-4 border-border' />
+                <div className='flex justify-end'>
+                  <Skeleton width={60} size='sm' />
                 </div>
               </CardContent>
             </Card>
@@ -213,45 +295,108 @@ export default function TargetsList() {
     );
   }
 
+  const hasContent = targets.length > 0 || pendingTargets.length > 0;
+
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-center justify-between'>
-        <Heading variant='component' as='h1'>
-          Targets
-        </Heading>
-        <div className='flex items-center gap-2'>
-          <Button
-            name='target-suggest'
-            variant='outline'
-            size='sm'
-            onClick={handleSuggest}
-            disabled={suggesting}
-          >
-            {suggesting ? (
-              <>
-                <Spinner size='sm' aria-label='Suggesting' />
-                <span>Suggesting...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className='size-4' aria-hidden />
-                <span>Suggest</span>
-              </>
-            )}
-          </Button>
+      <div className='flex items-start justify-between gap-3'>
+        <div>
+          <Heading variant='hero' as='h1'>
+            Targets
+          </Heading>
+          <Text variant='body' className='mt-1 text-text-secondary'>
+            Role profiles you score new jobs against
+          </Text>
+        </div>
+        {hasContent && (
           <Button
             name='target-create'
             variant='primary'
             size='sm'
+            iconOnly
+            aria-label='Create target'
+            className='rounded-full'
             onClick={() => setModalOpen(true)}
           >
             <Plus className='size-4' aria-hidden />
-            <span>New Target</span>
           </Button>
-        </div>
+        )}
       </div>
 
-      {/* AI Suggestions */}
+      {!hasContent ? (
+        <Card>
+          <CardContent className='flex flex-col items-center gap-3 py-12'>
+            <Text variant='body' as='p'>
+              No targets yet. Create your first target to start scoring jobs
+              against a specific role profile.
+            </Text>
+            <div className='flex flex-col items-stretch gap-3 sm:flex-row sm:items-center'>
+              <Button
+                name='target-create-empty'
+                variant='primary'
+                size='sm'
+                onClick={() => setModalOpen(true)}
+              >
+                <Plus className='size-4' aria-hidden />
+                <span>Create Target</span>
+              </Button>
+              <Button
+                name='target-suggest-empty'
+                variant='outline'
+                size='sm'
+                onClick={handleSuggest}
+                disabled={suggesting}
+              >
+                <Sparkles className='size-4' aria-hidden />
+                <span>Suggest from Experience</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {pendingTargets.map(p => (
+              <PendingTargetCard key={p.id} label={p.label} />
+            ))}
+            {targets.map(({ user_target, target }) => (
+              <TargetCard
+                key={target.id}
+                target={target}
+                fitScore={user_target.fit_score}
+                fitScoreReasoning={user_target.fit_score_reasoning}
+                onActivate={handleActivate}
+                onDeactivate={handleDeactivate}
+                onDelete={handleDelete}
+                onViewJobs={handleViewJobs}
+              />
+            ))}
+          </div>
+
+          <div className='flex items-center justify-center'>
+            <Button
+              name='target-suggest'
+              variant='outline'
+              size='sm'
+              onClick={handleSuggest}
+              disabled={suggesting}
+            >
+              {suggesting ? (
+                <>
+                  <Spinner size='sm' aria-label='Suggesting' />
+                  <span>Suggesting...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className='size-4' aria-hidden />
+                  <span>Suggest from Experience</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </>
+      )}
+
       {suggestions.length > 0 && (
         <div className='flex flex-col gap-3'>
           <Text variant='caption'>Suggested targets from your experience</Text>
@@ -260,9 +405,9 @@ export default function TargetsList() {
               <Card key={match.suggestion.label} padding='none'>
                 <CardContent className='p-4 flex flex-col gap-2'>
                   <div className='flex items-center gap-2'>
-                    <Text variant='body' className='font-medium'>
+                    <Heading variant='cardTitle'>
                       {match.suggestion.label}
-                    </Text>
+                    </Heading>
                     {!match.is_new && (
                       <Badge variant='default' size='sm'>
                         Existing
@@ -291,9 +436,7 @@ export default function TargetsList() {
                   >
                     {addingSuggestion === match.suggestion.label
                       ? 'Adding...'
-                      : match.is_new
-                        ? 'Create Target'
-                        : 'Add Target'}
+                      : 'Add Target'}
                   </Button>
                 </CardContent>
               </Card>
@@ -302,57 +445,11 @@ export default function TargetsList() {
         </div>
       )}
 
-      {targets.length === 0 ? (
-        <Card>
-          <CardContent className='flex flex-col items-center gap-3 py-12'>
-            <Text variant='body' as='p'>
-              No targets yet. Create your first target to start scoring jobs
-              against a specific role profile.
-            </Text>
-            <div className='flex items-center gap-3'>
-              <Button
-                name='target-create-empty'
-                variant='primary'
-                size='sm'
-                onClick={() => setModalOpen(true)}
-              >
-                <Plus className='size-4' aria-hidden />
-                <span>Create Target</span>
-              </Button>
-              <Button
-                name='target-suggest-empty'
-                variant='outline'
-                size='sm'
-                onClick={handleSuggest}
-                disabled={suggesting}
-              >
-                <Sparkles className='size-4' aria-hidden />
-                <span>Suggest from Experience</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {targets.map(({ user_target, target }) => (
-            <TargetCard
-              key={target.id}
-              target={target}
-              fitScore={user_target.fit_score}
-              fitScoreReasoning={user_target.fit_score_reasoning}
-              onActivate={handleActivate}
-              onDeactivate={handleDeactivate}
-              onDelete={handleDelete}
-              onViewJobs={handleViewJobs}
-            />
-          ))}
-        </div>
-      )}
-
       <CreateTargetModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onCreated={handleCreated}
+        onSubmitManual={handleSubmitManual}
+        onSubmitUrl={handleSubmitUrl}
       />
     </div>
   );

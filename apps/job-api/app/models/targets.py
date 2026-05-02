@@ -8,7 +8,7 @@ while keeping the original intact for backward compatibility.
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ---- Scoring Profile schema ------------------------------------------------
 
@@ -42,14 +42,6 @@ class ScoringProfile(BaseModel):
     seniority: SeniorityProfile = Field(default_factory=SeniorityProfile)
     domain: DomainProfile = Field(default_factory=DomainProfile)
     negative: NegativeProfile = Field(default_factory=NegativeProfile)
-
-
-class ResumeEmphasis(BaseModel):
-    """Hints for the tailor about what to emphasize for this target."""
-
-    focus_skills: list[str] = Field(default_factory=list)
-    focus_outcomes: list[str] = Field(default_factory=list)
-    tone: str | None = None
 
 
 # ---- Row models (DB read shapes) -------------------------------------------
@@ -90,7 +82,6 @@ class UserTarget(BaseModel):
     id: str
     user_id: str
     target_id: str
-    resume_emphasis: ResumeEmphasis
     is_active: bool
     fit_score: int | None = None
     fit_score_reasoning: str | None = None
@@ -117,6 +108,18 @@ class UserTargetWithTarget(BaseModel):
     target: JobTarget
 
 
+class CreateOrLinkResult(BaseModel):
+    """Outcome of a from-input flow.
+
+    ``was_matched`` indicates whether the LLM-normalized input collided with
+    an existing shared target — useful for the frontend to vary the toast.
+    """
+
+    user_target: UserTarget
+    target: JobTarget
+    was_matched: bool
+
+
 # ---- Request shapes (router inputs) ----------------------------------------
 
 
@@ -137,11 +140,47 @@ class TargetUpdate(BaseModel):
     profile_version: int | None = None
 
 
-class ReferenceJDAdd(BaseModel):
-    """Add a reference JD to a target. Triggers profile derivation + merge."""
+class TargetFromManual(BaseModel):
+    """Create a target from user-typed title + description.
 
-    jd_text: str = Field(min_length=50, max_length=100_000)
+    The LLM normalizes the input into a standardized ``TargetSuggestion``
+    shape before matching against existing targets, so created and suggested
+    targets share the same canonical format.
+    """
+
+    label: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class TargetFromUrl(BaseModel):
+    """Create a target from a JD URL.
+
+    The label is optional — when omitted, the job title extracted from the
+    page is used. Falls back to "Untitled Target" if neither is available.
+    """
+
+    jd_url: str
+    label: str | None = Field(default=None, max_length=200)
+
+
+class ReferenceJDAdd(BaseModel):
+    """Add a reference JD to a target. Triggers profile derivation + merge.
+
+    Either `jd_text` (>=50 chars) or `jd_url` must be provided. When only
+    `jd_url` is given, the server fetches the page and extracts JD text via
+    the same pipeline used by `POST /jobs/manual`.
+    """
+
+    jd_text: str | None = Field(default=None, max_length=100_000)
     jd_url: str | None = None
+
+    @model_validator(mode="after")
+    def _require_text_or_url(self) -> "ReferenceJDAdd":
+        if not self.jd_text and not self.jd_url:
+            raise ValueError("Either jd_text or jd_url is required")
+        if self.jd_text is not None and len(self.jd_text) < 50:
+            raise ValueError("jd_text must be at least 50 characters")
+        return self
 
 
 # ---- Suggestion shapes (LLM output) ----------------------------------------

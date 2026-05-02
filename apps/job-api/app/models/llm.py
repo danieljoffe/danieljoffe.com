@@ -40,6 +40,25 @@ class LLMResult(BaseModel):
     latency_ms: int
 
 
+class LLMStreamDelta(BaseModel):
+    """Incremental text chunk from a streaming completion."""
+
+    type: Literal["delta"] = "delta"
+    text: str
+
+
+class LLMStreamFinal(BaseModel):
+    """Terminal event for a streaming completion. Carries the full result
+    so callers can cost-log and parse a typed payload from `result.content`.
+    """
+
+    type: Literal["final"] = "final"
+    result: LLMResult
+
+
+LLMStreamEvent = LLMStreamDelta | LLMStreamFinal
+
+
 class LLMCallRecord(BaseModel):
     """Read shape for llm_cost_log rows.
 

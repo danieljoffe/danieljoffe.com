@@ -16,7 +16,9 @@ from supabase import Client
 from app.models.insights import (
     CostBucket,
     FunnelStage,
+    MissingSkill,
     PipelineInsights,
+    PipelinePeriodKpis,
     PurposeCost,
     ScoreBucket,
     ScoreTrendPoint,
@@ -62,40 +64,43 @@ def _parse_dt(value: str) -> datetime:
 # ── Pipeline ─────────────────────────────────────────────────────────────────
 
 
-def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsights:
-    # Fetch job postings
+def _fetch_postings_window(
+    supabase: Client, since: datetime | None, until: datetime | None
+) -> list[Row]:
     q = supabase.table("job_postings").select("id, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
-    postings = cast(list[Row], q.execute().data or [])
+    if until:
+        q = q.lt("created_at", until.isoformat())
+    return cast(list[Row], q.execute().data or [])
 
-    # Fetch status log for response-time calculation
-    sq = supabase.table("job_status_log").select("posting_id, old_status, new_status, created_at")
+
+def _fetch_status_logs_window(
+    supabase: Client, since: datetime | None, until: datetime | None
+) -> list[Row]:
+    sq = supabase.table("job_status_log").select(
+        "posting_id, old_status, new_status, created_at"
+    )
     if since:
         sq = sq.gte("created_at", since.isoformat())
-    status_logs = cast(list[Row], sq.execute().data or [])
+    if until:
+        sq = sq.lt("created_at", until.isoformat())
+    return cast(list[Row], sq.execute().data or [])
 
-    # Fetch tailored resumes for velocity
-    rq = supabase.table("tailored_resumes").select("job_posting_id, created_at")
-    if since:
-        rq = rq.gte("created_at", since.isoformat())
-    rq = rq.eq("document_type", "resume")
-    resumes = cast(list[Row], rq.execute().data or [])
 
-    # --- Funnel counts ---
+def _kpis_from(postings: list[Row], status_logs: list[Row]) -> PipelinePeriodKpis:
+    """Pure aggregation: derive the 5 top-line KPIs from already-fetched
+    postings + status logs for one window. Used for both the current and
+    prior periods so the math stays in one place."""
     status_counts: Counter[str] = Counter()
     for p in postings:
         status_counts[p["status"]] += 1
 
-    funnel = [FunnelStage(stage=s, count=status_counts.get(s, 0)) for s in FUNNEL_ORDER]
-
-    # --- Top-line KPIs ---
     total_applications = sum(status_counts.get(s, 0) for s in APPLIED_STATUSES)
     total_interviews = status_counts.get("interviewing", 0) + status_counts.get("offer", 0)
     total_offers = status_counts.get("offer", 0)
     response_rate = (total_interviews / total_applications) if total_applications > 0 else None
 
-    # --- Avg days from applied → interviewing ---
     applied_times: dict[str, datetime] = {}
     interview_times: dict[str, datetime] = {}
     for log in status_logs:
@@ -113,6 +118,51 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
             if delta >= 0:
                 response_days.append(delta)
     avg_days = (sum(response_days) / len(response_days)) if response_days else None
+
+    return PipelinePeriodKpis(
+        total_applications=total_applications,
+        total_interviews=total_interviews,
+        total_offers=total_offers,
+        response_rate=round(response_rate, 3) if response_rate is not None else None,
+        avg_days_to_response=round(avg_days, 1) if avg_days is not None else None,
+    )
+
+
+def compute_pipeline(
+    supabase: Client,
+    since: datetime | None,
+    prior_window: tuple[datetime, datetime] | None = None,
+) -> PipelineInsights:
+    """Compute pipeline insights for the current window. When *prior_window*
+    is supplied as ``(prior_since, prior_until)``, also compute the same KPIs
+    over that window so the dashboard can render trend deltas. Velocity and
+    funnel are scoped to the current window only."""
+    postings = _fetch_postings_window(supabase, since, None)
+    status_logs = _fetch_status_logs_window(supabase, since, None)
+
+    # Fetch tailored resumes for velocity (current window only)
+    rq = supabase.table("tailored_resumes").select("job_posting_id, created_at")
+    if since:
+        rq = rq.gte("created_at", since.isoformat())
+    rq = rq.eq("document_type", "resume")
+    resumes = cast(list[Row], rq.execute().data or [])
+
+    # --- Funnel counts ---
+    status_counts: Counter[str] = Counter()
+    for p in postings:
+        status_counts[p["status"]] += 1
+    funnel = [FunnelStage(stage=s, count=status_counts.get(s, 0)) for s in FUNNEL_ORDER]
+
+    # --- Top-line KPIs (current window) ---
+    current = _kpis_from(postings, status_logs)
+
+    # --- Prior-period KPIs (only when caller asked for a comparison) ---
+    previous: PipelinePeriodKpis | None = None
+    if prior_window is not None:
+        prior_since, prior_until = prior_window
+        prior_postings = _fetch_postings_window(supabase, prior_since, prior_until)
+        prior_logs = _fetch_status_logs_window(supabase, prior_since, prior_until)
+        previous = _kpis_from(prior_postings, prior_logs)
 
     # --- Weekly velocity ---
     week_resumes: Counter[date] = Counter()
@@ -135,13 +185,14 @@ def compute_pipeline(supabase: Client, since: datetime | None) -> PipelineInsigh
     ]
 
     return PipelineInsights(
-        total_applications=total_applications,
-        total_interviews=total_interviews,
-        total_offers=total_offers,
-        response_rate=round(response_rate, 3) if response_rate is not None else None,
-        avg_days_to_response=round(avg_days, 1) if avg_days is not None else None,
+        total_applications=current.total_applications,
+        total_interviews=current.total_interviews,
+        total_offers=current.total_offers,
+        response_rate=current.response_rate,
+        avg_days_to_response=current.avg_days_to_response,
         velocity=velocity,
         funnel=funnel,
+        previous=previous,
     )
 
 
@@ -163,11 +214,21 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     postings = cast(list[Row], q.execute().data or [])
 
     # --- Per-target aggregation ---
+    # Targets with no jobs in the window are dropped from the response
+    # (they're noise in the comparison chart). Postings with no signal
+    # — null OR zero score — are tracked separately as unscored_count
+    # so they don't bloat the 0-10 bucket of the distribution. (A
+    # legitimate score of 0 is vanishingly rare; in practice 0 means
+    # "default value, never scored".)
     target_jobs: defaultdict[str, list[Row]] = defaultdict(list)
-    all_scores: list[int] = []
+    scored_values: list[int] = []
+    unscored_count = 0
     for p in postings:
-        score = p.get("score") or 0
-        all_scores.append(score)
+        score = p.get("score")
+        if score is None or score == 0:
+            unscored_count += 1
+        else:
+            scored_values.append(int(score))
         tid = p.get("target_id")
         if tid and tid in target_labels:
             target_jobs[tid].append(p)
@@ -176,17 +237,6 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     for tid, label in target_labels.items():
         jobs = target_jobs.get(tid, [])
         if not jobs:
-            comparisons.append(
-                TargetComparison(
-                    target_id=tid,
-                    target_label=label,
-                    job_count=0,
-                    avg_score=0.0,
-                    applied_count=0,
-                    interview_count=0,
-                    conversion_rate=None,
-                )
-            )
             continue
         scores = [j.get("score", 0) or 0 for j in jobs]
         applied = sum(1 for j in jobs if j["status"] in APPLIED_STATUSES)
@@ -205,9 +255,9 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
             )
         )
 
-    # --- Score distribution ---
+    # --- Score distribution (excluding unscored postings) ---
     bucket_counts: Counter[str] = Counter()
-    for s in all_scores:
+    for s in scored_values:
         clamped = max(0, min(s, 100))
         bucket_idx = min(clamped // 10, 9)
         lo = bucket_idx * 10
@@ -222,11 +272,13 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
         for lo in range(0, 100, 10)
     ]
 
-    # --- Score trend by week ---
+    # --- Score trend by week (scored postings only) ---
     week_scores: defaultdict[date, list[int]] = defaultdict(list)
     for p in postings:
-        score = p.get("score") or 0
-        week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(score)
+        score = p.get("score")
+        if score is None:
+            continue
+        week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(int(score))
 
     score_trend = sorted(
         [
@@ -240,6 +292,7 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
         targets=comparisons,
         score_distribution=buckets,
         score_trend=score_trend,
+        unscored_count=unscored_count,
     )
 
 
@@ -248,10 +301,23 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
 
 def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostInsights:
     # Fetch analyses for skill extraction
-    aq = supabase.table("job_analyses").select("scorecard, created_at")
+    aq = supabase.table("job_analyses").select("job_posting_id, scorecard, created_at")
     if since:
         aq = aq.gte("created_at", since.isoformat())
     analyses = cast(list[Row], aq.execute().data or [])
+
+    # Fetch posting scores so we can rank skill gaps by impact (sum of
+    # llm_score across jobs missing the skill). Postings without a score
+    # contribute to missing_count but not priority_score.
+    pq = supabase.table("job_postings").select("id, llm_score")
+    if since:
+        pq = pq.gte("created_at", since.isoformat())
+    posting_rows = cast(list[Row], pq.execute().data or [])
+    posting_scores: dict[str, float] = {}
+    for p in posting_rows:
+        score = p.get("llm_score")
+        if score is not None:
+            posting_scores[str(p["id"])] = float(score)
 
     # Fetch LLM cost log
     cq = supabase.table("llm_cost_log").select("purpose, cost_usd, created_at")
@@ -269,20 +335,31 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
     # --- Skill frequencies ---
     matched_counts: Counter[str] = Counter()
     missing_counts: Counter[str] = Counter()
+    missing_score_sum: defaultdict[str, float] = defaultdict(float)
+    missing_score_count: Counter[str] = Counter()
 
     for a in analyses:
         scorecard = a.get("scorecard")
         if not isinstance(scorecard, dict):
             continue
+        posting_id = a.get("job_posting_id")
+        score = posting_scores.get(str(posting_id)) if posting_id else None
+
         for sm in scorecard.get("skills_matched", []):
             if isinstance(sm, dict) and sm.get("name"):
                 if sm.get("matched"):
                     matched_counts[sm["name"]] += 1
                 else:
                     missing_counts[sm["name"]] += 1
+                    if score is not None:
+                        missing_score_sum[sm["name"]] += score
+                        missing_score_count[sm["name"]] += 1
         for skill_name in scorecard.get("skills_missing", []):
             if isinstance(skill_name, str):
                 missing_counts[skill_name] += 1
+                if score is not None:
+                    missing_score_sum[skill_name] += score
+                    missing_score_count[skill_name] += 1
 
     # Combine and rank by total frequency
     all_skills = set(matched_counts.keys()) | set(missing_counts.keys())
@@ -299,10 +376,34 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
         reverse=True,
     )[:15]
 
-    # Top missing (skills never matched)
-    pure_missing = [
-        s for s, _ in missing_counts.most_common(10) if matched_counts.get(s, 0) == 0
-    ]
+    # Top missing (skills never matched), ranked by score-weighted priority.
+    # priority_score = sum(llm_score for jobs missing this skill); skills
+    # missing in many high-scoring jobs rank highest. When no job has a
+    # score, fall back to raw missing_count so ranking stays stable.
+    # Limitation: skills are still treated as binary present/absent per
+    # analysis — a skill matched in some jobs but missing in others is
+    # excluded entirely.
+    pure_missing_skills = [s for s in missing_counts if matched_counts.get(s, 0) == 0]
+    missing_records = []
+    for skill in pure_missing_skills:
+        count = missing_counts[skill]
+        score_count = missing_score_count[skill]
+        score_sum = missing_score_sum[skill]
+        avg = (score_sum / score_count) if score_count > 0 else None
+        priority = score_sum if score_count > 0 else float(count)
+        missing_records.append(
+            MissingSkill(
+                skill=skill,
+                missing_count=count,
+                avg_job_score=avg,
+                priority_score=round(priority, 4),
+            )
+        )
+    pure_missing = sorted(
+        missing_records,
+        key=lambda r: r.priority_score,
+        reverse=True,
+    )[:10]
 
     # --- Cost over time ---
     week_cost: defaultdict[date, float] = defaultdict(float)

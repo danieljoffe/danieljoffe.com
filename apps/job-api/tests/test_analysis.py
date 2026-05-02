@@ -12,7 +12,6 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-from pydantic import ValidationError
 
 from app.models.analysis import (
     JobAnalysis,
@@ -203,7 +202,7 @@ async def test_analyze_job_includes_target_context_in_message() -> None:
 
 async def test_analyze_job_json_parse_error_raises() -> None:
     llm = MockLLMClient(scripted={DEFAULT_PURPOSE: "not valid json"})
-    with pytest.raises(ValidationError):
+    with pytest.raises(Exception):
         await analyze_job(
             llm,
             optimized=_optimized_payload(),

@@ -13,6 +13,14 @@ export interface FunnelStage {
   count: number;
 }
 
+export interface PipelinePeriodKpis {
+  total_applications: number;
+  total_interviews: number;
+  total_offers: number;
+  response_rate: number | null;
+  avg_days_to_response: number | null;
+}
+
 export interface PipelineInsights {
   total_applications: number;
   total_interviews: number;
@@ -21,6 +29,7 @@ export interface PipelineInsights {
   avg_days_to_response: number | null;
   velocity: WeeklyCount[];
   funnel: FunnelStage[];
+  previous: PipelinePeriodKpis | null;
 }
 
 // ── Targets ────��──────────────────────────────────���─────────────────────────
@@ -49,6 +58,7 @@ export interface TargetInsights {
   targets: TargetComparison[];
   score_distribution: ScoreBucket[];
   score_trend: ScoreTrendPoint[];
+  unscored_count: number;
 }
 
 // ── Skills + Cost ─────��─────────────────────────────────────────────────────
@@ -57,6 +67,13 @@ export interface SkillFrequency {
   skill: string;
   matched_count: number;
   missing_count: number;
+}
+
+export interface MissingSkill {
+  skill: string;
+  missing_count: number;
+  avg_job_score: number | null;
+  priority_score: number;
 }
 
 export interface CostBucket {
@@ -73,7 +90,7 @@ export interface PurposeCost {
 
 export interface SkillsCostInsights {
   top_skills: SkillFrequency[];
-  top_missing: string[];
+  top_missing: MissingSkill[];
   cost_over_time: CostBucket[];
   cost_by_purpose: PurposeCost[];
   total_cost: number;

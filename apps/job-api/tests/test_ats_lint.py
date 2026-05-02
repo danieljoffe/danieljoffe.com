@@ -126,38 +126,10 @@ def test_inline_image_triggers_no_inline_images_error() -> None:
     assert any(v.code == "no_inline_images" for v in result.errors)
 
 
-# ---- experience_heading --------------------------------------------------
-
-
-def test_missing_experience_heading_errors() -> None:
-    doc = Document()
-    doc.add_heading("Summary", level=1)
-    doc.add_paragraph("text")
-    result = lint_docx(_doc_to_bytes(doc))
-    assert result.ok is False
-    codes = {v.code for v in result.errors}
-    assert "experience_heading" in codes
-
-
-# ---- standard_headings ---------------------------------------------------
-
-
-def test_non_standard_heading_is_warning_not_error() -> None:
-    doc = _minimum_valid_doc()
-    doc.add_heading("Hobbies", level=1)
-    result = lint_docx(_doc_to_bytes(doc))
-    assert result.ok is True  # warning, not error
-    codes = {v.code for v in result.warnings}
-    assert "standard_headings" in codes
-
-
-def test_standard_headings_all_allowed_yields_no_warning() -> None:
-    doc = Document()
-    for name in ("Summary", "Experience", "Skills", "Education"):
-        doc.add_heading(name, level=1)
-        doc.add_paragraph("body")
-    result = lint_docx(_doc_to_bytes(doc))
-    assert result.warnings == []
+# Heading-related rules were moved to markdown_linter.py — see
+# tests/test_pandoc_smoke.py for their coverage. The docx-byte linter
+# is now strictly the byte-level safety net (tables, images, frames,
+# shapes, page_count).
 
 
 # ---- page_count ----------------------------------------------------------
@@ -194,7 +166,8 @@ def test_large_doc_errors_on_page_count() -> None:
 def test_result_errors_and_warnings_partition_violations() -> None:
     doc = _minimum_valid_doc()
     doc.add_table(rows=1, cols=1)  # error: no_tables
-    doc.add_heading("Hobbies", level=1)  # warning: standard_headings
+    for i in range(85):  # warning: page_count (>80 lines)
+        doc.add_paragraph(f"filler paragraph {i}")
     result = lint_docx(_doc_to_bytes(doc))
     assert len(result.errors) == 1
     assert len(result.warnings) == 1

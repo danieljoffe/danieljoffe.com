@@ -1,32 +1,106 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { ChevronDown, Maximize2 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { cn } from '@/lib/cn';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
-import ResumeEditor from './ResumeEditor';
+import StatusIndicator from './StatusIndicator';
 import {
+  formatStatus,
   JOB_STATUSES,
+  STATUS_DOT_CLASS,
   type JobAnalysis,
   type JobPosting,
+  type JobStatus,
   type StatusLogEntry,
 } from './types';
 
 interface JobDetailPanelProps {
   posting: JobPosting;
   targetId: string | undefined;
+  viewFullHref: string | undefined;
   onDelete: (() => void) | undefined;
   onStatusChange: ((status: string) => void) | undefined;
+  /** Suppress the panel's own Delete action (the page renders one at root). */
+  hideDelete?: boolean;
+}
+
+const SCORE_FACTOR_LABEL: Record<string, string> = {
+  role_titles: 'Role titles',
+  technologies: 'Technologies',
+  domain_skills: 'Domain skills',
+  seniority_signals: 'Seniority signals',
+  negative: 'Penalties',
+};
+
+function formatFactor(key: string): string {
+  return SCORE_FACTOR_LABEL[key] ?? key.replace(/_/g, ' ');
+}
+
+function ScoreBreakdownList({
+  breakdown,
+}: {
+  breakdown: Record<string, number>;
+}) {
+  const entries = Object.entries(breakdown).filter(([, v]) => v !== 0);
+  if (entries.length === 0) {
+    return <Text variant='meta'>No factors contributed to this score</Text>;
+  }
+  const max = Math.max(...entries.map(([, v]) => Math.abs(v)));
+  return (
+    <ul className='flex flex-col gap-2'>
+      {entries.map(([key, value]) => {
+        const pct = max === 0 ? 0 : (Math.abs(value) / max) * 100;
+        const positive = value > 0;
+        const display = Number.isInteger(value)
+          ? value
+          : Number(value.toFixed(1));
+        return (
+          <li key={key} className='flex flex-col gap-1'>
+            <div className='flex items-baseline justify-between gap-3'>
+              <span className='text-sm text-text-primary'>
+                {formatFactor(key)}
+              </span>
+              <span
+                className={cn(
+                  'text-xs font-medium tabular-nums shrink-0',
+                  positive ? 'text-success' : 'text-error'
+                )}
+              >
+                {positive ? '+' : ''}
+                {display}
+              </span>
+            </div>
+            <div className='h-1.5 w-full overflow-hidden rounded-full bg-surface-elevated'>
+              <div
+                className={cn(
+                  'h-full rounded-full',
+                  positive ? 'bg-success' : 'bg-error/70'
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export default function JobDetailPanel({
   posting,
   targetId,
+  viewFullHref,
   onDelete,
   onStatusChange,
+  hideDelete = false,
 }: JobDetailPanelProps) {
   const [status, setStatus] = useState(posting.status);
   const [updating, setUpdating] = useState(false);
@@ -34,7 +108,6 @@ export default function JobDetailPanel({
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
   const [history, setHistory] = useState<StatusLogEntry[]>([]);
   const { toast } = useToast();
 
@@ -134,47 +207,86 @@ export default function JobDetailPanel({
 
   return (
     <div className='border-t border-border bg-surface-tertiary p-4 space-y-4'>
-      {/* Score breakdown */}
-      <div>
-        <Text variant='caption' className='mb-1'>
-          Score Breakdown
-        </Text>
-        {breakdown ? (
-          <div className='flex flex-wrap gap-2'>
-            {Object.entries(breakdown).map(([key, value]) => (
-              <Badge
-                key={key}
-                variant={value > 0 ? 'info' : value < 0 ? 'error' : 'default'}
-                size='sm'
-              >
-                {key}: {value}
-              </Badge>
-            ))}
-          </div>
-        ) : (
-          <Text variant='meta'>No breakdown available</Text>
-        )}
-      </div>
-
-      {/* Status buttons */}
+      {/* Status dropdown + score */}
       <div>
         <Text variant='caption' className='mb-1'>
           Status
         </Text>
-        <div className='flex flex-wrap gap-2'>
-          {JOB_STATUSES.map(s => (
-            <Button
-              key={s}
-              name={`status-${s}`}
-              variant={status === s ? 'primary' : 'outline'}
+        <div className='flex items-center justify-between gap-3'>
+          <Dropdown
+            trigger={
+              <span
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
+                  updating
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-surface-tertiary'
+                )}
+                aria-disabled={updating || undefined}
+              >
+                <span
+                  className={cn(
+                    'inline-block size-2 rounded-full',
+                    STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
+                  )}
+                  aria-hidden
+                />
+                <span className='capitalize'>{formatStatus(status)}</span>
+                <ChevronDown
+                  className='size-4 text-text-tertiary'
+                  aria-hidden
+                />
+              </span>
+            }
+            items={JOB_STATUSES.map<DropdownItem>(s => ({
+              label: formatStatus(s),
+              icon: (
+                <span
+                  className={cn(
+                    'inline-block size-2 rounded-full',
+                    STATUS_DOT_CLASS[s]
+                  )}
+                  aria-hidden
+                />
+              ),
+              disabled: updating || status === s,
+              onClick: () => updateStatus(s),
+            }))}
+          />
+          <span
+            className='inline-flex items-center gap-1.5 shrink-0'
+            aria-label={`Match score ${posting.score}`}
+          >
+            <Text variant='meta' className='text-text-tertiary'>
+              Score
+            </Text>
+            <Badge
+              variant={
+                posting.score >= 70
+                  ? 'success'
+                  : posting.score >= 40
+                    ? 'warning'
+                    : 'error'
+              }
               size='sm'
-              disabled={updating || status === s}
-              onClick={() => updateStatus(s)}
             >
-              {s.replace('_', ' ')}
-            </Button>
-          ))}
+              {posting.score}
+            </Badge>
+          </span>
         </div>
+      </div>
+
+      {/* Score breakdown — auto-rendered on load so users see immediately
+          how the score was assembled. */}
+      <div>
+        <Text variant='caption' className='mb-2'>
+          Score Breakdown
+        </Text>
+        {breakdown ? (
+          <ScoreBreakdownList breakdown={breakdown} />
+        ) : (
+          <Skeleton variant='text' lines={3} />
+        )}
       </div>
 
       {/* Status History */}
@@ -198,9 +310,7 @@ export default function JobDetailPanel({
                   })}
                 </span>
                 <span>&rarr;</span>
-                <Badge variant='default' size='sm'>
-                  {entry.new_status.replace('_', ' ')}
-                </Badge>
+                <StatusIndicator status={entry.new_status} />
                 {entry.note && (
                   <span className='truncate italic'>{entry.note}</span>
                 )}
@@ -215,122 +325,106 @@ export default function JobDetailPanel({
         </div>
       )}
 
-      {/* LLM Analysis */}
-      <div>
-        <Text variant='caption' className='mb-1'>
-          LLM Analysis
-        </Text>
-        {analysis ? (
-          <div className='space-y-2'>
-            <Text variant='body'>{analysis.recommendation}</Text>
-            <div className='flex flex-wrap gap-2'>
-              <Badge
-                variant={
-                  analysis.scorecard.seniority_fit === 'strong'
-                    ? 'success'
-                    : analysis.scorecard.seniority_fit === 'moderate'
-                      ? 'warning'
-                      : 'error'
-                }
-                size='sm'
-              >
-                Seniority: {analysis.scorecard.seniority_fit}
-              </Badge>
-              <Badge
-                variant={
-                  analysis.scorecard.domain_fit === 'strong'
-                    ? 'success'
-                    : analysis.scorecard.domain_fit === 'moderate'
-                      ? 'warning'
-                      : 'error'
-                }
-                size='sm'
-              >
-                Domain: {analysis.scorecard.domain_fit}
-              </Badge>
-            </div>
-            {analysis.scorecard.skills_missing.length > 0 && (
-              <div>
-                <Text variant='meta' className='mb-1'>
-                  Missing skills
-                </Text>
-                <div className='flex flex-wrap gap-1'>
-                  {analysis.scorecard.skills_missing.map(skill => (
-                    <Badge key={skill} variant='error' size='sm'>
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : analyzing ? (
-          <Skeleton variant='text' lines={3} />
-        ) : !targetId ? (
-          <Text variant='meta' className='text-text-tertiary'>
-            Select a target to see analysis for this job.
-          </Text>
-        ) : (
-          <div>
-            {analysisError && (
-              <Text variant='error' className='mb-2'>
-                {analysisError}
-              </Text>
-            )}
-            <Button
-              name='analyze-job'
-              variant='secondary'
-              size='sm'
-              onClick={runAnalysis}
-            >
-              Retry analysis
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Resume lifecycle */}
-      {(status === 'resume_draft' || status === 'resume_ready') && (
+      {/* LLM Analysis — only when a target is selected. The "pick a target"
+          hint lives at the list level so it shows once, not per-row. */}
+      {targetId && (
         <div>
           <Text variant='caption' className='mb-1'>
-            Resume
+            LLM Analysis
           </Text>
-          {status === 'resume_draft' && (
-            <Button
-              name='review-resume'
-              variant='primary'
-              size='sm'
-              onClick={() => setShowEditor(true)}
-            >
-              Review Resume
-            </Button>
-          )}
-          {status === 'resume_ready' && (
-            <div className='flex items-center gap-2'>
-              <Badge variant='success' size='sm'>
-                Approved
-              </Badge>
+          {analysis ? (
+            <div className='space-y-2'>
+              <Text variant='body'>{analysis.recommendation}</Text>
+              <div className='flex flex-wrap gap-2'>
+                <Badge
+                  variant={
+                    analysis.scorecard.seniority_fit === 'strong'
+                      ? 'success'
+                      : analysis.scorecard.seniority_fit === 'moderate'
+                        ? 'warning'
+                        : 'error'
+                  }
+                  size='sm'
+                >
+                  Seniority: {analysis.scorecard.seniority_fit}
+                </Badge>
+                <Badge
+                  variant={
+                    analysis.scorecard.domain_fit === 'strong'
+                      ? 'success'
+                      : analysis.scorecard.domain_fit === 'moderate'
+                        ? 'warning'
+                        : 'error'
+                  }
+                  size='sm'
+                >
+                  Domain: {analysis.scorecard.domain_fit}
+                </Badge>
+              </div>
+              {analysis.scorecard.skills_missing.length > 0 && (
+                <div>
+                  <Text variant='meta' className='mb-1'>
+                    Missing skills
+                  </Text>
+                  <div className='flex flex-wrap gap-1'>
+                    {analysis.scorecard.skills_missing.map(skill => (
+                      <Badge key={skill} variant='error' size='sm'>
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : analyzing ? (
+            <Skeleton variant='text' lines={3} />
+          ) : (
+            <div>
+              {analysisError && (
+                <Text variant='error' className='mb-2'>
+                  {analysisError}
+                </Text>
+              )}
               <Button
-                name='download-approved-resume'
+                name='analyze-job'
                 variant='secondary'
                 size='sm'
-                onClick={() => setShowEditor(true)}
+                onClick={runAnalysis}
               >
-                View / Download
+                Retry analysis
               </Button>
             </div>
           )}
-          <ResumeEditor
-            jobPostingId={posting.id}
-            companyName={posting.company_name}
-            jobTitle={posting.title}
-            isOpen={showEditor}
-            onClose={() => setShowEditor(false)}
-            onApproved={() => {
-              setStatus('resume_ready');
-              onStatusChange?.('resume_ready');
-            }}
-          />
+        </div>
+      )}
+
+      {/* Resume lifecycle */}
+      {(status === 'resume_draft' || status === 'resume_ready') && (
+        <div className='flex flex-col gap-2'>
+          <div className='flex items-center gap-2'>
+            <Text variant='caption'>Resume</Text>
+            <Badge
+              variant={status === 'resume_ready' ? 'success' : 'info'}
+              size='sm'
+            >
+              {status === 'resume_ready' ? 'Approved' : 'Draft'}
+            </Badge>
+          </div>
+          <div>
+            <Button
+              as='link'
+              href={`/fitted/jobs/${posting.id}/resume`}
+              variant={status === 'resume_ready' ? 'secondary' : 'primary'}
+              size='sm'
+              name={
+                status === 'resume_ready'
+                  ? 'view-approved-resume'
+                  : 'review-resume'
+              }
+            >
+              {status === 'resume_ready' ? 'View / Download' : 'Review Resume'}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -344,30 +438,33 @@ export default function JobDetailPanel({
       )}
 
       {/* Actions */}
-      <div className='flex gap-2'>
-        {posting.absolute_url && (
-          <Button
-            as='link'
-            href={posting.absolute_url}
-            target='_blank'
-            rel='noopener noreferrer'
-            variant='secondary'
-            size='sm'
-            name='view-posting-url'
-          >
-            View posting
-          </Button>
-        )}
-        <Button
-          name='delete-posting'
-          variant='error'
-          size='sm'
-          onClick={handleDelete}
-          disabled={deleting}
-        >
-          {deleting ? 'Deleting...' : 'Delete'}
-        </Button>
-      </div>
+      {(viewFullHref || !hideDelete) && (
+        <div className='flex flex-wrap gap-2'>
+          {viewFullHref && (
+            <Button
+              as='link'
+              href={viewFullHref}
+              variant='secondary'
+              size='sm'
+              name='view-full-job'
+            >
+              <Maximize2 className='size-4' aria-hidden />
+              Open full view
+            </Button>
+          )}
+          {!hideDelete && (
+            <Button
+              name='delete-posting'
+              variant='error'
+              size='sm'
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

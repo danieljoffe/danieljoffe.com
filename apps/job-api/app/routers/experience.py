@@ -7,9 +7,13 @@ doc -> chunks, all cost-logged.
 """
 
 import asyncio
+import json
+from collections.abc import AsyncIterator
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import ValidationError
 from supabase import Client
 
 from app.dependencies import (
@@ -32,6 +36,7 @@ from app.models.experience import (
     OptimizedPayload,
     Preferences,
     PreferencesUpsert,
+    ProseConsolidateResponse,
     ProseDoc,
     ProseDocCreate,
     ResumeUploadResponse,
@@ -42,6 +47,7 @@ from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import (
     annotations,
     chunks,
+    consolidate,
     derive,
     gap_tracker,
     optimized,
@@ -52,8 +58,9 @@ from app.services.experience import (
 from app.services.ingest import merge_into_prose, parse_resume
 from app.services.ingest.parse import ParseError
 from app.services.ingest.storage import upload_file
+from app.models.llm import Message
 from app.services.llm import cost_log
-from app.services.llm.client import LLMClient
+from app.services.llm.client import LLMClient, strip_markdown_fence
 
 router = APIRouter(
     prefix="/experience",
@@ -81,6 +88,65 @@ async def create_prose(
     supabase: Client = Depends(get_supabase),
 ) -> ProseDoc:
     return prose.create_version(supabase, user_id=None, content=body.content)
+
+
+@router.post("/prose/consolidate")
+async def consolidate_prose(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> ProseConsolidateResponse:
+    """LLM-dedupe the latest prose doc and persist as a new version.
+
+    Older docs that grew via naive concat-with-divider on each upload often
+    contain multiple near-identical resume copies. This pass merges them.
+    The result is always a new version — the original stays in history.
+    """
+    latest = prose.get_latest(supabase, user_id=None)
+    if latest is None:
+        raise HTTPException(status_code=404, detail="no prose doc to consolidate")
+
+    consolidated, result, fallback_reason = await consolidate.consolidate_prose(
+        llm, content=latest.content
+    )
+    if result is not None:
+        metadata: dict[str, str | int | float | bool] = {
+            "prose_doc_id": latest.id,
+            "prose_version": latest.version,
+            "chars_before": len(latest.content),
+            "chars_after": len(consolidated),
+        }
+        if fallback_reason is not None:
+            metadata["fallback_reason"] = fallback_reason
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose=consolidate.DEFAULT_PURPOSE,
+            result=result,
+            metadata=metadata,
+        )
+
+    no_op = consolidate.is_no_op(before=latest.content, after=consolidated)
+    if no_op and consolidated == latest.content:
+        # Nothing to persist — either too short to consolidate, the LLM
+        # returned the input unchanged, or the safety net rejected the LLM
+        # output. Return the existing version as-is, with fallback_reason
+        # set when the rejection path was taken.
+        return ProseConsolidateResponse(
+            prose=latest,
+            chars_before=len(latest.content),
+            chars_after=len(latest.content),
+            no_op=True,
+            fallback_reason=fallback_reason,
+        )
+
+    new_doc = prose.create_version(supabase, user_id=None, content=consolidated)
+    return ProseConsolidateResponse(
+        prose=new_doc,
+        chars_before=len(latest.content),
+        chars_after=len(consolidated),
+        no_op=no_op,
+        fallback_reason=fallback_reason,
+    )
 
 
 # ---- Resume upload --------------------------------------------------------
@@ -139,13 +205,22 @@ async def upload_resume(
         warnings.append("storage_upload_failed")
         storage_path = ""
 
-    # Merge into prose doc
+    # Merge into prose doc — semantic merge via LLM (#497).
     existing = prose.get_latest(supabase, user_id=None)
-    merged = merge_into_prose(
-        existing.content if existing else None,
-        parsed,
+    merged, merge_result = await merge_into_prose(
+        llm,
+        existing_content=existing.content if existing else None,
+        parsed=parsed,
     )
     prose_doc = prose.create_version(supabase, user_id=None, content=merged)
+    if merge_result is not None:
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose="experience.ingest_merge",
+            result=merge_result,
+            metadata={"prose_doc_id": prose_doc.id, "filename": filename},
+        )
 
     # Track the upload
     upload_row: dict[str, Any] = {
@@ -215,7 +290,7 @@ async def upload_resume(
 
 
 @router.get("/optimized")
-async def get_optimized(
+def get_optimized(
     supabase: Client = Depends(get_supabase),
 ) -> OptimizedDoc | dict[str, None]:
     doc = optimized.get_latest(supabase, user_id=None)
@@ -255,10 +330,23 @@ async def derive_optimized(
 ) -> OptimizedDoc:
     """Read the latest prose doc, derive an OptimizedPayload via LLM,
     persist it as a new optimized version, embed its chunks, and log cost.
+
+    Short-circuits when the latest LLM-sourced optimized doc already points
+    at this prose doc — repeat derives on unchanged prose are a 40s no-op
+    otherwise. User-edited optimized docs (source="user_edit") never
+    short-circuit; the user has explicitly asked to regenerate.
     """
     prose_doc = prose.get_latest(supabase, user_id=None)
     if prose_doc is None:
         raise HTTPException(status_code=404, detail="no prose doc to derive from")
+
+    previous = optimized.get_latest(supabase, user_id=None)
+    if (
+        previous is not None
+        and previous.prose_doc_id == prose_doc.id
+        and previous.source == "llm"
+    ):
+        return previous
 
     payload, result = await derive.derive_from_prose(
         llm,
@@ -274,7 +362,6 @@ async def derive_optimized(
 
     # Carry forward annotations from the previous doc and merge with any
     # the LLM extracted from inline prose comments this round (#499).
-    previous = optimized.get_latest(supabase, user_id=None)
     carried = (
         annotations.validate_annotation_refs(
             previous.payload.annotations, payload
@@ -301,11 +388,141 @@ async def derive_optimized(
     return doc
 
 
+def _sse_event(event: str, data: dict[str, Any]) -> bytes:
+    """Format a Server-Sent Events frame.
+
+    The blank line that follows ``data:`` terminates the event. ``data`` is
+    JSON-encoded as a single line — the SSE spec disallows raw newlines in
+    a single ``data:`` field, and ``json.dumps`` defaults to compact output
+    so we satisfy that automatically.
+    """
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n".encode()
+
+
+@router.post("/derive/stream")
+async def derive_optimized_stream(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+) -> StreamingResponse:
+    """Streaming variant of /derive.
+
+    Emits SSE frames for each LLM text delta so the client can render fields
+    progressively (a 40s wall-clock derive becomes "watch the resume appear"
+    instead of a 40s spinner). Concludes with a single ``done`` event whose
+    payload is the persisted ``OptimizedDoc``. Same skip-when-unchanged
+    short-circuit as /derive — when triggered, the response contains a
+    single ``done`` event with ``cached: true`` and no deltas.
+
+    Errors that occur after the response stream opens are surfaced via an
+    ``error`` SSE event rather than as an HTTP error code, since headers
+    have already been sent. Pre-flight errors (missing prose) still come
+    back as HTTP 404 before any SSE frame is written.
+    """
+    prose_doc = prose.get_latest(supabase, user_id=None)
+    if prose_doc is None:
+        raise HTTPException(status_code=404, detail="no prose doc to derive from")
+
+    previous = optimized.get_latest(supabase, user_id=None)
+
+    async def generate() -> AsyncIterator[bytes]:
+        if (
+            previous is not None
+            and previous.prose_doc_id == prose_doc.id
+            and previous.source == "llm"
+        ):
+            yield _sse_event(
+                "done",
+                {"doc": previous.model_dump(mode="json"), "cached": True},
+            )
+            return
+
+        buffered_text: list[str] = []
+        result = None
+        async for event in llm.stream(
+            model=derive.DEFAULT_MODEL,
+            system=derive.SYSTEM_PROMPT,
+            messages=[Message(role="user", content=prose_doc.content)],
+            purpose=derive.DEFAULT_PURPOSE,
+            max_tokens=derive.DEFAULT_MAX_TOKENS,
+            cache_system=True,
+        ):
+            if event.type == "delta":
+                buffered_text.append(event.text)
+                yield _sse_event("delta", {"text": event.text})
+            else:
+                result = event.result
+
+        if result is None:
+            yield _sse_event(
+                "error", {"detail": "stream ended without a final event"}
+            )
+            return
+
+        try:
+            payload = OptimizedPayload.model_validate_json(
+                strip_markdown_fence(result.content)
+            )
+        except ValidationError as exc:
+            yield _sse_event("error", {"detail": f"invalid payload: {exc}"})
+            return
+
+        cost_log.record(
+            supabase,
+            user_id=None,
+            purpose=derive.DEFAULT_PURPOSE,
+            result=result,
+            metadata={
+                "prose_doc_id": prose_doc.id,
+                "prose_version": prose_doc.version,
+                "streamed": True,
+            },
+        )
+
+        carried = (
+            annotations.validate_annotation_refs(
+                previous.payload.annotations, payload
+            )
+            if previous and previous.payload.annotations
+            else []
+        )
+        merged = annotations.merge_annotations(carried, payload.annotations)
+        payload = payload.model_copy(update={"annotations": merged})
+
+        doc = optimized.create_version(
+            supabase,
+            user_id=None,
+            payload=payload,
+            prose_doc_id=prose_doc.id,
+            source="llm",
+        )
+        await chunks.upsert_for_optimized(
+            supabase,
+            embeddings,
+            doc,
+            user_id=None,
+        )
+
+        yield _sse_event(
+            "done",
+            {"doc": doc.model_dump(mode="json"), "cached": False},
+        )
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",  # disable nginx response buffering
+        },
+    )
+
+
 # ---- Gap health (#498) ----------------------------------------------------
 
 
 @router.get("/gap-health")
-async def get_gap_health(
+def get_gap_health(
     supabase: Client = Depends(get_supabase),
 ) -> GapHealthResult:
     doc = optimized.get_latest(supabase, user_id=None)

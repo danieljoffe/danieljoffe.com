@@ -161,7 +161,7 @@ export default function JobsTable({ filters, refreshKey }: JobsTableProps) {
                   <td className='px-3 py-2'>
                     <StatusBadge status={job.status} />
                   </td>
-                  <td className='px-3 py-2 text-text-tertiary truncate max-w-[150px]'>
+                  <td className='px-3 py-2 text-text-tertiary truncate max-w-37.5'>
                     {job.location ?? '—'}
                   </td>
                 </tr>

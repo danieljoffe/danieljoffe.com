@@ -10,15 +10,14 @@ import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
+import type { UserTargetWithTarget } from '../targets/types';
 import BatchActionBar from './BatchActionBar';
-import JobsFilter from './JobsFilter';
-import JobsListTable from './JobsListTable';
+import JobsListView from './JobsListView';
 import type { JobPosting, JobsFilterState } from './types';
 
 interface TargetTab {
   id: string;
   label: string;
-  is_active: boolean;
 }
 
 const INITIAL_FILTERS: JobsFilterState = {
@@ -37,12 +36,23 @@ const BATCH_POLL_INTERVAL = 3000;
 
 interface JobsListProps {
   targetId: string | undefined;
+  initialStatus?: string;
+  initialMinScore?: string;
 }
 
-export default function JobsList({ targetId }: JobsListProps) {
-  const [filters, setFilters] = useState<JobsFilterState>(
-    targetId ? TARGET_FILTERS : INITIAL_FILTERS
-  );
+export default function JobsList({
+  targetId,
+  initialStatus,
+  initialMinScore,
+}: JobsListProps) {
+  const [filters, setFilters] = useState<JobsFilterState>(() => {
+    const base = targetId ? TARGET_FILTERS : INITIAL_FILTERS;
+    return {
+      ...base,
+      ...(initialStatus ? { status: initialStatus } : {}),
+      ...(initialMinScore ? { minScore: initialMinScore } : {}),
+    };
+  });
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
@@ -62,19 +72,22 @@ export default function JobsList({ targetId }: JobsListProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  // Fetch targets for tab bar
+  // Fetch targets for tab bar — uses the per-user link so tabs reflect
+  // what THIS user has active, not what's globally active across users.
   useEffect(() => {
     async function fetchTargets() {
       try {
-        const res = await fetch('/api/targets');
+        const res = await fetch('/api/targets/mine');
         if (!res.ok) return;
-        const data = (await res.json()) as {
-          targets: TargetTab[];
+        const { targets } = (await res.json()) as {
+          targets: UserTargetWithTarget[];
         };
-        const activeTargets = data.targets.filter(t => t.is_active);
+        const activeTargets: TargetTab[] = targets
+          .filter(t => t.user_target.is_active)
+          .map(t => ({ id: t.target.id, label: t.target.label }));
         setTargets(activeTargets);
         if (targetId && !activeTargets.some(t => t.id === targetId)) {
-          // URL target is not active — redirect to All Jobs
+          // URL target is not active for this user — redirect to All Jobs
           setActiveTargetId(undefined);
           setFilters(INITIAL_FILTERS);
           router.replace('/fitted/jobs', { scroll: false });
@@ -329,11 +342,21 @@ export default function JobsList({ targetId }: JobsListProps) {
     setRefreshKey(k => k + 1);
   }, [selectedIds, toast]);
 
+  // When the action bar is visible it overlaps the bottom of the table /
+  // pagination. Mobile bar is two-row (~5.5rem) + gap, desktop is single-row
+  // (~3.25rem). Reserve enough space at each breakpoint to scroll past it.
+  const bottomPadClass = selectedIds.size > 0 ? 'pb-28 md:pb-20' : '';
+
   return (
-    <div className='flex flex-col gap-6'>
-      <Heading variant='component' as='h1'>
-        Jobs
-      </Heading>
+    <div className={`flex flex-col gap-6 ${bottomPadClass}`}>
+      <div>
+        <Heading variant='hero' as='h1'>
+          Jobs
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Postings matched to your active targets
+        </Text>
+      </div>
 
       {targetsLoading ? (
         <div className='flex gap-1 border-b border-border pb-px'>
@@ -416,14 +439,14 @@ export default function JobsList({ targetId }: JobsListProps) {
             </div>
           )}
 
-          <JobsFilter filters={filters} onChange={setFilters} />
-
-          <JobsListTable
+          <JobsListView
             filters={filters}
+            onFiltersChange={setFilters}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             refreshKey={refreshKey}
             targetId={activeTargetId}
+            analysisTargetId={activeTargetId ?? targets[0]?.id}
             onPostingsLoaded={setVisiblePostings}
           />
 

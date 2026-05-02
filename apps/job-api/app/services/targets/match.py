@@ -7,8 +7,13 @@ other users have already created.
 Matching strategy:
 1. Normalize label (lowercase, trim, collapse whitespace)
 2. Exact match on normalized_label
-3. Fuzzy match via pg_trgm similarity (threshold 0.4)
+3. Fuzzy match via pg_trgm similarity (threshold 0.7)
 4. Exclude targets the user already has
+
+Threshold rationale: 0.7 keeps "sr fe eng" → "Senior Frontend Engineer"
+matches working while preventing specialization collisions like
+"Senior Backend Engineer" → "Senior Frontend Engineer" (~0.59 similarity
+because they share "senior" + "engineer" + suffix).
 """
 
 from __future__ import annotations
@@ -37,7 +42,7 @@ from app.services.targets.suggest import suggest_targets
 logger = logging.getLogger(__name__)
 
 _WHITESPACE_RE = re.compile(r"\s+")
-_SIMILARITY_THRESHOLD = 0.4
+_SIMILARITY_THRESHOLD = 0.7
 
 
 def _normalize_label(label: str) -> str:

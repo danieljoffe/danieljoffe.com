@@ -6,6 +6,7 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
+from app.config import settings
 from app.dependencies import get_supabase, verify_api_key_or_session
 from app.models.user_profile import (
     IdentityFields,
@@ -13,6 +14,23 @@ from app.models.user_profile import (
     NotificationPreferences,
     NotificationPreferencesUpdate,
 )
+
+
+def _email_channel_available() -> bool:
+    """Email alerts require the FastAPI to call back into the Next.js
+    app, which in turn calls Resend. NEXT_APP_URL + JOB_ALERT_SECRET are
+    the prerequisites visible from this process; the Next.js BFF further
+    AND-s this with its own RESEND_API_KEY check before returning.
+    """
+    return bool(settings.next_app_url and settings.job_alert_secret)
+
+
+def _sms_channel_available() -> bool:
+    return bool(
+        settings.twilio_account_sid
+        and settings.twilio_auth_token
+        and settings.twilio_phone_number
+    )
 
 router = APIRouter(
     prefix="/profile",
@@ -65,7 +83,11 @@ async def get_notification_preferences(
     supabase: Client = Depends(get_supabase),
 ) -> NotificationPreferences:
     row = await _get_or_create_profile(supabase)
-    return NotificationPreferences(**row)
+    return NotificationPreferences(
+        **row,
+        email_available=_email_channel_available(),
+        sms_available=_sms_channel_available(),
+    )
 
 
 @router.patch("/notifications")
@@ -73,12 +95,29 @@ async def update_notification_preferences(
     body: NotificationPreferencesUpdate,
     supabase: Client = Depends(get_supabase),
 ) -> NotificationPreferences:
+    if body.job_notifications_enabled is True and not _email_channel_available():
+        raise HTTPException(
+            status_code=400,
+            detail="Email notifications are unavailable: the operator has not "
+            "configured email provider credentials.",
+        )
+    if body.sms_notifications_enabled is True and not _sms_channel_available():
+        raise HTTPException(
+            status_code=400,
+            detail="SMS notifications are unavailable: the operator has not "
+            "configured Twilio credentials.",
+        )
+
     profile = await _get_or_create_profile(supabase)
 
     # Only send non-None fields
     updates = body.model_dump(exclude_none=True)
     if not updates:
-        return NotificationPreferences(**profile)
+        return NotificationPreferences(
+            **profile,
+            email_available=_email_channel_available(),
+            sms_available=_sms_channel_available(),
+        )
 
     # We need the profile id for the update
     id_resp = await asyncio.to_thread(
@@ -100,7 +139,11 @@ async def update_notification_preferences(
 
     # Return updated state
     merged = {**profile, **updates}
-    return NotificationPreferences(**merged)
+    return NotificationPreferences(
+        **merged,
+        email_available=_email_channel_available(),
+        sms_available=_sms_channel_available(),
+    )
 
 
 # ---------------------------------------------------------------------------

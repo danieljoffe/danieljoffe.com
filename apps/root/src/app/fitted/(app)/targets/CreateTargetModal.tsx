@@ -4,111 +4,135 @@ import { useCallback, useState } from 'react';
 import { Modal } from '@danieljoffe.com/shared-ui/Modal';
 import { Input } from '@danieljoffe.com/shared-ui/Input';
 import { Textarea } from '@danieljoffe.com/shared-ui/Textarea';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Tabs, type Tab } from '@danieljoffe.com/shared-ui/Tabs';
 import Button from '@/components/Button';
-import { useToast } from '@/state/Toast/ToastProvider';
+
+export interface ManualSubmission {
+  label: string;
+  description: string | undefined;
+}
+
+export interface UrlSubmission {
+  jd_url: string;
+  label: string | undefined;
+}
+
+type Mode = 'manual' | 'url';
 
 interface CreateTargetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated: () => void;
+  onSubmitManual: (payload: ManualSubmission) => void;
+  onSubmitUrl: (payload: UrlSubmission) => void;
 }
 
 export default function CreateTargetModal({
   isOpen,
   onClose,
-  onCreated,
+  onSubmitManual,
+  onSubmitUrl,
 }: CreateTargetModalProps) {
+  const [mode, setMode] = useState<Mode>('manual');
   const [label, setLabel] = useState('');
-  const [jdText, setJdText] = useState('');
+  const [description, setDescription] = useState('');
+  const [urlLabel, setUrlLabel] = useState('');
   const [jdUrl, setJdUrl] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [deriving, setDeriving] = useState(false);
-  const { toast } = useToast();
 
   const reset = useCallback(() => {
     setLabel('');
-    setJdText('');
+    setDescription('');
+    setUrlLabel('');
     setJdUrl('');
-    setSaving(false);
-    setDeriving(false);
+    setMode('manual');
   }, []);
 
   const handleClose = useCallback(() => {
-    if (saving || deriving) return;
     reset();
     onClose();
-  }, [saving, deriving, reset, onClose]);
+  }, [reset, onClose]);
 
-  const handleSubmit = useCallback(async () => {
-    const trimmedLabel = label.trim();
-    if (!trimmedLabel) return;
-
-    setSaving(true);
-
-    try {
-      // Create the target
-      const createRes = await fetch('/api/targets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: trimmedLabel }),
+  const handleSubmit = useCallback(() => {
+    if (mode === 'manual') {
+      const trimmedLabel = label.trim();
+      if (!trimmedLabel) return;
+      const trimmedDescription = description.trim();
+      onSubmitManual({
+        label: trimmedLabel,
+        description: trimmedDescription || undefined,
       });
-
-      if (!createRes.ok) {
-        const err = await createRes.json().catch(() => null);
-        toast({
-          variant: 'error',
-          title:
-            (err as Record<string, string> | null)?.detail ??
-            'Failed to create target',
-        });
-        setSaving(false);
-        return;
-      }
-
-      const target = (await createRes.json()) as { id: string };
-
-      // If JD text provided, add as reference JD (triggers LLM derivation)
-      const trimmedJd = jdText.trim();
-      if (trimmedJd.length >= 50) {
-        setDeriving(true);
-
-        const jdRes = await fetch(`/api/targets/${target.id}/reference-jds`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jd_text: trimmedJd,
-            ...(jdUrl.trim() ? { jd_url: jdUrl.trim() } : {}),
-          }),
-        });
-
-        if (!jdRes.ok) {
-          toast({
-            variant: 'warning',
-            title:
-              'Target created but profile derivation failed. Add a reference JD later.',
-          });
-        } else {
-          toast({
-            variant: 'success',
-            title: 'Target created with derived profile',
-          });
-        }
-      } else {
-        toast({ variant: 'success', title: 'Target created' });
-      }
-
-      reset();
-      onCreated();
-    } catch {
-      toast({ variant: 'error', title: 'Network error creating target' });
-      setSaving(false);
-      setDeriving(false);
+    } else {
+      const trimmedUrl = jdUrl.trim();
+      if (!trimmedUrl) return;
+      const trimmedLabel = urlLabel.trim();
+      onSubmitUrl({
+        jd_url: trimmedUrl,
+        label: trimmedLabel || undefined,
+      });
     }
-  }, [label, jdText, jdUrl, toast, reset, onCreated]);
+    reset();
+  }, [
+    mode,
+    label,
+    description,
+    urlLabel,
+    jdUrl,
+    onSubmitManual,
+    onSubmitUrl,
+    reset,
+  ]);
 
-  const busy = saving || deriving;
+  const canSubmit =
+    mode === 'manual' ? label.trim().length > 0 : jdUrl.trim().length > 0;
+
+  const tabs: Tab[] = [
+    {
+      id: 'manual',
+      label: 'Manual',
+      content: (
+        <div className='flex flex-col gap-4 pt-4'>
+          <Input
+            label='Title'
+            placeholder='e.g. Senior Frontend Engineer'
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+            maxLength={200}
+          />
+          <Textarea
+            label='Description (optional)'
+            helperText='A short note about this role. The LLM will use it (alongside your experience) to canonicalize the target and derive a scoring profile.'
+            placeholder='Roles I want to optimize for...'
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            rows={4}
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'url',
+      label: 'From URL',
+      content: (
+        <div className='flex flex-col gap-4 pt-4'>
+          <Input
+            label='Job description URL'
+            helperText="We'll fetch the page and derive a scoring profile from the job description."
+            placeholder='https://...'
+            value={jdUrl}
+            onChange={e => setJdUrl(e.target.value)}
+            type='url'
+          />
+          <Input
+            label='Title (optional)'
+            helperText='Leave blank to use the role title from the job posting.'
+            placeholder='e.g. Senior Frontend Engineer'
+            value={urlLabel}
+            onChange={e => setUrlLabel(e.target.value)}
+            maxLength={200}
+          />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <Modal
@@ -116,7 +140,6 @@ export default function CreateTargetModal({
       onClose={handleClose}
       title='New Target'
       size='lg'
-      closeOnBackdropClick={!busy}
       footer={
         <div className='flex justify-end gap-2'>
           <Button
@@ -124,7 +147,6 @@ export default function CreateTargetModal({
             variant='outline'
             size='sm'
             onClick={handleClose}
-            disabled={busy}
           >
             Cancel
           </Button>
@@ -133,58 +155,19 @@ export default function CreateTargetModal({
             variant='primary'
             size='sm'
             onClick={handleSubmit}
-            disabled={busy || !label.trim()}
+            disabled={!canSubmit}
           >
-            {busy ? (
-              <>
-                <Spinner size='sm' />
-                <span>{deriving ? 'Analyzing...' : 'Creating...'}</span>
-              </>
-            ) : (
-              'Create'
-            )}
+            Create Target
           </Button>
         </div>
       }
     >
-      <div className='flex flex-col gap-4'>
-        <Input
-          label='Label'
-          placeholder='e.g. Senior Frontend Engineer'
-          value={label}
-          onChange={e => setLabel(e.target.value)}
-          disabled={busy}
-          maxLength={200}
-        />
-
-        <Textarea
-          label='Job description (optional)'
-          helperText='Paste a job description to automatically derive a scoring profile. Minimum 50 characters.'
-          placeholder='Paste the full job description here...'
-          value={jdText}
-          onChange={e => setJdText(e.target.value)}
-          disabled={busy}
-          rows={8}
-        />
-
-        <Input
-          label='JD source URL (optional)'
-          placeholder='https://...'
-          value={jdUrl}
-          onChange={e => setJdUrl(e.target.value)}
-          disabled={busy}
-          type='url'
-        />
-
-        {deriving && (
-          <div className='flex items-center gap-2 rounded-lg bg-surface-secondary p-3'>
-            <Spinner size='sm' />
-            <Text variant='caption' as='span'>
-              Analyzing job description and building scoring profile...
-            </Text>
-          </div>
-        )}
-      </div>
+      <Tabs
+        tabs={tabs}
+        defaultTab='manual'
+        variant='underline'
+        onChange={id => setMode(id as Mode)}
+      />
     </Modal>
   );
 }

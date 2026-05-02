@@ -6,11 +6,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type {
-  CoverLetterPayload,
-  TailoredResumeRecord,
-  TailorResponse,
-} from './types';
+import type { TailoredResumeRecord, TailorResponse } from './types';
 
 interface CoverLetterSectionProps {
   jobPostingId: string;
@@ -26,25 +22,21 @@ export default function CoverLetterSection({
   const [record, setRecord] = useState<TailoredResumeRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const { toast } = useToast();
 
   const fetchCoverLetter = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/jobs/tailor/cover-letters');
-      if (!res.ok) {
-        setLoading(false);
+      const res = await fetch(
+        `/api/jobs/tailor/by-job/${jobPostingId}/cover-letter`
+      );
+      if (res.status === 404) {
+        setRecord(null);
         return;
       }
-      const data = (await res.json()) as {
-        cover_letters: TailoredResumeRecord[];
-      };
-      // Filter to find cover letters for this specific job posting
-      const match = data.cover_letters.find(
-        cl => cl.job_posting_id === jobPostingId
-      );
-      setRecord(match ?? null);
+      if (!res.ok) return;
+      const data = (await res.json()) as TailoredResumeRecord;
+      setRecord(data);
     } catch {
       // Non-critical — silently fail on initial load
     } finally {
@@ -92,7 +84,6 @@ export default function CoverLetterSection({
 
       const data = (await res.json()) as TailorResponse;
       setRecord(data.record);
-      setExpanded(true);
       toast({ variant: 'success', title: 'Cover letter generated' });
     } catch {
       toast({
@@ -104,142 +95,71 @@ export default function CoverLetterSection({
     }
   }
 
-  async function handleDownload() {
-    if (!record) return;
-    try {
-      const res = await fetch(`/api/jobs/tailor/${record.id}/download`);
-      if (!res.ok) {
-        toast({ variant: 'error', title: 'Download failed' });
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${companyName.replace(/\s+/g, '_')}_cover_letter.docx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      toast({
-        variant: 'error',
-        title: 'Network error downloading cover letter',
-      });
-    }
-  }
-
   if (loading) {
     return (
-      <div>
-        <Text variant='caption' className='mb-1'>
-          Cover Letter
-        </Text>
-        <div className='flex items-center gap-2 py-2'>
-          <Spinner size='sm' />
-          <Text variant='meta'>Loading...</Text>
+      <div className='flex flex-col gap-2'>
+        <div className='flex items-center gap-2'>
+          <Text variant='caption'>Cover Letter</Text>
+          <Badge variant='default' size='sm'>
+            Loading...
+          </Badge>
         </div>
       </div>
     );
   }
 
-  const payload = record ? (record.payload as CoverLetterPayload) : null;
+  const isApproved = record?.approved_at != null;
+  const statusLabel = generating
+    ? 'Generating...'
+    : !record
+      ? 'Not started'
+      : isApproved
+        ? 'Approved'
+        : 'Generated';
+  const statusVariant = generating
+    ? 'info'
+    : !record
+      ? 'default'
+      : isApproved
+        ? 'success'
+        : 'info';
 
   return (
-    <div>
-      <Text variant='caption' className='mb-1'>
-        Cover Letter
-      </Text>
+    <div className='flex flex-col gap-2'>
+      <div className='flex items-center gap-2'>
+        <Text variant='caption'>Cover Letter</Text>
+        <Badge variant={statusVariant} size='sm'>
+          {statusLabel}
+        </Badge>
+      </div>
 
-      {!record && !generating && (
-        <Button
-          name='generate-cover-letter'
-          variant='secondary'
-          size='sm'
-          onClick={handleGenerate}
-        >
-          Generate Cover Letter
-        </Button>
-      )}
-
-      {generating && (
-        <div className='flex items-center gap-2 py-2'>
+      {generating ? (
+        <div className='flex items-center gap-2'>
           <Spinner size='sm' />
           <Text variant='meta'>Generating cover letter...</Text>
         </div>
-      )}
-
-      {record && payload && (
-        <div className='space-y-2'>
-          <div className='flex items-center gap-2'>
-            <Badge variant='success' size='sm'>
-              Generated
-            </Badge>
-            <Button
-              name='toggle-cover-letter'
-              variant='ghost'
-              size='sm'
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? 'Collapse' : 'Expand'}
-            </Button>
-            <Button
-              name='download-cover-letter'
-              variant='secondary'
-              size='sm'
-              onClick={handleDownload}
-            >
-              Download .docx
-            </Button>
-            <Button
-              name='regenerate-cover-letter'
-              variant='outline'
-              size='sm'
-              onClick={handleGenerate}
-              disabled={generating}
-            >
-              Regenerate
-            </Button>
-          </div>
-
-          {/* Generation metadata */}
-          {record.cost_usd > 0 && (
-            <div className='flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-surface-secondary px-3 py-2'>
-              <Text variant='meta' as='span'>
-                Cost: ${record.cost_usd.toFixed(4)}
-              </Text>
-              <Text variant='meta' as='span'>
-                Tokens:{' '}
-                {(record.input_tokens + record.output_tokens).toLocaleString()}
-              </Text>
-              {record.model && (
-                <Text variant='meta' as='span'>
-                  Model: {record.model}
-                </Text>
-              )}
-              <Text variant='meta' as='span'>
-                Latency: {(record.latency_ms / 1000).toFixed(1)}s
-              </Text>
-            </div>
-          )}
-
-          {/* Cover letter content */}
-          {expanded && (
-            <div className='rounded-md border border-border bg-surface p-4 space-y-3 max-h-[40vh] overflow-y-auto'>
-              <Text variant='meta' className='text-text-secondary'>
-                {payload.salutation}
-              </Text>
-              {payload.paragraphs.map((p, i) => (
-                <Text key={i} variant='body'>
-                  {p.text}
-                </Text>
-              ))}
-              <Text variant='meta' className='text-text-secondary'>
-                {payload.closing}
-              </Text>
-              <Text variant='meta' className='text-text-secondary'>
-                {payload.signature}
-              </Text>
-            </div>
-          )}
+      ) : !record ? (
+        <div>
+          <Button
+            name='generate-cover-letter'
+            variant='secondary'
+            size='sm'
+            onClick={handleGenerate}
+          >
+            Generate Cover Letter
+          </Button>
+        </div>
+      ) : (
+        <div>
+          <Button
+            as='link'
+            href={`/fitted/jobs/${jobPostingId}/cover-letter`}
+            variant={isApproved ? 'secondary' : 'primary'}
+            size='sm'
+            name='review-cover-letter'
+          >
+            {isApproved ? 'View / Download' : 'Review Cover Letter'}
+          </Button>
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ GET   /tailor/resumes/by-job/{id}       — most recent resume for a job posting
 POST  /tailor/resumes/export-zip        — bulk .docx download as zip.
 PATCH /tailor/resumes/{id}              — edit a draft resume payload.
 POST  /tailor/resumes/{id}/approve      — approve (lock) a resume.
+POST  /tailor/resumes/{id}/unapprove    — reopen an approved resume for editing.
 GET   /tailor/resumes/{id}              — one record (either type; look up by id).
 GET   /tailor/resumes/{id}/download     — serves the `.docx` bytes.
 
@@ -33,15 +34,22 @@ from app.models.tailor import (
     BulkExportRequest,
     CoverLetterRequest,
     GapGateFailureResponse,
+    ResumeCheckpointRequest,
     ResumeEditRequest,
     TailoredResumeRecord,
     TailorLintFailureResponse,
     TailorRequest,
     TailorResponse,
 )
+from app.services.ats_lint import lint_markdown
 from app.services.ats_lint.linter import lint_docx
 from app.services.batch import create_batch, get_batch, process_batch
-from app.services.docx.renderer import render_docx
+from app.services.docx.pandoc_render import (
+    PandocNotInstalled,
+    PandocRenderError,
+    md_payload_hash,
+    md_to_docx,
+)
 from app.services.experience import gap_tracker, optimized, preferences
 from app.services.llm.client import LLMClient
 from app.services.tailor import (
@@ -138,6 +146,9 @@ async def create_tailored_resume(
                                 job_description=body.job_description,
                                 user_id=None,
                             )
+                            persistence.mark_job_resume_draft(
+                                supabase, body.job_posting_id
+                            )
                             return TailorResponse(
                                 record=cloned,
                                 lint_warnings=[],
@@ -173,6 +184,8 @@ async def create_tailored_resume(
 
     if not isinstance(result, PipelineSuccess):
         raise HTTPException(status_code=500, detail="Unexpected pipeline result")
+    if body.job_posting_id:
+        persistence.mark_job_resume_draft(supabase, body.job_posting_id)
     return TailorResponse(
         record=result.record,
         lint_warnings=result.lint.warnings,
@@ -289,6 +302,18 @@ async def get_resume_by_job(
     return row
 
 
+@router.get("/cover-letters/by-job/{job_posting_id}")
+async def get_cover_letter_by_job(
+    job_posting_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TailoredResumeRecord:
+    """Most recent cover letter for a given job posting."""
+    row = persistence.get_by_job(supabase, job_posting_id, document_type="cover_letter")
+    if row is None:
+        raise HTTPException(status_code=404, detail="no cover letter found for this job posting")
+    return row
+
+
 @router.post("/resumes/export-zip")
 async def export_resumes_zip(
     body: BulkExportRequest,
@@ -342,34 +367,18 @@ async def edit_tailored_resume(
     body: ResumeEditRequest,
     supabase: Client = Depends(get_supabase),
 ) -> TailorResponse:
-    """Edit a draft resume. Rejected if already approved."""
+    """Edit a draft resume's markdown. Rejected if already approved.
+
+    The .docx isn't re-rendered eagerly — saving is cheap and the
+    download endpoint detects a stale hash to re-render lazily.
+    """
     row = persistence.get(supabase, resume_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="tailored resume not found")
-    if row.document_type != "resume":
-        raise HTTPException(status_code=400, detail="only resumes can be edited")
+        raise HTTPException(status_code=404, detail="tailored document not found")
     if row.approved_at is not None:
-        raise HTTPException(status_code=409, detail="resume already approved — cannot edit")
+        raise HTTPException(status_code=409, detail="document already approved — cannot edit")
 
-    current = row.as_resume()
-
-    # Merge non-None fields from the edit request
-    updates: dict[str, Any] = {}
-    if body.summary is not None:
-        updates["summary"] = body.summary
-    if body.skills is not None:
-        updates["skills"] = body.skills
-    if body.experience is not None:
-        updates["experience"] = body.experience
-    if body.education is not None:
-        updates["education"] = body.education
-
-    updated = current.model_copy(update=updates)
-
-    # Re-render and re-lint
-    docx_bytes = render_docx(updated)
-    lint_result = lint_docx(docx_bytes, document_type="resume")
-
+    lint_result = lint_markdown(body.markdown, document_type=row.document_type)
     if lint_result.errors:
         raise HTTPException(
             status_code=422,
@@ -379,19 +388,48 @@ async def edit_tailored_resume(
             },
         )
 
-    # Persist updated payload and re-upload .docx
-    new_payload = updated.model_dump(mode="json")
-    storage_path = persistence.upload_docx(
-        supabase,
-        user_id=row.user_id,
-        resume_id=resume_id,
-        docx_bytes=docx_bytes,
-    )
-    record = persistence.update_payload(
-        supabase, resume_id, new_payload, storage_path=storage_path
-    )
-
+    record = persistence.update_payload_md(supabase, resume_id, body.markdown)
     return TailorResponse(record=record, lint_warnings=lint_result.warnings)
+
+
+@router.post("/resumes/{resume_id}/checkpoint")
+async def checkpoint_tailored_resume(
+    resume_id: str,
+    body: ResumeCheckpointRequest | None = None,
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    """Snapshot a draft resume's current markdown into version history.
+
+    Two callers:
+    - `navigator.sendBeacon` on pagehide, with `markdown` in the body, so
+      a debounced autosave that hasn't yet flushed still lands in
+      history before the page goes away.
+    - Pre-approve / pre-readapt explicit checkpoints, with no body.
+
+    Idempotent via dedup: if the latest snapshot already matches, no
+    new row is written.
+    """
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored document not found")
+    if row.approved_at is not None:
+        # Approved documents are locked — nothing new to snapshot.
+        return {"recorded": False, "reason": "approved"}
+
+    if body and body.markdown:
+        lint_result = lint_markdown(body.markdown, document_type=row.document_type)
+        if lint_result.errors:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "ok": False,
+                    "violations": [v.model_dump() for v in lint_result.violations],
+                },
+            )
+        persistence.update_payload_md(supabase, resume_id, body.markdown)
+
+    recorded = versions.checkpoint(supabase, resume_id)
+    return {"recorded": recorded}
 
 
 @router.post("/resumes/{resume_id}/approve")
@@ -399,12 +437,10 @@ async def approve_tailored_resume(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> TailoredResumeRecord:
-    """Approve (lock) a resume. Idempotent if already approved."""
+    """Approve (lock) a tailored resume or cover letter. Idempotent if already approved."""
     row = persistence.get(supabase, resume_id)
     if row is None:
-        raise HTTPException(status_code=404, detail="tailored resume not found")
-    if row.document_type != "resume":
-        raise HTTPException(status_code=400, detail="only resumes can be approved")
+        raise HTTPException(status_code=404, detail="tailored document not found")
 
     # Idempotent: if already approved, just return it
     if row.approved_at is not None:
@@ -412,10 +448,36 @@ async def approve_tailored_resume(
 
     record = persistence.approve(supabase, resume_id)
 
-    # Advance linked job posting to resume_ready
-    if row.job_posting_id:
+    # Resume approval also advances the linked job posting to resume_ready;
+    # cover letters don't drive job status.
+    if row.document_type == "resume" and row.job_posting_id:
         supabase.table("job_postings").update(
             {"status": "resume_ready"}
+        ).eq("id", row.job_posting_id).execute()
+
+    return record
+
+
+@router.post("/resumes/{resume_id}/unapprove")
+async def unapprove_tailored_resume(
+    resume_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TailoredResumeRecord:
+    """Reopen an approved resume or cover letter for editing. Idempotent if already unlocked."""
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored document not found")
+
+    if row.approved_at is None:
+        return row
+
+    record = persistence.unapprove(supabase, resume_id)
+
+    # Mirror the approve side: resume unlock walks the linked job back to
+    # resume_draft so the lifecycle stays in sync.
+    if row.document_type == "resume" and row.job_posting_id:
+        supabase.table("job_postings").update(
+            {"status": "resume_draft"}
         ).eq("id", row.job_posting_id).execute()
 
     return record
@@ -459,12 +521,68 @@ async def download_tailored_resume(
     row = persistence.get(supabase, resume_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
-    if not row.storage_path:
-        raise HTTPException(status_code=404, detail="no .docx persisted for this resume")
-    try:
-        data = persistence.download_docx(supabase, row.storage_path)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"storage fetch failed: {exc}") from exc
+
+    expected_hash = md_payload_hash(row.payload_md) if row.payload_md else None
+    cache_fresh = (
+        row.storage_path is not None
+        and expected_hash is not None
+        and row.docx_payload_md_hash == expected_hash
+    )
+
+    if not cache_fresh:
+        if not row.payload_md:
+            if not row.storage_path:
+                raise HTTPException(
+                    status_code=404, detail="no .docx persisted for this resume"
+                )
+            # Legacy row with cached docx but no markdown — serve cached bytes.
+            try:
+                data = persistence.download_docx(supabase, row.storage_path)
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=502, detail=f"storage fetch failed: {exc}"
+                ) from exc
+            filename = f"{row.id}.docx"
+            return Response(
+                content=data,
+                media_type=persistence.DOCX_CONTENT_TYPE,
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
+
+        try:
+            data = md_to_docx(row.payload_md)
+        except PandocNotInstalled as exc:
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+        except PandocRenderError as exc:
+            raise HTTPException(
+                status_code=500, detail=f"docx render failed: {exc}"
+            ) from exc
+
+        try:
+            storage_path = persistence.upload_docx(
+                supabase,
+                user_id=row.user_id,
+                resume_id=resume_id,
+                docx_bytes=data,
+            )
+            persistence.mark_docx_rendered(
+                supabase,
+                resume_id,
+                storage_path=storage_path,
+                payload_md_hash=expected_hash or md_payload_hash(row.payload_md),
+            )
+        except Exception:
+            # Fall through and serve the freshly-rendered bytes regardless;
+            # next download will retry the cache write.
+            pass
+    else:
+        try:
+            data = persistence.download_docx(supabase, row.storage_path)  # type: ignore[arg-type]
+        except Exception as exc:
+            raise HTTPException(
+                status_code=502, detail=f"storage fetch failed: {exc}"
+            ) from exc
+
     filename = f"{row.id}.docx"
     return Response(
         content=data,

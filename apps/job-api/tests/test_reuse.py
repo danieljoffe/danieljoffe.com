@@ -37,6 +37,8 @@ def _record(
     id: str = "rec-1",
     jd_snapshot: str = "some jd text",
     job_posting_id: str = "jp-1",
+    payload_md: str | None = None,
+    docx_payload_md_hash: str | None = None,
 ) -> TailoredResumeRecord:
     return TailoredResumeRecord(
         id=id,
@@ -47,6 +49,8 @@ def _record(
         jd_snapshot=jd_snapshot,
         jd_snapshot_hash="fakehash",
         payload={"summary": "test", "contact": {"name": "Test"}, "experience": [], "skills": []},
+        payload_md=payload_md,
+        docx_payload_md_hash=docx_payload_md_hash,
         storage_path="anon/rec-1.docx",
         warnings=[],
         model="claude-sonnet-4-20250514",
@@ -249,6 +253,50 @@ def test_clone_resume_preserves_payload() -> None:
     assert result.input_tokens == 0
     assert result.payload == source.payload
     assert result.storage_path == source.storage_path
+
+
+def test_clone_resume_carries_markdown_and_cache_hash() -> None:
+    """Cloned rows must inherit payload_md + docx_payload_md_hash so the
+    download endpoint serves the cached .docx without re-rendering. If
+    either field is dropped the clone forces a pandoc round-trip on first
+    download (slower) or worse, treats the cached storage_path bytes as
+    valid for a different markdown body.
+    """
+    supabase = MagicMock()
+    md = "# Daniel\n\n## Experience\n\n### Engineer — Acme\n\n- Did things\n"
+    source = _record(
+        id="source-1",
+        payload_md=md,
+        docx_payload_md_hash="hash-source",
+    )
+
+    cloned_row = {
+        **source.model_dump(mode="json"),
+        "id": "clone-1",
+        "job_posting_id": "jp-new",
+        "source_resume_id": "source-1",
+    }
+    supabase.table.return_value.insert.return_value.execute.return_value.data = [cloned_row]
+
+    result = clone_resume_for_job(
+        supabase,
+        source=source,
+        job_posting_id="jp-new",
+        job_description="new jd text",
+        user_id=None,
+    )
+
+    # `insert_row` writes to `tailored_resumes` first and then to the
+    # versions table — find the tailored_resumes call and assert against it.
+    inserts = supabase.table.return_value.insert.call_args_list
+    main_insert = next(
+        call[0][0] for call in inserts if "jd_snapshot" in call[0][0]
+    )
+    assert main_insert["payload_md"] == md
+    assert main_insert["docx_payload_md_hash"] == "hash-source"
+    # And the returned record reflects them.
+    assert result.payload_md == md
+    assert result.docx_payload_md_hash == "hash-source"
 
 
 def test_clone_resume_adds_reuse_warning() -> None:

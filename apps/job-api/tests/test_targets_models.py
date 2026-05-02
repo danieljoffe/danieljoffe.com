@@ -5,7 +5,6 @@ from app.models.targets import (
     DomainProfile,
     JobTarget,
     NegativeProfile,
-    ResumeEmphasis,
     ScoringProfile,
     SeniorityProfile,
     TargetCreate,
@@ -79,16 +78,6 @@ def test_category_profile_empty_keywords():
     c = CategoryProfile()
     assert c.keywords == {}
     assert c.weight == 1.0
-
-
-# ---- ResumeEmphasis --------------------------------------------------------
-
-
-def test_resume_emphasis_defaults():
-    e = ResumeEmphasis()
-    assert e.focus_skills == []
-    assert e.focus_outcomes == []
-    assert e.tone is None
 
 
 # ---- Request models --------------------------------------------------------

@@ -190,6 +190,8 @@ class TestUploadResumeEndpoint:
 
         from app.models.experience import ProseDoc
         from app.routers import experience as exp_router
+        from app.services.ingest.merge import DEFAULT_PURPOSE as MERGE_PURPOSE
+        from app.services.llm.mock import MockLLMClient
 
         docx_bytes = _make_docx_bytes(["New upload content"])
 
@@ -219,24 +221,32 @@ class TestUploadResumeEndpoint:
             "app.services.ingest.storage.upload_file",
             lambda *a, **kw: "anon/upload-2.docx",
         )
+        monkeypatch.setattr(
+            "app.services.llm.cost_log.record", MagicMock(),
+        )
 
+        merged_doc = (
+            "Existing career narrative here.\n"
+            "New upload content"
+        )
+        llm = MockLLMClient(scripted={MERGE_PURPOSE: merged_doc})
         supabase = _mock_supabase()
         file = _make_upload_file(docx_bytes)
         result = await exp_router.upload_resume(
             file=file,
             auto_derive=False,
             supabase=supabase,
-            llm=MagicMock(),
+            llm=llm,
             embeddings=MagicMock(),
         )
 
         assert result.success is True
         assert result.prose_version == 4
-        # Verify merge happened
+        # Verify the merged LLM output was persisted (semantic merge, no divider)
         assert len(created_content) == 1
-        assert "Existing career narrative here." in created_content[0]
-        assert "[Uploaded Resume: resume.docx]" in created_content[0]
-        assert "New upload content" in created_content[0]
+        assert created_content[0] == merged_doc
+        # Verify the merge LLM call was made with the right purpose
+        assert llm.calls and llm.calls[0]["purpose"] == MERGE_PURPOSE
 
     @pytest.mark.asyncio
     async def test_auto_derive_triggers_pipeline(self, monkeypatch: pytest.MonkeyPatch) -> None:

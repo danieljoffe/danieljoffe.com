@@ -9,5 +9,6 @@ set and `models/ats_lint.py` for the result shape.
 """
 
 from app.services.ats_lint.linter import lint_docx
+from app.services.ats_lint.markdown_linter import lint_markdown
 
-__all__ = ["lint_docx"]
+__all__ = ["lint_docx", "lint_markdown"]

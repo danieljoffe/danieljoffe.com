@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function FittedLoginPage() {
-  return <MagicLinkForm />;
+export default async function FittedLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  return <MagicLinkForm next={next} />;
 }

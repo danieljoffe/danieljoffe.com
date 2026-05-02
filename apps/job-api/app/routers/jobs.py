@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import logging
 from datetime import UTC, datetime
@@ -221,15 +222,22 @@ def _list_jobs_for_target(
         return _list_jobs_for_target_two_query(supabase, **kwargs)
 
 
+# Sync `def` so FastAPI runs each request in a threadpool worker. The body
+# makes multiple blocking supabase `.execute()` calls; `async def` would block
+# the event loop and serialize concurrent /jobs reads (verified by 2026-04-30
+# load test — see .claude/docs/cleanup/load-test-findings-2026-04-30.md).
+
+
 @router.get("")
-async def list_jobs(
+def list_jobs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     sort: str = Query("score", pattern="^(score|created_at|company_name|title)$"),
     order: str = Query("desc", pattern="^(asc|desc)$"),
     min_score: int | None = Query(None, ge=0, le=100),
     status: str | None = Query(
-        None, pattern="^(new|saved|applied|rejected|archived|resume_draft)$"
+        None,
+        pattern="^(new|saved|resume_draft|resume_ready|applied|interviewing|offer|rejected|archived)$",
     ),
     company: str | None = Query(None, max_length=200),
     search: str | None = Query(None, max_length=200),
@@ -432,22 +440,36 @@ async def add_manual_job(
         data = cast(dict[str, Any], resp_db.data[0])
         posting_id = data.get("id")
 
-    # Score against all active targets (stages 1+2 inline for manual entry)
+    # Score against all active targets (stages 1+2 inline for manual entry).
+    # Each per-target scoring call is independent and IO-bound (the Supabase
+    # SDK is sync, so we hand each one to the threadpool and gather). For 10
+    # active targets this turns ~10 sequential round-trips into ~1 wall-time.
     if posting_id and title:
         active_targets = get_active_target(supabase)
         parsed = parse_jd(description_html)
-        for active_target in active_targets:
-            try:
-                target_score_and_upsert(
+        results = await asyncio.gather(
+            *[
+                asyncio.to_thread(
+                    target_score_and_upsert,
                     supabase,
                     job_posting_id=posting_id,
                     title=title,
                     description_html=description_html,
-                    target=active_target,
+                    target=t,
                     parsed_jd=parsed,
                 )
-            except Exception:
-                logger.exception("Target scoring failed for manual job %s", posting_id)
+                for t in active_targets
+            ],
+            return_exceptions=True,
+        )
+        for t, result in zip(active_targets, results, strict=True):
+            if isinstance(result, BaseException):
+                logger.error(
+                    "Target scoring failed for manual job %s target %s",
+                    posting_id,
+                    t.id,
+                    exc_info=result,
+                )
         try:
             update_global_score(supabase, posting_id)
         except Exception:
@@ -485,7 +507,12 @@ async def rescore_for_target(
 async def backfill_salary(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
-    """One-off: extract salary from description_html for jobs missing salary_text."""
+    """One-off: extract salary from description_html for jobs missing salary_text.
+
+    Per batch of 500, extract salaries in Python then write all rows in a
+    single `bulk_update_job_salaries` RPC — turns ~N row-by-row UPDATEs
+    into one statement per batch.
+    """
     batch_size = 500
     offset = 0
     updated = 0
@@ -502,16 +529,20 @@ async def backfill_salary(
         if not rows:
             break
 
+        updates: list[dict[str, Any]] = []
         for row in rows:
             html = row.get("description_html") or ""
             if not html:
                 continue
             salary = extract_salary_from_text(strip_html(html))
             if salary:
-                supabase.table("job_postings").update(
-                    {"salary_text": salary}
-                ).eq("id", row["id"]).execute()
-                updated += 1
+                updates.append({"id": row["id"], "salary_text": salary})
+
+        if updates:
+            supabase.rpc(
+                "bulk_update_job_salaries", {"p_updates": updates}
+            ).execute()
+            updated += len(updates)
 
         if len(rows) < batch_size:
             break

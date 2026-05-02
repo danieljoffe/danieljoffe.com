@@ -144,3 +144,32 @@ async def test_complete_json_parses_against_schema() -> None:
     assert parsed.name == "x"
     assert parsed.value == 42
     assert result.cost_usd > 0
+
+
+async def test_complete_tool_use_returns_dict_from_scripted_json() -> None:
+    client = MockLLMClient(scripted={"tool": '{"a": 1, "b": "two"}'})
+    tool_input, result = await client.complete_tool_use(
+        model="claude-haiku-4-5",
+        system="",
+        messages=[Message(role="user", content="x")],
+        tool_name="return_X",
+        tool_description="d",
+        tool_input_schema={"type": "object"},
+        purpose="tool",
+    )
+    assert tool_input == {"a": 1, "b": "two"}
+    assert result.content == '{"a": 1, "b": "two"}'
+
+
+async def test_complete_tool_use_records_tool_name_in_call_log() -> None:
+    client = MockLLMClient(scripted={"tool": "{}"})
+    await client.complete_tool_use(
+        model="claude-haiku-4-5",
+        system="",
+        messages=[Message(role="user", content="x")],
+        tool_name="return_Foo",
+        tool_description="d",
+        tool_input_schema={"type": "object"},
+        purpose="tool",
+    )
+    assert client.calls[0]["tool_name"] == "return_Foo"

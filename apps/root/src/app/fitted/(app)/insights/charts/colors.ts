@@ -1,3 +1,5 @@
+import type { JobStatus } from '../../jobs/types';
+
 /**
  * Chart color tokens.
  *
@@ -26,3 +28,19 @@ export const SERIES_PALETTE = [
   CHART_COLORS.error,
   CHART_COLORS.brandLight,
 ] as const;
+
+/**
+ * Per-status chart fill, mirroring `STATUS_VARIANT` in jobs/types.ts so
+ * funnel/breakdown bars match the colored dots and badges used elsewhere.
+ */
+export const STATUS_CHART_COLOR: Record<JobStatus, string> = {
+  new: CHART_COLORS.muted,
+  saved: CHART_COLORS.info,
+  resume_draft: CHART_COLORS.info,
+  resume_ready: CHART_COLORS.success,
+  applied: CHART_COLORS.success,
+  interviewing: CHART_COLORS.warning,
+  offer: CHART_COLORS.warning,
+  rejected: CHART_COLORS.error,
+  archived: CHART_COLORS.muted,
+};

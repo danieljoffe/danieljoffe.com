@@ -1,15 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FileText,
-  Pencil,
-  RefreshCw,
-  Save,
-  Sparkles,
-  Upload,
-  X,
-} from 'lucide-react';
+import { FileText, Layers, RefreshCw, Sparkles, Upload } from 'lucide-react';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
@@ -24,6 +16,8 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { consumeSse } from '@/lib/consumeSse';
+import { parsePartialJson } from '@/lib/parsePartialJson';
 import { useToast } from '@/state/Toast/ToastProvider';
 import ConversationChatModal from '../../_components/ConversationChatModal';
 import type {
@@ -31,9 +25,13 @@ import type {
   GapHealthResult,
   GapTier,
   OptimizedDoc,
+  OptimizedPayload,
   OptimizedResponse,
+  Outcome,
   ProseDoc,
   ProseResponse,
+  Role,
+  Skill,
 } from './types';
 import {
   GAP_KIND_LABELS,
@@ -74,6 +72,16 @@ function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
   return 'success';
 }
 
+// Mid-stream the parser may produce role/skill/outcome objects that have only
+// some fields populated. Use a permissive shape so the render can guard each
+// field rather than asserting Role/Skill/Outcome exactness on a partial parse.
+type DisplayPayload = {
+  summary: string | null;
+  roles: Partial<Role>[];
+  skills: Partial<Skill>[];
+  outcomes: Partial<Outcome>[];
+};
+
 const ACCEPTED_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -90,10 +98,15 @@ export default function ProfilePage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deriving, setDeriving] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [streamingPayload, setStreamingPayload] =
+    useState<Partial<OptimizedPayload> | null>(null);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [consolidating, setConsolidating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Track the server's known content so autosave only fires on actual edits and
+  // doesn't overwrite mid-typing when fetchData refreshes the prose state.
+  const lastSavedProseRef = useRef<string | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -127,6 +140,60 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Sync the editable draft with the server-known prose, but skip when the
+  // user has unsaved local edits — autosave will catch up on its own debounce.
+  useEffect(() => {
+    if (loading) return;
+    if (
+      lastSavedProseRef.current !== null &&
+      draft !== lastSavedProseRef.current
+    ) {
+      return;
+    }
+    const content = prose?.content ?? '';
+    if (content === lastSavedProseRef.current) return;
+    setDraft(content);
+    lastSavedProseRef.current = content;
+  }, [loading, prose, draft]);
+
+  // Autosave the master document 800ms after the user stops typing.
+  useEffect(() => {
+    if (loading) return;
+    if (lastSavedProseRef.current === null) return;
+    if (saving || deriving) return;
+    if (draft === lastSavedProseRef.current) return;
+    if (!draft.trim()) return;
+
+    const handle = setTimeout(async () => {
+      setSaving(true);
+      try {
+        const res = await fetch('/api/career/experience/prose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: draft }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(
+            (data as Record<string, string> | null)?.detail ??
+              `Save failed (${res.status})`
+          );
+        }
+        lastSavedProseRef.current = draft;
+        toast({ variant: 'success', title: 'Master document saved' });
+        await fetchData();
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title: err instanceof Error ? err.message : 'Failed to save',
+        });
+      } finally {
+        setSaving(false);
+      }
+    }, 800);
+    return () => clearTimeout(handle);
+  }, [draft, loading, saving, deriving, fetchData, toast]);
 
   const handleUpload = useCallback(
     async (file: File) => {
@@ -179,64 +246,89 @@ export default function ProfilePage() {
 
   const handleDerive = useCallback(async () => {
     setDeriving(true);
+    setStreamingPayload(null);
+    let buffered = '';
+    let cached = false;
     try {
-      const res = await fetch('/api/career/experience/derive', {
+      const res = await fetch('/api/career/experience/derive/stream', {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Derive failed');
+
+      let streamError: string | null = null;
+      await consumeSse(res, (event, data) => {
+        if (event === 'delta') {
+          const text = (data as { text?: string }).text ?? '';
+          buffered += text;
+          const parsed = parsePartialJson<Partial<OptimizedPayload>>(buffered);
+          if (parsed) setStreamingPayload(parsed);
+        } else if (event === 'done') {
+          const payload = data as { doc: OptimizedDoc; cached?: boolean };
+          setOptimized(payload.doc);
+          cached = Boolean(payload.cached);
+        } else if (event === 'error') {
+          streamError =
+            (data as { detail?: string }).detail ?? 'derive stream error';
+        }
+      });
+
+      if (streamError) throw new Error(streamError);
+
       toast({
-        variant: 'success',
-        title: 'Profile re-derived from experience',
+        variant: cached ? 'info' : 'success',
+        title: cached
+          ? 'Profile already up to date'
+          : 'Profile re-derived from experience',
       });
       await fetchData();
     } catch {
       toast({ variant: 'error', title: 'Failed to re-derive profile' });
     } finally {
       setDeriving(false);
+      setStreamingPayload(null);
     }
   }, [fetchData, toast]);
 
-  const handleEditStart = useCallback(() => {
-    setDraft(prose?.content ?? '');
-    setEditing(true);
-  }, [prose]);
-
-  const handleEditCancel = useCallback(() => {
-    setEditing(false);
-    setDraft('');
-  }, []);
-
-  const handleSaveProse = useCallback(async () => {
-    if (!draft.trim()) {
-      toast({ variant: 'error', title: 'Document cannot be empty' });
-      return;
-    }
-    setSaving(true);
+  const handleConsolidate = useCallback(async () => {
+    setConsolidating(true);
     try {
-      const res = await fetch('/api/career/experience/prose', {
+      const res = await fetch('/api/career/experience/prose/consolidate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: draft }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         throw new Error(
           (data as Record<string, string> | null)?.detail ??
-            `Save failed (${res.status})`
+            `Consolidate failed (${res.status})`
         );
       }
-      toast({ variant: 'success', title: 'Master document saved' });
-      setEditing(false);
+      const body = (await res.json()) as {
+        no_op: boolean;
+        chars_before: number;
+        chars_after: number;
+      };
+      if (body.no_op) {
+        toast({
+          variant: 'info',
+          title: 'No duplicates found in master document',
+        });
+      } else {
+        const removed = body.chars_before - body.chars_after;
+        toast({
+          variant: 'success',
+          title: `Consolidated — removed ${removed.toLocaleString()} characters of duplicate content`,
+        });
+      }
       await fetchData();
     } catch (err) {
       toast({
         variant: 'error',
-        title: err instanceof Error ? err.message : 'Save failed',
+        title: err instanceof Error ? err.message : 'Consolidate failed',
       });
     } finally {
-      setSaving(false);
+      setConsolidating(false);
     }
-  }, [draft, fetchData, toast]);
+  }, [fetchData, toast]);
 
   const fileInput = (
     <input
@@ -271,7 +363,7 @@ export default function ProfilePage() {
     return (
       <div className='flex flex-col gap-6'>
         <div>
-          <Heading variant='component' as='h1'>
+          <Heading variant='hero' as='h1'>
             Profile
           </Heading>
           <Text variant='body' className='mt-1 text-text-secondary'>
@@ -326,7 +418,17 @@ export default function ProfilePage() {
 
   // -- Main layout ------------------------------------------------------------
 
-  const payload = optimized?.payload;
+  // While streaming, render parsed-so-far fields with empty defaults; this lets
+  // the user see the resume materialize instead of staring at a spinner. Once
+  // the `done` event lands, we swap back to the persisted optimized doc.
+  const payload: DisplayPayload | undefined = streamingPayload
+    ? {
+        summary: streamingPayload.summary ?? null,
+        roles: (streamingPayload.roles ?? []) as Partial<Role>[],
+        skills: (streamingPayload.skills ?? []) as Partial<Skill>[],
+        outcomes: (streamingPayload.outcomes ?? []) as Partial<Outcome>[],
+      }
+    : optimized?.payload;
   const roleGapRefs = new Set(
     gapHealth?.gaps
       .filter(g => g.ref && g.kind.startsWith('role.'))
@@ -335,25 +437,26 @@ export default function ProfilePage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-start justify-between gap-3'>
-        <div>
-          <Heading variant='component' as='h1'>
-            Profile
-          </Heading>
-          <Text variant='body' className='mt-1 text-text-secondary'>
-            Your master experience document and derived skills
-          </Text>
-        </div>
-        <Button
-          name='profile-improve-ai'
-          variant='outline'
-          size='sm'
-          onClick={() => setChatOpen(true)}
-        >
-          <Sparkles className='size-4' aria-hidden />
-          <span>Improve with AI</span>
-        </Button>
+      <div>
+        <Heading variant='hero' as='h1'>
+          Profile
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Your master experience document and derived skills
+        </Text>
       </div>
+
+      {deriving && (
+        <Alert variant='info' aria-live='polite'>
+          <div className='flex items-center gap-2'>
+            <Spinner size='sm' aria-label='Generating' />
+            <span>
+              Generating profile from your master document — fields below update
+              as they stream in. Editing is locked until generation completes.
+            </span>
+          </div>
+        </Alert>
+      )}
 
       {/* Document Health */}
       {gapHealth && (
@@ -362,78 +465,17 @@ export default function ProfilePage() {
             <div className='flex items-center justify-between'>
               <CardTitle>Document Health</CardTitle>
               <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
-                {Math.round(100 - gapHealth.gap_pct)}% complete
+                {Math.round(100 - gapHealth.gap_pct)}%
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className='flex flex-col gap-4'>
+          <CardContent>
             <ProgressBar
               value={Math.round(100 - gapHealth.gap_pct)}
               variant={tierToProgressVariant(gapHealth.tier)}
-              size='lg'
+              size='sm'
               aria-label='Document completeness'
             />
-
-            {gapHealth.tier === 'red' && (
-              <Alert variant='warning'>
-                <div className='flex flex-col items-start gap-2'>
-                  <span>
-                    Critical gaps detected. Generated resumes will be missing
-                    outcomes and metrics until you fill them in.
-                  </span>
-                  <Button
-                    name='profile-open-chat-from-alert'
-                    variant='outline'
-                    size='sm'
-                    onClick={() => setChatOpen(true)}
-                  >
-                    <Sparkles className='size-4' aria-hidden />
-                    <span>Answer questions to fill gaps</span>
-                  </Button>
-                </div>
-              </Alert>
-            )}
-
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button
-                name='profile-upload'
-                variant='outline'
-                size='sm'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Spinner size='sm' aria-label='Uploading' />
-                    <span>Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className='size-4' aria-hidden />
-                    <span>Upload Resume</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                name='profile-derive'
-                variant='outline'
-                size='sm'
-                onClick={handleDerive}
-                disabled={deriving}
-              >
-                {deriving ? (
-                  <>
-                    <Spinner size='sm' aria-label='Re-deriving' />
-                    <span>Re-deriving...</span>
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className='size-4' aria-hidden />
-                    <span>Re-derive</span>
-                  </>
-                )}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -441,139 +483,133 @@ export default function ProfilePage() {
       {/* Master Document */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex items-center justify-between gap-3'>
             <CardTitle>
               <FileText className='mr-2 inline size-5' aria-hidden />
               Master Document
             </CardTitle>
-            {prose && (
-              <Text variant='meta' as='span'>
-                v{prose.version} &middot;{' '}
-                {new Date(prose.created_at).toLocaleDateString()}
-              </Text>
-            )}
+            <div className='flex items-center gap-2'>
+              {saving && (
+                <Text
+                  as='span'
+                  variant='meta'
+                  className='inline-flex items-center gap-1'
+                  aria-live='polite'
+                >
+                  <Spinner size='sm' aria-label='Saving' />
+                  <span>Saving…</span>
+                </Text>
+              )}
+              {prose && (
+                <Text variant='meta' as='span'>
+                  v{prose.version} &middot;{' '}
+                  {new Date(prose.created_at).toLocaleDateString()}
+                </Text>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-3'>
-          {editing ? (
-            <>
-              <textarea
-                value={draft}
-                onChange={e => setDraft(e.target.value)}
-                className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
-                placeholder='Paste or type your master experience document here...'
-              />
-              <div className='flex items-center gap-2'>
-                <Button
-                  name='profile-save-prose'
-                  variant='primary'
-                  size='sm'
-                  onClick={handleSaveProse}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <>
-                      <Spinner size='sm' aria-label='Saving' />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className='size-4' aria-hidden />
-                      <span>Save</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='profile-save-derive'
-                  variant='outline'
-                  size='sm'
-                  onClick={async () => {
-                    await handleSaveProse();
-                    if (draft.trim()) await handleDerive();
-                  }}
-                  disabled={saving || deriving}
-                >
-                  {saving || deriving ? (
-                    <>
-                      <Spinner size='sm' aria-label='Processing' />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className='size-4' aria-hidden />
-                      <span>Save &amp; Re-derive</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  name='profile-cancel-edit'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleEditCancel}
-                  disabled={saving}
-                >
-                  <X className='size-4' aria-hidden />
-                  <span>Cancel</span>
-                </Button>
-              </div>
-            </>
-          ) : prose ? (
-            <>
-              <div className='max-h-[400px] overflow-y-auto rounded-md border border-border bg-surface-secondary p-3'>
-                <pre className='whitespace-pre-wrap font-mono text-sm text-text-primary'>
-                  {prose.content}
-                </pre>
-              </div>
-              <div className='flex items-center gap-2'>
-                <Button
-                  name='profile-edit-prose'
-                  variant='outline'
-                  size='sm'
-                  onClick={handleEditStart}
-                >
-                  <Pencil className='size-4' aria-hidden />
-                  <span>Edit</span>
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className='flex flex-col items-center gap-3 py-6'>
-              <FileText className='size-10 text-text-tertiary' aria-hidden />
-              <Text variant='body' as='p' className='text-center'>
-                No master document yet. Upload a resume or start a conversation
-                to create one.
-              </Text>
-            </div>
-          )}
+          <div className='flex flex-wrap items-center gap-2'>
+            <Button
+              name='profile-upload'
+              variant='outline'
+              size='sm'
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <>
+                  <Spinner size='sm' aria-label='Uploading' />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className='size-4' aria-hidden />
+                  <span>Upload Resume</span>
+                </>
+              )}
+            </Button>
+            <Button
+              name='profile-consolidate-prose'
+              variant='outline'
+              size='sm'
+              onClick={handleConsolidate}
+              disabled={consolidating || !prose}
+              title='Merge duplicate sections from past resume uploads'
+            >
+              {consolidating ? (
+                <>
+                  <Spinner size='sm' aria-label='Consolidating' />
+                  <span>Consolidating...</span>
+                </>
+              ) : (
+                <>
+                  <Layers className='size-4' aria-hidden />
+                  <span>Consolidate</span>
+                </>
+              )}
+            </Button>
+          </div>
+          <textarea
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
+            placeholder='Paste or type your master experience document here...'
+          />
         </CardContent>
       </Card>
 
       {/* Experience */}
       {payload && payload.roles.length > 0 && (
-        <Card>
+        <Card aria-busy={deriving || undefined}>
           <CardHeader>
-            <CardTitle>Experience</CardTitle>
+            <div className='flex items-center justify-between gap-2'>
+              <CardTitle>Experience</CardTitle>
+              <Button
+                name='profile-derive'
+                variant='outline'
+                size='sm'
+                iconOnly
+                aria-label='Re-derive profile from master document'
+                className='rounded-full'
+                onClick={handleDerive}
+                disabled={deriving}
+              >
+                {deriving ? (
+                  <Spinner size='sm' aria-label='Re-deriving' />
+                ) : (
+                  <RefreshCw className='size-4' aria-hidden />
+                )}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className='flex flex-col divide-y divide-border'>
-            {payload.roles.map(role => {
+            {payload.roles.map((role, idx) => {
               const outcomeCount =
                 payload.outcomes.filter(o => o.role_ref === role.id).length +
-                role.outcome_refs.length;
-              const hasGap = roleGapRefs.has(role.id);
+                (role.outcome_refs?.length ?? 0);
+              const hasGap = role.id ? roleGapRefs.has(role.id) : false;
+              const dateRange =
+                role.start !== undefined
+                  ? formatDateRange(role.start, role.end ?? null)
+                  : '';
+              const skills = role.skills ?? [];
 
               return (
                 <div
-                  key={role.id}
+                  key={role.id ?? `role-${idx}`}
                   className='flex flex-col gap-2 py-3 first:pt-0 last:pb-0'
                 >
                   <div className='flex items-start justify-between gap-2'>
                     <div>
                       <Text variant='body' className='font-medium'>
-                        {role.title}
+                        {role.title ?? ''}
                       </Text>
                       <Text variant='caption' className='text-text-secondary'>
-                        {role.company} &middot;{' '}
-                        {formatDateRange(role.start, role.end)}
+                        {role.company ?? ''}
+                        {role.company && dateRange ? ' · ' : ''}
+                        {dateRange}
                       </Text>
                     </div>
                     <div className='flex shrink-0 items-center gap-1.5'>
@@ -595,9 +631,9 @@ export default function ProfilePage() {
                       {role.summary}
                     </Text>
                   )}
-                  {role.skills.length > 0 && (
+                  {skills.length > 0 && (
                     <div className='flex flex-wrap gap-1'>
-                      {role.skills.map(skill => (
+                      {skills.map(skill => (
                         <Badge key={skill} variant='default' size='sm'>
                           {skill}
                         </Badge>
@@ -613,31 +649,34 @@ export default function ProfilePage() {
 
       {/* Skills */}
       {payload && payload.skills.length > 0 && (
-        <Card>
+        <Card aria-busy={deriving || undefined}>
           <CardHeader>
             <CardTitle>Skills</CardTitle>
           </CardHeader>
           <CardContent>
             <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-              {payload.skills.map(skill => (
-                <div
-                  key={skill.name}
-                  className='flex items-center justify-between rounded-md border border-border px-3 py-2'
-                >
-                  <Text variant='body' className='text-sm'>
-                    {skill.name}
-                  </Text>
-                  {skill.evidence_refs.length > 0 ? (
-                    <Badge variant='default' size='sm'>
-                      {skill.evidence_refs.length} evidence
-                    </Badge>
-                  ) : (
-                    <Badge variant='error' size='sm'>
-                      No evidence
-                    </Badge>
-                  )}
-                </div>
-              ))}
+              {payload.skills.map((skill, idx) => {
+                const evidenceCount = skill.evidence_refs?.length ?? 0;
+                return (
+                  <div
+                    key={skill.name ?? `skill-${idx}`}
+                    className='flex items-center justify-between rounded-md border border-border px-3 py-2'
+                  >
+                    <Text variant='body' className='text-sm'>
+                      {skill.name ?? ''}
+                    </Text>
+                    {evidenceCount > 0 ? (
+                      <Badge variant='default' size='sm'>
+                        {evidenceCount} evidence
+                      </Badge>
+                    ) : (
+                      <Badge variant='error' size='sm'>
+                        No evidence
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -645,7 +684,11 @@ export default function ProfilePage() {
 
       {/* Gaps */}
       {gapHealth && gapHealth.gaps.length > 0 && (
-        <GapsList gaps={gapHealth.gaps} />
+        <GapsList
+          gaps={gapHealth.gaps}
+          tier={gapHealth.tier}
+          onOpenChat={() => setChatOpen(true)}
+        />
       )}
 
       {fileInput}
@@ -661,8 +704,30 @@ export default function ProfilePage() {
 
 // -- Sub-components -----------------------------------------------------------
 
-function GapsList({ gaps }: { gaps: Gap[] }) {
+function GapsList({
+  gaps,
+  tier,
+  onOpenChat,
+}: {
+  gaps: Gap[];
+  tier: GapTier;
+  onOpenChat: () => void;
+}) {
   const visible = gaps.slice(0, 10);
+  const count = gaps.length;
+  const cta = (
+    <Button
+      name='profile-answer-questions'
+      variant='outline'
+      size='sm'
+      onClick={onOpenChat}
+    >
+      <Sparkles className='size-4' aria-hidden />
+      <span>
+        Answer {count} {count === 1 ? 'question' : 'questions'} to fill gaps
+      </span>
+    </Button>
+  );
 
   return (
     <Card>
@@ -670,32 +735,47 @@ function GapsList({ gaps }: { gaps: Gap[] }) {
         <div className='flex items-center justify-between'>
           <CardTitle>Gaps to Fill</CardTitle>
           <Badge variant='default' size='sm'>
-            {gaps.length} {gaps.length === 1 ? 'gap' : 'gaps'}
+            {count} {count === 1 ? 'gap' : 'gaps'}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className='flex flex-col divide-y divide-border'>
-        {visible.map((gap, i) => (
-          <div
-            key={`${gap.kind}-${gap.ref}-${i}`}
-            className='flex items-start gap-3 py-2.5 first:pt-0 last:pb-0'
-          >
-            <Badge
-              variant={gapBadgeVariant(gap.kind)}
-              size='sm'
-              className='shrink-0 mt-0.5'
+      <CardContent className='flex flex-col gap-4'>
+        <div className='flex flex-col divide-y divide-border'>
+          {visible.map((gap, i) => (
+            <div
+              key={`${gap.kind}-${gap.ref}-${i}`}
+              className='flex items-start gap-3 py-2.5 first:pt-0 last:pb-0'
             >
-              {GAP_KIND_LABELS[gap.kind] ?? gap.kind}
-            </Badge>
-            <Text variant='caption' className='text-text-secondary'>
-              {gap.context}
+              <Badge
+                variant={gapBadgeVariant(gap.kind)}
+                size='sm'
+                className='shrink-0 mt-0.5'
+              >
+                {GAP_KIND_LABELS[gap.kind] ?? gap.kind}
+              </Badge>
+              <Text variant='caption' className='text-text-secondary'>
+                {gap.context}
+              </Text>
+            </div>
+          ))}
+          {gaps.length > 10 && (
+            <Text variant='caption' className='pt-2 text-text-tertiary'>
+              +{gaps.length - 10} more gaps
             </Text>
-          </div>
-        ))}
-        {gaps.length > 10 && (
-          <Text variant='caption' className='pt-2 text-text-tertiary'>
-            +{gaps.length - 10} more gaps
-          </Text>
+          )}
+        </div>
+        {tier === 'red' ? (
+          <Alert variant='warning'>
+            <div className='flex flex-col items-start gap-2'>
+              <span>
+                Critical gaps detected. Generated resumes will be missing
+                outcomes and metrics until you fill them in.
+              </span>
+              {cta}
+            </div>
+          </Alert>
+        ) : (
+          cta
         )}
       </CardContent>
     </Card>

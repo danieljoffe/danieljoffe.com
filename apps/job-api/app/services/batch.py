@@ -20,7 +20,7 @@ from app.models.experience import OptimizedDoc, PreferencesPayload
 from app.models.tailor import ContactInfo, ResumeType
 from app.models.targets import ScoringProfile
 from app.services.llm.client import LLMClient
-from app.services.tailor import PipelineSuccess, run_tailor_pipeline
+from app.services.tailor import PipelineSuccess, persistence, run_tailor_pipeline
 from app.services.tailor.reuse import (
     clone_resume_for_job,
     extract_profile_keywords,
@@ -170,12 +170,7 @@ async def process_batch(
                     items[i]["reused_from"] = reusable.id
                     completed += 1
 
-                    supabase.table("job_postings").update(
-                        {
-                            "status": "resume_draft",
-                            "updated_at": datetime.now(UTC).isoformat(),
-                        }
-                    ).eq("id", job_posting_id).execute()
+                    persistence.mark_job_resume_draft(supabase, job_posting_id)
 
                     _update_batch(
                         supabase,
@@ -205,13 +200,7 @@ async def process_batch(
                 items[i]["resume_record_id"] = result.record.id
                 completed += 1
 
-                # Advance job status to resume_draft
-                supabase.table("job_postings").update(
-                    {
-                        "status": "resume_draft",
-                        "updated_at": datetime.now(UTC).isoformat(),
-                    }
-                ).eq("id", job_posting_id).execute()
+                persistence.mark_job_resume_draft(supabase, job_posting_id)
             else:
                 # Lint failure
                 violations = [v.message for v in result.lint.violations]

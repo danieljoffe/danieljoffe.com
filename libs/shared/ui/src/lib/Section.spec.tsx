@@ -63,6 +63,29 @@ describe('Section', () => {
     expect(container.firstChild).toHaveClass('bg-surface-elevated');
   });
 
+  it('inset-margins the elevated variant so it floats off the parent edges', () => {
+    const { container } = render(
+      <Section background='elevated'>Content</Section>
+    );
+    expect(container.firstChild).toHaveClass(
+      'max-w-[calc(100%-2rem)]',
+      'mx-auto'
+    );
+  });
+
+  it('applies internal horizontal padding to the elevated variant', () => {
+    const { container } = render(
+      <Section background='elevated'>Content</Section>
+    );
+    expect(container.firstChild).toHaveClass('px-4', 'sm:px-6', 'md:px-8');
+  });
+
+  it('does not inset-margin non-elevated variants', () => {
+    const { container } = render(<Section background='alt'>Content</Section>);
+    expect(container.firstChild).not.toHaveClass('max-w-[calc(100%-2rem)]');
+    expect(container.firstChild).not.toHaveClass('mx-auto');
+  });
+
   // Base styles tests
   it('applies relative positioning by default', () => {
     const { container } = render(<Section>Content</Section>);
@@ -171,8 +194,8 @@ describe('Section', () => {
       'flex',
       'justify-center',
       'overflow-hidden',
-      'w-full'
+      'w-full',
+      'px-4'
     );
-    expect(container.firstChild).not.toHaveClass('px-4');
   });
 });

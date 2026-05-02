@@ -27,8 +27,8 @@ from app.models.tailor import (
     TailoredResume,
     TailoredResumeRecord,
 )
-from app.services.ats_lint import lint_docx
-from app.services.docx.renderer import render_cover_letter_docx, render_docx
+from app.services.ats_lint import lint_docx, lint_markdown
+from app.services.docx.pandoc_render import md_to_docx
 from app.services.experience.annotations import (
     apply_exclusions,
     build_annotations_text,
@@ -37,6 +37,10 @@ from app.services.experience.annotations import (
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.tailor import persistence
+from app.services.tailor.markdown_render import (
+    to_markdown,
+    to_markdown_cover_letter,
+)
 from app.services.tailor.tailor import (
     DEFAULT_COVER_LETTER_PURPOSE,
     DEFAULT_PURPOSE,
@@ -119,7 +123,16 @@ async def run_tailor_pipeline(
         },
     )
 
-    docx_bytes = render_docx(resume)
+    payload_md = to_markdown(resume)
+    md_lint = lint_markdown(payload_md, document_type="resume")
+    if not md_lint.ok:
+        return PipelineLintFailure(
+            lint=md_lint,
+            resume=resume,
+            warnings=trace_warnings,
+            llm_result=llm_result,
+        )
+    docx_bytes = md_to_docx(payload_md)
     lint = lint_docx(docx_bytes)
     if not lint.ok:
         return PipelineLintFailure(
@@ -134,6 +147,7 @@ async def run_tailor_pipeline(
         user_id=user_id,
         job_posting_id=job_posting_id,
         resume=resume,
+        payload_md=payload_md,
         job_description=job_description,
         warnings=trace_warnings,
         llm_result=llm_result,
@@ -243,7 +257,16 @@ async def run_cover_letter_pipeline(
         },
     )
 
-    docx_bytes = render_cover_letter_docx(letter)
+    payload_md = to_markdown_cover_letter(letter)
+    md_lint = lint_markdown(payload_md, document_type="cover_letter")
+    if not md_lint.ok:
+        return CoverLetterPipelineLintFailure(
+            lint=md_lint,
+            letter=letter,
+            warnings=trace_warnings,
+            llm_result=llm_result,
+        )
+    docx_bytes = md_to_docx(payload_md)
     lint = lint_docx(docx_bytes, document_type="cover_letter")
     if not lint.ok:
         return CoverLetterPipelineLintFailure(
@@ -258,6 +281,7 @@ async def run_cover_letter_pipeline(
         user_id=user_id,
         job_posting_id=job_posting_id,
         letter=letter,
+        payload_md=payload_md,
         job_description=job_description,
         warnings=trace_warnings,
         llm_result=llm_result,
