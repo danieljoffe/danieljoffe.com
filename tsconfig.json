@@ -11,6 +11,12 @@
     },
     {
       "path": "./libs/shared/audit"
+    },
+    {
+      "path": "./apps/wyrdfold-e2e"
+    },
+    {
+      "path": "./apps/wyrdfold"
     }
   ],
   "ts-node": {

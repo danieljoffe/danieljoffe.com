@@ -109,7 +109,8 @@
       "inputs": ["production", "^production"]
     },
     "test": {
-      "inputs": ["default", "^production"]
+      "inputs": ["default", "^production"],
+      "dependsOn": ["^build"]
     },
     "lint": {
       "inputs": [
