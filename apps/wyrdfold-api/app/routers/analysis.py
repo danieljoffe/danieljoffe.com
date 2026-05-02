@@ -10,7 +10,7 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_session
+from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_jwt
 from app.models.analysis import JobAnalysisRecord
 from app.services.analysis import persistence
 from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job
@@ -22,7 +22,7 @@ from app.services.targets import crud as targets_crud
 router = APIRouter(
     prefix="/analysis",
     tags=["analysis"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 

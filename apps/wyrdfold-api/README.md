@@ -1,6 +1,6 @@
 # wyrdfold-api
 
-FastAPI service that powers the standalone WyrdFold product. Forked from `apps/job-api` in Phase 3a (see `.claude/docs/wyrdfold-migration/PHASES.md` and `job-api.md`). Phase 3b.1 renamed the API-key env var (`JOB_API_KEY` → `WYRDFOLD_API_KEY`) and wired Sentry. The remaining 3b slices replace the single-user `tools-admin` JWT path with Supabase auth, thread real `user_id` through services + cache keys, and add per-user token-budget guards.
+FastAPI service that powers the standalone WyrdFold product. Forked from `apps/job-api` in Phase 3a (see `.claude/docs/wyrdfold-migration/PHASES.md` and `job-api.md`). Phase 3b.1 wired Sentry and renamed the shared-secret env var to `WYRDFOLD_API_KEY`. Phase 3b.2 swapped the locally-minted admin session JWT for Supabase auth — user requests now present a Supabase Bearer token, while `WYRDFOLD_API_KEY` is reserved for cron / poller / batch callers. The remaining slices thread real `user_id` through services + cache keys (3b.3) and add per-user token-budget guards (3b.4).
 
 ## Local
 
@@ -23,7 +23,7 @@ The service builds from the monorepo root so the uv workspace lockfile is in sco
      - **Watch Paths**: `apps/wyrdfold-api/**` (prevents rebuilds when only the Next.js app changes).
      - **Networking → Target Port**: `8001`. Must match the port the container binds to. A mismatch returns `502 "Application failed to respond"` with `x-railway-fallback: true` even though the container is healthy.
 
-2. **Set environment variables** (Settings → Variables) from `apps/wyrdfold-api/.env.example`. `WYRDFOLD_API_KEY` is the shared secret between the Next.js proxy and this API. Set `SENTRY_DSN` (and optionally `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`) to enable error reporting.
+2. **Set environment variables** (Settings → Variables) from `apps/wyrdfold-api/.env.example`. `SUPABASE_JWT_SECRET` (Supabase Project Settings → API → JWT Settings) verifies user Bearer tokens. `WYRDFOLD_API_KEY` is the cron-only shared secret (poller, batch). Set `SENTRY_DSN` (and optionally `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`) to enable error reporting.
 
 3. **Generate the public domain** (Settings → Networking → Generate Domain). Copy the hostname.
 
@@ -40,4 +40,4 @@ The service builds from the monorepo root so the uv workspace lockfile is in sco
 - The Dockerfile uses `ghcr.io/astral-sh/uv:latest` for deps, then `python:3.11-slim` at runtime.
 - Railway supplies `$PORT` at runtime; the `startCommand` in `railway.toml` binds to it.
 - Healthcheck path is `/health`; Railway marks the deploy live once it returns 200.
-- Still **single-tenant** through Phase 3b.1 (hardcoded `tools-admin` user, same as job-api). Do not deploy publicly until Phase 3b.2/3b.3 land Supabase JWT auth and per-user enforcement.
+- Auth is in place (Supabase JWT for users, API key for cron) but the service layer is **still single-tenant** through Phase 3b.2 — every persistence call still resolves to `SINGLE_USER_ID = "tools-admin"`. Do not deploy publicly until Phase 3b.3 threads real `user_id` through services and cache keys.

@@ -4,7 +4,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.http_client import get_http_client
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
@@ -14,7 +14,7 @@ from app.services.greenhouse import GREENHOUSE_BASE
 router = APIRouter(
     prefix="/sources",
     tags=["sources"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 

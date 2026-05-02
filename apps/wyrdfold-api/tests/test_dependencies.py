@@ -6,13 +6,16 @@ from fastapi import HTTPException, Request
 
 from app.config import Settings
 from app.dependencies import (
+    SINGLE_USER_ID,
     _api_key_matches,
+    get_current_user_id,
     verify_api_key,
-    verify_api_key_or_session,
-    verify_session_jwt,
+    verify_api_key_or_jwt,
+    verify_supabase_jwt,
 )
 
-SECRET = "x" * 32
+JWT_SECRET = "x" * 32
+USER_SUB = "11111111-1111-1111-1111-111111111111"
 
 
 def _make_request(headers: dict[str, str] | None = None) -> Request:
@@ -29,13 +32,18 @@ def _make_request(headers: dict[str, str] | None = None) -> Request:
     return Request(scope)
 
 
-def _settings(api_key: str = "testkey", secret: str = SECRET) -> Settings:
-    return Settings(wyrdfold_api_key=api_key, admin_session_secret=secret)
+def _settings(api_key: str = "testkey", jwt_secret: str = JWT_SECRET) -> Settings:
+    return Settings(wyrdfold_api_key=api_key, supabase_jwt_secret=jwt_secret)
 
 
-def _mint(sub: str = "tools-admin", secret: str = SECRET) -> str:
+def _mint(
+    sub: str = USER_SUB,
+    secret: str = JWT_SECRET,
+    aud: str = "authenticated",
+) -> str:
     payload = {
         "sub": sub,
+        "aud": aud,
         "exp": datetime.now(UTC) + timedelta(hours=1),
     }
     return jwt.encode(payload, secret, algorithm="HS256")
@@ -77,53 +85,106 @@ def test_verify_api_key_returns_on_match():
     assert verify_api_key(key="testkey", s=_settings()) == "testkey"
 
 
-def test_verify_session_jwt_short_secret():
+def test_verify_supabase_jwt_unconfigured():
     req = _make_request({"authorization": f"Bearer {_mint()}"})
     with pytest.raises(HTTPException) as exc:
-        verify_session_jwt(req, s=_settings(secret="short"))
+        verify_supabase_jwt(req, s=_settings(jwt_secret=""))
     assert exc.value.status_code == 503
 
 
-def test_verify_session_jwt_missing_token():
+def test_verify_supabase_jwt_missing_token():
     req = _make_request()
     with pytest.raises(HTTPException) as exc:
-        verify_session_jwt(req, s=_settings())
+        verify_supabase_jwt(req, s=_settings())
     assert exc.value.status_code == 401
 
 
-def test_verify_session_jwt_wrong_key():
+def test_verify_supabase_jwt_wrong_signature():
     bad_token = _mint(secret="y" * 32)
     req = _make_request({"authorization": f"Bearer {bad_token}"})
     with pytest.raises(HTTPException) as exc:
-        verify_session_jwt(req, s=_settings())
+        verify_supabase_jwt(req, s=_settings())
     assert exc.value.status_code == 401
 
 
-def test_verify_session_jwt_wrong_sub():
-    bad_token = _mint(sub="someone-else")
+def test_verify_supabase_jwt_wrong_audience():
+    bad_token = _mint(aud="anon")
     req = _make_request({"authorization": f"Bearer {bad_token}"})
     with pytest.raises(HTTPException) as exc:
-        verify_session_jwt(req, s=_settings())
+        verify_supabase_jwt(req, s=_settings())
     assert exc.value.status_code == 401
 
 
-def test_verify_session_jwt_valid():
+def test_verify_supabase_jwt_expired():
+    payload = {
+        "sub": USER_SUB,
+        "aud": "authenticated",
+        "exp": datetime.now(UTC) - timedelta(hours=1),
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    req = _make_request({"authorization": f"Bearer {token}"})
+    with pytest.raises(HTTPException) as exc:
+        verify_supabase_jwt(req, s=_settings())
+    assert exc.value.status_code == 401
+
+
+def test_verify_supabase_jwt_malformed_bearer():
+    req = _make_request({"authorization": "Token abc.def.ghi"})
+    with pytest.raises(HTTPException) as exc:
+        verify_supabase_jwt(req, s=_settings())
+    assert exc.value.status_code == 401
+
+
+def test_verify_supabase_jwt_valid_returns_sub():
     req = _make_request({"authorization": f"Bearer {_mint()}"})
-    assert verify_session_jwt(req, s=_settings()) == "tools-admin"
+    assert verify_supabase_jwt(req, s=_settings()) == USER_SUB
 
 
-def test_verify_api_key_or_session_accepts_api_key():
+def test_verify_api_key_or_jwt_accepts_api_key():
     req = _make_request()
-    assert verify_api_key_or_session(req, key="testkey", s=_settings()) == "api-key"
+    assert verify_api_key_or_jwt(req, key="testkey", s=_settings()) == "api-key"
 
 
-def test_verify_api_key_or_session_accepts_session():
+def test_verify_api_key_or_jwt_accepts_jwt():
     req = _make_request({"authorization": f"Bearer {_mint()}"})
-    assert verify_api_key_or_session(req, key=None, s=_settings()) == "session"
+    assert verify_api_key_or_jwt(req, key=None, s=_settings()) == "jwt"
 
 
-def test_verify_api_key_or_session_rejects_both_missing():
+def test_verify_api_key_or_jwt_rejects_both_missing():
     req = _make_request()
     with pytest.raises(HTTPException) as exc:
-        verify_api_key_or_session(req, key=None, s=_settings())
+        verify_api_key_or_jwt(req, key=None, s=_settings())
     assert exc.value.status_code == 401
+
+
+def test_verify_api_key_or_jwt_rejects_invalid_jwt():
+    bad_token = _mint(secret="y" * 32)
+    req = _make_request({"authorization": f"Bearer {bad_token}"})
+    with pytest.raises(HTTPException) as exc:
+        verify_api_key_or_jwt(req, key=None, s=_settings())
+    assert exc.value.status_code == 401
+
+
+def test_get_current_user_id_returns_jwt_sub():
+    req = _make_request({"authorization": f"Bearer {_mint()}"})
+    assert get_current_user_id(req, key=None, s=_settings()) == USER_SUB
+
+
+def test_get_current_user_id_returns_sentinel_for_api_key():
+    req = _make_request()
+    assert get_current_user_id(req, key="testkey", s=_settings()) == SINGLE_USER_ID
+
+
+def test_get_current_user_id_rejects_unauthenticated():
+    req = _make_request()
+    with pytest.raises(HTTPException) as exc:
+        get_current_user_id(req, key=None, s=_settings())
+    assert exc.value.status_code == 401
+
+
+def test_get_current_user_id_prefers_jwt_over_api_key():
+    """If both a valid JWT and a valid API key are present, prefer the JWT
+    so the request runs under the user's identity, not the cron sentinel.
+    """
+    req = _make_request({"authorization": f"Bearer {_mint()}"})
+    assert get_current_user_id(req, key="testkey", s=_settings()) == USER_SUB

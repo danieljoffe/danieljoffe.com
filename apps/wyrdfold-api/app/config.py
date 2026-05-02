@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = Field(default="", repr=False)
     wyrdfold_api_key: str = Field(default="", repr=False)
-    admin_session_secret: str = Field(default="", repr=False)
+    # HS256 secret from the Supabase project (Project Settings → API → JWT
+    # Settings). Used to verify Bearer tokens minted by Supabase Auth.
+    supabase_jwt_secret: str = Field(default="", repr=False)
     greenhouse_delay_ms: int = Field(default=200, ge=0, le=10_000)
     score_normalizer: int = 30
     allowed_hosts: str = ""

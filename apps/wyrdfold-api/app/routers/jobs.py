@@ -11,7 +11,7 @@ from postgrest.types import CountMethod
 from supabase import Client
 
 from app.cache import job_list_cache, make_cache_key
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.http_client import get_http_client
 from app.models.schemas import (
     ManualJobRequest,
@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/jobs",
     tags=["jobs"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 _JP_SELECT_COLS = (

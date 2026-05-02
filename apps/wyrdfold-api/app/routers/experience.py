@@ -20,7 +20,7 @@ from app.dependencies import (
     get_embeddings_client,
     get_llm_client,
     get_supabase,
-    verify_api_key_or_session,
+    verify_api_key_or_jwt,
 )
 from app.models.conversation import (
     GapHealthResult,
@@ -65,7 +65,7 @@ from app.services.llm.client import LLMClient, strip_markdown_fence
 router = APIRouter(
     prefix="/experience",
     tags=["experience"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 

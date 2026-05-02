@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
 from app.config import settings
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.models.user_profile import (
     IdentityFields,
     IdentityFieldsUpdate,
@@ -35,7 +35,7 @@ def _sms_channel_available() -> bool:
 router = APIRouter(
     prefix="/profile",
     tags=["profile"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 # Columns we read / allow writing

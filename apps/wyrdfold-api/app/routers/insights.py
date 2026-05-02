@@ -10,14 +10,14 @@ from datetime import UTC, datetime, timedelta
 from fastapi import APIRouter, Depends, Query
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key_or_session
+from app.dependencies import get_supabase, verify_api_key_or_jwt
 from app.models.insights import PipelineInsights, SkillsCostInsights, TargetInsights
 from app.services.insights import compute_pipeline, compute_skills_cost, compute_targets
 
 router = APIRouter(
     prefix="/insights",
     tags=["insights"],
-    dependencies=[Depends(verify_api_key_or_session)],
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
 _PERIOD_DAYS: dict[str, int | None] = {
