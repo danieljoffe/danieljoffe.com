@@ -1,10 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import {
-  verifyJobsAccess,
+  getJobsAccess,
   proxyToFastAPI,
   LLM_TIMEOUT_MS,
 } from '@/app/api/jobs/proxy';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkTailorRateLimit, tooManyRequests } from '@/lib/llmRateLimit';
 
 /** Naive HTML tag stripper — enough for JD text extraction. */
 function stripHtml(html: string): string {
@@ -15,8 +16,14 @@ function stripHtml(html: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await verifyJobsAccess())) {
+  const access = await getJobsAccess();
+  if (!access) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (access.kind === 'user') {
+    const blocked = tooManyRequests(checkTailorRateLimit(access.userId));
+    if (blocked) return blocked;
   }
 
   const body = (await request.json()) as Record<string, unknown>;
