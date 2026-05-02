@@ -460,90 +460,17 @@ export default function ProfilePage() {
             <div className='flex items-center justify-between'>
               <CardTitle>Document Health</CardTitle>
               <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
-                {Math.round(100 - gapHealth.gap_pct)}% complete
+                {Math.round(100 - gapHealth.gap_pct)}%
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className='flex flex-col gap-4'>
+          <CardContent>
             <ProgressBar
               value={Math.round(100 - gapHealth.gap_pct)}
               variant={tierToProgressVariant(gapHealth.tier)}
               size='lg'
               aria-label='Document completeness'
             />
-
-            {gapHealth.gaps.length > 0 &&
-              (() => {
-                const count = gapHealth.gaps.length;
-                const cta = (
-                  <Button
-                    name='profile-answer-questions'
-                    variant='outline'
-                    size='sm'
-                    onClick={() => setChatOpen(true)}
-                  >
-                    <Sparkles className='size-4' aria-hidden />
-                    <span>
-                      Answer {count} {count === 1 ? 'question' : 'questions'} to
-                      fill gaps
-                    </span>
-                  </Button>
-                );
-                return gapHealth.tier === 'red' ? (
-                  <Alert variant='warning'>
-                    <div className='flex flex-col items-start gap-2'>
-                      <span>
-                        Critical gaps detected. Generated resumes will be
-                        missing outcomes and metrics until you fill them in.
-                      </span>
-                      {cta}
-                    </div>
-                  </Alert>
-                ) : (
-                  cta
-                );
-              })()}
-
-            <div className='flex flex-wrap items-center gap-2'>
-              <Button
-                name='profile-upload'
-                variant='outline'
-                size='sm'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Spinner size='sm' aria-label='Uploading' />
-                    <span>Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className='size-4' aria-hidden />
-                    <span>Upload Resume</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                name='profile-derive'
-                variant='outline'
-                size='sm'
-                onClick={handleDerive}
-                disabled={deriving}
-              >
-                {deriving ? (
-                  <>
-                    <Spinner size='sm' aria-label='Re-deriving' />
-                    <span>Re-deriving...</span>
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className='size-4' aria-hidden />
-                    <span>Re-derive</span>
-                  </>
-                )}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -565,6 +492,29 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-3'>
+          {!editing && (
+            <div className='flex flex-wrap items-center gap-2'>
+              <Button
+                name='profile-upload'
+                variant='outline'
+                size='sm'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <Spinner size='sm' aria-label='Uploading' />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className='size-4' aria-hidden />
+                    <span>Upload Resume</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
           {editing ? (
             <>
               <textarea
@@ -704,7 +654,25 @@ export default function ProfilePage() {
       {payload && payload.roles.length > 0 && (
         <Card aria-busy={deriving || undefined}>
           <CardHeader>
-            <CardTitle>Experience</CardTitle>
+            <div className='flex items-center justify-between gap-2'>
+              <CardTitle>Experience</CardTitle>
+              <Button
+                name='profile-derive'
+                variant='outline'
+                size='sm'
+                iconOnly
+                aria-label='Re-derive profile from master document'
+                className='rounded-full'
+                onClick={handleDerive}
+                disabled={deriving}
+              >
+                {deriving ? (
+                  <Spinner size='sm' aria-label='Re-deriving' />
+                ) : (
+                  <RefreshCw className='size-4' aria-hidden />
+                )}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className='flex flex-col divide-y divide-border'>
             {payload.roles.map((role, idx) => {
@@ -806,7 +774,11 @@ export default function ProfilePage() {
 
       {/* Gaps */}
       {gapHealth && gapHealth.gaps.length > 0 && (
-        <GapsList gaps={gapHealth.gaps} />
+        <GapsList
+          gaps={gapHealth.gaps}
+          tier={gapHealth.tier}
+          onOpenChat={() => setChatOpen(true)}
+        />
       )}
 
       {fileInput}
@@ -822,8 +794,30 @@ export default function ProfilePage() {
 
 // -- Sub-components -----------------------------------------------------------
 
-function GapsList({ gaps }: { gaps: Gap[] }) {
+function GapsList({
+  gaps,
+  tier,
+  onOpenChat,
+}: {
+  gaps: Gap[];
+  tier: GapTier;
+  onOpenChat: () => void;
+}) {
   const visible = gaps.slice(0, 10);
+  const count = gaps.length;
+  const cta = (
+    <Button
+      name='profile-answer-questions'
+      variant='outline'
+      size='sm'
+      onClick={onOpenChat}
+    >
+      <Sparkles className='size-4' aria-hidden />
+      <span>
+        Answer {count} {count === 1 ? 'question' : 'questions'} to fill gaps
+      </span>
+    </Button>
+  );
 
   return (
     <Card>
@@ -831,32 +825,47 @@ function GapsList({ gaps }: { gaps: Gap[] }) {
         <div className='flex items-center justify-between'>
           <CardTitle>Gaps to Fill</CardTitle>
           <Badge variant='default' size='sm'>
-            {gaps.length} {gaps.length === 1 ? 'gap' : 'gaps'}
+            {count} {count === 1 ? 'gap' : 'gaps'}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className='flex flex-col divide-y divide-border'>
-        {visible.map((gap, i) => (
-          <div
-            key={`${gap.kind}-${gap.ref}-${i}`}
-            className='flex items-start gap-3 py-2.5 first:pt-0 last:pb-0'
-          >
-            <Badge
-              variant={gapBadgeVariant(gap.kind)}
-              size='sm'
-              className='shrink-0 mt-0.5'
+      <CardContent className='flex flex-col gap-4'>
+        <div className='flex flex-col divide-y divide-border'>
+          {visible.map((gap, i) => (
+            <div
+              key={`${gap.kind}-${gap.ref}-${i}`}
+              className='flex items-start gap-3 py-2.5 first:pt-0 last:pb-0'
             >
-              {GAP_KIND_LABELS[gap.kind] ?? gap.kind}
-            </Badge>
-            <Text variant='caption' className='text-text-secondary'>
-              {gap.context}
+              <Badge
+                variant={gapBadgeVariant(gap.kind)}
+                size='sm'
+                className='shrink-0 mt-0.5'
+              >
+                {GAP_KIND_LABELS[gap.kind] ?? gap.kind}
+              </Badge>
+              <Text variant='caption' className='text-text-secondary'>
+                {gap.context}
+              </Text>
+            </div>
+          ))}
+          {gaps.length > 10 && (
+            <Text variant='caption' className='pt-2 text-text-tertiary'>
+              +{gaps.length - 10} more gaps
             </Text>
-          </div>
-        ))}
-        {gaps.length > 10 && (
-          <Text variant='caption' className='pt-2 text-text-tertiary'>
-            +{gaps.length - 10} more gaps
-          </Text>
+          )}
+        </div>
+        {tier === 'red' ? (
+          <Alert variant='warning'>
+            <div className='flex flex-col items-start gap-2'>
+              <span>
+                Critical gaps detected. Generated resumes will be missing
+                outcomes and metrics until you fill them in.
+              </span>
+              {cta}
+            </div>
+          </Alert>
+        ) : (
+          cta
         )}
       </CardContent>
     </Card>
