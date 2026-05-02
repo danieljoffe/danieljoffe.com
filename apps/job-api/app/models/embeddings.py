@@ -1,7 +1,7 @@
 """Pydantic models for the embeddings layer (#185 P2b).
 
 Embeddings are conceptually different from LLM completions but share
-the same cost-tracking surface (llm_cost_log). The model column there
+the same cost-tracking surface (llm_costs). The model column there
 holds either a Claude ID or a Voyage ID — disambiguated at the call
 site, opaque at the read layer.
 """

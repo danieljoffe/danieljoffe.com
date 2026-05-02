@@ -45,7 +45,7 @@ def test_sources_add_calls_upsert(client_factory):
     )
     assert r.status_code == 200
     assert r.json()["success"] is True
-    sb.table.assert_any_call("job_sources")
+    sb.table.assert_any_call("sources")
     sb.table.return_value.upsert.assert_called_once()
     args, kwargs = sb.table.return_value.upsert.call_args
     assert args[0] == {"board_token": "foo", "company_name": "Foo", "provider": "greenhouse"}

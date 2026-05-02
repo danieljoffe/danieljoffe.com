@@ -1,7 +1,7 @@
 """Batch resume generation service (#503).
 
 Processes multiple job postings sequentially through the existing
-`run_tailor_pipeline`. Progress is tracked in the `batch_jobs` table
+`run_tailor_pipeline`. Progress is tracked in the `batch_runs` table
 so the frontend can poll for status.
 
 #504 adds a reuse check: before generating a fresh resume, check if
@@ -27,7 +27,7 @@ from app.services.tailor.reuse import (
     find_reusable_resume,
 )
 
-TABLE = "batch_jobs"
+TABLE = "batch_runs"
 
 
 # ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ def create_batch(
     user_id: str | None,
     job_posting_ids: list[str],
 ) -> BatchJob:
-    """Insert a new batch_jobs row with all items pending."""
+    """Insert a new batch_runs row with all items pending."""
     items = [
         BatchItem(job_posting_id=jid).model_dump(mode="json")
         for jid in job_posting_ids
@@ -101,7 +101,7 @@ async def process_batch(
     batch_id: str,
     user_id: str | None,
     optimized: OptimizedDoc,
-    job_postings: list[dict[str, Any]],
+    jobs: list[dict[str, Any]],
     contact: ContactInfo,
     preferences: PreferencesPayload | None,
     resume_type: ResumeType,
@@ -130,7 +130,7 @@ async def process_batch(
     scoring_keywords: set[str] | None = None
     if target_id and not force_fresh:
         target_resp = (
-            supabase.table("job_targets")
+            supabase.table("targets")
             .select("scoring_profile")
             .eq("id", target_id)
             .execute()
@@ -144,7 +144,7 @@ async def process_batch(
 
     _update_batch(supabase, batch_id, status="processing")
 
-    for i, posting in enumerate(job_postings):
+    for i, posting in enumerate(jobs):
         job_posting_id = posting["id"]
         description_html = posting.get("description_html", "") or ""
 

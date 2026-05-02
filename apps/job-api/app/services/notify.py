@@ -6,12 +6,12 @@ Email flow:
     poller.py  (FastAPI)  ──POST──▶  /api/email/job-alert  (Next.js)
          │                                       │
          │                                       └─ renders React Email, sends via Resend
-         └─ writes job_notification_sent (dedup, channel='email')
+         └─ writes notifications_sent (dedup, channel='email')
 
 SMS flow:
     poller.py  (FastAPI)  ──Twilio SDK──▶  Twilio API
          │
-         └─ writes job_notification_sent (dedup, channel='sms')
+         └─ writes notifications_sent (dedup, channel='sms')
 
 At-most-once semantics: a dedup row is claimed via upsert-with-
 ignore_duplicates BEFORE the send. If the claim wins, we send; if the
@@ -97,7 +97,7 @@ async def _try_send_one(
     job_id = job["id"]
 
     claim = await asyncio.to_thread(
-        lambda: supabase.table("job_notification_sent")
+        lambda: supabase.table("notifications_sent")
         .upsert(
             {
                 "user_profile_id": profile_id,
@@ -125,7 +125,7 @@ async def _try_send_one(
 
     if resend_id:
         await asyncio.to_thread(
-            lambda: supabase.table("job_notification_sent")
+            lambda: supabase.table("notifications_sent")
             .update({"external_id": resend_id})
             .eq("id", claim_id)
             .execute()
@@ -214,7 +214,7 @@ async def _sms_count_today(supabase: Client, profile_id: str) -> int:
     """Count SMS notifications sent today for a profile."""
     today = datetime.now(UTC).strftime("%Y-%m-%dT00:00:00+00:00")
     resp = await asyncio.to_thread(
-        lambda: supabase.table("job_notification_sent")
+        lambda: supabase.table("notifications_sent")
         .select("id", count="exact")  # type: ignore[arg-type]
         .eq("user_profile_id", profile_id)
         .eq("channel", "sms")
@@ -247,7 +247,7 @@ async def _try_send_sms(
 
     # Claim dedup row
     claim = await asyncio.to_thread(
-        lambda: supabase.table("job_notification_sent")
+        lambda: supabase.table("notifications_sent")
         .upsert(
             {
                 "user_profile_id": profile_id,
@@ -286,7 +286,7 @@ async def _try_send_sms(
 
     if twilio_sid:
         await asyncio.to_thread(
-            lambda: supabase.table("job_notification_sent")
+            lambda: supabase.table("notifications_sent")
             .update({"external_id": twilio_sid})
             .eq("id", claim_id)
             .execute()

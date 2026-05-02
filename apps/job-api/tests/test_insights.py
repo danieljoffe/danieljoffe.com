@@ -57,7 +57,7 @@ class TestComputePipeline:
             {"id": "4", "status": "interviewing", "created_at": _ts(_NOW)},
             {"id": "5", "status": "offer", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_postings": postings})
+        sb = _mock_supabase({"jobs": postings})
         result = compute_pipeline(sb, since=None)
 
         assert result.total_applications == 3  # applied + interviewing + offer
@@ -77,7 +77,7 @@ class TestComputePipeline:
             {"id": "3", "status": "interviewing", "created_at": _ts(_NOW)},
             {"id": "4", "status": "offer", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_postings": postings})
+        sb = _mock_supabase({"jobs": postings})
         result = compute_pipeline(sb, since=None)
 
         # 4 applied-or-beyond, 2 interviewing-or-beyond → 0.5
@@ -99,7 +99,7 @@ class TestComputePipeline:
             },
         ]
         postings = [{"id": "1", "status": "interviewing", "created_at": _ts(_NOW)}]
-        sb = _mock_supabase({"job_postings": postings, "job_status_log": logs})
+        sb = _mock_supabase({"jobs": postings, "status_log": logs})
         result = compute_pipeline(sb, since=None)
 
         assert result.avg_days_to_response == 6.0
@@ -119,7 +119,7 @@ class TestComputePipeline:
             {"job_posting_id": "2", "created_at": _ts(_NOW - timedelta(days=1))},
             {"job_posting_id": "3", "created_at": _ts(_NOW - timedelta(days=8))},
         ]
-        sb = _mock_supabase({"tailored_resumes": resumes})
+        sb = _mock_supabase({"documents": resumes})
         result = compute_pipeline(sb, since=None)
 
         # Should group into weeks — at least 1 or 2 week buckets
@@ -140,7 +140,7 @@ class TestComputePipeline:
             {"id": "1", "status": "applied", "created_at": _ts(_NOW)},
             {"id": "2", "status": "interviewing", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_postings": postings})
+        sb = _mock_supabase({"jobs": postings})
         prior_until = _NOW - timedelta(days=30)
         prior_since = _NOW - timedelta(days=60)
         result = compute_pipeline(
@@ -169,7 +169,7 @@ class TestComputeTargets:
             {"id": "2", "target_id": "t1", "score": 60, "status": "new", "created_at": _ts(_NOW)},
             {"id": "3", "target_id": "t2", "score": 90, "status": "interviewing", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_targets": targets, "job_postings": postings})
+        sb = _mock_supabase({"targets": targets, "jobs": postings})
         result = compute_targets(sb, since=None)
 
         assert len(result.targets) == 2
@@ -192,7 +192,7 @@ class TestComputeTargets:
             {"id": "1", "target_id": "t1", "score": 80, "status": "new", "created_at": _ts(_NOW)},
             {"id": "2", "target_id": "t2", "score": 70, "status": "new", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_targets": targets, "job_postings": postings})
+        sb = _mock_supabase({"targets": targets, "jobs": postings})
         result = compute_targets(sb, since=None)
 
         labels = {t.target_label for t in result.targets}
@@ -206,7 +206,7 @@ class TestComputeTargets:
             {"id": "2", "target_id": None, "score": None, "status": "new", "created_at": _ts(_NOW)},
             {"id": "3", "target_id": None, "score": 5, "status": "new", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_postings": postings})
+        sb = _mock_supabase({"jobs": postings})
         result = compute_targets(sb, since=None)
 
         assert result.unscored_count == 2
@@ -220,7 +220,7 @@ class TestComputeTargets:
             {"id": "2", "target_id": None, "score": 85, "status": "new", "created_at": _ts(_NOW)},
             {"id": "3", "target_id": None, "score": 85, "status": "new", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_postings": postings})
+        sb = _mock_supabase({"jobs": postings})
         result = compute_targets(sb, since=None)
 
         bucket_map = {b.bucket: b.count for b in result.score_distribution}
@@ -242,7 +242,7 @@ class TestComputeTargets:
             {"id": "1", "target_id": None, "score": 60, "status": "new", "created_at": _ts(_NOW)},
             {"id": "2", "target_id": None, "score": 80, "status": "new", "created_at": _ts(_NOW - timedelta(days=8))},
         ]
-        sb = _mock_supabase({"job_postings": postings})
+        sb = _mock_supabase({"jobs": postings})
         result = compute_targets(sb, since=None)
 
         # At least 1 week bucket
@@ -277,7 +277,7 @@ class TestComputeSkillsCost:
                 "created_at": _ts(_NOW),
             },
         ]
-        sb = _mock_supabase({"job_analyses": analyses})
+        sb = _mock_supabase({"analyses": analyses})
         result = compute_skills_cost(sb, since=None)
 
         skill_map = {s.skill: s for s in result.top_skills}
@@ -330,7 +330,7 @@ class TestComputeSkillsCost:
             {"id": "low-1", "llm_score": 30.0, "created_at": _ts(_NOW)},
             {"id": "low-2", "llm_score": 30.0, "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"job_analyses": analyses, "job_postings": postings})
+        sb = _mock_supabase({"analyses": analyses, "jobs": postings})
         result = compute_skills_cost(sb, since=None)
 
         skills = [m.skill for m in result.top_missing]
@@ -359,7 +359,7 @@ class TestComputeSkillsCost:
         ]
         # postings with no llm_score
         postings = [{"id": "p1", "llm_score": None, "created_at": _ts(_NOW)}]
-        sb = _mock_supabase({"job_analyses": analyses, "job_postings": postings})
+        sb = _mock_supabase({"analyses": analyses, "jobs": postings})
         result = compute_skills_cost(sb, since=None)
 
         by_skill = {m.skill: m for m in result.top_missing}
@@ -378,8 +378,8 @@ class TestComputeSkillsCost:
             {"purpose": "tailor", "cost_usd": "0.0080", "created_at": _ts(_NOW)},
         ]
         sb = _mock_supabase({
-            "tailored_resumes": resume_costs,
-            "llm_cost_log": cost_logs,
+            "documents": resume_costs,
+            "llm_costs": cost_logs,
         })
         result = compute_skills_cost(sb, since=None)
 
@@ -395,7 +395,7 @@ class TestComputeSkillsCost:
             {"purpose": "tailor", "cost_usd": "0.02", "created_at": _ts(_NOW)},
             {"purpose": "analysis", "cost_usd": "0.005", "created_at": _ts(_NOW)},
         ]
-        sb = _mock_supabase({"llm_cost_log": cost_logs})
+        sb = _mock_supabase({"llm_costs": cost_logs})
         result = compute_skills_cost(sb, since=None)
 
         purpose_map = {p.purpose: p for p in result.cost_by_purpose}

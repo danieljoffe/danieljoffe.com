@@ -165,7 +165,7 @@ def _count_keyword_occurrences(keyword: str, text_lower: str) -> int:
 # ---- Target-based scoring (#495) -------------------------------------------
 
 # Map dynamic category names to existing ScoreBreakdown fields.
-# Pragmatic for v1: avoids migrating job_postings.score_breakdown.
+# Pragmatic for v1: avoids migrating jobs.score_breakdown.
 _CATEGORY_TO_FIELD: dict[str, str] = {
     "core_skills": "technologies",
     "secondary_skills": "domain_skills",

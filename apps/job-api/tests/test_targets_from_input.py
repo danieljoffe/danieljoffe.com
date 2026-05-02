@@ -30,7 +30,6 @@ from app.services.llm import cost_log
 from app.services.targets import crud, from_input
 from app.services.targets.fit_score import FitScoreResult
 
-
 # ---- Helpers ----------------------------------------------------------------
 
 

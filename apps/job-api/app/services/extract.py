@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from pydantic import BaseModel
 
 from app.services.jsonld import (
-    _extract_job_postings,
+    _extract_jobs,
     _format_salary,
     _get_location,
     _get_str,
@@ -83,7 +83,7 @@ def _company_from_domain(url: str) -> str:
 
 def _extract_from_jsonld(html: str) -> ExtractionResult | None:
     """Tier 1: Extract job metadata from JSON-LD structured data."""
-    postings = _extract_job_postings(html)
+    postings = _extract_jobs(html)
     if not postings:
         return None
 

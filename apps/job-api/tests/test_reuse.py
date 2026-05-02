@@ -148,16 +148,16 @@ def test_find_reusable_resume_no_jobs_in_target() -> None:
 def test_find_reusable_resume_no_resumes() -> None:
     supabase = MagicMock()
 
-    # First call: job_postings query returns IDs
+    # First call: jobs query returns IDs
     jp_mock = MagicMock()
     jp_mock.select.return_value.eq.return_value.execute.return_value.data = [{"id": "jp-1"}]
 
-    # Second call: tailored_resumes query returns empty
+    # Second call: documents query returns empty
     tr_mock = MagicMock()
     tr_chain = tr_mock.select.return_value.in_.return_value.eq.return_value.order.return_value
     tr_chain.limit.return_value.execute.return_value.data = []
 
-    supabase.table.side_effect = lambda name: jp_mock if name == "job_postings" else tr_mock
+    supabase.table.side_effect = lambda name: jp_mock if name == "jobs" else tr_mock
 
     result = find_reusable_resume(
         supabase,
@@ -182,7 +182,7 @@ def test_find_reusable_resume_below_threshold() -> None:
     tr_chain = tr_mock.select.return_value.in_.return_value.eq.return_value.order.return_value
     tr_chain.limit.return_value.execute.return_value.data = [resume_row]
 
-    supabase.table.side_effect = lambda name: jp_mock if name == "job_postings" else tr_mock
+    supabase.table.side_effect = lambda name: jp_mock if name == "jobs" else tr_mock
 
     result = find_reusable_resume(
         supabase,
@@ -207,7 +207,7 @@ def test_find_reusable_resume_above_threshold() -> None:
     tr_chain = tr_mock.select.return_value.in_.return_value.eq.return_value.order.return_value
     tr_chain.limit.return_value.execute.return_value.data = [resume_row]
 
-    supabase.table.side_effect = lambda name: jp_mock if name == "job_postings" else tr_mock
+    supabase.table.side_effect = lambda name: jp_mock if name == "jobs" else tr_mock
 
     kws = {"react", "typescript", "graphql", "node.js"}
     result = find_reusable_resume(
@@ -286,8 +286,8 @@ def test_clone_resume_carries_markdown_and_cache_hash() -> None:
         user_id=None,
     )
 
-    # `insert_row` writes to `tailored_resumes` first and then to the
-    # versions table — find the tailored_resumes call and assert against it.
+    # `insert_row` writes to `documents` first and then to the
+    # versions table — find the documents call and assert against it.
     inserts = supabase.table.return_value.insert.call_args_list
     main_insert = next(
         call[0][0] for call in inserts if "jd_snapshot" in call[0][0]

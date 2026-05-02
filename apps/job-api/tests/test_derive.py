@@ -251,7 +251,7 @@ def _parse_sse(raw: bytes) -> list[tuple[str, dict[str, Any]]]:
 
 
 async def _drain(streaming_response: object) -> bytes:
-    body_iterator = getattr(streaming_response, "body_iterator")
+    body_iterator = streaming_response.body_iterator
     chunks: list[bytes] = []
     async for chunk in body_iterator:
         chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))

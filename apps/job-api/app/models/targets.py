@@ -36,7 +36,7 @@ class NegativeProfile(BaseModel):
 
 
 class ScoringProfile(BaseModel):
-    """Per-target scoring profile. Stored as JSONB in job_targets.scoring_profile."""
+    """Per-target scoring profile. Stored as JSONB in targets.scoring_profile."""
 
     categories: dict[str, CategoryProfile] = Field(default_factory=dict)
     seniority: SeniorityProfile = Field(default_factory=SeniorityProfile)

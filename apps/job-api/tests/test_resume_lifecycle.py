@@ -126,7 +126,7 @@ class TestPersistenceHelpers:
 
         result = update_payload(supabase, "rec-1", {"summary": "Updated"})
         assert result.id == "rec-1"
-        supabase.table.assert_called_with("tailored_resumes")
+        supabase.table.assert_called_with("documents")
 
     def test_update_payload_with_storage_path(self) -> None:
         from app.services.tailor.persistence import update_payload
@@ -212,7 +212,7 @@ class TestPersistenceHelpers:
         supabase = MagicMock()
         mark_job_resume_draft(supabase, "job-42")
 
-        supabase.table.assert_called_with("job_postings")
+        supabase.table.assert_called_with("jobs")
         update_call = supabase.table.return_value.update.call_args
         payload = update_call[0][0]
         assert payload["status"] == "resume_draft"
@@ -228,7 +228,7 @@ class TestPersistenceHelpers:
 
 
 class TestSingleResumeStatusBump:
-    """POST /tailor/resume must advance job_postings.status to 'resume_draft'
+    """POST /tailor/resume must advance jobs.status to 'resume_draft'
     after a successful generation. Without this the JobDetailPanel never
     shows the 'Review Resume' button — the resume exists in the DB but is
     invisible to the user.
@@ -294,7 +294,7 @@ class TestSingleResumeStatusBump:
     @pytest.mark.asyncio
     async def test_no_status_bump_when_job_posting_id_missing(self) -> None:
         """One-off generations without a linked job (e.g. preview from a JD
-        paste) should not touch any job_postings row."""
+        paste) should not touch any jobs row."""
         from app.models.tailor import TailorRequest
         from app.routers import tailor as tailor_router
         from app.services.tailor import PipelineSuccess
@@ -505,7 +505,7 @@ class TestApproveResume:
 
         assert result.approved_at is not None
         # Verify job status was updated to resume_ready
-        supabase.table.assert_any_call("job_postings")
+        supabase.table.assert_any_call("jobs")
 
     @pytest.mark.asyncio
     async def test_approve_idempotent(self) -> None:
@@ -568,9 +568,9 @@ class TestApproveResume:
             )
 
         assert result.approved_at is not None
-        # No job_postings.update — cover letters don't drive job status.
+        # No jobs.update — cover letters don't drive job status.
         for call in supabase.table.call_args_list:
-            assert call.args[0] != "job_postings"
+            assert call.args[0] != "jobs"
 
 
 # ---------------------------------------------------------------------------
@@ -746,8 +746,8 @@ class TestCheckpointEndpoint:
 
     @pytest.mark.asyncio
     async def test_no_body_snapshots_current_state(self) -> None:
-        from app.routers import tailor as tailor_router
         from app.models.tailor import ResumeCheckpointRequest
+        from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
         record = _make_record(payload_md=_GOOD_MD)
@@ -774,8 +774,8 @@ class TestCheckpointEndpoint:
 
     @pytest.mark.asyncio
     async def test_body_with_markdown_saves_then_checkpoints(self) -> None:
-        from app.routers import tailor as tailor_router
         from app.models.tailor import ResumeCheckpointRequest
+        from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
         record = _make_record(payload_md="old md")
@@ -805,8 +805,8 @@ class TestCheckpointEndpoint:
     async def test_body_with_invalid_markdown_returns_422(self) -> None:
         from fastapi import HTTPException
 
-        from app.routers import tailor as tailor_router
         from app.models.tailor import ResumeCheckpointRequest
+        from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
         record = _make_record()
@@ -831,8 +831,8 @@ class TestCheckpointEndpoint:
 
     @pytest.mark.asyncio
     async def test_approved_resume_skips_checkpoint(self) -> None:
-        from app.routers import tailor as tailor_router
         from app.models.tailor import ResumeCheckpointRequest
+        from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
         record = _make_record(approved_at=_NOW)
@@ -856,8 +856,8 @@ class TestCheckpointEndpoint:
     async def test_not_found_returns_404(self) -> None:
         from fastapi import HTTPException
 
-        from app.routers import tailor as tailor_router
         from app.models.tailor import ResumeCheckpointRequest
+        from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
 

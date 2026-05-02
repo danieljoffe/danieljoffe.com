@@ -67,12 +67,12 @@ def find_reusable_resume(
 ) -> TailoredResumeRecord | None:
     """Find an existing resume in the same target similar enough to reuse.
 
-    Queries tailored_resumes for jobs sharing the same target_id.
+    Queries documents for jobs sharing the same target_id.
     Returns the best match above SIMILARITY_THRESHOLD, or None.
     """
     # Get job_posting_ids in this target
     jp_resp = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .select("id")
         .eq("target_id", target_id)
         .execute()
@@ -83,7 +83,7 @@ def find_reusable_resume(
 
     # Get recent resumes for those job postings
     resp = (
-        supabase.table("tailored_resumes")
+        supabase.table("documents")
         .select("*")
         .in_("job_posting_id", jp_ids)
         .eq("document_type", "resume")
@@ -114,7 +114,7 @@ def clone_resume_for_job(
     job_description: str,
     user_id: str | None,
 ) -> TailoredResumeRecord:
-    """Create a new tailored_resumes row that clones an existing resume.
+    """Create a new documents row that clones an existing resume.
 
     Same payload, same storage_path (docx), linked to a different
     job_posting. source_resume_id tracks the lineage. Zero LLM cost.

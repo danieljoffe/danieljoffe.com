@@ -252,7 +252,7 @@ async def _run_llm_scoring_for_row(
     # Fetch the current global score (average of target stage-2 scores)
     try:
         score_resp = await asyncio.to_thread(
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .select("score")
             .eq("id", job_id)
             .single()
@@ -284,7 +284,7 @@ async def _run_llm_scoring_for_row(
             llm_score = scorecard_to_numeric(cached.scorecard)
             blended = blend_scores(current_score, llm_score)
             await asyncio.to_thread(
-                supabase.table("job_postings")
+                supabase.table("jobs")
                 .update(
                     {
                         "score": blended,
@@ -328,9 +328,9 @@ async def _run_llm_scoring_for_row(
         llm_score = scorecard_to_numeric(analysis.scorecard)
         blended = blend_scores(current_score, llm_score)
 
-        # Update the job_postings row with LLM score data
+        # Update the jobs row with LLM score data
         await asyncio.to_thread(
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .update(
                 {
                     "score": blended,
@@ -430,7 +430,7 @@ async def _poll_one_source(
 
         # Upsert new/updated jobs AND fetch existing rows in parallel.
         existing_query = (
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .select("id, external_id")
             .eq("source_id", source_id)
             .not_.in_("status", ["saved", "applied", "archived"])
@@ -438,7 +438,7 @@ async def _poll_one_source(
 
         new_rows: list[dict[str, Any]] = []
         if rows_to_upsert:
-            upsert_query = supabase.table("job_postings").upsert(
+            upsert_query = supabase.table("jobs").upsert(
                 rows_to_upsert, on_conflict="source_id,external_id"
             )
             upsert_resp, existing_resp = await asyncio.gather(
@@ -572,7 +572,7 @@ async def _poll_one_source(
 
         # Archive stale jobs AND update last_polled_at in parallel
         last_polled_query = (
-            supabase.table("job_sources")
+            supabase.table("sources")
             .update(
                 {
                     "last_polled_at": datetime.now(UTC).isoformat(),
@@ -584,7 +584,7 @@ async def _poll_one_source(
 
         if stale_ids:
             archive_query = (
-                supabase.table("job_postings")
+                supabase.table("jobs")
                 .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
                 .in_("id", stale_ids)
             )
@@ -619,7 +619,7 @@ async def _poll_one_source(
 
 
 async def poll_all_sources(supabase: Client) -> PollResult:
-    sources_query = supabase.table("job_sources").select("*").eq("enabled", True)
+    sources_query = supabase.table("sources").select("*").eq("enabled", True)
     sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 
@@ -708,7 +708,7 @@ async def _poll_one_source_for_target(
 
         if rows_to_upsert:
             upsert_resp = await asyncio.to_thread(
-                supabase.table("job_postings")
+                supabase.table("jobs")
                 .upsert(rows_to_upsert, on_conflict="source_id,external_id")
                 .execute
             )
@@ -809,7 +809,7 @@ async def poll_sources_for_target(supabase: Client, target: JobTarget) -> PollRe
             errors=["Target has no search keywords"],
         )
 
-    sources_query = supabase.table("job_sources").select("*").eq("enabled", True)
+    sources_query = supabase.table("sources").select("*").eq("enabled", True)
     sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 

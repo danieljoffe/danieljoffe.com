@@ -121,7 +121,7 @@ ScoringStatus = Literal["stage1", "stage2", "complete"]
 
 
 class JobTargetScore(BaseModel):
-    """DB read shape for job_target_scores rows."""
+    """DB read shape for scores rows."""
 
     id: str
     job_posting_id: str

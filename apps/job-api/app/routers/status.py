@@ -21,7 +21,7 @@ async def get_status_history(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
     result = (
-        supabase.table("job_status_log")
+        supabase.table("status_log")
         .select("id, old_status, new_status, note, created_at")
         .eq("posting_id", posting_id)
         .order("created_at", desc=True)
@@ -38,7 +38,7 @@ async def update_status(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
     current = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .select("status")
         .eq("id", posting_id)
         .single()
@@ -50,7 +50,7 @@ async def update_status(
     row = cast(dict[str, Any], current.data)
     old_status = row["status"]
 
-    supabase.table("job_status_log").insert(
+    supabase.table("status_log").insert(
         {
             "posting_id": posting_id,
             "old_status": old_status,
@@ -59,7 +59,7 @@ async def update_status(
         }
     ).execute()
 
-    supabase.table("job_postings").update(
+    supabase.table("jobs").update(
         {
             "status": body.status,
             "updated_at": datetime.now(UTC).isoformat(),

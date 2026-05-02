@@ -8,6 +8,8 @@ import pytest
 
 from app.services.ingest.merge import (
     DEFAULT_PURPOSE as MERGE_PURPOSE,
+)
+from app.services.ingest.merge import (
     MIN_PRESERVATION_RATIO,
     merge_into_prose,
 )

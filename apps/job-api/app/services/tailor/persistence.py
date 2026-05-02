@@ -1,4 +1,4 @@
-"""Persistence + Supabase Storage for tailored_resumes.
+"""Persistence + Supabase Storage for documents.
 
 The pipeline produces a TailoredResume or TailoredCoverLetter + `.docx`
 bytes + cost metadata. This module handles:
@@ -33,7 +33,7 @@ from app.models.tailor import (
 from app.services.docx.pandoc_render import md_payload_hash
 from app.services.tailor import versions
 
-TABLE = "tailored_resumes"
+TABLE = "documents"
 STORAGE_BUCKET = "tailored-resumes"
 DOCX_CONTENT_TYPE = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -81,7 +81,7 @@ def insert_row(
     resp = supabase.table(TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError("Failed to insert tailored_resumes row")
+        raise RuntimeError("Failed to insert documents row")
     record = TailoredResumeRecord.model_validate(rows[0])
     # F3-H: capture the initial payload as version 1.
     versions.record(
@@ -106,7 +106,7 @@ def persist(
     llm_result: LLMResult,
     storage_path: str | None,
 ) -> TailoredResumeRecord:
-    """Insert one tailored_resumes row for a resume."""
+    """Insert one documents row for a resume."""
     row: dict[str, Any] = {
         "user_id": user_id,
         "job_posting_id": job_posting_id,
@@ -140,7 +140,7 @@ def persist_cover_letter(
     llm_result: LLMResult,
     storage_path: str | None,
 ) -> TailoredResumeRecord:
-    """Insert one tailored_resumes row for a cover letter.
+    """Insert one documents row for a cover letter.
 
     `resume_type` is set to 'generic' since the column is NOT NULL; it's
     ignored on reads when `document_type == 'cover_letter'`.
@@ -202,7 +202,7 @@ def update_payload(
     resp = supabase.table(TABLE).update(updates).eq("id", resume_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
+        raise RuntimeError(f"Failed to update documents row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
 
 
@@ -235,7 +235,7 @@ def update_payload_md(
     resp = supabase.table(TABLE).update(updates).eq("id", resume_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError(f"Failed to update tailored_resumes row {resume_id}")
+        raise RuntimeError(f"Failed to update documents row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
 
 
@@ -268,7 +268,7 @@ def mark_job_resume_draft(supabase: Client, job_posting_id: str) -> None:
     update. We unconditionally set the status because re-generation
     supersedes any prior draft/approval.
     """
-    supabase.table("job_postings").update(
+    supabase.table("jobs").update(
         {
             "status": "resume_draft",
             "updated_at": datetime.now(UTC).isoformat(),
@@ -281,7 +281,7 @@ def approve(supabase: Client, resume_id: str) -> TailoredResumeRecord:
     resp = supabase.table(TABLE).update({"approved_at": "now()"}).eq("id", resume_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError(f"Failed to approve tailored_resumes row {resume_id}")
+        raise RuntimeError(f"Failed to approve documents row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
 
 
@@ -290,7 +290,7 @@ def unapprove(supabase: Client, resume_id: str) -> TailoredResumeRecord:
     resp = supabase.table(TABLE).update({"approved_at": None}).eq("id", resume_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError(f"Failed to unapprove tailored_resumes row {resume_id}")
+        raise RuntimeError(f"Failed to unapprove documents row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
 
 

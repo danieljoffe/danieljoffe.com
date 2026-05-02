@@ -96,7 +96,7 @@ def _make_supabase_mock(
     supabase.table.return_value.select.return_value.eq.return_value.execute.return_value.data = (
         select_data or []
     )
-    # For bulk_score_for_target: range query on job_postings
+    # For bulk_score_for_target: range query on jobs
     supabase.table.return_value.select.return_value.range.return_value.execute.return_value.data = (
         select_data or []
     )
@@ -124,7 +124,7 @@ def test_score_and_upsert_calls_upsert_with_correct_shape() -> None:
     assert result.job_posting_id == "job-1"
     assert result.target_id == "target-1"
     # Verify upsert was called on the right table
-    supabase.table.assert_any_call("job_target_scores")
+    supabase.table.assert_any_call("scores")
 
 
 def test_score_and_upsert_raises_on_empty_response() -> None:
@@ -241,7 +241,7 @@ def test_get_target_scores_returns_empty_dict_when_no_scores() -> None:
 def test_list_jobs_without_target_returns_global_view(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Global view queries job_postings directly with global scores."""
+    """Global view queries jobs directly with global scores."""
     from fastapi.testclient import TestClient
 
     from app.dependencies import get_supabase, verify_api_key_or_session
@@ -326,7 +326,7 @@ def test_list_jobs_with_target_overlays_target_score(
 
     supabase = MagicMock()
     supabase.table.side_effect = (
-        lambda name: ts_mock if name == "job_target_scores" else jp_mock
+        lambda name: ts_mock if name == "scores" else jp_mock
     )
 
     app.dependency_overrides[get_supabase] = lambda: supabase

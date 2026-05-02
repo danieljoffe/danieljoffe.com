@@ -42,6 +42,7 @@ from app.models.experience import (
     ResumeUploadResponse,
     TurnAppend,
 )
+from app.models.llm import Message
 from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import (
@@ -58,7 +59,6 @@ from app.services.experience import (
 from app.services.ingest import merge_into_prose, parse_resume
 from app.services.ingest.parse import ParseError
 from app.services.ingest.storage import upload_file
-from app.models.llm import Message
 from app.services.llm import cost_log
 from app.services.llm.client import LLMClient, strip_markdown_fence
 
@@ -235,7 +235,7 @@ async def upload_resume(
         "file_size_bytes": len(file_bytes),
         "warnings": warnings,
     }
-    supabase.table("resume_uploads").insert(upload_row).execute()
+    supabase.table("uploaded_resumes").insert(upload_row).execute()
 
     # Optional: auto-derive
     optimized_doc_id: str | None = None

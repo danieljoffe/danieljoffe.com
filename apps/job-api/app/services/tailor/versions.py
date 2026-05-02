@@ -1,6 +1,6 @@
 """Resume payload version history (F3-H).
 
-Every `update_payload()` writes a snapshot row into `tailored_resume_versions`
+Every `update_payload()` writes a snapshot row into `document_versions`
 before mutating the live payload. We cap free-tier history at 5 most recent
 versions — older snapshots get pruned. The cap is enforced in Python rather
 than via a Postgres trigger so it's easy to test, easy to lift per user, and
@@ -15,7 +15,7 @@ from typing import Any, Literal, cast
 from pydantic import BaseModel
 from supabase import Client
 
-VERSIONS_TABLE = "tailored_resume_versions"
+VERSIONS_TABLE = "document_versions"
 
 VersionSource = Literal["initial", "user_edit", "llm_adapt"]
 
@@ -71,7 +71,7 @@ def checkpoint(supabase: Client, resume_id: str) -> bool:
     minutes of typing.
     """
     resume_resp = (
-        supabase.table("tailored_resumes")
+        supabase.table("documents")
         .select("payload, payload_md")
         .eq("id", resume_id)
         .single()

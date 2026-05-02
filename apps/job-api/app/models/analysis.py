@@ -2,7 +2,7 @@
 
 The LLM grades the user's OptimizedPayload against a job description,
 producing a structured scorecard and one-line recommendation. Results
-are cached in the `job_analyses` table.
+are cached in the `analyses` table.
 """
 
 from datetime import datetime
@@ -36,7 +36,7 @@ class JobAnalysis(BaseModel):
 
 
 class JobAnalysisRecord(BaseModel):
-    """DB read shape for job_analyses rows."""
+    """DB read shape for analyses rows."""
 
     id: str
     job_posting_id: str

@@ -60,7 +60,7 @@ LLMStreamEvent = LLMStreamDelta | LLMStreamFinal
 
 
 class LLMCallRecord(BaseModel):
-    """Read shape for llm_cost_log rows.
+    """Read shape for llm_costs rows.
 
     Covers both LLM completions and embedding calls. The `model` column
     holds either a Claude ID (ModelId) or a Voyage ID (EmbeddingModelId);

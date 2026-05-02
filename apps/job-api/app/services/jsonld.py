@@ -34,7 +34,7 @@ class _JsonLdExtractor(HTMLParser):
             self.blocks.append(self._buf)
 
 
-def _extract_job_postings(html: str) -> list[dict[str, object]]:
+def _extract_jobs(html: str) -> list[dict[str, object]]:
     """Parse HTML for JSON-LD blocks and return all JobPosting objects."""
     parser = _JsonLdExtractor()
     parser.feed(html)
@@ -151,7 +151,7 @@ async def fetch_jsonld_jobs(careers_url: str) -> list[StandardJob]:
     except httpx.HTTPError:
         return []
 
-    postings = _extract_job_postings(resp.text)
+    postings = _extract_jobs(resp.text)
 
     jobs: list[StandardJob] = []
     for posting in postings:

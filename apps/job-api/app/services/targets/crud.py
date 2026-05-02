@@ -20,9 +20,9 @@ from app.models.targets import (
     UserTargetWithTarget,
 )
 
-TARGETS_TABLE = "job_targets"
+TARGETS_TABLE = "targets"
 USER_TARGETS_TABLE = "user_targets"
-REF_JDS_TABLE = "target_reference_jds"
+REF_JDS_TABLE = "reference_jds"
 
 
 def _parse_target(row: dict[str, Any]) -> JobTarget:
@@ -84,7 +84,7 @@ def create(supabase: Client, payload: TargetCreate) -> JobTarget:
     resp = supabase.table(TARGETS_TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError("Failed to insert job_targets row")
+        raise RuntimeError("Failed to insert targets row")
     return _parse_target(rows[0])
 
 
@@ -110,7 +110,7 @@ def list_all(supabase: Client) -> list[JobTarget]:
 def get_active(supabase: Client) -> list[JobTarget]:
     """Return all globally active targets (active for any user).
 
-    The trigger on user_targets maintains job_targets.is_active, so this
+    The trigger on user_targets maintains targets.is_active, so this
     query works without joining user_targets.
     """
     resp = (
@@ -157,7 +157,7 @@ def delete(supabase: Client, target_id: str) -> bool:
 
 
 def set_active(supabase: Client, target_id: str) -> JobTarget | None:
-    """Directly set job_targets.is_active = True.
+    """Directly set targets.is_active = True.
 
     Prefer link_user_to_target() for multi-user flows — the DB trigger
     will keep is_active in sync. This is kept for single-user / system use.
@@ -173,7 +173,7 @@ def set_active(supabase: Client, target_id: str) -> JobTarget | None:
 
 
 def set_inactive(supabase: Client, target_id: str) -> JobTarget | None:
-    """Directly set job_targets.is_active = False.
+    """Directly set targets.is_active = False.
 
     Prefer unlink/deactivate via user_targets for multi-user flows.
     """
@@ -301,7 +301,7 @@ def link_user_to_target(
     fit_score: int | None = None,
     fit_score_reasoning: str | None = None,
 ) -> UserTarget:
-    """Link a user to a target (upsert). The DB trigger syncs job_targets.is_active."""
+    """Link a user to a target (upsert). The DB trigger syncs targets.is_active."""
     row: dict[str, Any] = {
         "user_id": user_id,
         "target_id": target_id,
@@ -369,7 +369,7 @@ def list_user_targets(supabase: Client, user_id: str) -> list[UserTarget]:
 def set_user_target_active(
     supabase: Client, user_id: str, target_id: str
 ) -> UserTarget | None:
-    """Activate a user's link to a target. The DB trigger syncs job_targets.is_active."""
+    """Activate a user's link to a target. The DB trigger syncs targets.is_active."""
     resp = (
         supabase.table(USER_TARGETS_TABLE)
         .update({"is_active": True, "updated_at": datetime.now(UTC).isoformat()})
@@ -384,7 +384,7 @@ def set_user_target_active(
 def set_user_target_inactive(
     supabase: Client, user_id: str, target_id: str
 ) -> UserTarget | None:
-    """Deactivate a user's link to a target. The DB trigger syncs job_targets.is_active."""
+    """Deactivate a user's link to a target. The DB trigger syncs targets.is_active."""
     resp = (
         supabase.table(USER_TARGETS_TABLE)
         .update({"is_active": False, "updated_at": datetime.now(UTC).isoformat()})
@@ -415,7 +415,7 @@ def add_reference_jd(
     resp = supabase.table(REF_JDS_TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError("Failed to insert target_reference_jds row")
+        raise RuntimeError("Failed to insert reference_jds row")
     return _parse_ref_jd(rows[0])
 
 

@@ -21,27 +21,27 @@ class _RecordingChain:
         self.inserts: list[dict[str, Any]] = []
         self.deletes_in_ids: list[list[str]] = []
 
-    def select(self, *_: Any, **__: Any) -> "_RecordingChain":
+    def select(self, *_: Any, **__: Any) -> _RecordingChain:
         return self
 
-    def insert(self, row: dict[str, Any]) -> "_RecordingChain":
+    def insert(self, row: dict[str, Any]) -> _RecordingChain:
         self.inserts.append(row)
         return self
 
-    def delete(self) -> "_RecordingChain":
+    def delete(self) -> _RecordingChain:
         return self
 
-    def in_(self, _col: str, ids: list[str]) -> "_RecordingChain":
+    def in_(self, _col: str, ids: list[str]) -> _RecordingChain:
         self.deletes_in_ids.append(ids)
         return self
 
-    def eq(self, *_: Any, **__: Any) -> "_RecordingChain":
+    def eq(self, *_: Any, **__: Any) -> _RecordingChain:
         return self
 
-    def order(self, *_: Any, **__: Any) -> "_RecordingChain":
+    def order(self, *_: Any, **__: Any) -> _RecordingChain:
         return self
 
-    def limit(self, *_: Any, **__: Any) -> "_RecordingChain":
+    def limit(self, *_: Any, **__: Any) -> _RecordingChain:
         return self
 
     def execute(self) -> _ExecuteStub:
@@ -110,8 +110,8 @@ def _checkpoint_supabase(
     """Builds a supabase mock with separate chains for the two tables the
     checkpoint() flow touches.
 
-    - tailored_resumes select returns {payload, payload_md}.
-    - tailored_resume_versions: insert calls land in `inserts`; the
+    - documents select returns {payload, payload_md}.
+    - document_versions: insert calls land in `inserts`; the
       last-version select (with `.limit(1)`) returns `last_versions`;
       the prune select (no `.limit`) also returns `last_versions` so
       prune behavior is deterministic.
@@ -121,12 +121,12 @@ def _checkpoint_supabase(
 
     def table_factory(name: str) -> MagicMock:
         chain = MagicMock()
-        if name == "tailored_resumes":
+        if name == "documents":
             chain.select.return_value.eq.return_value.single.return_value.execute.return_value.data = (
                 resume_row
             )
             return chain
-        assert name == "tailored_resume_versions"
+        assert name == "document_versions"
 
         def insert_capturing(row: dict[str, Any]) -> MagicMock:
             inserts.append(row)
