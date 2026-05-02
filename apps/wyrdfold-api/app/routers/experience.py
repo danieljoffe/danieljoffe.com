@@ -17,6 +17,7 @@ from pydantic import ValidationError
 from supabase import Client
 
 from app.dependencies import (
+    get_current_user_id_optional,
     get_embeddings_client,
     get_llm_client,
     get_supabase,
@@ -75,8 +76,9 @@ router = APIRouter(
 @router.get("/prose")
 async def get_prose(
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ProseDoc | dict[str, None]:
-    doc = prose.get_latest(supabase, user_id=None)
+    doc = prose.get_latest(supabase, user_id=user_id)
     if doc is None:
         return {"prose": None}
     return doc
@@ -86,14 +88,16 @@ async def get_prose(
 async def create_prose(
     body: ProseDocCreate,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ProseDoc:
-    return prose.create_version(supabase, user_id=None, content=body.content)
+    return prose.create_version(supabase, user_id=user_id, content=body.content)
 
 
 @router.post("/prose/consolidate")
 async def consolidate_prose(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ProseConsolidateResponse:
     """LLM-dedupe the latest prose doc and persist as a new version.
 
@@ -101,7 +105,7 @@ async def consolidate_prose(
     contain multiple near-identical resume copies. This pass merges them.
     The result is always a new version — the original stays in history.
     """
-    latest = prose.get_latest(supabase, user_id=None)
+    latest = prose.get_latest(supabase, user_id=user_id)
     if latest is None:
         raise HTTPException(status_code=404, detail="no prose doc to consolidate")
 
@@ -119,7 +123,7 @@ async def consolidate_prose(
             metadata["fallback_reason"] = fallback_reason
         cost_log.record(
             supabase,
-            user_id=None,
+            user_id=user_id,
             purpose=consolidate.DEFAULT_PURPOSE,
             result=result,
             metadata=metadata,
@@ -139,7 +143,7 @@ async def consolidate_prose(
             fallback_reason=fallback_reason,
         )
 
-    new_doc = prose.create_version(supabase, user_id=None, content=consolidated)
+    new_doc = prose.create_version(supabase, user_id=user_id, content=consolidated)
     return ProseConsolidateResponse(
         prose=new_doc,
         chars_before=len(latest.content),
@@ -159,6 +163,7 @@ async def upload_resume(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ResumeUploadResponse:
     """Upload a resume file (PDF/DOCX), extract text, merge into prose doc."""
     content_type = file.content_type or ""
@@ -195,7 +200,7 @@ async def upload_resume(
     try:
         storage_path = upload_file(
             supabase,
-            user_id=None,
+            user_id=user_id,
             upload_id=upload_id,
             file_bytes=file_bytes,
             file_ext=file_ext,
@@ -206,17 +211,17 @@ async def upload_resume(
         storage_path = ""
 
     # Merge into prose doc — semantic merge via LLM (#497).
-    existing = prose.get_latest(supabase, user_id=None)
+    existing = prose.get_latest(supabase, user_id=user_id)
     merged, merge_result = await merge_into_prose(
         llm,
         existing_content=existing.content if existing else None,
         parsed=parsed,
     )
-    prose_doc = prose.create_version(supabase, user_id=None, content=merged)
+    prose_doc = prose.create_version(supabase, user_id=user_id, content=merged)
     if merge_result is not None:
         cost_log.record(
             supabase,
-            user_id=None,
+            user_id=user_id,
             purpose="experience.ingest_merge",
             result=merge_result,
             metadata={"prose_doc_id": prose_doc.id, "filename": filename},
@@ -225,7 +230,7 @@ async def upload_resume(
     # Track the upload
     upload_row: dict[str, Any] = {
         "id": upload_id,
-        "user_id": None,
+        "user_id": user_id,
         "filename": filename,
         "file_type": parsed.file_type,
         "storage_path": storage_path,
@@ -245,7 +250,7 @@ async def upload_resume(
         )
         cost_log.record(
             supabase,
-            user_id=None,
+            user_id=user_id,
             purpose=derive.DEFAULT_PURPOSE,
             result=result,
             metadata={"prose_doc_id": prose_doc.id, "prose_version": prose_doc.version},
@@ -253,7 +258,7 @@ async def upload_resume(
 
         # Carry forward annotations from previous doc and merge with any
         # the LLM extracted from inline prose comments this round (#499).
-        previous_opt = optimized.get_latest(supabase, user_id=None)
+        previous_opt = optimized.get_latest(supabase, user_id=user_id)
         carried = (
             annotations.validate_annotation_refs(
                 previous_opt.payload.annotations, payload
@@ -266,12 +271,12 @@ async def upload_resume(
 
         doc = optimized.create_version(
             supabase,
-            user_id=None,
+            user_id=user_id,
             payload=payload,
             prose_doc_id=prose_doc.id,
             source="llm",
         )
-        await chunks.upsert_for_optimized(supabase, embeddings, doc, user_id=None)
+        await chunks.upsert_for_optimized(supabase, embeddings, doc, user_id=user_id)
         optimized_doc_id = doc.id
 
     return ResumeUploadResponse(
@@ -292,8 +297,9 @@ async def upload_resume(
 @router.get("/optimized")
 def get_optimized(
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> OptimizedDoc | dict[str, None]:
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
         return {"optimized": None}
     return doc
@@ -304,10 +310,11 @@ async def create_optimized(
     body: OptimizedDocUpsert,
     supabase: Client = Depends(get_supabase),
     embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> OptimizedDoc:
     doc = optimized.create_version(
         supabase,
-        user_id=None,
+        user_id=user_id,
         payload=body.payload,
         prose_doc_id=body.prose_doc_id,
         source=body.source,
@@ -317,7 +324,7 @@ async def create_optimized(
         supabase,
         embeddings,
         doc,
-        user_id=None,
+        user_id=user_id,
     )
     return doc
 
@@ -327,6 +334,7 @@ async def derive_optimized(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> OptimizedDoc:
     """Read the latest prose doc, derive an OptimizedPayload via LLM,
     persist it as a new optimized version, embed its chunks, and log cost.
@@ -336,11 +344,11 @@ async def derive_optimized(
     otherwise. User-edited optimized docs (source="user_edit") never
     short-circuit; the user has explicitly asked to regenerate.
     """
-    prose_doc = prose.get_latest(supabase, user_id=None)
+    prose_doc = prose.get_latest(supabase, user_id=user_id)
     if prose_doc is None:
         raise HTTPException(status_code=404, detail="no prose doc to derive from")
 
-    previous = optimized.get_latest(supabase, user_id=None)
+    previous = optimized.get_latest(supabase, user_id=user_id)
     if (
         previous is not None
         and previous.prose_doc_id == prose_doc.id
@@ -354,7 +362,7 @@ async def derive_optimized(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=derive.DEFAULT_PURPOSE,
         result=result,
         metadata={"prose_doc_id": prose_doc.id, "prose_version": prose_doc.version},
@@ -374,7 +382,7 @@ async def derive_optimized(
 
     doc = optimized.create_version(
         supabase,
-        user_id=None,
+        user_id=user_id,
         payload=payload,
         prose_doc_id=prose_doc.id,
         source="llm",
@@ -383,7 +391,7 @@ async def derive_optimized(
         supabase,
         embeddings,
         doc,
-        user_id=None,
+        user_id=user_id,
     )
     return doc
 
@@ -404,6 +412,7 @@ async def derive_optimized_stream(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     embeddings: EmbeddingsClient = Depends(get_embeddings_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> StreamingResponse:
     """Streaming variant of /derive.
 
@@ -419,11 +428,11 @@ async def derive_optimized_stream(
     have already been sent. Pre-flight errors (missing prose) still come
     back as HTTP 404 before any SSE frame is written.
     """
-    prose_doc = prose.get_latest(supabase, user_id=None)
+    prose_doc = prose.get_latest(supabase, user_id=user_id)
     if prose_doc is None:
         raise HTTPException(status_code=404, detail="no prose doc to derive from")
 
-    previous = optimized.get_latest(supabase, user_id=None)
+    previous = optimized.get_latest(supabase, user_id=user_id)
 
     async def generate() -> AsyncIterator[bytes]:
         if (
@@ -469,7 +478,7 @@ async def derive_optimized_stream(
 
         cost_log.record(
             supabase,
-            user_id=None,
+            user_id=user_id,
             purpose=derive.DEFAULT_PURPOSE,
             result=result,
             metadata={
@@ -491,7 +500,7 @@ async def derive_optimized_stream(
 
         doc = optimized.create_version(
             supabase,
-            user_id=None,
+            user_id=user_id,
             payload=payload,
             prose_doc_id=prose_doc.id,
             source="llm",
@@ -500,7 +509,7 @@ async def derive_optimized_stream(
             supabase,
             embeddings,
             doc,
-            user_id=None,
+            user_id=user_id,
         )
 
         yield _sse_event(
@@ -524,8 +533,9 @@ async def derive_optimized_stream(
 @router.get("/gap-health")
 def get_gap_health(
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> GapHealthResult:
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
         return gap_tracker.gap_health(OptimizedPayload())
     return gap_tracker.gap_health(doc.payload)
@@ -537,8 +547,9 @@ def get_gap_health(
 @router.get("/preferences")
 async def get_preferences(
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> Preferences | dict[str, None]:
-    row = preferences.get(supabase, user_id=None)
+    row = preferences.get(supabase, user_id=user_id)
     if row is None:
         return {"preferences": None}
     return row
@@ -548,15 +559,17 @@ async def get_preferences(
 async def upsert_preferences(
     body: PreferencesUpsert,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> Preferences:
-    return preferences.upsert(supabase, user_id=None, payload=body.payload)
+    return preferences.upsert(supabase, user_id=user_id, payload=body.payload)
 
 
 @router.delete("/preferences")
 async def reset_preferences(
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, bool]:
-    preferences.reset(supabase, user_id=None)
+    preferences.reset(supabase, user_id=user_id)
     return {"success": True}
 
 
@@ -568,10 +581,11 @@ async def list_turns(
     conversation_type: ConversationType | None = Query(default=None),
     limit: int = Query(default=200, ge=1, le=1000),
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, Any]:
     rows = turns.list_turns(
         supabase,
-        user_id=None,
+        user_id=user_id,
         conversation_type=conversation_type,
         limit=limit,
     )
@@ -582,12 +596,13 @@ async def list_turns(
 async def append_turn(
     body: TurnAppend,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, Any]:
     if body.skipped and body.role != "user":
         raise HTTPException(status_code=400, detail="only user turns can be skipped")
     turn = turns.append(
         supabase,
-        user_id=None,
+        user_id=user_id,
         conversation_type=body.conversation_type,
         role=body.role,
         content=body.content,
@@ -605,6 +620,7 @@ async def conversation_turn(
     body: TurnRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TurnResult:
     """Run one orchestrated turn. Persists user + assistant turns,
     appends to prose doc if the LLM determined fresh content was shared.
@@ -612,7 +628,7 @@ async def conversation_turn(
     return await orchestrator.handle_turn(
         supabase,
         llm,
-        user_id=None,
+        user_id=user_id,
         conversation_type=body.conversation_type,
         user_content=body.content,
         skipped=body.skipped,
@@ -622,17 +638,19 @@ async def conversation_turn(
 @router.post("/conversation/reset")
 async def conversation_reset(
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ResetResult:
     """Wipe prose, optimized (chunks cascade), and turns. Preferences are
     preserved — delete them via DELETE /experience/preferences if wanted.
     """
-    return orchestrator.reset_content(supabase, user_id=None)
+    return orchestrator.reset_content(supabase, user_id=user_id)
 
 
 @router.get("/conversation/next-probe")
 async def conversation_next_probe(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ProbeResult:
     """Top-priority gap phrased as a user-facing question by the LLM."""
-    return await orchestrator.next_probe(supabase, llm, user_id=None)
+    return await orchestrator.next_probe(supabase, llm, user_id=user_id)

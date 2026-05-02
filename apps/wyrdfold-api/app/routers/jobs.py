@@ -11,7 +11,11 @@ from postgrest.types import CountMethod
 from supabase import Client
 
 from app.cache import job_list_cache, make_cache_key
-from app.dependencies import get_supabase, verify_api_key_or_jwt
+from app.dependencies import (
+    get_current_user_id_optional,
+    get_supabase,
+    verify_api_key_or_jwt,
+)
 from app.http_client import get_http_client
 from app.models.schemas import (
     ManualJobRequest,
@@ -243,11 +247,14 @@ def list_jobs(
     search: str | None = Query(None, max_length=200),
     target_id: str | None = Query(None),
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, Any]:
     offset = (page - 1) * page_size
     ascending = order == "asc"
 
-    # Check cache (60s TTL — data only changes on poll/manual-add cycles)
+    # Check cache (60s TTL — data only changes on poll/manual-add cycles).
+    # user_id participates in the key so per-user views (saved/dismissed,
+    # future filtering) never cross-leak between accounts.
     cache_key = make_cache_key(
         "jobs",
         page=page,
@@ -259,6 +266,7 @@ def list_jobs(
         company=company,
         search=search,
         target_id=target_id,
+        user_id=user_id,
     )
     cached: dict[str, Any] | None = job_list_cache.get(cache_key)
     if cached is not None:

@@ -5,7 +5,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_supabase, verify_api_key_or_jwt
+from app.dependencies import (
+    get_current_user_id_optional,
+    get_supabase,
+    verify_api_key_or_jwt,
+)
 from app.main import app
 from app.models.experience import (
     OptimizedDoc,
@@ -63,6 +67,7 @@ class TestGapGateResume:
     def _overrides(self):
         app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
         app.dependency_overrides[get_supabase] = lambda: MagicMock()
+        app.dependency_overrides[get_current_user_id_optional] = lambda: None
         yield
         app.dependency_overrides.clear()
 

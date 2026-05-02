@@ -25,6 +25,7 @@ from fastapi.responses import Response
 from supabase import Client
 
 from app.dependencies import (
+    get_current_user_id_optional,
     get_llm_client,
     get_supabase,
     verify_api_key_or_jwt,
@@ -82,8 +83,9 @@ async def create_tailored_resume(
     body: TailorRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailorResponse:
-    current_optimized = optimized.get_latest(supabase, user_id=None)
+    current_optimized = optimized.get_latest(supabase, user_id=user_id)
     if current_optimized is None:
         raise HTTPException(
             status_code=404,
@@ -143,7 +145,7 @@ async def create_tailored_resume(
                                 source=reusable,
                                 job_posting_id=body.job_posting_id,
                                 job_description=body.job_description,
-                                user_id=None,
+                                user_id=user_id,
                             )
                             persistence.mark_job_resume_draft(
                                 supabase, body.job_posting_id
@@ -153,14 +155,14 @@ async def create_tailored_resume(
                                 lint_warnings=[],
                             )
 
-    prefs_row = preferences.get(supabase, user_id=None)
+    prefs_row = preferences.get(supabase, user_id=user_id)
     prefs_payload = prefs_row.payload if prefs_row else None
     contact = await resolve_contact(supabase, body.contact)
 
     result = await run_tailor_pipeline(
         supabase,
         llm,
-        user_id=None,
+        user_id=user_id,
         optimized=current_optimized,
         job_description=body.job_description,
         contact=contact,
@@ -199,8 +201,9 @@ async def create_tailored_cover_letter(
     body: CoverLetterRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailorResponse:
-    current_optimized = optimized.get_latest(supabase, user_id=None)
+    current_optimized = optimized.get_latest(supabase, user_id=user_id)
     if current_optimized is None:
         raise HTTPException(
             status_code=404,
@@ -222,14 +225,14 @@ async def create_tailored_cover_letter(
             },
         )
 
-    prefs_row = preferences.get(supabase, user_id=None)
+    prefs_row = preferences.get(supabase, user_id=user_id)
     prefs_payload = prefs_row.payload if prefs_row else None
     contact = await resolve_contact(supabase, body.contact)
 
     result = await run_cover_letter_pipeline(
         supabase,
         llm,
-        user_id=None,
+        user_id=user_id,
         optimized=current_optimized,
         job_description=body.job_description,
         company_name=body.company_name,
@@ -262,10 +265,11 @@ async def create_tailored_cover_letter(
 async def list_documents(
     limit: int = 50,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, list[TailoredResumeRecord]]:
     rows = persistence.list_recent(
         supabase,
-        user_id=None,
+        user_id=user_id,
         limit=max(1, min(limit, 200)),
         document_type="resume",
     )
@@ -276,10 +280,11 @@ async def list_documents(
 async def list_tailored_cover_letters(
     limit: int = 50,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, list[TailoredResumeRecord]]:
     rows = persistence.list_recent(
         supabase,
-        user_id=None,
+        user_id=user_id,
         limit=max(1, min(limit, 200)),
         document_type="cover_letter",
     )
@@ -599,13 +604,14 @@ async def create_batch_resumes(
     background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> BatchResponse:
     """Kick off batch resume generation for multiple job postings.
 
     Returns immediately with a batch_id. Poll GET /tailor/batch/{id}
     for progress.
     """
-    current_optimized = optimized.get_latest(supabase, user_id=None)
+    current_optimized = optimized.get_latest(supabase, user_id=user_id)
     if current_optimized is None:
         raise HTTPException(
             status_code=404,
@@ -632,13 +638,13 @@ async def create_batch_resumes(
     # Derive common target_id from first posting (all batch jobs share a target)
     target_id: str | None = postings[0].get("target_id") if postings else None
 
-    prefs_row = preferences.get(supabase, user_id=None)
+    prefs_row = preferences.get(supabase, user_id=user_id)
     prefs_payload = prefs_row.payload if prefs_row else None
     contact = await resolve_contact(supabase, body.contact)
 
     batch = create_batch(
         supabase,
-        user_id=None,
+        user_id=user_id,
         job_posting_ids=body.job_posting_ids,
     )
 
@@ -647,7 +653,7 @@ async def create_batch_resumes(
         supabase,
         llm,
         batch_id=batch.id,
-        user_id=None,
+        user_id=user_id,
         optimized=current_optimized,
         jobs=postings,
         contact=contact,

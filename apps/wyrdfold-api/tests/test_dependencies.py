@@ -6,9 +6,9 @@ from fastapi import HTTPException, Request
 
 from app.config import Settings
 from app.dependencies import (
-    SINGLE_USER_ID,
     _api_key_matches,
     get_current_user_id,
+    get_current_user_id_optional,
     verify_api_key,
     verify_api_key_or_jwt,
     verify_supabase_jwt,
@@ -167,24 +167,49 @@ def test_verify_api_key_or_jwt_rejects_invalid_jwt():
 
 def test_get_current_user_id_returns_jwt_sub():
     req = _make_request({"authorization": f"Bearer {_mint()}"})
-    assert get_current_user_id(req, key=None, s=_settings()) == USER_SUB
+    assert get_current_user_id(req, s=_settings()) == USER_SUB
 
 
-def test_get_current_user_id_returns_sentinel_for_api_key():
+def test_get_current_user_id_rejects_api_key_only():
+    """get_current_user_id is JWT-required — api-key callers must use
+    get_current_user_id_optional or a cron-only auth dep instead.
+    """
     req = _make_request()
-    assert get_current_user_id(req, key="testkey", s=_settings()) == SINGLE_USER_ID
+    with pytest.raises(HTTPException) as exc:
+        get_current_user_id(req, s=_settings())
+    assert exc.value.status_code == 401
 
 
 def test_get_current_user_id_rejects_unauthenticated():
     req = _make_request()
     with pytest.raises(HTTPException) as exc:
-        get_current_user_id(req, key=None, s=_settings())
+        get_current_user_id(req, s=_settings())
     assert exc.value.status_code == 401
 
 
-def test_get_current_user_id_prefers_jwt_over_api_key():
+def test_get_current_user_id_optional_returns_jwt_sub():
+    req = _make_request({"authorization": f"Bearer {_mint()}"})
+    assert get_current_user_id_optional(req, key=None, s=_settings()) == USER_SUB
+
+
+def test_get_current_user_id_optional_returns_none_for_api_key():
+    """API-key callers (cron/poller/batch) get None — services map None to
+    the legacy NULL-user_id rows, preserving single-tenant behavior.
+    """
+    req = _make_request()
+    assert get_current_user_id_optional(req, key="testkey", s=_settings()) is None
+
+
+def test_get_current_user_id_optional_rejects_unauthenticated():
+    req = _make_request()
+    with pytest.raises(HTTPException) as exc:
+        get_current_user_id_optional(req, key=None, s=_settings())
+    assert exc.value.status_code == 401
+
+
+def test_get_current_user_id_optional_prefers_jwt_over_api_key():
     """If both a valid JWT and a valid API key are present, prefer the JWT
-    so the request runs under the user's identity, not the cron sentinel.
+    so the request runs under the user's identity, not the cron path.
     """
     req = _make_request({"authorization": f"Bearer {_mint()}"})
-    assert get_current_user_id(req, key="testkey", s=_settings()) == USER_SUB
+    assert get_current_user_id_optional(req, key="testkey", s=_settings()) == USER_SUB

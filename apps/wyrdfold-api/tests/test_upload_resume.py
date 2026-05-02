@@ -312,6 +312,7 @@ class TestUploadResumeEndpoint:
             supabase=supabase,
             llm=MagicMock(),
             embeddings=MagicMock(),
+            user_id=None,
         )
 
         assert result.success is True

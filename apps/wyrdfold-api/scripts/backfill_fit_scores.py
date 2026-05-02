@@ -18,7 +18,6 @@ import logging
 from datetime import UTC, datetime
 from typing import Any, cast
 
-from app.dependencies import SINGLE_USER_ID
 from app.services.experience import optimized
 from app.services.llm import cost_log
 from app.services.llm import get_default_client as get_llm_client
@@ -64,7 +63,7 @@ async def backfill() -> int:
         # NULL-user_id experience_optimized_docs row from before multi-user.
         cache_key = user_id
         if cache_key not in payload_cache:
-            legacy_admin_ids = {SINGLE_USER_ID, "__system__"}
+            legacy_admin_ids = {"tools-admin", "__system__"}
             lookup_user = None if user_id in legacy_admin_ids else user_id
             doc = optimized.get_latest(supabase, user_id=lookup_user)
             payload_cache[cache_key] = doc.payload if doc else None

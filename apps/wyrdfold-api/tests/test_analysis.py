@@ -345,6 +345,7 @@ async def test_router_cache_hit_skips_llm(
     app.dependency_overrides[get_supabase] = lambda: supabase
     app.dependency_overrides[get_llm_client] = lambda: llm
     app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+    app.dependency_overrides[get_current_user_id_optional] = lambda: None
 
     try:
         tc = TestClient(app)
@@ -397,6 +398,7 @@ async def test_router_cache_miss_runs_llm_and_persists(
     app.dependency_overrides[get_supabase] = lambda: supabase
     app.dependency_overrides[get_llm_client] = lambda: llm
     app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+    app.dependency_overrides[get_current_user_id_optional] = lambda: None
 
     try:
         tc = TestClient(app)
@@ -426,6 +428,7 @@ async def test_router_missing_optimized_doc_returns_404(
     app.dependency_overrides[get_supabase] = lambda: MagicMock()
     app.dependency_overrides[get_llm_client] = lambda: MockLLMClient()
     app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+    app.dependency_overrides[get_current_user_id_optional] = lambda: None
 
     try:
         tc = TestClient(app)
@@ -462,6 +465,7 @@ async def test_router_empty_description_returns_422(
     app.dependency_overrides[get_supabase] = lambda: supabase
     app.dependency_overrides[get_llm_client] = lambda: MockLLMClient()
     app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+    app.dependency_overrides[get_current_user_id_optional] = lambda: None
 
     try:
         tc = TestClient(app)
@@ -495,6 +499,7 @@ async def test_router_missing_job_posting_returns_404(
     app.dependency_overrides[get_supabase] = lambda: supabase
     app.dependency_overrides[get_llm_client] = lambda: MockLLMClient()
     app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+    app.dependency_overrides[get_current_user_id_optional] = lambda: None
 
     try:
         tc = TestClient(app)
@@ -526,6 +531,7 @@ async def test_router_missing_target_returns_404(
     app.dependency_overrides[get_supabase] = lambda: MagicMock()
     app.dependency_overrides[get_llm_client] = lambda: MockLLMClient()
     app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+    app.dependency_overrides[get_current_user_id_optional] = lambda: None
 
     try:
         tc = TestClient(app)
@@ -537,4 +543,9 @@ async def test_router_missing_target_returns_404(
 
 
 # Need these imports for dependency overrides
-from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_jwt
+from app.dependencies import (
+    get_current_user_id_optional,
+    get_llm_client,
+    get_supabase,
+    verify_api_key_or_jwt,
+)

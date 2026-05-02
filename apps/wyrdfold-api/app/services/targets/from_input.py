@@ -72,7 +72,7 @@ async def _link_with_fit_score(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=FIT_SCORE_PURPOSE,
         result=llm_result,
         metadata={"target_id": target.id, "user_id": user_id},
@@ -108,7 +108,7 @@ async def from_manual(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=NORMALIZE_PURPOSE,
         result=norm_result,
         metadata={"user_id": user_id, "raw_label": label},
@@ -128,7 +128,7 @@ async def from_manual(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=DERIVE_LABEL_PURPOSE,
         result=derive_result,
         metadata={"user_id": user_id, "label": suggestion.label},
@@ -171,7 +171,7 @@ async def from_url(
     derived, derive_result = await derive_profile_from_jd(llm, jd_text=jd_text)
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=DERIVE_JD_PURPOSE,
         result=derive_result,
         metadata={"user_id": user_id, "jd_url": final_url},
