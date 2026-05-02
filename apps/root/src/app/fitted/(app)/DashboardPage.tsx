@@ -250,7 +250,7 @@ export default function DashboardPage() {
           <Link
             key={stat.status}
             href={stat.href}
-            className='group flex flex-col gap-2 rounded-lg border border-border bg-surface-secondary p-4 transition-colors hover:border-brand hover:bg-surface-tertiary'
+            className='group flex flex-col gap-1 rounded-lg border border-border bg-surface-secondary p-3 transition-colors hover:border-brand hover:bg-surface-tertiary sm:gap-2 sm:p-4'
           >
             <div className='flex items-center gap-2 text-text-secondary group-hover:text-text-primary'>
               {stat.icon}
@@ -258,7 +258,11 @@ export default function DashboardPage() {
                 {stat.label}
               </Text>
             </div>
-            <Text variant='body' as='span' className='text-2xl font-semibold'>
+            <Text
+              variant='body'
+              as='span'
+              className='text-lg font-semibold sm:text-2xl'
+            >
               {counts[stat.status] ?? 0}
             </Text>
           </Link>
@@ -289,7 +293,7 @@ export default function DashboardPage() {
               <Link
                 key={posting.id}
                 href={`/fitted/jobs/${posting.id}`}
-                className='group flex min-w-0 items-center gap-3 rounded-xl border border-border bg-surface-elevated p-3 transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
+                className='group flex min-w-0 items-start gap-3 rounded-xl border border-border bg-surface-elevated p-3 transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
               >
                 <Badge
                   variant={scoreBadgeVariant(posting.score)}
@@ -301,7 +305,7 @@ export default function DashboardPage() {
                 <div className='min-w-0 flex-1'>
                   <Text
                     variant='body'
-                    className='truncate text-sm font-medium leading-tight group-hover:text-brand-500'
+                    className='truncate text-sm font-semibold leading-tight group-hover:text-brand-500'
                   >
                     {posting.title}
                   </Text>
