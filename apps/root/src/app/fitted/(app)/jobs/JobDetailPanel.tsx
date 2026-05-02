@@ -28,6 +28,70 @@ interface JobDetailPanelProps {
   viewFullHref: string | undefined;
   onDelete: (() => void) | undefined;
   onStatusChange: ((status: string) => void) | undefined;
+  /** Suppress the panel's own Delete action (the page renders one at root). */
+  hideDelete?: boolean;
+}
+
+const SCORE_FACTOR_LABEL: Record<string, string> = {
+  role_titles: 'Role titles',
+  technologies: 'Technologies',
+  domain_skills: 'Domain skills',
+  seniority_signals: 'Seniority signals',
+  negative: 'Penalties',
+};
+
+function formatFactor(key: string): string {
+  return SCORE_FACTOR_LABEL[key] ?? key.replace(/_/g, ' ');
+}
+
+function ScoreBreakdownList({
+  breakdown,
+}: {
+  breakdown: Record<string, number>;
+}) {
+  const entries = Object.entries(breakdown).filter(([, v]) => v !== 0);
+  if (entries.length === 0) {
+    return <Text variant='meta'>No factors contributed to this score</Text>;
+  }
+  const max = Math.max(...entries.map(([, v]) => Math.abs(v)));
+  return (
+    <ul className='flex flex-col gap-2'>
+      {entries.map(([key, value]) => {
+        const pct = max === 0 ? 0 : (Math.abs(value) / max) * 100;
+        const positive = value > 0;
+        const display = Number.isInteger(value)
+          ? value
+          : Number(value.toFixed(1));
+        return (
+          <li key={key} className='flex flex-col gap-1'>
+            <div className='flex items-baseline justify-between gap-3'>
+              <span className='text-sm text-text-primary'>
+                {formatFactor(key)}
+              </span>
+              <span
+                className={cn(
+                  'text-xs font-medium tabular-nums shrink-0',
+                  positive ? 'text-success' : 'text-error'
+                )}
+              >
+                {positive ? '+' : ''}
+                {display}
+              </span>
+            </div>
+            <div className='h-1.5 w-full overflow-hidden rounded-full bg-surface-elevated'>
+              <div
+                className={cn(
+                  'h-full rounded-full',
+                  positive ? 'bg-success' : 'bg-error/70'
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export default function JobDetailPanel({
@@ -36,6 +100,7 @@ export default function JobDetailPanel({
   viewFullHref,
   onDelete,
   onStatusChange,
+  hideDelete = false,
 }: JobDetailPanelProps) {
   const [status, setStatus] = useState(posting.status);
   const [updating, setUpdating] = useState(false);
@@ -142,70 +207,86 @@ export default function JobDetailPanel({
 
   return (
     <div className='border-t border-border bg-surface-tertiary p-4 space-y-4'>
-      {/* Score breakdown */}
-      <div>
-        <Text variant='caption' className='mb-1'>
-          Score Breakdown
-        </Text>
-        {breakdown ? (
-          <div className='flex flex-wrap gap-2'>
-            {Object.entries(breakdown).map(([key, value]) => (
-              <Badge
-                key={key}
-                variant={value > 0 ? 'info' : value < 0 ? 'error' : 'default'}
-                size='sm'
-              >
-                {key}: {value}
-              </Badge>
-            ))}
-          </div>
-        ) : (
-          <Text variant='meta'>No breakdown available</Text>
-        )}
-      </div>
-
-      {/* Status dropdown */}
+      {/* Status dropdown + score */}
       <div>
         <Text variant='caption' className='mb-1'>
           Status
         </Text>
-        <Dropdown
-          trigger={
-            <span
-              className={cn(
-                'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
-                updating
-                  ? 'opacity-50 cursor-not-allowed'
-                  : 'hover:bg-surface-tertiary'
-              )}
-              aria-disabled={updating || undefined}
+        <div className='flex items-center justify-between gap-3'>
+          <Dropdown
+            trigger={
+              <span
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
+                  updating
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-surface-tertiary'
+                )}
+                aria-disabled={updating || undefined}
+              >
+                <span
+                  className={cn(
+                    'inline-block size-2 rounded-full',
+                    STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
+                  )}
+                  aria-hidden
+                />
+                <span className='capitalize'>{formatStatus(status)}</span>
+                <ChevronDown
+                  className='size-4 text-text-tertiary'
+                  aria-hidden
+                />
+              </span>
+            }
+            items={JOB_STATUSES.map<DropdownItem>(s => ({
+              label: formatStatus(s),
+              icon: (
+                <span
+                  className={cn(
+                    'inline-block size-2 rounded-full',
+                    STATUS_DOT_CLASS[s]
+                  )}
+                  aria-hidden
+                />
+              ),
+              disabled: updating || status === s,
+              onClick: () => updateStatus(s),
+            }))}
+          />
+          <span
+            className='inline-flex items-center gap-1.5 shrink-0'
+            aria-label={`Match score ${posting.score}`}
+          >
+            <Text variant='meta' className='text-text-tertiary'>
+              Score
+            </Text>
+            <Badge
+              variant={
+                posting.score >= 70
+                  ? 'success'
+                  : posting.score >= 40
+                    ? 'warning'
+                    : 'error'
+              }
+              size='sm'
             >
-              <span
-                className={cn(
-                  'inline-block size-2 rounded-full',
-                  STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
-                )}
-                aria-hidden
-              />
-              <span className='capitalize'>{formatStatus(status)}</span>
-              <ChevronDown className='size-4 text-text-tertiary' aria-hidden />
-            </span>
-          }
-          items={JOB_STATUSES.map<DropdownItem>(s => ({
-            label: formatStatus(s),
-            icon: (
-              <span
-                className={cn(
-                  'inline-block size-2 rounded-full',
-                  STATUS_DOT_CLASS[s]
-                )}
-                aria-hidden
-              />
-            ),
-            disabled: updating || status === s,
-            onClick: () => updateStatus(s),
-          }))}
-        />
+              {posting.score}
+            </Badge>
+          </span>
+        </div>
+      </div>
+
+      {/* Score breakdown — auto-rendered on load so users see immediately
+          how the score was assembled. */}
+      <div>
+        <Text variant='caption' className='mb-2'>
+          Score Breakdown
+        </Text>
+        {breakdown ? (
+          <ScoreBreakdownList breakdown={breakdown} />
+        ) : (
+          <Skeleton variant='text' lines={3} />
+        )}
       </div>
 
       {/* Status History */}
@@ -319,37 +400,31 @@ export default function JobDetailPanel({
 
       {/* Resume lifecycle */}
       {(status === 'resume_draft' || status === 'resume_ready') && (
-        <div>
-          <Text variant='caption' className='mb-1'>
-            Resume
-          </Text>
-          {status === 'resume_draft' && (
+        <div className='flex flex-col gap-2'>
+          <div className='flex items-center gap-2'>
+            <Text variant='caption'>Resume</Text>
+            <Badge
+              variant={status === 'resume_ready' ? 'success' : 'info'}
+              size='sm'
+            >
+              {status === 'resume_ready' ? 'Approved' : 'Draft'}
+            </Badge>
+          </div>
+          <div>
             <Button
               as='link'
               href={`/fitted/jobs/${posting.id}/resume`}
-              variant='primary'
+              variant={status === 'resume_ready' ? 'secondary' : 'primary'}
               size='sm'
-              name='review-resume'
+              name={
+                status === 'resume_ready'
+                  ? 'view-approved-resume'
+                  : 'review-resume'
+              }
             >
-              Review Resume
+              {status === 'resume_ready' ? 'View / Download' : 'Review Resume'}
             </Button>
-          )}
-          {status === 'resume_ready' && (
-            <div className='flex items-center gap-2'>
-              <Badge variant='success' size='sm'>
-                Approved
-              </Badge>
-              <Button
-                as='link'
-                href={`/fitted/jobs/${posting.id}/resume`}
-                variant='secondary'
-                size='sm'
-                name='view-approved-resume'
-              >
-                View / Download
-              </Button>
-            </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -363,42 +438,33 @@ export default function JobDetailPanel({
       )}
 
       {/* Actions */}
-      <div className='flex flex-wrap gap-2'>
-        {viewFullHref && (
-          <Button
-            as='link'
-            href={viewFullHref}
-            variant='secondary'
-            size='sm'
-            name='view-full-job'
-          >
-            <Maximize2 className='size-4' aria-hidden />
-            Open full view
-          </Button>
-        )}
-        {posting.absolute_url && (
-          <Button
-            as='link'
-            href={posting.absolute_url}
-            target='_blank'
-            rel='noopener noreferrer'
-            variant='secondary'
-            size='sm'
-            name='view-posting-url'
-          >
-            View posting
-          </Button>
-        )}
-        <Button
-          name='delete-posting'
-          variant='error'
-          size='sm'
-          onClick={handleDelete}
-          disabled={deleting}
-        >
-          {deleting ? 'Deleting...' : 'Delete'}
-        </Button>
-      </div>
+      {(viewFullHref || !hideDelete) && (
+        <div className='flex flex-wrap gap-2'>
+          {viewFullHref && (
+            <Button
+              as='link'
+              href={viewFullHref}
+              variant='secondary'
+              size='sm'
+              name='view-full-job'
+            >
+              <Maximize2 className='size-4' aria-hidden />
+              Open full view
+            </Button>
+          )}
+          {!hideDelete && (
+            <Button
+              name='delete-posting'
+              variant='error'
+              size='sm'
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

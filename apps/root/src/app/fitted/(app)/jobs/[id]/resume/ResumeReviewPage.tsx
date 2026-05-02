@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Lock, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Download, Lock, RotateCcw, Unlock } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -50,6 +50,7 @@ export default function ResumeReviewPage({
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [unapproving, setUnapproving] = useState(false);
   const [readapting, setReadapting] = useState(false);
   const [lintWarnings, setLintWarnings] = useState<LintViolation[]>([]);
 
@@ -233,14 +234,6 @@ export default function ResumeReviewPage({
 
   async function handleApprove() {
     if (!record) return;
-    /* eslint-disable no-alert -- personal tool, native confirm is fine */
-    if (
-      !window.confirm(
-        'Approve and lock this resume? It cannot be edited after approval.'
-      )
-    )
-      /* eslint-enable no-alert */
-      return;
     setApproving(true);
     try {
       const ok = await flushPendingSave();
@@ -259,11 +252,32 @@ export default function ResumeReviewPage({
       }
       const approved = (await res.json()) as TailoredResumeRecord;
       setRecord(approved);
-      toast({ variant: 'success', title: 'Resume approved' });
+      toast({ variant: 'success', title: 'Resume locked' });
     } catch {
-      toast({ variant: 'error', title: 'Network error approving resume' });
+      toast({ variant: 'error', title: 'Network error locking resume' });
     } finally {
       setApproving(false);
+    }
+  }
+
+  async function handleUnapprove() {
+    if (!record) return;
+    setUnapproving(true);
+    try {
+      const res = await fetch(`/api/jobs/tailor/${record.id}/unapprove`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        toast({ variant: 'error', title: 'Failed to unlock resume' });
+        return;
+      }
+      const reopened = (await res.json()) as TailoredResumeRecord;
+      setRecord(reopened);
+      toast({ variant: 'success', title: 'Resume unlocked for editing' });
+    } catch {
+      toast({ variant: 'error', title: 'Network error unlocking resume' });
+    } finally {
+      setUnapproving(false);
     }
   }
 
@@ -370,10 +384,41 @@ export default function ResumeReviewPage({
 
   if (loading || !record || !posting) {
     return (
-      <main className='mx-auto max-w-4xl space-y-4 p-6'>
-        <Skeleton className='h-6 w-32' />
-        <Skeleton className='h-10 w-3/4' />
-        <Skeleton className='h-[60vh] w-full' />
+      <main
+        className='mx-auto max-w-4xl space-y-4 p-6'
+        aria-label='Loading resume'
+      >
+        {/* Back link */}
+        <Skeleton className='h-5 w-24' />
+
+        {/* Title + subtitle */}
+        <div className='space-y-2'>
+          <Skeleton className='h-8 w-2/3' />
+          <Skeleton className='h-4 w-1/2' />
+        </div>
+
+        {/* Cost stats bar */}
+        <Skeleton variant='rectangular' className='h-10 w-full rounded-md' />
+
+        {/* Version history collapsed */}
+        <Skeleton variant='rectangular' className='h-10 w-full rounded-md' />
+
+        {/* Action toolbar */}
+        <div className='flex items-center justify-between'>
+          <Skeleton className='h-4 w-32' />
+          <div className='flex items-center gap-1'>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                variant='rectangular'
+                className='h-8 w-8 rounded-md'
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Markdown editor */}
+        <Skeleton variant='rectangular' className='h-[60vh] w-full' />
       </main>
     );
   }
@@ -393,7 +438,7 @@ export default function ResumeReviewPage({
         </Link>
         {isApproved && (
           <Badge variant='success' size='sm'>
-            Approved &amp; locked
+            Locked
           </Badge>
         )}
       </div>
@@ -549,12 +594,8 @@ export default function ResumeReviewPage({
               variant='ghost'
               size='sm'
               iconOnly
-              aria-label={
-                isApproved
-                  ? 'Generate a new resume from scratch with AI'
-                  : 'Re-adapt resume with AI'
-              }
-              title={isApproved ? 'Generate new with AI' : 'Re-adapt with AI'}
+              aria-label='Re-adapt resume with AI'
+              title='Re-adapt with AI'
               onClick={handleReadapt}
               disabled={
                 readapting || approving || saveStatus === 'saving' || isApproved
@@ -562,26 +603,38 @@ export default function ResumeReviewPage({
             >
               <RotateCcw className='h-4 w-4' aria-hidden='true' />
             </Button>
-            <Button
-              name='approve-resume'
-              variant='ghost'
-              size='sm'
-              iconOnly
-              aria-label={
-                isApproved ? 'Resume approved and locked' : 'Approve and lock'
-              }
-              title={isApproved ? 'Approved & locked' : 'Approve & lock'}
-              onClick={handleApprove}
-              disabled={
-                approving ||
-                isApproved ||
-                saveStatus === 'pending' ||
-                saveStatus === 'saving' ||
-                saveStatus === 'error'
-              }
-            >
-              <Lock className='h-4 w-4' aria-hidden='true' />
-            </Button>
+            {isApproved ? (
+              <Button
+                name='unlock-resume'
+                variant='ghost'
+                size='sm'
+                iconOnly
+                aria-label='Unlock resume for editing'
+                title='Unlock for editing'
+                onClick={handleUnapprove}
+                disabled={unapproving}
+              >
+                <Unlock className='h-4 w-4' aria-hidden='true' />
+              </Button>
+            ) : (
+              <Button
+                name='lock-resume'
+                variant='ghost'
+                size='sm'
+                iconOnly
+                aria-label='Lock resume from editing'
+                title='Lock from editing'
+                onClick={handleApprove}
+                disabled={
+                  approving ||
+                  saveStatus === 'pending' ||
+                  saveStatus === 'saving' ||
+                  saveStatus === 'error'
+                }
+              >
+                <Lock className='h-4 w-4' aria-hidden='true' />
+              </Button>
+            )}
           </div>
         </div>
         <textarea
@@ -592,7 +645,7 @@ export default function ResumeReviewPage({
             setMarkdown(e.target.value);
             setSaveStatus('pending');
           }}
-          disabled={isApproved || readapting || approving}
+          disabled={isApproved || readapting || approving || unapproving}
           spellCheck
         />
         <div className='flex items-center justify-between gap-2'>

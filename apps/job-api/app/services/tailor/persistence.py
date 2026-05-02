@@ -285,6 +285,15 @@ def approve(supabase: Client, resume_id: str) -> TailoredResumeRecord:
     return TailoredResumeRecord.model_validate(rows[0])
 
 
+def unapprove(supabase: Client, resume_id: str) -> TailoredResumeRecord:
+    """Clear approved_at on a tailored resume — reopens it for editing."""
+    resp = supabase.table(TABLE).update({"approved_at": None}).eq("id", resume_id).execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        raise RuntimeError(f"Failed to unapprove tailored_resumes row {resume_id}")
+    return TailoredResumeRecord.model_validate(rows[0])
+
+
 def get_by_job(
     supabase: Client,
     job_posting_id: str,

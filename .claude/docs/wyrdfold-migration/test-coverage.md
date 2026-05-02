@@ -136,7 +136,7 @@ These are pure TS/JS modules where a test catches real bugs:
 ### Tier 2 — component state machines (medium cost)
 
 - [ ] **Settings per-section save** — `savingSection: 'profile'
-    | 'email' | 'sms' | null` should never have two sections
+| 'email' | 'sms' | null` should never have two sections
       "saving" at once
 - [ ] **Profile re-derive streaming** — buffered `delta` →
       partial JSON → `done` swap; test with mocked `consumeSse`

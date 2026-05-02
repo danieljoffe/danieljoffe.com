@@ -28,7 +28,7 @@ interface JobsListTableProps {
   sortIndicator: (col: JobsSortColumn) => string;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
-  targetId: string | undefined;
+  analysisTargetId: string | undefined;
   onRefetch: () => void;
 }
 
@@ -82,7 +82,7 @@ export default function JobsListTable({
   sortIndicator,
   selectedIds,
   onSelectionChange,
-  targetId,
+  analysisTargetId,
   onRefetch,
 }: JobsListTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -268,7 +268,7 @@ export default function JobsListTable({
                     <td colSpan={8} className='p-0'>
                       <JobDetailPanel
                         posting={job}
-                        targetId={targetId}
+                        targetId={analysisTargetId}
                         viewFullHref={`/fitted/jobs/${job.id}`}
                         onDelete={() => {
                           setExpandedId(null);

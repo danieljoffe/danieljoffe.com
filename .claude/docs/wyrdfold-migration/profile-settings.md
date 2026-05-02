@@ -7,11 +7,11 @@ Issue: #587 · Branch base: `chore/fitted-ui-refinements` · Audit date: 2026-05
 Two adjacent surfaces, **7 files / ~1,470 LOC** combined:
 
 - **Profile** (`profile/`, 4 files, ~997 LOC) — master document
-  + derived skills/roles/outcomes + SSE-streamed re-derive + gap
-  health. ProfilePage.tsx is **864 LOC** (the largest single
-  client component on the Fitted surface — barely edges out
-  ResumeReviewPage at 503 LOC). Coherent, but a refactor
-  candidate.
+  - derived skills/roles/outcomes + SSE-streamed re-derive + gap
+    health. ProfilePage.tsx is **864 LOC** (the largest single
+    client component on the Fitted surface — barely edges out
+    ResumeReviewPage at 503 LOC). Coherent, but a refactor
+    candidate.
 - **Settings** (`settings/`, 3 files, ~473 LOC) — three
   per-section save cards: Profile (PII identity), Email
   Notifications (Resend), SMS Notifications (Twilio).
@@ -80,13 +80,13 @@ profile/ProfilePage.tsx:400   href='/fitted/onboarding'
 
 ### Profile imports
 
-| Import                                       | Where it lives                                   |
-| -------------------------------------------- | ------------------------------------------------ |
-| `consumeSse`                                 | `@/lib/consumeSse` — used by ConversationChat too |
-| `parsePartialJson`                           | `@/lib/parsePartialJson` — same                  |
-| `ConversationChatModal`                      | `apps/root/src/app/fitted/_components/`          |
-| `useToast`                                   | `@/state/Toast/ToastProvider`                    |
-| `Button`                                     | `@/components/Button`                            |
+| Import                  | Where it lives                                    |
+| ----------------------- | ------------------------------------------------- |
+| `consumeSse`            | `@/lib/consumeSse` — used by ConversationChat too |
+| `parsePartialJson`      | `@/lib/parsePartialJson` — same                   |
+| `ConversationChatModal` | `apps/root/src/app/fitted/_components/`           |
+| `useToast`              | `@/state/Toast/ToastProvider`                     |
+| `Button`                | `@/components/Button`                             |
 
 `ConversationChatModal` is shared between profile (gap-fill
 mode) and the standalone `/fitted/onboarding` flow. Port both
@@ -98,18 +98,18 @@ Only shared-ui + Button + useToast. No app-local cross-deps.
 
 ## 5. shared-ui usage
 
-| Component       | Profile | Settings |
-| --------------- | ------- | -------- |
-| Alert           | ✓       |          |
-| Badge           | ✓       |          |
-| Card / Header / Title / Content | ✓ | ✓ |
-| Heading         | ✓       | ✓        |
-| Input           |         | ✓        |
-| ProgressBar     | ✓       |          |
-| Skeleton        | ✓       | ✓        |
-| Spinner         | ✓       | ✓        |
-| Switch          |         | ✓        |
-| Text            | ✓       | ✓        |
+| Component                       | Profile | Settings |
+| ------------------------------- | ------- | -------- |
+| Alert                           | ✓       |          |
+| Badge                           | ✓       |          |
+| Card / Header / Title / Content | ✓       | ✓        |
+| Heading                         | ✓       | ✓        |
+| Input                           |         | ✓        |
+| ProgressBar                     | ✓       |          |
+| Skeleton                        | ✓       | ✓        |
+| Spinner                         | ✓       | ✓        |
+| Switch                          |         | ✓        |
+| Text                            | ✓       | ✓        |
 
 12 distinct shared-ui components across both surfaces. All
 audited as Pyre-ready in #593.
@@ -166,7 +166,7 @@ const ACCEPTED_TYPES = [
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
-const MAX_FILE_SIZE = 10 * 1024 * 1024;   // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 ```
 
 Hidden `<input type='file' aria-hidden>` triggered via
@@ -331,15 +331,15 @@ mappings that should stay client-side — no server contract.
 
 ## 16. Decision summary
 
-| Question                       | Answer                                                                            |
-| ------------------------------ | --------------------------------------------------------------------------------- |
-| Files to port                  | 7 (~1,470 LOC) + 2 lib helpers + 2 chat-modal files                               |
-| API endpoints                  | 8 (audited in #590)                                                               |
-| External deps beyond shared-ui | None (lucide-react already used everywhere)                                       |
-| Existing test coverage         | 0 — no tests on either surface                                                    |
-| `/fitted` substitutions        | 1 hit (`/fitted/onboarding` in ProfilePage)                                       |
+| Question                       | Answer                                                                             |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| Files to port                  | 7 (~1,470 LOC) + 2 lib helpers + 2 chat-modal files                                |
+| API endpoints                  | 8 (audited in #590)                                                                |
+| External deps beyond shared-ui | None (lucide-react already used everywhere)                                        |
+| Existing test coverage         | 0 — no tests on either surface                                                     |
+| `/fitted` substitutions        | 1 hit (`/fitted/onboarding` in ProfilePage)                                        |
 | Refactor candidates            | ProfilePage.tsx 864 LOC could split into 3-4 sub-components — defer post-migration |
-| PII concern                    | Verify `data-sentry-mask` flows through shared-ui Input on identity fields       |
+| PII concern                    | Verify `data-sentry-mask` flows through shared-ui Input on identity fields         |
 
 ## 17. Collisions
 

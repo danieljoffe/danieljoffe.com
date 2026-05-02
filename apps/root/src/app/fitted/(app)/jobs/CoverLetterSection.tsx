@@ -97,49 +97,60 @@ export default function CoverLetterSection({
 
   if (loading) {
     return (
-      <div>
-        <Text variant='caption' className='mb-1'>
-          Cover Letter
-        </Text>
-        <div className='flex items-center gap-2 py-2'>
-          <Spinner size='sm' />
-          <Text variant='meta'>Loading...</Text>
+      <div className='flex flex-col gap-2'>
+        <div className='flex items-center gap-2'>
+          <Text variant='caption'>Cover Letter</Text>
+          <Badge variant='default' size='sm'>
+            Loading...
+          </Badge>
         </div>
       </div>
     );
   }
 
   const isApproved = record?.approved_at != null;
+  const statusLabel = generating
+    ? 'Generating...'
+    : !record
+      ? 'Not started'
+      : isApproved
+        ? 'Approved'
+        : 'Generated';
+  const statusVariant = generating
+    ? 'info'
+    : !record
+      ? 'default'
+      : isApproved
+        ? 'success'
+        : 'info';
 
   return (
-    <div>
-      <Text variant='caption' className='mb-1'>
-        Cover Letter
-      </Text>
+    <div className='flex flex-col gap-2'>
+      <div className='flex items-center gap-2'>
+        <Text variant='caption'>Cover Letter</Text>
+        <Badge variant={statusVariant} size='sm'>
+          {statusLabel}
+        </Badge>
+      </div>
 
-      {!record && !generating && (
-        <Button
-          name='generate-cover-letter'
-          variant='secondary'
-          size='sm'
-          onClick={handleGenerate}
-        >
-          Generate Cover Letter
-        </Button>
-      )}
-
-      {generating && (
-        <div className='flex items-center gap-2 py-2'>
+      {generating ? (
+        <div className='flex items-center gap-2'>
           <Spinner size='sm' />
           <Text variant='meta'>Generating cover letter...</Text>
         </div>
-      )}
-
-      {record && !generating && (
-        <div className='flex items-center gap-2'>
-          <Badge variant={isApproved ? 'success' : 'info'} size='sm'>
-            {isApproved ? 'Approved' : 'Generated'}
-          </Badge>
+      ) : !record ? (
+        <div>
+          <Button
+            name='generate-cover-letter'
+            variant='secondary'
+            size='sm'
+            onClick={handleGenerate}
+          >
+            Generate Cover Letter
+          </Button>
+        </div>
+      ) : (
+        <div>
           <Button
             as='link'
             href={`/fitted/jobs/${jobPostingId}/cover-letter`}

@@ -15,16 +15,16 @@ that is the only blocking work item for #593.
 
 ## 1. shared-ui inventory (49 components)
 
-| Category | Components |
-|---|---|
-| Layout | `Container`, `Grid`, `GridBg`, `PageContainer`, `PageLayout`, `Section`, `Sidebar`, `Spacer`, `Stack` |
-| Navigation | `Breadcrumb`, `Pagination`, `Tabs` |
-| Inputs | `Button`, `Checkbox`, `Dropdown`, `FormFieldError`, `Input`, `Select`, `Switch`, `Textarea` |
-| Feedback | `Alert`, `Loading`, `ProgressBar`, `Skeleton`, `Spinner`, `Toast` |
-| Display | `AspectRatio`, `Avatar`, `Badge`, `Card`, `CTACard`, `Divider`, `Heading`, `Kbd`, `SectionLabel`, `StatsCard`, `Table`, `Text`, `Tooltip` |
-| Modal | `Modal` |
-| Theming | `ThemeProvider`, `ThemeToggle` |
-| Infrastructure | `ErrorBoundary`, `StructuredData`, plus `styles/`, `utils/`, `types.ts` |
+| Category       | Components                                                                                                                                |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Layout         | `Container`, `Grid`, `GridBg`, `PageContainer`, `PageLayout`, `Section`, `Sidebar`, `Spacer`, `Stack`                                     |
+| Navigation     | `Breadcrumb`, `Pagination`, `Tabs`                                                                                                        |
+| Inputs         | `Button`, `Checkbox`, `Dropdown`, `FormFieldError`, `Input`, `Select`, `Switch`, `Textarea`                                               |
+| Feedback       | `Alert`, `Loading`, `ProgressBar`, `Skeleton`, `Spinner`, `Toast`                                                                         |
+| Display        | `AspectRatio`, `Avatar`, `Badge`, `Card`, `CTACard`, `Divider`, `Heading`, `Kbd`, `SectionLabel`, `StatsCard`, `Table`, `Text`, `Tooltip` |
+| Modal          | `Modal`                                                                                                                                   |
+| Theming        | `ThemeProvider`, `ThemeToggle`                                                                                                            |
+| Infrastructure | `ErrorBoundary`, `StructuredData`, plus `styles/`, `utils/`, `types.ts`                                                                   |
 
 Every component ships with `.spec.tsx` (Vitest) and `.stories.tsx`
 (Storybook). MDX docs exist for `Button`, `Card`, `Dropdown`, `Input`,
@@ -106,42 +106,42 @@ Skeleton:
 /* libs/shared/ui/src/styles/pyre-theme.css */
 @theme {
   /* Pyre brand: chartreuse (oklch hue ~127, high chroma) */
-  --color-brand-50:  oklch(0.97 0.05 127);
-  --color-brand-100: oklch(0.93 0.10 127);
+  --color-brand-50: oklch(0.97 0.05 127);
+  --color-brand-100: oklch(0.93 0.1 127);
   --color-brand-200: oklch(0.87 0.16 127);
   --color-brand-300: oklch(0.78 0.22 127);
   --color-brand-400: oklch(0.72 0.26 127);
-  --color-brand-500: oklch(0.67 0.28 127);  /* primary chartreuse */
-  --color-brand-600: oklch(0.60 0.26 127);
-  --color-brand-700: oklch(0.50 0.22 127);
-  --color-brand-800: oklch(0.40 0.17 127);
-  --color-brand-900: oklch(0.30 0.12 127);
-  --color-brand-950: oklch(0.20 0.08 127);
+  --color-brand-500: oklch(0.67 0.28 127); /* primary chartreuse */
+  --color-brand-600: oklch(0.6 0.26 127);
+  --color-brand-700: oklch(0.5 0.22 127);
+  --color-brand-800: oklch(0.4 0.17 127);
+  --color-brand-900: oklch(0.3 0.12 127);
+  --color-brand-950: oklch(0.2 0.08 127);
 
   /* Surfaces — near-black */
-  --color-surface:           oklch(0.10 0.01 270);  /* primary background */
+  --color-surface: oklch(0.1 0.01 270); /* primary background */
   --color-surface-secondary: oklch(0.13 0.01 270);
-  --color-surface-tertiary:  oklch(0.16 0.01 270);
-  --color-surface-elevated:  oklch(0.13 0.01 270);
-  --color-surface-overlay:   rgba(0, 0, 0, 0.6);
+  --color-surface-tertiary: oklch(0.16 0.01 270);
+  --color-surface-elevated: oklch(0.13 0.01 270);
+  --color-surface-overlay: rgba(0, 0, 0, 0.6);
 
   /* Borders */
-  --color-border:           oklch(0.22 0.01 270);
-  --color-border-secondary: oklch(0.30 0.01 270);
-  --color-border-focus:     oklch(0.67 0.28 127);  /* chartreuse focus ring */
+  --color-border: oklch(0.22 0.01 270);
+  --color-border-secondary: oklch(0.3 0.01 270);
+  --color-border-focus: oklch(0.67 0.28 127); /* chartreuse focus ring */
 
   /* Text */
-  --color-text-primary:   oklch(0.96 0.01 90);
+  --color-text-primary: oklch(0.96 0.01 90);
   --color-text-secondary: oklch(0.75 0.02 90);
-  --color-text-tertiary:  oklch(0.60 0.02 90);
-  --color-text-inverse:   oklch(0.10 0.01 270);
-  --color-text-brand:     oklch(0.78 0.22 127);
+  --color-text-tertiary: oklch(0.6 0.02 90);
+  --color-text-inverse: oklch(0.1 0.01 270);
+  --color-text-brand: oklch(0.78 0.22 127);
 
   /* Status — keep semantic hues, dim chroma for dark surface */
-  --color-success: oklch(0.72 0.20 145);
+  --color-success: oklch(0.72 0.2 145);
   --color-warning: oklch(0.78 0.18 70);
-  --color-error:   oklch(0.65 0.22 25);
-  --color-info:    oklch(0.70 0.20 230);
+  --color-error: oklch(0.65 0.22 25);
+  --color-info: oklch(0.7 0.2 230);
 }
 ```
 
@@ -184,6 +184,7 @@ in the same change).
 - `/storybook-check` and `/verify-sharedui` skills exercise the lib
 
 For Wyrdfold-readiness specifically:
+
 - Add Pyre theme stories — render a representative subset of components
   (Button, Card, Modal, StatsCard, Sidebar) in a Pyre-themed Storybook
   story so the theme can be validated visually before Wyrdfold consumes
@@ -196,6 +197,7 @@ For Wyrdfold-readiness specifically:
 ## 7. /fitted-coupled patterns to NOT promote
 
 These live in apps/root and should NOT migrate into shared-ui:
+
 - `FittedSidebar.tsx` — has Fitted-specific nav items
 - `_components/ConversationChat*.tsx` — career-decision-tool–specific
 - `(app)/insights/charts/*` — Fitted insights visualizations (move
@@ -221,14 +223,14 @@ These are correctly product-specific and don't violate the kit boundary.
 
 ## 9. Decision summary
 
-| Question | Answer |
-|---|---|
-| Is shared-ui safe to share with Wyrdfold? | **Yes**, no changes needed. |
-| Where do Pyre tokens live? | New file `libs/shared/ui/src/styles/pyre-theme.css`, exported via package `exports` map. |
-| Do components need re-skinning? | **No** — token-based theming reskins everything via CSS. |
-| Does ThemeProvider need extending? | **No** — palette comes from CSS, not React state. |
-| Is `Sidebar` reusable for Wyrdfold? | **Yes** — replace `FittedSidebar` with shared-ui `Sidebar` + Wyrdfold-specific nav items. |
-| What's the only blocker for #593? | Author `pyre-theme.css` and validate WCAG contrast. |
+| Question                                  | Answer                                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Is shared-ui safe to share with Wyrdfold? | **Yes**, no changes needed.                                                               |
+| Where do Pyre tokens live?                | New file `libs/shared/ui/src/styles/pyre-theme.css`, exported via package `exports` map.  |
+| Do components need re-skinning?           | **No** — token-based theming reskins everything via CSS.                                  |
+| Does ThemeProvider need extending?        | **No** — palette comes from CSS, not React state.                                         |
+| Is `Sidebar` reusable for Wyrdfold?       | **Yes** — replace `FittedSidebar` with shared-ui `Sidebar` + Wyrdfold-specific nav items. |
+| What's the only blocker for #593?         | Author `pyre-theme.css` and validate WCAG contrast.                                       |
 
 ## 10. Ready-to-do checklist for the migration commit (separate PR)
 

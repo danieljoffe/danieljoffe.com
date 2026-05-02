@@ -358,12 +358,6 @@ export default function JobsList({
         </Text>
       </div>
 
-      {!activeTargetId && targets.length > 0 && (
-        <Text variant='meta' className='text-text-tertiary'>
-          Pick a target tab to see LLM job-fit analysis on each posting.
-        </Text>
-      )}
-
       {targetsLoading ? (
         <div className='flex gap-1 border-b border-border pb-px'>
           {Array.from({ length: 3 }).map((_, i) => (
@@ -452,6 +446,7 @@ export default function JobsList({
             onSelectionChange={setSelectedIds}
             refreshKey={refreshKey}
             targetId={activeTargetId}
+            analysisTargetId={activeTargetId ?? targets[0]?.id}
             onPostingsLoaded={setVisiblePostings}
           />
 

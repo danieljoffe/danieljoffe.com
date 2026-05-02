@@ -53,7 +53,12 @@ interface JobsListViewProps {
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
   refreshKey: number;
+  /** Active tab target — drives the jobs list filter. */
   targetId: string | undefined;
+  /** Target to analyze each job against in the expand panel — falls
+   *  back to the user's first active target so analysis still runs on
+   *  the "All Jobs" tab. */
+  analysisTargetId: string | undefined;
   onPostingsLoaded?: ((postings: JobPosting[]) => void) | undefined;
 }
 
@@ -64,6 +69,7 @@ export default function JobsListView({
   onSelectionChange,
   refreshKey,
   targetId,
+  analysisTargetId,
   onPostingsLoaded,
 }: JobsListViewProps) {
   const [deleteKey, setDeleteKey] = useState(0);
@@ -131,7 +137,7 @@ export default function JobsListView({
           sortIndicator={sortIndicator}
           selectedIds={selectedIds}
           onSelectionChange={onSelectionChange}
-          targetId={targetId}
+          analysisTargetId={analysisTargetId}
           onRefetch={handleRefetch}
         />
       ) : (

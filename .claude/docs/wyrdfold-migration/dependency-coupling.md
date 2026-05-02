@@ -22,20 +22,20 @@ The migration is **mostly mechanical rename + path rewrite**, with one pull-alon
 
 Aggregated, with usage counts (`grep | uniq -c | sort -rn`):
 
-| Count | Import | Destination in Wyrdfold |
-|------:|--------|-------------------------|
-| 25 | `@/components/Button` | Bring along — copy to `apps/wyrdfold/src/components/Button.tsx`. Custom Button enforces `name` lint rule; required. |
-| 13 | `@/state/Toast/ToastProvider` (`useToast`) | Bring along — provider must mount in Wyrdfold's root layout. Heavy usage. |
-| 6 | `@/lib/cn` | Bring along — trivial utility, copy verbatim. |
-| 3 | `@/lib/supabase/auth-server` (`createAuthServerClient`) | **Rewrite** — must point at Wyrdfold's net-new Supabase project (per epic). |
-| 2 | `@/lib/supabase/auth-client` (`createAuthBrowserClient`) | **Rewrite** — same as above. |
-| 1 | `@/components/Nav/DarkModeToggle` | **Decision** — Wyrdfold ships a single Pyre theme (luminous chartreuse on near-black). Either drop the toggle or keep it for accessibility; recommend drop, since Pyre is the design (see `FittedSidebar.tsx:158, 267`). |
-| 1 | `@/lib/parsePartialJson` | Bring along — used by streaming response parser. |
-| 1 | `@/lib/consumeSse` | Bring along — used by SSE consumer. |
-| 1 | `@/hooks/useInsights` | **Move into Wyrdfold** — see §2 below; this hook only has one consumer (Fitted insights) and reverse-couples to Fitted types. |
-| 1 | `@/hooks/useFocusTrap` | Bring along — small hook, copy verbatim. |
-| 1 | `@/hooks/useAdminTableFetch` | **Investigate** — name implies portfolio admin scope. Confirm Fitted is the only Wyrdfold-relevant consumer; if not Fitted-specific, copy. |
-| — | `@danieljoffe.com/shared-ui/*` | Stays — see #593 audit for component inventory. |
+| Count | Import                                                   | Destination in Wyrdfold                                                                                                                                                                                                  |
+| ----: | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|    25 | `@/components/Button`                                    | Bring along — copy to `apps/wyrdfold/src/components/Button.tsx`. Custom Button enforces `name` lint rule; required.                                                                                                      |
+|    13 | `@/state/Toast/ToastProvider` (`useToast`)               | Bring along — provider must mount in Wyrdfold's root layout. Heavy usage.                                                                                                                                                |
+|     6 | `@/lib/cn`                                               | Bring along — trivial utility, copy verbatim.                                                                                                                                                                            |
+|     3 | `@/lib/supabase/auth-server` (`createAuthServerClient`)  | **Rewrite** — must point at Wyrdfold's net-new Supabase project (per epic).                                                                                                                                              |
+|     2 | `@/lib/supabase/auth-client` (`createAuthBrowserClient`) | **Rewrite** — same as above.                                                                                                                                                                                             |
+|     1 | `@/components/Nav/DarkModeToggle`                        | **Decision** — Wyrdfold ships a single Pyre theme (luminous chartreuse on near-black). Either drop the toggle or keep it for accessibility; recommend drop, since Pyre is the design (see `FittedSidebar.tsx:158, 267`). |
+|     1 | `@/lib/parsePartialJson`                                 | Bring along — used by streaming response parser.                                                                                                                                                                         |
+|     1 | `@/lib/consumeSse`                                       | Bring along — used by SSE consumer.                                                                                                                                                                                      |
+|     1 | `@/hooks/useInsights`                                    | **Move into Wyrdfold** — see §2 below; this hook only has one consumer (Fitted insights) and reverse-couples to Fitted types.                                                                                            |
+|     1 | `@/hooks/useFocusTrap`                                   | Bring along — small hook, copy verbatim.                                                                                                                                                                                 |
+|     1 | `@/hooks/useAdminTableFetch`                             | **Investigate** — name implies portfolio admin scope. Confirm Fitted is the only Wyrdfold-relevant consumer; if not Fitted-specific, copy.                                                                               |
+|     — | `@danieljoffe.com/shared-ui/*`                           | Stays — see #593 audit for component inventory.                                                                                                                                                                          |
 
 ### Full shared-ui consumption (for cross-reference with #593)
 
@@ -63,18 +63,18 @@ The hook is consumed by **only one place** outside itself: `InsightsDashboard.ts
 
 ### Page metadata (`apps/root/src/app/fitted/.../page.tsx`)
 
-| File | Title |
-|------|-------|
-| `(app)/page.tsx` | `Dashboard` |
-| `(app)/jobs/page.tsx` | `Jobs` |
-| `(app)/jobs/[id]/page.tsx` | `Job Detail` |
-| `(app)/targets/page.tsx` | `Targets` |
-| `(app)/targets/[id]/page.tsx` | `Target Detail` |
-| `(app)/profile/page.tsx` | `Profile` |
-| `(app)/insights/page.tsx` | `Insights` |
-| `(app)/settings/page.tsx` | `Settings` |
-| `login/page.tsx` | `Sign in to Fitted` → **rename to** `Sign in to Wyrdfold` |
-| `onboarding/page.tsx` | `Get Started` |
+| File                          | Title                                                     |
+| ----------------------------- | --------------------------------------------------------- |
+| `(app)/page.tsx`              | `Dashboard`                                               |
+| `(app)/jobs/page.tsx`         | `Jobs`                                                    |
+| `(app)/jobs/[id]/page.tsx`    | `Job Detail`                                              |
+| `(app)/targets/page.tsx`      | `Targets`                                                 |
+| `(app)/targets/[id]/page.tsx` | `Target Detail`                                           |
+| `(app)/profile/page.tsx`      | `Profile`                                                 |
+| `(app)/insights/page.tsx`     | `Insights`                                                |
+| `(app)/settings/page.tsx`     | `Settings`                                                |
+| `login/page.tsx`              | `Sign in to Fitted` → **rename to** `Sign in to Wyrdfold` |
+| `onboarding/page.tsx`         | `Get Started`                                             |
 
 ### Root layout (`fitted/layout.tsx`)
 
@@ -129,12 +129,12 @@ No other providers (Analytics, FeatureFlag, Theme, etc.) are consumed today. Pos
 
 ## 6. Custom hooks consumed
 
-| Hook | Sites | Action |
-|------|------:|--------|
-| `useToast` | 13 | Bring along (provider) |
-| `useFocusTrap` | 1 (`FittedSidebar.tsx`) | Bring along (small hook) |
-| `useInsights` | 1 (`InsightsDashboard.tsx`) | Move into Wyrdfold (resolves reverse coupling) |
-| `useAdminTableFetch` | 1 | Verify scope; copy if Fitted-only or generic |
+| Hook                 |                       Sites | Action                                         |
+| -------------------- | --------------------------: | ---------------------------------------------- |
+| `useToast`           |                          13 | Bring along (provider)                         |
+| `useFocusTrap`       |     1 (`FittedSidebar.tsx`) | Bring along (small hook)                       |
+| `useInsights`        | 1 (`InsightsDashboard.tsx`) | Move into Wyrdfold (resolves reverse coupling) |
+| `useAdminTableFetch` |                           1 | Verify scope; copy if Fitted-only or generic   |
 
 Plus Next.js built-ins: `useRouter`, `usePathname`, `useSearchParams` (no action needed).
 
@@ -175,40 +175,40 @@ Not blocking for the migration itself, but the audit must complete before launch
 
 ### Inbound deps to bring along
 
-| Source path | Action | Owner / risk |
-|-------------|--------|--------------|
-| `@/components/Button` | Copy verbatim | Trivial |
-| `@/state/Toast/ToastProvider` (and provider) | Copy + mount in Wyrdfold root layout | Trivial |
-| `@/lib/cn` | Copy verbatim | Trivial |
-| `@/lib/parsePartialJson`, `@/lib/consumeSse` | Copy verbatim | Trivial |
-| `@/lib/supabase/auth-client`, `auth-server` | Copy + rewire to Wyrdfold Supabase project + new env vars | Cross-ref #592 |
-| `@/hooks/useFocusTrap` | Copy verbatim | Trivial |
-| `@/hooks/useAdminTableFetch` | Verify scope; copy if generic | Low |
-| `@/hooks/useInsights` (+ its consumed types) | **Move** into Wyrdfold; delete from root after | Resolves §2 reverse-coupling |
-| `@/components/Nav/DarkModeToggle` | **Drop** (Pyre is single-theme) | Decision required |
-| `@danieljoffe.com/shared-ui/*` | Stays in workspace | Cross-ref #593 |
+| Source path                                  | Action                                                    | Owner / risk                 |
+| -------------------------------------------- | --------------------------------------------------------- | ---------------------------- |
+| `@/components/Button`                        | Copy verbatim                                             | Trivial                      |
+| `@/state/Toast/ToastProvider` (and provider) | Copy + mount in Wyrdfold root layout                      | Trivial                      |
+| `@/lib/cn`                                   | Copy verbatim                                             | Trivial                      |
+| `@/lib/parsePartialJson`, `@/lib/consumeSse` | Copy verbatim                                             | Trivial                      |
+| `@/lib/supabase/auth-client`, `auth-server`  | Copy + rewire to Wyrdfold Supabase project + new env vars | Cross-ref #592               |
+| `@/hooks/useFocusTrap`                       | Copy verbatim                                             | Trivial                      |
+| `@/hooks/useAdminTableFetch`                 | Verify scope; copy if generic                             | Low                          |
+| `@/hooks/useInsights` (+ its consumed types) | **Move** into Wyrdfold; delete from root after            | Resolves §2 reverse-coupling |
+| `@/components/Nav/DarkModeToggle`            | **Drop** (Pyre is single-theme)                           | Decision required            |
+| `@danieljoffe.com/shared-ui/*`               | Stays in workspace                                        | Cross-ref #593               |
 
 ### Outbound deps to rewrite (in `apps/root` after migration)
 
-| Path | Action |
-|------|--------|
-| `apps/root/src/hooks/useInsights.ts` | Delete after move |
-| `apps/root/src/proxy.ts` | Strip `/fitted/*` handling once `/fitted` routes are removed/redirected |
-| Whatever decision lands for `apps/root/src/app/fitted/*` per epic (delete / redirect / freeze) | Tracked in epic #564 §4 |
+| Path                                                                                           | Action                                                                  |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `apps/root/src/hooks/useInsights.ts`                                                           | Delete after move                                                       |
+| `apps/root/src/proxy.ts`                                                                       | Strip `/fitted/*` handling once `/fitted` routes are removed/redirected |
+| Whatever decision lands for `apps/root/src/app/fitted/*` per epic (delete / redirect / freeze) | Tracked in epic #564 §4                                                 |
 
 ## Branding-string rename list (the deliverable)
 
-| Find | Replace |
-|------|---------|
-| `Fitted` (in titles, layout metadata) | `Wyrdfold` |
-| `Sign in to Fitted` | `Sign in to Wyrdfold` |
-| `template: '%s \| Fitted'` | `template: '%s \| Wyrdfold'` |
-| layout description (job-search command center) | new Pyre-aligned copy |
-| Component identifiers `Fitted*` | strip prefix or `Wyrdfold*` |
-| File names `Fitted*.tsx` | strip prefix |
-| `/fitted/*` href literals | root-relative (`/`, `/jobs`, etc.) |
-| `proxy.ts` `/fitted/*` matchers and constants | new Wyrdfold-rooted proxy |
-| `robots: { index: false }` | review at launch (keep for dev box) |
+| Find                                           | Replace                             |
+| ---------------------------------------------- | ----------------------------------- |
+| `Fitted` (in titles, layout metadata)          | `Wyrdfold`                          |
+| `Sign in to Fitted`                            | `Sign in to Wyrdfold`               |
+| `template: '%s \| Fitted'`                     | `template: '%s \| Wyrdfold'`        |
+| layout description (job-search command center) | new Pyre-aligned copy               |
+| Component identifiers `Fitted*`                | strip prefix or `Wyrdfold*`         |
+| File names `Fitted*.tsx`                       | strip prefix                        |
+| `/fitted/*` href literals                      | root-relative (`/`, `/jobs`, etc.)  |
+| `proxy.ts` `/fitted/*` matchers and constants  | new Wyrdfold-rooted proxy           |
+| `robots: { index: false }`                     | review at launch (keep for dev box) |
 
 ## Notes on collisions with the in-flight resume/cover-letter session
 

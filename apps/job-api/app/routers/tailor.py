@@ -8,6 +8,7 @@ GET   /tailor/resumes/by-job/{id}       — most recent resume for a job posting
 POST  /tailor/resumes/export-zip        — bulk .docx download as zip.
 PATCH /tailor/resumes/{id}              — edit a draft resume payload.
 POST  /tailor/resumes/{id}/approve      — approve (lock) a resume.
+POST  /tailor/resumes/{id}/unapprove    — reopen an approved resume for editing.
 GET   /tailor/resumes/{id}              — one record (either type; look up by id).
 GET   /tailor/resumes/{id}/download     — serves the `.docx` bytes.
 
@@ -452,6 +453,31 @@ async def approve_tailored_resume(
     if row.document_type == "resume" and row.job_posting_id:
         supabase.table("job_postings").update(
             {"status": "resume_ready"}
+        ).eq("id", row.job_posting_id).execute()
+
+    return record
+
+
+@router.post("/resumes/{resume_id}/unapprove")
+async def unapprove_tailored_resume(
+    resume_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TailoredResumeRecord:
+    """Reopen an approved resume or cover letter for editing. Idempotent if already unlocked."""
+    row = persistence.get(supabase, resume_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="tailored document not found")
+
+    if row.approved_at is None:
+        return row
+
+    record = persistence.unapprove(supabase, resume_id)
+
+    # Mirror the approve side: resume unlock walks the linked job back to
+    # resume_draft so the lifecycle stays in sync.
+    if row.document_type == "resume" and row.job_posting_id:
+        supabase.table("job_postings").update(
+            {"status": "resume_draft"}
         ).eq("id", row.job_posting_id).execute()
 
     return record

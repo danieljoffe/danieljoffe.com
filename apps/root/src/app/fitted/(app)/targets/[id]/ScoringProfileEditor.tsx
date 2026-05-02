@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Input } from '@danieljoffe.com/shared-ui/Input';
@@ -241,54 +240,43 @@ export default function ScoringProfileEditor({
     [profile.negative.keywords, updateNegative]
   );
 
-  return (
-    <Card>
-      <CardHeader>
-        <div className='flex items-center justify-between'>
-          <CardTitle>Scoring Profile</CardTitle>
-          <Button
-            name='target-profile-save'
-            variant='primary'
-            size='sm'
-            onClick={handleSave}
-            disabled={saving || !isDirty}
-          >
-            {saving ? (
-              <>
-                <Spinner size='sm' />
-                <span>Saving...</span>
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className='flex flex-col gap-6'>
-        {/* ---- Categories ---- */}
-        <section
-          aria-labelledby='scoring-categories'
-          className='flex flex-col gap-4'
-        >
-          <Heading variant='section' as='h3' id='scoring-categories'>
-            Categories
-          </Heading>
+  const totalKeywords = useMemo(
+    () =>
+      Object.values(profile.categories).reduce(
+        (sum, c) => sum + Object.keys(c.keywords).length,
+        0
+      ),
+    [profile.categories]
+  );
 
+  return (
+    <div className='flex flex-col gap-4'>
+      {/* ---- Categories ---- */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-baseline justify-between gap-2'>
+            <CardTitle>Categories</CardTitle>
+            <Text variant='meta' className='text-text-tertiary'>
+              {Object.keys(profile.categories).length} categories ·{' '}
+              {totalKeywords} keywords
+            </Text>
+          </div>
+          <Text variant='meta' className='text-text-secondary'>
+            Group keywords by theme. Each keyword gets a 1–3 weight (click to
+            cycle); category weight scales the whole group.
+          </Text>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-3'>
           {Object.entries(profile.categories).map(
             ([catName, cat]: [string, CategoryProfile]) => (
               <div
                 key={catName}
                 className='rounded-lg border border-border p-4 flex flex-col gap-3'
               >
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center gap-2'>
-                    <Text variant='label' as='span'>
-                      {catName}
-                    </Text>
-                    {/* <Badge variant='default' size='sm'>
-                      {Object.keys(cat.keywords).length} keywords
-                    </Badge> */}
-                  </div>
+                <div className='flex items-center justify-between gap-2'>
+                  <Text variant='label' as='span'>
+                    {catName}
+                  </Text>
                   <div className='flex items-center gap-2'>
                     <label className='flex items-center gap-1 text-xs text-text-secondary'>
                       Weight:
@@ -402,17 +390,25 @@ export default function ScoringProfileEditor({
               <span>Add Category</span>
             </Button>
           </div>
-        </section>
+        </CardContent>
+      </Card>
 
-        {/* ---- Seniority ---- */}
-        <section
-          aria-labelledby='scoring-seniority'
-          className='flex flex-col gap-3'
-        >
-          <Heading variant='section' as='h3' id='scoring-seniority'>
-            Seniority
-          </Heading>
-          <div className='flex items-center gap-3'>
+      {/* ---- Seniority ---- */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-baseline justify-between gap-2'>
+            <CardTitle>Seniority</CardTitle>
+            <Text variant='meta' className='text-text-tertiary'>
+              {profile.seniority.signals.length} signals
+            </Text>
+          </div>
+          <Text variant='meta' className='text-text-secondary'>
+            What level you&rsquo;re aiming for and the language that signals it
+            in a posting.
+          </Text>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-3'>
+          <div className='max-w-xs'>
             <Input
               label='Level'
               value={profile.seniority.level ?? ''}
@@ -433,16 +429,24 @@ export default function ScoringProfileEditor({
             onAdd={addSenioritySignal}
             onRemove={removeSenioritySignal}
           />
-        </section>
+        </CardContent>
+      </Card>
 
-        {/* ---- Domain ---- */}
-        <section
-          aria-labelledby='scoring-domain'
-          className='flex flex-col gap-3'
-        >
-          <Heading variant='section' as='h3' id='scoring-domain'>
-            Domain
-          </Heading>
+      {/* ---- Domain ---- */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-baseline justify-between gap-2'>
+            <CardTitle>Domain</CardTitle>
+            <Text variant='meta' className='text-text-tertiary'>
+              {profile.domain.signals.length} signals
+            </Text>
+          </div>
+          <Text variant='meta' className='text-text-secondary'>
+            Industry / problem-space cues. Multiplier applied to the bucket as a
+            whole.
+          </Text>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-3'>
           <label className='flex items-center gap-1 text-xs text-text-secondary'>
             Weight:
             <input
@@ -466,16 +470,24 @@ export default function ScoringProfileEditor({
             onAdd={addDomainSignal}
             onRemove={removeDomainSignal}
           />
-        </section>
+        </CardContent>
+      </Card>
 
-        {/* ---- Negative ---- */}
-        <section
-          aria-labelledby='scoring-negative'
-          className='flex flex-col gap-3'
-        >
-          <Heading variant='section' as='h3' id='scoring-negative'>
-            Negative Keywords
-          </Heading>
+      {/* ---- Negative ---- */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-baseline justify-between gap-2'>
+            <CardTitle>Penalties</CardTitle>
+            <Text variant='meta' className='text-text-tertiary'>
+              {profile.negative.keywords.length} keywords
+            </Text>
+          </div>
+          <Text variant='meta' className='text-text-secondary'>
+            Keywords that should drag a posting&rsquo;s score down (e.g.
+            misaligned tech, role types).
+          </Text>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-3'>
           <label className='flex items-center gap-1 text-xs text-text-secondary'>
             Weight:
             <input
@@ -499,15 +511,40 @@ export default function ScoringProfileEditor({
             onAdd={addNegativeKeyword}
             onRemove={removeNegativeKeyword}
           />
-        </section>
+        </CardContent>
+      </Card>
 
-        {isDirty && (
-          <Text variant='caption' as='p' className='text-warning'>
+      {/* Sticky save bar — only visible while there are unsaved changes.
+          Sits above any other bottom-fixed UI (jobs batch bar reserves
+          its own space at the route level). */}
+      {isDirty && (
+        <div
+          className='sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-elevated px-4 py-2.5 shadow-lg'
+          role='status'
+          aria-live='polite'
+        >
+          <Text variant='caption' className='text-warning'>
             Unsaved changes
           </Text>
-        )}
-      </CardContent>
-    </Card>
+          <Button
+            name='target-profile-save'
+            variant='primary'
+            size='sm'
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <Spinner size='sm' />
+                <span>Saving...</span>
+              </>
+            ) : (
+              'Save'
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 

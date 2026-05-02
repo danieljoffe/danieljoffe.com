@@ -26,19 +26,19 @@ specific gaps, then decides whether Wyrdfold should share or fork it.
 
 Routers registered in `app/main.py`:
 
-| Router | Prefix | File | Notes |
-|---|---|---|---|
-| analysis | `/analysis` | `routers/analysis.py` | LLM job-description analysis |
-| experience | `/experience` | `routers/experience.py` | Prose docs, optimized docs, conversation, gap tracker (longest router — handles SSE for `/derive`) |
-| insights | `/insights` | `routers/insights.py` | 3 GET endpoints (pipeline / skills-cost / targets) with `period=7d|30d|90d|all` |
-| jobs | `/jobs` | `routers/jobs.py` | Sync `def` handlers (threadpool) — verified via 2026-04-30 load test |
-| poll | `/poll` | `routers/poll.py` | Cron-triggered poller endpoint |
-| sources | `/sources` | `routers/sources.py` | Greenhouse/Lever/Ashby/Workday/Smartrecruiters seed CRUD |
-| status | `/status` | `routers/status.py` | Status log |
-| tailor | `/tailor` | `routers/tailor.py` | Tailored resumes + cover letters (lifecycle, single-lookup, batch generation, versions) |
-| targets | `/targets` | `routers/targets.py` | 19 endpoints: CRUD + activate/deactivate + reference JDs + derive-profile + poll-jobs + status |
-| user_profile | `/profile` | `routers/user_profile.py` | Notification prefs + identity (resume contact info) |
-| (none) | `/health` | `app/main.py` | Bypasses TrustedHost middleware |
+| Router       | Prefix        | File                      | Notes                                                                                              |
+| ------------ | ------------- | ------------------------- | -------------------------------------------------------------------------------------------------- | --- | --- | ---- |
+| analysis     | `/analysis`   | `routers/analysis.py`     | LLM job-description analysis                                                                       |
+| experience   | `/experience` | `routers/experience.py`   | Prose docs, optimized docs, conversation, gap tracker (longest router — handles SSE for `/derive`) |
+| insights     | `/insights`   | `routers/insights.py`     | 3 GET endpoints (pipeline / skills-cost / targets) with `period=7d                                 | 30d | 90d | all` |
+| jobs         | `/jobs`       | `routers/jobs.py`         | Sync `def` handlers (threadpool) — verified via 2026-04-30 load test                               |
+| poll         | `/poll`       | `routers/poll.py`         | Cron-triggered poller endpoint                                                                     |
+| sources      | `/sources`    | `routers/sources.py`      | Greenhouse/Lever/Ashby/Workday/Smartrecruiters seed CRUD                                           |
+| status       | `/status`     | `routers/status.py`       | Status log                                                                                         |
+| tailor       | `/tailor`     | `routers/tailor.py`       | Tailored resumes + cover letters (lifecycle, single-lookup, batch generation, versions)            |
+| targets      | `/targets`    | `routers/targets.py`      | 19 endpoints: CRUD + activate/deactivate + reference JDs + derive-profile + poll-jobs + status     |
+| user_profile | `/profile`    | `routers/user_profile.py` | Notification prefs + identity (resume contact info)                                                |
+| (none)       | `/health`     | `app/main.py`             | Bypasses TrustedHost middleware                                                                    |
 
 Every router declares a router-level
 `dependencies=[Depends(verify_api_key_or_session)]`. Per-handler
@@ -66,6 +66,7 @@ Cron    ──x-api-key───────────────────
 Next.js mints the short-lived session JWT via `apps/root/src/lib/adminSession.ts`. The job-api never sees the long-lived admin cookie.
 
 **Wyrdfold implications:**
+
 - `tools-admin` is hardcoded as the only valid `sub`. Wyrdfold has multiple users — this check must become "any valid Supabase JWT" or
   similar.
 - `get_current_user_id` returns the literal `"tools-admin"` string for api-key callers. Multi-tenant Wyrdfold cannot use api-key paths
@@ -77,19 +78,19 @@ Next.js mints the short-lived session JWT via `apps/root/src/lib/adminSession.ts
 
 `app/config.py` — pydantic-settings BaseSettings:
 
-| Var | Required for | Wyrdfold action |
-|---|---|---|
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | DB | Wyrdfold's separate Supabase project |
-| `JOB_API_KEY` | api-key auth | Restrict scope to internal cron |
-| `ADMIN_SESSION_SECRET` | session JWT | Replace with Supabase JWT verification |
-| `ALLOWED_HOSTS` | TrustedHostMiddleware | Set to Wyrdfold's frontend hosts |
-| `ANTHROPIC_API_KEY`, `LLM_PROVIDER` | LLM | Same key works; consider per-product budget |
-| `VOYAGE_API_KEY`, `EMBEDDINGS_PROVIDER` | embeddings | Same |
-| `TWILIO_*` | SMS | Optional — defer for Wyrdfold v1 |
-| `NEXT_APP_URL`, `JOB_ALERT_SECRET` | email alerts BFF callback | Replace with Wyrdfold web URL |
-| `FIRECRAWL_API_KEY` | JD scraping fallback | Same |
-| `GREENHOUSE_DELAY_MS`, `SLOW_REQUEST_THRESHOLD_MS` | throttling/log | Same |
-| `VALIDATE_POLL_URLS` | poller | Same |
+| Var                                                | Required for              | Wyrdfold action                             |
+| -------------------------------------------------- | ------------------------- | ------------------------------------------- |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`        | DB                        | Wyrdfold's separate Supabase project        |
+| `JOB_API_KEY`                                      | api-key auth              | Restrict scope to internal cron             |
+| `ADMIN_SESSION_SECRET`                             | session JWT               | Replace with Supabase JWT verification      |
+| `ALLOWED_HOSTS`                                    | TrustedHostMiddleware     | Set to Wyrdfold's frontend hosts            |
+| `ANTHROPIC_API_KEY`, `LLM_PROVIDER`                | LLM                       | Same key works; consider per-product budget |
+| `VOYAGE_API_KEY`, `EMBEDDINGS_PROVIDER`            | embeddings                | Same                                        |
+| `TWILIO_*`                                         | SMS                       | Optional — defer for Wyrdfold v1            |
+| `NEXT_APP_URL`, `JOB_ALERT_SECRET`                 | email alerts BFF callback | Replace with Wyrdfold web URL               |
+| `FIRECRAWL_API_KEY`                                | JD scraping fallback      | Same                                        |
+| `GREENHOUSE_DELAY_MS`, `SLOW_REQUEST_THRESHOLD_MS` | throttling/log            | Same                                        |
+| `VALIDATE_POLL_URLS`                               | poller                    | Same                                        |
 
 No CORS middleware is registered — only `TrustedHostMiddleware`.
 That is correct for the BFF pattern (server-to-server). If Wyrdfold's
@@ -121,10 +122,10 @@ into `cost_log.record(...)` callsites.
 
 Total grep hits: **2**.
 
-| File:line | Hit | Action |
-|---|---|---|
-| `services/notify.py:273` | `f"{settings.next_app_url.rstrip('/')}/fitted/jobs/{job_id}"` (SMS deep link) | Make path configurable: `settings.deep_link_jobs_path` defaulting to `/jobs` |
-| `services/targets/merge.py:6` | Docstring `"Strategy (per fitted-scope.md):"` | Cosmetic — drop or update |
+| File:line                     | Hit                                                                           | Action                                                                       |
+| ----------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `services/notify.py:273`      | `f"{settings.next_app_url.rstrip('/')}/fitted/jobs/{job_id}"` (SMS deep link) | Make path configurable: `settings.deep_link_jobs_path` defaulting to `/jobs` |
+| `services/targets/merge.py:6` | Docstring `"Strategy (per fitted-scope.md):"`                                 | Cosmetic — drop or update                                                    |
 
 Everything else is product-agnostic: extraction, scoring, persistence,
 LLM plumbing, ATS lint, ingest, embeddings, conversation orchestrator.
@@ -170,6 +171,7 @@ vars, force-overrides `ALLOWED_HOSTS=*`, and clears the in-memory
 cache between tests.
 
 Gaps for Wyrdfold:
+
 - No tests exercise multi-user data isolation (because there is no
   multi-user mode).
 - No auth-failure tests for `verify_api_key_or_session` malformed
@@ -280,6 +282,7 @@ When kicking off Wyrdfold-api:
 ## 13. Collisions encountered
 
 The other session is actively editing in `chore/fitted-ui-refinements`:
+
 - `apps/job-api/app/routers/tailor.py`
 - `apps/job-api/app/services/batch.py`
 - `apps/job-api/app/services/llm/{anthropic_client,client,mock}.py`
