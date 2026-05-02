@@ -18,7 +18,6 @@ from app.services.experience.consolidate import (
 )
 from app.services.llm.mock import MockLLMClient
 
-
 # ---------------------------------------------------------------------------
 # Service: consolidate_prose
 # ---------------------------------------------------------------------------

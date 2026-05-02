@@ -15,7 +15,7 @@ class _Resp:
 
 def _build_supabase(posting_data: dict[str, Any] | None) -> MagicMock:
     sb = MagicMock()
-    # .table("job_postings").select("status").eq("id", id).single().execute()
+    # .table("jobs").select("status").eq("id", id).single().execute()
     select_chain = sb.table.return_value.select.return_value.eq.return_value.single
     select_chain.return_value.execute.return_value = _Resp(posting_data)
     # insert, update, and delete are chain-called; default MagicMock return is fine

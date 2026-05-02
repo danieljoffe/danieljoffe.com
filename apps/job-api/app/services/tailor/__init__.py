@@ -8,7 +8,7 @@ front of an employer.
 Layout:
 - tailor.py       — LLM synthesis + trace validation (P3a)
 - prompts.py      — TAILOR_SYSTEM (P3a)
-- persistence.py  — tailored_resumes CRUD + Supabase Storage (P3d)
+- persistence.py  — documents CRUD + Supabase Storage (P3d)
 - pipeline.py     — end-to-end orchestration (P3d)
 - reuse.py        — resume reuse within targets (#504)
 """

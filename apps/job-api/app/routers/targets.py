@@ -19,6 +19,7 @@ from app.dependencies import (
     get_supabase,
     verify_api_key_or_session,
 )
+from app.http_client import get_http_client
 from app.models.schemas import PollResult
 from app.models.targets import (
     CreateOrLinkResult,
@@ -34,7 +35,6 @@ from app.models.targets import (
     UserTarget,
     UserTargetWithTarget,
 )
-from app.http_client import get_http_client
 from app.services.experience import optimized
 from app.services.extract import (
     ExtractionResult,
@@ -449,7 +449,7 @@ async def get_target_status(
         raise HTTPException(status_code=404, detail="Target not found")
 
     count_resp = (
-        supabase.table("job_target_scores")
+        supabase.table("scores")
         .select("id", count=CountMethod.exact)
         .eq("target_id", target_id)
         .execute()
@@ -489,7 +489,7 @@ async def create_target_from_posting(
     reference, and activates the target.
     """
     resp = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .select("id, title, description_html, absolute_url")
         .eq("id", posting_id)
         .execute()

@@ -20,7 +20,7 @@ router = APIRouter(
 
 @router.get("")
 async def list_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
-    resp = supabase.table("job_sources").select("*").order("company_name").execute()
+    resp = supabase.table("sources").select("*").order("company_name").execute()
     return {"sources": resp.data or []}
 
 
@@ -33,7 +33,7 @@ async def manage_source(
         if not body.company_name:
             raise HTTPException(status_code=422, detail="company_name required for add")
         resp = (
-            supabase.table("job_sources")
+            supabase.table("sources")
             .upsert(
                 {
                     "board_token": body.board_token,
@@ -47,12 +47,12 @@ async def manage_source(
         return {"success": True, "source": resp.data[0] if resp.data else None}
 
     elif body.action == "remove":
-        supabase.table("job_sources").delete().eq("board_token", body.board_token).execute()
+        supabase.table("sources").delete().eq("board_token", body.board_token).execute()
         return {"success": True}
 
     elif body.action == "toggle":
         current = (
-            supabase.table("job_sources")
+            supabase.table("sources")
             .select("enabled")
             .eq("board_token", body.board_token)
             .single()
@@ -61,7 +61,7 @@ async def manage_source(
         if current.data:
             row = cast(dict[str, Any], current.data)
             new_enabled = not row["enabled"]
-            supabase.table("job_sources").update({"enabled": new_enabled}).eq(
+            supabase.table("sources").update({"enabled": new_enabled}).eq(
                 "board_token", body.board_token
             ).execute()
             return {"success": True, "enabled": new_enabled}
@@ -107,7 +107,7 @@ async def detect_provider(
 
 @router.post("/seed")
 async def seed_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
-    supabase.table("job_sources").upsert(
+    supabase.table("sources").upsert(
         list(COMPANY_SEED), on_conflict="board_token"
     ).execute()
     return {"success": True, "seeded": len(COMPANY_SEED)}

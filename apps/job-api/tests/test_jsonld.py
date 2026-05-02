@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from app.services.jsonld import _extract_job_postings, fetch_jsonld_jobs
+from app.services.jsonld import _extract_jobs, fetch_jsonld_jobs
 from app.services.standard_job import StandardJob
 
 _SINGLE_POSTING_HTML = """
@@ -103,31 +103,31 @@ _ARRAY_FORMAT_HTML = """
 """
 
 
-# --- _extract_job_postings unit tests ---
+# --- _extract_jobs unit tests ---
 
 
 class TestExtractJobPostings:
     def test_single_posting(self):
-        postings = _extract_job_postings(_SINGLE_POSTING_HTML)
+        postings = _extract_jobs(_SINGLE_POSTING_HTML)
         assert len(postings) == 1
         assert postings[0]["title"] == "Frontend Engineer"
 
     def test_graph_format(self):
-        postings = _extract_job_postings(_GRAPH_HTML)
+        postings = _extract_jobs(_GRAPH_HTML)
         assert len(postings) == 1
         assert postings[0]["jobTitle"] == "Designer"
 
     def test_no_jsonld(self):
-        postings = _extract_job_postings(_NO_JSONLD_HTML)
+        postings = _extract_jobs(_NO_JSONLD_HTML)
         assert postings == []
 
     def test_array_format(self):
-        postings = _extract_job_postings(_ARRAY_FORMAT_HTML)
+        postings = _extract_jobs(_ARRAY_FORMAT_HTML)
         assert len(postings) == 2
 
     def test_invalid_json_skipped(self):
         html = '<script type="application/ld+json">not valid json</script>'
-        postings = _extract_job_postings(html)
+        postings = _extract_jobs(html)
         assert postings == []
 
 

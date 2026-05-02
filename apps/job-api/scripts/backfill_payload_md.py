@@ -1,4 +1,4 @@
-"""Backfill payload_md for tailored_resumes rows that predate the markdown pivot.
+"""Backfill payload_md for documents rows that predate the markdown pivot.
 
 Markdown is now the source of truth for the editor and the pandoc-rendered
 .docx. Older rows have only the structured `payload` JSONB. This script
@@ -30,7 +30,7 @@ from app.supabase_pool import get_supabase_pool, init_supabase
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("backfill_payload_md")
 
-TABLE = "tailored_resumes"
+TABLE = "documents"
 
 
 def _serialize(row: dict[str, Any]) -> str:

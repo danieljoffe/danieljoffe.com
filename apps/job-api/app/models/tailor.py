@@ -180,7 +180,7 @@ class CoverLetterRequest(BaseModel):
 
 
 class TailoredResumeRecord(BaseModel):
-    """Read shape for a tailored_resumes row.
+    """Read shape for a documents row.
 
     `payload` is stored as JSONB; its shape depends on `document_type`:
     - `"resume"` -> parseable as `TailoredResume`

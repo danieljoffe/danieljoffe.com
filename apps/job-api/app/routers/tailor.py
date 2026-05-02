@@ -42,7 +42,6 @@ from app.models.tailor import (
     TailorResponse,
 )
 from app.services.ats_lint import lint_markdown
-from app.services.ats_lint.linter import lint_docx
 from app.services.batch import create_batch, get_batch, process_batch
 from app.services.docx.pandoc_render import (
     PandocNotInstalled,
@@ -109,7 +108,7 @@ async def create_tailored_resume(
     # Reuse check (#504): skip pipeline if a similar resume exists in the target
     if not body.force_fresh and body.job_posting_id:
         jp_resp = (
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .select("target_id")
             .eq("id", body.job_posting_id)
             .execute()
@@ -118,7 +117,7 @@ async def create_tailored_resume(
             target_id = cast(dict[str, Any], jp_resp.data[0]).get("target_id")
             if target_id:
                 target_resp = (
-                    supabase.table("job_targets")
+                    supabase.table("targets")
                     .select("scoring_profile")
                     .eq("id", target_id)
                     .execute()
@@ -260,7 +259,7 @@ async def create_tailored_cover_letter(
 
 
 @router.get("/resumes")
-async def list_tailored_resumes(
+async def list_documents(
     limit: int = 50,
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, list[TailoredResumeRecord]]:
@@ -451,7 +450,7 @@ async def approve_tailored_resume(
     # Resume approval also advances the linked job posting to resume_ready;
     # cover letters don't drive job status.
     if row.document_type == "resume" and row.job_posting_id:
-        supabase.table("job_postings").update(
+        supabase.table("jobs").update(
             {"status": "resume_ready"}
         ).eq("id", row.job_posting_id).execute()
 
@@ -476,7 +475,7 @@ async def unapprove_tailored_resume(
     # Mirror the approve side: resume unlock walks the linked job back to
     # resume_draft so the lifecycle stays in sync.
     if row.document_type == "resume" and row.job_posting_id:
-        supabase.table("job_postings").update(
+        supabase.table("jobs").update(
             {"status": "resume_draft"}
         ).eq("id", row.job_posting_id).execute()
 
@@ -618,7 +617,7 @@ async def create_batch_resumes(
     postings: list[dict[str, Any]] = []
     for jid in body.job_posting_ids:
         resp = (
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .select("id, title, description_html, target_id")
             .eq("id", jid)
             .execute()
@@ -650,7 +649,7 @@ async def create_batch_resumes(
         batch_id=batch.id,
         user_id=None,
         optimized=current_optimized,
-        job_postings=postings,
+        jobs=postings,
         contact=contact,
         preferences=prefs_payload,
         resume_type=body.resume_type or "generic",

@@ -248,7 +248,7 @@ async def test_lint_failure_does_not_persist(
 
     assert isinstance(result, PipelineLintFailure)
     assert any(v.code == "no_tables" for v in result.lint.errors)
-    # No insert call for tailored_resumes.
+    # No insert call for documents.
     supabase.table.return_value.insert.assert_not_called()
 
 

@@ -20,7 +20,7 @@ class BatchItem(BaseModel):
 
 
 class BatchJob(BaseModel):
-    """DB read shape for batch_jobs rows."""
+    """DB read shape for batch_runs rows."""
 
     id: str
     user_id: str | None

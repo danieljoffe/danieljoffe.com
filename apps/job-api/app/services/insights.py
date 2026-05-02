@@ -67,7 +67,7 @@ def _parse_dt(value: str) -> datetime:
 def _fetch_postings_window(
     supabase: Client, since: datetime | None, until: datetime | None
 ) -> list[Row]:
-    q = supabase.table("job_postings").select("id, status, created_at")
+    q = supabase.table("jobs").select("id, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
     if until:
@@ -78,7 +78,7 @@ def _fetch_postings_window(
 def _fetch_status_logs_window(
     supabase: Client, since: datetime | None, until: datetime | None
 ) -> list[Row]:
-    sq = supabase.table("job_status_log").select(
+    sq = supabase.table("status_log").select(
         "posting_id, old_status, new_status, created_at"
     )
     if since:
@@ -141,7 +141,7 @@ def compute_pipeline(
     status_logs = _fetch_status_logs_window(supabase, since, None)
 
     # Fetch tailored resumes for velocity (current window only)
-    rq = supabase.table("tailored_resumes").select("job_posting_id, created_at")
+    rq = supabase.table("documents").select("job_posting_id, created_at")
     if since:
         rq = rq.gte("created_at", since.isoformat())
     rq = rq.eq("document_type", "resume")
@@ -203,12 +203,12 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
     # Fetch all targets for labels
     targets_data = cast(
         list[Row],
-        supabase.table("job_targets").select("id, label").execute().data or [],
+        supabase.table("targets").select("id, label").execute().data or [],
     )
     target_labels = {t["id"]: t["label"] for t in targets_data}
 
     # Fetch postings with target + score + status
-    q = supabase.table("job_postings").select("id, target_id, score, status, created_at")
+    q = supabase.table("jobs").select("id, target_id, score, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
     postings = cast(list[Row], q.execute().data or [])
@@ -301,7 +301,7 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
 
 def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostInsights:
     # Fetch analyses for skill extraction
-    aq = supabase.table("job_analyses").select("job_posting_id, scorecard, created_at")
+    aq = supabase.table("analyses").select("job_posting_id, scorecard, created_at")
     if since:
         aq = aq.gte("created_at", since.isoformat())
     analyses = cast(list[Row], aq.execute().data or [])
@@ -309,7 +309,7 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
     # Fetch posting scores so we can rank skill gaps by impact (sum of
     # llm_score across jobs missing the skill). Postings without a score
     # contribute to missing_count but not priority_score.
-    pq = supabase.table("job_postings").select("id, llm_score")
+    pq = supabase.table("jobs").select("id, llm_score")
     if since:
         pq = pq.gte("created_at", since.isoformat())
     posting_rows = cast(list[Row], pq.execute().data or [])
@@ -320,13 +320,13 @@ def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostI
             posting_scores[str(p["id"])] = float(score)
 
     # Fetch LLM cost log
-    cq = supabase.table("llm_cost_log").select("purpose, cost_usd, created_at")
+    cq = supabase.table("llm_costs").select("purpose, cost_usd, created_at")
     if since:
         cq = cq.gte("created_at", since.isoformat())
     cost_logs = cast(list[Row], cq.execute().data or [])
 
     # Fetch tailored resumes for per-resume cost
-    rq = supabase.table("tailored_resumes").select("cost_usd, created_at")
+    rq = supabase.table("documents").select("cost_usd, created_at")
     if since:
         rq = rq.gte("created_at", since.isoformat())
     rq = rq.eq("document_type", "resume")

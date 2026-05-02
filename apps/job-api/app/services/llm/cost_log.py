@@ -17,14 +17,14 @@ from supabase import Client
 from app.models.embeddings import EmbeddingResult
 from app.models.llm import LLMCallRecord, LLMResult
 
-TABLE = "llm_cost_log"
+TABLE = "llm_costs"
 
 
 def _insert_row(supabase: Client, row: dict[str, Any]) -> LLMCallRecord:
     resp = supabase.table(TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError("Failed to insert llm_cost_log row")
+        raise RuntimeError("Failed to insert llm_costs row")
     return LLMCallRecord.model_validate(rows[0])
 
 

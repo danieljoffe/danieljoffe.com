@@ -237,7 +237,7 @@ class TestBatchProcessing:
                 batch_id="batch-1",
                 user_id=None,
                 optimized=_OPTIMIZED,
-                job_postings=[{"id": "job-1", "description_html": "<p>JD</p>"}],
+                jobs=[{"id": "job-1", "description_html": "<p>JD</p>"}],
                 contact=_CONTACT,
                 preferences=None,
                 resume_type="generic",
@@ -274,7 +274,7 @@ class TestBatchProcessing:
                 batch_id="batch-1",
                 user_id=None,
                 optimized=_OPTIMIZED,
-                job_postings=[{"id": "job-1", "description_html": "<p>JD</p>"}],
+                jobs=[{"id": "job-1", "description_html": "<p>JD</p>"}],
                 contact=_CONTACT,
                 preferences=None,
                 resume_type="generic",
@@ -300,7 +300,7 @@ class TestBatchProcessing:
                 batch_id="batch-1",
                 user_id=None,
                 optimized=_OPTIMIZED,
-                job_postings=[{"id": "job-1", "description_html": "<p>JD</p>"}],
+                jobs=[{"id": "job-1", "description_html": "<p>JD</p>"}],
                 contact=_CONTACT,
                 preferences=None,
                 resume_type="generic",
@@ -322,7 +322,7 @@ class TestBatchProcessing:
             batch_id="nonexistent",
             user_id=None,
             optimized=_OPTIMIZED,
-            job_postings=[],
+            jobs=[],
             contact=_CONTACT,
             preferences=None,
             resume_type="generic",
@@ -360,7 +360,7 @@ class TestBatchProcessing:
                 batch_id="batch-1",
                 user_id=None,
                 optimized=_OPTIMIZED,
-                job_postings=[
+                jobs=[
                     {"id": "job-1", "description_html": "<p>JD1</p>"},
                     {"id": "job-2", "description_html": "<p>JD2</p>"},
                 ],
@@ -401,7 +401,7 @@ class TestBatchProcessing:
                 batch_id="batch-1",
                 user_id=None,
                 optimized=_OPTIMIZED,
-                job_postings=[{"id": "job-1", "description_html": "<p>JD</p>"}],
+                jobs=[{"id": "job-1", "description_html": "<p>JD</p>"}],
                 contact=_CONTACT,
                 preferences=None,
                 resume_type="generic",
@@ -478,7 +478,7 @@ class TestBatchEndpoint:
         from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
-        # Mock job_postings lookup
+        # Mock jobs lookup
         _set_mock_data(supabase, [
             {"id": "job-1", "title": "SWE", "description_html": "<p>JD</p>"}
         ])

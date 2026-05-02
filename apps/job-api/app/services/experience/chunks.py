@@ -118,7 +118,7 @@ async def upsert_for_optimized(
     """Generate, embed, and persist chunks for an optimized doc.
 
     Idempotent: deletes any existing chunks for this doc_id before insert.
-    Records embedding cost in llm_cost_log under `purpose`.
+    Records embedding cost in llm_costs under `purpose`.
     """
     inputs = chunks_for_optimized(optimized.payload)
     _delete_existing(supabase, optimized.id)

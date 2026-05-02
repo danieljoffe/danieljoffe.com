@@ -21,9 +21,9 @@ def _build_supabase_mock(
 ) -> MagicMock:
     """Returns a MagicMock that answers:
     - table('user_profiles').select(...).eq(...).is_(...).execute()  → profiles
-    - table('job_notification_sent').upsert(...).execute()           → claim_response
-    - table('job_notification_sent').update(...).eq(...).execute()   → ok
-    - table('job_notification_sent').select(..., count=...).eq(...)  → count stub
+    - table('notifications_sent').upsert(...).execute()           → claim_response
+    - table('notifications_sent').update(...).eq(...).execute()   → ok
+    - table('notifications_sent').select(..., count=...).eq(...)  → count stub
     """
     profiles_chain = MagicMock()
     profiles_chain.select.return_value = profiles_chain
@@ -46,7 +46,7 @@ def _build_supabase_mock(
     count_chain.gte.return_value = count_chain
     count_chain.execute.return_value = _ExecuteStub([], count=0)
 
-    # Track calls to job_notification_sent to route between claim/update/count
+    # Track calls to notifications_sent to route between claim/update/count
     notif_calls: dict[str, int] = {"n": 0}
 
     def _notif_table(_name: str) -> MagicMock:
@@ -58,7 +58,7 @@ def _build_supabase_mock(
     def _table(name: str) -> MagicMock:
         if name == "user_profiles":
             return profiles_chain
-        if name == "job_notification_sent":
+        if name == "notifications_sent":
             return _notif_table(name)
         raise AssertionError(f"Unexpected table: {name}")
 
@@ -109,7 +109,7 @@ def _build_sms_supabase_mock(
     def _table(name: str) -> MagicMock:
         if name == "user_profiles":
             return profiles_chain
-        if name == "job_notification_sent":
+        if name == "notifications_sent":
             return _notif_table(name)
         raise AssertionError(f"Unexpected table: {name}")
 

@@ -28,12 +28,12 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json()) as Record<string, unknown>;
 
-  // If job_description is missing or empty, fetch from job_postings table
+  // If job_description is missing or empty, fetch from jobs table
   if (!body['job_description'] && body['job_posting_id']) {
     const supabase = createServerSupabaseClient();
     if (supabase) {
       const { data } = await supabase
-        .from('job_postings')
+        .from('jobs')
         .select('description_html')
         .eq('id', body['job_posting_id'] as string)
         .single();

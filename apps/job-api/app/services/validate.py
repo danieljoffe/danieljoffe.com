@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from app.services.jsonld import _extract_job_postings
+from app.services.jsonld import _extract_jobs
 
 # ---------------------------------------------------------------------------
 # Layer 1 — URL format validation
@@ -111,7 +111,7 @@ def _verify_content(html: str) -> tuple[bool, list[str]]:
     Returns (is_job_page, warnings). Never hard-rejects.
     """
     # Tier 1: JSON-LD (gold standard)
-    if _extract_job_postings(html):
+    if _extract_jobs(html):
         return True, []
 
     # Tier 2: HTML heuristics

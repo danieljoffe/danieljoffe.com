@@ -59,7 +59,7 @@ async def create_analysis(
 
     # 4. Fetch job posting (existence + description in one round-trip)
     resp = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .select("id, description_html")
         .eq("id", job_id)
         .limit(1)

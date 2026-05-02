@@ -1,4 +1,4 @@
-"""Cache CRUD for job_analyses table.
+"""Cache CRUD for analyses table.
 
 The cache key is (job_posting_id, target_id, optimized_doc_id) so that
 re-deriving the master doc or switching targets naturally invalidates
@@ -15,7 +15,7 @@ from supabase import Client
 from app.models.analysis import JobAnalysis, JobAnalysisRecord
 from app.models.llm import LLMResult
 
-TABLE = "job_analyses"
+TABLE = "analyses"
 
 
 def get_cached(
@@ -58,7 +58,7 @@ def persist(
     analysis: JobAnalysis,
     llm_result: LLMResult,
 ) -> JobAnalysisRecord:
-    """Insert one job_analyses row."""
+    """Insert one analyses row."""
     row: dict[str, Any] = {
         "job_posting_id": job_posting_id,
         "target_id": target_id,
@@ -73,5 +73,5 @@ def persist(
     resp = supabase.table(TABLE).insert(row).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError("Failed to insert job_analyses row")
+        raise RuntimeError("Failed to insert analyses row")
     return JobAnalysisRecord.model_validate(rows[0])

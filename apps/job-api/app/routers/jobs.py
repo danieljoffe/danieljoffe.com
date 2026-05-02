@@ -115,7 +115,7 @@ def _list_jobs_for_target_two_query(
     """Fallback: two-query pattern with pagination pushed to the scores layer."""
     sort_col = "score" if sort == "score" else sort
     ts_query = (
-        supabase.table("job_target_scores")
+        supabase.table("scores")
         .select("job_posting_id, score, score_breakdown, scoring_status", count=CountMethod.exact)
         .eq("target_id", target_id)
         .eq("excluded", False)
@@ -145,7 +145,7 @@ def _list_jobs_for_target_two_query(
         total = None  # will be computed after posting-level filters
 
     jp_query = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .select(_JP_SELECT_COLS)
         .in_("id", page_ids)
     )
@@ -282,8 +282,8 @@ def list_jobs(
         job_list_cache.set(cache_key, result)
         return result
 
-    # Global view — query job_postings directly with global scores
-    query = supabase.table("job_postings").select(
+    # Global view — query jobs directly with global scores
+    query = supabase.table("jobs").select(
         _JP_SELECT_COLS,
         count=CountMethod.exact,
     )
@@ -413,7 +413,7 @@ async def add_manual_job(
     if not salary and description_html:
         salary = extract_salary_from_text(strip_html(description_html))
 
-    # Upsert into job_postings (score starts at 0, updated by target pipeline)
+    # Upsert into jobs (score starts at 0, updated by target pipeline)
     row: dict[str, Any] = {
         "external_id": external_id,
         "source_id": MANUAL_SOURCE_ID,
@@ -430,7 +430,7 @@ async def add_manual_job(
     }
 
     resp_db = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .upsert(row, on_conflict="source_id,external_id")
         .execute()
     )
@@ -510,7 +510,7 @@ async def backfill_salary(
     """One-off: extract salary from description_html for jobs missing salary_text.
 
     Per batch of 500, extract salaries in Python then write all rows in a
-    single `bulk_update_job_salaries` RPC — turns ~N row-by-row UPDATEs
+    single `bulk_update_salaries` RPC — turns ~N row-by-row UPDATEs
     into one statement per batch.
     """
     batch_size = 500
@@ -519,7 +519,7 @@ async def backfill_salary(
 
     while True:
         resp = (
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .select("id, description_html")
             .is_("salary_text", "null")
             .range(offset, offset + batch_size - 1)
@@ -540,7 +540,7 @@ async def backfill_salary(
 
         if updates:
             supabase.rpc(
-                "bulk_update_job_salaries", {"p_updates": updates}
+                "bulk_update_salaries", {"p_updates": updates}
             ).execute()
             updated += len(updates)
 
@@ -558,7 +558,7 @@ async def get_job(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
     resp = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .select(_JP_SELECT_COLS)
         .eq("id", posting_id)
         .limit(1)
@@ -579,7 +579,7 @@ async def delete_job(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
     resp = (
-        supabase.table("job_postings")
+        supabase.table("jobs")
         .delete()
         .eq("id", posting_id)
         .execute()

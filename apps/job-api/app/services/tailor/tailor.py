@@ -2,7 +2,7 @@
 
 Pure function. No DB. No docx. No retrieval (the optimized doc is small
 enough to pass in full). Cost logging happens at the router layer, which
-also persists the result to `tailored_resumes` and kicks off rendering.
+also persists the result to `documents` and kicks off rendering.
 
 Post-generation, `validate_trace_refs()` checks that every role and
 bullet carries a source ref that actually exists in the OptimizedPayload.

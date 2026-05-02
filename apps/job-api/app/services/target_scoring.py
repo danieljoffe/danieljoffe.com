@@ -5,8 +5,8 @@ Three-stage scoring pipeline:
   Stage 2: Full JD match (async, after stage 1 passes)
   Stage 3: LLM analysis (async, for top stage-2 scores)
 
-Stores target-specific scores in `job_target_scores`. The global score
-on `job_postings` = average across active targets (updated after each stage).
+Stores target-specific scores in `scores`. The global score
+on `jobs` = average across active targets (updated after each stage).
 
 Consumers:
 - Poller: stage 1 title scoring during poll, stage 2+3 async after
@@ -30,7 +30,7 @@ from app.services.scoring import score_job_with_profile, score_title_against_pro
 
 logger = logging.getLogger(__name__)
 
-TABLE = "job_target_scores"
+TABLE = "scores"
 
 
 def _parse_score(row: dict[str, Any]) -> JobTargetScore:
@@ -84,7 +84,7 @@ def _upsert_score(
     )
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
-        raise RuntimeError("Failed to upsert job_target_scores row")
+        raise RuntimeError("Failed to upsert scores row")
     return _parse_score(rows[0])
 
 
@@ -155,7 +155,7 @@ def score_and_upsert(
 def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
     """Re-score stale jobs for this target. Returns count scored.
 
-    Only fetches jobs with existing ``job_target_scores`` rows whose
+    Only fetches jobs with existing ``scores`` rows whose
     ``scored_profile_version`` is less than the target's current
     ``profile_version`` (lazy re-scoring). Used by the re-score endpoint
     when a target's profile changes.
@@ -190,7 +190,7 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
     for i in range(0, len(all_job_ids), batch_size):
         batch_ids = all_job_ids[i : i + batch_size]
         resp = (
-            supabase.table("job_postings")
+            supabase.table("jobs")
             .select("id, title, description_html")
             .in_("id", batch_ids)
             .execute()
@@ -251,7 +251,7 @@ def get_target_scores(
 
 
 def update_global_score(supabase: Client, job_posting_id: str) -> None:
-    """Recompute job_postings.score as average of active-target scores.
+    """Recompute jobs.score as average of active-target scores.
 
     Called after any stage updates a target score. Uses a single query
     to average all non-excluded target scores for this job.
@@ -269,7 +269,7 @@ def update_global_score(supabase: Client, job_posting_id: str) -> None:
     scores = [r["score"] for r in rows if not r.get("excluded", False)]
     avg_score = round(sum(scores) / len(scores)) if scores else 0
 
-    supabase.table("job_postings").update({"score": avg_score}).eq(
+    supabase.table("jobs").update({"score": avg_score}).eq(
         "id", job_posting_id
     ).execute()
 
@@ -280,11 +280,11 @@ _BATCH_CHUNK_SIZE = 100
 def batch_update_global_scores(
     supabase: Client, job_posting_ids: list[str]
 ) -> None:
-    """Recompute job_postings.score for many jobs in fewer DB round-trips.
+    """Recompute jobs.score for many jobs in fewer DB round-trips.
 
     Fetches all target scores for the given IDs in one query (chunked to
     avoid URL length limits), computes averages in Python, then writes
-    every new score in a single `bulk_update_job_scores` RPC instead of
+    every new score in a single `bulk_update_scores` RPC instead of
     one UPDATE per job.
     """
     if not job_posting_ids:
@@ -321,7 +321,7 @@ def batch_update_global_scores(
         for job_id in unique_ids
     ]
     if updates:
-        supabase.rpc("bulk_update_job_scores", {"p_updates": updates}).execute()
+        supabase.rpc("bulk_update_scores", {"p_updates": updates}).execute()
 
 
 def mark_complete(supabase: Client, job_posting_id: str) -> None:

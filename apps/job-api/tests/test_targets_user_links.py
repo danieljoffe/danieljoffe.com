@@ -2,7 +2,7 @@
 
 Covers:
   1. set_user_target_inactive deactivates via user_targets (so the trigger
-     can sync job_targets.is_active).
+     can sync targets.is_active).
   2. FitScoreResult tolerates reasoning strings up to 1500 chars (the LLM
      occasionally exceeds the original 500 cap, which caused 502s).
 """
