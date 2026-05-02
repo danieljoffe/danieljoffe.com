@@ -631,6 +631,7 @@ export default function CoverLetterReviewPage({
           }}
           disabled={isApproved || regenerating || approving || unapproving}
           spellCheck
+          data-sentry-mask
         />
         <div className='flex items-center justify-between gap-2'>
           <Text

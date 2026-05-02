@@ -453,6 +453,7 @@ export default function SettingsPage() {
               placeholder='Full name'
               autoComplete='name'
               required
+              data-sentry-mask
             />
             <Input
               label='Email'
@@ -462,6 +463,7 @@ export default function SettingsPage() {
               placeholder='name@example.com'
               autoComplete='email'
               inputMode='email'
+              data-sentry-mask
             />
             <Input
               label='Phone'
@@ -471,6 +473,7 @@ export default function SettingsPage() {
               placeholder='+1 555 555 5555'
               autoComplete='tel'
               inputMode='tel'
+              data-sentry-mask
             />
             <Input
               label='Location'
@@ -478,6 +481,7 @@ export default function SettingsPage() {
               onChange={e => setIdentityLocation(e.target.value)}
               placeholder='City, State'
               autoComplete='address-level2'
+              data-sentry-mask
             />
             <Input
               label='LinkedIn URL'
@@ -487,6 +491,7 @@ export default function SettingsPage() {
               placeholder='https://linkedin.com/in/username'
               autoComplete='url'
               inputMode='url'
+              data-sentry-mask
             />
             <Input
               label='Website'
@@ -496,6 +501,7 @@ export default function SettingsPage() {
               placeholder='https://example.com'
               autoComplete='url'
               inputMode='url'
+              data-sentry-mask
             />
           </div>
         </CardContent>
