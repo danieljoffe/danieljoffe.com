@@ -1,11 +1,12 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Briefcase, MoreVertical, Power, Trash2 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import Button from '@/components/Button';
+import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
+import { cn } from '@/lib/cn';
 import type { JobTarget } from './types';
 
 interface TargetCardProps {
@@ -43,94 +44,111 @@ export default function TargetCard({
   onDelete,
   onViewJobs,
 }: TargetCardProps) {
+  const router = useRouter();
+  const detailHref = `/fitted/targets/${target.id}`;
   const categoryCount = Object.keys(target.scoring_profile.categories).length;
   const keywordCount = countKeywords(target);
 
+  function handleNavigate() {
+    router.push(detailHref);
+  }
+
+  const items: DropdownItem[] = [
+    {
+      label: 'View jobs',
+      icon: <Briefcase className='size-4' aria-hidden />,
+      onClick: () => onViewJobs(target.id),
+      disabled: !target.is_active,
+    },
+    {
+      label: target.is_active ? 'Deactivate' : 'Activate',
+      icon: <Power className='size-4' aria-hidden />,
+      onClick: () =>
+        target.is_active ? onDeactivate(target.id) : onActivate(target.id),
+    },
+    { label: '', divider: true },
+    {
+      label: 'Delete',
+      icon: <Trash2 className='size-4' aria-hidden />,
+      danger: true,
+      onClick: () => onDelete(target.id),
+    },
+  ];
+
   return (
-    <Card padding='none'>
-      <CardContent className='p-4 flex flex-col gap-3'>
-        <div className='flex items-start justify-between gap-2'>
-          <Link
-            href={`/fitted/targets/${target.id}`}
-            className='hover:underline flex-1'
-          >
-            <Heading variant='cardTitle' as='h3'>
-              {target.label}
-            </Heading>
-          </Link>
-          <div className='flex items-center gap-1.5 flex-wrap justify-end'>
+    <Card padding='none' className='min-w-0'>
+      <CardContent
+        className={cn(
+          'flex cursor-pointer flex-col gap-2.5 p-4 transition-colors',
+          'hover:bg-surface-secondary',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
+        )}
+        onClick={handleNavigate}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleNavigate();
+          }
+        }}
+        tabIndex={0}
+        role='button'
+        aria-label={`Open target ${target.label}`}
+      >
+        <header className='flex items-start justify-between gap-2'>
+          <div className='flex min-w-0 flex-1 items-center gap-2'>
             {fitScore !== null && (
               <Badge
                 variant={fitScoreVariant(fitScore)}
                 size='sm'
                 title={fitScoreReasoning ?? undefined}
+                className='shrink-0'
               >
-                Fit {fitScore}
+                {fitScore}
               </Badge>
             )}
-            {target.is_active && (
-              <Badge variant='brand-solid' size='sm'>
-                Active
-              </Badge>
-            )}
+            <span className='min-w-0 flex-1 truncate text-sm font-medium leading-tight text-text-primary'>
+              {target.label}
+            </span>
           </div>
-        </div>
+          <div className='shrink-0' onClick={e => e.stopPropagation()}>
+            <Dropdown
+              trigger={
+                <span className='inline-flex rounded p-1 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'>
+                  <MoreVertical className='size-4' aria-hidden />
+                </span>
+              }
+              items={items}
+              align='right'
+            />
+          </div>
+        </header>
 
-        <div className='flex flex-wrap gap-x-4 gap-y-1'>
-          <Text variant='caption' as='span'>
-            {categoryCount} {categoryCount === 1 ? 'category' : 'categories'},
-          </Text>
-          <Text variant='caption' as='span'>
-            {' '}
-            {keywordCount} {keywordCount === 1 ? 'keyword' : 'keywords'}
-          </Text>
-        </div>
+        <hr className='-mx-4 border-border' />
 
-        <Text variant='meta' as='p'>
-          Updated {new Date(target.updated_at).toLocaleDateString()}
-        </Text>
+        <dl className='grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs'>
+          <dt className='text-text-tertiary'>Categories</dt>
+          <dd className='text-right text-text-secondary'>{categoryCount}</dd>
+          <dt className='text-text-tertiary'>Keywords</dt>
+          <dd className='text-right text-text-secondary'>{keywordCount}</dd>
+          <dt className='text-text-tertiary'>Updated</dt>
+          <dd className='text-right text-text-secondary'>
+            {new Date(target.updated_at).toLocaleDateString()}
+          </dd>
+        </dl>
 
-        <div className='flex items-center gap-2 pt-1'>
-          <Button
-            name={`target-view-jobs-${target.id}`}
-            variant='primary'
-            size='sm'
-            onClick={() => onViewJobs(target.id)}
-            disabled={!target.is_active}
-            title={
-              target.is_active ? undefined : 'Activate this target to view jobs'
-            }
-          >
-            View Jobs
-          </Button>
-          {target.is_active ? (
-            <Button
-              name={`target-deactivate-${target.id}`}
-              variant='outline'
-              size='sm'
-              onClick={() => onDeactivate(target.id)}
-            >
-              Deactivate
-            </Button>
-          ) : (
-            <Button
-              name={`target-activate-${target.id}`}
-              variant='outline'
-              size='sm'
-              onClick={() => onActivate(target.id)}
-            >
-              Activate
-            </Button>
-          )}
-          <Button
-            name={`target-delete-${target.id}`}
-            variant='outline'
-            size='sm'
-            onClick={() => onDelete(target.id)}
-            className='text-error hover:bg-error/10'
-          >
-            Delete
-          </Button>
+        <hr className='-mx-4 border-border' />
+
+        <div className='flex justify-end'>
+          <span className='inline-flex items-center gap-1.5 text-xs text-text-secondary'>
+            <span
+              className={cn(
+                'inline-block size-2 rounded-full',
+                target.is_active ? 'bg-success' : 'bg-text-tertiary'
+              )}
+              aria-hidden
+            />
+            {target.is_active ? 'Active' : 'Inactive'}
+          </span>
         </div>
       </CardContent>
     </Card>

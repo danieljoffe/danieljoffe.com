@@ -279,17 +279,13 @@ export default function TargetsList() {
         <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} padding='none'>
-              <CardContent className='p-4 flex flex-col gap-3'>
-                <Skeleton width='70%' size='lg' />
-                <div className='flex gap-4'>
-                  <Skeleton width={90} size='sm' />
-                  <Skeleton width={80} size='sm' />
-                </div>
-                <Skeleton width={130} size='sm' />
-                <div className='flex gap-2 pt-1'>
-                  <Skeleton variant='rectangular' width={80} height={32} />
-                  <Skeleton variant='rectangular' width={80} height={32} />
-                  <Skeleton variant='rectangular' width={60} height={32} />
+              <CardContent className='flex flex-col gap-2.5 p-4'>
+                <Skeleton width='70%' size='sm' />
+                <hr className='-mx-4 border-border' />
+                <Skeleton variant='text' lines={3} />
+                <hr className='-mx-4 border-border' />
+                <div className='flex justify-end'>
+                  <Skeleton width={60} size='sm' />
                 </div>
               </CardContent>
             </Card>

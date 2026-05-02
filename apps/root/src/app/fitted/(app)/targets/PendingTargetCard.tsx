@@ -1,10 +1,8 @@
 'use client';
 
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 interface PendingTargetCardProps {
   /** Best-known title for this in-flight target. May be empty for URL mode. */
@@ -13,33 +11,54 @@ interface PendingTargetCardProps {
 
 export default function PendingTargetCard({ label }: PendingTargetCardProps) {
   return (
-    <Card padding='none' aria-busy='true' aria-live='polite'>
-      <CardContent className='p-4 flex flex-col gap-3'>
-        <div className='flex items-start justify-between gap-2'>
-          {label ? (
-            <Heading variant='cardTitle' as='h3'>
-              {label}
-            </Heading>
-          ) : (
-            <Skeleton width='70%' size='lg' />
-          )}
-          <div className='flex items-center gap-1.5'>
-            <Spinner size='sm' aria-label='Creating target' />
+    <Card
+      padding='none'
+      aria-busy='true'
+      aria-live='polite'
+      className='min-w-0'
+    >
+      <CardContent className='flex flex-col gap-2.5 p-4'>
+        <header className='flex items-start justify-between gap-2'>
+          <div className='flex min-w-0 flex-1 items-center gap-2'>
+            {label ? (
+              <span className='min-w-0 flex-1 truncate text-sm font-medium leading-tight text-text-primary'>
+                {label}
+              </span>
+            ) : (
+              <Skeleton width='70%' size='sm' />
+            )}
           </div>
-        </div>
+          <Spinner
+            size='sm'
+            aria-label='Creating target'
+            className='shrink-0'
+          />
+        </header>
 
-        <div className='flex gap-4'>
-          <Skeleton width={90} size='sm' />
-          <Skeleton width={80} size='sm' />
-        </div>
+        <hr className='-mx-4 border-border' />
 
-        <Text variant='meta' as='p' className='text-text-secondary'>
-          Building scoring profile…
-        </Text>
+        <dl className='grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs'>
+          <dt className='text-text-tertiary'>Categories</dt>
+          <dd className='flex justify-end'>
+            <Skeleton width={20} size='sm' />
+          </dd>
+          <dt className='text-text-tertiary'>Keywords</dt>
+          <dd className='flex justify-end'>
+            <Skeleton width={24} size='sm' />
+          </dd>
+          <dt className='text-text-tertiary'>Updated</dt>
+          <dd className='flex justify-end'>
+            <Skeleton width={70} size='sm' />
+          </dd>
+        </dl>
 
-        <div className='flex gap-2 pt-1'>
-          <Skeleton variant='rectangular' width={80} height={32} />
-          <Skeleton variant='rectangular' width={80} height={32} />
+        <hr className='-mx-4 border-border' />
+
+        <div className='flex justify-end'>
+          <span className='inline-flex items-center gap-1.5 text-xs text-text-tertiary'>
+            <Spinner size='sm' aria-label='Building scoring profile' />
+            Building…
+          </span>
         </div>
       </CardContent>
     </Card>
