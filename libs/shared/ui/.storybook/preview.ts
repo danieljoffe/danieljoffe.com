@@ -9,6 +9,7 @@ const preview: Preview = {
       themes: {
         light: '',
         dark: 'dark',
+        pyre: 'pyre dark',
       },
       defaultTheme: 'dark',
     }),
