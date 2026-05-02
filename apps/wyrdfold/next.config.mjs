@@ -135,4 +135,27 @@ const nextConfig = {
 
 const plugins = [withNx];
 
-export default composePlugins(...plugins)(nextConfig);
+const { withSentryConfig } = await import('@sentry/nextjs');
+
+const nextConfigWithPlugins = composePlugins(...plugins)(nextConfig);
+
+// Skip Sentry config in CI/test to keep build deterministic and avoid
+// uploading source maps during PR checks.
+const finalConfig =
+  isCI || isTest
+    ? nextConfigWithPlugins
+    : withSentryConfig(nextConfigWithPlugins, {
+        org: 'testing-b1',
+        project: 'wyrdfold',
+
+        silent: !isCI,
+        widenClientFileUpload: true,
+        tunnelRoute: '/monitoring',
+
+        webpack: {
+          treeshake: { removeDebugLogging: true },
+          automaticVercelMonitors: true,
+        },
+      });
+
+export default finalConfig;
