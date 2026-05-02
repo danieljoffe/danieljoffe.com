@@ -13,12 +13,7 @@ import {
   Target,
 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
+import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -271,13 +266,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Top matches */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top matches</CardTitle>
-        </CardHeader>
-        <CardContent className='flex flex-col divide-y divide-border'>
-          {topMatches.length === 0 ? (
-            <div className='flex flex-col items-center gap-3 py-8 text-center'>
+      <section className='flex flex-col gap-3'>
+        <Heading variant='component' as='h2'>
+          Top matches
+        </Heading>
+        {topMatches.length === 0 ? (
+          <Card>
+            <CardContent className='flex flex-col items-center gap-3 py-8 text-center'>
               <CheckCircle2
                 className='size-10 text-text-tertiary'
                 aria-hidden
@@ -286,34 +281,43 @@ export default function DashboardPage() {
                 No new matches right now. We&apos;ll notify you as fresh roles
                 come in.
               </Text>
-            </div>
-          ) : (
-            topMatches.map(posting => (
+            </CardContent>
+          </Card>
+        ) : (
+          <div className='flex flex-col gap-2'>
+            {topMatches.map(posting => (
               <Link
                 key={posting.id}
                 href={`/fitted/jobs/${posting.id}`}
-                className='group flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 transition-colors hover:bg-surface-tertiary -mx-3 px-3 rounded-md'
+                className='group flex min-w-0 items-center gap-3 rounded-xl border border-border bg-surface-elevated p-3 transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
               >
+                <Badge
+                  variant={scoreBadgeVariant(posting.score)}
+                  size='sm'
+                  className='shrink-0'
+                >
+                  {posting.score}
+                </Badge>
                 <div className='min-w-0 flex-1'>
                   <Text
                     variant='body'
-                    className='truncate font-medium group-hover:text-brand-500'
+                    className='truncate text-sm font-medium leading-tight group-hover:text-brand-500'
                   >
                     {posting.title}
                   </Text>
-                  <Text variant='caption' className='text-text-secondary'>
+                  <Text
+                    variant='caption'
+                    className='truncate text-text-secondary'
+                  >
                     {posting.company_name}
                     {posting.location ? ` · ${posting.location}` : ''}
                   </Text>
                 </div>
-                <Badge variant={scoreBadgeVariant(posting.score)} size='sm'>
-                  {posting.score}
-                </Badge>
               </Link>
-            ))
-          )}
-        </CardContent>
-      </Card>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
