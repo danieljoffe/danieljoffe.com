@@ -24,7 +24,6 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type { GapHealthResult, GapTier } from './profile/types';
 import type { JobPosting } from './jobs/types';
 import type { UserTargetWithTarget } from './targets/types';
 
@@ -69,12 +68,6 @@ const PIPELINE_STATS: PipelineStat[] = [
   },
 ];
 
-function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
-  if (tier === 'red') return 'error';
-  if (tier === 'yellow') return 'warning';
-  return 'success';
-}
-
 function scoreBadgeVariant(score: number): 'success' | 'brand' | 'default' {
   if (score >= 80) return 'success';
   if (score >= 60) return 'brand';
@@ -87,7 +80,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [topMatches, setTopMatches] = useState<JobPosting[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
-  const [gapHealth, setGapHealth] = useState<GapHealthResult | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [hasActiveTargets, setHasActiveTargets] = useState<boolean>(false);
   const { toast } = useToast();
@@ -110,8 +102,6 @@ export default function DashboardPage() {
       }
 
       if (healthRes.ok) {
-        const data = (await healthRes.json()) as GapHealthResult;
-        setGapHealth(data);
         setHasProfile(true);
       }
 
@@ -250,29 +240,13 @@ export default function DashboardPage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-start justify-between gap-3'>
-        <div>
-          <Heading variant='hero' as='h1'>
-            Dashboard
-          </Heading>
-          <Text variant='body' className='mt-1 text-text-secondary'>
-            Your job search at a glance
-          </Text>
-        </div>
-        {gapHealth && (
-          <Link
-            href='/fitted/profile'
-            className='group flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-3 py-2 transition-colors hover:bg-surface-tertiary'
-          >
-            <Badge variant={tierToBadgeVariant(gapHealth.tier)} size='sm'>
-              Profile {Math.round(100 - gapHealth.gap_pct)}%
-            </Badge>
-            <ArrowRight
-              className='size-4 text-text-tertiary transition-transform group-hover:translate-x-0.5'
-              aria-hidden
-            />
-          </Link>
-        )}
+      <div>
+        <Heading variant='hero' as='h1'>
+          Dashboard
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Your job search at a glance
+        </Text>
       </div>
 
       {/* Pipeline stats */}
@@ -299,19 +273,7 @@ export default function DashboardPage() {
       {/* Top matches */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
-            <CardTitle>
-              <Star className='mr-2 inline size-5' aria-hidden />
-              Top matches
-            </CardTitle>
-            <Link
-              href='/fitted/jobs'
-              className='inline-flex items-center gap-1 text-sm text-brand-500 hover:underline'
-            >
-              View all jobs
-              <ArrowRight className='size-3.5' aria-hidden />
-            </Link>
-          </div>
+          <CardTitle>Top matches</CardTitle>
         </CardHeader>
         <CardContent className='flex flex-col divide-y divide-border'>
           {topMatches.length === 0 ? (
