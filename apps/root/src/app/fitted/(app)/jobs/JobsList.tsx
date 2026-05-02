@@ -349,9 +349,20 @@ export default function JobsList({
 
   return (
     <div className={`flex flex-col gap-6 ${bottomPadClass}`}>
-      <Heading variant='hero' as='h1'>
-        Jobs
-      </Heading>
+      <div>
+        <Heading variant='hero' as='h1'>
+          Jobs
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Postings matched to your active targets
+        </Text>
+      </div>
+
+      {!activeTargetId && targets.length > 0 && (
+        <Text variant='meta' className='text-text-tertiary'>
+          Pick a target tab to see LLM job-fit analysis on each posting.
+        </Text>
+      )}
 
       {targetsLoading ? (
         <div className='flex gap-1 border-b border-border pb-px'>
@@ -432,12 +443,6 @@ export default function JobsList({
             <div className='text-sm text-error'>
               Failed to load jobs for this target. Try switching tabs to retry.
             </div>
-          )}
-
-          {!activeTargetId && targets.length > 0 && (
-            <Text variant='meta' className='text-text-tertiary'>
-              Pick a target tab to see LLM job-fit analysis on each posting.
-            </Text>
           )}
 
           <JobsListView

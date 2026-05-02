@@ -299,10 +299,15 @@ export default function TargetsList() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-center justify-between'>
-        <Heading variant='hero' as='h1'>
-          Targets
-        </Heading>
+      <div className='flex items-start justify-between gap-3'>
+        <div>
+          <Heading variant='hero' as='h1'>
+            Targets
+          </Heading>
+          <Text variant='body' className='mt-1 text-text-secondary'>
+            Role profiles you score new jobs against
+          </Text>
+        </div>
         {hasContent && (
           <Button
             name='target-create'
