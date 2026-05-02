@@ -1,0 +1,63 @@
+[project]
+name = "wyrdfold-api"
+version = "0.1.0"
+description = "WyrdFold API — fork of job-api for the standalone WyrdFold product (career-decision tooling)"
+authors = [{ name = "Daniel Joffe" }]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.34",
+  "httpx>=0.28",
+  "supabase>=2.13",
+  "pydantic-settings>=2.7",
+  "beautifulsoup4>=4.13",
+  "bleach>=6.2",
+  "pyjwt>=2.10",
+  "pdfplumber>=0.11",
+  "python-docx>=1.1",
+  "python-multipart>=0.0.18",
+  "anthropic>=0.40",
+  "voyageai>=0.3",
+  "twilio>=9.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.25",
+  "pytest-cov>=6.0",
+  "ruff>=0.11",
+  "mypy>=1.15",
+  "types-bleach>=6.2",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "S", "SIM", "RUF", "T20"]
+ignore = [
+  "B008",   # Depends() in FastAPI arg defaults is idiomatic
+  "S105",   # false positives on non-secret pattern constants
+  "S106",   # false positives on non-secret pattern constants
+  "RUF001", # intentional en dashes in prompts/docstrings
+  "RUF002", # intentional unicode in docstrings (×, –)
+  "SIM108", # if/else blocks are clearer than ternaries for query builders
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "E501", "RUF059", "F841", "SIM117", "E402", "B017"]
+"scripts/**/*.py" = ["T201"]  # CLI scripts use print() for user output
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing --no-cov-on-fail"

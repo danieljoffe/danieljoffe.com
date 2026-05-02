@@ -1,0 +1,44 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "wyrdfold-api",
+  "sourceRoot": "apps/wyrdfold-api",
+  "projectType": "application",
+  "tags": ["scope:wyrdfold", "type:app", "platform:python"],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "uv run --package wyrdfold-api uvicorn app.main:app --reload --port 8001",
+        "cwd": "apps/wyrdfold-api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "uv run --package wyrdfold-api pytest -v",
+        "cwd": "apps/wyrdfold-api"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "{projectRoot}/pyproject.toml"],
+      "options": {
+        "command": "uv run --package wyrdfold-api ruff check .",
+        "cwd": "apps/wyrdfold-api"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "uv run --package wyrdfold-api mypy app/",
+        "cwd": "apps/wyrdfold-api"
+      }
+    }
+  }
+}
