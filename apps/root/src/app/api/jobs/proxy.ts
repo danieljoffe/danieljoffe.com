@@ -6,20 +6,37 @@ const JOB_API_URL = process.env['JOB_API_URL'] ?? '';
 const JOB_API_KEY = process.env['JOB_API_KEY'] ?? '';
 
 /**
- * Verify access: accepts either an admin session cookie (admin dashboard)
- * or a valid Supabase session (Fitted app via magic link).
+ * Caller identity, used by `getJobsAccess` so route handlers can key
+ * per-user rate limits on `userId` for the Fitted/magic-link path
+ * (admin sessions are infrastructure-class and skip user rate limits).
  */
-export async function verifyJobsAccess(): Promise<boolean> {
+export type JobsAccess = { kind: 'admin' } | { kind: 'user'; userId: string };
+
+/**
+ * Resolve caller identity. Admin session takes precedence (single
+ * operator); otherwise resolves the Supabase user. Returns `null` if
+ * neither is present.
+ */
+export async function getJobsAccess(): Promise<JobsAccess | null> {
   const adminSession = await readAdminSession();
-  if (adminSession !== null) return true;
+  if (adminSession !== null) return { kind: 'admin' };
 
   try {
     const supabase = await createAuthServerClient();
     const { data } = await supabase.auth.getUser();
-    return data.user !== null;
+    if (data.user !== null) return { kind: 'user', userId: data.user.id };
+    return null;
   } catch {
-    return false;
+    return null;
   }
+}
+
+/**
+ * Verify access: accepts either an admin session cookie (admin dashboard)
+ * or a valid Supabase session (Fitted app via magic link).
+ */
+export async function verifyJobsAccess(): Promise<boolean> {
+  return (await getJobsAccess()) !== null;
 }
 
 /** Default upstream timeout in milliseconds. */

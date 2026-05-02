@@ -556,6 +556,7 @@ export default function ProfilePage() {
             onChange={e => setDraft(e.target.value)}
             className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
             placeholder='Paste or type your master experience document here...'
+            data-sentry-mask
           />
         </CardContent>
       </Card>

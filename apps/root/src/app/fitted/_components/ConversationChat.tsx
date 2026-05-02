@@ -263,6 +263,7 @@ export default function ConversationChat({
               rows={2}
               className='flex-1 resize-none'
               aria-label='Your response'
+              data-sentry-mask
             />
             <div className='flex flex-col gap-1'>
               <Button
