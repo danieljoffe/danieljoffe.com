@@ -181,6 +181,7 @@ export default function ProfilePage() {
           );
         }
         lastSavedProseRef.current = draft;
+        toast({ variant: 'success', title: 'Master document saved' });
         await fetchData();
       } catch (err) {
         toast({
