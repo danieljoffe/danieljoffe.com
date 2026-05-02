@@ -313,10 +313,12 @@ export default function TargetsList() {
             name='target-create'
             variant='primary'
             size='sm'
+            iconOnly
+            aria-label='Create target'
+            className='rounded-full'
             onClick={() => setModalOpen(true)}
           >
             <Plus className='size-4' aria-hidden />
-            <span>Create Target</span>
           </Button>
         )}
       </div>
