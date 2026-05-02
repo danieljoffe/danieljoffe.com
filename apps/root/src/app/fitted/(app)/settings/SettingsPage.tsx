@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Save } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -14,8 +13,9 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Switch } from '@danieljoffe.com/shared-ui/Switch';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
-import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+
+const AUTOSAVE_DEBOUNCE_MS = 800;
 
 async function extractFastApiError(res: Response): Promise<string | null> {
   if (res.ok) return null;
@@ -56,6 +56,53 @@ interface IdentityFields {
 
 type Section = 'profile' | 'email' | 'sms';
 
+function profileSig(fields: {
+  name: string;
+  email: string;
+  phone_number: string;
+  location: string;
+  linkedin_url: string;
+  website_url: string;
+}): string {
+  return JSON.stringify(fields);
+}
+
+function emailSig(enabled: boolean, threshold: number): string {
+  return JSON.stringify({
+    job_notifications_enabled: enabled,
+    job_score_threshold: threshold,
+  });
+}
+
+function smsSig(
+  enabled: boolean,
+  threshold: number,
+  dailyLimit: number,
+  phone: string | null
+): string {
+  return JSON.stringify({
+    sms_notifications_enabled: enabled,
+    sms_score_threshold: threshold,
+    sms_daily_limit: dailyLimit,
+    phone_number: phone,
+  });
+}
+
+function SavingIndicator({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <Text
+      as='span'
+      variant='meta'
+      className='inline-flex items-center gap-1'
+      aria-live='polite'
+    >
+      <Spinner size='sm' aria-label='Saving' />
+      <span>Saving…</span>
+    </Text>
+  );
+}
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<Section | null>(null);
@@ -78,6 +125,15 @@ export default function SettingsPage() {
   const [identityLinkedin, setIdentityLinkedin] = useState('');
   const [identityWebsite, setIdentityWebsite] = useState('');
 
+  // Server-known signatures — autosave fires only when local state diverges.
+  // Failed-sigs prevent retry-loops when the server rejects a value.
+  const lastProfileSigRef = useRef<string | null>(null);
+  const lastEmailSigRef = useRef<string | null>(null);
+  const lastSmsSigRef = useRef<string | null>(null);
+  const lastFailedProfileSigRef = useRef<string | null>(null);
+  const lastFailedEmailSigRef = useRef<string | null>(null);
+  const lastFailedSmsSigRef = useRef<string | null>(null);
+
   const fetchPrefs = useCallback(async () => {
     try {
       const [prefsRes, identityRes] = await Promise.all([
@@ -93,6 +149,16 @@ export default function SettingsPage() {
         setSmsThreshold(String(data.sms_score_threshold));
         setSmsDailyLimit(String(data.sms_daily_limit));
         setPhoneNumber(data.phone_number ?? '');
+        lastEmailSigRef.current = emailSig(
+          data.job_notifications_enabled,
+          data.job_score_threshold
+        );
+        lastSmsSigRef.current = smsSig(
+          data.sms_notifications_enabled,
+          data.sms_score_threshold,
+          data.sms_daily_limit,
+          data.phone_number ?? null
+        );
       }
       if (identityRes.ok) {
         const data = (await identityRes.json()) as IdentityFields;
@@ -102,6 +168,14 @@ export default function SettingsPage() {
         setIdentityLocation(data.location ?? '');
         setIdentityLinkedin(data.linkedin_url ?? '');
         setIdentityWebsite(data.website_url ?? '');
+        lastProfileSigRef.current = profileSig({
+          name: (data.name ?? '').trim(),
+          email: (data.email ?? '').trim(),
+          phone_number: (data.phone_number ?? '').trim(),
+          location: (data.location ?? '').trim(),
+          linkedin_url: (data.linkedin_url ?? '').trim(),
+          website_url: (data.website_url ?? '').trim(),
+        });
       }
     } catch {
       toast({
@@ -117,53 +191,30 @@ export default function SettingsPage() {
     fetchPrefs();
   }, [fetchPrefs]);
 
-  const patchNotifications = useCallback(
-    async (section: 'email' | 'sms', body: Record<string, unknown>) => {
-      setSavingSection(section);
-      try {
-        const res = await fetch('/api/profile/notifications', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          const message =
-            (await extractFastApiError(res)) ?? 'Failed to save settings';
-          toast({ variant: 'error', title: message });
-          return;
-        }
-        const data = (await res.json()) as NotificationPreferences;
-        setPrefs(data);
-        toast({ variant: 'success', title: 'Settings saved' });
-      } catch {
-        toast({ variant: 'error', title: 'Failed to save settings' });
-      } finally {
-        setSavingSection(null);
-      }
-    },
-    [toast]
-  );
+  // -- Save handlers ----------------------------------------------------------
 
   const handleSaveProfile = useCallback(async () => {
+    const trimmed = {
+      name: identityName.trim(),
+      email: identityEmail.trim(),
+      phone_number: identityPhone.trim(),
+      location: identityLocation.trim(),
+      linkedin_url: identityLinkedin.trim(),
+      website_url: identityWebsite.trim(),
+    };
+    const sig = profileSig(trimmed);
     setSavingSection('profile');
     try {
-      const body: Record<string, unknown> = {
-        name: identityName.trim(),
-        email: identityEmail.trim(),
-        phone_number: identityPhone.trim(),
-        location: identityLocation.trim(),
-        linkedin_url: identityLinkedin.trim(),
-        website_url: identityWebsite.trim(),
-      };
       const res = await fetch('/api/profile/identity', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(trimmed),
       });
       if (!res.ok) {
         const message =
           (await extractFastApiError(res)) ?? 'Failed to save profile';
         toast({ variant: 'error', title: message });
+        lastFailedProfileSigRef.current = sig;
         return;
       }
       const data = (await res.json()) as IdentityFields;
@@ -175,9 +226,19 @@ export default function SettingsPage() {
       setIdentityLocation(data.location ?? '');
       setIdentityLinkedin(data.linkedin_url ?? '');
       setIdentityWebsite(data.website_url ?? '');
+      lastProfileSigRef.current = profileSig({
+        name: (data.name ?? '').trim(),
+        email: (data.email ?? '').trim(),
+        phone_number: (data.phone_number ?? '').trim(),
+        location: (data.location ?? '').trim(),
+        linkedin_url: (data.linkedin_url ?? '').trim(),
+        website_url: (data.website_url ?? '').trim(),
+      });
+      lastFailedProfileSigRef.current = null;
       toast({ variant: 'success', title: 'Profile saved' });
     } catch {
       toast({ variant: 'error', title: 'Failed to save profile' });
+      lastFailedProfileSigRef.current = sig;
     } finally {
       setSavingSection(null);
     }
@@ -192,28 +253,156 @@ export default function SettingsPage() {
   ]);
 
   const handleSaveEmail = useCallback(async () => {
-    await patchNotifications('email', {
-      job_notifications_enabled: emailEnabled,
-      job_score_threshold: parseInt(emailThreshold, 10) || 100,
-    });
-  }, [emailEnabled, emailThreshold, patchNotifications]);
+    const threshold = parseInt(emailThreshold, 10) || 100;
+    const sig = emailSig(emailEnabled, threshold);
+    setSavingSection('email');
+    try {
+      const res = await fetch('/api/profile/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_notifications_enabled: emailEnabled,
+          job_score_threshold: threshold,
+        }),
+      });
+      if (!res.ok) {
+        const message =
+          (await extractFastApiError(res)) ?? 'Failed to save email settings';
+        toast({ variant: 'error', title: message });
+        lastFailedEmailSigRef.current = sig;
+        return;
+      }
+      const data = (await res.json()) as NotificationPreferences;
+      setPrefs(data);
+      setEmailEnabled(data.job_notifications_enabled);
+      setEmailThreshold(String(data.job_score_threshold));
+      lastEmailSigRef.current = emailSig(
+        data.job_notifications_enabled,
+        data.job_score_threshold
+      );
+      lastFailedEmailSigRef.current = null;
+      toast({ variant: 'success', title: 'Email settings saved' });
+    } catch {
+      toast({ variant: 'error', title: 'Failed to save email settings' });
+      lastFailedEmailSigRef.current = sig;
+    } finally {
+      setSavingSection(null);
+    }
+  }, [emailEnabled, emailThreshold, toast]);
 
   const handleSaveSms = useCallback(async () => {
-    const body: Record<string, unknown> = {
-      sms_notifications_enabled: smsEnabled,
-      sms_score_threshold: parseInt(smsThreshold, 10) || 100,
-      sms_daily_limit: parseInt(smsDailyLimit, 10) || 5,
-    };
-    if (phoneNumber.trim()) {
-      body.phone_number = phoneNumber.trim();
+    const trimmedPhone = phoneNumber.trim();
+    const threshold = parseInt(smsThreshold, 10) || 100;
+    const dailyLimit = parseInt(smsDailyLimit, 10) || 5;
+    const sig = smsSig(smsEnabled, threshold, dailyLimit, trimmedPhone || null);
+    setSavingSection('sms');
+    try {
+      const body: Record<string, unknown> = {
+        sms_notifications_enabled: smsEnabled,
+        sms_score_threshold: threshold,
+        sms_daily_limit: dailyLimit,
+      };
+      if (trimmedPhone) {
+        body.phone_number = trimmedPhone;
+      }
+      const res = await fetch('/api/profile/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const message =
+          (await extractFastApiError(res)) ?? 'Failed to save SMS settings';
+        toast({ variant: 'error', title: message });
+        lastFailedSmsSigRef.current = sig;
+        return;
+      }
+      const data = (await res.json()) as NotificationPreferences;
+      setPrefs(data);
+      setSmsEnabled(data.sms_notifications_enabled);
+      setSmsThreshold(String(data.sms_score_threshold));
+      setSmsDailyLimit(String(data.sms_daily_limit));
+      setPhoneNumber(data.phone_number ?? '');
+      lastSmsSigRef.current = smsSig(
+        data.sms_notifications_enabled,
+        data.sms_score_threshold,
+        data.sms_daily_limit,
+        data.phone_number ?? null
+      );
+      lastFailedSmsSigRef.current = null;
+      toast({ variant: 'success', title: 'SMS settings saved' });
+    } catch {
+      toast({ variant: 'error', title: 'Failed to save SMS settings' });
+      lastFailedSmsSigRef.current = sig;
+    } finally {
+      setSavingSection(null);
     }
-    await patchNotifications('sms', body);
+  }, [smsEnabled, smsThreshold, smsDailyLimit, phoneNumber, toast]);
+
+  // -- Autosave effects -------------------------------------------------------
+
+  useEffect(() => {
+    if (lastProfileSigRef.current === null) return;
+    if (savingSection === 'profile') return;
+    const sig = profileSig({
+      name: identityName.trim(),
+      email: identityEmail.trim(),
+      phone_number: identityPhone.trim(),
+      location: identityLocation.trim(),
+      linkedin_url: identityLinkedin.trim(),
+      website_url: identityWebsite.trim(),
+    });
+    if (sig === lastProfileSigRef.current) return;
+    if (sig === lastFailedProfileSigRef.current) return;
+    const handle = setTimeout(() => {
+      handleSaveProfile();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [
+    identityName,
+    identityEmail,
+    identityPhone,
+    identityLocation,
+    identityLinkedin,
+    identityWebsite,
+    savingSection,
+    handleSaveProfile,
+  ]);
+
+  useEffect(() => {
+    if (lastEmailSigRef.current === null) return;
+    if (savingSection === 'email') return;
+    const sig = emailSig(emailEnabled, parseInt(emailThreshold, 10) || 100);
+    if (sig === lastEmailSigRef.current) return;
+    if (sig === lastFailedEmailSigRef.current) return;
+    const handle = setTimeout(() => {
+      handleSaveEmail();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [emailEnabled, emailThreshold, savingSection, handleSaveEmail]);
+
+  useEffect(() => {
+    if (lastSmsSigRef.current === null) return;
+    if (savingSection === 'sms') return;
+    const sig = smsSig(
+      smsEnabled,
+      parseInt(smsThreshold, 10) || 100,
+      parseInt(smsDailyLimit, 10) || 5,
+      phoneNumber.trim() || null
+    );
+    if (sig === lastSmsSigRef.current) return;
+    if (sig === lastFailedSmsSigRef.current) return;
+    const handle = setTimeout(() => {
+      handleSaveSms();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
   }, [
     smsEnabled,
     smsThreshold,
     smsDailyLimit,
     phoneNumber,
-    patchNotifications,
+    savingSection,
+    handleSaveSms,
   ]);
 
   const emailAvailable = prefs?.email_available ?? false;
@@ -232,35 +421,6 @@ export default function SettingsPage() {
     );
   }
 
-  const renderSaveButton = (
-    section: Section,
-    onClick: () => void,
-    disabled: boolean
-  ) => {
-    const isSaving = savingSection === section;
-    return (
-      <Button
-        name={`save-${section}`}
-        variant='primary'
-        size='sm'
-        onClick={onClick}
-        disabled={isSaving || disabled}
-      >
-        {isSaving ? (
-          <>
-            <Spinner size='sm' aria-label='Saving' />
-            <span>Saving...</span>
-          </>
-        ) : (
-          <>
-            <Save className='size-4' aria-hidden />
-            <span>Save</span>
-          </>
-        )}
-      </Button>
-    );
-  };
-
   return (
     <div className='flex flex-col gap-6'>
       <div>
@@ -275,9 +435,9 @@ export default function SettingsPage() {
       {/* Profile (resume + cover-letter contact info) */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex items-center justify-between gap-3'>
             <CardTitle>Profile</CardTitle>
-            {renderSaveButton('profile', handleSaveProfile, false)}
+            <SavingIndicator active={savingSection === 'profile'} />
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
@@ -345,16 +505,16 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className='flex flex-wrap items-center justify-between gap-3'>
-            <CardTitle>Email Notifications</CardTitle>
             <div className='flex items-center gap-3'>
-              <Switch
-                checked={emailEnabled && emailAvailable}
-                onChange={setEmailEnabled}
-                label='Enabled'
-                disabled={!emailAvailable}
-              />
-              {renderSaveButton('email', handleSaveEmail, !emailAvailable)}
+              <CardTitle>Email Notifications</CardTitle>
+              <SavingIndicator active={savingSection === 'email'} />
             </div>
+            <Switch
+              checked={emailEnabled && emailAvailable}
+              onChange={setEmailEnabled}
+              label='Enabled'
+              disabled={!emailAvailable}
+            />
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
@@ -390,16 +550,16 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className='flex flex-wrap items-center justify-between gap-3'>
-            <CardTitle>SMS Notifications</CardTitle>
             <div className='flex items-center gap-3'>
-              <Switch
-                checked={smsEnabled && smsAvailable}
-                onChange={setSmsEnabled}
-                label='Enabled'
-                disabled={!smsAvailable}
-              />
-              {renderSaveButton('sms', handleSaveSms, !smsAvailable)}
+              <CardTitle>SMS Notifications</CardTitle>
+              <SavingIndicator active={savingSection === 'sms'} />
             </div>
+            <Switch
+              checked={smsEnabled && smsAvailable}
+              onChange={setSmsEnabled}
+              label='Enabled'
+              disabled={!smsAvailable}
+            />
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>

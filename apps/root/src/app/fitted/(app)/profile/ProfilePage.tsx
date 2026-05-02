@@ -1,14 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FileText,
-  Layers,
-  RefreshCw,
-  Save,
-  Sparkles,
-  Upload,
-} from 'lucide-react';
+import { FileText, Layers, RefreshCw, Sparkles, Upload } from 'lucide-react';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import {
@@ -111,6 +104,9 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [consolidating, setConsolidating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Track the server's known content so autosave only fires on actual edits and
+  // doesn't overwrite mid-typing when fetchData refreshes the prose state.
+  const lastSavedProseRef = useRef<string | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -145,9 +141,58 @@ export default function ProfilePage() {
     fetchData();
   }, [fetchData]);
 
+  // Sync the editable draft with the server-known prose, but skip when the
+  // user has unsaved local edits — autosave will catch up on its own debounce.
   useEffect(() => {
-    setDraft(prose?.content ?? '');
-  }, [prose]);
+    if (loading) return;
+    if (
+      lastSavedProseRef.current !== null &&
+      draft !== lastSavedProseRef.current
+    ) {
+      return;
+    }
+    const content = prose?.content ?? '';
+    if (content === lastSavedProseRef.current) return;
+    setDraft(content);
+    lastSavedProseRef.current = content;
+  }, [loading, prose, draft]);
+
+  // Autosave the master document 800ms after the user stops typing.
+  useEffect(() => {
+    if (loading) return;
+    if (lastSavedProseRef.current === null) return;
+    if (saving || deriving) return;
+    if (draft === lastSavedProseRef.current) return;
+    if (!draft.trim()) return;
+
+    const handle = setTimeout(async () => {
+      setSaving(true);
+      try {
+        const res = await fetch('/api/career/experience/prose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: draft }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(
+            (data as Record<string, string> | null)?.detail ??
+              `Save failed (${res.status})`
+          );
+        }
+        lastSavedProseRef.current = draft;
+        await fetchData();
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title: err instanceof Error ? err.message : 'Failed to save',
+        });
+      } finally {
+        setSaving(false);
+      }
+    }, 800);
+    return () => clearTimeout(handle);
+  }, [draft, loading, saving, deriving, fetchData, toast]);
 
   const handleUpload = useCallback(
     async (file: File) => {
@@ -283,37 +328,6 @@ export default function ProfilePage() {
       setConsolidating(false);
     }
   }, [fetchData, toast]);
-
-  const handleSaveProse = useCallback(async () => {
-    if (!draft.trim()) {
-      toast({ variant: 'error', title: 'Document cannot be empty' });
-      return;
-    }
-    setSaving(true);
-    try {
-      const res = await fetch('/api/career/experience/prose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: draft }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(
-          (data as Record<string, string> | null)?.detail ??
-            `Save failed (${res.status})`
-        );
-      }
-      toast({ variant: 'success', title: 'Master document saved' });
-      await fetchData();
-    } catch (err) {
-      toast({
-        variant: 'error',
-        title: err instanceof Error ? err.message : 'Save failed',
-      });
-    } finally {
-      setSaving(false);
-    }
-  }, [draft, fetchData, toast]);
 
   const fileInput = (
     <input
@@ -468,17 +482,30 @@ export default function ProfilePage() {
       {/* Master Document */}
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex items-center justify-between gap-3'>
             <CardTitle>
               <FileText className='mr-2 inline size-5' aria-hidden />
               Master Document
             </CardTitle>
-            {prose && (
-              <Text variant='meta' as='span'>
-                v{prose.version} &middot;{' '}
-                {new Date(prose.created_at).toLocaleDateString()}
-              </Text>
-            )}
+            <div className='flex items-center gap-2'>
+              {saving && (
+                <Text
+                  as='span'
+                  variant='meta'
+                  className='inline-flex items-center gap-1'
+                  aria-live='polite'
+                >
+                  <Spinner size='sm' aria-label='Saving' />
+                  <span>Saving…</span>
+                </Text>
+              )}
+              {prose && (
+                <Text variant='meta' as='span'>
+                  v{prose.version} &middot;{' '}
+                  {new Date(prose.created_at).toLocaleDateString()}
+                </Text>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-3'>
@@ -529,51 +556,6 @@ export default function ProfilePage() {
             className='min-h-[300px] w-full rounded-md border border-border bg-surface-primary p-3 font-mono text-sm text-text-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand'
             placeholder='Paste or type your master experience document here...'
           />
-          <div className='flex flex-wrap items-center gap-2'>
-            <Button
-              name='profile-save-prose'
-              variant='primary'
-              size='sm'
-              onClick={handleSaveProse}
-              disabled={
-                saving || !draft.trim() || draft === (prose?.content ?? '')
-              }
-            >
-              {saving ? (
-                <>
-                  <Spinner size='sm' aria-label='Saving' />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <Save className='size-4' aria-hidden />
-                  <span>Save</span>
-                </>
-              )}
-            </Button>
-            <Button
-              name='profile-save-derive'
-              variant='outline'
-              size='sm'
-              onClick={async () => {
-                await handleSaveProse();
-                if (draft.trim()) await handleDerive();
-              }}
-              disabled={saving || deriving || !draft.trim()}
-            >
-              {saving || deriving ? (
-                <>
-                  <Spinner size='sm' aria-label='Processing' />
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw className='size-4' aria-hidden />
-                  <span>Save &amp; Re-derive</span>
-                </>
-              )}
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
