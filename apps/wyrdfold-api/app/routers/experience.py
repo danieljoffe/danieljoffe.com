@@ -17,6 +17,7 @@ from pydantic import ValidationError
 from supabase import Client
 
 from app.dependencies import (
+    enforce_llm_budget,
     get_current_user_id_optional,
     get_embeddings_client,
     get_llm_client,
@@ -93,7 +94,7 @@ async def create_prose(
     return prose.create_version(supabase, user_id=user_id, content=body.content)
 
 
-@router.post("/prose/consolidate")
+@router.post("/prose/consolidate", dependencies=[Depends(enforce_llm_budget)])
 async def consolidate_prose(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -156,7 +157,7 @@ async def consolidate_prose(
 # ---- Resume upload --------------------------------------------------------
 
 
-@router.post("/upload-resume")
+@router.post("/upload-resume", dependencies=[Depends(enforce_llm_budget)])
 async def upload_resume(
     file: UploadFile,
     auto_derive: bool = Query(default=False),
@@ -329,7 +330,7 @@ async def create_optimized(
     return doc
 
 
-@router.post("/derive")
+@router.post("/derive", dependencies=[Depends(enforce_llm_budget)])
 async def derive_optimized(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -407,7 +408,7 @@ def _sse_event(event: str, data: dict[str, Any]) -> bytes:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n".encode()
 
 
-@router.post("/derive/stream")
+@router.post("/derive/stream", dependencies=[Depends(enforce_llm_budget)])
 async def derive_optimized_stream(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -615,7 +616,7 @@ async def append_turn(
 # ---- Conversation orchestrator (P2d) -------------------------------------
 
 
-@router.post("/conversation/turn")
+@router.post("/conversation/turn", dependencies=[Depends(enforce_llm_budget)])
 async def conversation_turn(
     body: TurnRequest,
     supabase: Client = Depends(get_supabase),
@@ -646,7 +647,7 @@ async def conversation_reset(
     return orchestrator.reset_content(supabase, user_id=user_id)
 
 
-@router.get("/conversation/next-probe")
+@router.get("/conversation/next-probe", dependencies=[Depends(enforce_llm_budget)])
 async def conversation_next_probe(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),

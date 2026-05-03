@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from unittest.mock import MagicMock
 
 import jwt
 import pytest
@@ -7,6 +8,7 @@ from fastapi import HTTPException, Request
 from app.config import Settings
 from app.dependencies import (
     _api_key_matches,
+    enforce_llm_budget,
     get_current_user_id,
     get_current_user_id_optional,
     verify_api_key,
@@ -213,3 +215,68 @@ def test_get_current_user_id_optional_prefers_jwt_over_api_key():
     """
     req = _make_request({"authorization": f"Bearer {_mint()}"})
     assert get_current_user_id_optional(req, key="testkey", s=_settings()) == USER_SUB
+
+
+def _budget_settings(daily: float = 5.0, hourly: float = 1.0) -> Settings:
+    return Settings(
+        wyrdfold_api_key="testkey",
+        supabase_jwt_secret=JWT_SECRET,
+        user_llm_daily_budget_usd=daily,
+        user_llm_hourly_budget_usd=hourly,
+    )
+
+
+def test_enforce_llm_budget_apikey_caller_bypasses(monkeypatch):
+    """API-key callers (user_id=None) skip the budget check entirely — no
+    supabase round-trip, no spend lookup. System paths are trusted.
+    """
+    from app.services.llm import budget as budget_mod
+
+    called = False
+
+    def _spy(*a, **kw):
+        nonlocal called
+        called = True
+
+    monkeypatch.setattr(budget_mod, "check_user_budget", _spy)
+    enforce_llm_budget(user_id=None, supabase=MagicMock(), s=_budget_settings())
+    assert called is False
+
+
+def test_enforce_llm_budget_jwt_user_invokes_check(monkeypatch):
+    from app.services.llm import budget as budget_mod
+
+    captured: dict = {}
+
+    def _spy(supabase, *, user_id, daily_limit_usd, hourly_limit_usd):
+        captured.update(
+            user_id=user_id,
+            daily_limit_usd=daily_limit_usd,
+            hourly_limit_usd=hourly_limit_usd,
+        )
+
+    monkeypatch.setattr(budget_mod, "check_user_budget", _spy)
+    enforce_llm_budget(
+        user_id=USER_SUB, supabase=MagicMock(), s=_budget_settings(daily=7.0, hourly=2.0)
+    )
+    assert captured == {
+        "user_id": USER_SUB,
+        "daily_limit_usd": 7.0,
+        "hourly_limit_usd": 2.0,
+    }
+
+
+def test_enforce_llm_budget_propagates_429(monkeypatch):
+    """If the underlying check raises 429, the dep surfaces it unchanged."""
+    from app.services.llm import budget as budget_mod
+
+    def _raise(*a, **kw):
+        raise HTTPException(
+            status_code=429, detail={"code": "llm_budget_exceeded", "scope": "hourly"}
+        )
+
+    monkeypatch.setattr(budget_mod, "check_user_budget", _raise)
+    with pytest.raises(HTTPException) as exc:
+        enforce_llm_budget(user_id=USER_SUB, supabase=MagicMock(), s=_budget_settings())
+    assert exc.value.status_code == 429
+    assert exc.value.detail["scope"] == "hourly"

@@ -172,3 +172,27 @@ def get_current_user_id_optional(
     if _api_key_matches(key, s.wyrdfold_api_key):
         return None
     raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+def enforce_llm_budget(
+    user_id: str | None = Depends(get_current_user_id_optional),
+    supabase: Client = Depends(get_supabase),
+    s: Settings = Depends(get_settings),
+) -> None:
+    """Defense-in-depth budget gate for LLM-touching routes.
+
+    JWT users get checked against rolling daily/hourly cost caps from
+    `llm_costs`. API-key callers (cron/poller/batch) bypass — those
+    system paths are trusted and gated by the operator. Limits are
+    configured via `user_llm_*_budget_usd` settings; 0 disables.
+    """
+    if user_id is None:
+        return
+    from app.services.llm import budget
+
+    budget.check_user_budget(
+        supabase,
+        user_id=user_id,
+        daily_limit_usd=s.user_llm_daily_budget_usd,
+        hourly_limit_usd=s.user_llm_hourly_budget_usd,
+    )
