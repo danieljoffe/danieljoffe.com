@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
 from app.dependencies import (
+    enforce_llm_budget,
     get_current_user_id_optional,
     get_llm_client,
     get_supabase,
@@ -31,7 +32,7 @@ router = APIRouter(
 )
 
 
-@router.post("/{job_id}")
+@router.post("/{job_id}", dependencies=[Depends(enforce_llm_budget)])
 async def create_analysis(
     job_id: str,
     target_id: str = Query(..., description="Target the user is viewing the job under"),

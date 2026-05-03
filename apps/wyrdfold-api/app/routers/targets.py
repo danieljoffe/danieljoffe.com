@@ -14,6 +14,7 @@ from postgrest.types import CountMethod
 from supabase import Client
 
 from app.dependencies import (
+    enforce_llm_budget,
     get_current_user_id,
     get_current_user_id_optional,
     get_llm_client,
@@ -153,7 +154,7 @@ async def create_target(
     return crud.create(supabase, payload=body)
 
 
-@router.post("/from-manual")
+@router.post("/from-manual", dependencies=[Depends(enforce_llm_budget)])
 async def create_target_from_manual(
     body: TargetFromManual,
     supabase: Client = Depends(get_supabase),
@@ -183,7 +184,7 @@ async def create_target_from_manual(
     )
 
 
-@router.post("/from-url")
+@router.post("/from-url", dependencies=[Depends(enforce_llm_budget)])
 async def create_target_from_url(
     body: TargetFromUrl,
     supabase: Client = Depends(get_supabase),
@@ -235,7 +236,7 @@ def list_targets(
     return {"targets": targets}
 
 
-@router.post("/suggest")
+@router.post("/suggest", dependencies=[Depends(enforce_llm_budget)])
 async def suggest(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -304,7 +305,7 @@ def update_target(
     return target
 
 
-@router.post("/{target_id}/activate")
+@router.post("/{target_id}/activate", dependencies=[Depends(enforce_llm_budget)])
 async def activate_target(
     target_id: str,
     background_tasks: BackgroundTasks,
@@ -343,7 +344,7 @@ async def deactivate_target(
     return crud.get(supabase, target_id) or target
 
 
-@router.post("/{target_id}/link")
+@router.post("/{target_id}/link", dependencies=[Depends(enforce_llm_budget)])
 async def link_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -382,7 +383,7 @@ async def link_target(
     )
 
 
-@router.post("/{target_id}/derive-profile")
+@router.post("/{target_id}/derive-profile", dependencies=[Depends(enforce_llm_budget)])
 async def derive_target_profile(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -478,7 +479,7 @@ async def delete_target(
 # ---- Create from job posting -----------------------------------------------
 
 
-@router.post("/from-posting/{posting_id}")
+@router.post("/from-posting/{posting_id}", dependencies=[Depends(enforce_llm_budget)])
 async def create_target_from_posting(
     posting_id: str,
     supabase: Client = Depends(get_supabase),
@@ -601,7 +602,7 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     return extraction.title, jd_text
 
 
-@router.post("/{target_id}/reference-jds")
+@router.post("/{target_id}/reference-jds", dependencies=[Depends(enforce_llm_budget)])
 async def add_reference_jd(
     target_id: str,
     body: ReferenceJDAdd,

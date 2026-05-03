@@ -25,6 +25,7 @@ from fastapi.responses import Response
 from supabase import Client
 
 from app.dependencies import (
+    enforce_llm_budget,
     get_current_user_id_optional,
     get_llm_client,
     get_supabase,
@@ -78,6 +79,7 @@ router = APIRouter(
 @router.post(
     "/resume",
     responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
+    dependencies=[Depends(enforce_llm_budget)],
 )
 async def create_tailored_resume(
     body: TailorRequest,
@@ -196,6 +198,7 @@ async def create_tailored_resume(
 @router.post(
     "/cover-letter",
     responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
+    dependencies=[Depends(enforce_llm_budget)],
 )
 async def create_tailored_cover_letter(
     body: CoverLetterRequest,
@@ -598,7 +601,7 @@ async def download_tailored_resume(
 # ---- Batch resume generation (#503) ----------------------------------------
 
 
-@router.post("/batch")
+@router.post("/batch", dependencies=[Depends(enforce_llm_budget)])
 async def create_batch_resumes(
     body: BatchRequest,
     background_tasks: BackgroundTasks,

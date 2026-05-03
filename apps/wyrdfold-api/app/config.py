@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     # at WARNING with method/path/duration. Set to 0 to log every request.
     slow_request_threshold_ms: int = Field(default=500, ge=0, le=60_000)
 
+    # Per-user LLM budget (defense-in-depth). Rolling window over llm_costs.
+    # Set to 0 to disable a window. API-key callers (cron) bypass — system
+    # paths are trusted and gated by the operator.
+    user_llm_daily_budget_usd: float = Field(default=5.0, ge=0.0)
+    user_llm_hourly_budget_usd: float = Field(default=1.0, ge=0.0)
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
     @property
