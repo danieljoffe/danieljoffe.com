@@ -8,9 +8,11 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = Field(default="", repr=False)
     wyrdfold_api_key: str = Field(default="", repr=False)
-    # HS256 secret from the Supabase project (Project Settings → API → JWT
-    # Settings). Used to verify Bearer tokens minted by Supabase Auth.
-    supabase_jwt_secret: str = Field(default="", repr=False)
+    # JWT verification uses Supabase's JWKS endpoint at
+    # `<supabase_url>/auth/v1/.well-known/jwks.json` — public-key verification
+    # with key rotation handled automatically. No shared secret required.
+    # Override the audience for tests; production should keep "authenticated".
+    supabase_jwt_audience: str = "authenticated"
     greenhouse_delay_ms: int = Field(default=200, ge=0, le=10_000)
     score_normalizer: int = 30
     allowed_hosts: str = ""
