@@ -23,7 +23,7 @@ The service builds from the monorepo root so the uv workspace lockfile is in sco
      - **Watch Paths**: `apps/wyrdfold-api/**` (prevents rebuilds when only the Next.js app changes).
      - **Networking → Target Port**: `8001`. Must match the port the container binds to. A mismatch returns `502 "Application failed to respond"` with `x-railway-fallback: true` even though the container is healthy.
 
-2. **Set environment variables** (Settings → Variables) from `apps/wyrdfold-api/.env.example`. `SUPABASE_JWT_SECRET` (Supabase Project Settings → API → JWT Settings) verifies user Bearer tokens. `WYRDFOLD_API_KEY` is the cron-only shared secret (poller, batch). Set `SENTRY_DSN` (and optionally `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`) to enable error reporting.
+2. **Set environment variables** (Settings → Variables) from `apps/wyrdfold-api/.env.example`. `SUPABASE_URL` is enough for JWT verification — the API fetches the project's public keys from `<SUPABASE_URL>/auth/v1/.well-known/jwks.json` (asymmetric ES256/RS256). No shared JWT secret to leak or rotate. `WYRDFOLD_API_KEY` is the cron-only shared secret (poller, batch). Set `SENTRY_DSN` (and optionally `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`) to enable error reporting.
 
 3. **Generate the public domain** (Settings → Networking → Generate Domain). Copy the hostname.
 

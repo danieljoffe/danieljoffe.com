@@ -1,9 +1,13 @@
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from unittest.mock import MagicMock
 
 import jwt
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi import HTTPException, Request
+from jwt import PyJWKClientError
 
 from app.config import Settings
 from app.dependencies import (
@@ -16,8 +20,63 @@ from app.dependencies import (
     verify_supabase_jwt,
 )
 
-JWT_SECRET = "x" * 32
 USER_SUB = "11111111-1111-1111-1111-111111111111"
+TEST_SUPABASE_URL = "https://test-project.supabase.co"
+TEST_ISSUER = f"{TEST_SUPABASE_URL}/auth/v1"
+TEST_KID = "test-kid-1"
+
+# Ephemeral EC P-256 keypair used by the whole module. Mirrors the asymmetric
+# (ES256) signing model Supabase uses for access tokens. A second keypair is
+# generated for "wrong signature" coverage.
+_PRIVATE_KEY = ec.generate_private_key(ec.SECP256R1())
+_PRIVATE_PEM = _PRIVATE_KEY.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+)
+_PUBLIC_KEY = _PRIVATE_KEY.public_key()
+
+_OTHER_PRIVATE_KEY = ec.generate_private_key(ec.SECP256R1())
+_OTHER_PRIVATE_PEM = _OTHER_PRIVATE_KEY.private_bytes(
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption(),
+)
+
+
+class _FakeSigningKey:
+    def __init__(self, key: Any) -> None:
+        self.key = key
+
+
+class _FakeJWKSClient:
+    """Stand-in for PyJWKClient. Returns the test public key for any token."""
+
+    def __init__(self, key: Any) -> None:
+        self._key = key
+
+    def get_signing_key_from_jwt(self, token: str) -> _FakeSigningKey:
+        return _FakeSigningKey(self._key)
+
+
+class _FailingJWKSClient:
+    def get_signing_key_from_jwt(self, token: str) -> _FakeSigningKey:
+        raise PyJWKClientError("JWKS endpoint unreachable")
+
+
+@pytest.fixture(autouse=True)
+def _patch_jwks(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Replace `_get_jwks_client` with a fake that returns the test public key.
+
+    Individual tests can override by re-patching the same attribute.
+    """
+    from app import dependencies
+
+    monkeypatch.setattr(
+        dependencies,
+        "_get_jwks_client",
+        lambda s: _FakeJWKSClient(_PUBLIC_KEY),
+    )
 
 
 def _make_request(headers: dict[str, str] | None = None) -> Request:
@@ -34,21 +93,25 @@ def _make_request(headers: dict[str, str] | None = None) -> Request:
     return Request(scope)
 
 
-def _settings(api_key: str = "testkey", jwt_secret: str = JWT_SECRET) -> Settings:
-    return Settings(wyrdfold_api_key=api_key, supabase_jwt_secret=jwt_secret)
+def _settings(api_key: str = "testkey", supabase_url: str = TEST_SUPABASE_URL) -> Settings:
+    return Settings(wyrdfold_api_key=api_key, supabase_url=supabase_url)
 
 
 def _mint(
     sub: str = USER_SUB,
-    secret: str = JWT_SECRET,
+    private_pem: bytes = _PRIVATE_PEM,
     aud: str = "authenticated",
+    iss: str = TEST_ISSUER,
+    exp_offset_seconds: int = 3600,
+    kid: str = TEST_KID,
 ) -> str:
     payload = {
         "sub": sub,
         "aud": aud,
-        "exp": datetime.now(UTC) + timedelta(hours=1),
+        "iss": iss,
+        "exp": datetime.now(UTC) + timedelta(seconds=exp_offset_seconds),
     }
-    return jwt.encode(payload, secret, algorithm="HS256")
+    return jwt.encode(payload, private_pem, algorithm="ES256", headers={"kid": kid})
 
 
 def test_api_key_matches_none_presented():
@@ -90,7 +153,7 @@ def test_verify_api_key_returns_on_match():
 def test_verify_supabase_jwt_unconfigured():
     req = _make_request({"authorization": f"Bearer {_mint()}"})
     with pytest.raises(HTTPException) as exc:
-        verify_supabase_jwt(req, s=_settings(jwt_secret=""))
+        verify_supabase_jwt(req, s=_settings(supabase_url=""))
     assert exc.value.status_code == 503
 
 
@@ -102,7 +165,7 @@ def test_verify_supabase_jwt_missing_token():
 
 
 def test_verify_supabase_jwt_wrong_signature():
-    bad_token = _mint(secret="y" * 32)
+    bad_token = _mint(private_pem=_OTHER_PRIVATE_PEM)
     req = _make_request({"authorization": f"Bearer {bad_token}"})
     with pytest.raises(HTTPException) as exc:
         verify_supabase_jwt(req, s=_settings())
@@ -117,13 +180,20 @@ def test_verify_supabase_jwt_wrong_audience():
     assert exc.value.status_code == 401
 
 
+def test_verify_supabase_jwt_wrong_issuer():
+    """Tokens minted by a different Supabase project (or anything not matching
+    `<supabase_url>/auth/v1`) must be rejected — pinning issuer prevents a
+    leaked token from another project being replayed against this one.
+    """
+    bad_token = _mint(iss="https://other-project.supabase.co/auth/v1")
+    req = _make_request({"authorization": f"Bearer {bad_token}"})
+    with pytest.raises(HTTPException) as exc:
+        verify_supabase_jwt(req, s=_settings())
+    assert exc.value.status_code == 401
+
+
 def test_verify_supabase_jwt_expired():
-    payload = {
-        "sub": USER_SUB,
-        "aud": "authenticated",
-        "exp": datetime.now(UTC) - timedelta(hours=1),
-    }
-    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    token = _mint(exp_offset_seconds=-3600)
     req = _make_request({"authorization": f"Bearer {token}"})
     with pytest.raises(HTTPException) as exc:
         verify_supabase_jwt(req, s=_settings())
@@ -132,6 +202,20 @@ def test_verify_supabase_jwt_expired():
 
 def test_verify_supabase_jwt_malformed_bearer():
     req = _make_request({"authorization": "Token abc.def.ghi"})
+    with pytest.raises(HTTPException) as exc:
+        verify_supabase_jwt(req, s=_settings())
+    assert exc.value.status_code == 401
+
+
+def test_verify_supabase_jwt_jwks_fetch_failure(monkeypatch: pytest.MonkeyPatch):
+    """If the JWKS endpoint is unreachable (or returns malformed JSON, or the
+    token's `kid` isn't present after a refresh) PyJWKClient raises
+    PyJWKClientError — the dep collapses it to 401 without leaking detail.
+    """
+    from app import dependencies
+
+    monkeypatch.setattr(dependencies, "_get_jwks_client", lambda s: _FailingJWKSClient())
+    req = _make_request({"authorization": f"Bearer {_mint()}"})
     with pytest.raises(HTTPException) as exc:
         verify_supabase_jwt(req, s=_settings())
     assert exc.value.status_code == 401
@@ -160,7 +244,7 @@ def test_verify_api_key_or_jwt_rejects_both_missing():
 
 
 def test_verify_api_key_or_jwt_rejects_invalid_jwt():
-    bad_token = _mint(secret="y" * 32)
+    bad_token = _mint(private_pem=_OTHER_PRIVATE_PEM)
     req = _make_request({"authorization": f"Bearer {bad_token}"})
     with pytest.raises(HTTPException) as exc:
         verify_api_key_or_jwt(req, key=None, s=_settings())
@@ -220,7 +304,7 @@ def test_get_current_user_id_optional_prefers_jwt_over_api_key():
 def _budget_settings(daily: float = 5.0, hourly: float = 1.0) -> Settings:
     return Settings(
         wyrdfold_api_key="testkey",
-        supabase_jwt_secret=JWT_SECRET,
+        supabase_url=TEST_SUPABASE_URL,
         user_llm_daily_budget_usd=daily,
         user_llm_hourly_budget_usd=hourly,
     )
