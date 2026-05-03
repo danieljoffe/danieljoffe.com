@@ -50,12 +50,21 @@ class _FakeSigningKey:
 
 
 class _FakeJWKSClient:
-    """Stand-in for PyJWKClient. Returns the test public key for any token."""
+    """Stand-in for PyJWKClient. Returns the test public key for any token.
+
+    Mirrors the real client by parsing the token header first — that's where
+    real PyJWKClient raises ``jwt.DecodeError`` on malformed input. Without
+    this, malformed-token tests would silently pass through to ``jwt.decode``
+    which raises a different (still PyJWTError) exception, and we wouldn't
+    exercise the JWKS-side error path.
+    """
 
     def __init__(self, key: Any) -> None:
         self._key = key
 
     def get_signing_key_from_jwt(self, token: str) -> _FakeSigningKey:
+        # Triggers DecodeError on malformed tokens, matching real behavior.
+        jwt.get_unverified_header(token)
         return _FakeSigningKey(self._key)
 
 
@@ -202,6 +211,27 @@ def test_verify_supabase_jwt_expired():
 
 def test_verify_supabase_jwt_malformed_bearer():
     req = _make_request({"authorization": "Token abc.def.ghi"})
+    with pytest.raises(HTTPException) as exc:
+        verify_supabase_jwt(req, s=_settings())
+    assert exc.value.status_code == 401
+
+
+@pytest.mark.parametrize(
+    "bogus_token",
+    [
+        "not.a.real.token",  # base64-decodes to invalid UTF-8
+        "abc",  # not enough segments
+        "x.y.z",  # right shape, garbage base64
+    ],
+    ids=["invalid-utf8-header", "not-enough-segments", "garbage-base64"],
+)
+def test_verify_supabase_jwt_malformed_token_returns_401(bogus_token: str):
+    """Regression: PyJWKClient.get_signing_key_from_jwt parses the token
+    header and raises jwt.DecodeError (a PyJWTError) on malformed input —
+    NOT PyJWKClientError. Originally this leaked through as a 500 with the
+    parser error in the response body. Smoke-tested 2026-05-03.
+    """
+    req = _make_request({"authorization": f"Bearer {bogus_token}"})
     with pytest.raises(HTTPException) as exc:
         verify_supabase_jwt(req, s=_settings())
     assert exc.value.status_code == 401

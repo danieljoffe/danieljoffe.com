@@ -114,9 +114,12 @@ def _decode_supabase_jwt(token: str, s: Settings) -> dict[str, object]:
     """
     try:
         signing_key = _get_jwks_client(s).get_signing_key_from_jwt(token)
-    except PyJWKClientError as exc:
-        # Unknown kid, malformed token header, or JWKS unreachable. All
-        # collapse to 401 — never leak network detail to the client.
+    except (PyJWKClientError, jwt.PyJWTError) as exc:
+        # PyJWKClientError: unknown kid (after refresh), JWKS unreachable,
+        # malformed JWKS response. PyJWTError: malformed token (not enough
+        # segments, bad base64, bad UTF-8 in header) — get_signing_key_from_jwt
+        # parses the token header and re-raises decode errors. All collapse
+        # to 401 — never leak parser/network detail to the client.
         raise HTTPException(status_code=401, detail="Invalid auth token") from exc
 
     try:
