@@ -14,13 +14,6 @@ if TYPE_CHECKING:
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
-# Sentinel user_id returned for api-key callers (cron / poller / batch jobs).
-# Real users authenticate via Supabase JWT and `get_current_user_id` returns
-# their JWT `sub` (a UUID). Phase 3b.3 will thread these per-user IDs through
-# the service layer; until then api-key callers stay single-tenant under this
-# label, matching the legacy `tools-admin` value to avoid orphaning rows.
-SINGLE_USER_ID = "tools-admin"
-
 
 def get_settings() -> Settings:
     return settings
@@ -133,27 +126,49 @@ def verify_api_key_or_jwt(
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
+def _try_decode_jwt_sub(request: Request, s: Settings) -> str | None:
+    """Return the JWT `sub` if a valid Bearer token is present, else None."""
+    if not s.supabase_jwt_secret:
+        return None
+    token = _extract_bearer_token(request)
+    if not token:
+        return None
+    try:
+        payload = _decode_supabase_jwt(token, s.supabase_jwt_secret)
+    except HTTPException:
+        return None
+    return str(payload["sub"])
+
+
 def get_current_user_id(
+    request: Request,
+    s: Settings = Depends(get_settings),
+) -> str:
+    """Return the JWT `sub` for the current request (JWT-required).
+
+    Use on endpoints that need a real user identity (no api-key fallback).
+    """
+    sub = _try_decode_jwt_sub(request, s)
+    if sub is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return sub
+
+
+def get_current_user_id_optional(
     request: Request,
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
-) -> str:
-    """Return the stable user_id for the current request.
+) -> str | None:
+    """Return the JWT `sub`, or None for api-key callers (cron/poller/batch).
 
-    Supabase JWT callers get their `sub` (a UUID). API-key callers (cron,
-    poller, batch) get the ``SINGLE_USER_ID`` sentinel — Phase 3b.3 will
-    replace the sentinel with proper per-user routing for cron jobs that
-    iterate users explicitly.
+    Routes accepting both auth modes use this to thread the user identity
+    through the service layer: JWT → real per-user data, api-key → legacy
+    single-tenant rows (where user_id IS NULL). Raises 401 if neither auth
+    mode matches.
     """
-    if s.supabase_jwt_secret:
-        token = _extract_bearer_token(request)
-        if token:
-            try:
-                payload = _decode_supabase_jwt(token, s.supabase_jwt_secret)
-            except HTTPException:
-                pass
-            else:
-                return str(payload["sub"])
+    sub = _try_decode_jwt_sub(request, s)
+    if sub is not None:
+        return sub
     if _api_key_matches(key, s.wyrdfold_api_key):
-        return SINGLE_USER_ID
+        return None
     raise HTTPException(status_code=401, detail="Unauthorized")

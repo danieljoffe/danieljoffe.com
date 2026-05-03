@@ -10,7 +10,12 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_llm_client, get_supabase, verify_api_key_or_jwt
+from app.dependencies import (
+    get_current_user_id_optional,
+    get_llm_client,
+    get_supabase,
+    verify_api_key_or_jwt,
+)
 from app.models.analysis import JobAnalysisRecord
 from app.services.analysis import persistence
 from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job
@@ -32,9 +37,10 @@ async def create_analysis(
     target_id: str = Query(..., description="Target the user is viewing the job under"),
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobAnalysisRecord:
     # 1. Fetch optimized doc (needed for cache key)
-    current_optimized = optimized.get_latest(supabase, user_id=None)
+    current_optimized = optimized.get_latest(supabase, user_id=user_id)
     if current_optimized is None:
         raise HTTPException(
             status_code=404,
@@ -47,7 +53,7 @@ async def create_analysis(
         job_id,
         target_id=target_id,
         optimized_doc_id=current_optimized.id,
-        user_id=None,
+        user_id=user_id,
     )
     if cached is not None:
         return cached
@@ -90,7 +96,7 @@ async def create_analysis(
     # 6. Log cost
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=DEFAULT_PURPOSE,
         result=llm_result,
         metadata={
@@ -105,7 +111,7 @@ async def create_analysis(
         supabase,
         job_posting_id=job_id,
         target_id=target_id,
-        user_id=None,
+        user_id=user_id,
         optimized_doc_id=current_optimized.id,
         analysis=analysis,
         llm_result=llm_result,

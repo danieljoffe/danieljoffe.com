@@ -15,6 +15,7 @@ from supabase import Client
 
 from app.dependencies import (
     get_current_user_id,
+    get_current_user_id_optional,
     get_llm_client,
     get_supabase,
     verify_api_key_or_jwt,
@@ -77,7 +78,7 @@ router = APIRouter(
 
 
 async def _activate_pipeline(
-    supabase: Client, llm: LLMClient, target: JobTarget
+    supabase: Client, llm: LLMClient, target: JobTarget, user_id: str
 ) -> None:
     """Derive profile (if needed) then poll jobs for a target. Runs as BackgroundTask."""
     target_id = target.id
@@ -89,7 +90,7 @@ async def _activate_pipeline(
             crud.update(
                 supabase, target_id, TargetUpdate(activation_status="deriving")
             )
-            doc = optimized.get_latest(supabase, user_id=None)
+            doc = optimized.get_latest(supabase, user_id=user_id)
             if doc is None:
                 logger.warning("No OptimizedDoc for target %s — skipping derive", target_id)
                 crud.update(
@@ -102,7 +103,7 @@ async def _activate_pipeline(
             )
             cost_log.record(
                 supabase,
-                user_id=None,
+                user_id=user_id,
                 purpose=DERIVE_LABEL_PURPOSE,
                 result=result,
                 metadata={"target_id": target_id, "trigger": "activation"},
@@ -166,7 +167,7 @@ async def create_target_from_manual(
     creates a new target (with a profile derived from label + experience)
     and links the user. The user always ends up with a ``user_targets`` row.
     """
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
         raise HTTPException(
             status_code=404,
@@ -197,7 +198,7 @@ async def create_target_from_url(
     re-merged (corpus building); on no match a new target is created. The
     user is always linked.
     """
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
         raise HTTPException(
             status_code=404,
@@ -245,7 +246,7 @@ async def suggest(
     Returns each suggestion paired with its matched target (if one exists)
     or flagged as new. Excludes targets the user already has.
     """
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
         raise HTTPException(status_code=404, detail="No experience profile found")
 
@@ -254,7 +255,7 @@ async def suggest(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=SUGGEST_PURPOSE,
         result=result,
         metadata={"user_id": user_id},
@@ -321,7 +322,7 @@ async def activate_target(
     refreshed = crud.get(supabase, target_id) or target
 
     background_tasks.add_task(
-        _activate_pipeline, supabase, llm, refreshed
+        _activate_pipeline, supabase, llm, refreshed, user_id
     )
     return refreshed
 
@@ -357,14 +358,14 @@ async def link_target(
     # Derive fit score if we have an experience profile
     fit_score: int | None = None
     fit_reasoning: str | None = None
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is not None:
         fit_result, result = await derive_fit_score(
             llm, payload=doc.payload, target=target
         )
         cost_log.record(
             supabase,
-            user_id=None,
+            user_id=user_id,
             purpose=FIT_SCORE_PURPOSE,
             result=result,
             metadata={"target_id": target_id, "user_id": user_id},
@@ -386,13 +387,14 @@ async def derive_target_profile(
     target_id: str,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobTarget:
     """Derive a scoring profile + search keywords from the target label + user experience."""
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
-    doc = optimized.get_latest(supabase, user_id=None)
+    doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
         raise HTTPException(status_code=404, detail="No experience profile found")
 
@@ -401,7 +403,7 @@ async def derive_target_profile(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=DERIVE_LABEL_PURPOSE,
         result=result,
         metadata={"target_id": target_id},
@@ -481,6 +483,7 @@ async def create_target_from_posting(
     posting_id: str,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobTarget:
     """Create a target from an existing job posting.
 
@@ -515,7 +518,7 @@ async def create_target_from_posting(
             )
             cost_log.record(
                 supabase,
-                user_id=None,
+                user_id=user_id,
                 purpose=DEFAULT_PURPOSE,
                 result=result,
                 metadata={
@@ -604,6 +607,7 @@ async def add_reference_jd(
     body: ReferenceJDAdd,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobTarget:
     """Add a reference JD, derive a scoring profile via LLM, and merge.
 
@@ -641,7 +645,7 @@ async def add_reference_jd(
     )
     cost_log.record(
         supabase,
-        user_id=None,
+        user_id=user_id,
         purpose=DEFAULT_PURPOSE,
         result=result,
         metadata={"target_id": target_id, "jd_url": body.jd_url or ""},
