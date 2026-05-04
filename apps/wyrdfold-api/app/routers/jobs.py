@@ -228,8 +228,7 @@ def _list_jobs_for_target(
 
 # Sync `def` so FastAPI runs each request in a threadpool worker. The body
 # makes multiple blocking supabase `.execute()` calls; `async def` would block
-# the event loop and serialize concurrent /jobs reads (verified by 2026-04-30
-# load test — see .claude/docs/cleanup/load-test-findings-2026-04-30.md).
+# the event loop and serialize concurrent /jobs reads.
 
 
 @router.get("")
