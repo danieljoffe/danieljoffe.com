@@ -272,16 +272,8 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex items-start justify-between gap-3'>
-        <div>
-          <Heading variant='hero' as='h1'>
-            Targets
-          </Heading>
-          <Text variant='body' className='mt-1 text-text-secondary'>
-            Role profiles you score new jobs against
-          </Text>
-        </div>
-        {hasContent && (
+      {hasContent && (
+        <div className='flex justify-end'>
           <Button
             name='target-create'
             variant='primary'
@@ -293,8 +285,8 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
           >
             <Plus className='size-4' aria-hidden />
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {!hasContent ? (
         <Card>
