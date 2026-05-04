@@ -2,6 +2,11 @@
   "name": "@danieljoffe.com/wyrdfold",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start"
+  },
   "dependencies": {
     "@danieljoffe.com/shared-ui": "workspace:*",
     "@supabase/ssr": "^0.10.2",
