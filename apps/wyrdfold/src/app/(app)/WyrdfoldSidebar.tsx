@@ -14,7 +14,6 @@ import {
   LogOut,
   X,
 } from 'lucide-react';
-import { Sidebar, type SidebarItem } from '@danieljoffe.com/shared-ui/Sidebar';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -22,51 +21,15 @@ import { createAuthBrowserClient } from '@/lib/supabase/auth-client';
 import DarkModeToggle from '@/components/Nav/DarkModeToggle';
 
 type Icon = typeof LayoutDashboard;
-type NavItem = SidebarItem & { href: string; lucide: Icon };
+type NavItem = { id: string; label: string; href: string; lucide: Icon };
 
 const NAV_ITEMS: NavItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    href: '/',
-    lucide: LayoutDashboard,
-    icon: <LayoutDashboard className='size-4' aria-hidden />,
-  },
-  {
-    id: 'jobs',
-    label: 'Jobs',
-    href: '/jobs',
-    lucide: Briefcase,
-    icon: <Briefcase className='size-4' aria-hidden />,
-  },
-  {
-    id: 'targets',
-    label: 'Targets',
-    href: '/targets',
-    lucide: Target,
-    icon: <Target className='size-4' aria-hidden />,
-  },
-  {
-    id: 'profile',
-    label: 'Profile',
-    href: '/profile',
-    lucide: User,
-    icon: <User className='size-4' aria-hidden />,
-  },
-  {
-    id: 'insights',
-    label: 'Insights',
-    href: '/insights',
-    lucide: BarChart3,
-    icon: <BarChart3 className='size-4' aria-hidden />,
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    href: '/settings',
-    lucide: Settings,
-    icon: <Settings className='size-4' aria-hidden />,
-  },
+  { id: 'dashboard', label: 'Dashboard', href: '/', lucide: LayoutDashboard },
+  { id: 'jobs', label: 'Jobs', href: '/jobs', lucide: Briefcase },
+  { id: 'targets', label: 'Targets', href: '/targets', lucide: Target },
+  { id: 'profile', label: 'Profile', href: '/profile', lucide: User },
+  { id: 'insights', label: 'Insights', href: '/insights', lucide: BarChart3 },
+  { id: 'settings', label: 'Settings', href: '/settings', lucide: Settings },
 ];
 
 // Mobile shows the four daily-use tabs + More; the sheet picks up the rest.
@@ -124,14 +87,6 @@ export default function WyrdfoldSidebar() {
     };
   }, [sheetOpen]);
 
-  const handleSheetLink = useCallback(
-    (href: string) => {
-      setSheetOpen(false);
-      requestAnimationFrame(() => router.push(href));
-    },
-    [router]
-  );
-
   async function handleSignOut() {
     setSheetOpen(false);
     const supabase = createAuthBrowserClient();
@@ -140,47 +95,57 @@ export default function WyrdfoldSidebar() {
     router.refresh();
   }
 
-  // --- Desktop sidebar ---
-  const handleDesktopSelect = useCallback(
-    (id: string) => {
-      const item = NAV_ITEMS.find(n => n.id === id);
-      if (item) router.push(item.href);
-    },
-    [router]
-  );
-
-  const sidebarHeader = (
-    <span className='text-sm font-semibold text-text-primary'>WyrdFold</span>
-  );
-
-  const sidebarFooter = (
-    <div className='flex flex-col gap-2'>
-      <DarkModeToggle />
-      <Button
-        name='wyrdfold-sign-out'
-        variant='outline'
-        size='sm'
-        onClick={handleSignOut}
-        className='w-full justify-center'
-      >
-        <LogOut className='size-4' aria-hidden />
-        <span>Sign out</span>
-      </Button>
-    </div>
-  );
-
   return (
     <>
-      {/* Desktop sidebar */}
-      <div className='hidden md:block'>
-        <Sidebar
-          items={NAV_ITEMS}
-          activeId={activeId}
-          onSelect={handleDesktopSelect}
-          header={sidebarHeader}
-          footer={sidebarFooter}
-        />
-      </div>
+      {/* Desktop sidebar — Link-based so Next can prefetch each route. */}
+      <aside
+        className='hidden md:flex flex-col h-screen sticky top-0 w-48 lg:w-60 bg-surface border-r border-border'
+        aria-label='WyrdFold primary navigation'
+      >
+        <div className='p-4 border-b border-border shrink-0'>
+          <span className='text-sm font-semibold text-text-primary'>
+            WyrdFold
+          </span>
+        </div>
+        <nav className='flex-1 overflow-y-auto p-2 space-y-0.5'>
+          {NAV_ITEMS.map(item => {
+            const Icon = item.lucide;
+            const active = activeId === item.id;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'flex items-center gap-2 w-full justify-start rounded-md px-3 py-2 text-sm transition-colors motion-reduce:transition-none',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+                  active
+                    ? 'bg-brand-50 text-brand-700 font-medium'
+                    : 'text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
+                )}
+              >
+                <Icon className='size-4 shrink-0' aria-hidden='true' />
+                <span className='flex-1 text-left truncate'>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+        <div className='p-4 border-t border-border shrink-0'>
+          <div className='flex flex-col gap-2'>
+            <DarkModeToggle />
+            <Button
+              name='wyrdfold-sign-out'
+              variant='outline'
+              size='sm'
+              onClick={handleSignOut}
+              className='w-full justify-center'
+            >
+              <LogOut className='size-4' aria-hidden />
+              <span>Sign out</span>
+            </Button>
+          </div>
+        </div>
+      </aside>
 
       {/* Mobile bottom bar */}
       <div
@@ -285,12 +250,13 @@ export default function WyrdfoldSidebar() {
               const active = activeId === item.id;
               return (
                 <li key={item.id}>
-                  <Button
-                    name={`wyrdfold-more-${item.id}`}
-                    variant='bare'
-                    onClick={() => handleSheetLink(item.href)}
+                  <Link
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    onClick={() => setSheetOpen(false)}
                     className={cn(
-                      'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer',
+                      'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
                       active
                         ? 'text-brand-500 bg-surface-tertiary'
                         : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
@@ -298,7 +264,7 @@ export default function WyrdfoldSidebar() {
                   >
                     <Icon className='h-4 w-4' aria-hidden='true' />
                     {item.label}
-                  </Button>
+                  </Link>
                 </li>
               );
             })}
