@@ -3,7 +3,9 @@
 import { composePlugins, withNx } from '@nx/next';
 
 const isTest = process.env.NODE_ENV === 'test';
-const isCI = process.env.CI === 'true';
+// CI provider conventions vary: GitHub Actions sets CI=true, Vercel sets CI=1.
+// Truthy check handles both. Also explicitly include VERCEL for clarity.
+const isCI = !!process.env.CI || process.env.VERCEL === '1';
 
 // Derive the Supabase storage host from env so user-uploaded resume PDFs
 // served from Supabase Storage pass through next/image. Falls back to
