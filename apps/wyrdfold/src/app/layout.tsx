@@ -9,7 +9,12 @@ export const metadata = {
     default: 'WyrdFold',
   },
   description: 'AI-assisted job search command center.',
+  manifest: '/site.webmanifest',
   robots: { index: false, follow: false },
+};
+
+export const viewport = {
+  themeColor: '#8FC900',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
