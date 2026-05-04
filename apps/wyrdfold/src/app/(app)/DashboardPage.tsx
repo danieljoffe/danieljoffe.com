@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -15,18 +14,15 @@ import {
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
-import { useToast } from '@/state/Toast/ToastProvider';
 import type { JobPosting } from './jobs/types';
-import type { UserTargetWithTarget } from './targets/types';
 
-interface JobsListResponse {
-  postings: JobPosting[];
-  total: number;
-  page: number;
-  page_size: number;
+export interface DashboardInitial {
+  topMatches: JobPosting[];
+  counts: Record<string, number>;
+  hasProfile: boolean;
+  hasActiveTargets: boolean;
 }
 
 interface PipelineStat {
@@ -71,82 +67,12 @@ function scoreBadgeVariant(score: number): 'success' | 'brand' | 'default' {
 
 // -- Component ----------------------------------------------------------------
 
-export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [topMatches, setTopMatches] = useState<JobPosting[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [hasProfile, setHasProfile] = useState<boolean>(false);
-  const [hasActiveTargets, setHasActiveTargets] = useState<boolean>(false);
-  const { toast } = useToast();
+interface DashboardPageProps {
+  initial: DashboardInitial;
+}
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [topRes, healthRes, targetsRes, ...countResponses] =
-        await Promise.all([
-          fetch('/api/jobs?status=new&sort=score&order=desc&page_size=5'),
-          fetch('/api/career/experience/gap-health'),
-          fetch('/api/targets/mine'),
-          ...PIPELINE_STATS.map(s =>
-            fetch(`/api/jobs?status=${s.status}&page_size=1`)
-          ),
-        ]);
-
-      if (topRes.ok) {
-        const data = (await topRes.json()) as JobsListResponse;
-        setTopMatches(data.postings ?? []);
-      }
-
-      if (healthRes.ok) {
-        setHasProfile(true);
-      }
-
-      if (targetsRes.ok) {
-        const { targets } = (await targetsRes.json()) as {
-          targets: UserTargetWithTarget[];
-        };
-        setHasActiveTargets(targets.some(t => t.user_target.is_active));
-      }
-
-      const newCounts: Record<string, number> = {};
-      await Promise.all(
-        countResponses.map(async (res, i) => {
-          if (res.ok) {
-            const data = (await res.json()) as JobsListResponse;
-            const stat = PIPELINE_STATS[i];
-            if (stat) newCounts[stat.status] = data.total ?? 0;
-          }
-        })
-      );
-      setCounts(newCounts);
-    } catch {
-      toast({ variant: 'error', title: 'Failed to load dashboard data' });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // -- Loading state ----------------------------------------------------------
-
-  if (loading) {
-    return (
-      <div className='flex flex-col gap-6'>
-        <div>
-          <Skeleton variant='text' size='lg' className='w-32' />
-          <Skeleton variant='text' className='mt-2 w-56' />
-        </div>
-        <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
-          {[0, 1, 2, 3].map(i => (
-            <Skeleton key={i} variant='rectangular' height={88} />
-          ))}
-        </div>
-        <Skeleton variant='rectangular' height={320} />
-      </div>
-    );
-  }
+export default function DashboardPage({ initial }: DashboardPageProps) {
+  const { topMatches, counts, hasProfile, hasActiveTargets } = initial;
 
   // -- Zero state -------------------------------------------------------------
 
