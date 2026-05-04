@@ -3,19 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
-import type { UserTargetWithTarget } from '../targets/types';
 import BatchActionBar from './BatchActionBar';
 import JobsListView from './JobsListView';
 import type { JobPosting, JobsFilterState } from './types';
 
-interface TargetTab {
+export interface TargetTab {
   id: string;
   label: string;
 }
@@ -38,12 +36,14 @@ interface JobsListProps {
   targetId: string | undefined;
   initialStatus?: string;
   initialMinScore?: string;
+  initialTargets: TargetTab[];
 }
 
 export default function JobsList({
   targetId,
   initialStatus,
   initialMinScore,
+  initialTargets,
 }: JobsListProps) {
   const [filters, setFilters] = useState<JobsFilterState>(() => {
     const base = targetId ? TARGET_FILTERS : INITIAL_FILTERS;
@@ -61,8 +61,6 @@ export default function JobsList({
   >(undefined);
   const [exporting, setExporting] = useState(false);
   const [visiblePostings, setVisiblePostings] = useState<JobPosting[]>([]);
-  const [targets, setTargets] = useState<TargetTab[]>([]);
-  const [targetsLoading, setTargetsLoading] = useState(true);
   const [activeTargetId, setActiveTargetId] = useState<string | undefined>(
     targetId
   );
@@ -72,34 +70,7 @@ export default function JobsList({
   const { toast } = useToast();
   const router = useRouter();
 
-  // Fetch targets for tab bar — uses the per-user link so tabs reflect
-  // what THIS user has active, not what's globally active across users.
-  useEffect(() => {
-    async function fetchTargets() {
-      try {
-        const res = await fetch('/api/targets/mine');
-        if (!res.ok) return;
-        const { targets } = (await res.json()) as {
-          targets: UserTargetWithTarget[];
-        };
-        const activeTargets: TargetTab[] = targets
-          .filter(t => t.user_target.is_active)
-          .map(t => ({ id: t.target.id, label: t.target.label }));
-        setTargets(activeTargets);
-        if (targetId && !activeTargets.some(t => t.id === targetId)) {
-          // URL target is not active for this user — redirect to All Jobs
-          setActiveTargetId(undefined);
-          setFilters(INITIAL_FILTERS);
-          router.replace('/jobs', { scroll: false });
-        }
-      } catch {
-        // Non-critical — tabs just won't show
-      } finally {
-        setTargetsLoading(false);
-      }
-    }
-    fetchTargets();
-  }, [targetId]);
+  const targets = initialTargets;
 
   // Check target activation status when switching tabs
   useEffect(() => {
@@ -358,13 +329,7 @@ export default function JobsList({
         </Text>
       </div>
 
-      {targetsLoading ? (
-        <div className='flex gap-1 border-b border-border pb-px'>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} variant='rectangular' width={90} height={36} />
-          ))}
-        </div>
-      ) : targets.length === 0 ? (
+      {targets.length === 0 ? (
         <Card>
           <CardContent className='flex flex-col items-center gap-3 py-12'>
             <Text variant='body' as='p'>
