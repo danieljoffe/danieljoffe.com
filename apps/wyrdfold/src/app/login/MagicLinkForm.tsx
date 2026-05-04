@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { Mail, CheckCircle2 } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -12,6 +11,7 @@ import {
 } from '@danieljoffe.com/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
+import WyrdfoldLogo from '@/components/WyrdfoldLogo';
 import { createAuthBrowserClient } from '@/lib/supabase/auth-client';
 
 type FormState = 'idle' | 'loading' | 'sent' | 'error';
@@ -79,14 +79,7 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
   return (
     <main className='min-h-screen flex flex-col items-center justify-center px-6 py-12'>
       <div className='w-full max-w-xs flex flex-col items-center gap-6'>
-        <Image
-          src='/logo.svg'
-          alt='WyrdFold'
-          width={64}
-          height={48}
-          priority
-          className='select-none'
-        />
+        <WyrdfoldLogo aria-label='WyrdFold' className='h-12 w-16 select-none' />
 
         {formState === 'sent' ? (
           <>

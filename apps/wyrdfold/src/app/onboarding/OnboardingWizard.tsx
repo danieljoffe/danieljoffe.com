@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import WyrdfoldLogo from '@/components/WyrdfoldLogo';
 import ConversationChat from '../_components/ConversationChat';
 import PathChooser from './PathChooser';
 import ResumeUploader from './ResumeUploader';
@@ -67,7 +68,10 @@ export default function OnboardingWizard() {
     <div className='flex min-h-screen items-center justify-center bg-bg px-4 py-12'>
       <div className='w-full max-w-2xl'>
         {/* Header */}
-        <div className='mb-8 text-center'>
+        <div className='mb-8 flex flex-col items-center text-center'>
+          {currentStep === 'path-chooser' && (
+            <WyrdfoldLogo aria-label='WyrdFold' className='mb-4 h-12 w-16' />
+          )}
           <Heading variant='hero' as='h1'>
             Welcome to WyrdFold
           </Heading>

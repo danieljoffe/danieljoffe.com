@@ -19,6 +19,7 @@ import { cn } from '@/lib/cn';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { createAuthBrowserClient } from '@/lib/supabase/auth-client';
 import DarkModeToggle from '@/components/Nav/DarkModeToggle';
+import WyrdfoldLogo from '@/components/WyrdfoldLogo';
 
 type Icon = typeof LayoutDashboard;
 type NavItem = { id: string; label: string; href: string; lucide: Icon };
@@ -103,9 +104,16 @@ export default function WyrdfoldSidebar() {
         aria-label='WyrdFold primary navigation'
       >
         <div className='p-4 border-b border-border shrink-0'>
-          <span className='text-sm font-semibold text-text-primary'>
-            WyrdFold
-          </span>
+          <Link
+            href='/'
+            aria-label='WyrdFold home'
+            className='flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
+          >
+            <WyrdfoldLogo aria-label='WyrdFold' className='h-4 w-5' />
+            <span className='text-sm font-semibold text-text-primary'>
+              WyrdFold
+            </span>
+          </Link>
         </div>
         <nav className='flex-1 overflow-y-auto p-2 space-y-0.5'>
           {NAV_ITEMS.map(item => {
