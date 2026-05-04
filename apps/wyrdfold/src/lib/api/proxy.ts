@@ -29,6 +29,45 @@ export async function getAccessToken(): Promise<string | null> {
   }
 }
 
+/**
+ * Server-side JSON GET to wyrdfold-api for use in Server Components.
+ * Returns null on auth failure, network error, or non-OK status — the
+ * caller should fall back to defaults (empty list, "no data" state).
+ *
+ * Bypasses the /api/* route handler so the page doesn't pay an extra
+ * client→Next round-trip; data streams inline with the RSC payload.
+ */
+export async function fetchJsonFromWyrdfoldAPI<T>(
+  path: string,
+  options: { searchParams?: URLSearchParams; timeoutMs?: number } = {}
+): Promise<T | null> {
+  const { searchParams, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+
+  const accessToken = await getAccessToken();
+  if (accessToken === null) return null;
+
+  const qs = searchParams ? `?${searchParams.toString()}` : '';
+  const url = `${apiBaseUrl()}${path}${qs}`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: controller.signal,
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function unauthorized(): NextResponse {
   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 }
