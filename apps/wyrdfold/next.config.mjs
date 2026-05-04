@@ -129,6 +129,13 @@ const nextConfig = {
     ];
     return config;
   },
+  // Turbopack uses the package.json `exports` field directly, so workspace
+  // resolution works via the `default` condition (the built dist) rather
+  // than the custom `@danieljoffe.com/source` condition wired up in the
+  // webpack block above. No SVG-as-component loader rules are needed since
+  // wyrdfold imports SVG icons via lucide-react components, not file imports.
+  // Block is here for parity with apps/root/next.config.mjs.
+  turbopack: {},
 
   productionBrowserSourceMaps: false,
 };
