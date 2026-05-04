@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
-import JobsList from './JobsList';
+import { redirect } from 'next/navigation';
+import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
+import type { UserTargetWithTarget } from '../targets/types';
+import JobsList, { type TargetTab } from './JobsList';
 import { JOB_STATUSES, type JobStatus } from './types';
 
 export const metadata: Metadata = {
@@ -30,11 +33,26 @@ export default async function FittedJobsPage({
       ? String(parsedMinScore)
       : '';
 
+  const targetsRes = await fetchJsonFromWyrdfoldAPI<{
+    targets: UserTargetWithTarget[];
+  }>('/targets/mine');
+  const initialTargets: TargetTab[] = (targetsRes?.targets ?? [])
+    .filter(t => t.user_target.is_active)
+    .map(t => ({ id: t.target.id, label: t.target.label }));
+
+  // If the URL points to a target this user doesn't have active, drop the
+  // filter rather than rendering an empty list. Server-side redirect avoids
+  // a render → effect → client redirect waterfall.
+  if (targetId && !initialTargets.some(t => t.id === targetId)) {
+    redirect('/jobs');
+  }
+
   return (
     <JobsList
       targetId={targetId}
       initialStatus={initialStatus}
       initialMinScore={initialMinScore}
+      initialTargets={initialTargets}
     />
   );
 }
