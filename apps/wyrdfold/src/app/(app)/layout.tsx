@@ -1,25 +1,13 @@
 import type { ReactNode } from 'react';
-import { redirect } from 'next/navigation';
-import { createAuthServerClient } from '@/lib/supabase/auth-server';
 import WyrdfoldSidebar from './WyrdfoldSidebar';
 
-/**
- * Server-side auth backstop for /(app)/* routes. The proxy.ts middleware
- * already redirects unauthenticated requests, but Next.js Router Cache can
- * replay a previously-rendered RSC payload on client-side nav before the
- * middleware runs. Re-checking the session here means any cached payload
- * still has to pass an authenticated render — no auth, no shell.
- */
-export default async function AppLayout({ children }: { children: ReactNode }) {
-  const supabase = await createAuthServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+// Auth gating for /(app)/* lives entirely in proxy.ts middleware, which runs
+// on every matched request (including RSC navigations) and redirects to
+// /login when there's no session. Re-doing supabase.auth.getUser() here would
+// mean two network round-trips per page render, which serializes the shell
+// behind a Supabase call that the middleware already made.
 
-  if (!user) {
-    redirect('/login');
-  }
-
+export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className='flex min-h-screen'>
       <WyrdfoldSidebar />
