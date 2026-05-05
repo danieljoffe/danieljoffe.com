@@ -46,14 +46,14 @@ export default function TargetSuggestions({
   // Path A: auto-create target from job posting
   useEffect(() => {
     if (!jobData) return;
+    const postingId = jobData.postingId;
     let cancelled = false;
 
     async function createFromPosting() {
       try {
-        const res = await fetch(
-          `/api/targets/from-posting/${jobData.postingId}`,
-          { method: 'POST' }
-        );
+        const res = await fetch(`/api/targets/from-posting/${postingId}`, {
+          method: 'POST',
+        });
         if (!res.ok) throw new Error('Failed to create target');
         const data = (await res.json()) as { label: string };
         if (!cancelled) {

@@ -49,10 +49,8 @@ function tierToVariant(tier: GapTier): 'error' | 'accent' | 'success' {
   return 'success';
 }
 
-function tierToBadgeVariant(
-  tier: GapTier
-): 'destructive' | 'warning' | 'success' {
-  if (tier === 'red') return 'destructive';
+function tierToBadgeVariant(tier: GapTier): 'error' | 'warning' | 'success' {
+  if (tier === 'red') return 'error';
   if (tier === 'yellow') return 'warning';
   return 'success';
 }

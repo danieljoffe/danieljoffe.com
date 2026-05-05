@@ -7,6 +7,12 @@ import WyrdfoldSidebar from './WyrdfoldSidebar';
 // mean two network round-trips per page render, which serializes the shell
 // behind a Supabase call that the middleware already made.
 
+// Force dynamic rendering so the build never tries to prerender pages that
+// depend on per-request cookies/Supabase auth. CI builds run without
+// NEXT_PUBLIC_SUPABASE_URL set, so a static generation attempt would throw
+// from createAuthServerClient before cookies() can mark the route dynamic.
+export const dynamic = 'force-dynamic';
+
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className='flex min-h-screen'>

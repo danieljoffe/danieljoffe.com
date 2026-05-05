@@ -21,6 +21,6 @@ export async function POST(request: NextRequest) {
     request.nextUrl.searchParams.get('auto_derive') === 'true';
   return proxyMultipartToFastAPI('/experience/upload-resume', request, {
     searchParams: request.nextUrl.searchParams,
-    timeoutMs: autoDerives ? LLM_TIMEOUT_MS : undefined,
+    ...(autoDerives ? { timeoutMs: LLM_TIMEOUT_MS } : {}),
   });
 }

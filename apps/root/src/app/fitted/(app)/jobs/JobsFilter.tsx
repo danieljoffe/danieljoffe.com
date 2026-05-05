@@ -55,7 +55,7 @@ export default function JobsFilter({
   handleSort,
 }: JobsFilterProps) {
   const [searchDraft, setSearchDraft] = useState(filters.search);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     timerRef.current = setTimeout(() => {
