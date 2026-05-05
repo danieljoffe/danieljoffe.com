@@ -17,7 +17,7 @@
     "test:lighthouse": "lhci autorun",
     "test:lighthouse:collect": "lhci collect",
     "test:lighthouse:assert": "lhci assert",
-    "test:python": "nx run-many --target=lint,mypy,test --projects=job-api",
+    "test:python": "nx run-many --target=lint,mypy,test --projects=wyrdfold-api,audit-api",
     "typecheck": "nx run-many --target=typecheck --all",
     "knip": "knip",
     "knip:fix": "knip --fix",
