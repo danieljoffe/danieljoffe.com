@@ -250,8 +250,8 @@ def merge_annotations(
     """
     seen: set[tuple[str, str, str, str]] = set()
     merged: list[Annotation] = []
-    for annotations in annotation_lists:
-        for a in annotations:
+    for annotation_list in annotation_lists:
+        for a in annotation_list:
             key = _annotation_key(a)
             if key in seen:
                 continue
