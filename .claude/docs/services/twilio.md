@@ -21,7 +21,7 @@ Sends SMS notifications when a newly polled job clears a user's `sms_score_thres
 
 ## Env vars
 
-In `apps/job-api/.env`:
+In `apps/wyrdfold-api/.env`:
 
 ```env
 TWILIO_ACCOUNT_SID=AC...
@@ -47,7 +47,7 @@ curl -u "$TWILIO_ACCOUNT_SID:$TWILIO_AUTH_TOKEN" \
   -X POST "https://api.twilio.com/2010-04-01/Accounts/$TWILIO_ACCOUNT_SID/Messages.json" \
   --data-urlencode "From=$TWILIO_PHONE_NUMBER" \
   --data-urlencode "To=+1<your-cell>" \
-  --data-urlencode "Body=Twilio test from job-api"
+  --data-urlencode "Body=Twilio test from wyrdfold-api"
 ```
 
 End-to-end: enable SMS for your user_profile (`sms_notifications_enabled=true`, set `phone_number`, lower `sms_score_threshold` to e.g. 50), then trigger a manual poll and check the dedup table:
@@ -67,16 +67,16 @@ order by sent_at desc limit 5;
 
 ## Where it's wired
 
-- SMS sender: `apps/job-api/app/services/notify.py:312` (`_send_twilio_sms`)
-- Cached client: `apps/job-api/app/services/notify.py:299` (`_get_twilio_client`)
-- Fan-out + rate limit: `apps/job-api/app/services/notify.py:175` (`send_sms_alerts_for_new_jobs`)
+- SMS sender: `apps/wyrdfold-api/app/services/notify.py:312` (`_send_twilio_sms`)
+- Cached client: `apps/wyrdfold-api/app/services/notify.py:299` (`_get_twilio_client`)
+- Fan-out + rate limit: `apps/wyrdfold-api/app/services/notify.py:175` (`send_sms_alerts_for_new_jobs`)
 - Per-user opt-in fields on `user_profiles`: `phone_number`, `sms_notifications_enabled`, `sms_score_threshold`, `sms_daily_limit`
 
 ## Common errors
 
 | Symptom                                          | Cause                                 | Fix                                                            |
 | ------------------------------------------------ | ------------------------------------- | -------------------------------------------------------------- |
-| `HTTP 401 Authenticate`                          | wrong SID/auth-token combo            | re-copy from console; restart job-api                          |
+| `HTTP 401 Authenticate`                          | wrong SID/auth-token combo            | re-copy from console; restart wyrdfold-api                     |
 | `21408` permission denied to send to that number | trial account, recipient not verified | verify the recipient under Phone Numbers → Verified Caller IDs |
 | `21610` recipient unsubscribed                   | user replied STOP                     | nothing to do — Twilio enforces this; clear in their console   |
 | `21211` invalid 'To' phone number                | E.164 format missing                  | store phone numbers as `+15555550100`, no spaces or dashes     |

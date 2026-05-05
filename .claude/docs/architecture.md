@@ -2,10 +2,12 @@
 
 ## Monorepo Structure
 
-- **apps/root**: Main Next.js 16 application (App Router)
-- **apps/root-e2e**: Playwright E2E tests
+- **apps/root**: Portfolio site, blog, and audit tool (Next.js 16, App Router)
+- **apps/root-e2e**: Playwright E2E tests for `apps/root`
+- **apps/wyrdfold**: WyrdFold product app (Next.js 16, App Router)
+- **apps/wyrdfold-e2e**: Playwright E2E tests for `apps/wyrdfold`
 - **apps/audit-api**: FastAPI service for Lighthouse/axe audits
-- **apps/job-api**: FastAPI service for job posting CMS
+- **apps/wyrdfold-api**: FastAPI service backing the WyrdFold product
 - **libs/shared/ui**: Shared React component library (@danieljoffe.com/shared-ui)
 - **libs/shared/audit**: Shared audit types and utilities
 

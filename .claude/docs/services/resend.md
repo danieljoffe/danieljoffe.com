@@ -40,11 +40,11 @@ In `apps/root/.env.local`:
 
 ```env
 RESEND_API_KEY=re_...
-JOB_ALERT_SECRET=...   # shared secret with job-api → Next.js POSTs
+JOB_ALERT_SECRET=...   # shared secret with wyrdfold-api → Next.js POSTs
 NEXT_APP_URL=http://localhost:3000
 ```
 
-In `apps/job-api/.env`:
+In `apps/wyrdfold-api/.env`:
 
 ```env
 NEXT_APP_URL=http://localhost:3000
@@ -90,7 +90,7 @@ curl -X POST http://localhost:3000/api/email/job-alert \
 - Constants (FROM/TO): `apps/root/src/lib/email/resend.ts:10`
 - Job alert handler: `apps/root/src/app/api/email/job-alert/route.ts`
 - Contact form: `apps/root/src/app/api/email/contact/`
-- Caller from FastAPI: `apps/job-api/app/services/notify.py:138` (`_post_alert`)
+- Caller from FastAPI: `apps/wyrdfold-api/app/services/notify.py:138` (`_post_alert`)
 
 ## Common errors
 

@@ -28,11 +28,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhb...           # anon, safe in browser
 SUPABASE_SERVICE_ROLE_KEY=eyJhb...               # server-only (SSR / route handlers)
 ```
 
-**job-api** (`apps/job-api/.env`):
+**wyrdfold-api** (`apps/wyrdfold-api/.env`):
 
 ```env
 SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhb...               # job-api always runs as service_role
+SUPABASE_SERVICE_ROLE_KEY=eyJhb...               # wyrdfold-api always runs as service_role
 ```
 
 **audit-api** uses the same envs if it writes to the DB (check `apps/audit-api/app/config.py`).
@@ -49,7 +49,7 @@ const { data, error } = await window.supabase
 console.log(data, error);
 ```
 
-Server side from job-api:
+Server side from wyrdfold-api:
 
 ```bash
 uv run python -c 'from app.supabase_pool import init_supabase, get_supabase; init_supabase(); print(get_supabase().table("job_postings").select("id").limit(1).execute())'
@@ -76,8 +76,8 @@ psql "$DATABASE_URL" -c "select count(*) from job_postings;"
 
 ## Where it's wired
 
-- Backend client pool: `apps/job-api/app/supabase_pool.py`
-- Backend dependency: `apps/job-api/app/dependencies.py::get_supabase`
+- Backend client pool: `apps/wyrdfold-api/app/supabase_pool.py`
+- Backend dependency: `apps/wyrdfold-api/app/dependencies.py::get_supabase`
 - Frontend browser: `apps/root/src/lib/supabase/client.ts`
 - Frontend SSR: `apps/root/src/lib/supabase/server.ts`
 - Frontend auth helpers: `apps/root/src/lib/supabase/auth-server.ts`

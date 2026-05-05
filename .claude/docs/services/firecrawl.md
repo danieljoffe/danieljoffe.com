@@ -18,7 +18,7 @@ Crawls JS-rendered careers pages that don't expose a clean ATS API. Used as the 
 
 ## Env vars
 
-In `apps/job-api/.env`:
+In `apps/wyrdfold-api/.env`:
 
 ```env
 FIRECRAWL_API_KEY=fc-...
@@ -37,7 +37,7 @@ curl https://api.firecrawl.dev/v2/scrape \
 
 A 200 with a `data.markdown` string means the key is good. 401 = bad key. 402 = out of credits.
 
-End-to-end: add a crawl source via the admin UI (`/fitted/admin/sources`) with `kind=crawl` and trigger a poll — check `apps/job-api` logs for `Firecrawl returned …` lines.
+End-to-end: add a crawl source via the admin UI (`/fitted/admin/sources`) with `kind=crawl` and trigger a poll — check `apps/wyrdfold-api` logs for `Firecrawl returned …` lines.
 
 ## Cost / billing dashboard
 
@@ -46,15 +46,15 @@ End-to-end: add a crawl source via the admin UI (`/fitted/admin/sources`) with `
 
 ## Where it's wired
 
-- Scraper: `apps/job-api/app/services/firecrawl.py:66` (`fetch_firecrawl_jobs`)
-- Poller integration: `apps/job-api/app/services/poller.py` (called when `crawl_source.kind == 'crawl'`)
-- Schema sent to LLM extraction: `apps/job-api/app/services/firecrawl.py:16` (`_EXTRACT_SCHEMA`)
+- Scraper: `apps/wyrdfold-api/app/services/firecrawl.py:66` (`fetch_firecrawl_jobs`)
+- Poller integration: `apps/wyrdfold-api/app/services/poller.py` (called when `crawl_source.kind == 'crawl'`)
+- Schema sent to LLM extraction: `apps/wyrdfold-api/app/services/firecrawl.py:16` (`_EXTRACT_SCHEMA`)
 
 ## Common errors
 
 | Symptom                               | Cause                                | Fix                                                                                          |
 | ------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `401`                                 | wrong key                            | rotate, update `.env`, restart job-api                                                       |
+| `401`                                 | wrong key                            | rotate, update `.env`, restart wyrdfold-api                                                  |
 | `402 payment_required`                | out of credits                       | top up at firecrawl.dev or remove the noisiest crawl sources                                 |
 | Empty `jobs` array but page has roles | LLM extraction missed the structure  | open the URL — if it's behind login or a "Load more" button, Firecrawl can't see those roles |
 | Many duplicates after the first crawl | careers URL has tracking params      | strip query params before saving the source URL — `_make_external_id` includes the URL       |

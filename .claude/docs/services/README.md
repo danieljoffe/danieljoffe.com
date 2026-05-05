@@ -30,7 +30,7 @@ Each walkthrough follows the same structure:
 
 ## Two-mode services
 
-`LLM_PROVIDER` and `EMBEDDINGS_PROVIDER` settings let job-api run with either real or mock clients. **Mock is the default** so dev doesn't burn tokens accidentally. Flip to real in `.env` when you want end-to-end behavior:
+`LLM_PROVIDER` and `EMBEDDINGS_PROVIDER` settings let wyrdfold-api run with either real or mock clients. **Mock is the default** so dev doesn't burn tokens accidentally. Flip to real in `.env` when you want end-to-end behavior:
 
 ```env
 LLM_PROVIDER=anthropic
@@ -41,7 +41,7 @@ If either is `mock`, you can leave the corresponding API key blank.
 
 ## Where the env vars live
 
-- **`apps/job-api/.env`** — backend secrets (Anthropic, Voyage, Supabase service role, Twilio, Firecrawl, job-alert secret)
+- **`apps/wyrdfold-api/.env`** — backend secrets (Anthropic, Voyage, Supabase service role, Twilio, Firecrawl, job-alert secret)
 - **`apps/audit-api/.env`** — audit-only (Sentry DSN, Lighthouse/axe paths)
 - **`apps/root/.env.local`** — Next.js (Supabase public + service role for SSR, Resend, Sentry frontend, JOB_API_URL + JOB_API_KEY)
 

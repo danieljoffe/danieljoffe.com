@@ -6,7 +6,7 @@ Error tracking + APM across all three apps:
 
 - **`apps/root` (Next.js)** — client + server error capture, Replay, performance traces. Toggled by `NEXT_PUBLIC_SENTRY_CONFIG_ID` (the DSN); empty value disables Sentry entirely so dev doesn't ship noise.
 - **`apps/audit-api` (FastAPI)** — captures unhandled scan errors. `SENTRY_DSN` empty = disabled.
-- **`apps/job-api` (FastAPI)** — currently no Sentry SDK wired (verify in `apps/job-api/app/main.py` if this changes). Errors surface in Railway logs only.
+- **`apps/wyrdfold-api` (FastAPI)** — currently no Sentry SDK wired (verify in `apps/wyrdfold-api/app/main.py` if this changes). Errors surface in Railway logs only.
 
 PII-bearing form fields use `data-sentry-mask` so values don't end up in Replay recordings.
 
@@ -14,8 +14,8 @@ PII-bearing form fields use `data-sentry-mask` so values don't end up in Replay 
 
 1. Sign in at https://sentry.io
 2. **Settings → Projects** → **Create Project**
-   - Platform: **Next.js** for `root`, **Python** for `audit-api`/`job-api`
-   - Name: `danieljoffe-root` / `danieljoffe-audit-api` / `danieljoffe-job-api`
+   - Platform: **Next.js** for `root`, **Python** for `audit-api`/`wyrdfold-api`
+   - Name: `danieljoffe-root` / `danieljoffe-audit-api` / `danieljoffe-wyrdfold-api`
 3. After creation, **Settings → SDK Setup → Client Keys (DSN)** → copy the DSN
 4. For source-map uploads (Next.js prod builds), **Settings → Auth Tokens** → **Create New Token** with `project:releases` + `org:read` scopes
 

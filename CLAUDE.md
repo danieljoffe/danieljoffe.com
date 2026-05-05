@@ -56,7 +56,7 @@ Loaded contextually via `.claude/rules/` (path-scoped — only when editing matc
 - **Content posts & style guide** — MDX and content data files
 - **Testing & CI** — spec, test, story, and config files
 - **Sentry integration** — Sentry and instrumentation files
-- **Python / FastAPI** — job-api and audit-api files
+- **Python / FastAPI** — wyrdfold-api and audit-api files
 
 ## Skills & Agents
 
@@ -64,7 +64,6 @@ The workspace includes Claude Code skills and agents for common workflows:
 
 - **Skills** (`.claude/skills/`): Task-specific workflows invocable via `/skill-name`
   - `/verify-root` — verify root Next.js app (build, browser console check, full POM suite)
-  - `/verify-jobapi` — verify job-api backend + Fitted frontend workflows
   - `/verify-auditapi` — verify audit-api backend + audit tool frontend workflows
   - `/verify-sharedui` — verify shared-ui library (build, tests, Storybook, consumer smoke test)
   - `/gen-test` — generate unit tests following project conventions

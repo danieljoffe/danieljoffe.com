@@ -58,14 +58,14 @@ Free, no rate-limit dashboards. **Greenhouse** has a soft delay (`GREENHOUSE_DEL
 
 ## Where it's wired
 
-- Greenhouse: `apps/job-api/app/services/greenhouse.py`
-- Lever: `apps/job-api/app/services/lever.py`
-- Workday: `apps/job-api/app/services/workday.py`
-- Ashby: `apps/job-api/app/services/ashby.py`
-- SmartRecruiters: `apps/job-api/app/services/smartrecruiters.py`
-- ATS auto-detection from a careers URL: `apps/job-api/app/services/ats_detect.py`
-- Common normalized shape: `apps/job-api/app/services/standard_job.py` (`StandardJob`)
-- Poller dispatch: `apps/job-api/app/services/poller.py`
+- Greenhouse: `apps/wyrdfold-api/app/services/greenhouse.py`
+- Lever: `apps/wyrdfold-api/app/services/lever.py`
+- Workday: `apps/wyrdfold-api/app/services/workday.py`
+- Ashby: `apps/wyrdfold-api/app/services/ashby.py`
+- SmartRecruiters: `apps/wyrdfold-api/app/services/smartrecruiters.py`
+- ATS auto-detection from a careers URL: `apps/wyrdfold-api/app/services/ats_detect.py`
+- Common normalized shape: `apps/wyrdfold-api/app/services/standard_job.py` (`StandardJob`)
+- Poller dispatch: `apps/wyrdfold-api/app/services/poller.py`
 
 ## Common errors
 

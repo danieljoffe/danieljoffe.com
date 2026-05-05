@@ -18,7 +18,7 @@ Embeds optimized-doc chunks (roles, skills, outcomes, summary) into vectors so w
 
 ## Env vars
 
-In `apps/job-api/.env`:
+In `apps/wyrdfold-api/.env`:
 
 ```env
 EMBEDDINGS_PROVIDER=voyage
@@ -52,9 +52,9 @@ Purposes we emit: `embeddings.optimized_chunks`, `embeddings.job_posting`, `embe
 
 ## Where it's wired
 
-- Client init: `apps/job-api/app/services/embeddings/voyage_client.py:29`
-- Provider switch: `apps/job-api/app/dependencies.py` (`get_embeddings_client`)
-- Chunk embed pipeline: `apps/job-api/app/services/experience/chunks.py`
+- Client init: `apps/wyrdfold-api/app/services/embeddings/voyage_client.py:29`
+- Provider switch: `apps/wyrdfold-api/app/dependencies.py` (`get_embeddings_client`)
+- Chunk embed pipeline: `apps/wyrdfold-api/app/services/experience/chunks.py`
 
 ## Common errors
 

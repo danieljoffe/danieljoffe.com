@@ -4,13 +4,13 @@
 
 - **Claude Sonnet 4.6** — heavy reasoning: resume tailoring (`tailor.py`), prose → optimized projection (`derive.py`), prose consolidation (`consolidate.py`), semantic resume merge on upload (`merge.py`), target profile derivation, ATS lint
 - **Claude Haiku 4.5** — latency-sensitive: conversation turns (`orchestrator.py`), gap probes
-- All calls flow through `app/services/llm/client.py` (Protocol) with a Mock/Anthropic split. Production uses `AnthropicLLMClient` in `apps/job-api/app/services/llm/anthropic_client.py:29`
+- All calls flow through `app/services/llm/client.py` (Protocol) with a Mock/Anthropic split. Production uses `AnthropicLLMClient` in `apps/wyrdfold-api/app/services/llm/anthropic_client.py:29`
 
 ## Get an API key
 
 1. Sign in at https://console.anthropic.com
 2. Settings → API Keys → **Create Key**
-3. Name it `fitted-job-api-local` (or `-prod` for the deployed key)
+3. Name it `fitted-wyrdfold-api-local` (or `-prod` for the deployed key)
 4. Workspace: pick the one that has billing attached
 5. Copy the `sk-ant-…` value — shown once, never again
 
@@ -18,7 +18,7 @@
 
 ## Env vars
 
-In `apps/job-api/.env`:
+In `apps/wyrdfold-api/.env`:
 
 ```env
 LLM_PROVIDER=anthropic
@@ -58,23 +58,23 @@ This requires a prose doc to exist; on success it writes a row to `llm_cost_log`
 - Per-purpose cost in our DB: `select purpose, sum(cost_usd) from llm_cost_log group by 1 order by 2 desc;`
 - Insights page surfaces this under "Skills + Cost"
 
-`purpose` labels we emit (grep `cost_log.record` in `apps/job-api`):
+`purpose` labels we emit (grep `cost_log.record` in `apps/wyrdfold-api`):
 `experience.derive`, `experience.ingest_merge`, `experience.prose_consolidate`, `tailor.resume`, `tailor.cover_letter`, `lint_ats`, `conversation.onboarding`, `conversation.update`, `gap_probe`, `targets.derive_profile`, `targets.fit_score`, `targets.suggest`, `targets.match`.
 
 If you see a row with `purpose='unknown'` it's a code bug — every `complete()` call should pass a purpose.
 
 ## Where it's wired
 
-- Client init: `apps/job-api/app/services/llm/anthropic_client.py:29`
-- Provider switch: `apps/job-api/app/dependencies.py` (`get_llm_client`)
-- Pricing table (used by mock + real for cost calc): `apps/job-api/app/services/llm/pricing.py`
-- Markdown-fence stripping for Haiku JSON: `apps/job-api/app/services/llm/client.py:24`
+- Client init: `apps/wyrdfold-api/app/services/llm/anthropic_client.py:29`
+- Provider switch: `apps/wyrdfold-api/app/dependencies.py` (`get_llm_client`)
+- Pricing table (used by mock + real for cost calc): `apps/wyrdfold-api/app/services/llm/pricing.py`
+- Markdown-fence stripping for Haiku JSON: `apps/wyrdfold-api/app/services/llm/client.py:24`
 
 ## Common errors
 
 | Symptom                                     | Cause                            | Fix                                                                      |
 | ------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------ |
-| `401 invalid_api_key`                       | wrong key, deleted key           | rotate in console, update `.env`, restart job-api                        |
+| `401 invalid_api_key`                       | wrong key, deleted key           | rotate in console, update `.env`, restart wyrdfold-api                   |
 | `429 rate_limit_error`                      | burst beyond tier                | space out calls; check Workspace tier                                    |
 | `400 model not found`                       | typo or missing model access     | verify model id matches `app/models/llm.py::ModelId`                     |
 | `EOF while parsing JSON`                    | output truncated by `max_tokens` | bump caller's `max_tokens`; we hit this on `derive` (now 16384)          |
