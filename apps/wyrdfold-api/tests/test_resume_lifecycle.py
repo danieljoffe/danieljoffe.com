@@ -1073,7 +1073,7 @@ class TestDownloadCache:
         from fastapi import HTTPException
 
         from app.routers import tailor as tailor_router
-        from app.services.docx.pandoc_render import PandocNotInstalled
+        from app.services.docx.pandoc_render import PandocNotInstalledError
 
         supabase = MagicMock()
         record = _make_record(
@@ -1086,7 +1086,7 @@ class TestDownloadCache:
             patch("app.services.tailor.persistence.get", return_value=record),
             patch(
                 "app.routers.tailor.md_to_docx",
-                side_effect=PandocNotInstalled("pandoc missing"),
+                side_effect=PandocNotInstalledError("pandoc missing"),
             ),
             pytest.raises(HTTPException) as exc_info,
         ):

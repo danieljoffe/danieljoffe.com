@@ -16,6 +16,7 @@ All 422 responses carry the LintFailureResponse shape.
 """
 
 import io
+import logging
 import re
 import zipfile
 from typing import Any, cast
@@ -46,7 +47,7 @@ from app.models.tailor import (
 from app.services.ats_lint import lint_markdown
 from app.services.batch import create_batch, get_batch, process_batch
 from app.services.docx.pandoc_render import (
-    PandocNotInstalled,
+    PandocNotInstalledError,
     PandocRenderError,
     md_payload_hash,
     md_to_docx,
@@ -69,6 +70,8 @@ from app.services.tailor.reuse import (
     extract_profile_keywords,
     find_reusable_resume,
 )
+
+_log = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/tailor",
@@ -558,7 +561,7 @@ async def download_tailored_resume(
 
         try:
             data = md_to_docx(row.payload_md)
-        except PandocNotInstalled as exc:
+        except PandocNotInstalledError as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
         except PandocRenderError as exc:
             raise HTTPException(
@@ -580,8 +583,13 @@ async def download_tailored_resume(
             )
         except Exception:
             # Fall through and serve the freshly-rendered bytes regardless;
-            # next download will retry the cache write.
-            pass
+            # next download will retry the cache write. Log so a persistent
+            # storage outage isn't silently masked by the in-memory render.
+            _log.warning(
+                "docx cache write failed for resume_id=%s; serving fresh bytes",
+                resume_id,
+                exc_info=True,
+            )
     else:
         try:
             data = persistence.download_docx(supabase, row.storage_path)  # type: ignore[arg-type]
