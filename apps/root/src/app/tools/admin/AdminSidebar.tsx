@@ -1,23 +1,11 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Briefcase, FileText, Gauge, LogOut } from 'lucide-react';
+import { Gauge, LogOut } from 'lucide-react';
 import { Sidebar, type SidebarItem } from '@danieljoffe.com/shared-ui/Sidebar';
 import Button from '@/components/Button';
 
 const NAV_ITEMS: (SidebarItem & { href: string })[] = [
-  {
-    id: 'jobs',
-    label: 'Jobs',
-    href: '/tools/admin/jobs',
-    icon: <Briefcase className='size-4' aria-hidden />,
-  },
-  {
-    id: 'career',
-    label: 'Career',
-    href: '/tools/admin/career',
-    icon: <FileText className='size-4' aria-hidden />,
-  },
   {
     id: 'audit',
     label: 'Site Audits',
