@@ -1,5 +1,4 @@
 import hmac
-import logging
 from typing import TYPE_CHECKING
 
 import jwt
@@ -13,8 +12,6 @@ from app.config import Settings, settings
 if TYPE_CHECKING:
     from app.services.embeddings.client import EmbeddingsClient
     from app.services.llm.client import LLMClient
-
-_log = logging.getLogger(__name__)
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
@@ -169,16 +166,10 @@ def verify_api_key_or_jwt(
         if token:
             try:
                 _decode_supabase_jwt(token, s)
-            except HTTPException as exc:
-                # TEMPORARY DEBUG: surface the swallowed JWT decode reason so we
-                # can diagnose silent 401s. Revert once root cause is known.
-                _log.warning("JWT decode failed in verify_api_key_or_jwt: %s", exc.detail)
+            except HTTPException:
+                pass
             else:
                 return "jwt"
-        else:
-            _log.warning("verify_api_key_or_jwt: no Bearer token on request")
-    else:
-        _log.warning("verify_api_key_or_jwt: supabase_url not configured")
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
