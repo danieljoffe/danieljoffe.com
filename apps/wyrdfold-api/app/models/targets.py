@@ -120,6 +120,37 @@ class CreateOrLinkResult(BaseModel):
     was_matched: bool
 
 
+class TargetsListResponse(BaseModel):
+    """Response shape for endpoints returning a list of shared JobTargets."""
+
+    targets: list[JobTarget]
+
+
+class MyTargetsListResponse(BaseModel):
+    """Response shape for the per-user targets list (with link metadata)."""
+
+    targets: list[UserTargetWithTarget]
+
+
+class TargetStatusResponse(BaseModel):
+    """Activation status snapshot for a target — used by the activation pipeline."""
+
+    activation_status: str
+    jobs_count: int
+
+
+class ReferenceJDsListResponse(BaseModel):
+    """Response shape for the reference-JDs list endpoint."""
+
+    reference_jds: list[TargetReferenceJD]
+
+
+class DeleteResponse(BaseModel):
+    """Generic 200-with-body delete confirmation. Frontend reads ``deleted``."""
+
+    deleted: bool
+
+
 # ---- Request shapes (router inputs) ----------------------------------------
 
 
