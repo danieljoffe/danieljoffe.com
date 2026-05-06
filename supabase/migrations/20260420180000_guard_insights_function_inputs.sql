@@ -17,6 +17,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 STABLE
+SET search_path = public
 AS $$
 BEGIN
   IF bucket_interval NOT IN ('week', 'month') THEN
@@ -67,6 +68,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 STABLE
+SET search_path = public
 AS $$
 BEGIN
   IF period_days IS NOT NULL AND (period_days < 1 OR period_days > 365) THEN
