@@ -99,7 +99,7 @@ jobs:
                 ;;
             esac
             case "$file" in
-              apps/root/*|apps/root-e2e/*|libs/*) E2E=true ;;
+              apps/root/*|apps/root-e2e/*|apps/wyrdfold/*|apps/wyrdfold-e2e/*|libs/*) E2E=true ;;
             esac
             case "$file" in
               apps/root/*|libs/shared/*) LH=true ;;

@@ -69,7 +69,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           </Button>
         </div>
       </header>
-      <main className='flex-1'>{children}</main>
+      <main id='main-content' className='flex-1'>
+        {children}
+      </main>
       <footer className='border-t border-border'>
         <div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-text-tertiary md:flex-row md:items-center md:justify-between md:gap-6 md:px-6 md:py-10'>
           <p>

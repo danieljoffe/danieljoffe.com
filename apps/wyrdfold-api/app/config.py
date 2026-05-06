@@ -53,6 +53,15 @@ class Settings(BaseSettings):
     # at WARNING with method/path/duration. Set to 0 to log every request.
     slow_request_threshold_ms: int = Field(default=500, ge=0, le=60_000)
 
+    # CORS — comma-separated allowlist of origins permitted to call the API
+    # from a browser. Empty disables CORS (server-to-server only). Production
+    # should be the Next.js app URL; local dev typically `http://localhost:3000,http://localhost:3100`.
+    cors_allowed_origins: str = ""
+
+    @property
+    def cors_allowed_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
+
     # Per-user LLM budget (defense-in-depth). Rolling window over llm_costs.
     # Set to 0 to disable a window. API-key callers (cron) bypass — system
     # paths are trusted and gated by the operator.

@@ -21,6 +21,30 @@ def _clear_caches():
     job_list_cache.invalidate()
 
 
+@pytest.fixture(autouse=True)
+def _bypass_ssrf_dns(monkeypatch):
+    """Make every hostname resolve to a public address for unit tests.
+
+    Real DNS lookups are noisy and slow, and the mock domains used by
+    URL-fetcher tests (`legit.com`, `example.com`) sometimes don't
+    resolve in sandboxed CI. The SSRF guard added in
+    `app/services/validate.py` would reject those as `did not resolve`
+    even when the test mocks the HTTP layer. Override the resolver to
+    return a public IP so the SSRF check passes — tests that
+    specifically need to exercise SSRF rejection re-monkeypatch inside
+    the test body.
+    """
+    import ipaddress
+
+    import app.services.validate as validate_mod
+
+    def _stub_resolve(_hostname: str):
+        return [ipaddress.ip_address("1.1.1.1")]
+
+    monkeypatch.setattr(validate_mod, "_resolve_addresses", _stub_resolve)
+    yield
+
+
 @pytest.fixture
 def mock_http_client():
     """Provides a mock httpx client injected into the http_client module.

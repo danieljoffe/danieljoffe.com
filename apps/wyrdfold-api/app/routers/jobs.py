@@ -12,6 +12,7 @@ from supabase import Client
 
 from app.cache import job_list_cache, make_cache_key
 from app.dependencies import (
+    get_current_user_id,
     get_current_user_id_optional,
     get_supabase,
     verify_api_key_or_jwt,
@@ -42,7 +43,9 @@ from app.services.target_scoring import (
 )
 from app.services.targets.crud import get as get_target
 from app.services.targets.crud import get_active as get_active_target
+from app.services.targets.crud import get_user_target_ids
 from app.services.validate import (
+    assert_safe_host,
     is_banned_domain,
     registrable_domain,
     validate_format,
@@ -271,6 +274,31 @@ def list_jobs(
     if cached is not None:
         return cached
 
+    # JWT callers see only postings whose target_id is in their user_targets.
+    # The api-key path (cron/poller) bypasses scoping — it operates on the
+    # whole table by design (e.g. backfill, rescore-all, cost rollup).
+    user_target_ids: set[str] | None = None
+    if user_id is not None:
+        user_target_ids = get_user_target_ids(supabase, user_id)
+        if not user_target_ids:
+            empty: dict[str, Any] = {
+                "postings": [],
+                "total": 0,
+                "page": page,
+                "page_size": page_size,
+            }
+            job_list_cache.set(cache_key, empty)
+            return empty
+        if target_id and target_id not in user_target_ids:
+            empty = {
+                "postings": [],
+                "total": 0,
+                "page": page,
+                "page_size": page_size,
+            }
+            job_list_cache.set(cache_key, empty)
+            return empty
+
     # Target view: sort/paginate by target-specific scores
     if target_id:
         result = _list_jobs_for_target(
@@ -295,6 +323,8 @@ def list_jobs(
         count=CountMethod.exact,
     )
 
+    if user_target_ids is not None:
+        query = query.in_("target_id", list(user_target_ids))
     if min_score is not None:
         query = query.gte("score", min_score)
     if status:
@@ -349,6 +379,12 @@ async def add_manual_job(
             detail=f"Banned domain: {registrable_domain(hostname)}",
         )
 
+    # SSRF defense — refuse to fetch URLs that resolve to private/internal IPs.
+    try:
+        assert_safe_host(hostname)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     # Fetch the page
     client = get_http_client()
     try:
@@ -364,6 +400,14 @@ async def add_manual_job(
             status_code=400,
             detail=f"Redirects to banned domain: {registrable_domain(final_hostname)}",
         )
+    if final_hostname and final_hostname != hostname:
+        try:
+            assert_safe_host(final_hostname)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Redirect target rejected: {exc}",
+            ) from exc
     if registrable_domain(hostname) != registrable_domain(final_hostname):
         warnings.append(
             f"redirect_domain_change:"
@@ -559,32 +603,59 @@ async def backfill_salary(
     return {"updated": updated}
 
 
-@router.get("/{posting_id}")
-async def get_job(
-    posting_id: str,
-    supabase: Client = Depends(get_supabase),
+def _assert_user_owns_posting(
+    supabase: Client, posting_id: str, user_id: str
 ) -> dict[str, Any]:
-    resp = (
+    """Look up a posting and verify the caller is linked to its target.
+    Returns the selected columns. 404 on either missing or unowned (don't
+    leak existence of postings outside the user's targets).
+    """
+    posting_resp = (
         supabase.table("jobs")
-        .select(_JP_SELECT_COLS)
+        .select(_JP_SELECT_COLS + ", target_id")
         .eq("id", posting_id)
         .limit(1)
         .execute()
     )
-    rows = resp.data or []
-    if not rows:
+    rows = posting_resp.data or []
+    if not rows or not isinstance(rows[0], dict):
         raise HTTPException(status_code=404, detail="Posting not found")
-    row = rows[0]
-    if not isinstance(row, dict):
-        raise HTTPException(status_code=500, detail="Unexpected response shape")
+    row = cast(dict[str, Any], rows[0])
+    target_id = row.get("target_id")
+    if not target_id:
+        raise HTTPException(status_code=404, detail="Posting not found")
+    link = (
+        supabase.table("user_targets")
+        .select("target_id")
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .limit(1)
+        .execute()
+    )
+    if not link.data:
+        raise HTTPException(status_code=404, detail="Posting not found")
+    return row
+
+
+@router.get("/{posting_id}")
+async def get_job(
+    posting_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase),
+) -> dict[str, Any]:
+    row = _assert_user_owns_posting(supabase, posting_id, user_id)
+    # Drop the helper target_id column we only fetched for ownership.
+    row.pop("target_id", None)
     return row
 
 
 @router.delete("/{posting_id}")
 async def delete_job(
     posting_id: str,
+    user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
+    _assert_user_owns_posting(supabase, posting_id, user_id)
     resp = (
         supabase.table("jobs")
         .delete()

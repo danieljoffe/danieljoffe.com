@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.types import Receive, Scope, Send
@@ -81,6 +82,19 @@ app.add_middleware(
 # Compress JSON responses ≥1KB. List endpoints can return hundreds of jobs;
 # gzip cuts ~70-80% off typical JSON payloads.
 app.add_middleware(GZipMiddleware, minimum_size=1024)
+
+# Explicit CORS allowlist (Phase 5 P1-Sec). Empty = no browser-direct
+# callers — the Next.js app proxies via server-side fetch and doesn't need
+# CORS. Set CORS_ALLOWED_ORIGINS in env when adding browser callers.
+if settings.cors_allowed_origins_list:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allowed_origins_list,
+        allow_credentials=False,  # we use Bearer JWT, not cookies
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
+        allow_headers=["authorization", "content-type", "x-api-key"],
+        max_age=600,
+    )
 
 
 @app.middleware("http")

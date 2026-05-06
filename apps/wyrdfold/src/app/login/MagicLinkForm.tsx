@@ -78,7 +78,10 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
   }
 
   return (
-    <main className='min-h-screen flex flex-col items-center justify-center px-6 py-12'>
+    <main
+      id='main-content'
+      className='min-h-screen flex flex-col items-center justify-center px-6 py-12'
+    >
       <div className='w-full max-w-xs flex flex-col items-center gap-6'>
         <Link
           href='/'

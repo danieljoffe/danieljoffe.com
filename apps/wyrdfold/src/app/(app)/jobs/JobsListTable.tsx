@@ -211,7 +211,8 @@ export default function JobsListTable({
                   tabIndex={0}
                   role='row'
                   aria-expanded={expandedId === job.id}
-                  aria-label={`${job.title} at ${job.company_name}`}
+                  aria-controls={`job-detail-${job.id}`}
+                  aria-label={`${job.title} at ${job.company_name}, press Enter to ${expandedId === job.id ? 'collapse' : 'expand'} details`}
                 >
                   <td className='px-3 py-2'>
                     <input
@@ -265,7 +266,7 @@ export default function JobsListTable({
                 </tr>
                 {expandedId === job.id && (
                   <tr>
-                    <td colSpan={8} className='p-0'>
+                    <td colSpan={8} className='p-0' id={`job-detail-${job.id}`}>
                       <JobDetailPanel
                         posting={job}
                         targetId={analysisTargetId}

@@ -7,7 +7,9 @@ import pytest
 
 from app.services.validate import (
     BANNED_DOMAINS,
+    _is_disallowed_address,
     _verify_content,
+    assert_safe_host,
     is_banned_domain,
     registrable_domain,
     validate_format,
@@ -53,6 +55,139 @@ class TestValidateFormat:
 
     def test_data_uri(self):
         assert validate_format("data:text/html,<h1>hi</h1>") is None
+
+    def test_ipv6_literal_rejected(self):
+        # Phase 5 P0-Sec-3: bare IPv6 literals are an SSRF vector.
+        assert validate_format("http://[::1]/foo") is None
+        assert validate_format("http://[fc00::1]/foo") is None
+
+
+class TestSsrfHostCheck:
+    """SSRF guard — rejects hostnames resolving to internal address ranges.
+
+    These tests bypass the autouse `_bypass_ssrf_dns` conftest fixture by
+    re-monkeypatching the resolver so we can exercise the rejection path.
+    """
+
+    def test_loopback_v4_blocked(self, monkeypatch):
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v, "_resolve_addresses", lambda _h: [ipaddress.ip_address("127.0.0.1")]
+        )
+        with pytest.raises(ValueError, match="disallowed"):
+            assert_safe_host("anything.evil")
+
+    def test_aws_metadata_v4_blocked(self, monkeypatch):
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v,
+            "_resolve_addresses",
+            lambda _h: [ipaddress.ip_address("169.254.169.254")],
+        )
+        with pytest.raises(ValueError, match="disallowed"):
+            assert_safe_host("metadata.evil")
+
+    def test_rfc1918_v4_blocked(self, monkeypatch):
+        import ipaddress
+
+        import app.services.validate as v
+
+        for cidr in ("10.0.0.1", "172.16.0.1", "192.168.1.1"):
+            monkeypatch.setattr(
+                v, "_resolve_addresses", lambda _h, _c=cidr: [ipaddress.ip_address(_c)]
+            )
+            with pytest.raises(ValueError, match="disallowed"):
+                assert_safe_host(f"private-{cidr}")
+
+    def test_ipv6_loopback_blocked(self, monkeypatch):
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v, "_resolve_addresses", lambda _h: [ipaddress.ip_address("::1")]
+        )
+        with pytest.raises(ValueError, match="disallowed"):
+            assert_safe_host("v6-loopback")
+
+    def test_ipv6_ula_blocked(self, monkeypatch):
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v, "_resolve_addresses", lambda _h: [ipaddress.ip_address("fc00::1")]
+        )
+        with pytest.raises(ValueError, match="disallowed"):
+            assert_safe_host("v6-ula")
+
+    def test_ipv4_mapped_v6_blocked(self, monkeypatch):
+        """Defense against IPv4-mapped IPv6 (::ffff:127.0.0.1) bypass."""
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v,
+            "_resolve_addresses",
+            lambda _h: [ipaddress.ip_address("::ffff:127.0.0.1")],
+        )
+        with pytest.raises(ValueError, match="disallowed"):
+            assert_safe_host("mapped-loopback")
+
+    def test_unresolvable_host_rejected(self, monkeypatch):
+        import app.services.validate as v
+
+        monkeypatch.setattr(v, "_resolve_addresses", lambda _h: [])
+        with pytest.raises(ValueError, match="did not resolve"):
+            assert_safe_host("never-going-to-resolve-xyzabc")
+
+    def test_public_ip_passes(self, monkeypatch):
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v, "_resolve_addresses", lambda _h: [ipaddress.ip_address("1.1.1.1")]
+        )
+        assert_safe_host("public.example")  # no exception
+
+    def test_any_disallowed_in_set_blocks(self, monkeypatch):
+        """If hostname returns multiple A records and any is disallowed,
+        reject — defense against split DNS / load-balanced rebinding."""
+        import ipaddress
+
+        import app.services.validate as v
+
+        monkeypatch.setattr(
+            v,
+            "_resolve_addresses",
+            lambda _h: [
+                ipaddress.ip_address("1.1.1.1"),
+                ipaddress.ip_address("169.254.169.254"),
+            ],
+        )
+        with pytest.raises(ValueError, match="disallowed"):
+            assert_safe_host("split-dns")
+
+
+class TestIsDisallowedAddress:
+    def test_public_v4_allowed(self):
+        import ipaddress
+
+        assert _is_disallowed_address(ipaddress.ip_address("1.1.1.1")) is False
+        assert _is_disallowed_address(ipaddress.ip_address("8.8.8.8")) is False
+
+    def test_public_v6_allowed(self):
+        import ipaddress
+
+        assert _is_disallowed_address(ipaddress.ip_address("2001:4860:4860::8888")) is False
 
 
 # ---------------------------------------------------------------------------

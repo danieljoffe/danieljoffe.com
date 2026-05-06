@@ -1,4 +1,5 @@
 import hmac
+import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -9,6 +10,8 @@ from jwt import PyJWKClient, PyJWKClientError
 from supabase import Client
 
 from app.config import Settings, settings
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from app.services.embeddings.client import EmbeddingsClient
@@ -162,7 +165,12 @@ def verify_api_key_or_jwt(
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
-    """Accept either the shared API key (cron) or a Supabase JWT (user)."""
+    """Accept either the shared API key (cron) or a Supabase JWT (user).
+
+    JWT decode failures are logged at WARNING (no token detail) so a
+    spike of invalid tokens is detectable in observability — the
+    previous silent swallow was a detection blind spot.
+    """
     if _api_key_matches(key, s.wyrdfold_api_key):
         return "api-key"
     if s.supabase_url:
@@ -170,15 +178,23 @@ def verify_api_key_or_jwt(
         if token:
             try:
                 _decode_supabase_jwt(token, s)
-            except HTTPException:
-                pass
+            except HTTPException as exc:
+                logger.warning(
+                    "auth_jwt_decode_failed path=%s reason=%s",
+                    request.url.path,
+                    exc.detail,
+                )
             else:
                 return "jwt"
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 def _try_decode_jwt_sub(request: Request, s: Settings) -> str | None:
-    """Return the JWT `sub` if a valid Bearer token is present, else None."""
+    """Return the JWT `sub` if a valid Bearer token is present, else None.
+
+    Decode failures are logged at WARNING — see `verify_api_key_or_jwt`
+    for rationale.
+    """
     if not s.supabase_url:
         return None
     token = _extract_bearer_token(request)
@@ -186,7 +202,12 @@ def _try_decode_jwt_sub(request: Request, s: Settings) -> str | None:
         return None
     try:
         payload = _decode_supabase_jwt(token, s)
-    except HTTPException:
+    except HTTPException as exc:
+        logger.warning(
+            "auth_jwt_decode_failed path=%s reason=%s",
+            request.url.path,
+            exc.detail,
+        )
         return None
     return str(payload["sub"])
 

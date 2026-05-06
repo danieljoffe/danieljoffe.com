@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.config import settings
-from app.dependencies import get_supabase, verify_api_key_or_jwt
+from app.dependencies import get_current_user_id, get_supabase, verify_supabase_jwt
 from app.main import app
 
 
@@ -18,11 +18,15 @@ class _Resp:
         self.count = count
 
 
+_TEST_USER_ID = "00000000-0000-0000-0000-000000000001"
+
+
 @pytest.fixture
 def client_factory():
     def _make(supabase: MagicMock) -> TestClient:
         app.dependency_overrides[get_supabase] = lambda: supabase
-        app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+        app.dependency_overrides[verify_supabase_jwt] = lambda: _TEST_USER_ID
+        app.dependency_overrides[get_current_user_id] = lambda: _TEST_USER_ID
         return TestClient(app)
 
     yield _make
@@ -56,7 +60,7 @@ def test_get_returns_capabilities_false_when_unconfigured(
     client_factory, _reset_channel_settings
 ):
     sb = MagicMock()
-    sb.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+    sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
         _Resp([_profile_row()])
     )
     client = client_factory(sb)
@@ -77,7 +81,7 @@ def test_get_returns_capabilities_true_when_configured(
     monkeypatch.setattr(settings, "twilio_phone_number", "+15551234567")
 
     sb = MagicMock()
-    sb.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+    sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
         _Resp([_profile_row()])
     )
     client = client_factory(sb)
@@ -120,12 +124,14 @@ def test_patch_allows_disabling_email_even_when_unconfigured(
     """Operator may have removed the credentials after the user enabled
     the channel — the user must still be able to turn it off."""
     sb = MagicMock()
-    sb.table.return_value.select.return_value.limit.return_value.execute.return_value = (
+    sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
         _Resp([_profile_row()])
     )
     sb.table.return_value.update.return_value.eq.return_value.execute.return_value = (
         _Resp(None)
     )
+    # /profile UPDATE no longer reads back the row id — `.eq("user_id", ...)`
+    # targets the row directly.
     client = client_factory(sb)
     r = client.patch(
         "/profile/notifications",

@@ -24,7 +24,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         will dock above the nav, and natural scroll bottoms get the same
         clearance for free.
       */}
-      <main className='flex-1 overflow-x-hidden p-4 pb-[calc(theme(spacing.16)+env(safe-area-inset-bottom)+1rem)] md:p-6'>
+      <main
+        id='main-content'
+        className='flex-1 overflow-x-hidden p-4 pb-[calc(theme(spacing.16)+env(safe-area-inset-bottom)+1rem)] md:p-6'
+      >
         {children}
       </main>
     </div>

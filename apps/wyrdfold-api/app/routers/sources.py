@@ -1,16 +1,32 @@
+"""Sources router — global job-board catalog.
+
+Sources are operator-managed (job boards, ATS providers). Reads are
+available to any authenticated user; mutations (`POST /sources`,
+`POST /sources/seed`) are gated to the cron API key only — a leaked
+operator key is the only way they should be reachable, and even
+authenticated users must not be able to add/remove/toggle the global
+source list.
+"""
+
 from typing import Any, cast
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_supabase, verify_api_key_or_jwt
+from app.dependencies import (
+    get_supabase,
+    verify_api_key,
+    verify_api_key_or_jwt,
+)
 from app.http_client import get_http_client
 from app.models.schemas import SourceAction
 from app.seed.company_seed import COMPANY_SEED
 from app.services.ats_detect import detect_ats
 from app.services.greenhouse import GREENHOUSE_BASE
 
+# Default dependency = read auth (JWT or api-key). Write endpoints below
+# layer on `verify_api_key` to restrict to operator/cron callers.
 router = APIRouter(
     prefix="/sources",
     tags=["sources"],
@@ -24,7 +40,7 @@ async def list_sources(supabase: Client = Depends(get_supabase)) -> dict[str, An
     return {"sources": resp.data or []}
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(verify_api_key)])
 async def manage_source(
     body: SourceAction,
     supabase: Client = Depends(get_supabase),
@@ -105,7 +121,7 @@ async def detect_provider(
     }
 
 
-@router.post("/seed")
+@router.post("/seed", dependencies=[Depends(verify_api_key)])
 async def seed_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
     supabase.table("sources").upsert(
         list(COMPANY_SEED), on_conflict="board_token"

@@ -67,7 +67,7 @@ from app.services.targets.fit_score import (
 from app.services.targets.match import suggest_and_match
 from app.services.targets.merge import merge_profiles
 from app.services.targets.suggest import DEFAULT_PURPOSE as SUGGEST_PURPOSE
-from app.services.validate import validate_job_url
+from app.services.validate import assert_safe_host, validate_job_url
 
 logger = logging.getLogger(__name__)
 
@@ -603,13 +603,38 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     Raises ``HTTPException`` if the fetch fails or no usable description can
     be extracted. The minimum-length requirement matches ``ReferenceJDAdd``
     so the downstream LLM has enough signal to derive a profile.
+
+    SSRF defense: re-resolve the hostname inside this function as a TOCTOU
+    safety net. ``validate_job_url`` already ran upstream, but the upstream
+    check resolves DNS once and we connect a few milliseconds later — a
+    rebind in that window would slip through without this re-check.
     """
+    from urllib.parse import urlparse
+
+    hostname = urlparse(url).hostname or ""
+    try:
+        assert_safe_host(hostname)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422, detail=f"Refusing to fetch JD URL: {exc}"
+        ) from exc
+
     client = get_http_client()
     try:
         resp = await client.get(url)
         final_url = str(resp.url)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=400, detail="Failed to fetch JD URL") from exc
+
+    final_hostname = urlparse(final_url).hostname or ""
+    if final_hostname and final_hostname != hostname:
+        try:
+            assert_safe_host(final_hostname)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Refusing to fetch JD URL after redirect: {exc}",
+            ) from exc
 
     html = resp.text if resp.status_code == 200 else ""
     extraction: ExtractionResult
