@@ -9,7 +9,8 @@
 -- Ordering by COUNT DESC, title ASC keeps results stable across requests when
 -- two violations tie on count.
 
-CREATE OR REPLACE VIEW insights_violations_view AS
+CREATE OR REPLACE VIEW insights_violations_view
+WITH (security_invoker = true) AS
 SELECT
   si.category,
   si.title,

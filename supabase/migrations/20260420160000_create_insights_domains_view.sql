@@ -7,7 +7,8 @@
 -- DISTINCT ON to pick the most recent completed scan per domain. This avoids
 -- a correlated subquery in the SELECT list.
 
-CREATE OR REPLACE VIEW insights_domains_view AS
+CREATE OR REPLACE VIEW insights_domains_view
+WITH (security_invoker = true) AS
 WITH scans_with_domain AS (
   SELECT
     split_part(split_part(normalized_url, '://', 2), '/', 1) AS domain,
