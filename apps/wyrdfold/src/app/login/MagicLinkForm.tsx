@@ -37,6 +37,22 @@ function stashNextInCookie(next: string): void {
   document.cookie = `${NEXT_COOKIE}=${encodeURIComponent(next)}; max-age=${NEXT_COOKIE_MAX_AGE_S}; path=/; samesite=lax`;
 }
 
+// Wyrdfold is invite-only during the beta. The login form sends
+// `shouldCreateUser: false`, so non-invited emails get rejected by GoTrue
+// (or by the before-user-created hook) with one of these messages. Translate
+// to copy that hints at the invite gate without leaking which path failed.
+function friendlyAuthError(message: string): string {
+  const lower = message.toLowerCase();
+  if (
+    lower.includes('signups not allowed') ||
+    lower.includes('not on the wyrdfold beta list') ||
+    lower.includes('user not found')
+  ) {
+    return "This email isn't on the beta list yet. If you think it should be, reply to your invitation.";
+  }
+  return message;
+}
+
 export default function MagicLinkForm({ next }: MagicLinkFormProps) {
   const [email, setEmail] = useState('');
   const [formState, setFormState] = useState<FormState>('idle');
@@ -64,11 +80,12 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        shouldCreateUser: false,
       },
     });
 
     if (authError) {
-      setError(authError.message);
+      setError(friendlyAuthError(authError.message));
       setFormState('error');
     } else {
       setFormState('sent');
