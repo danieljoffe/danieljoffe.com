@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "invite-beta": "tsx scripts/invite-beta-tester.ts",
     "start": "next start"
   },
   "dependencies": {
