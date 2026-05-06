@@ -75,6 +75,9 @@ describe('MagicLinkForm — idle state', () => {
       email: 'test@example.com',
       options: {
         emailRedirectTo: expect.stringMatching(/\/auth\/callback$/),
+        // Beta-only gate (#646) — block GoTrue from auto-creating users
+        // for emails outside the invite list.
+        shouldCreateUser: false,
       },
     });
   });
