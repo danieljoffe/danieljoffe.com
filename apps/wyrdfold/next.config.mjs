@@ -28,7 +28,7 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
   devIndicators: false,
   experimental: {
-    optimizePackageImports: ['yup'],
+    optimizePackageImports: ['lucide-react', 'recharts'],
     webpackBuildWorker: !isTest && !isCI,
   },
 

@@ -138,7 +138,7 @@ export default function WyrdfoldLandingPage() {
             width={1280}
             height={944}
             priority
-            sizes='(min-width: 1024px) 1024px, 100vw'
+            sizes='(min-width: 1024px) 1280px, 100vw'
             className='h-auto w-full'
           />
         </div>

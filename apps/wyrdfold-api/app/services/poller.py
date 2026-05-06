@@ -260,6 +260,14 @@ async def _run_llm_scoring_for_row(
         )
         current_score = int(cast(dict[str, Any], score_resp.data).get("score", 0))
     except Exception:
+        # Score row missing or unparseable — treat as 0 so the LLM-threshold
+        # gate applies as if this is a fresh job. Logged so silent zeroing is
+        # observable when investigating low-confidence matches.
+        logger.warning(
+            "Could not read current score for job %s — defaulting to 0",
+            job_id,
+            exc_info=True,
+        )
         current_score = 0
 
     if current_score < LLM_SCORE_THRESHOLD:

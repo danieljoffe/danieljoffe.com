@@ -6,12 +6,10 @@ import WyrdfoldSidebar from './WyrdfoldSidebar';
 // /login when there's no session. Re-doing supabase.auth.getUser() here would
 // mean two network round-trips per page render, which serializes the shell
 // behind a Supabase call that the middleware already made.
-
-// Force dynamic rendering so the build never tries to prerender pages that
-// depend on per-request cookies/Supabase auth. CI builds run without
-// NEXT_PUBLIC_SUPABASE_URL set, so a static generation attempt would throw
-// from createAuthServerClient before cookies() can mark the route dynamic.
-export const dynamic = 'force-dynamic';
+//
+// Dynamic-rendering is signalled at the leaf via `await connection()` inside
+// `createAuthServerClient` (see lib/supabase/auth-server.ts). Pages calling
+// auth opt-in there; the layout itself stays cacheable.
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (

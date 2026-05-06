@@ -1,4 +1,5 @@
 import hmac
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import jwt
@@ -18,9 +19,6 @@ api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 # Algorithms accepted for Supabase JWT verification. Supabase migrated to
 # ES256 by default; older projects on RS256 still verify cleanly.
 _JWT_ALGORITHMS = ["ES256", "RS256"]
-
-# Cached JWKS client, keyed by URL so a settings swap (tests) reinitializes.
-_jwks_clients: dict[str, PyJWKClient] = {}
 
 
 def get_settings() -> Settings:
@@ -84,25 +82,31 @@ def _issuer(s: Settings) -> str:
     return f"{s.supabase_url.rstrip('/')}/auth/v1"
 
 
-def _get_jwks_client(s: Settings) -> PyJWKClient:
-    """Lazy-initialize and cache a PyJWKClient per JWKS URL.
+@lru_cache(maxsize=4)
+def _get_jwks_client_for_url(url: str) -> PyJWKClient:
+    """LRU-cached PyJWKClient construction keyed by JWKS URL.
 
-    PyJWKClient handles JWKS fetching, response caching (5-minute TTL by
-    default), and per-key LRU caching. On unknown `kid` it auto-refreshes
-    the JWKS and retries before raising — key rotation is transparent.
+    `lru_cache(maxsize=4)` bounds memory in long-lived test processes
+    that construct fresh `Settings` per run — without the bound, the
+    cache would grow unbounded across `Settings` instances even though
+    the URL set is tiny in practice (1–2 distinct values).
+
+    PyJWKClient itself handles JWKS fetching, response caching (5-minute
+    TTL by default), and per-key LRU caching internally. On unknown
+    `kid` it auto-refreshes the JWKS and retries before raising — key
+    rotation is transparent.
     """
-    url = _jwks_url(s)
-    client = _jwks_clients.get(url)
-    if client is None:
-        client = PyJWKClient(
-            url,
-            cache_jwk_set=True,
-            lifespan=300,
-            max_cached_keys=16,
-            timeout=10,
-        )
-        _jwks_clients[url] = client
-    return client
+    return PyJWKClient(
+        url,
+        cache_jwk_set=True,
+        lifespan=300,
+        max_cached_keys=16,
+        timeout=10,
+    )
+
+
+def _get_jwks_client(s: Settings) -> PyJWKClient:
+    return _get_jwks_client_for_url(_jwks_url(s))
 
 
 def _decode_supabase_jwt(token: str, s: Settings) -> dict[str, object]:
