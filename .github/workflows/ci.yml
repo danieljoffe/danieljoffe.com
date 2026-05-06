@@ -168,6 +168,10 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --frozen
 
+      - name: Install pandoc (wyrdfold-api docx tests)
+        if: needs.preflight.outputs.wyrdfold-api-changed == 'true'
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
       - name: wyrdfold-api — lint, typecheck, test
         if: needs.preflight.outputs.wyrdfold-api-changed == 'true'
         working-directory: apps/wyrdfold-api

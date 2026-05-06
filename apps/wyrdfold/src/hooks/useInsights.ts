@@ -22,7 +22,7 @@ interface InsightsState {
   fetchedAt: number | undefined;
 }
 
-export interface InsightsLoading {
+interface InsightsLoading {
   pipeline: boolean;
   targets: boolean;
   skillsCost: boolean;
@@ -30,7 +30,7 @@ export interface InsightsLoading {
   all: boolean;
 }
 
-export interface InsightsData {
+interface InsightsData {
   pipeline: PipelineInsights | undefined;
   targets: TargetInsights | undefined;
   skillsCost: SkillsCostInsights | undefined;
@@ -49,13 +49,13 @@ export interface InsightsData {
  * - `parse`: the response body couldn't be parsed as JSON.
  * - `shape`: the JSON parsed but didn't match the expected schema.
  */
-export type InsightsFetchErrorInfo =
+type InsightsFetchErrorInfo =
   | { kind: 'http'; status: number; statusText: string }
   | { kind: 'network'; cause: unknown }
   | { kind: 'parse'; cause: unknown }
   | { kind: 'shape'; field: string };
 
-export class InsightsFetchError extends Error {
+class InsightsFetchError extends Error {
   readonly info: InsightsFetchErrorInfo;
   constructor(info: InsightsFetchErrorInfo) {
     super(

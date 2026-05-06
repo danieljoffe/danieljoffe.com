@@ -5,6 +5,11 @@
   "projectType": "library",
   "tags": ["scope:shared", "type:ui"],
   "targets": {
+    "storybook": {
+      "options": {
+        "host": "0.0.0.0"
+      }
+    },
     "build": {
       "outputs": ["{projectRoot}/dist"]
     }

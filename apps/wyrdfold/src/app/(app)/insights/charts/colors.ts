@@ -18,20 +18,7 @@ export const CHART_COLORS = {
 } as const;
 
 /**
- * Ordered palette for multi-series charts. Add more as needed.
- */
-export const SERIES_PALETTE = [
-  CHART_COLORS.brand,
-  CHART_COLORS.success,
-  CHART_COLORS.warning,
-  CHART_COLORS.info,
-  CHART_COLORS.error,
-  CHART_COLORS.brandLight,
-] as const;
-
-/**
- * Per-status chart fill, mirroring `STATUS_VARIANT` in jobs/types.ts so
- * funnel/breakdown bars match the colored dots and badges used elsewhere.
+ * Per-status chart fill, matching the colored dots and badges used elsewhere.
  */
 export const STATUS_CHART_COLOR: Record<JobStatus, string> = {
   new: CHART_COLORS.muted,

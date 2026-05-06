@@ -5,7 +5,6 @@
   "dependencies": {
     "@danieljoffe.com/shared-audit": "workspace:*",
     "@danieljoffe.com/shared-ui": "workspace:*",
-    "@supabase/ssr": "^0.10.2",
     "recharts": "^3.8.1",
     "sharp": "^0.34.5"
   }
