@@ -14,7 +14,7 @@ import {
 import type { JobStatus } from '../../jobs/types';
 import type { FunnelStage } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS, STATUS_CHART_COLOR } from './colors';
+import { CHART_AXIS_TICK, CHART_COLORS, STATUS_CHART_COLOR } from './colors';
 
 const DRILL_LINK_CLASS =
   'inline-flex items-center rounded-full bg-surface-tertiary px-2 py-0.5 text-xs text-text-primary tabular-nums hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1';
@@ -87,16 +87,12 @@ export default function FunnelChart({ data }: FunnelChartProps) {
               stroke={CHART_COLORS.grid}
               horizontal={false}
             />
-            <XAxis
-              type='number'
-              allowDecimals={false}
-              tick={{ fontSize: 12 }}
-            />
+            <XAxis type='number' allowDecimals={false} tick={CHART_AXIS_TICK} />
             <YAxis
               type='category'
               dataKey='label'
               width={70}
-              tick={{ fontSize: 12 }}
+              tick={CHART_AXIS_TICK}
             />
             <Tooltip contentStyle={{ fontSize: 12 }} />
             <Bar dataKey='count' name='Jobs' radius={[0, 4, 4, 0]}>

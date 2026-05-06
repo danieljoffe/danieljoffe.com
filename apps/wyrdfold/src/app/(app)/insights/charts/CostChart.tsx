@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import type { CostBucket } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS } from './colors';
+import { CHART_AXIS_TICK, CHART_COLORS } from './colors';
 import { formatCost, formatWeek } from './format';
 
 interface CostChartProps {
@@ -47,18 +47,18 @@ export default function CostChart({ data }: CostChartProps) {
           <XAxis
             dataKey='week_start'
             tickFormatter={formatWeek}
-            tick={{ fontSize: 12 }}
+            tick={CHART_AXIS_TICK}
           />
           <YAxis
             yAxisId='cost'
             tickFormatter={formatCost}
-            tick={{ fontSize: 12 }}
+            tick={CHART_AXIS_TICK}
           />
           <YAxis
             yAxisId='count'
             orientation='right'
             allowDecimals={false}
-            tick={{ fontSize: 12 }}
+            tick={CHART_AXIS_TICK}
           />
           <Tooltip
             labelFormatter={label => formatWeek(String(label))}

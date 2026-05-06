@@ -15,6 +15,21 @@ export const CHART_COLORS = {
   info: '#2563eb',
   muted: '#6b7280', // text-secondary
   grid: '#e5e7eb', // border
+  // Axis tick text on the dark Pyre surface. #9ca3af = gray-400, ~5.7:1
+  // contrast on near-black; passes WCAG AA. Recharts default `#666` failed
+  // at ~3.4:1 (Phase 4c finding).
+  axisTick: '#9ca3af',
+} as const;
+
+/**
+ * Default tick-style for chart axes. Spread this into recharts `<XAxis />`
+ * / `<YAxis />` `tick` prop so axis labels meet WCAG AA contrast on the
+ * Pyre dark surface. Add per-chart overrides (e.g. fontSize) after the
+ * spread.
+ */
+export const CHART_AXIS_TICK = {
+  fill: CHART_COLORS.axisTick,
+  fontSize: 12,
 } as const;
 
 /**

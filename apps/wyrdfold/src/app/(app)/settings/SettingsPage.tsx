@@ -545,7 +545,9 @@ export default function SettingsPage() {
               type='number'
               value={emailThreshold}
               onChange={e => setEmailThreshold(e.target.value)}
-              helperText='Minimum job score to trigger an email alert (0-200)'
+              min={0}
+              max={100}
+              helperText='Minimum job score to trigger an email alert (0-100)'
               disabled={!emailEnabled || !emailAvailable}
             />
           </div>
@@ -589,6 +591,7 @@ export default function SettingsPage() {
               helperText='Include country code'
               autoComplete='tel'
               inputMode='tel'
+              data-sentry-mask
               disabled={!smsEnabled || !smsAvailable}
             />
             <Input
@@ -596,7 +599,9 @@ export default function SettingsPage() {
               type='number'
               value={smsThreshold}
               onChange={e => setSmsThreshold(e.target.value)}
-              helperText='Minimum score for SMS (0-200)'
+              min={0}
+              max={100}
+              helperText='Minimum score for SMS (0-100)'
               disabled={!smsEnabled || !smsAvailable}
             />
             <Input
@@ -604,6 +609,8 @@ export default function SettingsPage() {
               type='number'
               value={smsDailyLimit}
               onChange={e => setSmsDailyLimit(e.target.value)}
+              min={1}
+              max={50}
               helperText='Max texts per day (1-50)'
               disabled={!smsEnabled || !smsAvailable}
             />

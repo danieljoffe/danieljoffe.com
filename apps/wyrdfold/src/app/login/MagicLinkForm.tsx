@@ -152,7 +152,6 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                   aria-describedby={
                     formState === 'error' ? 'login-error' : undefined
                   }
-                  autoFocus
                   required
                   data-sentry-mask
                   className={cn(
