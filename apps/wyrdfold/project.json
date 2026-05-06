@@ -4,6 +4,7 @@
   "sourceRoot": "apps/wyrdfold",
   "projectType": "application",
   "tags": ["scope:wyrdfold", "type:app"],
+  "// content-build": "WyrdFold ships no MDX — no validate-content/generate-search-index chain (cf. apps/root). All targets are inferred by @nx/next/plugin.",
   "// targets": "to see all targets run: nx show project wyrdfold --web",
   "targets": {}
 }

@@ -16,7 +16,12 @@
     "test": {
       "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["default", "^production"],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/pyproject.toml",
+        "{workspaceRoot}/uv.lock"
+      ],
+      "dependsOn": [],
       "options": {
         "command": "uv run --package wyrdfold-api pytest -v",
         "cwd": "apps/wyrdfold-api"
@@ -25,7 +30,12 @@
     "lint": {
       "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["default", "{projectRoot}/pyproject.toml"],
+      "inputs": [
+        "default",
+        "{projectRoot}/pyproject.toml",
+        "{workspaceRoot}/pyproject.toml",
+        "{workspaceRoot}/uv.lock"
+      ],
       "options": {
         "command": "uv run --package wyrdfold-api ruff check .",
         "cwd": "apps/wyrdfold-api"
@@ -34,7 +44,11 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,
-      "inputs": ["default", "^production"],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/pyproject.toml",
+        "{workspaceRoot}/uv.lock"
+      ],
       "options": {
         "command": "uv run --package wyrdfold-api mypy app/",
         "cwd": "apps/wyrdfold-api"
