@@ -384,9 +384,6 @@ importers:
       '@danieljoffe.com/shared-ui':
         specifier: workspace:*
         version: link:../../libs/shared/ui
-      '@supabase/ssr':
-        specifier: ^0.10.2
-        version: 0.10.2(@supabase/supabase-js@2.103.0)
       recharts:
         specifier: ^3.8.1
         version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react-is@18.3.1)(react@19.2.5)(redux@5.0.1)
