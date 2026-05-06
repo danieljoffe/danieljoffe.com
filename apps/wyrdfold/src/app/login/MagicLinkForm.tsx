@@ -141,29 +141,37 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
             </div>
 
             <form onSubmit={sendLink} className='w-full flex flex-col gap-3'>
-              <div className='relative'>
-                <Mail
-                  className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none'
-                  aria-hidden
-                />
-                <input
-                  type='email'
-                  placeholder='you@example.com'
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  aria-label='Email address'
-                  aria-describedby={
-                    formState === 'error' ? 'login-error' : undefined
-                  }
-                  required
-                  data-sentry-mask
-                  className={cn(
-                    BASE_FIELD,
-                    FIELD_PADDING,
-                    FIELD_PLACEHOLDER,
-                    'pl-9'
-                  )}
-                />
+              <div className='flex flex-col gap-1'>
+                <label
+                  htmlFor='login-email'
+                  className='text-sm font-medium text-text-secondary'
+                >
+                  Email
+                </label>
+                <div className='relative'>
+                  <Mail
+                    className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none'
+                    aria-hidden
+                  />
+                  <input
+                    id='login-email'
+                    type='email'
+                    placeholder='you@example.com'
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    aria-describedby={
+                      formState === 'error' ? 'login-error' : undefined
+                    }
+                    required
+                    data-sentry-mask
+                    className={cn(
+                      BASE_FIELD,
+                      FIELD_PADDING,
+                      FIELD_PLACEHOLDER,
+                      'pl-9'
+                    )}
+                  />
+                </div>
               </div>
               {formState === 'error' && (
                 <Text

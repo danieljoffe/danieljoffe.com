@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Sparkles } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
@@ -40,20 +40,13 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  // Re-fetch after mutating actions (activate/deactivate/delete) so the cards
-  // pick up server-derived state (fit score, activation status, etc.).
-  const fetchTargets = useCallback(async () => {
-    try {
-      const res = await fetch('/api/targets/mine');
-      if (!res.ok) throw new Error('Failed to fetch targets');
-      const { targets } = (await res.json()) as {
-        targets: UserTargetWithTarget[];
-      };
-      setTargets(targets);
-    } catch {
-      toast({ variant: 'error', title: 'Failed to load targets' });
-    }
-  }, [toast]);
+  // Sync local state when the parent server component re-renders with
+  // fresh data (after `router.refresh()` post-mutation). Optimistic
+  // updates from create/link still work because the server refetch
+  // arrives with the canonical state.
+  useEffect(() => {
+    setTargets(initialTargets);
+  }, [initialTargets]);
 
   const handleActivate = useCallback(
     async (id: string) => {
@@ -63,12 +56,15 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         });
         if (!res.ok) throw new Error('Activate failed');
         toast({ variant: 'success', title: 'Target activated' });
-        fetchTargets();
+        // RSC re-render rather than a second client fetch — saves a
+        // round-trip and keeps the targets page authoritative on the
+        // server.
+        router.refresh();
       } catch {
         toast({ variant: 'error', title: 'Failed to activate target' });
       }
     },
-    [toast, fetchTargets]
+    [toast, router]
   );
 
   const handleDeactivate = useCallback(
@@ -79,12 +75,12 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         });
         if (!res.ok) throw new Error('Deactivate failed');
         toast({ variant: 'success', title: 'Target deactivated' });
-        fetchTargets();
+        router.refresh();
       } catch {
         toast({ variant: 'error', title: 'Failed to deactivate target' });
       }
     },
-    [toast, fetchTargets]
+    [toast, router]
   );
 
   const handleDelete = useCallback(
@@ -97,12 +93,15 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         const res = await fetch(`/api/targets/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Delete failed');
         toast({ variant: 'success', title: 'Target deleted' });
-        fetchTargets();
+        // Optimistic removal so the card disappears instantly; refresh
+        // brings authoritative state to backstop the optimistic delete.
+        setTargets(prev => prev.filter(t => t.target.id !== id));
+        router.refresh();
       } catch {
         toast({ variant: 'error', title: 'Failed to delete target' });
       }
     },
-    [toast, fetchTargets]
+    [toast, router]
   );
 
   const handleViewJobs = useCallback(

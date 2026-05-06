@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -12,14 +13,17 @@ import {
   Settings,
   MoreHorizontal,
   LogOut,
-  X,
 } from 'lucide-react';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
-import { createAuthBrowserClient } from '@/lib/supabase/auth-client';
 import DarkModeToggle from '@/components/Nav/DarkModeToggle';
 import WyrdfoldLogo from '@/components/WyrdfoldLogo';
+
+// Mobile sheet ships its own JSX, useFocusTrap, and the secondary nav.
+// `dynamic({ ssr: false })` keeps it out of the eager bundle on every
+// authed page — it loads only when the user taps "More". (Phase 5
+// Perf P2 — sidebar weight cut.)
+const MoreSheet = dynamic(() => import('./MoreSheet'), { ssr: false });
 
 type Icon = typeof LayoutDashboard;
 type NavItem = { id: string; label: string; href: string; lucide: Icon };
@@ -64,37 +68,19 @@ export default function WyrdfoldSidebar() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
-  const sheetRef = useFocusTrap(sheetOpen) as React.RefObject<HTMLDivElement>;
 
   const closeSheet = useCallback(() => {
     setSheetOpen(false);
     moreButtonRef.current?.focus();
   }, []);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!sheetOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeSheet();
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [sheetOpen, closeSheet]);
-
-  // Lock body scroll when sheet is open
-  useEffect(() => {
-    if (sheetOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [sheetOpen]);
-
+  // Lazy-import the Supabase browser client only when the user actually
+  // signs out. Top-level import would pull @supabase/ssr into the eager
+  // sidebar bundle on every authed page — significant for a flow used
+  // once per session.
   async function handleSignOut() {
-    setSheetOpen(false);
+    const { createAuthBrowserClient } =
+      await import('@/lib/supabase/auth-client');
     const supabase = createAuthBrowserClient();
     await supabase.auth.signOut();
     router.replace('/login');
@@ -210,91 +196,18 @@ export default function WyrdfoldSidebar() {
         </nav>
       </div>
 
-      {/* Mobile backdrop */}
+      {/* The sheet itself ships its own focus trap, dialog markup, and the
+          secondary nav. dynamic-import keeps that out of every page until
+          the user taps "More". */}
       {sheetOpen && (
-        <div
-          className='md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity'
-          onClick={closeSheet}
-          aria-hidden='true'
+        <MoreSheet
+          open={sheetOpen}
+          onClose={closeSheet}
+          items={MORE_ITEMS}
+          activeId={activeId}
+          onSignOut={handleSignOut}
         />
       )}
-
-      {/* Mobile bottom sheet — slides up from above the bar */}
-      <div
-        ref={sheetRef}
-        role='dialog'
-        aria-label='More navigation'
-        aria-modal='true'
-        aria-hidden={!sheetOpen}
-        inert={!sheetOpen ? true : undefined}
-        className={cn(
-          'md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
-          sheetOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
-        )}
-        style={{
-          paddingBottom: sheetOpen
-            ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 1.25rem)'
-            : undefined,
-        }}
-      >
-        <div className='flex items-center justify-between mb-3'>
-          <span className='text-xs font-semibold text-text-tertiary uppercase tracking-wider'>
-            More
-          </span>
-          <div className='flex items-center gap-1'>
-            <DarkModeToggle />
-            <Button
-              name='wyrdfold-close-more'
-              variant='bare'
-              size='sm'
-              iconOnly
-              onClick={closeSheet}
-              aria-label='Close more menu'
-              className='rounded-lg text-text-tertiary hover:text-text-primary'
-            >
-              <X className='h-4 w-4' />
-            </Button>
-          </div>
-        </div>
-        <nav aria-label='More links'>
-          <ul className='space-y-1'>
-            {MORE_ITEMS.map(item => {
-              const Icon = item.lucide;
-              const active = activeId === item.id;
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    onClick={() => setSheetOpen(false)}
-                    className={cn(
-                      'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-                      active
-                        ? 'text-brand-500 bg-surface-tertiary'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
-                    )}
-                  >
-                    <Icon className='h-4 w-4' aria-hidden='true' />
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-            <li>
-              <Button
-                name='wyrdfold-more-sign-out'
-                variant='bare'
-                onClick={handleSignOut}
-                className='w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
-              >
-                <LogOut className='h-4 w-4' aria-hidden='true' />
-                Sign out
-              </Button>
-            </li>
-          </ul>
-        </nav>
-      </div>
     </>
   );
 }

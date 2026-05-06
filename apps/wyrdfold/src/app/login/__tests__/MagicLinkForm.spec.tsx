@@ -40,7 +40,7 @@ describe('MagicLinkForm — idle state', () => {
 
   it('marks the email input with data-sentry-mask for PII redaction', () => {
     render(<MagicLinkForm next={undefined} />);
-    const email = screen.getByRole('textbox', { name: /email address/i });
+    const email = screen.getByRole('textbox', { name: /^email$/i });
     expect(email).toHaveAttribute('data-sentry-mask');
   });
 
@@ -63,7 +63,7 @@ describe('MagicLinkForm — idle state', () => {
     render(<MagicLinkForm next={undefined} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'test@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -84,7 +84,7 @@ describe('MagicLinkForm — idle state', () => {
     render(<MagicLinkForm next={'/jobs'} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'test@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -103,7 +103,7 @@ describe('MagicLinkForm — idle state', () => {
     render(<MagicLinkForm next={undefined} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'test@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -111,9 +111,10 @@ describe('MagicLinkForm — idle state', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(/rate limit exceeded/i);
     expect(alert).toHaveAttribute('id', 'login-error');
-    expect(
-      screen.getByRole('textbox', { name: /email address/i })
-    ).toHaveAttribute('aria-describedby', 'login-error');
+    expect(screen.getByRole('textbox', { name: /^email$/i })).toHaveAttribute(
+      'aria-describedby',
+      'login-error'
+    );
   });
 });
 
@@ -123,7 +124,7 @@ describe('MagicLinkForm — sent state', () => {
     render(<MagicLinkForm next={undefined} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'jane@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -142,7 +143,7 @@ describe('MagicLinkForm — sent state', () => {
     render(<MagicLinkForm next={undefined} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'jane@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -157,7 +158,7 @@ describe('MagicLinkForm — sent state', () => {
     render(<MagicLinkForm next={undefined} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'jane@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -175,7 +176,7 @@ describe('MagicLinkForm — sent state', () => {
     render(<MagicLinkForm next={undefined} />);
 
     await user.type(
-      screen.getByRole('textbox', { name: /email address/i }),
+      screen.getByRole('textbox', { name: /^email$/i }),
       'jane@example.com'
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
@@ -188,8 +189,6 @@ describe('MagicLinkForm — sent state', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: /sign in/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /email address/i })).toHaveValue(
-      ''
-    );
+    expect(screen.getByRole('textbox', { name: /^email$/i })).toHaveValue('');
   });
 });

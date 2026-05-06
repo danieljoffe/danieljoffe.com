@@ -13,7 +13,7 @@ test('login page renders the magic-link form', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Sign in', level: 1 })
   ).toBeVisible();
-  await expect(page.getByLabel('Email address')).toBeVisible();
+  await expect(page.getByLabel('Email', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Send magic link' })
   ).toBeDisabled();

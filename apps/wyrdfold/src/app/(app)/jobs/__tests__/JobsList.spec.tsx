@@ -171,7 +171,9 @@ describe('JobsList — empty targets state', () => {
     expect(
       screen.getByRole('link', { name: /go to targets/i })
     ).toHaveAttribute('href', '/targets');
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('group', { name: /filter jobs by target/i })
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -181,19 +183,25 @@ describe('JobsList — with targets', () => {
     { id: 't2', label: 'Backend' },
   ];
 
-  it('renders the page heading and a tab list with all targets + "All Jobs"', () => {
+  it('renders the page heading and a target filter group with "All Jobs" + targets', () => {
     render(<JobsList targetId={undefined} initialTargets={TARGETS} />);
 
     expect(
       screen.getByRole('heading', { level: 1, name: /jobs/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /all jobs/i })).toHaveAttribute(
-      'aria-selected',
+    expect(
+      screen.getByRole('group', { name: /filter jobs by target/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /all jobs/i })).toHaveAttribute(
+      'aria-pressed',
       'true'
     );
-    expect(screen.getByRole('tab', { name: /frontend/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /backend/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /frontend/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /backend/i })
+    ).toBeInTheDocument();
   });
 
   it('renders the loading skeleton state via JobsListView', () => {
@@ -267,7 +275,7 @@ describe('JobsList — with targets', () => {
     await user.click(
       screen.getByRole('button', { name: /select senior frontend engineer/i })
     );
-    await user.click(screen.getByRole('tab', { name: /frontend/i }));
+    await user.click(screen.getByRole('button', { name: /^frontend$/i }));
 
     expect(mockReplace).toHaveBeenCalledWith('/jobs?target=t1', {
       scroll: false,

@@ -348,11 +348,21 @@ export default function JobsList({
         </Card>
       ) : (
         <>
+          {/* Toggle-button group rather than role='tablist'. Tabs require
+              Left/Right/Home/End keyboard nav + aria-controls / tabpanel
+              linkage per WAI-ARIA APG; we don't need either since the
+              "panel" is the rest of the page. aria-pressed gives SR
+              users the same selected-state announcement as aria-selected
+              would. (Phase 5 A11y P2.) */}
           <div className='border-b border-border'>
-            <div role='tablist' className='flex gap-1 overflow-x-auto'>
+            <div
+              role='group'
+              aria-label='Filter jobs by target'
+              className='flex gap-1 overflow-x-auto'
+            >
               <button
-                role='tab'
-                aria-selected={activeTargetId === undefined}
+                type='button'
+                aria-pressed={activeTargetId === undefined}
                 onClick={() => handleTabChange(undefined)}
                 className={cn(
                   'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
@@ -366,9 +376,9 @@ export default function JobsList({
               </button>
               {targets.map(target => (
                 <button
+                  type='button'
                   key={target.id}
-                  role='tab'
-                  aria-selected={activeTargetId === target.id}
+                  aria-pressed={activeTargetId === target.id}
                   onClick={() => handleTabChange(target.id)}
                   className={cn(
                     'shrink-0 border-b-2 px-4 py-2.5 text-sm transition-colors',
