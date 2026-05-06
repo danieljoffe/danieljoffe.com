@@ -2,41 +2,48 @@
 name: verify-auditapi
 description: Verify the audit-api backend and its audit tool frontend workflows
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Verify Audit API
 
-Run targeted verification for the audit-api backend and its audit tool frontend integration. Fix any issues at each step before proceeding.
+Verify the audit-api backend and audit tool frontend pass all checks. **Do not fix failures** — report them and stop.
+
+## Token Budget Rules
+
+- Route ALL commands producing >20 lines through `ctx_batch_execute` or `ctx_execute`
+- Batch independent commands into a single `ctx_batch_execute` call
+- If any phase fails, report the failure in the summary table and **stop** — do not attempt fixes
+- Browser checks: 2 public pages + 1 admin page
 
 ## Instructions
 
-### Phase 1: Backend Checks
+### Phase 1: Backend + TypeScript Checks
 
-Run these sequentially, fixing failures before proceeding:
+Run via `ctx_batch_execute` (one call):
 
-1. `pnpm nx lint audit-api`
-2. `pnpm nx typecheck audit-api` (mypy)
-3. `pnpm nx test audit-api`
-
-### Phase 2: TypeScript Typecheck
-
-Run `pnpm tsc --noEmit`. This catches type errors in the Next.js API routes and frontend components that integrate with audit-api.
-
-### Phase 3: Frontend Unit Tests (API route + component subset)
-
-Run the subset of root app tests that cover the audit integration layer:
-
-```bash
-pnpm nx test root -- --testPathPatterns="(api/audit|audit)"
+```
+[
+  { "label": "lint-auditapi",     "command": "pnpm nx lint audit-api" },
+  { "label": "typecheck-auditapi","command": "pnpm nx typecheck audit-api" },
+  { "label": "test-auditapi",     "command": "pnpm nx test audit-api" },
+  { "label": "typecheck-tsc",     "command": "pnpm tsc --noEmit" }
+]
 ```
 
-This runs tests matching:
+Search results for failures: `ctx_search(["error", "failed", "FAILED"])`. If any command failed, report and stop.
 
-- `apps/root/src/app/api/audit/**`
-- `apps/root/src/app/(public)/audit/**`
-- `apps/root/src/app/tools/admin/audit/**`
+### Phase 2: Frontend Unit Tests
 
-### Phase 4: Dev Server + Browser Check
+Run the subset of root app tests covering the audit integration:
+
+```
+ctx_execute(language: "shell", code: "pnpm nx test root -- --testPathPatterns='(api/audit|audit)'")
+```
+
+If tests fail, report and stop.
+
+### Phase 3: Browser Check
 
 1. Read `TOOLS_ADMIN_PASSWORD` from `apps/root/.env.local` using Grep
 2. Start the dev server: `pnpm nx dev root` (background)
@@ -44,13 +51,11 @@ This runs tests matching:
 
 **Public pages (no auth needed):**
 
-4. Visit these pages and check console for errors/warnings:
-   - `/audit` (scan input form)
-   - `/audit/insights` (public insights dashboard)
+4. Visit `/audit` and `/audit/insights`, check console for errors
 
-**Admin pages (auth needed):**
+**Admin page (auth needed):**
 
-5. Authenticate by running this in Chrome DevTools `evaluate_script`:
+5. Authenticate via Chrome DevTools `evaluate_script`:
    ```js
    await fetch('/api/tools/login', {
      method: 'POST',
@@ -58,21 +63,10 @@ This runs tests matching:
      body: JSON.stringify({ password: '<TOOLS_ADMIN_PASSWORD value>' }),
    });
    ```
-6. Verify the response status is 200 (the `admin_session` cookie is now set)
-7. Visit admin pages and check console for errors/warnings:
-   - `/tools/admin/audit` (admin dashboard — leads, scans, stats)
+6. Visit `/tools/admin/audit`, check console for errors
+7. Stop the dev server when done
 
-**For all pages, verify:**
-
-- No unexpected console errors
-- Page renders without blank screens or loading spinners that never resolve
-- API calls return successfully (check Network tab if needed)
-
-8. Stop the dev server when done
-
-### Phase 5: Report
-
-After all steps pass, report a summary table:
+### Phase 4: Report
 
 | Step                       | Result |
 | -------------------------- | ------ |
@@ -81,9 +75,7 @@ After all steps pass, report a summary table:
 | test (audit-api)           | ...    |
 | typecheck (tsc)            | ...    |
 | test (root — audit routes) | ...    |
-| console.logs (public)      | ...    |
-| console.logs (admin)       | ...    |
+| console (public)           | ...    |
+| console (admin)            | ...    |
 
-Note any pre-existing warnings separately.
-
-If any fixes were made during verification, commit them before reporting.
+Note pre-existing warnings separately. **Do not commit fixes.**

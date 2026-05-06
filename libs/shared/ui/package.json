@@ -29,7 +29,8 @@
       "types": "./dist/lib/types.d.ts",
       "default": "./src/lib/types.ts"
     },
-    "./styles/indigo-theme.css": "./src/styles/indigo-theme.css"
+    "./styles/indigo-theme.css": "./src/styles/indigo-theme.css",
+    "./styles/pyre-theme.css": "./src/styles/pyre-theme.css"
   },
   "dependencies": {
     "clsx": "^2.1.0",

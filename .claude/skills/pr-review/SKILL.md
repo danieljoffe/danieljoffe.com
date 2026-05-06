@@ -1,69 +1,183 @@
 ---
 name: pr-review
-description: Run all reviewer agents (a11y, perf, content, nx, security) in parallel on changed files and summarize findings
+description: Run reviewer agents on changed files with smart filtering, manifest-based routing, and diff-first analysis
 disable-model-invocation: true
 user-invocable: true
 ---
 
 # PR Review
 
-Run all reviewer agents in parallel on the current branch's changed files and produce a unified report.
+Context-efficient review of the current branch's changed files. Builds a file manifest, filters out noise, and routes only relevant files to each reviewer agent.
 
 ## Arguments
 
-`/pr-review` — no arguments needed (uses current branch diff against develop)
+- `/pr-review` — review all changed files (auto-detects base branch)
+- `/pr-review --only a11y,perf` — run only specified reviewers
+- `/pr-review --skip content,nx` — skip specified reviewers
+- `/pr-review --base main` — override base branch (default: auto-detect)
+- `/pr-review --force` — bypass PR size guardrails
+
+Reviewer names: `a11y`, `perf`, `content`, `nx`, `e2e`, `security`
+
+## Token Budget Rules
+
+- Build the manifest via `ctx_batch_execute` — diffs can be large
+- Pass diff hunks to agents in the prompt — agents only read full files when hunks lack context
+- Agents must use `ctx_batch_execute` for any file reads >50 lines
 
 ## Instructions
 
-1. **Identify changed files:**
+### Step 1: Detect base branch
 
-   ```bash
-   git diff --name-only origin/develop...HEAD
-   ```
+```bash
+gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "develop"
+```
 
-2. **Categorize files** to determine which reviewers to run:
-   - **a11y-reviewer**: Any `.tsx` files in `components/`, `libs/shared/ui/`, or `app/`
-   - **perf-reviewer**: Any `.tsx`/`.ts` files touching components, hooks, API routes, or config
-   - **content-reviewer**: Any `.mdx` files in `data/content/`
-   - **nx-reviewer**: Any `project.json`, `tsconfig*.json`, `nx.json`, or workspace config files
-   - **security-reviewer**: Any `.ts`/`.tsx` files in `app/api/`, `lib/`, `proxy.ts`, `middleware.ts`, or files touching env vars, auth, Supabase, or Resend
+Use the result as `BASE_BRANCH`. Override with `--base` if provided. Always `git fetch origin` first.
 
-3. **Launch applicable reviewers in parallel** using the Agent tool:
-   - Pass the list of relevant changed files to each agent
-   - Each agent should read the changed files and apply its review checklist
+### Step 2: Build file manifest
 
-4. **Collect and deduplicate findings** from all agents.
+Run via `ctx_batch_execute`:
 
-5. **Output a unified report:**
+```bash
+git diff --name-status origin/${BASE_BRANCH}...HEAD
+git diff --stat origin/${BASE_BRANCH}...HEAD
+```
 
-   ```markdown
-   ## PR Review Summary
+Parse into a structured manifest. For each file determine:
 
-   **Branch**: <branch-name>
-   **Files changed**: <count>
-   **Reviewers run**: <list>
+| Field             | Values                                                    |
+| ----------------- | --------------------------------------------------------- |
+| **status**        | `A` (added), `M` (modified), `D` (deleted), `R` (renamed) |
+| **lines_changed** | additions + deletions from `--stat`                       |
+| **category**      | See classification table below                            |
 
-   ### Critical (must fix)
+**File classification:**
 
-   - [ ] file:line — description (reviewer)
+| Pattern                                                                  | Category      |
+| ------------------------------------------------------------------------ | ------------- |
+| Status `D` (any path)                                                    | `deleted`     |
+| `*.png`, `*.jpg`, `*.svg`, `*.ico`, `*-snapshots/*`                      | `binary`      |
+| `.claude/`, `CLAUDE.md`                                                  | `skill-meta`  |
+| `*.md` (not `.claude/`, not `.mdx`)                                      | `docs`        |
+| `*.mdx` in `data/content/`                                               | `content-mdx` |
+| `apps/root-e2e/**`                                                       | `e2e-test`    |
+| `*.spec.*`, `*.test.*`, `__tests__/*`, `__mocks__/*`                     | `unit-test`   |
+| `project.json`, `tsconfig*`, `nx.json`, `eslint.config*`, `package.json` | `config`      |
+| `apps/root/src/app/api/**`, `*/middleware.ts`, `*/proxy.ts`              | `api-code`    |
+| `libs/**` (non-test)                                                     | `lib-code`    |
+| `apps/**` (non-test, non-api)                                            | `app-code`    |
 
-   ### Warnings (should fix)
+### Step 3: Apply guardrails
 
-   - [ ] file:line — description (reviewer)
+Count **reviewable files** = total minus `deleted`, `binary`, `skill-meta`, `docs`.
 
-   ### Suggestions (nice to have)
+| Reviewable files | Action                                                                        |
+| ---------------- | ----------------------------------------------------------------------------- |
+| 0                | Report clean — nothing to review. Stop.                                       |
+| 1–30             | Proceed normally.                                                             |
+| 31–80            | Warn the user. Suggest `--only` for focused review. Proceed.                  |
+| >80              | **Refuse** unless `--force`. Print the manifest summary and suggest `--only`. |
 
-   - [ ] file:line — description (reviewer)
+### Step 4: Route files to reviewers
 
-   ### Passed Checks
+Each reviewer gets ONLY its relevant files from the manifest:
 
-   - ✓ description (reviewer)
-   ```
+| Reviewer     | Receives categories                                                         | File filter            |
+| ------------ | --------------------------------------------------------------------------- | ---------------------- |
+| **a11y**     | `app-code`, `lib-code`                                                      | `.tsx` files only      |
+| **perf**     | `app-code`, `lib-code`, `api-code`                                          | `.ts` and `.tsx` files |
+| **content**  | `content-mdx`                                                               | all                    |
+| **nx**       | `config`                                                                    | all                    |
+| **e2e**      | `e2e-test`                                                                  | all                    |
+| **security** | `api-code`, plus `app-code`/`lib-code` touching auth, env, Supabase, Resend | `.ts` and `.tsx` files |
 
-6. If no issues found, report a clean bill of health.
+**Routing rules:**
+
+- Skip any reviewer with 0 matching files.
+- Respect `--only` / `--skip` flags after routing.
+- `unit-test` files are NOT sent to a11y, perf, content, or security reviewers. Only e2e-reviewer receives test files (for coverage gap analysis — it compares test files against routes).
+
+### Step 5: Prepare agent context
+
+For each file in an agent's queue, prepare the diff hunk:
+
+```bash
+git diff origin/${BASE_BRANCH}...HEAD -- <file>
+```
+
+Run all file diffs in a single `ctx_batch_execute` call, then search for each file's hunk.
+
+**Per-file treatment based on change size:**
+
+| Lines changed | Agent receives     | Agent action                                        |
+| ------------- | ------------------ | --------------------------------------------------- |
+| Deleted       | Manifest note only | Note gap/impact, do NOT read                        |
+| < 10 lines    | Diff hunk only     | Review hunk in isolation                            |
+| 10–100 lines  | Diff hunk          | Read full file only if hunk context is insufficient |
+| > 100 lines   | Diff hunk          | Read full file via `ctx_batch_execute`              |
+
+**File budget:** Cap at **15 files per agent**. If a reviewer's queue exceeds 15, prioritize by `lines_changed` (largest first). Note skipped files in the report.
+
+### Step 6: Select agent model
+
+| Reviewer             | Matching files | Model                                      |
+| -------------------- | -------------- | ------------------------------------------ |
+| Any                  | > 10 files     | `sonnet` (faster throughput)               |
+| content, nx          | any count      | `sonnet` (checklist-driven, deterministic) |
+| a11y, perf, security | ≤ 10 files     | default (inherits parent model)            |
+| e2e                  | any count      | `sonnet`                                   |
+
+Override: when `--force` is used, all agents inherit the parent model.
+
+### Step 7: Launch agents in parallel
+
+Spawn each applicable reviewer via the Agent tool with `subagent_type` matching the reviewer name (e.g., `a11y-reviewer`). Include in each agent's prompt:
+
+1. **Manifest summary**: branch, base, total files, reviewable count
+2. **This agent's file list** with diff hunks inline
+3. **Instruction**: "Review ONLY the listed files. For files marked diff-only, review the hunk. Read full files via `ctx_batch_execute` only when the diff lacks sufficient context for your checklist."
+
+### Step 8: Collect and deduplicate
+
+Merge findings from all agents. Deduplicate by `file:line` — if multiple agents flag the same location, merge into one finding noting all reviewers.
+
+### Step 9: Output unified report
+
+```markdown
+## PR Review Summary
+
+**Branch**: <branch> → <base>
+**Files in PR**: <total> | **Reviewed**: <count> | **Skipped**: <count> (deleted/binary/meta/docs)
+**Reviewers run**: <list>
+**Skipped reviewers**: <list with reason>
+
+### Critical (must fix)
+
+- [ ] file:line — description (reviewer)
+
+### Warnings (should fix)
+
+- [ ] file:line — description (reviewer)
+
+### Suggestions (nice to have)
+
+- [ ] file:line — description (reviewer)
+
+### Passed Checks
+
+- ✓ description (reviewer)
+
+### Skipped Files
+
+<count> files not reviewed: <breakdown by reason>
+```
 
 ## Rules
 
-- Only run reviewers that have relevant files to check — skip if no matching files changed.
-- Do not make any code changes — this is read-only analysis.
+- Read-only analysis — no code changes.
 - Group findings by severity, not by reviewer.
+- Deleted files are noted but never read.
+- Binary and snapshot files are always skipped.
+- Test files route to e2e-reviewer only.
+- Skill/meta files (`.claude/`) are always skipped.

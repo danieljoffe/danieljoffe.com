@@ -7,12 +7,24 @@
   "targets": {
     "generate-search-index": {
       "command": "tsx scripts/generate-search-index.ts",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/src/data/content/**/*.mdx",
+        "{workspaceRoot}/scripts/generate-search-index.ts"
+      ],
+      "outputs": ["{projectRoot}/src/data/generated/searchIndex.json"],
       "options": {
         "cwd": "{workspaceRoot}"
       }
     },
     "validate-content": {
       "command": "tsx scripts/validate-content.ts",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/src/data/content/**/*.mdx",
+        "{workspaceRoot}/scripts/validate-content.ts"
+      ],
+      "outputs": [],
       "options": {
         "cwd": "{workspaceRoot}"
       }

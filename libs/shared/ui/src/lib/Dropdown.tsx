@@ -225,7 +225,10 @@ export function Dropdown({
                 )}
               >
                 {item.icon && (
-                  <span className='h-4 w-4 shrink-0' aria-hidden='true'>
+                  <span
+                    className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
+                    aria-hidden='true'
+                  >
                     {item.icon}
                   </span>
                 )}

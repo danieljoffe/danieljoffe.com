@@ -10,14 +10,32 @@ argument-hint: '[--fix] [--quality]'
 
 Scan the codebase for components missing unit tests or Storybook stories, report the gaps, and optionally generate stubs. With `--quality`, also audit existing tests for anti-patterns.
 
+## Token Budget Rules
+
+- Route file listing and test output through `ctx_batch_execute` — scanning many directories produces large output
+- When running generated specs (`--fix`), route test output through `ctx_execute`
+
 ## Arguments
 
-`/coverage-gaps` — scan for missing tests and stories (read-only)
-`/coverage-gaps --fix` — also generate stub files for each gap found
-`/coverage-gaps --quality` — also audit existing test quality (unit + E2E)
-`/coverage-gaps --fix --quality` — both
+- `/coverage-gaps` — scan for missing tests and stories (read-only, full codebase)
+- `/coverage-gaps --changed` — scan only components changed on the current branch (fastest)
+- `/coverage-gaps --fix` — also generate stub files for each gap found
+- `/coverage-gaps --quality` — also audit existing test quality (unit + E2E)
+- `/coverage-gaps --fix --quality` — both
+- Flags combine: `/coverage-gaps --changed --fix`
 
 ## Instructions
+
+### Part 0: Scope detection (if `--changed`)
+
+If `--changed` is passed, narrow the scan to only changed component files:
+
+```bash
+BASE=$(gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "develop")
+git diff --name-only origin/${BASE}...HEAD -- '*.tsx' '*.ts' | grep -v '\.spec\.\|\.test\.\|\.stories\.\|__tests__\|__mocks__'
+```
+
+From this list, identify which directories each file belongs to (shared-ui, kit, components, hooks) and only scan those files in Part 1 below. Skip directories with no changed files. This avoids scanning hundreds of files when only a few changed.
 
 ### Part 1: Coverage Scan (always runs)
 

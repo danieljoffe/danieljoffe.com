@@ -10,15 +10,30 @@ argument-hint: '<draft slug-name> to skip proposals and draft a specific topic'
 
 Analyze the diff between `develop` and `main`, identify content-worthy work, propose topics, and draft MDX posts.
 
+## Token Budget Rules
+
+- Route git log, diff, and `gh pr view` output through `ctx_batch_execute`
+- Batch all `gh pr view` calls into a single `ctx_batch_execute` instead of calling per-PR
+
 ## Instructions
 
 ### Phase 1: Analyze the work
 
-1. Run `git fetch origin` to ensure both branches are current.
-2. Run `git log main..develop --oneline --merges` to find merged PRs.
-3. For each merged PR, run `gh pr view <number> --json title,body,labels,number,files` to get full context.
-4. Run `git diff main..develop --stat` for the overall change footprint.
-5. For notable changes, read the actual code diffs to understand the technical details — don't rely solely on PR descriptions.
+1. Run via `ctx_batch_execute`:
+   ```
+   [
+     { "label": "merges",    "command": "git fetch origin && git log main..develop --oneline --merges" },
+     { "label": "diff-stat", "command": "git diff main..develop --stat" }
+   ]
+   ```
+2. Extract PR numbers from merge commits, then batch all `gh pr view` calls:
+   ```
+   [
+     { "label": "PR-123", "command": "gh pr view 123 --json title,body,labels,number,files" },
+     ...
+   ]
+   ```
+3. For notable changes, use `ctx_search` to find relevant diffs or read the actual code to understand technical details.
 
 ### Phase 2: Propose topics (default behavior)
 

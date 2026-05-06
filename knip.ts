@@ -27,10 +27,19 @@ const config: KnipConfig = {
         'jest-environment-jsdom',
         // @swc/jest is used by libs/shared/audit/jest.config.cts (hoisted dep)
         '@swc/jest',
+        // @swc/cli is the SWC compiler driver referenced via apps/*/.swcrc
+        '@swc/cli',
         // @eslint/js is required by @nx/eslint-plugin flat config presets
         '@eslint/js',
+        // eslint-plugin-react-hooks is loaded transitively by @nx/eslint-plugin
+        // flat config presets — not imported directly anywhere in our configs
+        'eslint-plugin-react-hooks',
         // ts-jest is required by @nx/jest/preset transform config
         'ts-jest',
+        // babel-jest is the Jest transformer fallback used by next/jest
+        'babel-jest',
+        // jest-util is a transitive Jest internal pulled in by next/jest
+        'jest-util',
       ],
     },
 
@@ -64,6 +73,40 @@ const config: KnipConfig = {
     // apps/root-e2e — Playwright E2E tests
     // -----------------------------------------------------------------
     'apps/root-e2e': {
+      entry: ['src/**/*.spec.ts'],
+      project: ['src/**/*.ts'],
+    },
+
+    // -----------------------------------------------------------------
+    // apps/wyrdfold — Next.js 16 application (WyrdFold product)
+    // -----------------------------------------------------------------
+    'apps/wyrdfold': {
+      entry: [
+        'src/app/**/page.tsx',
+        'src/app/**/layout.tsx',
+        'src/app/**/loading.tsx',
+        'src/app/**/error.tsx',
+        'src/app/**/not-found.tsx',
+        'src/app/**/route.ts',
+        'src/app/api/**/route.ts',
+        // Module declaration for *.svg imports — referenced via tsconfig include
+        'index.d.ts',
+        // Placeholder kept for future regen via `supabase gen types`
+        'src/lib/supabase/types.ts',
+      ],
+      project: ['src/**/*.{ts,tsx}'],
+      ignoreDependencies: [
+        // sharp is used internally by next/image at runtime
+        'sharp',
+        // webpack is a Next.js transitive dep, referenced in next.config.mjs
+        'webpack',
+      ],
+    },
+
+    // -----------------------------------------------------------------
+    // apps/wyrdfold-e2e — Playwright E2E tests for wyrdfold
+    // -----------------------------------------------------------------
+    'apps/wyrdfold-e2e': {
       entry: ['src/**/*.spec.ts'],
       project: ['src/**/*.ts'],
     },

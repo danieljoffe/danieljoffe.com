@@ -15,12 +15,17 @@ interface EmailLayoutProps {
   preview: string;
   unsubscribeUrl: string;
   children: ReactNode;
+  footerText?: string;
 }
+
+const DEFAULT_FOOTER_TEXT =
+  'You received this because you used the free website audit tool at danieljoffe.com.';
 
 export default function EmailLayout({
   preview,
   unsubscribeUrl,
   children,
+  footerText = DEFAULT_FOOTER_TEXT,
 }: EmailLayoutProps) {
   return (
     <Html lang='en'>
@@ -36,10 +41,7 @@ export default function EmailLayout({
 
           <Hr style={hr} />
           <Section style={footer}>
-            <Text style={footerText}>
-              You received this because you used the free website audit tool at
-              danieljoffe.com.
-            </Text>
+            <Text style={footerStyle}>{footerText}</Text>
             <Link href={unsubscribeUrl} style={unsubscribeLink}>
               Unsubscribe
             </Link>
@@ -93,7 +95,7 @@ const footer: CSSProperties = {
   paddingTop: '0',
 };
 
-const footerText: CSSProperties = {
+const footerStyle: CSSProperties = {
   fontSize: '12px',
   color: '#666',
   margin: '0 0 8px',

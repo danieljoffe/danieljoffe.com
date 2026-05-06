@@ -1,0 +1,91 @@
+"""Pydantic models for user profile — notification + identity fields."""
+
+import re
+
+from pydantic import BaseModel, Field, field_validator
+
+# E.164: leading '+', country code starting 1-9, then up to 14 more digits.
+# Twilio rejects malformed numbers at send time and the failure is swallowed
+# in the poller — validate here so the user gets immediate feedback.
+_E164_RE = re.compile(r"^\+[1-9]\d{1,14}$")
+
+
+def _normalize_phone(value: str | None) -> str | None:
+    """Normalize and validate an E.164 phone number. Empty/whitespace → None
+    (treated as "clear the field"). Otherwise must match E.164 after stripping
+    spaces/hyphens/parentheses for forgiving input."""
+    if value is None:
+        return None
+    stripped = value.strip()
+    if not stripped:
+        return None
+    cleaned = re.sub(r"[\s\-()]", "", stripped)
+    if not _E164_RE.match(cleaned):
+        raise ValueError(
+            "Phone number must be in E.164 format "
+            "(e.g. +14155552671 — country code, no spaces/dashes)"
+        )
+    return cleaned
+
+
+class NotificationPreferences(BaseModel):
+    """Read model for notification preferences."""
+
+    job_notifications_enabled: bool = False
+    job_score_threshold: int = 100
+    sms_notifications_enabled: bool = False
+    sms_score_threshold: int = 100
+    sms_daily_limit: int = 5
+    phone_number: str | None = None
+    email: str | None = None
+    # Server-derived: false when the operator hasn't configured the
+    # corresponding provider credentials. The frontend uses these to
+    # disable the toggles; the PATCH handler rejects attempts to enable
+    # a channel whose backend isn't reachable.
+    email_available: bool = True
+    sms_available: bool = True
+
+
+class NotificationPreferencesUpdate(BaseModel):
+    """Write model — all fields optional so callers can patch individual settings."""
+
+    job_notifications_enabled: bool | None = None
+    job_score_threshold: int | None = Field(default=None, ge=0, le=200)
+    sms_notifications_enabled: bool | None = None
+    sms_score_threshold: int | None = Field(default=None, ge=0, le=200)
+    sms_daily_limit: int | None = Field(default=None, ge=1, le=50)
+    phone_number: str | None = Field(default=None, max_length=20)
+
+    @field_validator("phone_number", mode="before")
+    @classmethod
+    def _validate_phone(cls, value: str | None) -> str | None:
+        return _normalize_phone(value)
+
+
+class IdentityFields(BaseModel):
+    """Read model for resume / cover-letter identity. Backend sources contact
+    info from here so the frontend never has to send it (F3-A).
+    """
+
+    name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
+    location: str | None = None
+    linkedin_url: str | None = None
+    website_url: str | None = None
+
+
+class IdentityFieldsUpdate(BaseModel):
+    """Write model — all fields optional. Empty strings clear the field."""
+
+    name: str | None = Field(default=None, max_length=200)
+    email: str | None = Field(default=None, max_length=320)
+    phone_number: str | None = Field(default=None, max_length=20)
+    location: str | None = Field(default=None, max_length=200)
+    linkedin_url: str | None = Field(default=None, max_length=500)
+    website_url: str | None = Field(default=None, max_length=500)
+
+    @field_validator("phone_number", mode="before")
+    @classmethod
+    def _validate_phone(cls, value: str | None) -> str | None:
+        return _normalize_phone(value)
