@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Mail, CheckCircle2 } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -79,7 +80,13 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
   return (
     <main className='min-h-screen flex flex-col items-center justify-center px-6 py-12'>
       <div className='w-full max-w-xs flex flex-col items-center gap-6'>
-        <WyrdfoldLogo aria-label='WyrdFold' className='h-12 w-16 select-none' />
+        <Link
+          href='/'
+          aria-label='WyrdFold home'
+          className='rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+        >
+          <WyrdfoldLogo aria-hidden className='h-12 w-16 select-none' />
+        </Link>
 
         {formState === 'sent' ? (
           <>
@@ -89,7 +96,7 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                 Check your email
               </Heading>
               <Text variant='body' className='text-text-secondary'>
-                We sent a magic link to{' '}
+                Magic link sent to{' '}
                 <span className='font-medium text-text-primary'>{email}</span>.
               </Text>
             </div>
@@ -126,8 +133,7 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                 Sign in
               </Heading>
               <Text variant='body' className='text-text-secondary'>
-                Enter your email — we&apos;ll send you a magic link. No password
-                to remember.
+                Two clicks: enter your email, click the link in your inbox.
               </Text>
             </div>
 
@@ -178,14 +184,6 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
             </form>
           </>
         )}
-
-        <Text
-          variant='detail'
-          className='text-center text-text-tertiary text-xs'
-        >
-          Passwordless sign-in. We never store your password because there
-          isn&apos;t one.
-        </Text>
       </div>
     </main>
   );

@@ -49,7 +49,7 @@ export default function AppError({
               variant='outline'
               size='sm'
               as='link'
-              href='/'
+              href='/dashboard'
             >
               Back to dashboard
             </Button>

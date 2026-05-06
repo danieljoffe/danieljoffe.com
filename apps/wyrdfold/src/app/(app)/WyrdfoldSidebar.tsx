@@ -25,7 +25,12 @@ type Icon = typeof LayoutDashboard;
 type NavItem = { id: string; label: string; href: string; lucide: Icon };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', href: '/', lucide: LayoutDashboard },
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    lucide: LayoutDashboard,
+  },
   { id: 'jobs', label: 'Jobs', href: '/jobs', lucide: Briefcase },
   { id: 'targets', label: 'Targets', href: '/targets', lucide: Target },
   { id: 'profile', label: 'Profile', href: '/profile', lucide: User },
@@ -44,7 +49,7 @@ const MORE_ITEMS = NAV_ITEMS.filter(
 );
 
 function activeIdFrom(pathname: string): string | undefined {
-  if (pathname === '/' || pathname === '') return 'dashboard';
+  if (pathname.startsWith('/dashboard')) return 'dashboard';
   const match = NAV_ITEMS.find(
     item => item.id !== 'dashboard' && pathname.startsWith(item.href)
   );
@@ -105,7 +110,7 @@ export default function WyrdfoldSidebar() {
       >
         <div className='p-4 border-b border-border shrink-0'>
           <Link
-            href='/'
+            href='/dashboard'
             aria-label='WyrdFold home'
             className='flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
           >

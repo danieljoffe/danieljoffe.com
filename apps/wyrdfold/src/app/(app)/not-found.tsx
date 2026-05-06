@@ -20,7 +20,7 @@ export default function AppNotFound() {
             variant='primary'
             size='sm'
             as='link'
-            href='/'
+            href='/dashboard'
           >
             Back to dashboard
           </Button>

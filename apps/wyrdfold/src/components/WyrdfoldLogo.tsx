@@ -6,6 +6,11 @@ interface WyrdfoldLogoProps {
   size?: number;
   color?: string;
   'aria-label'?: string;
+  // When true, the logo renders as a decorative presentation image — useful
+  // when an ancestor (e.g. a wrapping <Link aria-label="...">) already
+  // provides the accessible name and announcing the logo separately would
+  // be redundant.
+  'aria-hidden'?: boolean;
 }
 
 function WyrdfoldLogo({
@@ -13,13 +18,15 @@ function WyrdfoldLogo({
   size = 24,
   color,
   'aria-label': ariaLabel = 'Wyrdfold',
+  'aria-hidden': ariaHidden,
 }: WyrdfoldLogoProps) {
   const style: CSSProperties | undefined = color ? { color } : undefined;
 
   return (
     <svg
-      role='img'
-      aria-label={ariaLabel}
+      role={ariaHidden ? 'presentation' : 'img'}
+      aria-hidden={ariaHidden || undefined}
+      aria-label={ariaHidden ? undefined : ariaLabel}
       width={size}
       height={size}
       viewBox='0 0 680 510'
@@ -28,7 +35,7 @@ function WyrdfoldLogo({
       className={cn('text-brand-300', className)}
       style={style}
     >
-      <title>{ariaLabel}</title>
+      {!ariaHidden && <title>{ariaLabel}</title>}
       <path
         d='M0 0.0161135H183.078L340.002 510L0 0.0161135Z'
         fill='currentColor'
