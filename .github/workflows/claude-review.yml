@@ -24,7 +24,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
+      # Soft-fail: this review is advisory, not a merge gate. The most
+      # common failure mode is the Anthropic monthly API cap blocking the
+      # SDK call (the action exits with code 1, the job goes red, the PR
+      # shows a non-required failed check, the merge UI flips to UNSTABLE
+      # for no real reason). `continue-on-error: true` lets the job exit
+      # successfully even when the action errors. Trade-off: this also
+      # masks genuine action bugs — the workflow run history is the place
+      # to spot those.
       - uses: anthropics/claude-code-action@v1
+        continue-on-error: true
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: >-
