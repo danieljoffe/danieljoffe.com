@@ -46,6 +46,24 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className='min-h-screen flex flex-col bg-surface text-text-primary'>
+      {/* Beta strip — signals the app is pre-launch and data is not durable.
+          Public-pages-only on purpose: the (app) shell repeats this in the
+          dashboard nav so signed-in users don't lose the warning. */}
+      <div
+        role='status'
+        aria-live='polite'
+        className='border-b border-border bg-surface-elevated'
+      >
+        <div className='mx-auto w-full max-w-6xl px-4 py-2 md:px-6'>
+          <p className='text-xs md:text-sm text-text-secondary'>
+            <span className='font-semibold text-text-primary'>
+              Private beta.
+            </span>{' '}
+            WyrdFold is under active development — accounts and data may be
+            reset without notice while we iterate.
+          </p>
+        </div>
+      </div>
       <header className='border-b border-border'>
         <div className='mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:px-6 md:py-5'>
           <Link
@@ -56,6 +74,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             <WyrdfoldLogo aria-label='WyrdFold' className='h-5 w-6' />
             <span className='text-base font-semibold tracking-tight text-text-primary'>
               WyrdFold
+            </span>
+            <span
+              className='ml-1 inline-flex items-center rounded-full border border-brand-300/40 bg-brand-300/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-brand-300'
+              aria-label='Private beta'
+            >
+              Beta
             </span>
           </Link>
           <Button

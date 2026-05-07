@@ -7,6 +7,7 @@ import {
   Target,
   type LucideIcon,
 } from 'lucide-react';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -93,10 +94,13 @@ export default function WyrdfoldLandingPage() {
       {/* Hero */}
       <section className='py-16 md:py-24'>
         <div className='max-w-3xl'>
+          <span className='inline-flex items-center rounded-full border border-brand-300/40 bg-brand-300/10 px-3 py-1 font-mono text-xs uppercase tracking-wider text-brand-300'>
+            Private beta · invite-only
+          </span>
           <Heading
             variant='detail'
             as='h1'
-            className='text-balance text-text-primary'
+            className='mt-4 text-balance text-text-primary'
           >
             The search runs while you don&apos;t.
           </Heading>
@@ -128,6 +132,15 @@ export default function WyrdfoldLandingPage() {
               See how it works
             </Button>
           </div>
+          <Alert
+            variant='warning'
+            title='Heads up — this is a beta'
+            className='mt-8'
+          >
+            WyrdFold is invite-only and under active development. Schemas,
+            features, and accounts may change or be reset without notice. Don’t
+            rely on it as your only system of record while we iterate.
+          </Alert>
         </div>
 
         {/* Hero screenshot — optimized via scripts/optimize-covers.ts. */}
@@ -257,10 +270,14 @@ export default function WyrdfoldLandingPage() {
 
       {/* Footer CTA */}
       <section className='py-16 md:py-24 border-t border-border'>
-        <div className='flex flex-col items-center gap-6 text-center'>
+        <div className='flex flex-col items-center gap-4 text-center'>
           <Heading variant='section' as='h2' className='max-w-2xl text-balance'>
             You&apos;ll be authenticated in two clicks.
           </Heading>
+          <Text variant='body' as='p' className='max-w-xl text-text-secondary'>
+            Beta access is invite-only — bring an invited email address. Data
+            created during beta may be reset.
+          </Text>
           <Button
             name='wyrdfold-footer-sign-in'
             as='link'

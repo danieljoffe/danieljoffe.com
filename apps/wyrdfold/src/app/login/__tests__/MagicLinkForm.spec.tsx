@@ -111,9 +111,11 @@ describe('MagicLinkForm — idle state', () => {
     );
     await user.click(screen.getByRole('button', { name: /send magic link/i }));
 
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent(/rate limit exceeded/i);
-    expect(alert).toHaveAttribute('id', 'login-error');
+    // The persistent beta-warning Alert also exposes role='alert', so scope
+    // to the inline error by its id rather than picking the first alert.
+    const error = await screen.findByText(/rate limit exceeded/i);
+    expect(error).toHaveAttribute('role', 'alert');
+    expect(error).toHaveAttribute('id', 'login-error');
     expect(screen.getByRole('textbox', { name: /^email$/i })).toHaveAttribute(
       'aria-describedby',
       'login-error'
