@@ -33,20 +33,29 @@ const RESEND_COOLDOWN_S = 30;
  * (production), dropping `next` and breaking dev login. The cookie sits
  * alongside the request, the callback reads it after exchanging the
  * code, then clears it.
+ *
+ * `secure` is set when the page is served over HTTPS so the cookie
+ * isn't sent in cleartext on any non-HSTS preview/dev host. Skipped
+ * on plain http://localhost in dev.
  */
 function stashNextInCookie(next: string): void {
-  document.cookie = `${NEXT_COOKIE}=${encodeURIComponent(next)}; max-age=${NEXT_COOKIE_MAX_AGE_S}; path=/; samesite=lax`;
+  const secure =
+    typeof window !== 'undefined' && window.location.protocol === 'https:'
+      ? '; secure'
+      : '';
+  document.cookie = `${NEXT_COOKIE}=${encodeURIComponent(next)}; max-age=${NEXT_COOKIE_MAX_AGE_S}; path=/; samesite=lax${secure}`;
 }
 
 // Wyrdfold is invite-only during the beta. The login form sends
 // `shouldCreateUser: false`, so non-invited emails get rejected by GoTrue
-// (or by the before-user-created hook) with one of these messages. Translate
-// to copy that hints at the invite gate without leaking which path failed.
+// (or by the before-user-created hook) with one of these messages. The
+// hook now mirrors GoTrue's "User not found" string verbatim so the two
+// paths are indistinguishable on the wire (anti-enumeration). Translate
+// to copy that hints at the invite gate without naming the gate.
 function friendlyAuthError(message: string): string {
   const lower = message.toLowerCase();
   if (
     lower.includes('signups not allowed') ||
-    lower.includes('not on the wyrdfold beta list') ||
     lower.includes('user not found')
   ) {
     return "This email isn't on the beta list yet. If you think it should be, reply to your invitation.";
