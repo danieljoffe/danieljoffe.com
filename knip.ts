@@ -23,8 +23,6 @@ const config: KnipConfig = {
         'caniuse-lite',
         // ts-node is referenced in tsconfig.json "ts-node" block
         'ts-node',
-        // jest-environment-jsdom is resolved by Jest via testEnvironment: 'jsdom'
-        'jest-environment-jsdom',
         // @swc/jest is used by libs/shared/audit/jest.config.cts (hoisted dep)
         '@swc/jest',
         // @swc/cli is the SWC compiler driver referenced via apps/*/.swcrc
