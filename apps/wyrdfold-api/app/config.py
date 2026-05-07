@@ -1,10 +1,12 @@
 from typing import Literal
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
     supabase_url: str = ""
     supabase_service_role_key: str = Field(default="", repr=False)
     wyrdfold_api_key: str = Field(default="", repr=False)
@@ -67,8 +69,6 @@ class Settings(BaseSettings):
     # paths are trusted and gated by the operator.
     user_llm_daily_budget_usd: float = Field(default=5.0, ge=0.0)
     user_llm_hourly_budget_usd: float = Field(default=1.0, ge=0.0)
-
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
     @property
     def allowed_hosts_list(self) -> list[str]:

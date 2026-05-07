@@ -71,8 +71,9 @@ def _is_disallowed_address(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) ->
         return True
     if ip.is_multicast or ip.is_unspecified or ip.is_reserved:
         return True
-    # IPv4-mapped (::ffff:x.x.x.x) and IPv4-compat — re-check the
-    # embedded v4 against the v4 ranges.
+    # IPv4-mapped (::ffff:x.x.x.x) and IPv4-compat IPv6 — re-check the
+    # embedded v4 against the v4 ranges. Python's short-circuit evaluation
+    # narrows `ip` to IPv6Address before the `.ipv4_mapped` access.
     return (
         isinstance(ip, ipaddress.IPv6Address)
         and ip.ipv4_mapped is not None

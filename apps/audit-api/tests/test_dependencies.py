@@ -73,10 +73,18 @@ def test_verify_api_key_returns_on_match():
     assert verify_api_key(key="testkey", s=_settings()) == "testkey"
 
 
-def test_verify_session_jwt_short_secret():
+def test_settings_rejects_short_secret() -> None:
+    """Settings rejects a 1-31 char secret at construction. The dep used to
+    receive short secrets and 503; now they fail earlier (config-validate)."""
+    with pytest.raises(ValueError, match="at least 32 characters"):
+        Settings(audit_api_key="testkey", admin_session_secret="short")
+
+
+def test_verify_session_jwt_unconfigured_secret() -> None:
+    """Empty admin_session_secret = unconfigured. Dep returns 503."""
     req = _make_request({"authorization": f"Bearer {_mint()}"})
     with pytest.raises(HTTPException) as exc:
-        verify_session_jwt(req, s=_settings(secret="short"))
+        verify_session_jwt(req, s=_settings(secret=""))
     assert exc.value.status_code == 503
 
 
