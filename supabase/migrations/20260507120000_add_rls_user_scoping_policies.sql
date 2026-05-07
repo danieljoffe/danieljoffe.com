@@ -83,21 +83,22 @@ CREATE POLICY "Users access their own experience_preferences"
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
--- experience_chunks has no user_id column (chunks are referenced by
--- doc_id which has user_id). Constrain via a sub-select on the parent
--- doc — slower than a direct equality but keeps multi-tenant safety.
+-- experience_chunks has no user_id column. FK is `optimized_doc_id →
+-- experience_optimized_docs(id)`; user_id lives on the parent. Constrain
+-- via sub-select on the parent — slower than a direct equality but
+-- keeps multi-tenant safety.
 CREATE POLICY "Users access experience_chunks for their own docs"
   ON experience_chunks
   FOR ALL
   TO authenticated
   USING (
-    doc_id IN (
-      SELECT id FROM experience_prose_docs WHERE user_id = auth.uid()
+    optimized_doc_id IN (
+      SELECT id FROM experience_optimized_docs WHERE user_id = auth.uid()
     )
   )
   WITH CHECK (
-    doc_id IN (
-      SELECT id FROM experience_prose_docs WHERE user_id = auth.uid()
+    optimized_doc_id IN (
+      SELECT id FROM experience_optimized_docs WHERE user_id = auth.uid()
     )
   );
 
@@ -117,18 +118,20 @@ CREATE POLICY "Users access their own uploaded_resumes"
   WITH CHECK (auth.uid() = user_id);
 
 -- ---- document_versions (renamed from tailored_resume_versions) ------------
--- No direct user_id; access via parent document.
+-- No direct user_id; access via parent document. The FK column kept its
+-- original name `resume_id` after the table rename — rename pass renamed
+-- tables, not columns.
 CREATE POLICY "Users access document_versions for their own documents"
   ON document_versions
   FOR ALL
   TO authenticated
   USING (
-    document_id IN (
+    resume_id IN (
       SELECT id FROM documents WHERE user_id = auth.uid()
     )
   )
   WITH CHECK (
-    document_id IN (
+    resume_id IN (
       SELECT id FROM documents WHERE user_id = auth.uid()
     )
   );
