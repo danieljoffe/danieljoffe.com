@@ -9,6 +9,15 @@ out-tsc
 node_modules
 .venv
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # IDEs and editors
 /.idea
 .project
@@ -82,3 +91,5 @@ apps/root/src/data/generated/
 
 .claude/worktrees
 .claude/settings.local.json
+
+.nx/key/

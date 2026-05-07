@@ -9,8 +9,8 @@
       "command": "tsx scripts/generate-search-index.ts",
       "cache": true,
       "inputs": [
-        "{projectRoot}/src/data/content/**/*.mdx",
-        "{workspaceRoot}/scripts/generate-search-index.ts"
+        "{workspaceRoot}/scripts/generate-search-index.ts",
+        "{projectRoot}/src/data/content/**/*.mdx"
       ],
       "outputs": ["{projectRoot}/src/data/generated/searchIndex.json"],
       "options": {
@@ -21,10 +21,10 @@
       "command": "tsx scripts/validate-content.ts",
       "cache": true,
       "inputs": [
-        "{projectRoot}/src/data/content/**/*.mdx",
-        "{workspaceRoot}/scripts/validate-content.ts"
+        "{workspaceRoot}/scripts/validate-content.ts",
+        "{workspaceRoot}/scripts/content-schema.ts",
+        "{projectRoot}/src/data/content/**/*.mdx"
       ],
-      "outputs": [],
       "options": {
         "cwd": "{workspaceRoot}"
       }
@@ -34,12 +34,6 @@
     },
     "build": {
       "dependsOn": ["generate-search-index", "validate-content"],
-      "// inputs": "Override @nx/next/plugin's default ['default', '^production', ...] which includes spec files. Production-bound builds shouldn't invalidate on test changes.",
-      "inputs": [
-        "production",
-        "^production",
-        { "externalDependencies": ["next"] }
-      ],
       "options": {
         "command": "next build --webpack"
       }

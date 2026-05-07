@@ -17,6 +17,7 @@
       "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
       "!{projectRoot}/.storybook/**/*",
       "!{projectRoot}/tsconfig.storybook.json",
+      "!{projectRoot}/__mocks__/**/*",
       "!{projectRoot}/playwright.config.[jt]s",
       "!{projectRoot}/e2e/**/*"
     ],
@@ -108,6 +109,7 @@
   ],
   "targetDefaults": {
     "test": {
+      "cache": true,
       "inputs": [
         "default",
         "^production",
@@ -116,11 +118,21 @@
       "dependsOn": ["^build"]
     },
     "lint": {
+      "cache": true,
       "inputs": [
         "default",
         "{workspaceRoot}/eslint.config.mjs",
         "{projectRoot}/eslint.config.mjs"
       ]
+    },
+    "e2e": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    },
+    "build-storybook": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {
@@ -139,5 +151,12 @@
   "sync": {
     "applyChanges": true
   },
-  "analytics": false
+  "analytics": false,
+  "s3": {
+    "endpoint": "https://00d080d3b26b7d6eba1fa5571b75b459.r2.cloudflarestorage.com",
+    "region": "auto",
+    "bucket": "danieljoffe-nx-cache",
+    "forcePathStyle": true,
+    "localMode": "read-write"
+  }
 }

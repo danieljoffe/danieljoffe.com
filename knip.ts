@@ -38,6 +38,9 @@ const config: KnipConfig = {
         'babel-jest',
         // jest-util is a transitive Jest internal pulled in by next/jest
         'jest-util',
+        // @nx/s3-cache is loaded at runtime via the `s3` block in nx.json
+        // (Cloudflare R2 remote cache), not via a static import.
+        '@nx/s3-cache',
       ],
     },
 
