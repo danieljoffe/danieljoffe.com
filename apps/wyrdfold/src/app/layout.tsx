@@ -1,9 +1,10 @@
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { ToastProvider } from '@/state/Toast/ToastProvider';
 import { ThemeProvider } from '@/state/Theme/ThemeProvider';
 import './global.css';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     template: '%s | WyrdFold',
     default: 'WyrdFold',
@@ -13,7 +14,9 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: '#8FC900',
 };
 
