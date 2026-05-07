@@ -83,7 +83,9 @@ async def manage_source(
             return {"success": True, "enabled": new_enabled}
         return {"error": "Source not found"}
 
-    return {"error": f"Unknown action: {body.action}"}
+    # Pydantic validates body.action as Literal["add","remove","toggle"] at
+    # parse time — the if/elif chain above is exhaustive, so no fallback
+    # is needed (mypy warn_unreachable confirms).
 
 
 @router.get("/verify")

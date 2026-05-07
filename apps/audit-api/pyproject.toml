@@ -32,7 +32,12 @@ target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "B", "S", "SIM", "RUF", "T20"]
+select = [
+  "E", "F", "I", "N", "W", "UP",
+  "B", "S", "SIM", "RUF", "T20",
+  "PTH",    # flake8-use-pathlib — Path over os.path
+  "ASYNC",  # async anti-patterns (blocking calls in coroutines)
+]
 ignore = [
   "B008",   # Depends() in FastAPI arg defaults is idiomatic
   "S105",   # false positives on non-secret pattern constants
@@ -40,7 +45,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S108"]
+# ASYNC109: test helpers use a `timeout` arg as a polling deadline,
+#   not a single-await timeout — `asyncio.timeout` would change semantics.
+"tests/**/*.py" = ["S101", "S108", "ASYNC109"]
 "scripts/**/*.py" = ["T20"]
 
 [tool.mypy]
@@ -48,6 +55,7 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+warn_unreachable = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
