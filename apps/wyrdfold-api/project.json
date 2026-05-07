@@ -53,6 +53,10 @@
         "command": "uv run --package wyrdfold-api mypy app/",
         "cwd": "apps/wyrdfold-api"
       }
+    },
+    "docker:build": {
+      "// dependsOn": "Override @nx/docker plugin's inferred dependsOn:['build','^build']. This is a Python app — no JS build target — so the inferred deps would error 'Cannot find configuration for task wyrdfold-api:build' on invocation.",
+      "dependsOn": []
     }
   }
 }
