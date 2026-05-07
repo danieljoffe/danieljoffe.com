@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Mail, CheckCircle2 } from 'lucide-react';
+import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import {
@@ -165,6 +166,12 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                 Two clicks: enter your email, click the link in your inbox.
               </Text>
             </div>
+
+            <Alert variant='warning' title='Private beta'>
+              WyrdFold is invite-only and under active development. By signing
+              in you accept that your account and data may be reset without
+              notice while we iterate.
+            </Alert>
 
             <form onSubmit={sendLink} className='w-full flex flex-col gap-3'>
               <div className='flex flex-col gap-1'>
