@@ -31,6 +31,9 @@ const config: KnipConfig = {
         '@eslint/js',
         // ts-jest is required by @nx/jest/preset transform config
         'ts-jest',
+        // @nx/s3-cache is loaded at runtime via the `s3` block in nx.json
+        // (Cloudflare R2 remote cache), not via a static import.
+        '@nx/s3-cache',
       ],
     },
 
