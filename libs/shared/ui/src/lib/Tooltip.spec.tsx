@@ -25,7 +25,7 @@ describe('Tooltip', () => {
   });
 
   it('renders tooltip element with content', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text'>
         <button>Hover me</button>
       </Tooltip>
@@ -36,7 +36,7 @@ describe('Tooltip', () => {
   });
 
   it('tooltip is hidden by default', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text'>
         <button>Hover me</button>
       </Tooltip>
@@ -46,7 +46,7 @@ describe('Tooltip', () => {
   });
 
   it('shows tooltip after delay on mouse enter', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
@@ -64,7 +64,7 @@ describe('Tooltip', () => {
   });
 
   it('hides tooltip on mouse leave', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
@@ -84,7 +84,7 @@ describe('Tooltip', () => {
   });
 
   it('does not show tooltip if mouse leaves before delay', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
@@ -108,7 +108,7 @@ describe('Tooltip', () => {
   });
 
   it('shows tooltip on focus', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
@@ -126,7 +126,7 @@ describe('Tooltip', () => {
   });
 
   it('hides tooltip on blur', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
@@ -146,7 +146,7 @@ describe('Tooltip', () => {
   });
 
   it('hides tooltip on Escape key', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
@@ -166,7 +166,7 @@ describe('Tooltip', () => {
   });
 
   it('applies top position with offset and centering by default', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text'>
         <button>Hover me</button>
       </Tooltip>
@@ -176,7 +176,7 @@ describe('Tooltip', () => {
   });
 
   it('applies bottom position with offset and centering', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' position='bottom'>
         <button>Hover me</button>
       </Tooltip>
@@ -186,7 +186,7 @@ describe('Tooltip', () => {
   });
 
   it('applies left position with offset and centering', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' position='left'>
         <button>Hover me</button>
       </Tooltip>
@@ -196,7 +196,7 @@ describe('Tooltip', () => {
   });
 
   it('applies right position with offset and centering', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' position='right'>
         <button>Hover me</button>
       </Tooltip>
@@ -206,7 +206,7 @@ describe('Tooltip', () => {
   });
 
   it('uses custom delay', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={500}>
         <button>Hover me</button>
       </Tooltip>
@@ -271,7 +271,7 @@ describe('Tooltip', () => {
   });
 
   it('sets aria-hidden="true" on tooltip when not visible', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text'>
         <button>Hover me</button>
       </Tooltip>
@@ -281,7 +281,7 @@ describe('Tooltip', () => {
   });
 
   it('sets aria-hidden="false" on tooltip when visible', () => {
-    const { container } = render(
+    render(
       <Tooltip content='Tooltip text' delay={200}>
         <button>Hover me</button>
       </Tooltip>
