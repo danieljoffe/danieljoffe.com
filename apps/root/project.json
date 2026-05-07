@@ -34,6 +34,12 @@
     },
     "build": {
       "dependsOn": ["generate-search-index", "validate-content"],
+      "// inputs": "Override @nx/next/plugin's default ['default', '^production', ...] which includes spec files. Production-bound builds shouldn't invalidate on test changes.",
+      "inputs": [
+        "production",
+        "^production",
+        { "externalDependencies": ["next"] }
+      ],
       "options": {
         "command": "next build --webpack"
       }
