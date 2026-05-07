@@ -11,13 +11,6 @@ on:
         description: NX_HEAD SHA for affected detection
         type: string
         required: true
-    secrets:
-      NX_KEY:
-        required: true
-      R2_ACCESS_KEY_ID:
-        required: true
-      R2_SECRET_ACCESS_KEY:
-        required: true
 
 env:
   # @nx/s3-cache plugin → Cloudflare R2 (see nx.json `s3` block).

@@ -30,12 +30,6 @@ on:
         required: false
         default: 'true'
     secrets:
-      NX_KEY:
-        required: true
-      R2_ACCESS_KEY_ID:
-        required: true
-      R2_SECRET_ACCESS_KEY:
-        required: true
       CHROMATIC_PROJECT_TOKEN:
         required: false
 
