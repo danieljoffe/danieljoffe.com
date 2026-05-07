@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import Footer from '../index';
+
+expect.extend(toHaveNoViolations);
 
 // Mock next/link to render a real <a>
 jest.mock('next/link', () => {
@@ -67,5 +70,10 @@ describe('Footer', () => {
     render(<Footer />);
     expect(screen.getByText('Browse the design system')).toBeInTheDocument();
     expect(screen.getByText('ui.danieljoffe.com')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Footer />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

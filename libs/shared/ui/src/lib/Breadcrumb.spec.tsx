@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Breadcrumb } from './Breadcrumb';
+
+expect.extend(toHaveNoViolations);
 
 describe('Breadcrumb', () => {
   const items = [
@@ -53,5 +56,10 @@ describe('Breadcrumb', () => {
   it('renders as a nav element', () => {
     render(<Breadcrumb items={items} />);
     expect(screen.getByRole('navigation')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<Breadcrumb items={items} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

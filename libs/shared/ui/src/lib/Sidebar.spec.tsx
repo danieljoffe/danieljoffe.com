@@ -39,7 +39,7 @@ describe('Sidebar', () => {
 
   it('highlights active item', () => {
     render(<Sidebar items={items} activeId='home' />);
-    expect(screen.getByText('Home').closest('button')).toHaveClass(
+    expect(screen.getByRole('button', { name: 'Home' })).toHaveClass(
       'bg-brand-50'
     );
   });
@@ -103,14 +103,14 @@ describe('Sidebar', () => {
 
   it('applies focus-visible ring classes on sidebar buttons', () => {
     render(<Sidebar items={items} />);
-    const homeButton = screen.getByText('Home').closest('button')!;
+    const homeButton = screen.getByRole('button', { name: 'Home' });
     expect(homeButton.className).toContain('focus-visible:ring-2');
   });
 
   it('applies focus-visible ring classes on child items', () => {
     render(<Sidebar items={items} />);
-    fireEvent.click(screen.getByText('Projects'));
-    const childButton = screen.getByText('Project A').closest('button')!;
+    fireEvent.click(screen.getByRole('button', { name: 'Projects' }));
+    const childButton = screen.getByRole('button', { name: 'Project A' });
     expect(childButton.className).toContain('focus-visible:ring-2');
   });
 

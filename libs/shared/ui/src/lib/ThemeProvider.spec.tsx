@@ -103,7 +103,7 @@ describe('ThemeProvider', () => {
       </ThemeProvider>
     );
     await act(async () => {
-      screen.getByText('Set Dark').click();
+      screen.getByRole('button', { name: 'Set Dark' }).click();
     });
     expect(localStorage.getItem('theme')).toBe('dark');
   });
@@ -119,7 +119,7 @@ describe('ThemeProvider', () => {
       await new Promise(r => setTimeout(r, 0));
     });
     await act(async () => {
-      screen.getByText('Toggle').click();
+      screen.getByRole('button', { name: 'Toggle' }).click();
     });
     expect(screen.getByTestId('dark')).toHaveTextContent('yes');
   });
@@ -132,7 +132,7 @@ describe('ThemeProvider', () => {
       </ThemeProvider>
     );
     await act(async () => {
-      screen.getByText('Set Dark').click();
+      screen.getByRole('button', { name: 'Set Dark' }).click();
     });
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
@@ -146,7 +146,7 @@ describe('ThemeProvider', () => {
       </ThemeProvider>
     );
     await act(async () => {
-      screen.getByText('Set Light').click();
+      screen.getByRole('button', { name: 'Set Light' }).click();
     });
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });

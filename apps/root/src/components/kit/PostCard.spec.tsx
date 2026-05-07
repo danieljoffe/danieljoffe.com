@@ -1,8 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { analytics } from '@/lib/analytics';
 import type { PostThumbnail } from '@/types/postTypes';
 import { PostCard } from './PostCard';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@/lib/analytics', () => ({
   analytics: {
@@ -53,6 +56,8 @@ describe('PostCard', () => {
   });
 
   it('renders a company logo image when the logo prop is supplied', () => {
+    // CompanyLogo uses alt='' (decorative) — no accessible name, so we
+    // can't query by role. Match the rendered <img src=...> directly.
     const { container } = render(
       <PostCard post={makePost()} logo='/images/acme.png' />
     );
@@ -67,5 +72,10 @@ describe('PostCard', () => {
     await user.click(screen.getByRole('link'));
     expect(analytics.blogClick).toHaveBeenCalledWith('my-post');
     expect(analytics.projectClick).not.toHaveBeenCalled();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<PostCard post={makePost()} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
