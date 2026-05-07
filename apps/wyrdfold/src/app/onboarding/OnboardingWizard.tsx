@@ -80,6 +80,16 @@ export default function OnboardingWizard() {
               ? 'How would you like to get started?'
               : `Step ${stepIndex + 1} of ${totalSteps}`}
           </Text>
+          {currentStep === 'path-chooser' && (
+            <Text
+              variant='caption'
+              className='mt-3 max-w-md text-text-tertiary'
+            >
+              Think of WyrdFold like a new recruiter you&apos;re onboarding. The
+              first scores will be rough — the more context you feed it, the
+              sharper it gets.
+            </Text>
+          )}
         </div>
 
         {/* Progress bar */}
