@@ -86,7 +86,7 @@ describe('Dropdown', () => {
       />
     );
     fireEvent.click(screen.getByText('Menu'));
-    expect(screen.getByText('Disabled').closest('button')).toHaveAttribute(
+    expect(screen.getByRole('menuitem', { name: 'Disabled' })).toHaveAttribute(
       'aria-disabled',
       'true'
     );
@@ -95,7 +95,7 @@ describe('Dropdown', () => {
   it('applies danger styles to danger items', () => {
     render(<Dropdown trigger={<span>Menu</span>} items={items} />);
     fireEvent.click(screen.getByText('Menu'));
-    expect(screen.getByText('Delete').closest('button')).toHaveClass(
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveClass(
       'text-error'
     );
   });
@@ -118,7 +118,7 @@ describe('Dropdown', () => {
   it('applies focus-visible ring classes on menu items', () => {
     render(<Dropdown trigger={<span>Menu</span>} items={items} />);
     fireEvent.click(screen.getByText('Menu'));
-    const editButton = screen.getByText('Edit').closest('button')!;
+    const editButton = screen.getByRole('menuitem', { name: 'Edit' });
     expect(editButton.className).toContain('focus-visible:ring-2');
   });
 

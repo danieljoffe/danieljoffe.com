@@ -1,5 +1,8 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { TableOfContents } from '../TableOfContents';
+
+expect.extend(toHaveNoViolations);
 
 // Mock useFocusTrap
 jest.mock('@/hooks/useFocusTrap', () => ({
@@ -102,13 +105,9 @@ describe('TableOfContents', () => {
     await act(() => Promise.resolve());
 
     // The heading text appears both in the DOM heading and the TOC button.
-    // Click the TOC button (role=button), not the heading element.
-    const tocButtons = screen.getAllByRole('button');
-    const introButton = tocButtons.find(
-      btn => btn.textContent === 'Introduction'
-    );
-    expect(introButton).toBeDefined();
-    fireEvent.click(introButton!);
+    // `getByRole('button', { name })` throws if missing — implicit assertion.
+    const introButton = screen.getByRole('button', { name: 'Introduction' });
+    fireEvent.click(introButton);
 
     expect(scrollIntoViewMock).toHaveBeenCalledWith(
       expect.objectContaining({ behavior: 'smooth' })
@@ -168,5 +167,11 @@ describe('TableOfContents', () => {
     expect(
       screen.getByRole('button', { name: /open table of contents/i })
     ).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations (desktop)', async () => {
+    const { container: wrapper } = render(<TableOfContents desktop />);
+    await act(() => Promise.resolve());
+    expect(await axe(wrapper)).toHaveNoViolations();
   });
 });

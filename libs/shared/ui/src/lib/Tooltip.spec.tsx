@@ -30,7 +30,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toBeInTheDocument();
     expect(screen.getByText('Tooltip text')).toBeInTheDocument();
   });
@@ -41,7 +41,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -59,7 +59,7 @@ describe('Tooltip', () => {
       jest.advanceTimersByTime(200);
     });
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-100');
   });
 
@@ -79,7 +79,7 @@ describe('Tooltip', () => {
 
     fireEvent.mouseLeave(trigger);
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -103,7 +103,7 @@ describe('Tooltip', () => {
       jest.advanceTimersByTime(100);
     });
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -121,7 +121,7 @@ describe('Tooltip', () => {
       jest.advanceTimersByTime(200);
     });
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-100');
   });
 
@@ -141,7 +141,7 @@ describe('Tooltip', () => {
 
     fireEvent.blur(trigger);
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -161,7 +161,7 @@ describe('Tooltip', () => {
 
     fireEvent.keyDown(trigger, { key: 'Escape' });
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('opacity-0');
   });
 
@@ -171,7 +171,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('bottom-full', 'mb-2', '-translate-x-1/2');
   });
 
@@ -181,7 +181,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('top-full', 'mt-2', '-translate-x-1/2');
   });
 
@@ -191,7 +191,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('right-full', 'mr-2', '-translate-y-1/2');
   });
 
@@ -201,7 +201,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveClass('left-full', 'ml-2', '-translate-y-1/2');
   });
 
@@ -213,7 +213,7 @@ describe('Tooltip', () => {
     );
 
     const trigger = screen.getByRole('button');
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
 
     fireEvent.mouseEnter(trigger);
 
@@ -257,7 +257,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     const trigger = container.querySelector('[role="presentation"]');
     const button = screen.getByRole('button', { name: 'Hover me' });
 
@@ -276,7 +276,7 @@ describe('Tooltip', () => {
         <button>Hover me</button>
       </Tooltip>
     );
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveAttribute('aria-hidden', 'true');
   });
 
@@ -294,7 +294,7 @@ describe('Tooltip', () => {
       jest.advanceTimersByTime(200);
     });
 
-    const tooltip = container.querySelector('[role="tooltip"]');
+    const tooltip = screen.getByRole('tooltip', { hidden: true });
     expect(tooltip).toHaveAttribute('aria-hidden', 'false');
   });
 

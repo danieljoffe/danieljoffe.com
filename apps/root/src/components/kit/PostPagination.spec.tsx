@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import type { PostPaginationData } from '@/data/contentOrder';
 import { PostPagination } from './PostPagination';
+
+expect.extend(toHaveNoViolations);
 
 const pagination: PostPaginationData = {
   prev: {
@@ -31,5 +34,10 @@ describe('PostPagination', () => {
     const next = screen.getByRole('link', { name: /next: next post/i });
     expect(next).toHaveAttribute('href', '/blog/next-post');
     expect(next).toHaveTextContent('Next Post');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<PostPagination pagination={pagination} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

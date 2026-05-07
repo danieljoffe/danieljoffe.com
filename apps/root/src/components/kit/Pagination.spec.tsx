@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Pagination } from './Pagination';
+
+expect.extend(toHaveNoViolations);
 
 describe('Pagination', () => {
   it('returns null when there is only one page', () => {
@@ -72,5 +75,17 @@ describe('Pagination', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next' }));
     expect(onPageChange).toHaveBeenCalledWith(3);
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <Pagination
+        page={2}
+        totalPages={5}
+        onPageChange={jest.fn()}
+        namePrefix='jobs'
+      />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

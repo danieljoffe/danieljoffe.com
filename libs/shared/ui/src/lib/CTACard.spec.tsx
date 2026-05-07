@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { CTACard } from './CTACard';
+
+expect.extend(toHaveNoViolations);
 
 describe('CTACard', () => {
   it('renders heading', () => {
@@ -26,7 +29,9 @@ describe('CTACard', () => {
         <button>Click me</button>
       </CTACard>
     );
-    expect(screen.getByText('Click me')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Click me' })
+    ).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
@@ -36,5 +41,14 @@ describe('CTACard', () => {
       </CTACard>
     );
     expect(container.firstChild).toHaveClass('mt-8');
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <CTACard heading='Get Started' description='Description'>
+        <button>CTA</button>
+      </CTACard>
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
