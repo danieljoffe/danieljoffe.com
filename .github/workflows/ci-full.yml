@@ -30,16 +30,20 @@ on:
         required: false
         default: 'true'
     secrets:
-      NX_CLOUD_ACCESS_TOKEN:
-        required: false
-      NX_CLOUD_ID:
-        required: false
+      NX_KEY:
+        required: true
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
       CHROMATIC_PROJECT_TOKEN:
         required: false
 
 env:
-  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
-  NX_NO_CLOUD: 'true'
+  # @nx/s3-cache plugin → Cloudflare R2 (see nx.json `s3` block).
+  NX_KEY: ${{ secrets.NX_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
 
 jobs:
   # Single consolidated job. Previously three parallel jobs (e2e, lighthouse,
@@ -95,16 +99,11 @@ jobs:
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       # --- lighthouse ---
       - name: Build app for Lighthouse
         if: inputs.lighthouse-changed == 'true'
         run: pnpm nx build root
-        env:
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Lighthouse CI
         if: inputs.lighthouse-changed == 'true'
@@ -119,8 +118,6 @@ jobs:
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Run Chromatic visual tests
         if: inputs.storybook-changed == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''

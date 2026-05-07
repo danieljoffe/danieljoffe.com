@@ -90,3 +90,5 @@ apps/root/src/data/generated/
 
 .claude/worktrees
 .claude/settings.local.json
+
+.nx/key/

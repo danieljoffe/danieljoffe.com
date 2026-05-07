@@ -12,14 +12,18 @@ on:
         type: string
         required: true
     secrets:
-      NX_CLOUD_ACCESS_TOKEN:
-        required: false
-      NX_CLOUD_ID:
-        required: false
+      NX_KEY:
+        required: true
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
 
 env:
-  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
-  NX_NO_CLOUD: 'true'
+  # @nx/s3-cache plugin → Cloudflare R2 (see nx.json `s3` block).
+  NX_KEY: ${{ secrets.NX_KEY }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
 
 jobs:
   checks:
@@ -38,8 +42,6 @@ jobs:
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
 
       - name: Dead code check (Knip)
         run: pnpm knip
