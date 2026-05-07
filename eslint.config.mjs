@@ -79,11 +79,6 @@ export default tseslint.config(
               sourceTag: 'scope:audit',
               onlyDependOnLibsWithTags: ['scope:audit', 'scope:shared'],
             },
-            // Job-scoped projects can use job and shared libs
-            {
-              sourceTag: 'scope:job',
-              onlyDependOnLibsWithTags: ['scope:job', 'scope:shared'],
-            },
             // WyrdFold-scoped projects can use shared libs but not other app scopes
             {
               sourceTag: 'scope:wyrdfold',
