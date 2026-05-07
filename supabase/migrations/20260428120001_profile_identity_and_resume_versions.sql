@@ -11,17 +11,36 @@
 --   trail. Add a versions table; service caps history at 5 most recent (paid
 --   tiers can lift the cap later).
 -- ============================================
+--
+-- ----------------------------------------------------------------------
+-- HISTORICAL NOTE (Phase 5 fix): same pattern as 20260426120000 — this
+-- migration ALTERs user_profiles before the canonical create migration
+-- (20260428120002, which runs immediately after this one). Production
+-- already had user_profiles via an earlier path; fresh DBs (Supabase
+-- branch previews) hit `relation "user_profiles" does not exist`.
+-- Guard with to_regclass so the identity-column add no-ops on fresh
+-- DBs (the canonical create migration emits the same final schema)
+-- and stays a no-op on production.
+-- ----------------------------------------------------------------------
 
 -- ---- F3-A: identity fields on user_profiles --------------------------------
 -- email + phone_number already exist (added by 20260426120000). Add the four
 -- remaining ContactInfo fields.
-ALTER TABLE user_profiles
-  ADD COLUMN IF NOT EXISTS name TEXT,
-  ADD COLUMN IF NOT EXISTS location TEXT,
-  ADD COLUMN IF NOT EXISTS linkedin_url TEXT,
-  ADD COLUMN IF NOT EXISTS website_url TEXT;
+DO $$
+BEGIN
+  IF to_regclass('public.user_profiles') IS NOT NULL THEN
+    ALTER TABLE user_profiles
+      ADD COLUMN IF NOT EXISTS name TEXT,
+      ADD COLUMN IF NOT EXISTS location TEXT,
+      ADD COLUMN IF NOT EXISTS linkedin_url TEXT,
+      ADD COLUMN IF NOT EXISTS website_url TEXT;
+  END IF;
+END
+$$;
 
 -- ---- F3-H: resume version history ------------------------------------------
+-- tailored_resumes is created by 20260423120000 which precedes this migration,
+-- so no guard needed here.
 CREATE TABLE IF NOT EXISTS tailored_resume_versions (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   resume_id    UUID NOT NULL REFERENCES tailored_resumes(id) ON DELETE CASCADE,
