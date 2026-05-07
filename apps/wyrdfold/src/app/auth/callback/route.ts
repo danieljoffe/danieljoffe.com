@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createAuthServerClient } from '@/lib/supabase/auth-server';
 
-const DEFAULT_NEXT = '/';
+const DEFAULT_NEXT = '/dashboard';
 const NEXT_COOKIE = 'wyrdfold_login_next';
 
 /**

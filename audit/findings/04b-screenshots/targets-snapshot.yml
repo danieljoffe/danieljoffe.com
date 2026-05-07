@@ -1,0 +1,120 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e2]:
+        - complementary "WyrdFold primary navigation" [ref=e3]:
+            - link "WyrdFold home" [ref=e5] [cursor=pointer]:
+                - /url: /dashboard
+                - img "WyrdFold" [ref=e6]
+                - generic [ref=e10]: WyrdFold
+            - navigation [ref=e11]:
+                - link "Dashboard" [ref=e12] [cursor=pointer]:
+                    - /url: /dashboard
+                    - img [ref=e13]
+                    - generic [ref=e18]: Dashboard
+                - link "Jobs" [ref=e19] [cursor=pointer]:
+                    - /url: /jobs
+                    - img [ref=e20]
+                    - generic [ref=e23]: Jobs
+                - link "Targets" [ref=e24] [cursor=pointer]:
+                    - /url: /targets
+                    - img [ref=e25]
+                    - generic [ref=e29]: Targets
+                - link "Profile" [ref=e30] [cursor=pointer]:
+                    - /url: /profile
+                    - img [ref=e31]
+                    - generic [ref=e34]: Profile
+                - link "Insights" [ref=e35] [cursor=pointer]:
+                    - /url: /insights
+                    - img [ref=e36]
+                    - generic [ref=e38]: Insights
+                - link "Settings" [ref=e39] [cursor=pointer]:
+                    - /url: /settings
+                    - img [ref=e40]
+                    - generic [ref=e43]: Settings
+            - generic [ref=e45]:
+                - button "Switch to light mode" [ref=e46] [cursor=pointer]:
+                    - img [ref=e47]
+                    - generic [ref=e49]: D
+                - button "Sign out" [ref=e50]:
+                    - img [ref=e51]
+                    - generic [ref=e54]: Sign out
+        - main [ref=e55]:
+            - generic [ref=e56]:
+                - generic [ref=e57]:
+                    - heading "Targets" [level=1] [ref=e58]
+                    - paragraph [ref=e59]: Role profiles you score new jobs against
+                - generic [ref=e60]:
+                    - button "Create target" [ref=e62]:
+                        - img [ref=e63]
+                    - generic [ref=e64]:
+                        - button "Open target Senior Software Engineer" [ref=e66] [cursor=pointer]:
+                            - generic [ref=e67]:
+                                - generic [ref=e68]:
+                                    - generic "Near-perfect alignment across all core skills — 8 years of React, TypeScript, JavaScript, Node.js, plus Next.js in active use — paired with strong seniority signals (8 years, production scale, unblocking cross-functional teams) and deep secondary coverage including Storybook, Playwright, Cypress, AWS, CI/CD, and performance optimization. The only marginal gaps are areas like GraphQL and Docker where experience is listed but depth isn't explicitly demonstrated in role history." [ref=e69]: '96'
+                                    - generic [ref=e70]: Senior Software Engineer
+                                - button [ref=e73]:
+                                    - img [ref=e75]
+                            - separator [ref=e79]
+                            - generic [ref=e80]:
+                                - term [ref=e81]: Categories
+                                - definition [ref=e82]: '3'
+                                - term [ref=e83]: Keywords
+                                - definition [ref=e84]: '37'
+                                - term [ref=e85]: Updated
+                                - definition [ref=e86]: 4/30/2026
+                            - separator [ref=e87]
+                            - generic [ref=e89]: Inactive
+                        - button "Open target Senior Engineering Manager, Messaging Channels" [ref=e92] [cursor=pointer]:
+                            - generic [ref=e93]:
+                                - generic [ref=e94]:
+                                    - generic "Strong frontend engineering foundation with some AWS and Postgres exposure, but this role requires 4+ years of engineering management including managing managers and staff/principal engineers, plus deep distributed systems expertise (Kafka, MongoDB, incident response, on-call), none of which appear in the candidate's profile." [ref=e95]: '18'
+                                    - generic [ref=e96]: Senior Engineering Manager, Messaging Channels
+                                - button [ref=e99]:
+                                    - img [ref=e101]
+                            - separator [ref=e105]
+                            - generic [ref=e106]:
+                                - term [ref=e107]: Categories
+                                - definition [ref=e108]: '3'
+                                - term [ref=e109]: Keywords
+                                - definition [ref=e110]: '24'
+                                - term [ref=e111]: Updated
+                                - definition [ref=e112]: 4/29/2026
+                            - separator [ref=e113]
+                            - generic [ref=e115]: Inactive
+                        - button "Open target Staff Full-Stack Engineer" [ref=e118] [cursor=pointer]:
+                            - generic [ref=e119]:
+                                - generic [ref=e120]:
+                                    - generic "Strong alignment on core skills — 8 years of React, TypeScript, JavaScript, and Node.js with proven full-stack delivery and performance ownership — but GraphQL and PostgreSQL are present without demonstrated depth, and secondary skills like Redis, WebSockets, MobX, Kubernetes, and Google Cloud are largely absent or unvalidated, which are meaningful gaps for a staff-level platform infrastructure role." [ref=e121]: '72'
+                                    - generic [ref=e122]: Staff Full-Stack Engineer
+                                - button [ref=e125]:
+                                    - img [ref=e127]
+                            - separator [ref=e131]
+                            - generic [ref=e132]:
+                                - term [ref=e133]: Categories
+                                - definition [ref=e134]: '3'
+                                - term [ref=e135]: Keywords
+                                - definition [ref=e136]: '19'
+                                - term [ref=e137]: Updated
+                                - definition [ref=e138]: 4/29/2026
+                            - separator [ref=e139]
+                            - generic [ref=e141]: Inactive
+                        - button "Open target Senior Frontend Engineer" [ref=e144] [cursor=pointer]:
+                            - generic [ref=e145]:
+                                - generic [ref=e146]:
+                                    - generic "Strong alignment on core frontend requirements — React, TypeScript, Node.js (8 years each), PostgreSQL, CI/CD (GitHub Actions), frontend testing (Jest/Playwright/Cypress), component architecture, and state management — but the role heavily weights Go, Kubernetes, Distributed Systems, LLM integration, and real-time UI, none of which appear in the user's profile, creating significant gaps in the highest-weighted core skills." [ref=e147]: '52'
+                                    - generic [ref=e148]: Senior Frontend Engineer
+                                - button [ref=e151]:
+                                    - img [ref=e153]
+                            - separator [ref=e157]
+                            - generic [ref=e158]:
+                                - term [ref=e159]: Categories
+                                - definition [ref=e160]: '3'
+                                - term [ref=e161]: Keywords
+                                - definition [ref=e162]: '61'
+                                - term [ref=e163]: Updated
+                                - definition [ref=e164]: 4/30/2026
+                            - separator [ref=e165]
+                            - generic [ref=e167]: Active
+                    - button "Suggest from Experience" [ref=e170]:
+                        - img [ref=e171]
+                        - generic [ref=e174]: Suggest from Experience
+    - alert [ref=e175]

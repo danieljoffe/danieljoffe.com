@@ -16,11 +16,16 @@
       "!{projectRoot}/**/*.md",
       "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
       "!{projectRoot}/.storybook/**/*",
-      "!{projectRoot}/tsconfig.storybook.json"
+      "!{projectRoot}/tsconfig.storybook.json",
+      "!{projectRoot}/playwright.config.[jt]s",
+      "!{projectRoot}/e2e/**/*",
+      "!{projectRoot}/src/**/*.spec.ts"
     ],
     "sharedGlobals": [
       "{workspaceRoot}/eslint.config.mjs",
-      "{workspaceRoot}/tsconfig.base.json"
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/pnpm-lock.yaml"
     ]
   },
   "plugins": [

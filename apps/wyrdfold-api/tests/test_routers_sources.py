@@ -5,7 +5,11 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_supabase, verify_api_key_or_jwt
+from app.dependencies import (
+    get_supabase,
+    verify_api_key,
+    verify_api_key_or_jwt,
+)
 from app.main import app
 from app.seed.company_seed import COMPANY_SEED
 
@@ -21,6 +25,9 @@ def client_factory():
         app.dependency_overrides[get_supabase] = lambda: supabase
         if authed:
             app.dependency_overrides[verify_api_key_or_jwt] = lambda: "test"
+            # Write endpoints (manage/seed) layer on verify_api_key — override
+            # too so tests don't need to thread x-api-key headers.
+            app.dependency_overrides[verify_api_key] = lambda: "test"
         return TestClient(app)
 
     yield _make
@@ -31,6 +38,26 @@ def test_sources_unauth_returns_401():
     client = TestClient(app)
     r = client.post("/sources", json={"action": "add", "board_token": "foo", "company_name": "F"})
     assert r.status_code == 401
+
+
+def test_sources_jwt_only_caller_cannot_write():
+    """JWT-only authenticated users must not mutate the global source list —
+    only the operator/cron API key can. Regression for P0-Sec-1."""
+    app.dependency_overrides[get_supabase] = lambda: MagicMock()
+    # Pass the *or-jwt* check (mimicking a JWT user) but leave verify_api_key
+    # un-overridden so it falls through to the real check (no api-key header).
+    app.dependency_overrides[verify_api_key_or_jwt] = lambda: "jwt"
+    try:
+        client = TestClient(app)
+        r = client.post(
+            "/sources",
+            json={"action": "add", "board_token": "foo", "company_name": "F"},
+        )
+        assert r.status_code == 401
+        r2 = client.post("/sources/seed")
+        assert r2.status_code == 401
+    finally:
+        app.dependency_overrides.clear()
 
 
 def test_sources_add_calls_upsert(client_factory):

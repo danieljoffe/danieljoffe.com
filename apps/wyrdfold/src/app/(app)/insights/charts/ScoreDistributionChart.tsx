@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import type { ScoreBucket } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS } from './colors';
+import { CHART_AXIS_TICK, CHART_COLORS } from './colors';
 
 interface ScoreDistributionChartProps {
   data: ScoreBucket[];
@@ -72,8 +72,11 @@ export default function ScoreDistributionChart({
         <ResponsiveContainer width='100%' height={250}>
           <BarChart data={data}>
             <CartesianGrid strokeDasharray='3 3' stroke={CHART_COLORS.grid} />
-            <XAxis dataKey='bucket' tick={{ fontSize: 11 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+            <XAxis
+              dataKey='bucket'
+              tick={{ ...CHART_AXIS_TICK, fontSize: 11 }}
+            />
+            <YAxis allowDecimals={false} tick={CHART_AXIS_TICK} />
             <Tooltip contentStyle={{ fontSize: 12 }} />
             <Bar dataKey='count' name='Jobs' radius={[4, 4, 0, 0]}>
               {data.map(entry => (

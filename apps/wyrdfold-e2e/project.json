@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "sourceRoot": "apps/wyrdfold-e2e/src",
-  "tags": [],
+  "tags": ["scope:wyrdfold", "type:e2e"],
   "implicitDependencies": ["wyrdfold"],
   "// targets": "to see all targets run: nx show project wyrdfold-e2e --web",
   "targets": {}

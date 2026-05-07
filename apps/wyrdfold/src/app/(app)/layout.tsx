@@ -6,27 +6,29 @@ import WyrdfoldSidebar from './WyrdfoldSidebar';
 // /login when there's no session. Re-doing supabase.auth.getUser() here would
 // mean two network round-trips per page render, which serializes the shell
 // behind a Supabase call that the middleware already made.
-
-// Force dynamic rendering so the build never tries to prerender pages that
-// depend on per-request cookies/Supabase auth. CI builds run without
-// NEXT_PUBLIC_SUPABASE_URL set, so a static generation attempt would throw
-// from createAuthServerClient before cookies() can mark the route dynamic.
-export const dynamic = 'force-dynamic';
+//
+// Dynamic-rendering is signalled at the leaf via `await connection()` inside
+// `createAuthServerClient` (see lib/supabase/auth-server.ts). Pages calling
+// auth opt-in there; the layout itself stays cacheable.
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className='flex min-h-screen'>
       <WyrdfoldSidebar />
-      <main className='flex-1 overflow-x-hidden p-4 md:p-6'>
+      {/*
+        Mobile bottom-nav is `position: fixed` at viewport bottom (h-14 + iOS
+        safe-area). The earlier "trailing clearance div" approach didn't bite
+        for sticky / scroll-end content (pagination on /jobs sat under the
+        nav; 4th target card on /targets was clipped). Layout-level padding
+        on `<main>` is the defensive fix — anything sticky-bottom inside main
+        will dock above the nav, and natural scroll bottoms get the same
+        clearance for free.
+      */}
+      <main
+        id='main-content'
+        className='flex-1 overflow-x-hidden p-4 pb-[calc(theme(spacing.16)+env(safe-area-inset-bottom)+1rem)] md:p-6'
+      >
         {children}
-        {/* Clearance for the mobile bottom nav (h-14) + iOS home indicator. */}
-        <div
-          aria-hidden='true'
-          className='md:hidden'
-          style={{
-            height: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 1rem)',
-          }}
-        />
       </main>
     </div>
   );

@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import type { TargetComparison } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS } from './colors';
+import { CHART_AXIS_TICK, CHART_COLORS } from './colors';
 
 interface TargetComparisonChartProps {
   data: TargetComparison[];
@@ -51,12 +51,12 @@ export default function TargetComparisonChart({
       <ResponsiveContainer width='100%' height={250}>
         <BarChart data={formatted}>
           <CartesianGrid strokeDasharray='3 3' stroke={CHART_COLORS.grid} />
-          <XAxis dataKey='target_label' tick={{ fontSize: 12 }} />
-          <YAxis yAxisId='score' tick={{ fontSize: 12 }} />
+          <XAxis dataKey='target_label' tick={CHART_AXIS_TICK} />
+          <YAxis yAxisId='score' tick={CHART_AXIS_TICK} />
           <YAxis
             yAxisId='pct'
             orientation='right'
-            tick={{ fontSize: 12 }}
+            tick={CHART_AXIS_TICK}
             unit='%'
           />
           <Tooltip

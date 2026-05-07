@@ -1,4 +1,6 @@
 import hmac
+import logging
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import jwt
@@ -9,6 +11,8 @@ from supabase import Client
 
 from app.config import Settings, settings
 
+logger = logging.getLogger(__name__)
+
 if TYPE_CHECKING:
     from app.services.embeddings.client import EmbeddingsClient
     from app.services.llm.client import LLMClient
@@ -18,9 +22,6 @@ api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 # Algorithms accepted for Supabase JWT verification. Supabase migrated to
 # ES256 by default; older projects on RS256 still verify cleanly.
 _JWT_ALGORITHMS = ["ES256", "RS256"]
-
-# Cached JWKS client, keyed by URL so a settings swap (tests) reinitializes.
-_jwks_clients: dict[str, PyJWKClient] = {}
 
 
 def get_settings() -> Settings:
@@ -84,25 +85,31 @@ def _issuer(s: Settings) -> str:
     return f"{s.supabase_url.rstrip('/')}/auth/v1"
 
 
-def _get_jwks_client(s: Settings) -> PyJWKClient:
-    """Lazy-initialize and cache a PyJWKClient per JWKS URL.
+@lru_cache(maxsize=4)
+def _get_jwks_client_for_url(url: str) -> PyJWKClient:
+    """LRU-cached PyJWKClient construction keyed by JWKS URL.
 
-    PyJWKClient handles JWKS fetching, response caching (5-minute TTL by
-    default), and per-key LRU caching. On unknown `kid` it auto-refreshes
-    the JWKS and retries before raising — key rotation is transparent.
+    `lru_cache(maxsize=4)` bounds memory in long-lived test processes
+    that construct fresh `Settings` per run — without the bound, the
+    cache would grow unbounded across `Settings` instances even though
+    the URL set is tiny in practice (1–2 distinct values).
+
+    PyJWKClient itself handles JWKS fetching, response caching (5-minute
+    TTL by default), and per-key LRU caching internally. On unknown
+    `kid` it auto-refreshes the JWKS and retries before raising — key
+    rotation is transparent.
     """
-    url = _jwks_url(s)
-    client = _jwks_clients.get(url)
-    if client is None:
-        client = PyJWKClient(
-            url,
-            cache_jwk_set=True,
-            lifespan=300,
-            max_cached_keys=16,
-            timeout=10,
-        )
-        _jwks_clients[url] = client
-    return client
+    return PyJWKClient(
+        url,
+        cache_jwk_set=True,
+        lifespan=300,
+        max_cached_keys=16,
+        timeout=10,
+    )
+
+
+def _get_jwks_client(s: Settings) -> PyJWKClient:
+    return _get_jwks_client_for_url(_jwks_url(s))
 
 
 def _decode_supabase_jwt(token: str, s: Settings) -> dict[str, object]:
@@ -158,7 +165,12 @@ def verify_api_key_or_jwt(
     key: str | None = Security(api_key_header),
     s: Settings = Depends(get_settings),
 ) -> str:
-    """Accept either the shared API key (cron) or a Supabase JWT (user)."""
+    """Accept either the shared API key (cron) or a Supabase JWT (user).
+
+    JWT decode failures are logged at WARNING (no token detail) so a
+    spike of invalid tokens is detectable in observability — the
+    previous silent swallow was a detection blind spot.
+    """
     if _api_key_matches(key, s.wyrdfold_api_key):
         return "api-key"
     if s.supabase_url:
@@ -166,15 +178,23 @@ def verify_api_key_or_jwt(
         if token:
             try:
                 _decode_supabase_jwt(token, s)
-            except HTTPException:
-                pass
+            except HTTPException as exc:
+                logger.warning(
+                    "auth_jwt_decode_failed path=%s reason=%s",
+                    request.url.path,
+                    exc.detail,
+                )
             else:
                 return "jwt"
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 def _try_decode_jwt_sub(request: Request, s: Settings) -> str | None:
-    """Return the JWT `sub` if a valid Bearer token is present, else None."""
+    """Return the JWT `sub` if a valid Bearer token is present, else None.
+
+    Decode failures are logged at WARNING — see `verify_api_key_or_jwt`
+    for rationale.
+    """
     if not s.supabase_url:
         return None
     token = _extract_bearer_token(request)
@@ -182,7 +202,12 @@ def _try_decode_jwt_sub(request: Request, s: Settings) -> str | None:
         return None
     try:
         payload = _decode_supabase_jwt(token, s)
-    except HTTPException:
+    except HTTPException as exc:
+        logger.warning(
+            "auth_jwt_decode_failed path=%s reason=%s",
+            request.url.path,
+            exc.detail,
+        )
         return None
     return str(payload["sub"])
 

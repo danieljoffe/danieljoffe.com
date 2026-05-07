@@ -21,6 +21,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en' className='pyre dark'>
       <body>
+        {/* WCAG 2.4.1 Bypass Blocks — keyboard/SR users skip past the
+            sidebar (~7 nav links + sign-out) on every authed route.
+            Hidden until focused so it doesn't disturb the visual design. */}
+        <a
+          href='#main-content'
+          className='sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-brand-500 focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-text-inverse focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-surface'
+        >
+          Skip to main content
+        </a>
         <ThemeProvider>
           <ToastProvider>{children}</ToastProvider>
         </ThemeProvider>

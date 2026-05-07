@@ -5,11 +5,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.types import Receive, Scope, Send
 
-from app.config import settings
+from app.config import Settings, settings
 from app.http_client import close_http_client
 from app.observability import init_sentry
 from app.routers import (
@@ -28,16 +29,25 @@ from app.supabase_pool import close_supabase, init_supabase
 
 _log = logging.getLogger("app")
 
-if not settings.allowed_hosts_list:
-    raise RuntimeError(
-        "ALLOWED_HOSTS must be set (comma-separated host allowlist). Use '*' only in local dev."
-    )
-
 init_sentry()
+
+
+def _validate_settings(s: Settings) -> None:
+    """Fail fast on missing/invalid required settings.
+
+    Called from within ``lifespan`` so the check runs at app startup
+    rather than at module import — keeps tests/import order decoupled.
+    """
+    if not s.allowed_hosts_list:
+        raise RuntimeError(
+            "ALLOWED_HOSTS must be set (comma-separated host allowlist). "
+            "Use '*' only in local dev."
+        )
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    _validate_settings(settings)
     init_supabase()
     try:
         yield
@@ -73,6 +83,19 @@ app.add_middleware(
 # gzip cuts ~70-80% off typical JSON payloads.
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
+# Explicit CORS allowlist (Phase 5 P1-Sec). Empty = no browser-direct
+# callers — the Next.js app proxies via server-side fetch and doesn't need
+# CORS. Set CORS_ALLOWED_ORIGINS in env when adding browser callers.
+if settings.cors_allowed_origins_list:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allowed_origins_list,
+        allow_credentials=False,  # we use Bearer JWT, not cookies
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
+        allow_headers=["authorization", "content-type", "x-api-key"],
+        max_age=600,
+    )
+
 
 @app.middleware("http")
 async def _log_slow_requests(
@@ -107,15 +130,27 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
 
     Without this, Starlette's default handler returns plain-text
     ``Internal Server Error``, which trips the proxy's non-JSON branch.
+    Verbose detail (class name + message) is gated on non-production
+    environments — production gets a generic body so SQL fragments,
+    file paths, or secrets in stringified exceptions don't leak.
     """
+    # FastAPI/Starlette resolves more-specific handlers first, so HTTPException
+    # never reaches us. Re-raise defensively in case a future middleware path
+    # routes one through Exception.
+    from fastapi import HTTPException
+
+    if isinstance(exc, HTTPException):
+        raise exc
+
     _log.exception("unhandled exception on %s %s", request.method, request.url.path)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "detail": f"{type(exc).__name__}: {exc}",
-            "path": request.url.path,
-        },
-    )
+    is_production = settings.sentry_environment == "production"
+    body: dict[str, str] = {
+        "detail": "Internal server error"
+        if is_production
+        else f"{type(exc).__name__}: {exc}",
+        "path": request.url.path,
+    }
+    return JSONResponse(status_code=500, content=body)
 
 
 app.include_router(analysis.router)

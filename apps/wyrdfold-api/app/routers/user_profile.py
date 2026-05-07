@@ -1,4 +1,9 @@
-"""User profile router — notification preferences + identity (contact) fields."""
+"""User profile router — notification preferences + identity (contact) fields.
+
+All endpoints scope to the JWT subject. The service-role Supabase client
+bypasses RLS, so explicit `.eq("user_id", user_id)` is the only thing
+preventing cross-tenant reads/writes.
+"""
 
 import asyncio
 from typing import Any, cast
@@ -7,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
 from app.config import settings
-from app.dependencies import get_supabase, verify_api_key_or_jwt
+from app.dependencies import get_current_user_id, get_supabase, verify_supabase_jwt
 from app.models.user_profile import (
     IdentityFields,
     IdentityFieldsUpdate,
@@ -32,10 +37,14 @@ def _sms_channel_available() -> bool:
         and settings.twilio_phone_number
     )
 
+# `verify_supabase_jwt` (not `_or_jwt`) — profile data is per-user, never
+# accessed by cron/poller. Restricting to JWT-only blocks the api-key
+# fallback that would otherwise let a leaked operator key impersonate any
+# user via this surface.
 router = APIRouter(
     prefix="/profile",
     tags=["profile"],
-    dependencies=[Depends(verify_api_key_or_jwt)],
+    dependencies=[Depends(verify_supabase_jwt)],
 )
 
 # Columns we read / allow writing
@@ -48,11 +57,19 @@ _PREFS_COLUMNS = (
 _IDENTITY_COLUMNS = "name, email, phone_number, location, linkedin_url, website_url"
 
 
-async def _get_or_create_profile(supabase: Client) -> dict[str, Any]:
-    """Return the first user_profiles row, creating one if none exists."""
+async def _get_or_create_profile(
+    supabase: Client, user_id: str, columns: str
+) -> dict[str, Any]:
+    """Return the user's profile row, creating one if none exists.
+
+    Scoped by `user_id` (UNIQUE on user_profiles.user_id) so distinct
+    callers never see each other's row even though service-role bypasses
+    RLS.
+    """
     resp = await asyncio.to_thread(
         lambda: supabase.table("user_profiles")
-        .select(_PREFS_COLUMNS)
+        .select(columns)
+        .eq("user_id", user_id)
         .limit(1)
         .execute()
     )
@@ -60,18 +77,17 @@ async def _get_or_create_profile(supabase: Client) -> dict[str, Any]:
     if rows:
         return cast(dict[str, Any], rows[0])
 
-    # Single-user tool — create a default row
     insert = await asyncio.to_thread(
         lambda: supabase.table("user_profiles")
-        .insert({})
+        .insert({"user_id": user_id})
         .execute()
     )
     if not insert.data:
         raise HTTPException(status_code=500, detail="Failed to create profile")
-    # Re-fetch to get column defaults
     resp2 = await asyncio.to_thread(
         lambda: supabase.table("user_profiles")
-        .select(_PREFS_COLUMNS)
+        .select(columns)
+        .eq("user_id", user_id)
         .limit(1)
         .execute()
     )
@@ -80,9 +96,10 @@ async def _get_or_create_profile(supabase: Client) -> dict[str, Any]:
 
 @router.get("/notifications")
 async def get_notification_preferences(
+    user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ) -> NotificationPreferences:
-    row = await _get_or_create_profile(supabase)
+    row = await _get_or_create_profile(supabase, user_id, _PREFS_COLUMNS)
     return NotificationPreferences(
         **row,
         email_available=_email_channel_available(),
@@ -93,6 +110,7 @@ async def get_notification_preferences(
 @router.patch("/notifications")
 async def update_notification_preferences(
     body: NotificationPreferencesUpdate,
+    user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ) -> NotificationPreferences:
     if body.job_notifications_enabled is True and not _email_channel_available():
@@ -108,9 +126,8 @@ async def update_notification_preferences(
             "configured Twilio credentials.",
         )
 
-    profile = await _get_or_create_profile(supabase)
+    profile = await _get_or_create_profile(supabase, user_id, _PREFS_COLUMNS)
 
-    # Only send non-None fields
     updates = body.model_dump(exclude_none=True)
     if not updates:
         return NotificationPreferences(
@@ -119,25 +136,13 @@ async def update_notification_preferences(
             sms_available=_sms_channel_available(),
         )
 
-    # We need the profile id for the update
-    id_resp = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles")
-        .select("id")
-        .limit(1)
-        .execute()
-    )
-    profile_id = cast(dict[str, Any], (id_resp.data or [{}])[0]).get("id")
-    if not profile_id:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
     await asyncio.to_thread(
         lambda: supabase.table("user_profiles")
         .update(updates)
-        .eq("id", profile_id)
+        .eq("user_id", user_id)
         .execute()
     )
 
-    # Return updated state
     merged = {**profile, **updates}
     return NotificationPreferences(
         **merged,
@@ -151,46 +156,22 @@ async def update_notification_preferences(
 # ---------------------------------------------------------------------------
 
 
-async def _get_or_create_identity(supabase: Client) -> dict[str, Any]:
-    resp = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles")
-        .select(_IDENTITY_COLUMNS)
-        .limit(1)
-        .execute()
-    )
-    rows = resp.data or []
-    if rows:
-        return cast(dict[str, Any], rows[0])
-
-    # Single-user tool — create a default row
-    insert = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles").insert({}).execute()
-    )
-    if not insert.data:
-        raise HTTPException(status_code=500, detail="Failed to create profile")
-    resp2 = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles")
-        .select(_IDENTITY_COLUMNS)
-        .limit(1)
-        .execute()
-    )
-    return cast(dict[str, Any], (resp2.data or [{}])[0])
-
-
 @router.get("/identity")
 async def get_identity(
+    user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ) -> IdentityFields:
-    row = await _get_or_create_identity(supabase)
+    row = await _get_or_create_profile(supabase, user_id, _IDENTITY_COLUMNS)
     return IdentityFields(**row)
 
 
 @router.patch("/identity")
 async def update_identity(
     body: IdentityFieldsUpdate,
+    user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ) -> IdentityFields:
-    profile = await _get_or_create_identity(supabase)
+    profile = await _get_or_create_profile(supabase, user_id, _IDENTITY_COLUMNS)
 
     # Treat empty strings as explicit clears; None means "don't touch"
     updates = body.model_dump(exclude_none=True)
@@ -201,17 +182,10 @@ async def update_identity(
     if not updates:
         return IdentityFields(**profile)
 
-    id_resp = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles").select("id").limit(1).execute()
-    )
-    profile_id = cast(dict[str, Any], (id_resp.data or [{}])[0]).get("id")
-    if not profile_id:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
     await asyncio.to_thread(
         lambda: supabase.table("user_profiles")
         .update(updates)
-        .eq("id", profile_id)
+        .eq("user_id", user_id)
         .execute()
     )
 

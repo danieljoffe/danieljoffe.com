@@ -27,7 +27,11 @@ const JobsListTable = dynamic(() => import('./JobsListTable'), {
   ),
 });
 
-const DESKTOP_QUERY = '(min-width: 768px)';
+// Was `(min-width: 768px)` — at tablet the 7-column table cramps the Title
+// column to a single word per line ("Software / Engineer, / Product / ...").
+// Bumping the breakpoint to lg (1024px+) keeps tablet on the mobile card
+// pattern, which scales cleanly across the 768–1023 range. (Phase 4b #12.)
+const DESKTOP_QUERY = '(min-width: 1024px)';
 
 function subscribeMedia(callback: () => void): () => void {
   const mq = window.matchMedia(DESKTOP_QUERY);

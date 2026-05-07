@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Mail, CheckCircle2 } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -94,9 +95,18 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
   }
 
   return (
-    <main className='min-h-screen flex flex-col items-center justify-center px-6 py-12'>
+    <main
+      id='main-content'
+      className='min-h-screen flex flex-col items-center justify-center px-6 py-12'
+    >
       <div className='w-full max-w-xs flex flex-col items-center gap-6'>
-        <WyrdfoldLogo aria-label='WyrdFold' className='h-12 w-16 select-none' />
+        <Link
+          href='/'
+          aria-label='WyrdFold home'
+          className='rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+        >
+          <WyrdfoldLogo aria-hidden className='h-12 w-16 select-none' />
+        </Link>
 
         {formState === 'sent' ? (
           <>
@@ -106,7 +116,7 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                 Check your email
               </Heading>
               <Text variant='body' className='text-text-secondary'>
-                We sent a magic link to{' '}
+                Magic link sent to{' '}
                 <span className='font-medium text-text-primary'>{email}</span>.
               </Text>
             </div>
@@ -143,36 +153,42 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                 Sign in
               </Heading>
               <Text variant='body' className='text-text-secondary'>
-                Enter your email — we&apos;ll send you a magic link. No password
-                to remember.
+                Two clicks: enter your email, click the link in your inbox.
               </Text>
             </div>
 
             <form onSubmit={sendLink} className='w-full flex flex-col gap-3'>
-              <div className='relative'>
-                <Mail
-                  className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none'
-                  aria-hidden
-                />
-                <input
-                  type='email'
-                  placeholder='you@example.com'
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  aria-label='Email address'
-                  aria-describedby={
-                    formState === 'error' ? 'login-error' : undefined
-                  }
-                  autoFocus
-                  required
-                  data-sentry-mask
-                  className={cn(
-                    BASE_FIELD,
-                    FIELD_PADDING,
-                    FIELD_PLACEHOLDER,
-                    'pl-9'
-                  )}
-                />
+              <div className='flex flex-col gap-1'>
+                <label
+                  htmlFor='login-email'
+                  className='text-sm font-medium text-text-secondary'
+                >
+                  Email
+                </label>
+                <div className='relative'>
+                  <Mail
+                    className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary pointer-events-none'
+                    aria-hidden
+                  />
+                  <input
+                    id='login-email'
+                    type='email'
+                    placeholder='you@example.com'
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    aria-describedby={
+                      formState === 'error' ? 'login-error' : undefined
+                    }
+                    required
+                    data-sentry-mask
+                    className={cn(
+                      BASE_FIELD,
+                      FIELD_PADDING,
+                      FIELD_PLACEHOLDER,
+                      'pl-9'
+                    )}
+                  />
+                </div>
               </div>
               {formState === 'error' && (
                 <Text
@@ -195,14 +211,6 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
             </form>
           </>
         )}
-
-        <Text
-          variant='detail'
-          className='text-center text-text-tertiary text-xs'
-        >
-          Passwordless sign-in. We never store your password because there
-          isn&apos;t one.
-        </Text>
       </div>
     </main>
   );

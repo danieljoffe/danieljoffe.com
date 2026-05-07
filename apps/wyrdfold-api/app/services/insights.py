@@ -65,19 +65,29 @@ def _parse_dt(value: str) -> datetime:
 
 
 def _fetch_postings_window(
-    supabase: Client, since: datetime | None, until: datetime | None
+    supabase: Client,
+    since: datetime | None,
+    until: datetime | None,
+    target_ids: set[str] | None,
 ) -> list[Row]:
-    q = supabase.table("jobs").select("id, status, created_at")
+    q = supabase.table("jobs").select("id, status, created_at, target_id")
     if since:
         q = q.gte("created_at", since.isoformat())
     if until:
         q = q.lt("created_at", until.isoformat())
+    if target_ids is not None:
+        q = q.in_("target_id", list(target_ids))
     return cast(list[Row], q.execute().data or [])
 
 
 def _fetch_status_logs_window(
-    supabase: Client, since: datetime | None, until: datetime | None
+    supabase: Client,
+    since: datetime | None,
+    until: datetime | None,
+    posting_ids: set[str] | None,
 ) -> list[Row]:
+    if posting_ids is not None and not posting_ids:
+        return []
     sq = supabase.table("status_log").select(
         "posting_id, old_status, new_status, created_at"
     )
@@ -85,6 +95,8 @@ def _fetch_status_logs_window(
         sq = sq.gte("created_at", since.isoformat())
     if until:
         sq = sq.lt("created_at", until.isoformat())
+    if posting_ids is not None:
+        sq = sq.in_("posting_id", list(posting_ids))
     return cast(list[Row], sq.execute().data or [])
 
 
@@ -132,19 +144,30 @@ def compute_pipeline(
     supabase: Client,
     since: datetime | None,
     prior_window: tuple[datetime, datetime] | None = None,
+    target_ids: set[str] | None = None,
 ) -> PipelineInsights:
     """Compute pipeline insights for the current window. When *prior_window*
     is supplied as ``(prior_since, prior_until)``, also compute the same KPIs
     over that window so the dashboard can render trend deltas. Velocity and
-    funnel are scoped to the current window only."""
-    postings = _fetch_postings_window(supabase, since, None)
-    status_logs = _fetch_status_logs_window(supabase, since, None)
+    funnel are scoped to the current window only.
+
+    When *target_ids* is supplied, all queries are bounded to the user's
+    target set — required for multi-tenant safety since wyrdfold-api uses
+    service-role and bypasses RLS.
+    """
+    postings = _fetch_postings_window(supabase, since, None, target_ids)
+    posting_ids = {str(p["id"]) for p in postings}
+    status_logs = _fetch_status_logs_window(supabase, since, None, posting_ids)
 
     # Fetch tailored resumes for velocity (current window only)
-    rq = supabase.table("documents").select("job_posting_id, created_at")
+    rq = supabase.table("documents").select(
+        "job_posting_id, created_at, target_id"
+    )
     if since:
         rq = rq.gte("created_at", since.isoformat())
     rq = rq.eq("document_type", "resume")
+    if target_ids is not None:
+        rq = rq.in_("target_id", list(target_ids))
     resumes = cast(list[Row], rq.execute().data or [])
 
     # --- Funnel counts ---
@@ -160,8 +183,13 @@ def compute_pipeline(
     previous: PipelinePeriodKpis | None = None
     if prior_window is not None:
         prior_since, prior_until = prior_window
-        prior_postings = _fetch_postings_window(supabase, prior_since, prior_until)
-        prior_logs = _fetch_status_logs_window(supabase, prior_since, prior_until)
+        prior_postings = _fetch_postings_window(
+            supabase, prior_since, prior_until, target_ids
+        )
+        prior_posting_ids = {str(p["id"]) for p in prior_postings}
+        prior_logs = _fetch_status_logs_window(
+            supabase, prior_since, prior_until, prior_posting_ids
+        )
         previous = _kpis_from(prior_postings, prior_logs)
 
     # --- Weekly velocity ---
@@ -199,18 +227,26 @@ def compute_pipeline(
 # ── Targets ──────────────────────────────────────────────────────────────────
 
 
-def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
-    # Fetch all targets for labels
-    targets_data = cast(
-        list[Row],
-        supabase.table("targets").select("id, label").execute().data or [],
-    )
+def compute_targets(
+    supabase: Client,
+    since: datetime | None,
+    target_ids: set[str] | None = None,
+) -> TargetInsights:
+    """Compute target insights. When *target_ids* is supplied, only those
+    targets and their postings are aggregated."""
+    # Fetch only the user's targets for labels
+    tq = supabase.table("targets").select("id, label")
+    if target_ids is not None:
+        tq = tq.in_("id", list(target_ids))
+    targets_data = cast(list[Row], tq.execute().data or [])
     target_labels = {t["id"]: t["label"] for t in targets_data}
 
     # Fetch postings with target + score + status
     q = supabase.table("jobs").select("id, target_id, score, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
+    if target_ids is not None:
+        q = q.in_("target_id", list(target_ids))
     postings = cast(list[Row], q.execute().data or [])
 
     # --- Per-target aggregation ---
@@ -299,37 +335,66 @@ def compute_targets(supabase: Client, since: datetime | None) -> TargetInsights:
 # ── Skills + Cost ────────────────────────────────────────────────────────────
 
 
-def compute_skills_cost(supabase: Client, since: datetime | None) -> SkillsCostInsights:
+def compute_skills_cost(
+    supabase: Client,
+    since: datetime | None,
+    user_id: str | None = None,
+    target_ids: set[str] | None = None,
+) -> SkillsCostInsights:
+    """Compute skills + cost insights.
+
+    *target_ids* scopes job-posting / analyses / documents queries to the
+    user's targets. *user_id* scopes ``llm_costs`` which has its own
+    direct ``user_id`` column.
+    """
+    # Fetch posting scores first — also gives us the set of posting_ids
+    # the user is allowed to see, used to bound analyses.
+    pq = supabase.table("jobs").select("id, llm_score, target_id")
+    if since:
+        pq = pq.gte("created_at", since.isoformat())
+    if target_ids is not None:
+        pq = pq.in_("target_id", list(target_ids))
+    posting_rows = cast(list[Row], pq.execute().data or [])
+    posting_scores: dict[str, float] = {}
+    visible_posting_ids: set[str] = set()
+    for p in posting_rows:
+        pid = str(p["id"])
+        visible_posting_ids.add(pid)
+        score = p.get("llm_score")
+        if score is not None:
+            posting_scores[pid] = float(score)
+
     # Fetch analyses for skill extraction
     aq = supabase.table("analyses").select("job_posting_id, scorecard, created_at")
     if since:
         aq = aq.gte("created_at", since.isoformat())
-    analyses = cast(list[Row], aq.execute().data or [])
+    if target_ids is not None:
+        # Target-scope via posting_id so we don't surface analyses for
+        # postings the caller can't see. (analyses.target_id was added
+        # later and may be NULL for older rows.)
+        if not visible_posting_ids:
+            analyses: list[Row] = []
+        else:
+            aq = aq.in_("job_posting_id", list(visible_posting_ids))
+            analyses = cast(list[Row], aq.execute().data or [])
+    else:
+        analyses = cast(list[Row], aq.execute().data or [])
 
-    # Fetch posting scores so we can rank skill gaps by impact (sum of
-    # llm_score across jobs missing the skill). Postings without a score
-    # contribute to missing_count but not priority_score.
-    pq = supabase.table("jobs").select("id, llm_score")
-    if since:
-        pq = pq.gte("created_at", since.isoformat())
-    posting_rows = cast(list[Row], pq.execute().data or [])
-    posting_scores: dict[str, float] = {}
-    for p in posting_rows:
-        score = p.get("llm_score")
-        if score is not None:
-            posting_scores[str(p["id"])] = float(score)
-
-    # Fetch LLM cost log
+    # Fetch LLM cost log — has a direct user_id column.
     cq = supabase.table("llm_costs").select("purpose, cost_usd, created_at")
     if since:
         cq = cq.gte("created_at", since.isoformat())
+    if user_id is not None:
+        cq = cq.eq("user_id", user_id)
     cost_logs = cast(list[Row], cq.execute().data or [])
 
     # Fetch tailored resumes for per-resume cost
-    rq = supabase.table("documents").select("cost_usd, created_at")
+    rq = supabase.table("documents").select("cost_usd, created_at, target_id")
     if since:
         rq = rq.gte("created_at", since.isoformat())
     rq = rq.eq("document_type", "resume")
+    if target_ids is not None:
+        rq = rq.in_("target_id", list(target_ids))
     resume_costs = cast(list[Row], rq.execute().data or [])
 
     # --- Skill frequencies ---

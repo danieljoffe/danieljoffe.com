@@ -1,5 +1,5 @@
-'use client';
-
+// Pure presentational component — no hooks, no event handlers, no browser APIs.
+// Renders as a server component to keep the dashboard shell streaming.
 import Link from 'next/link';
 import {
   ArrowRight,

@@ -15,6 +15,11 @@ SPEC_FILE=$(basename "$FILE_PATH")
 
 # Determine project and test args from file path
 case "$FILE_PATH" in
+  */apps/*-e2e/*)
+    # Playwright e2e specs share the *.spec.ts extension but aren't unit
+    # tests — skip cleanly. CI's `nx affected -t e2e` picks them up.
+    exit 0
+    ;;
   */libs/shared/ui/*)
     PROJECT="@danieljoffe.com/shared-ui"
     TEST_ARGS="-- $SPEC_FILE"

@@ -186,6 +186,7 @@ export default function ResumeUploader({
         onChange={handleFileChange}
         className='hidden'
         aria-hidden='true'
+        data-sentry-mask
       />
 
       {error && <Alert variant='error'>{error}</Alert>}

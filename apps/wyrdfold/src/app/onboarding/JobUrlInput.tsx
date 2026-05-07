@@ -135,6 +135,7 @@ export default function JobUrlInput({ onComplete, onSkip }: JobUrlInputProps) {
                   type='url'
                   disabled={submitting}
                   aria-label='Job posting URL'
+                  data-sentry-mask
                 />
               </div>
             </div>

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
-import DashboardPage, { type DashboardInitial } from './DashboardPage';
-import type { JobPosting } from './jobs/types';
-import type { UserTargetWithTarget } from './targets/types';
+import DashboardPage, { type DashboardInitial } from '../DashboardPage';
+import type { JobPosting } from '../jobs/types';
+import type { UserTargetWithTarget } from '../targets/types';
 
 export const metadata: Metadata = {
   title: 'Dashboard',

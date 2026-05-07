@@ -55,8 +55,12 @@ interface AsLinkProps
 
 type AppButtonProps = AsButtonProps | AsLinkProps;
 
+// Disabled state intentionally avoids `disabled:opacity-50` — semi-transparent
+// chartreuse on the primary variant reads as a "rejected/error" state to
+// first-time users (Phase 4a finding #7). Instead, swap to a neutral surface
+// + tertiary text so disabled = "fill the form first," not "form is broken."
 const baseButtonStyles =
-  'inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none';
+  'inline-flex items-center justify-center gap-2 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:bg-surface-elevated disabled:text-text-tertiary disabled:border disabled:border-border disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-surface-elevated disabled:hover:scale-100 disabled:hover:shadow-none hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none';
 
 const variantButtonStyles: Record<string, string> = {
   primary:

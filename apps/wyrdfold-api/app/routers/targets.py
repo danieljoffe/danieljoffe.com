@@ -25,17 +25,20 @@ from app.http_client import get_http_client
 from app.models.schemas import PollResult
 from app.models.targets import (
     CreateOrLinkResult,
+    DeleteResponse,
     JobTarget,
     MatchedSuggestions,
+    MyTargetsListResponse,
     ReferenceJDAdd,
+    ReferenceJDsListResponse,
     ScoringProfile,
     TargetCreate,
     TargetFromManual,
     TargetFromUrl,
-    TargetReferenceJD,
+    TargetsListResponse,
+    TargetStatusResponse,
     TargetUpdate,
     UserTarget,
-    UserTargetWithTarget,
 )
 from app.services.experience import optimized
 from app.services.extract import (
@@ -64,7 +67,7 @@ from app.services.targets.fit_score import (
 from app.services.targets.match import suggest_and_match
 from app.services.targets.merge import merge_profiles
 from app.services.targets.suggest import DEFAULT_PURPOSE as SUGGEST_PURPOSE
-from app.services.validate import validate_job_url
+from app.services.validate import assert_safe_host, validate_job_url
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +149,7 @@ async def _activate_pipeline(
 # ---- Target CRUD -----------------------------------------------------------
 
 
-@router.post("")
+@router.post("", response_model=JobTarget, status_code=201)
 async def create_target(
     body: TargetCreate,
     supabase: Client = Depends(get_supabase),
@@ -154,7 +157,12 @@ async def create_target(
     return crud.create(supabase, payload=body)
 
 
-@router.post("/from-manual", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/from-manual",
+    response_model=CreateOrLinkResult,
+    status_code=201,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def create_target_from_manual(
     body: TargetFromManual,
     supabase: Client = Depends(get_supabase),
@@ -184,7 +192,12 @@ async def create_target_from_manual(
     )
 
 
-@router.post("/from-url", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/from-url",
+    response_model=CreateOrLinkResult,
+    status_code=201,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def create_target_from_url(
     body: TargetFromUrl,
     supabase: Client = Depends(get_supabase),
@@ -228,15 +241,19 @@ async def create_target_from_url(
     )
 
 
-@router.get("")
+@router.get("", response_model=TargetsListResponse)
 def list_targets(
     supabase: Client = Depends(get_supabase),
-) -> dict[str, list[JobTarget]]:
+) -> TargetsListResponse:
     targets = crud.list_all(supabase)
-    return {"targets": targets}
+    return TargetsListResponse(targets=targets)
 
 
-@router.post("/suggest", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/suggest",
+    response_model=MatchedSuggestions,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def suggest(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -264,25 +281,25 @@ async def suggest(
     return matched
 
 
-@router.get("/active")
+@router.get("/active", response_model=TargetsListResponse)
 def get_active_targets(
     supabase: Client = Depends(get_supabase),
-) -> dict[str, list[JobTarget]]:
+) -> TargetsListResponse:
     targets = crud.get_active(supabase)
-    return {"targets": targets}
+    return TargetsListResponse(targets=targets)
 
 
-@router.get("/mine")
+@router.get("/mine", response_model=MyTargetsListResponse)
 def get_my_targets(
     supabase: Client = Depends(get_supabase),
     user_id: str = Depends(get_current_user_id),
-) -> dict[str, list[UserTargetWithTarget]]:
+) -> MyTargetsListResponse:
     """Return the current user's linked targets with fit scores."""
     items = crud.list_user_targets_with_targets(supabase, user_id)
-    return {"targets": items}
+    return MyTargetsListResponse(targets=items)
 
 
-@router.get("/{target_id}")
+@router.get("/{target_id}", response_model=JobTarget)
 def get_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -293,7 +310,7 @@ def get_target(
     return target
 
 
-@router.patch("/{target_id}")
+@router.patch("/{target_id}", response_model=JobTarget)
 def update_target(
     target_id: str,
     body: TargetUpdate,
@@ -305,7 +322,11 @@ def update_target(
     return target
 
 
-@router.post("/{target_id}/activate", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/{target_id}/activate",
+    response_model=JobTarget,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def activate_target(
     target_id: str,
     background_tasks: BackgroundTasks,
@@ -328,7 +349,7 @@ async def activate_target(
     return refreshed
 
 
-@router.post("/{target_id}/deactivate")
+@router.post("/{target_id}/deactivate", response_model=JobTarget)
 async def deactivate_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -344,7 +365,12 @@ async def deactivate_target(
     return crud.get(supabase, target_id) or target
 
 
-@router.post("/{target_id}/link", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/{target_id}/link",
+    response_model=UserTarget,
+    status_code=201,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def link_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -383,7 +409,11 @@ async def link_target(
     )
 
 
-@router.post("/{target_id}/derive-profile", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/{target_id}/derive-profile",
+    response_model=JobTarget,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def derive_target_profile(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -424,7 +454,7 @@ async def derive_target_profile(
     return updated
 
 
-@router.post("/{target_id}/poll-jobs")
+@router.post("/{target_id}/poll-jobs", response_model=PollResult)
 async def poll_jobs_for_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -441,11 +471,11 @@ async def poll_jobs_for_target(
     return await poll_sources_for_target(supabase, target)
 
 
-@router.get("/{target_id}/status")
+@router.get("/{target_id}/status", response_model=TargetStatusResponse)
 async def get_target_status(
     target_id: str,
     supabase: Client = Depends(get_supabase),
-) -> dict[str, Any]:
+) -> TargetStatusResponse:
     """Return activation status and job count for a target."""
     target = crud.get(supabase, target_id)
     if target is None:
@@ -459,27 +489,32 @@ async def get_target_status(
     )
     jobs_count = count_resp.count or 0
 
-    return {
-        "activation_status": target.activation_status,
-        "jobs_count": jobs_count,
-    }
+    return TargetStatusResponse(
+        activation_status=target.activation_status,
+        jobs_count=jobs_count,
+    )
 
 
-@router.delete("/{target_id}")
+@router.delete("/{target_id}", response_model=DeleteResponse)
 async def delete_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
-) -> dict[str, bool]:
+) -> DeleteResponse:
     deleted = crud.delete(supabase, target_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Target not found")
-    return {"deleted": True}
+    return DeleteResponse(deleted=True)
 
 
 # ---- Create from job posting -----------------------------------------------
 
 
-@router.post("/from-posting/{posting_id}", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/from-posting/{posting_id}",
+    response_model=JobTarget,
+    status_code=201,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def create_target_from_posting(
     posting_id: str,
     supabase: Client = Depends(get_supabase),
@@ -568,13 +603,38 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     Raises ``HTTPException`` if the fetch fails or no usable description can
     be extracted. The minimum-length requirement matches ``ReferenceJDAdd``
     so the downstream LLM has enough signal to derive a profile.
+
+    SSRF defense: re-resolve the hostname inside this function as a TOCTOU
+    safety net. ``validate_job_url`` already ran upstream, but the upstream
+    check resolves DNS once and we connect a few milliseconds later — a
+    rebind in that window would slip through without this re-check.
     """
+    from urllib.parse import urlparse
+
+    hostname = urlparse(url).hostname or ""
+    try:
+        assert_safe_host(hostname)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422, detail=f"Refusing to fetch JD URL: {exc}"
+        ) from exc
+
     client = get_http_client()
     try:
         resp = await client.get(url)
         final_url = str(resp.url)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=400, detail="Failed to fetch JD URL") from exc
+
+    final_hostname = urlparse(final_url).hostname or ""
+    if final_hostname and final_hostname != hostname:
+        try:
+            assert_safe_host(final_hostname)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Refusing to fetch JD URL after redirect: {exc}",
+            ) from exc
 
     html = resp.text if resp.status_code == 200 else ""
     extraction: ExtractionResult
@@ -602,7 +662,12 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     return extraction.title, jd_text
 
 
-@router.post("/{target_id}/reference-jds", dependencies=[Depends(enforce_llm_budget)])
+@router.post(
+    "/{target_id}/reference-jds",
+    response_model=JobTarget,
+    status_code=201,
+    dependencies=[Depends(enforce_llm_budget)],
+)
 async def add_reference_jd(
     target_id: str,
     body: ReferenceJDAdd,
@@ -680,16 +745,19 @@ async def add_reference_jd(
     return updated
 
 
-@router.get("/{target_id}/reference-jds")
+@router.get("/{target_id}/reference-jds", response_model=ReferenceJDsListResponse)
 async def list_reference_jds(
     target_id: str,
     supabase: Client = Depends(get_supabase),
-) -> dict[str, list[TargetReferenceJD]]:
+) -> ReferenceJDsListResponse:
     ref_jds = crud.list_reference_jds(supabase, target_id)
-    return {"reference_jds": ref_jds}
+    return ReferenceJDsListResponse(reference_jds=ref_jds)
 
 
-@router.delete("/{target_id}/reference-jds/{ref_jd_id}")
+@router.delete(
+    "/{target_id}/reference-jds/{ref_jd_id}",
+    response_model=JobTarget,
+)
 async def delete_reference_jd(
     target_id: str,
     ref_jd_id: str,

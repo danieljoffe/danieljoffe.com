@@ -2,67 +2,32 @@ import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-// For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:3000';
+// Wyrdfold dev server runs on :3100 to avoid colliding with `apps/root`
+// (which owns :3000). With `reuseExistingServer: true`, a stale root
+// process on :3000 would silently absorb every spec — we'd be testing
+// the wrong app. Pinning a distinct port makes that mistake impossible.
+const PORT = process.env['PORT'] || '3100';
+const baseURL = process.env['BASE_URL'] || `http://localhost:${PORT}`;
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
-
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm exec nx run wyrdfold:dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    command: `PORT=${PORT} pnpm exec nx run wyrdfold:dev`,
+    url: baseURL,
+    reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    // Uncomment for mobile browsers support
-    /* {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    }, */
-
-    // Uncomment for branded browsers
-    /* {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    },
-    {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    } */
-  ],
+  // CI-Chromium-only matches root-e2e and avoids 90% noise from running
+  // Firefox + WebKit headless against an auth+SSE stack with zero specs.
+  projects: process.env['CI']
+    ? [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
+    : [
+        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+        { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+      ],
 });

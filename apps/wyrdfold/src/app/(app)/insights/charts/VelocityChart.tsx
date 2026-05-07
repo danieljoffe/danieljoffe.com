@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import type { WeeklyCount } from '../types';
 import { ChartFigure, type ChartColumn } from './ChartFigure';
-import { CHART_COLORS } from './colors';
+import { CHART_AXIS_TICK, CHART_COLORS } from './colors';
 import { formatWeek } from './format';
 
 interface VelocityChartProps {
@@ -47,9 +47,9 @@ export default function VelocityChart({ data }: VelocityChartProps) {
           <XAxis
             dataKey='week_start'
             tickFormatter={formatWeek}
-            tick={{ fontSize: 12 }}
+            tick={CHART_AXIS_TICK}
           />
-          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+          <YAxis allowDecimals={false} tick={CHART_AXIS_TICK} />
           <Tooltip
             labelFormatter={label => formatWeek(String(label))}
             contentStyle={{ fontSize: 12 }}

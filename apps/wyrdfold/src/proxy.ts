@@ -3,16 +3,20 @@ import { createServerClient } from '@supabase/ssr';
 import { allowedOrigins, allowedImageOrigins } from '@/utils/constants';
 import { isProduction } from '@/utils/helpers';
 
-const HOME_DEFAULT = '/';
+// Default post-auth destination for signed-in users. The marketing landing
+// page lives at `/`; authenticated users belong on the dashboard.
+const HOME_DEFAULT = '/dashboard';
 
 /**
  * Constrains `next` to a same-origin relative path. Anything else
- * (absolute URL, protocol-relative `//evil.com`, missing leading `/`)
- * falls back to / so the redirect can't be abused.
+ * (absolute URL, protocol-relative `//evil.com`, missing leading `/`,
+ * or `/` itself which would just bounce back to the marketing page)
+ * falls back to /dashboard so the redirect can't be abused.
  */
 function safeNext(value: string | null): string {
   if (!value) return HOME_DEFAULT;
   if (!value.startsWith('/') || value.startsWith('//')) return HOME_DEFAULT;
+  if (value === '/') return HOME_DEFAULT;
   return value;
 }
 
@@ -80,6 +84,19 @@ export async function proxy(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
 
+  // Public marketing landing page. Signed-in users get sent to the dashboard
+  // so they don't see the marketing pitch; everyone else can view it.
+  if (pathname === '/') {
+    if (user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+    supabaseResponse.headers.set('Content-Security-Policy', cspValue);
+    return supabaseResponse;
+  }
+
   if (pathname.startsWith('/login') || pathname.startsWith('/auth')) {
     if (user && pathname.startsWith('/login')) {
       const url = request.nextUrl.clone();
@@ -106,7 +123,11 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      // Bypass: API routes, Next internals, favicons, manifest/robots/sitemap,
+      // and the /public/images directory (public-page assets like the hero
+      // screenshot are served from here and must not require auth).
+      source:
+        '/((?!api|_next/static|_next/image|favicon|images/|site\\.webmanifest|robots\\.txt|sitemap\\.xml).*)',
     },
   ],
 };

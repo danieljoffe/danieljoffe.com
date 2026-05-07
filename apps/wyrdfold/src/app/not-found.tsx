@@ -30,7 +30,7 @@ export default function NotFound() {
             variant='primary'
             size='sm'
             as='link'
-            href='/'
+            href='/dashboard'
           >
             Back to dashboard
           </Button>
