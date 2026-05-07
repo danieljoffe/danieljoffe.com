@@ -129,8 +129,10 @@ test.describe('audit scan page - form validation', () => {
       name: /audit this site|starting scan/i,
     });
 
+    const scanRequest = page.waitForRequest('**/api/audit/scan');
     await fillInput(input, VALID_AUDIT_URL);
     await button.click();
+    await scanRequest;
 
     await expect(input).toBeDisabled();
     await expect(
@@ -302,8 +304,10 @@ test.describe('audit scan page - error handling', () => {
   test('network error shows network error message', async ({ page }) => {
     await page.route('**/api/audit/scan', route => route.abort());
 
+    const scanRequest = page.waitForRequest('**/api/audit/scan');
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
+    await scanRequest;
 
     await expect(
       page.getByText('Network error. Please try again.')
@@ -359,8 +363,10 @@ test.describe('audit scan page - accessibility', () => {
     // Hang the request to keep submitting state
     await page.route('**/api/audit/scan', async () => undefined);
 
+    const scanRequest = page.waitForRequest('**/api/audit/scan');
     await fillInput(page.getByLabel('Website URL'), VALID_AUDIT_URL);
     await page.getByRole('button', { name: 'Audit this site' }).click();
+    await scanRequest;
 
     await expect(
       page.getByRole('button', { name: /starting scan/i })

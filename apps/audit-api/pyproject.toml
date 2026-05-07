@@ -21,6 +21,7 @@ dependencies = [
 dev = [
   "pytest>=8.3",
   "pytest-asyncio>=0.25",
+  "pytest-cov>=6.0",
   "httpx>=0.28",
   "ruff>=0.11",
   "mypy>=1.15",
@@ -31,14 +32,32 @@ target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP"]
+select = [
+  "E", "F", "I", "N", "W", "UP",
+  "B", "S", "SIM", "RUF", "T20",
+  "PTH",    # flake8-use-pathlib — Path over os.path
+  "ASYNC",  # async anti-patterns (blocking calls in coroutines)
+]
+ignore = [
+  "B008",   # Depends() in FastAPI arg defaults is idiomatic
+  "S105",   # false positives on non-secret pattern constants
+  "S106",   # false positives on non-secret pattern constants
+]
+
+[tool.ruff.lint.per-file-ignores]
+# ASYNC109: test helpers use a `timeout` arg as a polling deadline,
+#   not a single-await timeout — `asyncio.timeout` would change semantics.
+"tests/**/*.py" = ["S101", "S108", "ASYNC109"]
+"scripts/**/*.py" = ["T20"]
 
 [tool.mypy]
 python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+warn_unreachable = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing --no-cov-on-fail"

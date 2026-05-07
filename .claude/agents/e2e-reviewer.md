@@ -1,3 +1,9 @@
+---
+name: e2e-reviewer
+description: E2E test coverage, fixture consistency, and Playwright best practices
+memory: project
+---
+
 # E2E Reviewer
 
 Review changed files for E2E test coverage, fixture consistency, and Playwright best practices.
@@ -23,19 +29,23 @@ Review changed files for E2E test coverage, fixture consistency, and Playwright 
 
 ## Existing E2E Specs
 
-Check these for coverage overlap and consistency:
+Auto-discover existing specs rather than relying on a hardcoded list:
 
-- `accessibility.spec.ts` — WCAG checks across pages
-- `navigation.spec.ts` — Desktop/mobile nav, route transitions
-- `contact-form.spec.ts` — Form submission, validation, hCaptcha
-- `dynamic-routes.spec.ts` — Project/experience/blog detail pages
-- `performance.spec.ts` — Core Web Vitals, resource sizes
-- `error-handling.spec.ts` — 404, error boundaries
-- `command-palette.spec.ts` — Keyboard shortcut search
-- `audit-scan.spec.ts`, `audit-report.spec.ts` — Audit tool flows
-- `api-audit.spec.ts`, `api-email.spec.ts` — API endpoint tests
-- `services.spec.ts` — Services page interactions
-- `visual-regression.spec.ts` — Screenshot comparisons (CI-managed)
+```bash
+ls apps/root-e2e/src/*.spec.ts
+```
+
+Cross-reference changed routes against existing specs to identify coverage gaps.
+
+## Review Protocol
+
+You receive a file manifest and diff hunks from the orchestrator.
+
+- **Deleted files**: Check if deletion removes test coverage for an existing route, but do not read them.
+- **Small changes (diff-only)**: Review the hunk. Minor test tweaks are usually clear from the diff.
+- **Larger changes**: Read the full spec file via `ctx_batch_execute` to validate fixture usage, hydration handling, and selector patterns.
+- You receive E2E test files AND the orchestrator's manifest of changed app routes. Use the route list to identify coverage gaps even if the spec files themselves didn't change.
+- Stay within your assigned file list for test quality review. Use the manifest for gap analysis.
 
 ## Output
 

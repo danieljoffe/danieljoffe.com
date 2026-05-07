@@ -31,7 +31,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - name: Lint, typecheck, test, build affected
-        run: pnpm nx affected -t lint typecheck test build --exclude=job-api,audit-api --nxBail
+        run: pnpm nx affected -t lint typecheck test build --exclude=wyrdfold-api,audit-api --nxBail
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}

@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -39,6 +40,12 @@ class ScanError(RuntimeError):
     """Lighthouse run failed or returned unusable output."""
 
 
+def _read_json(path: Path) -> dict[str, Any]:
+    """Sync JSON read — called via asyncio.to_thread from async contexts."""
+    with path.open(encoding="utf-8") as f:
+        return dict(json.load(f))
+
+
 def _kill_process_group(proc: asyncio.subprocess.Process) -> None:
     """Kill the entire process group that *proc* leads.
 
@@ -48,12 +55,10 @@ def _kill_process_group(proc: asyncio.subprocess.Process) -> None:
     to connect to Chrome." start_new_session=True on the subprocess puts
     the tree in its own process group so killpg reaches Chrome too.
     """
-    if proc.pid is None:
-        return
-    try:
+    # asyncio.subprocess.Process.pid is always set after spawn — no None
+    # guard needed. ProcessLookupError covers the "already exited" race.
+    with contextlib.suppress(ProcessLookupError, OSError):
         os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-    except (ProcessLookupError, OSError):
-        pass
 
 
 async def _run_lighthouse(url: str, device: DeviceMode) -> dict[str, Any]:
@@ -80,12 +85,15 @@ async def _run_lighthouse(url: str, device: DeviceMode) -> dict[str, Any]:
             await proc.wait()
             raise ScanError(f"Lighthouse timed out after {SCAN_TIMEOUT_SEC}s") from exc
 
-        if not Path(output_path).exists():
+        # File I/O wrapped in to_thread so it doesn't block the event loop.
+        # Lighthouse's output file is microseconds to read, but ruff ASYNC230
+        # rule rightly flags blocking IO in async coroutines.
+        output_path_obj = Path(output_path)
+        if not await asyncio.to_thread(output_path_obj.exists):
             detail = stderr.decode(errors="replace").strip() if stderr else ""
             raise ScanError(f"Lighthouse produced no output. stderr: {detail[:500]}")
 
-        with open(output_path, encoding="utf-8") as f:
-            return dict(json.load(f))
+        return await asyncio.to_thread(_read_json, output_path_obj)
 
 
 async def _run_axe_and_capture(
@@ -132,7 +140,7 @@ async def _run_axe_and_capture(
 
             axe_result: dict[str, Any] = {"violations": []}
             axe_path = Path(AXE_SCRIPT_PATH)
-            if axe_path.exists():
+            if await asyncio.to_thread(axe_path.exists):
                 await page.add_script_tag(path=str(axe_path))
                 try:
                     raw = await asyncio.wait_for(

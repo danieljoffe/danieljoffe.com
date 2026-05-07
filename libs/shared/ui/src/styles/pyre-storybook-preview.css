@@ -1,0 +1,50 @@
+/**
+ * Pyre overrides scoped to the `.pyre` class — for Storybook only.
+ *
+ * The production Pyre file (pyre-theme.css) registers its tokens via
+ * `@theme {}` at :root, which would clobber indigo's defaults in the
+ * Storybook preview where both palettes coexist. This file scopes the
+ * same token *values* under `.pyre` so the storybook decorator can flip
+ * between palettes by toggling a class on <body>.
+ *
+ * Values must stay in lockstep with pyre-theme.css's @theme block.
+ * If you change one, change both.
+ */
+.pyre {
+  --color-brand-50: oklch(0.97 0.05 127);
+  --color-brand-100: oklch(0.93 0.1 127);
+  --color-brand-200: oklch(0.87 0.16 127);
+  --color-brand-300: oklch(0.78 0.22 127);
+  --color-brand-400: oklch(0.72 0.26 127);
+  --color-brand-500: oklch(0.67 0.28 127);
+  --color-brand-600: oklch(0.6 0.26 127);
+  --color-brand-700: oklch(0.5 0.22 127);
+  --color-brand-800: oklch(0.4 0.17 127);
+  --color-brand-900: oklch(0.3 0.12 127);
+  --color-brand-950: oklch(0.2 0.08 127);
+
+  --color-surface: oklch(0.1 0.01 270);
+  --color-surface-secondary: oklch(0.13 0.01 270);
+  --color-surface-tertiary: oklch(0.16 0.01 270);
+  --color-surface-elevated: oklch(0.13 0.01 270);
+  --color-surface-overlay: rgba(0, 0, 0, 0.7);
+
+  --color-border: oklch(0.22 0.01 270);
+  --color-border-secondary: oklch(0.3 0.01 270);
+  --color-border-focus: oklch(0.67 0.28 127);
+
+  --color-text-primary: oklch(0.96 0.01 90);
+  --color-text-secondary: oklch(0.75 0.02 90);
+  --color-text-tertiary: oklch(0.6 0.02 90);
+  --color-text-inverse: oklch(0.1 0.01 270);
+  --color-text-brand: oklch(0.78 0.22 127);
+
+  --color-success: oklch(0.72 0.2 145);
+  --color-success-light: oklch(0.25 0.05 145);
+  --color-warning: oklch(0.78 0.18 70);
+  --color-warning-light: oklch(0.28 0.05 70);
+  --color-error: oklch(0.65 0.22 25);
+  --color-error-light: oklch(0.25 0.05 25);
+  --color-info: oklch(0.7 0.2 230);
+  --color-info-light: oklch(0.25 0.05 230);
+}

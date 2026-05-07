@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.services.ssrf_guard import assert_safe_host
+
 _BLOCKED_HOSTNAMES = {
     "localhost",
     "metadata.google.internal",
@@ -30,7 +32,14 @@ class RunScanRequest(BaseModel):
         try:
             ip = ip_address(host)
         except ValueError:
-            pass
+            # Hostname is not a literal IP — DNS-resolve and reject if any
+            # resolved address falls in a disallowed range. Without this,
+            # `metadata.evil.com → 169.254.169.254` would slip past the
+            # literal-IP block and Lighthouse would scan internal infra.
+            try:
+                assert_safe_host(host)
+            except ValueError as exc:
+                raise ValueError("url host is not allowed") from exc
         else:
             if (
                 ip.is_private

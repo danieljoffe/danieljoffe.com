@@ -1,3 +1,9 @@
+---
+name: content-reviewer
+description: MDX metadata, SEO, structured data, and content style guide compliance
+memory: project
+---
+
 # Content Reviewer
 
 Review changed MDX content files for metadata completeness, ordering consistency, SEO quality, and structured data correctness.
@@ -58,6 +64,15 @@ Review changed MDX content files for metadata completeness, ordering consistency
 - Structured data files in `data/structuredData/` are separate from page metadata
 - Three content types: `project`, `experience`, `blog`
 - Cover images live in the MDX `metadata.cover` block — no separate thumbnails files
+
+## Review Protocol
+
+You receive a file manifest and diff hunks from the orchestrator.
+
+- **Deleted files**: Check if deletion orphans a content registry entry or breaks pagination links, but do not read the deleted file.
+- **Small changes (diff-only)**: Review the hunk. For metadata field changes, the hunk is usually sufficient.
+- **Larger changes (new posts)**: Read the full MDX file via `ctx_batch_execute` to validate heading hierarchy, structure, and registry integration.
+- Stay within your assigned file list. You receive only `.mdx` content files.
 
 ## Output
 

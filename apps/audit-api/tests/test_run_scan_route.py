@@ -66,7 +66,8 @@ def test_run_scan_enqueues_job_and_returns_accepted() -> None:
                     "device_mode": "desktop",
                 },
             )
-        assert response.status_code == 200
+        # 202 Accepted — scan is queued for async processing, not completed.
+        assert response.status_code == 202
         assert response.json() == {"status": "accepted", "scan_id": "s1"}
         mock_enqueue.assert_awaited_once()
         enqueued: ScanJob = mock_enqueue.await_args.args[0]

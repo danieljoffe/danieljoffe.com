@@ -21,6 +21,7 @@ RETURNS TABLE (
 )
 LANGUAGE sql
 STABLE
+SET search_path = public
 AS $$
   SELECT
     ROUND(AVG(score_performance)::numeric, 1) AS avg_performance,

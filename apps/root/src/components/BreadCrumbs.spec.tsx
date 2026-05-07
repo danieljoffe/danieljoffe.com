@@ -1,7 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import type { NavLink } from '@/types/base';
 import BreadCrumbs from './BreadCrumbs';
+
+expect.extend(toHaveNoViolations);
 
 // Mock next/navigation
 const mockUsePathname = jest.fn();
@@ -78,5 +81,11 @@ describe('BreadCrumbs', () => {
       <BreadCrumbs items={null as unknown as NavLink[]} />
     );
     expect(container.firstChild).toBeNull();
+  });
+
+  test('has no accessibility violations', async () => {
+    mockUsePathname.mockReturnValue('/about');
+    const { container } = render(<BreadCrumbs items={items} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

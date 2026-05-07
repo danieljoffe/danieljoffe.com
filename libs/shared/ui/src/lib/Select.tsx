@@ -4,12 +4,12 @@ import {
   BASE_FIELD,
   DISABLED,
   FIELD_ERROR,
-  FIELD_PADDING,
   FIELD_SUCCESS,
   FORM_LABEL,
   REQUIRED_MARK,
 } from './styles/formStyles';
 import { Text } from './Text';
+import type { ComponentSize } from './types';
 import { cn } from './utils';
 
 export interface SelectOption {
@@ -17,20 +17,31 @@ export interface SelectOption {
   label: string;
 }
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  'size'
+> {
   ref?: Ref<HTMLSelectElement> | undefined;
   label?: string | undefined;
   error?: string | undefined;
   helperText?: string | undefined;
   success?: boolean | undefined;
+  size?: ComponentSize;
   options: SelectOption[];
 }
+
+const sizeStyles: Record<ComponentSize, string> = {
+  sm: 'px-3 py-1.5 pr-8 text-sm',
+  md: 'px-4 py-2.5 pr-10',
+  lg: 'px-5 py-3 pr-12 text-lg',
+};
 
 export function Select({
   label,
   error,
   helperText,
   success,
+  size = 'md',
   options,
   className,
   id,
@@ -68,7 +79,7 @@ export function Select({
           required={required}
           className={cn(
             BASE_FIELD,
-            FIELD_PADDING,
+            sizeStyles[size],
             'appearance-none',
             DISABLED,
             getStateClasses(),
