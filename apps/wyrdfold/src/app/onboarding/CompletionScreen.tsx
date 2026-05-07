@@ -22,6 +22,10 @@ export default function CompletionScreen() {
               Your account is ready. Head to your targets to start tracking jobs
               and generating tailored resumes.
             </Text>
+            <Text variant='caption' className='mt-3 text-text-tertiary'>
+              WyrdFold sharpens as you mark which jobs you&apos;d actually apply
+              to. A few rounds in, the matches start finding you.
+            </Text>
           </div>
         </div>
       </Card>
