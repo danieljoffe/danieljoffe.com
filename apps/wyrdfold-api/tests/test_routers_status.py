@@ -117,6 +117,33 @@ def test_status_200_on_valid_update(client_factory):
     assert body["new_status"] == "applied"
 
 
+def test_status_update_only_evicts_owning_target_and_global_views(client_factory):
+    """Sibling targets' cached pages must survive a status mutation."""
+    from app.cache import job_list_cache, jobs_cache_prefix, make_cache_key
+
+    sibling_target = "22222222-2222-2222-2222-222222222222"
+    owning_key = make_cache_key(
+        jobs_cache_prefix(target_id=_TEST_TARGET_ID), page=1
+    )
+    sibling_key = make_cache_key(
+        jobs_cache_prefix(target_id=sibling_target), page=1
+    )
+    global_key = make_cache_key(jobs_cache_prefix(target_id=None), page=1)
+
+    job_list_cache.set(owning_key, {"v": "owning"})
+    job_list_cache.set(sibling_key, {"v": "sibling"})
+    job_list_cache.set(global_key, {"v": "global"})
+
+    sb = _build_supabase(posting_data={"status": "saved"})
+    client = client_factory(sb)
+    r = client.post("/jobs/abc/status", json={"status": "applied"})
+    assert r.status_code == 200
+
+    assert job_list_cache.get(owning_key) is None
+    assert job_list_cache.get(global_key) is None
+    assert job_list_cache.get(sibling_key) == {"v": "sibling"}
+
+
 def test_status_422_on_invalid_status(client_factory):
     sb = _build_supabase(posting_data={"status": "new"})
     client = client_factory(sb)

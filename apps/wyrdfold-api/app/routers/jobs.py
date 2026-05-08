@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from postgrest.types import CountMethod
 from supabase import Client
 
-from app.cache import job_list_cache, make_cache_key
+from app.cache import job_list_cache, jobs_cache_prefix, make_cache_key
 from app.dependencies import (
     get_current_user_id,
     get_current_user_id_optional,
@@ -258,7 +258,7 @@ def list_jobs(
     # user_id participates in the key so per-user views (saved/dismissed,
     # future filtering) never cross-leak between accounts.
     cache_key = make_cache_key(
-        "jobs",
+        jobs_cache_prefix(target_id=target_id),
         page=page,
         page_size=page_size,
         sort=sort,
@@ -267,7 +267,6 @@ def list_jobs(
         status=status,
         company=company,
         search=search,
-        target_id=target_id,
         user_id=user_id,
     )
     cached: dict[str, Any] | None = job_list_cache.get(cache_key)
