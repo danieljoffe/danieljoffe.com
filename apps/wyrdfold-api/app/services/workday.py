@@ -1,9 +1,12 @@
-import httpx
+import logging
 
-from app.http_client import get_http_client
+from app.http_client import FetchExhaustedError, request_with_retry
 from app.services.standard_job import StandardJob
 
+logger = logging.getLogger(__name__)
+
 MAX_JOBS = 200
+PAGE_SIZE = 20
 
 
 async def fetch_workday_jobs(board_token: str) -> list[StandardJob]:
@@ -19,24 +22,37 @@ async def fetch_workday_jobs(board_token: str) -> list[StandardJob]:
     base_url, tenant, site = parts
     url = f"{base_url}/wday/cxs/{tenant}/{site}/jobs"
 
-    client = get_http_client()
     all_jobs: list[StandardJob] = []
     offset = 0
 
     while offset < MAX_JOBS:
         try:
-            resp = await client.post(
+            resp = await request_with_retry(
+                "POST",
                 url,
                 json={
                     "appliedFacets": {},
-                    "limit": 20,
+                    "limit": PAGE_SIZE,
                     "offset": offset,
                     "searchText": "",
                 },
             )
-            if resp.status_code != 200:
-                return all_jobs
-        except httpx.HTTPError:
+        except FetchExhaustedError as exc:
+            logger.warning(
+                "workday fetch exhausted retries for %s (offset %d): %s",
+                board_token,
+                offset,
+                exc,
+            )
+            return all_jobs
+
+        if resp.status_code != 200:
+            logger.warning(
+                "workday %s returned %d at offset %d",
+                board_token,
+                resp.status_code,
+                offset,
+            )
             return all_jobs
 
         data = resp.json()
@@ -59,7 +75,7 @@ async def fetch_workday_jobs(board_token: str) -> list[StandardJob]:
             )
 
         total = data.get("total", 0)
-        offset += 20
+        offset += PAGE_SIZE
         if offset >= total:
             break
 

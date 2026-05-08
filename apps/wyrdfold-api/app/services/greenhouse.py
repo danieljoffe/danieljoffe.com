@@ -1,20 +1,25 @@
-import httpx
+import logging
 
-from app.http_client import get_http_client
+from app.http_client import FetchExhaustedError, request_with_retry
 from app.services.standard_job import StandardJob
+
+logger = logging.getLogger(__name__)
 
 GREENHOUSE_BASE = "https://boards-api.greenhouse.io/v1/boards"
 
 
 async def fetch_board_jobs(board_token: str) -> list[StandardJob]:
     url = f"{GREENHOUSE_BASE}/{board_token}/jobs?content=true"
-    client = get_http_client()
     try:
-        resp = await client.get(url)
-        if resp.status_code == 404:
-            return []
-        resp.raise_for_status()
-    except httpx.HTTPError:
+        resp = await request_with_retry("GET", url)
+    except FetchExhaustedError as exc:
+        logger.warning("greenhouse fetch exhausted retries for %s: %s", board_token, exc)
+        return []
+
+    if resp.status_code == 404:
+        return []
+    if resp.status_code >= 400:
+        logger.warning("greenhouse %s returned %d for %s", board_token, resp.status_code, url)
         return []
 
     data = resp.json()

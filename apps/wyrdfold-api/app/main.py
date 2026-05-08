@@ -25,6 +25,7 @@ from app.routers import (
     targets,
     user_profile,
 )
+from app.scheduler import start_scheduler_if_enabled
 from app.supabase_pool import close_supabase, init_supabase
 
 _log = logging.getLogger("app")
@@ -40,8 +41,7 @@ def _validate_settings(s: Settings) -> None:
     """
     if not s.allowed_hosts_list:
         raise RuntimeError(
-            "ALLOWED_HOSTS must be set (comma-separated host allowlist). "
-            "Use '*' only in local dev."
+            "ALLOWED_HOSTS must be set (comma-separated host allowlist). Use '*' only in local dev."
         )
 
 
@@ -49,9 +49,12 @@ def _validate_settings(s: Settings) -> None:
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     _validate_settings(settings)
     init_supabase()
+    scheduler = start_scheduler_if_enabled()
     try:
         yield
     finally:
+        if scheduler is not None:
+            scheduler.shutdown(wait=False)
         close_supabase()
         await close_http_client()
 
@@ -145,9 +148,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
     _log.exception("unhandled exception on %s %s", request.method, request.url.path)
     is_production = settings.sentry_environment == "production"
     body: dict[str, str] = {
-        "detail": "Internal server error"
-        if is_production
-        else f"{type(exc).__name__}: {exc}",
+        "detail": "Internal server error" if is_production else f"{type(exc).__name__}: {exc}",
         "path": request.url.path,
     }
     return JSONResponse(status_code=500, content=body)
