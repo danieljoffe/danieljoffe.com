@@ -1,11 +1,12 @@
 import json
+import logging
 import re
 from html.parser import HTMLParser
 
-import httpx
-
-from app.http_client import get_http_client
+from app.http_client import FetchExhaustedError, request_with_retry
 from app.services.standard_job import StandardJob
+
+logger = logging.getLogger(__name__)
 
 
 class _JsonLdExtractor(HTMLParser):
@@ -143,12 +144,14 @@ def _format_salary(posting: dict[str, object]) -> str | None:
 
 async def fetch_jsonld_jobs(careers_url: str) -> list[StandardJob]:
     """Fetch a careers page and extract jobs from JSON-LD markup."""
-    client = get_http_client()
     try:
-        resp = await client.get(careers_url)
-        if resp.status_code != 200:
-            return []
-    except httpx.HTTPError:
+        resp = await request_with_retry("GET", careers_url)
+    except FetchExhaustedError as exc:
+        logger.warning("jsonld fetch exhausted retries for %s: %s", careers_url, exc)
+        return []
+
+    if resp.status_code != 200:
+        logger.warning("jsonld %s returned %d for %s", careers_url, resp.status_code, careers_url)
         return []
 
     postings = _extract_jobs(resp.text)

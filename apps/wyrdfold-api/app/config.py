@@ -60,6 +60,13 @@ class Settings(BaseSettings):
     # should be the Next.js app URL; local dev typically `http://localhost:3000,http://localhost:3100`.
     cors_allowed_origins: str = ""
 
+    # In-process scheduled poller. Off by default so tests and ad-hoc dev
+    # processes don't trigger background fetches; ops opt-in via env var.
+    # Tick = how often the scheduler wakes up to look for due sources;
+    # actual per-source cadence is governed by ``sources.poll_interval_minutes``.
+    poll_scheduler_enabled: bool = False
+    poll_tick_minutes: int = Field(default=30, ge=1, le=1440)
+
     @property
     def cors_allowed_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]

@@ -4,7 +4,7 @@ import asyncio
 import contextlib
 import logging
 from collections.abc import Callable, Coroutine
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
 from supabase import Client
@@ -656,6 +656,89 @@ async def poll_all_sources(supabase: Client) -> PollResult:
         if s["error"]:
             result.errors.append(s["error"])
 
+    return result
+
+
+# ---- Due-source polling (cron entry point) ---------------------------------
+
+
+# Fallback interval used when a source row predates the
+# `poll_interval_minutes` column or has it set to NULL for any reason.
+DEFAULT_POLL_INTERVAL_MINUTES = 240
+
+
+def _is_due(source: dict[str, Any], now: datetime) -> bool:
+    """Return True if the source should be polled this tick.
+
+    A source is due when it has never been polled or when its
+    ``last_polled_at + poll_interval_minutes`` is in the past.
+    """
+    last = source.get("last_polled_at")
+    if not last:
+        return True
+
+    interval_min = source.get("poll_interval_minutes") or DEFAULT_POLL_INTERVAL_MINUTES
+    try:
+        last_dt = (
+            datetime.fromisoformat(last.replace("Z", "+00:00"))
+            if isinstance(last, str)
+            else last
+        )
+    except (TypeError, ValueError):
+        # Unparseable timestamp — treat as never-polled rather than
+        # silently skipping the row forever.
+        return True
+
+    return last_dt + timedelta(minutes=int(interval_min)) <= now
+
+
+def filter_due_sources(
+    sources: list[dict[str, Any]], *, now: datetime | None = None
+) -> list[dict[str, Any]]:
+    """Pure helper for the due-filter — extracted so tests don't need Supabase."""
+    moment = now or datetime.now(UTC)
+    return [s for s in sources if _is_due(s, moment)]
+
+
+async def poll_due_sources(supabase: Client) -> PollResult:
+    """Poll only the sources whose interval has elapsed.
+
+    Same shape as ``poll_all_sources`` but skips sources that were
+    polled recently. Designed to be called from a frequent cron tick
+    (e.g. every 30 min) without re-hammering boards that have a longer
+    configured cadence.
+    """
+    sources_query = supabase.table("sources").select("*").eq("enabled", True)
+    sources_resp = await asyncio.to_thread(sources_query.execute)
+    all_enabled = cast(list[dict[str, Any]], sources_resp.data or [])
+
+    due = filter_due_sources(all_enabled)
+    if not due:
+        return PollResult(
+            sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
+        )
+
+    optimized_doc = await asyncio.to_thread(get_latest_optimized, supabase, None)
+
+    semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
+
+    async def _worker(source: dict[str, Any]) -> dict[str, Any]:
+        async with semaphore:
+            return await _poll_one_source(source, supabase, optimized_doc)
+
+    summaries = await asyncio.gather(*(_worker(s) for s in due))
+
+    result = PollResult(
+        sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
+    )
+    for s in summaries:
+        if s["polled"]:
+            result.sources_polled += 1
+        result.new_jobs += s["new"]
+        result.updated_jobs += s["updated"]
+        result.archived_jobs += s["archived"]
+        if s["error"]:
+            result.errors.append(s["error"])
     return result
 
 

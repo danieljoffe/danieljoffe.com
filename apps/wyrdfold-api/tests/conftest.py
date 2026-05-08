@@ -22,6 +22,25 @@ def _clear_caches():
 
 
 @pytest.fixture(autouse=True)
+def _no_retry_sleep(monkeypatch):
+    """Skip retry backoff in tests.
+
+    The shared HTTP helper retries on 429/5xx/transport errors with
+    exponential backoff. In production that's seconds of sleep per
+    failure; in tests that's seconds of pointless wall-clock time.
+    Patch the module-level sleep alias to an immediate no-op.
+    """
+
+    async def _instant(_seconds: float) -> None:
+        return None
+
+    import app.http_client as http_mod
+
+    monkeypatch.setattr(http_mod, "_sleep", _instant)
+    yield
+
+
+@pytest.fixture(autouse=True)
 def _bypass_ssrf_dns(monkeypatch):
     """Make every hostname resolve to a public address for unit tests.
 

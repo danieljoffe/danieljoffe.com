@@ -1,10 +1,8 @@
 import hashlib
 import logging
 
-import httpx
-
 from app.config import settings
-from app.http_client import get_http_client
+from app.http_client import FetchExhaustedError, request_with_retry
 from app.services.standard_job import StandardJob
 
 logger = logging.getLogger(__name__)
@@ -78,9 +76,9 @@ async def fetch_firecrawl_jobs(careers_url: str) -> list[StandardJob]:
         logger.warning("FIRECRAWL_API_KEY not set — skipping crawl source %s", careers_url)
         return []
 
-    client = get_http_client()
     try:
-        resp = await client.post(
+        resp = await request_with_retry(
+            "POST",
             FIRECRAWL_SCRAPE_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
@@ -98,8 +96,8 @@ async def fetch_firecrawl_jobs(careers_url: str) -> list[StandardJob]:
             },
             timeout=120.0,
         )
-    except httpx.HTTPError:
-        logger.exception("Firecrawl request failed for %s", careers_url)
+    except FetchExhaustedError as exc:
+        logger.warning("firecrawl fetch exhausted retries for %s: %s", careers_url, exc)
         return []
 
     if resp.status_code != 200:

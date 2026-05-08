@@ -21,6 +21,7 @@ dependencies = [
   "voyageai>=0.3",
   "twilio>=9.0",
   "sentry-sdk[fastapi]>=2.19",
+  "apscheduler>=3.11",
 ]
 
 [dependency-groups]
