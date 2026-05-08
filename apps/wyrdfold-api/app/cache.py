@@ -60,12 +60,28 @@ class TTLCache:
 
 
 def make_cache_key(prefix: str, **params: Any) -> str:
-    """Deterministic cache key from a prefix and arbitrary query params."""
+    """Deterministic cache key from a prefix and arbitrary query params.
+
+    The prefix is preserved verbatim so callers can structure invalidation
+    namespaces. Example: ``make_cache_key("jobs:t=abc123", page=1)`` returns
+    ``"jobs:t=abc123:<digest>"``, which can be invalidated as a group via
+    ``cache.invalidate(prefix="jobs:t=abc123:")``.
+    """
     # Sort keys for determinism, skip None values
     filtered = {k: v for k, v in sorted(params.items()) if v is not None}
     raw = json.dumps(filtered, sort_keys=True, default=str)
     digest = hashlib.sha256(raw.encode()).hexdigest()[:16]
     return f"{prefix}:{digest}"
+
+
+def jobs_cache_prefix(*, target_id: str | None) -> str:
+    """Namespace prefix for `job_list_cache` entries.
+
+    Callers that mutate jobs for a single target can invalidate just that
+    target's cached list pages plus the global view, without flushing
+    sibling targets. Pair with `job_list_cache.invalidate(prefix=...)`.
+    """
+    return f"jobs:t={target_id or 'global'}"
 
 
 # Singleton caches

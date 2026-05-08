@@ -4,7 +4,7 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
-from app.cache import job_list_cache
+from app.cache import job_list_cache, jobs_cache_prefix
 from app.dependencies import (
     get_current_user_id,
     get_supabase,
@@ -84,6 +84,7 @@ async def update_status(
 ) -> dict[str, Any]:
     posting = _assert_user_owns_posting(supabase, posting_id, user_id)
     old_status = posting["status"]
+    target_id = posting["target_id"]
 
     supabase.table("status_log").insert(
         {
@@ -101,5 +102,9 @@ async def update_status(
         }
     ).eq("id", posting_id).execute()
 
-    job_list_cache.invalidate()
+    # Scoped invalidation: a single posting status change only affects the
+    # owning target's cached pages and the global view. Sibling targets'
+    # cached pages stay warm.
+    job_list_cache.invalidate(prefix=f"{jobs_cache_prefix(target_id=target_id)}:")
+    job_list_cache.invalidate(prefix=f"{jobs_cache_prefix(target_id=None)}:")
     return {"success": True, "old_status": old_status, "new_status": body.status}
