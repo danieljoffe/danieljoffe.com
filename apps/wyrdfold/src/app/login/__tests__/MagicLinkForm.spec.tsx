@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MagicLinkForm from '../MagicLinkForm';
 
@@ -49,6 +49,27 @@ describe('MagicLinkForm — idle state', () => {
     expect(
       screen.getByRole('button', { name: /send magic link/i })
     ).toBeDisabled();
+  });
+
+  it('re-syncs state on blur so password-manager autofill enables submit', () => {
+    // Password managers (1Password, Chrome) sometimes set the input's
+    // .value via the DOM without firing a synthetic React onChange,
+    // leaving `email` state empty and the button disabled. Simulate
+    // that by mutating .value directly, then verify onBlur catches it.
+    render(<MagicLinkForm next={undefined} />);
+
+    const email = screen.getByRole('textbox', {
+      name: /^email$/i,
+    }) as HTMLInputElement;
+    const button = screen.getByRole('button', { name: /send magic link/i });
+
+    expect(button).toBeDisabled();
+
+    // Direct DOM mutation — bypasses React's onChange the way autofill does.
+    email.value = 'autofilled@example.com';
+    fireEvent.blur(email);
+
+    expect(button).toBeEnabled();
   });
 
   it('does not submit when the input is empty (HTML5 required)', async () => {

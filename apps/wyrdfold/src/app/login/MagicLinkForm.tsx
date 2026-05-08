@@ -192,6 +192,13 @@ export default function MagicLinkForm({ next }: MagicLinkFormProps) {
                     placeholder='you@example.com'
                     value={email}
                     onChange={e => setEmail(e.target.value)}
+                    // Password managers and browser autofill sometimes set the
+                    // DOM .value without firing React's synthetic onChange, so
+                    // the field appears filled but `email` stays '' and the
+                    // submit button stays disabled. Re-sync on blur covers the
+                    // common autofill paths (Chrome/1Password set on focus
+                    // change).
+                    onBlur={e => setEmail(e.target.value)}
                     aria-describedby={
                       formState === 'error' ? 'login-error' : undefined
                     }
