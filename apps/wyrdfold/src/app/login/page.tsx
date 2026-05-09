@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; auth_error?: string }>;
 }) {
-  const { next } = await searchParams;
-  return <MagicLinkForm next={next} />;
+  const { next, auth_error } = await searchParams;
+  return <MagicLinkForm next={next} authError={auth_error} />;
 }

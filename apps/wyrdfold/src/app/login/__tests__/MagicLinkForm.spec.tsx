@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe('MagicLinkForm — idle state', () => {
   it('renders the sign-in heading and subtitle', () => {
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     expect(
       screen.getByRole('heading', { level: 1, name: /sign in/i })
@@ -33,26 +33,26 @@ describe('MagicLinkForm — idle state', () => {
   });
 
   it('renders the WyrdFold logo wrapped in a Link to "/"', () => {
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
     const homeLink = screen.getByRole('link', { name: /wyrdfold home/i });
     expect(homeLink).toHaveAttribute('href', '/');
   });
 
   it('marks the email input with data-sentry-mask for PII redaction', () => {
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
     const email = screen.getByRole('textbox', { name: /^email$/i });
     expect(email).toHaveAttribute('data-sentry-mask');
   });
 
   it('disables the submit button when the email is empty', () => {
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
     expect(
       screen.getByRole('button', { name: /send magic link/i })
     ).toBeDisabled();
   });
 
   it('does not submit when the input is empty (HTML5 required)', async () => {
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
     const button = screen.getByRole('button', { name: /send magic link/i });
     expect(button).toBeDisabled();
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('MagicLinkForm — idle state', () => {
 
   it('calls Supabase signInWithOtp on submit with emailRedirectTo', async () => {
     const user = userEvent.setup();
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
@@ -84,7 +84,7 @@ describe('MagicLinkForm — idle state', () => {
 
   it('stashes the next param in a cookie before submitting', async () => {
     const user = userEvent.setup();
-    render(<MagicLinkForm next={'/jobs'} />);
+    render(<MagicLinkForm next={'/jobs'} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
@@ -103,7 +103,7 @@ describe('MagicLinkForm — idle state', () => {
       error: { message: 'Email rate limit exceeded' },
     });
     const user = userEvent.setup();
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
@@ -123,10 +123,33 @@ describe('MagicLinkForm — idle state', () => {
   });
 });
 
+describe('MagicLinkForm — callback errors', () => {
+  it('surfaces the missing_code reason as a readable error on first render', () => {
+    render(<MagicLinkForm next={undefined} authError={'missing_code'} />);
+    const error = screen.getByText(/redirect URL allowlist/i);
+    expect(error).toHaveAttribute('role', 'alert');
+    expect(error).toHaveAttribute('id', 'login-error');
+  });
+
+  it('points missing-cookie failures at the same-browser hint', () => {
+    render(
+      <MagicLinkForm next={undefined} authError={'flow_state_not_found'} />
+    );
+    expect(
+      screen.getByText(/same browser you requested it from/i)
+    ).toBeInTheDocument();
+  });
+
+  it('falls back to a generic message for unknown error codes', () => {
+    render(<MagicLinkForm next={undefined} authError={'mystery'} />);
+    expect(screen.getByText(/Sign-in failed \(mystery\)/i)).toBeInTheDocument();
+  });
+});
+
 describe('MagicLinkForm — sent state', () => {
   it('renders "Check your email" heading and the masked email after success', async () => {
     const user = userEvent.setup();
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
@@ -145,7 +168,7 @@ describe('MagicLinkForm — sent state', () => {
 
   it('disables the resend button initially with a countdown label', async () => {
     const user = userEvent.setup();
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
@@ -160,7 +183,7 @@ describe('MagicLinkForm — sent state', () => {
 
   it('disables the resend button while the cooldown is active', async () => {
     const user = userEvent.setup();
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
@@ -178,7 +201,7 @@ describe('MagicLinkForm — sent state', () => {
 
   it('returns to the idle form when "Use a different email" is clicked', async () => {
     const user = userEvent.setup();
-    render(<MagicLinkForm next={undefined} />);
+    render(<MagicLinkForm next={undefined} authError={undefined} />);
 
     await user.type(
       screen.getByRole('textbox', { name: /^email$/i }),
