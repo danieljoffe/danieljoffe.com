@@ -61,8 +61,13 @@ export default function JobsList({
   >(undefined);
   const [exporting, setExporting] = useState(false);
   const [visiblePostings, setVisiblePostings] = useState<JobPosting[]>([]);
+  // When there's no ``?target=...`` in the URL, fall back to the first
+  // active target. The /jobs API's untargeted "global view" filters by
+  // ``jobs.target_id`` — a column the poller never populates — so without
+  // an explicit target_id every authenticated user gets an empty list.
+  // Auto-selecting the first tab keeps /jobs useful as a default landing.
   const [activeTargetId, setActiveTargetId] = useState<string | undefined>(
-    targetId
+    targetId ?? initialTargets[0]?.id
   );
   const [activationStatus, setActivationStatus] = useState<string>('idle');
   const activatingRef = useRef<Set<string>>(new Set());
