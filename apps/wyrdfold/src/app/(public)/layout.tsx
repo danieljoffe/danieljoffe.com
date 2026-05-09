@@ -72,7 +72,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             className='flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
           >
             <WyrdfoldLogo aria-label='WyrdFold' className='h-5 w-6' />
-            <span className='text-base font-semibold tracking-tight text-text-primary'>
+            <span className='text-base text-text-tertiary uppercase tracking-[6px]'>
               WyrdFold
             </span>
             <span
