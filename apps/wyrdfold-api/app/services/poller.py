@@ -32,7 +32,7 @@ from app.services.jsonld import fetch_jsonld_jobs
 from app.services.lever import fetch_lever_jobs
 from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
-from app.services.llm.cost_log import record as record_llm_cost
+from app.services.llm.cost_log import enqueue as enqueue_llm_cost
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
@@ -329,9 +329,11 @@ async def _run_llm_scoring_for_row(
             analysis=analysis,
             llm_result=llm_result,
         )
-        await asyncio.to_thread(
-            record_llm_cost, supabase, None, "poll_scoring", llm_result
-        )
+        # Cron path: enqueue instead of inline INSERT. The background
+        # buffer batches per-row writes into a single bulk INSERT every
+        # few seconds, so a fan-out of N concurrent LLM calls produces
+        # ~1 cost-log INSERT instead of N.
+        enqueue_llm_cost(None, "poll_scoring", llm_result)
 
         llm_score = scorecard_to_numeric(analysis.scorecard)
         blended = blend_scores(current_score, llm_score)
