@@ -148,3 +148,77 @@ def test_start_is_idempotent() -> None:
         await buf.stop(sb)
 
     asyncio.run(_go())
+
+
+async def test_enqueue_from_worker_thread_wakes_flusher() -> None:
+    """Regression: ``enqueue`` is routinely called inside
+    ``asyncio.to_thread`` workers. The early-flush wakeup must cross
+    the thread boundary safely — ``asyncio.Event.set()`` is not
+    thread-safe, so we use ``loop.call_soon_threadsafe``."""
+    buf = CostLogBuffer(max_size=3, flush_interval_s=60.0)
+    sb = _supabase_mock()
+
+    buf.start(sb)
+    try:
+        # Fill exactly to max_size from a worker thread — this triggers
+        # the cross-thread wakeup path. Without ``call_soon_threadsafe``
+        # the flusher would either crash or only fire on the 60s tick.
+        def _producer() -> None:
+            for i in range(3):
+                buf.enqueue(_row(i))
+
+        await asyncio.to_thread(_producer)
+
+        # Periodic task should drain well before the 60s interval.
+        for _ in range(40):
+            await asyncio.sleep(0.025)
+            if buf.pending == 0:
+                break
+        assert buf.pending == 0
+        sb.table.return_value.insert.assert_called()
+    finally:
+        await buf.stop(sb)
+
+
+async def test_stop_does_not_lose_rows_to_cancelled_error() -> None:
+    """Regression: an earlier version called ``task.cancel()`` to wind
+    down the periodic task, but ``CancelledError`` inherits from
+    ``BaseException`` and bypasses ``flush``'s ``except Exception``
+    re-queue branch. Any rows drained mid-flush would be dropped.
+
+    Cooperative shutdown lets the in-flight flush complete naturally,
+    so when ``stop`` returns every enqueued row has either landed in
+    the DB or been re-queued for the next process boot.
+    """
+    buf = CostLogBuffer(max_size=100, flush_interval_s=0.05)
+
+    write_count = 0
+
+    def _slow_execute() -> Any:
+        nonlocal write_count
+        # Simulate Supabase taking a beat to ack. Real ``execute`` is
+        # sync, so we mirror that — ``flush`` already wraps the call in
+        # ``to_thread`` so the loop stays responsive.
+        import time
+
+        time.sleep(0.05)
+        write_count += 1
+        return MagicMock(data=[])
+
+    sb = MagicMock()
+    sb.table.return_value.insert.return_value.execute.side_effect = _slow_execute
+
+    buf.start(sb)
+    for i in range(5):
+        buf.enqueue(_row(i))
+    # Give the periodic task a tick to start the first flush.
+    await asyncio.sleep(0.06)
+
+    await buf.stop(sb)
+
+    # All five rows must be accounted for — either the in-flight flush
+    # finished cleanly or stop's final flush picked them up. Either way
+    # nothing should be sitting in ``_rows`` and ``execute`` must have
+    # been called at least once.
+    assert buf.pending == 0
+    assert write_count >= 1

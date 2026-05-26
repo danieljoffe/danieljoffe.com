@@ -58,6 +58,12 @@ class CostLogBuffer:
         # Set when a row is enqueued; the background task waits on this
         # to flush early when the buffer is full.
         self._wakeup: asyncio.Event | None = None
+        # Loop the periodic task runs on. ``enqueue`` is called from sync
+        # code (often inside ``asyncio.to_thread`` workers), so it can't
+        # touch ``_wakeup`` directly — ``asyncio.Event`` is not
+        # thread-safe. We stash the loop in ``start`` and use
+        # ``call_soon_threadsafe`` to signal across the thread boundary.
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     @property
     def pending(self) -> int:
@@ -70,9 +76,21 @@ class CostLogBuffer:
         with self._lock:
             self._rows.append(row)
             full = len(self._rows) >= self._max_size
-        if full and self._wakeup is not None:
-            # Wake the flusher early; loop captures and clears the event.
-            self._wakeup.set()
+        if not full:
+            return
+        # The wakeup must be set from the loop's own thread —
+        # ``asyncio.Event.set()`` is not thread-safe. Route through the
+        # captured loop so the call lands on the right thread even when
+        # ``enqueue`` runs under ``asyncio.to_thread``.
+        loop = self._loop
+        wakeup = self._wakeup
+        if loop is None or wakeup is None:
+            return
+        # Loop may be closed (e.g. interpreter shutdown after the FastAPI
+        # lifespan exited); in that case there's nothing to wake and the
+        # row stays buffered for the next process boot.
+        with contextlib.suppress(RuntimeError):
+            loop.call_soon_threadsafe(wakeup.set)
 
     def _drain(self) -> list[dict[str, Any]]:
         with self._lock:
@@ -137,18 +155,35 @@ class CostLogBuffer:
             return
         self._stopping = False
         self._wakeup = asyncio.Event()
+        # Capture the running loop so cross-thread ``enqueue`` calls can
+        # schedule the wakeup via ``call_soon_threadsafe``.
+        self._loop = asyncio.get_running_loop()
         self._task = asyncio.create_task(self._run(supabase))
 
     async def stop(self, supabase: Client) -> None:
-        """Cancel the periodic task and drain any remaining rows."""
+        """Drain the buffer and shut the periodic task down cooperatively.
+
+        Avoids ``task.cancel()`` because ``CancelledError`` derives from
+        ``BaseException``, so cancelling mid-``flush`` would bypass the
+        ``except Exception`` re-queue branch and lose any rows that had
+        been drained but not yet committed. Instead we set the stop
+        flag, nudge the wakeup so the task notices immediately instead
+        of waiting out the flush interval, and let the current
+        iteration finish on its own.
+        """
         self._stopping = True
+        wakeup = self._wakeup
+        loop = self._loop
+        if wakeup is not None and loop is not None:
+            with contextlib.suppress(RuntimeError):
+                loop.call_soon_threadsafe(wakeup.set)
         if self._task is not None:
-            self._task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
+            with contextlib.suppress(Exception):
                 await self._task
             self._task = None
         with contextlib.suppress(Exception):
             await self.flush(supabase)
+        self._loop = None
 
 
 # Module-level singleton — every cron caller writes through the same
