@@ -247,6 +247,62 @@ describe('TargetSuggestions — Path B/C (no jobData)', () => {
     });
   });
 
+  it('kicks off /activate for each created target so jobs start polling', async () => {
+    // Regression test for the "onboarded targets stuck at activation_status=idle"
+    // bug. Without the activate kickoff, the derive→poll pipeline never runs
+    // and the user lands at /jobs with no postings — even after a full
+    // onboarding round-trip.
+    fetchMock.mockImplementation((url: string) => {
+      // /suggest returns two new suggestions
+      if (typeof url === 'string' && url.endsWith('/api/targets/suggest')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            matches: [
+              makeSuggestion('Frontend Engineer', true, null),
+              makeSuggestion('Backend Engineer', true, null),
+            ],
+          }),
+        });
+      }
+      // /api/targets POST returns the created target with an id
+      if (typeof url === 'string' && url === '/api/targets') {
+        return Promise.resolve({
+          ok: true,
+          json: async () =>
+            makeTarget({ id: `t-${Math.random().toString(36).slice(2, 6)}` }),
+        });
+      }
+      // /link POST succeeds
+      // /activate POST succeeds — but we only care that it was CALLED.
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    const user = userEvent.setup();
+    render(<TargetSuggestions onComplete={jest.fn()} onSkip={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { level: 2, name: /suggested targets/i })
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /create 2 targets/i }));
+
+    // After create+link, /activate must fire for both targets — the bug
+    // was that this call was missing, leaving the activation pipeline
+    // (derive → poll) un-kicked.
+    await waitFor(() => {
+      const activateCalls = fetchMock.mock.calls.filter(
+        ([url, init]: [string, RequestInit | undefined]) =>
+          typeof url === 'string' &&
+          /\/api\/targets\/[^/]+\/activate$/.test(url) &&
+          init?.method === 'POST'
+      );
+      expect(activateCalls.length).toBe(2);
+    });
+  });
+
   it('invokes onSkip when "Skip for now" is clicked from the manual fallback', async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
