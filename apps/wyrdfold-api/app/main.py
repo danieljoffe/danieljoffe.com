@@ -26,7 +26,8 @@ from app.routers import (
     user_profile,
 )
 from app.scheduler import start_scheduler_if_enabled
-from app.supabase_pool import close_supabase, init_supabase
+from app.services.llm.cost_log_buffer import buffer as cost_log_buffer
+from app.supabase_pool import close_supabase, get_supabase_pool, init_supabase
 
 _log = logging.getLogger("app")
 
@@ -50,11 +51,20 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     _validate_settings(settings)
     init_supabase()
     scheduler = start_scheduler_if_enabled()
+    # Background cost-log flush task. Cron paths enqueue rows and the
+    # buffer drains them in a single bulk INSERT every few seconds.
+    # Started only when supabase is configured (otherwise enqueued rows
+    # would accumulate forever in tests/local dev without a backing DB).
+    supabase_for_buffer = get_supabase_pool()
+    if supabase_for_buffer is not None:
+        cost_log_buffer.start(supabase_for_buffer)
     try:
         yield
     finally:
         if scheduler is not None:
             scheduler.shutdown(wait=False)
+        if supabase_for_buffer is not None:
+            await cost_log_buffer.stop(supabase_for_buffer)
         close_supabase()
         await close_http_client()
 

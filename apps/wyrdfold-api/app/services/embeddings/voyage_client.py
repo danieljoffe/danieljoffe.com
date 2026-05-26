@@ -17,6 +17,7 @@ Protocol rather than leak vendor-specific vocabulary into every caller.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from typing import Any
 
@@ -24,6 +25,11 @@ from voyageai.client_async import AsyncClient
 
 from app.models.embeddings import EmbeddingModelId, EmbeddingResult, EmbeddingUsage
 from app.services.embeddings.pricing import calculate_cost
+
+# Voyage's documented per-call cap is 1000 inputs and 320k tokens.
+# 128 keeps each sub-batch well below both limits and parallelizes
+# better when callers send large batches (e.g. resume re-derive).
+MAX_INPUTS_PER_CALL = 128
 
 
 class VoyageEmbeddingsClient:
@@ -44,6 +50,16 @@ class VoyageEmbeddingsClient:
             max_retries=max_retries,
         )
 
+    async def _embed_one_batch(
+        self, *, model: EmbeddingModelId, inputs: list[str]
+    ) -> tuple[list[list[float]], int]:
+        response: Any = await self._client.embed(
+            texts=inputs,
+            model=model,
+            input_type="document",
+        )
+        return list(response.embeddings), int(response.total_tokens)
+
     async def embed(
         self,
         *,
@@ -62,20 +78,31 @@ class VoyageEmbeddingsClient:
             )
 
         start = time.perf_counter()
-        response: Any = await self._client.embed(
-            texts=inputs,
-            model=model,
-            input_type="document",
-        )
-        latency_ms = int((time.perf_counter() - start) * 1000)
 
-        # voyageai returns a result object with .embeddings (list[list[float]])
-        # and .total_tokens (int).
-        usage = EmbeddingUsage(input_tokens=int(response.total_tokens))
+        if len(inputs) <= MAX_INPUTS_PER_CALL:
+            embeddings, total_tokens = await self._embed_one_batch(
+                model=model, inputs=inputs
+            )
+        else:
+            sub_batches = [
+                inputs[i : i + MAX_INPUTS_PER_CALL]
+                for i in range(0, len(inputs), MAX_INPUTS_PER_CALL)
+            ]
+            results = await asyncio.gather(
+                *(
+                    self._embed_one_batch(model=model, inputs=sub)
+                    for sub in sub_batches
+                )
+            )
+            embeddings = [vec for sub_embeds, _ in results for vec in sub_embeds]
+            total_tokens = sum(tokens for _, tokens in results)
+
+        latency_ms = int((time.perf_counter() - start) * 1000)
+        usage = EmbeddingUsage(input_tokens=total_tokens)
         cost = calculate_cost(model, usage)
 
         return EmbeddingResult(
-            embeddings=list(response.embeddings),
+            embeddings=embeddings,
             model=model,
             usage=usage,
             cost_usd=cost,

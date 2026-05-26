@@ -18,6 +18,7 @@ returned dict against the schema. Callers that want a typed object use it.
 
 import re
 from collections.abc import AsyncIterator
+from functools import lru_cache
 from typing import Any, Protocol, TypeVar
 
 from pydantic import BaseModel
@@ -115,12 +116,26 @@ class LLMClient(Protocol):
 _INVALID_TOOL_NAME_CHARS = re.compile(r"[^a-zA-Z0-9_-]")
 
 
+@lru_cache(maxsize=128)
 def _tool_name_for(schema: type[BaseModel]) -> str:
     """Anthropic tool names allow [a-zA-Z0-9_-]{1,64}. Sanitize the
     schema's class name so generic types or odd characters don't break
     the call."""
     sanitized = _INVALID_TOOL_NAME_CHARS.sub("_", schema.__name__)
     return f"return_{sanitized}"[:64]
+
+
+@lru_cache(maxsize=128)
+def _tool_input_schema_for(schema: type[BaseModel]) -> dict[str, Any]:
+    """Cache `model_json_schema()` per Pydantic class.
+
+    The JSON schema is fully determined by the class — generating it on every
+    call walks every field, every annotation, every nested model. For hot
+    paths (probe, conversation turn) the same schema is rebuilt on each
+    request. Caching by class identity is safe because Pydantic models are
+    immutable once defined.
+    """
+    return schema.model_json_schema()
 
 
 async def complete_json(
@@ -148,7 +163,7 @@ async def complete_json(
         messages=messages,
         tool_name=_tool_name_for(schema),
         tool_description=f"Record the response as a populated {schema.__name__} object.",
-        tool_input_schema=schema.model_json_schema(),
+        tool_input_schema=_tool_input_schema_for(schema),
         purpose=purpose,
         max_tokens=max_tokens,
         cache_system=cache_system,

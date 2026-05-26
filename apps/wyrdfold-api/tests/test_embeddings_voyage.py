@@ -136,3 +136,64 @@ async def test_batch_of_inputs_passes_full_texts_list() -> None:
         purpose="test",
     )
     assert embed_mock.call_args.kwargs["texts"] == ["a", "b", "c"]
+
+
+async def test_large_batch_is_split_into_sub_batches() -> None:
+    """Batches over the per-call cap fan out into chunks of ≤MAX_INPUTS_PER_CALL."""
+    from app.services.embeddings.voyage_client import MAX_INPUTS_PER_CALL
+
+    inputs = [f"text-{i}" for i in range(MAX_INPUTS_PER_CALL * 2 + 5)]
+    expected_chunks = 3  # ceil((cap*2 + 5) / cap)
+
+    call_count = 0
+
+    async def _fake_embed(*, texts: list[str], **_: Any) -> Any:
+        nonlocal call_count
+        call_count += 1
+        return _fake_response(
+            embeddings=[[float(i)] for i, _ in enumerate(texts)],
+            total_tokens=len(texts),
+        )
+
+    client = VoyageEmbeddingsClient(api_key="test-key")
+    client._client.embed = _fake_embed  # type: ignore[method-assign]
+
+    result = await client.embed(model="voyage-3", inputs=inputs, purpose="test")
+
+    assert call_count == expected_chunks
+    assert len(result.embeddings) == len(inputs)
+    assert result.usage.input_tokens == len(inputs)
+
+
+async def test_batch_at_cap_makes_single_call() -> None:
+    """A batch exactly at the cap stays in one request — no unnecessary fan-out."""
+    from app.services.embeddings.voyage_client import MAX_INPUTS_PER_CALL
+
+    inputs = [f"t-{i}" for i in range(MAX_INPUTS_PER_CALL)]
+    client, embed_mock = _client_with_mocked_sdk(
+        _fake_response(
+            embeddings=[[0.0]] * MAX_INPUTS_PER_CALL,
+            total_tokens=MAX_INPUTS_PER_CALL,
+        )
+    )
+    await client.embed(model="voyage-3", inputs=inputs, purpose="test")
+    assert embed_mock.call_count == 1
+
+
+async def test_split_batch_aggregates_total_tokens() -> None:
+    from app.services.embeddings.voyage_client import MAX_INPUTS_PER_CALL
+
+    inputs = [f"t-{i}" for i in range(MAX_INPUTS_PER_CALL + 1)]
+
+    async def _fake_embed(*, texts: list[str], **_: Any) -> Any:
+        # 1 token per input — total per call mirrors call size.
+        return _fake_response(
+            embeddings=[[0.0]] * len(texts),
+            total_tokens=len(texts),
+        )
+
+    client = VoyageEmbeddingsClient(api_key="test-key")
+    client._client.embed = _fake_embed  # type: ignore[method-assign]
+
+    result = await client.embed(model="voyage-3", inputs=inputs, purpose="test")
+    assert result.usage.input_tokens == len(inputs)
