@@ -11,6 +11,7 @@ import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
+import ResumeSection from './ResumeSection';
 import StatusIndicator from './StatusIndicator';
 import {
   formatStatus,
@@ -421,34 +422,16 @@ export default function JobDetailPanel({
         </div>
       )}
 
-      {/* Resume lifecycle */}
+      {/*
+        Resume lifecycle — ResumeSection internally fetches the tailored
+        record (if any) and decides between "Generate" and "Review" based
+        on its actual existence, not on the loosely-correlated job
+        status. Previously inline rendering always linked to the review
+        page even when no draft existed, sending users to a "Resume not
+        found" dead end.
+      */}
       {(status === 'resume_draft' || status === 'resume_ready') && (
-        <div className='flex flex-col gap-2'>
-          <div className='flex items-center gap-2'>
-            <Text variant='caption'>Resume</Text>
-            <Badge
-              variant={status === 'resume_ready' ? 'success' : 'info'}
-              size='sm'
-            >
-              {status === 'resume_ready' ? 'Approved' : 'Draft'}
-            </Badge>
-          </div>
-          <div>
-            <Button
-              as='link'
-              href={`/jobs/${posting.id}/resume`}
-              variant={status === 'resume_ready' ? 'secondary' : 'primary'}
-              size='sm'
-              name={
-                status === 'resume_ready'
-                  ? 'view-approved-resume'
-                  : 'review-resume'
-              }
-            >
-              {status === 'resume_ready' ? 'View / Download' : 'Review Resume'}
-            </Button>
-          </div>
-        </div>
+        <ResumeSection jobPostingId={posting.id} />
       )}
 
       {/* Cover letter */}
