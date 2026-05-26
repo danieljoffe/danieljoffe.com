@@ -21,6 +21,30 @@ interface Message {
   content: string;
 }
 
+/**
+ * Extract a usable error message from a failing response. The wyrdfold
+ * proxy forwards upstream FastAPI errors as ``{detail: "..."}`` — when
+ * that's present and string-shaped, surface it so the toast can name
+ * the actual cause (e.g. "No experience profile found", "LLM provider
+ * misconfigured") instead of the generic fallback. Outside non-prod
+ * envs FastAPI returns a generic "Internal server error", which is
+ * also fine to surface.
+ */
+async function extractErrorDetail(
+  res: Response,
+  fallback: string
+): Promise<string> {
+  try {
+    const body = (await res.clone().json()) as { detail?: unknown };
+    if (typeof body.detail === 'string' && body.detail.trim()) {
+      return body.detail;
+    }
+  } catch {
+    /* non-JSON body or stream already consumed — fall through */
+  }
+  return fallback;
+}
+
 export default function ConversationChat({
   onComplete,
   onSkip,
@@ -99,7 +123,11 @@ export default function ConversationChat({
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to send message');
+      if (!res.ok) {
+        throw new Error(
+          await extractErrorDetail(res, 'Failed to send message')
+        );
+      }
 
       const data = (await res.json()) as {
         assistant_message: string;
@@ -117,7 +145,14 @@ export default function ConversationChat({
         const deriveRes = await fetch('/api/career/experience/derive', {
           method: 'POST',
         });
-        if (!deriveRes.ok) throw new Error('Failed to build master document');
+        if (!deriveRes.ok) {
+          throw new Error(
+            await extractErrorDetail(
+              deriveRes,
+              'Failed to build master document'
+            )
+          );
+        }
         setDeriving(false);
 
         setTimeout(onComplete, 800);
@@ -159,7 +194,11 @@ export default function ConversationChat({
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to skip question');
+      if (!res.ok) {
+        throw new Error(
+          await extractErrorDetail(res, 'Failed to skip question')
+        );
+      }
 
       const data = (await res.json()) as {
         assistant_message: string;
@@ -176,7 +215,14 @@ export default function ConversationChat({
         const deriveRes = await fetch('/api/career/experience/derive', {
           method: 'POST',
         });
-        if (!deriveRes.ok) throw new Error('Failed to build master document');
+        if (!deriveRes.ok) {
+          throw new Error(
+            await extractErrorDetail(
+              deriveRes,
+              'Failed to build master document'
+            )
+          );
+        }
         setDeriving(false);
         setTimeout(onComplete, 800);
       }
