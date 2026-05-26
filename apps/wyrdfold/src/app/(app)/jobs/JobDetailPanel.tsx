@@ -162,7 +162,30 @@ export default function JobDetailPanel({
         const data = (await res.json()) as JobAnalysis;
         setAnalysis(data);
       } else {
-        setAnalysisError('Analysis failed. The job may lack a description.');
+        // Distinguish the specific "no description in DB" 422 case (which
+        // the route surfaces with ``Job posting has no description to
+        // analyze.``) from every other failure mode (404, 503, LLM
+        // error, network reset). The previous blanket "lack a
+        // description" message was actively misleading — most analysis
+        // failures aren't about the description.
+        const body = (await res.json().catch(() => null)) as {
+          detail?: string;
+          error?: string;
+        } | null;
+        const detail = body?.detail ?? body?.error;
+        if (
+          res.status === 422 &&
+          typeof detail === 'string' &&
+          /no description/i.test(detail)
+        ) {
+          setAnalysisError(
+            'Analysis skipped — this job posting has no description text.'
+          );
+        } else if (typeof detail === 'string' && detail.trim()) {
+          setAnalysisError(`Analysis failed: ${detail}`);
+        } else {
+          setAnalysisError(`Analysis failed (${res.status}).`);
+        }
       }
     } catch {
       setAnalysisError('Network error running analysis.');
