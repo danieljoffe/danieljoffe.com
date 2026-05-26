@@ -7,6 +7,7 @@ import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import Button from '@/components/Button';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
+import { hasProse, type ProseResponse } from '../profile/types';
 import TargetsList from './TargetsList';
 import type { UserTargetWithTarget } from './types';
 
@@ -41,10 +42,13 @@ async function TargetsLoader() {
     fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithTarget[] }>(
       '/targets/mine'
     ),
-    fetchJsonFromWyrdfoldAPI<{ prose: unknown }>('/experience/prose'),
+    fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose'),
   ]);
   const initialTargets = targetsRes?.targets ?? [];
-  const hasProfile = proseRes?.prose != null;
+  // ``/experience/prose`` returns ``{prose: null}`` when empty and the
+  // bare ``ProseDoc`` when populated — ``hasProse`` is the type guard
+  // that handles both.
+  const hasProfile = proseRes != null && hasProse(proseRes);
 
   if (!hasProfile && initialTargets.length === 0) {
     return <NoProfileZeroState />;

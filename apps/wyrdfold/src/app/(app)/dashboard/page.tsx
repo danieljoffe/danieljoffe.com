@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import DashboardPage, { type DashboardInitial } from '../DashboardPage';
 import type { JobPosting } from '../jobs/types';
+import { hasProse, type ProseResponse } from '../profile/types';
 import type { UserTargetWithTarget } from '../targets/types';
 
 export const metadata: Metadata = {
@@ -19,13 +20,14 @@ const PIPELINE_STATUSES = ['new', 'saved', 'resume_draft', 'applied'] as const;
 
 export default async function WyrdfoldDashboard() {
   // ``hasProfile`` checks whether the user has authored prose at all —
-  // the underlying signal that "they've started onboarding." Earlier
-  // versions used ``/experience/gap-health`` for this, but that route
-  // returns a synthetic 200 body (``{gap_pct: 100, tier: 'red', gaps:
-  // [...content.empty]}``) for users with no content, so the truthiness
-  // check incorrectly flagged invited guests as already-onboarded and
-  // sent them to the "no active targets" branch instead of the
-  // onboarding CTA.
+  // the underlying signal that "they've started onboarding." The
+  // upstream ``/experience/prose`` endpoint returns ``{prose: null}``
+  // when empty and the bare ``ProseDoc`` (``{id, content, ...}``) when
+  // populated — two shapes for the same response. ``hasProse`` is the
+  // type-guard from ``profile/types`` that handles both correctly.
+  // A naive ``proseRes?.prose != null`` check matched only the empty
+  // case and silently treated every populated response as ``no profile``,
+  // sending users back to the onboarding CTA after they'd onboarded.
   const [topRes, proseRes, targetsRes, ...countResponses] = await Promise.all([
     fetchJsonFromWyrdfoldAPI<JobsListResponse>('/jobs', {
       searchParams: new URLSearchParams({
@@ -35,7 +37,7 @@ export default async function WyrdfoldDashboard() {
         page_size: '5',
       }),
     }),
-    fetchJsonFromWyrdfoldAPI<{ prose: unknown }>('/experience/prose'),
+    fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose'),
     fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithTarget[] }>(
       '/targets/mine'
     ),
@@ -55,7 +57,7 @@ export default async function WyrdfoldDashboard() {
   const initial: DashboardInitial = {
     topMatches: topRes?.postings ?? [],
     counts,
-    hasProfile: proseRes?.prose != null,
+    hasProfile: proseRes != null && hasProse(proseRes),
     hasActiveTargets:
       targetsRes?.targets?.some(t => t.user_target.is_active) ?? false,
   };
