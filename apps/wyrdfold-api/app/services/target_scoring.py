@@ -27,6 +27,7 @@ from app.models.schemas import JobTargetScore, ScoreBreakdown, ScoringStatus
 from app.models.targets import JobTarget
 from app.services.jd_parser import ParsedJD, parse_jd
 from app.services.scoring import score_job_with_profile, score_title_against_profile
+from app.services.supabase_retry import execute_with_retry_sync
 
 logger = logging.getLogger(__name__)
 
@@ -77,10 +78,13 @@ def _upsert_score(
         "scored_profile_version": scored_profile_version,
         "updated_at": datetime.now(UTC).isoformat(),
     }
-    resp = (
+    # Idempotent upsert (`on_conflict` matches the unique constraint), so
+    # retrying on a Supabase HTTP/2 stream drop is safe.
+    resp = execute_with_retry_sync(
         supabase.table(TABLE)
         .upsert(row, on_conflict="job_posting_id,target_id")
-        .execute()
+        .execute,
+        label="scores upsert",
     )
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:

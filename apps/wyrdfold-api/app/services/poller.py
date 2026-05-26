@@ -37,6 +37,7 @@ from app.services.sanitize import sanitize_html
 from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
 from app.services.standard_job import StandardJob
+from app.services.supabase_retry import execute_with_retry_sync
 from app.services.target_scoring import (
     batch_update_global_scores,
 )
@@ -451,9 +452,20 @@ async def _poll_one_source(
             upsert_query = supabase.table("jobs").upsert(
                 rows_to_upsert, on_conflict="source_id,external_id"
             )
+            # Both calls are idempotent — the upsert keys on the unique
+            # constraint, the SELECT is read-only — so retrying on a
+            # Supabase HTTP/2 stream drop won't double-write or skew counts.
             upsert_resp, existing_resp = await asyncio.gather(
-                asyncio.to_thread(upsert_query.execute),
-                asyncio.to_thread(existing_query.execute),
+                asyncio.to_thread(
+                    execute_with_retry_sync,
+                    upsert_query.execute,
+                    label=f"poll upsert {company_name}",
+                ),
+                asyncio.to_thread(
+                    execute_with_retry_sync,
+                    existing_query.execute,
+                    label=f"poll existing {company_name}",
+                ),
             )
             for raw_row in upsert_resp.data or []:
                 data = cast(dict[str, Any], raw_row)
@@ -598,13 +610,27 @@ async def _poll_one_source(
                 .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
                 .in_("id", stale_ids)
             )
+            # Both writes are idempotent (UPDATE with stable WHERE), so a
+            # retry after a stream drop is safe.
             await asyncio.gather(
-                asyncio.to_thread(archive_query.execute),
-                asyncio.to_thread(last_polled_query.execute),
+                asyncio.to_thread(
+                    execute_with_retry_sync,
+                    archive_query.execute,
+                    label=f"poll archive {company_name}",
+                ),
+                asyncio.to_thread(
+                    execute_with_retry_sync,
+                    last_polled_query.execute,
+                    label=f"poll mark-polled {company_name}",
+                ),
             )
             summary["archived"] = len(stale_ids)
         else:
-            await asyncio.to_thread(last_polled_query.execute)
+            await asyncio.to_thread(
+                execute_with_retry_sync,
+                last_polled_query.execute,
+                label=f"poll mark-polled {company_name}",
+            )
 
         # Fire email + SMS alerts for newly-inserted high-scoring jobs.
         if new_rows:

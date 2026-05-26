@@ -20,6 +20,7 @@ type FormState = 'idle' | 'loading' | 'sent' | 'error';
 
 interface MagicLinkFormProps {
   next: string | undefined;
+  authError: string | undefined;
 }
 
 const NEXT_COOKIE = 'wyrdfold_login_next';
@@ -64,10 +65,40 @@ function friendlyAuthError(message: string): string {
   return message;
 }
 
-export default function MagicLinkForm({ next }: MagicLinkFormProps) {
+// `?auth_error=` codes set by /auth/callback when the magic link
+// flow fails. Keep the user-facing copy short — the goal is just to
+// stop the link looking like it did nothing.
+function callbackErrorCopy(code: string): string {
+  switch (code) {
+    case 'missing_code':
+      // Most common cause: the project's redirect-URL allowlist
+      // doesn't include this app's /auth/callback, so Supabase
+      // silently substituted Site URL for the redirect and stripped
+      // the `?code=...` we needed to exchange.
+      return 'Magic link redirect was blocked by Supabase. Check the project’s redirect URL allowlist includes this site’s /auth/callback.';
+    case 'flow_state_not_found':
+    case 'pkce_verifier_not_found':
+      // The PKCE code_verifier cookie was missing. Happens when the
+      // email is opened in a different browser/profile from the one
+      // that requested the link.
+      return 'Open the magic link in the same browser you requested it from, or request a new one.';
+    case 'otp_expired':
+      return 'That magic link expired. Request a fresh one below.';
+    default:
+      return `Sign-in failed (${code}). Try requesting a new link.`;
+  }
+}
+
+export default function MagicLinkForm({ next, authError }: MagicLinkFormProps) {
   const [email, setEmail] = useState('');
-  const [formState, setFormState] = useState<FormState>('idle');
-  const [error, setError] = useState('');
+  // Surface a callback failure as the initial error state so the user
+  // sees *why* the magic link didn't sign them in.
+  const [formState, setFormState] = useState<FormState>(
+    authError ? 'error' : 'idle'
+  );
+  const [error, setError] = useState(
+    authError ? callbackErrorCopy(authError) : ''
+  );
   const [resendIn, setResendIn] = useState(0);
 
   // Resend cooldown — counts down from RESEND_COOLDOWN_S after the link is sent.

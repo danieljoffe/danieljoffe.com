@@ -84,6 +84,17 @@ export async function proxy(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
 
+  // API routes handle their own 401s (returning JSON, not redirecting), so
+  // we deliberately don't run the redirect-to-/login dance here. Letting
+  // the middleware run is what makes ``getUser()`` above fire — its side
+  // effect is refreshing the access token via the cookie adapter when the
+  // current one is expiring, which keeps every authenticated /api/* call
+  // from 401-ing the moment the session crosses the JWT TTL.
+  if (pathname.startsWith('/api/')) {
+    supabaseResponse.headers.set('Content-Security-Policy', cspValue);
+    return supabaseResponse;
+  }
+
   // Public marketing landing page. Signed-in users get sent to the dashboard
   // so they don't see the marketing pitch; everyone else can view it.
   if (pathname === '/') {
@@ -123,11 +134,18 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Bypass: API routes, Next internals, favicons, manifest/robots/sitemap,
-      // and the /public/images directory (public-page assets like the hero
-      // screenshot are served from here and must not require auth).
+      // Bypass: Next internals, favicons, manifest/robots/sitemap, and the
+      // /public/images directory (public-page assets like the hero screenshot
+      // are served from here and must not require auth).
+      //
+      // ``/api/*`` is intentionally NOT bypassed — the middleware's
+      // ``auth.getUser()`` call is what refreshes the access token via the
+      // cookie adapter, and skipping it on /api/* causes every authenticated
+      // route handler to ship a stale token to wyrdfold-api after the JWT
+      // TTL elapses. The handler for /api/* exits early in ``proxy()`` so
+      // route handlers keep their own 401 contract.
       source:
-        '/((?!api|_next/static|_next/image|favicon|images/|site\\.webmanifest|robots\\.txt|sitemap\\.xml).*)',
+        '/((?!_next/static|_next/image|favicon|images/|site\\.webmanifest|robots\\.txt|sitemap\\.xml).*)',
     },
   ],
 };

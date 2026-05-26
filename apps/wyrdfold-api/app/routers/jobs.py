@@ -229,6 +229,104 @@ def _list_jobs_for_target(
         return _list_jobs_for_target_two_query(supabase, **kwargs)
 
 
+def _list_jobs_across_user_targets(
+    supabase: Client,
+    *,
+    user_target_ids: set[str],
+    offset: int,
+    page: int,
+    page_size: int,
+    sort: str,
+    ascending: bool,
+    min_score: int | None,
+    status: str | None,
+    company: str | None,
+    search: str | None,
+) -> dict[str, Any]:
+    """Untargeted list — returns the union of jobs scored against any of the
+    user's active targets, deduplicated by job id.
+
+    Two-query pattern, mirroring ``_list_jobs_for_target_two_query`` but
+    aggregating by ``max(score)`` across the user's targets so each job
+    appears once. Replaces the previous "global view" path which filtered
+    by ``jobs.target_id`` — a column the poller never populates, so that
+    filter rejected every row.
+    """
+    sort_col = "score" if sort == "score" else sort
+
+    score_query = (
+        supabase.table("scores")
+        .select("job_posting_id, target_id, score, score_breakdown, scoring_status")
+        .in_("target_id", list(user_target_ids))
+        .eq("excluded", False)
+    )
+    if min_score is not None:
+        score_query = score_query.gte("score", min_score)
+    score_resp = score_query.execute()
+    score_rows = cast(list[dict[str, Any]], score_resp.data or [])
+
+    if not score_rows:
+        return {"postings": [], "total": 0, "page": page, "page_size": page_size}
+
+    # Per-job: take the highest score across this user's targets.
+    best: dict[str, dict[str, Any]] = {}
+    for row in score_rows:
+        jid = row["job_posting_id"]
+        existing = best.get(jid)
+        if existing is None or row["score"] > existing["score"]:
+            best[jid] = row
+
+    if sort_col == "score" and not status and not company and not search:
+        # Sort + paginate at the scores layer when no posting-level filters
+        # require us to load every candidate posting first.
+        ranked_ids = sorted(
+            best.keys(),
+            key=lambda jid: best[jid]["score"],
+            reverse=not ascending,
+        )
+        page_ids = ranked_ids[offset : offset + page_size]
+        total: int | None = len(ranked_ids)
+    else:
+        page_ids = list(best.keys())
+        total = None  # recomputed after posting-level filters
+
+    if not page_ids:
+        return {"postings": [], "total": total or 0, "page": page, "page_size": page_size}
+
+    jp_query = supabase.table("jobs").select(_JP_SELECT_COLS).in_("id", page_ids)
+    if status:
+        jp_query = jp_query.eq("status", status)
+    if company:
+        jp_query = jp_query.eq("company_name", company)
+    if search:
+        jp_query = jp_query.ilike("title", f"%{search}%")
+    jp_resp = jp_query.execute()
+    postings = list(jp_resp.data or [])
+
+    for posting in postings:
+        p = cast(dict[str, Any], posting)
+        ts = best.get(p["id"])
+        if ts:
+            p["score"] = ts["score"]
+            p["score_breakdown"] = ts.get("score_breakdown")
+            p["scoring_status"] = ts.get("scoring_status", "stage1")
+
+    if total is None or sort_col != "score":
+
+        def _sort_key(p: Any) -> Any:
+            val = cast(dict[str, Any], p).get(sort)
+            if val is None:
+                return 0 if sort == "score" else ""
+            return val
+
+        postings.sort(key=_sort_key, reverse=not ascending)
+        if total is None:
+            total = len(postings)
+            postings = postings[offset : offset + page_size]
+
+    return {"postings": postings, "total": total, "page": page, "page_size": page_size}
+
+
 # Sync `def` so FastAPI runs each request in a threadpool worker. The body
 # makes multiple blocking supabase `.execute()` calls; `async def` would block
 # the event loop and serialize concurrent /jobs reads.
@@ -316,14 +414,32 @@ def list_jobs(
         job_list_cache.set(cache_key, result)
         return result
 
-    # Global view — query jobs directly with global scores
+    # Untargeted list — for JWT callers, return the union of jobs scored
+    # against any of the user's active targets (deduplicated). For api-key
+    # callers (cron/poller) we keep the old "table scan" path: they need
+    # to operate on the whole table by design (rescore-all, backfill).
+    if user_target_ids is not None:
+        result = _list_jobs_across_user_targets(
+            supabase,
+            user_target_ids=user_target_ids,
+            offset=offset,
+            page=page,
+            page_size=page_size,
+            sort=sort,
+            ascending=ascending,
+            min_score=min_score,
+            status=status,
+            company=company,
+            search=search,
+        )
+        job_list_cache.set(cache_key, result)
+        return result
+
+    # Operator path (api-key, no JWT): full table view, no target scoping.
     query = supabase.table("jobs").select(
         _JP_SELECT_COLS,
         count=CountMethod.exact,
     )
-
-    if user_target_ids is not None:
-        query = query.in_("target_id", list(user_target_ids))
     if min_score is not None:
         query = query.gte("score", min_score)
     if status:
@@ -336,14 +452,14 @@ def list_jobs(
     query = query.order(sort, desc=not ascending).range(offset, offset + page_size - 1)
     resp = query.execute()
 
-    global_result: dict[str, Any] = {
+    operator_result: dict[str, Any] = {
         "postings": list(resp.data or []),
         "total": resp.count or 0,
         "page": page,
         "page_size": page_size,
     }
-    job_list_cache.set(cache_key, global_result)
-    return global_result
+    job_list_cache.set(cache_key, operator_result)
+    return operator_result
 
 
 @router.post("/validate-url")

@@ -27,6 +27,14 @@ const nextConfig = {
   nx: {},
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
   devIndicators: false,
+  // Next 16 blocks cross-origin requests to internal dev endpoints
+  // (HMR WebSocket, /__nextjs_font/*, etc.) by default — and the
+  // built-in allow list is only `localhost` / `*.localhost`. Loading
+  // the dev server from `127.0.0.1` hits 403s on those internals,
+  // which breaks hydration on the page and leaves SSR HTML stuck.
+  // Allow both forms so either hostname works.
+  // Ref: node_modules/next/dist/server/lib/router-utils/block-cross-site-dev.js
+  allowedDevOrigins: ['127.0.0.1'],
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts'],
     webpackBuildWorker: !isTest && !isCI,

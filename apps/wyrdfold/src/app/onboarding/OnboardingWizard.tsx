@@ -85,9 +85,8 @@ export default function OnboardingWizard() {
               variant='caption'
               className='mt-3 max-w-md text-text-tertiary'
             >
-              Think of WyrdFold like a new recruiter you&apos;re onboarding. The
-              first scores will be rough — the more context you feed it, the
-              sharper it gets.
+              Match scores start rough and get more accurate as you add resume
+              content, target roles, and preferences.
             </Text>
           )}
         </div>

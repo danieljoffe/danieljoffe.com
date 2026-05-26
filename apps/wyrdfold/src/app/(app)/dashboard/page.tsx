@@ -18,7 +18,15 @@ interface JobsListResponse {
 const PIPELINE_STATUSES = ['new', 'saved', 'resume_draft', 'applied'] as const;
 
 export default async function WyrdfoldDashboard() {
-  const [topRes, healthRes, targetsRes, ...countResponses] = await Promise.all([
+  // ``hasProfile`` checks whether the user has authored prose at all —
+  // the underlying signal that "they've started onboarding." Earlier
+  // versions used ``/experience/gap-health`` for this, but that route
+  // returns a synthetic 200 body (``{gap_pct: 100, tier: 'red', gaps:
+  // [...content.empty]}``) for users with no content, so the truthiness
+  // check incorrectly flagged invited guests as already-onboarded and
+  // sent them to the "no active targets" branch instead of the
+  // onboarding CTA.
+  const [topRes, proseRes, targetsRes, ...countResponses] = await Promise.all([
     fetchJsonFromWyrdfoldAPI<JobsListResponse>('/jobs', {
       searchParams: new URLSearchParams({
         status: 'new',
@@ -27,7 +35,7 @@ export default async function WyrdfoldDashboard() {
         page_size: '5',
       }),
     }),
-    fetchJsonFromWyrdfoldAPI<unknown>('/experience/gap-health'),
+    fetchJsonFromWyrdfoldAPI<{ prose: unknown }>('/experience/prose'),
     fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithTarget[] }>(
       '/targets/mine'
     ),
@@ -47,7 +55,7 @@ export default async function WyrdfoldDashboard() {
   const initial: DashboardInitial = {
     topMatches: topRes?.postings ?? [],
     counts,
-    hasProfile: healthRes !== null,
+    hasProfile: proseRes?.prose != null,
     hasActiveTargets:
       targetsRes?.targets?.some(t => t.user_target.is_active) ?? false,
   };
