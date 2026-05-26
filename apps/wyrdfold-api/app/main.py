@@ -45,6 +45,27 @@ def _validate_settings(s: Settings) -> None:
             "ALLOWED_HOSTS must be set (comma-separated host allowlist). Use '*' only in local dev."
         )
 
+    # If the operator selected the real Anthropic provider but didn't
+    # configure a key, every LLM-backed request will 500 mid-call with
+    # an opaque SDK ``TypeError`` ("Could not resolve authentication
+    # method") — and nothing surfaces that misconfig until the first
+    # user tries to onboard, derive a target, score a job, etc. Fail
+    # the lifespan instead so the deploy logs make the cause obvious.
+    if s.llm_provider == "anthropic" and not s.anthropic_api_key:
+        raise RuntimeError(
+            "LLM_PROVIDER=anthropic but ANTHROPIC_API_KEY is unset. "
+            "Either set ANTHROPIC_API_KEY or switch LLM_PROVIDER=mock."
+        )
+
+    # Same shape for Voyage embeddings — when the real provider is
+    # selected without a key, embedding generation will explode partway
+    # through a request flow (re-derive, conversation, etc.).
+    if s.embeddings_provider == "voyage" and not s.voyage_api_key:
+        raise RuntimeError(
+            "EMBEDDINGS_PROVIDER=voyage but VOYAGE_API_KEY is unset. "
+            "Either set VOYAGE_API_KEY or switch EMBEDDINGS_PROVIDER=mock."
+        )
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
