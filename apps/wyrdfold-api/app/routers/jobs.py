@@ -731,21 +731,30 @@ def _assert_user_owns_posting(
     *,
     include_description: bool = False,
 ) -> dict[str, Any]:
-    """Look up a posting and verify the caller is linked to its target.
-    Returns the selected columns. 404 on either missing or unowned (don't
-    leak existence of postings outside the user's targets).
+    """Look up a posting and verify the caller is linked (via
+    ``user_targets``) to at least one target that has scored this
+    posting. 404 on either missing or unowned (don't leak existence of
+    postings outside the user's targets).
 
     ``include_description=True`` adds ``description_html`` to the
     projection — needed by the per-posting detail GET, omitted from the
     other callers (delete, ownership-only checks) so we don't move the
     full JD body across the wire on every status mutation.
+
+    Ownership is derived through ``scores``: the poller writes
+    ``scores`` rows keyed by ``(job_posting_id, target_id)``, while
+    ``jobs.target_id`` is **not** populated. Checking ``jobs.target_id``
+    directly (the previous shape) always 404'd on real postings. This
+    mirrors the fix applied in ``status.py`` (PR #676) — same root
+    cause, separate copy of the helper.
     """
+    # 1. Fetch the posting (and projection).
     select_cols = (
         _JP_DETAIL_SELECT_COLS if include_description else _JP_SELECT_COLS
     )
     posting_resp = (
         supabase.table("jobs")
-        .select(select_cols + ", target_id")
+        .select(select_cols)
         .eq("id", posting_id)
         .limit(1)
         .execute()
@@ -754,19 +763,37 @@ def _assert_user_owns_posting(
     if not rows or not isinstance(rows[0], dict):
         raise HTTPException(status_code=404, detail="Posting not found")
     row = cast(dict[str, Any], rows[0])
-    target_id = row.get("target_id")
-    if not target_id:
-        raise HTTPException(status_code=404, detail="Posting not found")
-    link = (
+
+    # 2. Resolve the caller's target ids.
+    user_targets_resp = (
         supabase.table("user_targets")
         .select("target_id")
         .eq("user_id", user_id)
-        .eq("target_id", target_id)
+        .execute()
+    )
+    user_target_ids = {
+        cast(dict[str, Any], r)["target_id"]
+        for r in user_targets_resp.data or []
+    }
+    if not user_target_ids:
+        raise HTTPException(status_code=404, detail="Posting not found")
+
+    # 3. Confirm at least one of the user's targets has a score row for
+    # this posting. Exposing the matched target_id on the returned row
+    # so callers can scope cache invalidation, mirroring the old
+    # ``jobs.target_id`` contract.
+    score_resp = (
+        supabase.table("scores")
+        .select("target_id")
+        .eq("job_posting_id", posting_id)
+        .in_("target_id", list(user_target_ids))
         .limit(1)
         .execute()
     )
-    if not link.data:
+    score_rows = cast(list[dict[str, Any]], score_resp.data or [])
+    if not score_rows:
         raise HTTPException(status_code=404, detail="Posting not found")
+    row["target_id"] = score_rows[0]["target_id"]
     return row
 
 
