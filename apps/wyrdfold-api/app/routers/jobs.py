@@ -66,6 +66,12 @@ _JP_SELECT_COLS = (
     "greenhouse_updated_at, first_seen_at, created_at"
 )
 
+# Detail-view projection — adds ``description_html`` (and anything else
+# that's too heavy for list pages). Used by the per-posting GET so the
+# UI can render the JD body in the detail panel; analysis/tailor flows
+# already read ``description_html`` directly off ``jobs``.
+_JP_DETAIL_SELECT_COLS = _JP_SELECT_COLS + ", description_html"
+
 
 def _list_jobs_for_target_rpc(
     supabase: Client,
@@ -719,15 +725,27 @@ async def backfill_salary(
 
 
 def _assert_user_owns_posting(
-    supabase: Client, posting_id: str, user_id: str
+    supabase: Client,
+    posting_id: str,
+    user_id: str,
+    *,
+    include_description: bool = False,
 ) -> dict[str, Any]:
     """Look up a posting and verify the caller is linked to its target.
     Returns the selected columns. 404 on either missing or unowned (don't
     leak existence of postings outside the user's targets).
+
+    ``include_description=True`` adds ``description_html`` to the
+    projection — needed by the per-posting detail GET, omitted from the
+    other callers (delete, ownership-only checks) so we don't move the
+    full JD body across the wire on every status mutation.
     """
+    select_cols = (
+        _JP_DETAIL_SELECT_COLS if include_description else _JP_SELECT_COLS
+    )
     posting_resp = (
         supabase.table("jobs")
-        .select(_JP_SELECT_COLS + ", target_id")
+        .select(select_cols + ", target_id")
         .eq("id", posting_id)
         .limit(1)
         .execute()
@@ -758,7 +776,12 @@ async def get_job(
     user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
-    row = _assert_user_owns_posting(supabase, posting_id, user_id)
+    # Detail GET pulls ``description_html`` so the UI can render the JD
+    # body. The list endpoint deliberately omits it for payload size, but
+    # there's no rendering of a single posting without the JD text.
+    row = _assert_user_owns_posting(
+        supabase, posting_id, user_id, include_description=True
+    )
     # Drop the helper target_id column we only fetched for ownership.
     row.pop("target_id", None)
     return row
