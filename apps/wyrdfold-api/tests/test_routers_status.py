@@ -29,13 +29,30 @@ def _build_supabase(
 ) -> MagicMock:
     """Mock supabase chain for status + delete routes.
 
-    Status uses `_assert_user_owns_posting` which:
-      1. table("jobs").select(...).eq("id", id).single().execute()
-      2. table("user_targets").select(...).eq.eq.limit(1).execute()
-    Delete uses the jobs router's own `_assert_user_owns_posting` which
-    differs slightly: it uses .limit(1) instead of .single(). Mock both.
+    Status uses ``_assert_user_owns_posting`` which:
+      1. ``table("jobs").select("status").eq("id", id).single().execute()``
+      2. ``table("user_targets").select("target_id").eq("user_id", uid).execute()``
+      3. ``table("scores").select("target_id").eq("job_posting_id", id).in_("target_id", [...]).limit(1).execute()``
+
+    The old shape went via ``jobs.target_id`` directly; this version
+    routes ownership through the ``scores`` table since the poller
+    doesn't populate ``jobs.target_id``.
+
+    Delete uses the jobs router's own ``_assert_user_owns_posting``
+    (still on the old shape today — ``jobs.target_id`` + .limit(1)).
+    Mock both.
     """
     sb = MagicMock()
+    # Status route returns ``{status}`` from the jobs query. Delete route
+    # still uses the legacy shape with ``jobs.target_id`` inline.
+    posting_status_only = (
+        # The status route only reads ``status`` off the row. Default to
+        # ``"new"`` when callers don't supply one (e.g. delete-path tests
+        # that don't care about status semantics).
+        {"status": posting_data.get("status", "new"), "id": "abc"}
+        if posting_data is not None
+        else None
+    )
     posting_with_target = (
         {**posting_data, "target_id": _TEST_TARGET_ID, "id": "abc"}
         if posting_data is not None
@@ -46,11 +63,11 @@ def _build_supabase(
         t = MagicMock()
         if name == "jobs":
             sel = t.select.return_value
-            # status.py uses .single().execute()
+            # status.py uses .single().execute() — selects just ``status``
             sel.eq.return_value.single.return_value.execute.return_value = _Resp(
-                posting_with_target
+                posting_status_only
             )
-            # jobs.py delete/get use .limit(1).execute()
+            # jobs.py delete/get use .limit(1).execute() — still selects target_id
             sel.eq.return_value.limit.return_value.execute.return_value = _Resp(
                 [posting_with_target] if posting_with_target else None
             )
@@ -61,13 +78,25 @@ def _build_supabase(
                 [posting_with_target] if posting_with_target else None
             )
         elif name == "user_targets":
-            link_data = (
+            # Status route: ``.select("target_id").eq("user_id", uid).execute()``
+            t.select.return_value.eq.return_value.execute.return_value = _Resp(
+                [{"target_id": _TEST_TARGET_ID}] if owns_posting else []
+            )
+            # Legacy delete-path chain (kept for jobs.py compatibility).
+            t.select.return_value.eq.return_value.eq.return_value.limit.return_value.execute.return_value = _Resp(
                 [{"target_id": _TEST_TARGET_ID}]
                 if owns_posting and posting_with_target
                 else []
             )
-            t.select.return_value.eq.return_value.eq.return_value.limit.return_value.execute.return_value = _Resp(
-                link_data
+        elif name == "scores":
+            # Status route: ``.eq("job_posting_id", id).in_("target_id", [...]).limit(1).execute()``
+            score_rows = (
+                [{"target_id": _TEST_TARGET_ID}]
+                if owns_posting and posting_with_target
+                else []
+            )
+            t.select.return_value.eq.return_value.in_.return_value.limit.return_value.execute.return_value = _Resp(
+                score_rows
             )
         elif name == "status_log":
             t.insert.return_value.execute.return_value = _Resp(None)
