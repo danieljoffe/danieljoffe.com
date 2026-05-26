@@ -178,8 +178,13 @@ async def create_target_from_manual(
     """
     doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
+        # 422 (Unprocessable Entity): the route exists and the request is
+        # well-formed, but a business precondition (an experience profile
+        # to derive against) isn't met. 404 was misleading — it implied
+        # the endpoint didn't exist, and the UI couldn't distinguish from
+        # a genuine misrouted call.
         raise HTTPException(
-            status_code=404,
+            status_code=422,
             detail="No experience profile found — complete onboarding first",
         )
     return await from_input.from_manual(
@@ -214,8 +219,9 @@ async def create_target_from_url(
     """
     doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
+        # Precondition (profile exists) not met — see /from-manual for rationale.
         raise HTTPException(
-            status_code=404,
+            status_code=422,
             detail="No experience profile found — complete onboarding first",
         )
 
@@ -266,7 +272,8 @@ async def suggest(
     """
     doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
-        raise HTTPException(status_code=404, detail="No experience profile found")
+        # Precondition (profile exists) not met — see /from-manual for rationale.
+        raise HTTPException(status_code=422, detail="No experience profile found")
 
     matched, result = await suggest_and_match(
         supabase, llm, payload=doc.payload, user_id=user_id
@@ -427,7 +434,8 @@ async def derive_target_profile(
 
     doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
-        raise HTTPException(status_code=404, detail="No experience profile found")
+        # Precondition (profile exists) not met — see /from-manual for rationale.
+        raise HTTPException(status_code=422, detail="No experience profile found")
 
     derived, result = await derive_profile_from_label(
         llm, label=target.label, payload=doc.payload

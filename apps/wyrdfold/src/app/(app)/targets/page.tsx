@@ -1,9 +1,11 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import Button from '@/components/Button';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import TargetsList from './TargetsList';
 import type { UserTargetWithTarget } from './types';
@@ -31,11 +33,60 @@ export default function FittedTargetsPage() {
 }
 
 async function TargetsLoader() {
-  const res = await fetchJsonFromWyrdfoldAPI<{
-    targets: UserTargetWithTarget[];
-  }>('/targets/mine');
-  const initialTargets = res?.targets ?? [];
+  // Target creation depends on having an experience profile — the API
+  // uses it to derive the scoring profile. Fetch both in parallel so we
+  // can short-circuit to the onboarding CTA when no prose doc exists,
+  // sparing the user a dead-end submit that just toasts an error.
+  const [targetsRes, proseRes] = await Promise.all([
+    fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithTarget[] }>(
+      '/targets/mine'
+    ),
+    fetchJsonFromWyrdfoldAPI<{ prose: unknown }>('/experience/prose'),
+  ]);
+  const initialTargets = targetsRes?.targets ?? [];
+  const hasProfile = proseRes?.prose != null;
+
+  if (!hasProfile && initialTargets.length === 0) {
+    return <NoProfileZeroState />;
+  }
+
   return <TargetsList initialTargets={initialTargets} />;
+}
+
+function NoProfileZeroState() {
+  return (
+    <Card>
+      <CardContent className='flex flex-col items-center gap-4 py-12'>
+        <Sparkles className='size-12 text-text-tertiary' aria-hidden />
+        <Text variant='body' as='p' className='text-center max-w-md'>
+          Build your profile first — we use it to derive each target's scoring
+          profile, so targets can't be created until there's prose to draw from.
+        </Text>
+        <div className='flex items-center gap-3'>
+          <Button
+            name='targets-go-profile'
+            variant='primary'
+            size='sm'
+            as='link'
+            href='/profile'
+          >
+            <span>Set up profile</span>
+            <ArrowRight className='size-4' aria-hidden />
+          </Button>
+          <Button
+            name='targets-start-onboarding'
+            variant='outline'
+            size='sm'
+            as='link'
+            href='/onboarding'
+          >
+            <Sparkles className='size-4' aria-hidden />
+            <span>Start with AI</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 function TargetsCardsSkeleton() {
