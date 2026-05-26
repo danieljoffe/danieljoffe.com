@@ -153,7 +153,22 @@ export default function TargetSuggestions({
         const linkRes = await fetch(`/api/targets/${targetId}/link`, {
           method: 'POST',
         });
-        if (linkRes.ok) created++;
+        if (!linkRes.ok) continue;
+        created++;
+
+        // Fire the activation pipeline (derive scoring profile → poll
+        // sources → mark ready) without awaiting. Onboarded targets
+        // were previously left at ``activation_status=idle`` because the
+        // wizard only ran create+link, so no jobs got polled until the
+        // user manually clicked Activate on /targets. Fire-and-forget
+        // keeps the wizard responsive; failures will surface on /jobs
+        // (still-idle target = no postings) rather than block the
+        // completion step. Catch and swallow to avoid an unhandled
+        // promise rejection — the user can re-activate from /targets if
+        // the kickoff was lost.
+        void fetch(`/api/targets/${targetId}/activate`, {
+          method: 'POST',
+        }).catch(() => undefined);
       } catch {
         // Continue creating remaining targets
       }
