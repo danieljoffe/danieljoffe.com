@@ -39,6 +39,21 @@ export async function extractApiError(
 
   if (typeof detail === 'string' && detail.trim()) return detail;
 
+  // FastAPI pydantic validation errors arrive as
+  // ``detail: [{ loc, msg, type, ... }, ...]``. Surface the first
+  // entry's ``msg`` (stripping the ``Value error,`` prefix pydantic
+  // adds when our validators raise ``ValueError``) so the user sees
+  // "Phone must be E.164" instead of a generic fallback. SettingsPage
+  // previously had a copy of this branch in its own
+  // ``extractFastApiError``; centralizing here so every PATCH/PUT
+  // gets the same treatment.
+  if (Array.isArray(detail) && detail.length > 0) {
+    const first = detail[0] as { msg?: unknown } | undefined;
+    if (first && typeof first.msg === 'string' && first.msg.trim()) {
+      return first.msg.replace(/^Value error,\s*/, '');
+    }
+  }
+
   if (
     detail &&
     typeof detail === 'object' &&
