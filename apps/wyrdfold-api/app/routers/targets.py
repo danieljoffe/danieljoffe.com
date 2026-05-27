@@ -489,10 +489,18 @@ async def get_target_status(
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
+    # Filter ``excluded=False`` so this count matches what the user
+    # actually sees in /jobs?target_id=... — the list endpoint hides
+    # rows the scorer flagged as excluded (negative-keyword matches),
+    # but this endpoint was previously counting all of them. Result:
+    # a "ready, 3 jobs scored" status that landed the user on a list
+    # showing 1, with the other 2 silently filtered out for being
+    # off-target.
     count_resp = (
         supabase.table("scores")
         .select("id", count=CountMethod.exact)
         .eq("target_id", target_id)
+        .eq("excluded", False)
         .execute()
     )
     jobs_count = count_resp.count or 0
