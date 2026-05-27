@@ -341,7 +341,7 @@ def compute_targets(
     postings = cast(list[Row], q.execute().data or [])
 
     # Per-target score lookup: ``(posting_id, target_id) → score``. Fetched
-    # once so the aggregation below stays O(n) over postings × their
+    # once so the aggregation below stays O(n) over postings x their
     # targets without repeated table queries.
     score_lookup: dict[tuple[str, str], int] = {}
     if posting_ids:
