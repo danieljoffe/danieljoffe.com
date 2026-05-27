@@ -6,6 +6,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { promptForMissingContactName } from './promptForMissingContactName';
 import type { TailoredResumeRecord, TailorResponse } from './types';
 
 interface CoverLetterSectionProps {
@@ -68,16 +69,36 @@ export default function CoverLetterSection({
         return;
       }
 
-      const res = await fetch('/api/jobs/tailor/cover-letter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job_description: jd,
-          job_posting_id: jobPostingId,
-          company_name: companyName,
-          role_title: roleTitle,
-        }),
-      });
+      const postTailor = () =>
+        fetch('/api/jobs/tailor/cover-letter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            job_description: jd,
+            job_posting_id: jobPostingId,
+            company_name: companyName,
+            role_title: roleTitle,
+          }),
+        });
+
+      let res = await postTailor();
+
+      // Mirrors the contact-name capture in ResumeSection — same gate
+      // on the tailor pipeline, first-time users hit it without ever
+      // visiting Settings.
+      if (!res.ok) {
+        const peek = (await res
+          .clone()
+          .json()
+          .catch(() => null)) as {
+          detail?: { code?: string; message?: string } | string;
+        } | null;
+        const peekDetail =
+          typeof peek?.detail === 'string' ? peek.detail : undefined;
+        if (await promptForMissingContactName(peekDetail)) {
+          res = await postTailor();
+        }
+      }
 
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as {
