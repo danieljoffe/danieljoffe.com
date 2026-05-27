@@ -263,12 +263,10 @@ class TestComputeTargets:
         """
         # The MagicMock chain returns the same table mock for every call,
         # so we record the .eq() arguments to assert excluded filter.
-        from unittest.mock import MagicMock as MM
-
         eq_calls: list[tuple] = []
 
-        sb = MM()
-        tbl = MM()
+        sb = MagicMock()
+        tbl = MagicMock()
 
         def eq_recorder(*args, **kwargs):
             eq_calls.append(args)
