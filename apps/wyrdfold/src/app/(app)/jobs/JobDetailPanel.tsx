@@ -469,19 +469,23 @@ export default function JobDetailPanel({
       )}
 
       {/*
-        Resume lifecycle — ResumeSection internally fetches the tailored
-        record (if any) and decides between "Generate" and "Review" based
-        on its actual existence, not on the loosely-correlated job
-        status. Previously inline rendering always linked to the review
-        page even when no draft existed, sending users to a "Resume not
-        found" dead end.
+        Resume + cover letter lifecycle — both sections internally fetch
+        the tailored record (if any) and decide between "Generate" and
+        "Review" based on its actual existence, not on the
+        loosely-correlated job status. We render them for every status
+        (was gated to ``resume_draft`` / ``resume_ready`` only), because
+        a new user clicking into a fresh "new" job has no way to discover
+        they must first flip status before the Generate buttons appear.
+        The status flip happens automatically on first generate via the
+        backend's persistence side-effect; surfacing the controls up
+        front matches the user's mental model ("I want to tailor for
+        this role"). Only requires a target_id — the tailor pipeline
+        needs it.
       */}
-      {(status === 'resume_draft' || status === 'resume_ready') && (
-        <ResumeSection jobPostingId={posting.id} />
-      )}
+      {targetId && <ResumeSection jobPostingId={posting.id} />}
 
       {/* Cover letter */}
-      {(status === 'resume_draft' || status === 'resume_ready') && (
+      {targetId && (
         <CoverLetterSection
           jobPostingId={posting.id}
           companyName={posting.company_name}

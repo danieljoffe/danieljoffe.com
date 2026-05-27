@@ -229,6 +229,24 @@ def validate_cover_letter_refs(
     valid_role_ids = {r.id for r in optimized.roles}
     valid_outcome_descriptions = {o.description for o in optimized.outcomes}
     valid_skill_names = {s.name for s in optimized.skills}
+    # Case- and pluralization-tolerant lookup: the LLM frequently emits
+    # "Component Libraries" when the canonical name is "Component
+    # Library", or pluralizes/capitalizes inconsistently. Without this
+    # tolerance every cover letter ships with cosmetic ``Dropped unknown
+    # skill_ref`` warnings even though the underlying skill is in the
+    # optimized doc. Map normalized → canonical so we keep the
+    # canonical form in the response.
+    def _normalize(s: str) -> str:
+        stripped = s.strip().lower()
+        if stripped.endswith("ies"):
+            return stripped[:-3] + "y"
+        if stripped.endswith("s") and not stripped.endswith("ss"):
+            return stripped[:-1]
+        return stripped
+
+    skill_normalized_to_canonical: dict[str, str] = {
+        _normalize(name): name for name in valid_skill_names
+    }
 
     warnings: list[str] = []
 
@@ -250,6 +268,8 @@ def validate_cover_letter_refs(
     for ref in letter.source_skill_refs:
         if ref in valid_skill_names:
             kept_skill_refs.append(ref)
+        elif (canonical := skill_normalized_to_canonical.get(_normalize(ref))):
+            kept_skill_refs.append(canonical)
         else:
             warnings.append(f"Dropped unknown skill_ref: {ref!r}")
 
