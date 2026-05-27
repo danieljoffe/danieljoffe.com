@@ -33,8 +33,23 @@ export async function createAuthServerClient() {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        for (const { name, value, options } of cookiesToSet) {
-          cookieStore.set(name, value, options);
+        // Server Components can't mutate cookies — only Route Handlers,
+        // Server Actions, and Middleware can. Supabase still tries to
+        // write refreshed cookies whenever ``getSession()`` rotates the
+        // token, and the throw used to escape into ``getAccessToken``'s
+        // catch — collapsing the whole session to ``null`` and making
+        // every SSR ``fetchJsonFromWyrdfoldAPI`` call return null. The
+        // browser-side ``/api/*`` proxy routes were unaffected (Route
+        // Handlers can write), which is why the Targets / Dashboard
+        // pages rendered the zero-state while client fetches succeeded.
+        // Suppress the write in the read-only context — middleware
+        // handles the actual token refresh.
+        try {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
+          }
+        } catch {
+          // no-op — see comment above
         }
       },
     },

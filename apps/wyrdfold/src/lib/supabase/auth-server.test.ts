@@ -102,6 +102,38 @@ describe('createAuthServerClient', () => {
     });
   });
 
+  it('cookie adapter setAll() swallows cookieStore.set throws (Server Component context)', async () => {
+    // Next.js throws "Cookies can only be modified in a Server Action or
+    // Route Handler" when ``cookieStore.set`` is called from a Server
+    // Component. If we let that bubble, ``getAccessToken``'s catch
+    // collapses the whole session to null and every SSR fetch falls
+    // back to the "no data" state — even though the access token is
+    // perfectly valid. Suppress the write here; middleware refreshes.
+    process.env['NEXT_PUBLIC_SUPABASE_URL'] = 'https://supabase.test';
+    process.env['NEXT_PUBLIC_SUPABASE_ANON_ID'] = 'anon-key';
+    mockCookieStore.set.mockImplementation(() => {
+      throw new Error('Cookies can only be modified in a Server Action');
+    });
+
+    const { createAuthServerClient } = await import('./auth-server');
+    await createAuthServerClient();
+
+    const [, , opts] = mockCreateServerClient.mock.calls[0] as [
+      string,
+      string,
+      {
+        cookies: {
+          setAll: (
+            c: { name: string; value: string; options: unknown }[]
+          ) => void;
+        };
+      },
+    ];
+    expect(() =>
+      opts.cookies.setAll([{ name: 'a', value: '1', options: { path: '/' } }])
+    ).not.toThrow();
+  });
+
   it('throws when env vars are missing', async () => {
     delete process.env['NEXT_PUBLIC_SUPABASE_URL'];
     delete process.env['NEXT_PUBLIC_SUPABASE_ANON_ID'];
