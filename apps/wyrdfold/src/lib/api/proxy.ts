@@ -36,12 +36,32 @@ export async function getAccessToken(): Promise<string | null> {
  *
  * Bypasses the /api/* route handler so the page doesn't pay an extra
  * client→Next round-trip; data streams inline with the RSC payload.
+ *
+ * Retries transient network errors and 5xx responses once with a short
+ * backoff. The dashboard and other RSC pages fan out 6–10 of these
+ * calls in parallel; a single Railway HTTP/2 stream drop used to
+ * collapse the whole counter strip to zeros (and Top Matches to "No
+ * new matches right now"). One retry absorbs the vast majority of
+ * those one-off failures without inflating worst-case latency
+ * meaningfully — the read is idempotent so a re-issue is safe.
  */
+const _DEFAULT_RETRIES = 1;
+const _RETRY_BACKOFF_MS = 150;
+
 export async function fetchJsonFromWyrdfoldAPI<T>(
   path: string,
-  options: { searchParams?: URLSearchParams; timeoutMs?: number } = {}
+  options: {
+    searchParams?: URLSearchParams;
+    timeoutMs?: number;
+    /** Override the default 1-retry pass. ``0`` disables retry entirely. */
+    retries?: number;
+  } = {}
 ): Promise<T | null> {
-  const { searchParams, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+  const {
+    searchParams,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    retries = _DEFAULT_RETRIES,
+  } = options;
 
   const accessToken = await getAccessToken();
   if (accessToken === null) return null;
@@ -49,23 +69,35 @@ export async function fetchJsonFromWyrdfoldAPI<T>(
   const qs = searchParams ? `?${searchParams.toString()}` : '';
   const url = `${apiBaseUrl()}${path}${qs}`;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${accessToken}` },
-      signal: controller.signal,
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+      // Don't retry 4xx — those are protocol-level rejections
+      // (auth, validation, not-found) where a re-issue won't help and
+      // would just amplify the load.
+      if (!res.ok) {
+        if (res.status < 500 || attempt === retries) return null;
+      } else {
+        return (await res.json()) as T;
+      }
+    } catch {
+      // Network / abort / timeout — retry once.
+      if (attempt === retries) return null;
+    } finally {
+      clearTimeout(timer);
+    }
+    if (attempt < retries) {
+      await new Promise(r => setTimeout(r, _RETRY_BACKOFF_MS));
+    }
   }
+  return null;
 }
 
 function unauthorized(): NextResponse {

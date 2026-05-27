@@ -12,6 +12,7 @@ jest.mock('@/lib/supabase/auth-server', () => ({
 }));
 
 import {
+  fetchJsonFromWyrdfoldAPI,
   proxyMultipartToWyrdfoldAPI,
   proxyStreamingToWyrdfoldAPI,
   proxyToWyrdfoldAPI,
@@ -283,5 +284,74 @@ describe('proxyMultipartToWyrdfoldAPI', () => {
       error: 'Upstream returned non-JSON',
       upstreamStatus: 500,
     });
+  });
+});
+
+describe('fetchJsonFromWyrdfoldAPI retry behavior', () => {
+  it('returns parsed JSON on first success without retrying', async () => {
+    const fn = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ total: 76 })));
+    global.fetch = fn as unknown as typeof fetch;
+
+    const result = await fetchJsonFromWyrdfoldAPI<{ total: number }>('/jobs');
+    expect(result).toEqual({ total: 76 });
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries once on a thrown fetch error then succeeds', async () => {
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('ECONNRESET'))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ total: 76 })));
+    global.fetch = fn as unknown as typeof fetch;
+
+    const result = await fetchJsonFromWyrdfoldAPI<{ total: number }>('/jobs');
+    expect(result).toEqual({ total: 76 });
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries once on a 5xx response then succeeds', async () => {
+    const fn = jest
+      .fn()
+      .mockResolvedValueOnce(new Response('boom', { status: 502 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true })));
+    global.fetch = fn as unknown as typeof fetch;
+
+    const result = await fetchJsonFromWyrdfoldAPI<{ ok: boolean }>('/jobs');
+    expect(result).toEqual({ ok: true });
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('does NOT retry on 4xx (protocol-level rejection)', async () => {
+    const fn = jest
+      .fn()
+      .mockResolvedValueOnce(new Response('nope', { status: 404 }));
+    global.fetch = fn as unknown as typeof fetch;
+
+    const result = await fetchJsonFromWyrdfoldAPI<unknown>('/jobs');
+    expect(result).toBeNull();
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns null after exhausting retries on persistent errors', async () => {
+    const fn = jest.fn().mockRejectedValue(new Error('ECONNRESET'));
+    global.fetch = fn as unknown as typeof fetch;
+
+    const result = await fetchJsonFromWyrdfoldAPI<unknown>('/jobs', {
+      retries: 2,
+    });
+    expect(result).toBeNull();
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('skips the upstream round-trip when there is no session', async () => {
+    mockGetSession.mockResolvedValueOnce({ data: { session: null } });
+    const fn = jest.fn();
+    global.fetch = fn as unknown as typeof fetch;
+
+    const result = await fetchJsonFromWyrdfoldAPI<unknown>('/jobs');
+    expect(result).toBeNull();
+    expect(fn).not.toHaveBeenCalled();
   });
 });
