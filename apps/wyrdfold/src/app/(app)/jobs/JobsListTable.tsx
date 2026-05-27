@@ -5,9 +5,9 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
+import JobsEmptyState from './JobsEmptyState';
 import StatusIndicator from './StatusIndicator';
 import {
   MANUAL_SOURCE_ID,
@@ -126,11 +126,7 @@ export default function JobsListTable({
   }
 
   if (postings.length === 0) {
-    return (
-      <Text variant='body' className='text-center py-12 text-text-tertiary'>
-        No jobs found. Try adjusting filters or adding jobs manually.
-      </Text>
-    );
+    return <JobsEmptyState onJobAdded={onRefetch} />;
   }
 
   return (
