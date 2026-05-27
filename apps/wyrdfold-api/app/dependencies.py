@@ -226,6 +226,36 @@ def get_current_user_id(
     return sub
 
 
+def get_current_user_email(
+    request: Request,
+    s: Settings = Depends(get_settings),
+) -> str | None:
+    """Return the JWT `email` claim for the current request, if present.
+
+    Best-effort — Supabase issues JWTs with the verified email in the
+    ``email`` claim for password and magic-link sign-ins, but the claim
+    is optional in the spec and may be missing for some auth providers
+    (anonymous sign-ins, custom IdPs). Returns ``None`` when absent or
+    when the token can't be decoded; callers should treat this as "we
+    don't know the email" rather than an error.
+
+    Used by the user-profile routes to pre-seed the ``email`` column on
+    first-time profile creation, so onboarding's IdentityStep doesn't
+    ask the user to retype the email they just signed in with.
+    """
+    if not s.supabase_url:
+        return None
+    token = _extract_bearer_token(request)
+    if not token:
+        return None
+    try:
+        payload = _decode_supabase_jwt(token, s)
+    except HTTPException:
+        return None
+    email = payload.get("email")
+    return email if isinstance(email, str) and email else None
+
+
 def get_current_user_id_optional(
     request: Request,
     key: str | None = Security(api_key_header),
