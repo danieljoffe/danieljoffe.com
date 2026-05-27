@@ -243,6 +243,7 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
           onDelete={undefined}
           onStatusChange={handleStatusChange}
           hideDelete
+          defaultDescriptionOpen
         />
       </Card>
 

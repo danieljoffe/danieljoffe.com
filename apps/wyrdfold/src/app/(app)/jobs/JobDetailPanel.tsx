@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 import { ChevronDown, Maximize2 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
@@ -31,6 +32,10 @@ interface JobDetailPanelProps {
   onStatusChange: ((status: string) => void) | undefined;
   /** Suppress the panel's own Delete action (the page renders one at root). */
   hideDelete?: boolean;
+  /** Default-open the JD description block on the full-page detail
+   *  view (where the user clearly wants to see it). The inline panel
+   *  in the list keeps it collapsed to avoid blowing up rows. */
+  defaultDescriptionOpen?: boolean;
 }
 
 const SCORE_FACTOR_LABEL: Record<string, string> = {
@@ -102,6 +107,7 @@ export default function JobDetailPanel({
   onDelete,
   onStatusChange,
   hideDelete = false,
+  defaultDescriptionOpen = false,
 }: JobDetailPanelProps) {
   const [status, setStatus] = useState(posting.status);
   const [updating, setUpdating] = useState(false);
@@ -229,6 +235,27 @@ export default function JobDetailPanel({
 
   const breakdown = posting.score_breakdown;
 
+  // Sanitize the upstream JD HTML once per posting. Greenhouse returns
+  // (and the poller persists) the description body entity-encoded —
+  // ``&lt;h4&gt;…&lt;/h4&gt;`` rather than ``<h4>…</h4>`` — so we have
+  // to decode one level before DOMPurify will recognize the tags;
+  // otherwise the panel just renders the encoded source as text.
+  // DOMPurify itself scrubs against XSS — defence-in-depth even
+  // though the source is first-party.
+  const sanitizedDescription = useMemo(() => {
+    const raw = posting.description_html ?? '';
+    if (!raw.trim()) return null;
+    const decoded =
+      typeof window === 'undefined'
+        ? raw
+        : (() => {
+            const ta = document.createElement('textarea');
+            ta.innerHTML = raw;
+            return ta.value;
+          })();
+    return DOMPurify.sanitize(decoded, { USE_PROFILES: { html: true } });
+  }, [posting.description_html]);
+
   return (
     <div className='border-t border-border bg-surface-tertiary p-4 space-y-4'>
       {/* Status dropdown + score */}
@@ -312,6 +339,25 @@ export default function JobDetailPanel({
           <Skeleton variant='text' lines={3} />
         )}
       </div>
+
+      {/* Job description body — rendered from the upstream JD HTML.
+          Wrapped in ``<details>`` so the inline list panel stays compact;
+          the full detail page passes ``defaultDescriptionOpen`` to open
+          it by default since the user navigated there explicitly. */}
+      {sanitizedDescription && (
+        <details open={defaultDescriptionOpen}>
+          <summary className='cursor-pointer text-text-secondary hover:text-text-primary'>
+            <Text variant='caption' as='span'>
+              Job description
+            </Text>
+          </summary>
+          <div
+            className='mt-2 prose prose-sm dark:prose-invert max-w-none text-text-primary [&_a]:text-brand-500 [&_a]:underline [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5'
+            // Sanitized via DOMPurify above — safe to inject.
+            dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+          />
+        </details>
+      )}
 
       {/* Status History */}
       {history.length > 0 && (

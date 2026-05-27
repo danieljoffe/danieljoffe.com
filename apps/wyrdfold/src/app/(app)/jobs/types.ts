@@ -50,6 +50,9 @@ export interface JobPosting {
   greenhouse_updated_at: string | null;
   first_seen_at: string;
   created_at: string;
+  /** Present only on the detail GET ``/jobs/{id}`` — list responses
+   *  deliberately omit it to keep the payload small. */
+  description_html?: string | null;
 }
 
 export interface JobsFilterState {

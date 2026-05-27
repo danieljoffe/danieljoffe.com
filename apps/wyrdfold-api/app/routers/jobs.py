@@ -781,19 +781,30 @@ def _assert_user_owns_posting(
     # 3. Confirm at least one of the user's targets has a score row for
     # this posting. Exposing the matched target_id on the returned row
     # so callers can scope cache invalidation, mirroring the old
-    # ``jobs.target_id`` contract.
+    # ``jobs.target_id`` contract. Also pull ``score`` + ``score_breakdown``
+    # so detail callers can overlay them — ``jobs.score`` and
+    # ``jobs.score_breakdown`` are vestigial pre-shared-targets columns
+    # that the poller doesn't update (it writes ``scores``), so reading
+    # them directly off the posting row yields stale ``0`` / ``{}``.
     score_resp = (
         supabase.table("scores")
-        .select("target_id")
+        .select("target_id, score, score_breakdown")
         .eq("job_posting_id", posting_id)
         .in_("target_id", list(user_target_ids))
+        .order("score", desc=True)
         .limit(1)
         .execute()
     )
     score_rows = cast(list[dict[str, Any]], score_resp.data or [])
     if not score_rows:
         raise HTTPException(status_code=404, detail="Posting not found")
-    row["target_id"] = score_rows[0]["target_id"]
+    best = score_rows[0]
+    row["target_id"] = best["target_id"]
+    # Stash the live score onto the row under an alias so callers can opt
+    # in to the overlay without changing the existing ``score`` /
+    # ``score_breakdown`` semantics on routes that don't need it.
+    row["_target_score"] = best.get("score")
+    row["_target_score_breakdown"] = best.get("score_breakdown")
     return row
 
 
@@ -809,6 +820,19 @@ async def get_job(
     row = _assert_user_owns_posting(
         supabase, posting_id, user_id, include_description=True
     )
+    # Overlay the live per-target score + breakdown. The ``jobs.score`` /
+    # ``jobs.score_breakdown`` columns are vestigial and never updated
+    # by the poller — without this, the detail view reads stale ``0`` /
+    # ``{}`` and the "Score Breakdown" panel renders "No factors
+    # contributed to this score" for every posting. Use the best score
+    # across the user's targets (matches the untargeted list view's
+    # per-job aggregation).
+    target_score = row.pop("_target_score", None)
+    target_breakdown = row.pop("_target_score_breakdown", None)
+    if target_score is not None:
+        row["score"] = target_score
+    if target_breakdown is not None:
+        row["score_breakdown"] = target_breakdown
     # Drop the helper target_id column we only fetched for ownership.
     row.pop("target_id", None)
     return row
