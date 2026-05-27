@@ -61,6 +61,57 @@ def _parse_dt(value: str) -> datetime:
     return datetime.fromisoformat(value)
 
 
+# ── Target membership ────────────────────────────────────────────────────────
+
+
+def _posting_target_map(
+    supabase: Client, target_ids: set[str] | None
+) -> dict[str, set[str]] | None:
+    """Return ``{job_posting_id → {target_id, ...}}`` for the user's targets.
+
+    Returns ``None`` when ``target_ids`` is ``None`` (caller wants the
+    unscoped global view). Returns an empty dict when the user has no
+    targets — callers must early-return on an empty membership.
+
+    The whole insights module previously filtered by ``jobs.target_id``
+    (and ``documents.target_id``). ``jobs.target_id`` is a vestigial
+    pre-shared-targets column the poller never populates — same root
+    cause as the bugs fixed in #676 / #678 — so every per-target
+    aggregation silently returned zero rows. ``documents.target_id``
+    doesn't exist at all (the table was renamed from
+    ``tailored_resumes`` without ever adding that column), which is
+    why the pipeline + skills-cost endpoints currently 500. Pivot all
+    target scoping through the ``scores`` table, which is the actual
+    source of truth.
+    """
+    if target_ids is None:
+        return None
+    if not target_ids:
+        return {}
+    resp = (
+        supabase.table("scores")
+        .select("job_posting_id, target_id")
+        .in_("target_id", list(target_ids))
+        .execute()
+    )
+    out: dict[str, set[str]] = defaultdict(set)
+    for r in cast(list[Row], resp.data or []):
+        out[r["job_posting_id"]].add(r["target_id"])
+    return dict(out)
+
+
+def _flatten_posting_ids(
+    membership: dict[str, set[str]] | None,
+) -> set[str] | None:
+    """Flatten ``_posting_target_map`` into a posting-id set.
+
+    Returns ``None`` for the unscoped global view, propagating that
+    "no filter" signal to consumers."""
+    if membership is None:
+        return None
+    return set(membership.keys())
+
+
 # ── Pipeline ─────────────────────────────────────────────────────────────────
 
 
@@ -70,13 +121,16 @@ def _fetch_postings_window(
     until: datetime | None,
     target_ids: set[str] | None,
 ) -> list[Row]:
-    q = supabase.table("jobs").select("id, status, created_at, target_id")
+    posting_ids = _flatten_posting_ids(_posting_target_map(supabase, target_ids))
+    if posting_ids is not None and not posting_ids:
+        return []
+    q = supabase.table("jobs").select("id, status, created_at")
     if since:
         q = q.gte("created_at", since.isoformat())
     if until:
         q = q.lt("created_at", until.isoformat())
-    if target_ids is not None:
-        q = q.in_("target_id", list(target_ids))
+    if posting_ids is not None:
+        q = q.in_("id", list(posting_ids))
     return cast(list[Row], q.execute().data or [])
 
 
@@ -159,16 +213,24 @@ def compute_pipeline(
     posting_ids = {str(p["id"]) for p in postings}
     status_logs = _fetch_status_logs_window(supabase, since, None, posting_ids)
 
-    # Fetch tailored resumes for velocity (current window only)
-    rq = supabase.table("documents").select(
-        "job_posting_id, created_at, target_id"
-    )
-    if since:
-        rq = rq.gte("created_at", since.isoformat())
-    rq = rq.eq("document_type", "resume")
-    if target_ids is not None:
-        rq = rq.in_("target_id", list(target_ids))
-    resumes = cast(list[Row], rq.execute().data or [])
+    # Fetch tailored resumes for velocity (current window only). The
+    # ``documents`` table has no ``target_id`` column (it was renamed
+    # from ``tailored_resumes`` without that column ever being added),
+    # so scoping goes through ``job_posting_id`` against the same
+    # posting set the window query just resolved. Skip the query
+    # entirely when target scoping is requested but the user has zero
+    # matching postings — ``.in_("…", [])`` would otherwise relax to
+    # an unbounded SELECT.
+    if target_ids is not None and not posting_ids:
+        resumes: list[Row] = []
+    else:
+        rq = supabase.table("documents").select("job_posting_id, created_at")
+        if since:
+            rq = rq.gte("created_at", since.isoformat())
+        rq = rq.eq("document_type", "resume")
+        if target_ids is not None:
+            rq = rq.in_("job_posting_id", list(posting_ids))
+        resumes = cast(list[Row], rq.execute().data or [])
 
     # --- Funnel counts ---
     status_counts: Counter[str] = Counter()
@@ -241,13 +303,58 @@ def compute_targets(
     targets_data = cast(list[Row], tq.execute().data or [])
     target_labels = {t["id"]: t["label"] for t in targets_data}
 
-    # Fetch postings with target + score + status
-    q = supabase.table("jobs").select("id, target_id, score, status, created_at")
+    # Resolve target membership via the ``scores`` table. ``jobs.target_id``
+    # is vestigial — the poller never writes it, so the previous filter
+    # collapsed every per-target bucket to empty. Same architectural
+    # fix as ownership checks in #676 / #678.
+    membership = _posting_target_map(supabase, target_ids)
+    posting_ids = _flatten_posting_ids(membership)
+    if target_ids is not None and not posting_ids:
+        return TargetInsights(
+            targets=[],
+            score_distribution=[
+                ScoreBucket(
+                    bucket=f"{lo}-{lo + 10 if lo < 90 else 100}", count=0
+                )
+                for lo in range(0, 100, 10)
+            ],
+            score_trend=[],
+            unscored_count=0,
+        )
+
+    # Fetch postings within the user's target set, hydrating with status
+    # + created_at; per-target scores come from the ``scores`` table
+    # (jobs.score is the global blended score, not the per-target one).
+    # In the unscoped / admin path (``target_ids=None``) we also need
+    # the legacy inline ``target_id`` + ``score`` columns so callers
+    # that didn't pass per-user scoping still get a meaningful answer.
+    select_cols = (
+        "id, status, created_at"
+        if target_ids is not None
+        else "id, target_id, score, status, created_at"
+    )
+    q = supabase.table("jobs").select(select_cols)
     if since:
         q = q.gte("created_at", since.isoformat())
-    if target_ids is not None:
-        q = q.in_("target_id", list(target_ids))
+    if posting_ids is not None:
+        q = q.in_("id", list(posting_ids))
     postings = cast(list[Row], q.execute().data or [])
+
+    # Per-target score lookup: ``(posting_id, target_id) → score``. Fetched
+    # once so the aggregation below stays O(n) over postings × their
+    # targets without repeated table queries.
+    score_lookup: dict[tuple[str, str], int] = {}
+    if posting_ids:
+        sq = supabase.table("scores").select(
+            "job_posting_id, target_id, score"
+        )
+        if target_ids is not None:
+            sq = sq.in_("target_id", list(target_ids))
+        sq = sq.in_("job_posting_id", list(posting_ids))
+        for r in cast(list[Row], sq.execute().data or []):
+            score_lookup[(r["job_posting_id"], r["target_id"])] = int(
+                r.get("score") or 0
+            )
 
     # --- Per-target aggregation ---
     # Targets with no jobs in the window are dropped from the response
@@ -256,38 +363,70 @@ def compute_targets(
     # so they don't bloat the 0-10 bucket of the distribution. (A
     # legitimate score of 0 is vanishingly rare; in practice 0 means
     # "default value, never scored".)
-    target_jobs: defaultdict[str, list[Row]] = defaultdict(list)
+    target_jobs: defaultdict[str, list[tuple[Row, int]]] = defaultdict(list)
     scored_values: list[int] = []
     unscored_count = 0
     for p in postings:
-        score = p.get("score")
-        if score is None or score == 0:
+        pid = str(p["id"])
+        if target_ids is None:
+            # Admin / global path — historically the only path. Read
+            # ``target_id`` and ``score`` straight off the posting row.
+            # ``jobs.target_id`` is NULL in production today (vestigial
+            # column) so this path mainly surfaces the unscored count
+            # + score distribution from the inline ``score`` column.
+            inline_score = p.get("score")
+            if inline_score is None or inline_score == 0:
+                unscored_count += 1
+            else:
+                scored_values.append(int(inline_score))
+            inline_tid = p.get("target_id")
+            if inline_tid and inline_tid in target_labels:
+                target_jobs[inline_tid].append((p, int(inline_score or 0)))
+            continue
+
+        tids = (membership.get(pid, set()) if membership else set()) or set()
+        if not tids:
+            # Posting outside the user's target set — skip (shouldn't
+            # happen because we filtered postings by posting_ids above,
+            # but defensive).
+            continue
+        # A posting can be scored against multiple targets; surface the
+        # best per-target score in that target's distribution rather
+        # than collapsing across targets.
+        seen_any_score = False
+        for tid in tids:
+            if tid not in target_labels:
+                continue
+            score = score_lookup.get((pid, tid), 0)
+            if score:
+                seen_any_score = True
+                scored_values.append(score)
+                target_jobs[tid].append((p, score))
+            else:
+                target_jobs[tid].append((p, 0))
+        if not seen_any_score:
             unscored_count += 1
-        else:
-            scored_values.append(int(score))
-        tid = p.get("target_id")
-        if tid and tid in target_labels:
-            target_jobs[tid].append(p)
 
     comparisons: list[TargetComparison] = []
     for tid, label in target_labels.items():
-        jobs = target_jobs.get(tid, [])
-        if not jobs:
+        rows = target_jobs.get(tid, [])
+        if not rows:
             continue
-        scores = [j.get("score", 0) or 0 for j in jobs]
-        applied = sum(1 for j in jobs if j["status"] in APPLIED_STATUSES)
-        interviews = sum(
-            1 for j in jobs if j["status"] in {"interviewing", "offer"}
-        )
+        scores = [s for _, s in rows]
+        statuses = [r["status"] for r, _ in rows]
+        applied = sum(1 for s in statuses if s in APPLIED_STATUSES)
+        interviews = sum(1 for s in statuses if s in {"interviewing", "offer"})
         comparisons.append(
             TargetComparison(
                 target_id=tid,
                 target_label=label,
-                job_count=len(jobs),
+                job_count=len(rows),
                 avg_score=round(sum(scores) / len(scores), 1),
                 applied_count=applied,
                 interview_count=interviews,
-                conversion_rate=round(interviews / applied, 3) if applied > 0 else None,
+                conversion_rate=round(interviews / applied, 3)
+                if applied > 0
+                else None,
             )
         )
 
@@ -309,12 +448,27 @@ def compute_targets(
     ]
 
     # --- Score trend by week (scored postings only) ---
+    # Per-user path: use the highest per-target score across the user's
+    # targets so a posting that's a great fit for one target and a
+    # poor fit for another contributes its strength signal. Global
+    # path: fall back to the inline ``jobs.score`` column.
     week_scores: defaultdict[date, list[int]] = defaultdict(list)
     for p in postings:
-        score = p.get("score")
-        if score is None:
+        pid = str(p["id"])
+        if target_ids is None:
+            inline = p.get("score")
+            if inline is None:
+                continue
+            week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(
+                int(inline)
+            )
             continue
-        week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(int(score))
+        tids = (membership.get(pid, set()) if membership else set()) or set()
+        per_target = [score_lookup.get((pid, t), 0) for t in tids]
+        best = max(per_target, default=0)
+        if best <= 0:
+            continue
+        week_scores[_iso_week_start(_parse_dt(p["created_at"]))].append(best)
 
     score_trend = sorted(
         [
@@ -347,14 +501,27 @@ def compute_skills_cost(
     user's targets. *user_id* scopes ``llm_costs`` which has its own
     direct ``user_id`` column.
     """
-    # Fetch posting scores first — also gives us the set of posting_ids
-    # the user is allowed to see, used to bound analyses.
-    pq = supabase.table("jobs").select("id, llm_score, target_id")
+    # Resolve target-scoped posting membership via ``scores`` (the only
+    # table that actually records per-target attribution — ``jobs.target_id``
+    # is a vestigial pre-shared-targets column that's never populated).
+    membership = _posting_target_map(supabase, target_ids)
+    target_scoped_posting_ids = _flatten_posting_ids(membership)
+
+    # Fetch posting scores. ``jobs.llm_score`` is the globally-blended
+    # LLM score the poller writes back to ``jobs`` after analysis —
+    # fine to read directly off the postings row for the missing-skill
+    # priority calculation below.
+    pq = supabase.table("jobs").select("id, llm_score")
     if since:
         pq = pq.gte("created_at", since.isoformat())
-    if target_ids is not None:
-        pq = pq.in_("target_id", list(target_ids))
-    posting_rows = cast(list[Row], pq.execute().data or [])
+    if target_scoped_posting_ids is not None:
+        if not target_scoped_posting_ids:
+            posting_rows: list[Row] = []
+        else:
+            pq = pq.in_("id", list(target_scoped_posting_ids))
+            posting_rows = cast(list[Row], pq.execute().data or [])
+    else:
+        posting_rows = cast(list[Row], pq.execute().data or [])
     posting_scores: dict[str, float] = {}
     visible_posting_ids: set[str] = set()
     for p in posting_rows:
@@ -388,14 +555,20 @@ def compute_skills_cost(
         cq = cq.eq("user_id", user_id)
     cost_logs = cast(list[Row], cq.execute().data or [])
 
-    # Fetch tailored resumes for per-resume cost
-    rq = supabase.table("documents").select("cost_usd, created_at, target_id")
-    if since:
-        rq = rq.gte("created_at", since.isoformat())
-    rq = rq.eq("document_type", "resume")
-    if target_ids is not None:
-        rq = rq.in_("target_id", list(target_ids))
-    resume_costs = cast(list[Row], rq.execute().data or [])
+    # Fetch tailored resumes for per-resume cost. ``documents`` has no
+    # ``target_id`` column (renamed from ``tailored_resumes`` without
+    # the column ever being added), so target scoping pivots through
+    # ``job_posting_id`` against the membership map.
+    if target_ids is not None and not visible_posting_ids:
+        resume_costs: list[Row] = []
+    else:
+        rq = supabase.table("documents").select("cost_usd, created_at")
+        if since:
+            rq = rq.gte("created_at", since.isoformat())
+        rq = rq.eq("document_type", "resume")
+        if target_ids is not None:
+            rq = rq.in_("job_posting_id", list(visible_posting_ids))
+        resume_costs = cast(list[Row], rq.execute().data or [])
 
     # --- Skill frequencies ---
     matched_counts: Counter[str] = Counter()

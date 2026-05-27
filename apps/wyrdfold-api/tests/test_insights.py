@@ -248,6 +248,43 @@ class TestComputeTargets:
         # At least 1 week bucket
         assert len(result.score_trend) >= 1
 
+    def test_per_user_path_pivots_through_scores_table(self):
+        """When ``target_ids`` is passed, membership + score come from
+        the ``scores`` table — ``jobs.target_id`` is vestigial and
+        ``jobs.score`` is the global blended score, neither is
+        authoritative for per-target rollups. Same architectural
+        invariant as #676 / #678 ownership checks."""
+        targets = [
+            {"id": "t1", "label": "Frontend"},
+            {"id": "t2", "label": "Backend"},
+        ]
+        # Postings carry NO ``target_id`` or ``score`` — production
+        # reality (the poller writes both into ``scores``, not back
+        # onto ``jobs``).
+        postings = [
+            {"id": "1", "status": "applied", "created_at": _ts(_NOW)},
+            {"id": "2", "status": "new", "created_at": _ts(_NOW)},
+            {"id": "3", "status": "interviewing", "created_at": _ts(_NOW)},
+        ]
+        scores = [
+            {"job_posting_id": "1", "target_id": "t1", "score": 80},
+            {"job_posting_id": "2", "target_id": "t1", "score": 60},
+            {"job_posting_id": "3", "target_id": "t2", "score": 90},
+        ]
+        sb = _mock_supabase(
+            {"targets": targets, "jobs": postings, "scores": scores}
+        )
+        result = compute_targets(sb, since=None, target_ids={"t1", "t2"})
+
+        assert len(result.targets) == 2
+        fe = next(t for t in result.targets if t.target_label == "Frontend")
+        assert fe.job_count == 2
+        assert fe.avg_score == 70.0
+        assert fe.applied_count == 1
+        be = next(t for t in result.targets if t.target_label == "Backend")
+        assert be.avg_score == 90.0
+        assert be.interview_count == 1
+
 
 # ===========================================================================
 # Skills + Cost
