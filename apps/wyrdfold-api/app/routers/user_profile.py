@@ -12,7 +12,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 
 from app.config import settings
-from app.dependencies import get_current_user_id, get_supabase, verify_supabase_jwt
+from app.dependencies import (
+    get_current_user_email,
+    get_current_user_id,
+    get_supabase,
+    verify_supabase_jwt,
+)
 from app.models.user_profile import (
     IdentityFields,
     IdentityFieldsUpdate,
@@ -58,13 +63,22 @@ _IDENTITY_COLUMNS = "name, email, phone_number, location, linkedin_url, website_
 
 
 async def _get_or_create_profile(
-    supabase: Client, user_id: str, columns: str
+    supabase: Client,
+    user_id: str,
+    columns: str,
+    seed_email: str | None = None,
 ) -> dict[str, Any]:
     """Return the user's profile row, creating one if none exists.
 
     Scoped by `user_id` (UNIQUE on user_profiles.user_id) so distinct
     callers never see each other's row even though service-role bypasses
     RLS.
+
+    ``seed_email`` pre-fills the ``email`` column on the create path so
+    onboarding's IdentityStep doesn't ask the user to retype the email
+    they just signed in with. Only applied at creation time — existing
+    rows aren't touched, since the user may have intentionally cleared
+    or changed the value in Settings.
     """
     resp = await asyncio.to_thread(
         lambda: supabase.table("user_profiles")
@@ -77,10 +91,11 @@ async def _get_or_create_profile(
     if rows:
         return cast(dict[str, Any], rows[0])
 
+    seed: dict[str, Any] = {"user_id": user_id}
+    if seed_email:
+        seed["email"] = seed_email
     insert = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles")
-        .insert({"user_id": user_id})
-        .execute()
+        lambda: supabase.table("user_profiles").insert(seed).execute()
     )
     if not insert.data:
         raise HTTPException(status_code=500, detail="Failed to create profile")
@@ -97,9 +112,12 @@ async def _get_or_create_profile(
 @router.get("/notifications")
 async def get_notification_preferences(
     user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
     supabase: Client = Depends(get_supabase),
 ) -> NotificationPreferences:
-    row = await _get_or_create_profile(supabase, user_id, _PREFS_COLUMNS)
+    row = await _get_or_create_profile(
+        supabase, user_id, _PREFS_COLUMNS, seed_email=user_email
+    )
     return NotificationPreferences(
         **row,
         email_available=_email_channel_available(),
@@ -111,6 +129,7 @@ async def get_notification_preferences(
 async def update_notification_preferences(
     body: NotificationPreferencesUpdate,
     user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
     supabase: Client = Depends(get_supabase),
 ) -> NotificationPreferences:
     if body.job_notifications_enabled is True and not _email_channel_available():
@@ -126,7 +145,9 @@ async def update_notification_preferences(
             "configured Twilio credentials.",
         )
 
-    profile = await _get_or_create_profile(supabase, user_id, _PREFS_COLUMNS)
+    profile = await _get_or_create_profile(
+        supabase, user_id, _PREFS_COLUMNS, seed_email=user_email
+    )
 
     updates = body.model_dump(exclude_none=True)
     if not updates:
@@ -159,9 +180,12 @@ async def update_notification_preferences(
 @router.get("/identity")
 async def get_identity(
     user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
     supabase: Client = Depends(get_supabase),
 ) -> IdentityFields:
-    row = await _get_or_create_profile(supabase, user_id, _IDENTITY_COLUMNS)
+    row = await _get_or_create_profile(
+        supabase, user_id, _IDENTITY_COLUMNS, seed_email=user_email
+    )
     return IdentityFields(**row)
 
 
@@ -169,9 +193,12 @@ async def get_identity(
 async def update_identity(
     body: IdentityFieldsUpdate,
     user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
     supabase: Client = Depends(get_supabase),
 ) -> IdentityFields:
-    profile = await _get_or_create_profile(supabase, user_id, _IDENTITY_COLUMNS)
+    profile = await _get_or_create_profile(
+        supabase, user_id, _IDENTITY_COLUMNS, seed_email=user_email
+    )
 
     # Treat empty strings as explicit clears; None means "don't touch"
     updates = body.model_dump(exclude_none=True)
