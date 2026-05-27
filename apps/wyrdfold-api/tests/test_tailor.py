@@ -8,6 +8,7 @@ from app.models.experience import OptimizedPayload, Outcome, Role, Skill
 from app.models.tailor import (
     ContactInfo,
     TailoredBullet,
+    TailoredCoverLetter,
     TailoredEducation,
     TailoredResume,
     TailoredRole,
@@ -17,6 +18,7 @@ from app.services.tailor.tailor import (
     DEFAULT_PURPOSE,
     build_user_message,
     tailor_resume,
+    validate_cover_letter_refs,
     validate_trace_refs,
 )
 
@@ -424,3 +426,53 @@ def test_tailored_resume_json_round_trips() -> None:
     assert parsed.contact.name == "Daniel Joffe"
     assert parsed.experience[0].source_role_ref == "fc"
     assert json.loads(raw)["skills"] == ["React", "TypeScript"]
+
+
+def _cover_letter(skill_refs: list[str]) -> TailoredCoverLetter:
+    """Bare letter used to exercise the ref-validation tolerance."""
+    from app.models.tailor import CoverLetterParagraph
+
+    return TailoredCoverLetter(
+        contact=ContactInfo(name="Daniel Joffe", email="d@example.com"),
+        recipient_company="Acme",
+        salutation="Dear Acme team,",
+        paragraphs=[CoverLetterParagraph(text="Body.")],
+        closing="Sincerely,",
+        signature="Daniel Joffe",
+        source_role_refs=[],
+        source_outcome_refs=[],
+        source_skill_refs=skill_refs,
+    )
+
+
+def test_validate_cover_letter_accepts_canonical_skill() -> None:
+    optimized = _optimized()  # has skills "React" + "TypeScript"
+    letter, warnings = validate_cover_letter_refs(
+        _cover_letter(["React"]), optimized
+    )
+    assert letter.source_skill_refs == ["React"]
+    assert warnings == []
+
+
+def test_validate_cover_letter_tolerates_pluralization_and_case() -> None:
+    """LLM commonly emits 'TypeScripts' or 'react' when canonical is
+    'TypeScript' / 'React'. Tolerance keeps the canonical form in the
+    response and suppresses the cosmetic 'Dropped unknown skill_ref'
+    warning users would otherwise see in their cover letter metadata."""
+    optimized = _optimized()
+    letter, warnings = validate_cover_letter_refs(
+        _cover_letter(["react", "TypeScripts"]), optimized
+    )
+    assert sorted(letter.source_skill_refs) == ["React", "TypeScript"]
+    assert warnings == []
+
+
+def test_validate_cover_letter_drops_truly_unknown_skill() -> None:
+    """Tolerance must not over-match: a skill that genuinely isn't in
+    the optimized doc still gets dropped + warned."""
+    optimized = _optimized()
+    letter, warnings = validate_cover_letter_refs(
+        _cover_letter(["Kafka"]), optimized
+    )
+    assert letter.source_skill_refs == []
+    assert any("Kafka" in w for w in warnings)

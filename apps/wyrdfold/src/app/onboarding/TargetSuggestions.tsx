@@ -306,7 +306,21 @@ export default function TargetSuggestions({
                   <div className='flex-1'>
                     <div className='flex items-center gap-2'>
                       <Text variant='body' className='font-medium'>
-                        {suggestion.label}
+                        {/*
+                          When the LLM-suggested label fuzzy-matches an
+                          existing catalog target, ``link`` actually
+                          attaches the user to ``matched_target`` — which
+                          may have a different label than what the LLM
+                          proposed. Showing ``suggestion.label`` here
+                          was misleading: e.g. the LLM suggests
+                          "Full-Stack Engineer" but the linked target is
+                          "Staff Full-Stack Engineer", and the user
+                          finds the latter on their dashboard with no
+                          explanation for the rename.
+                        */}
+                        {!match.is_new && match.matched_target
+                          ? match.matched_target.label
+                          : suggestion.label}
                       </Text>
                       {!match.is_new && (
                         <Badge variant='default' size='sm'>
