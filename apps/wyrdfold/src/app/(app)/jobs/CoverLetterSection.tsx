@@ -51,34 +51,56 @@ export default function CoverLetterSection({
   async function handleGenerate() {
     setGenerating(true);
     try {
+      const detailRes = await fetch(`/api/jobs/${jobPostingId}`);
+      if (!detailRes.ok) {
+        toast({ variant: 'error', title: 'Could not load job description' });
+        return;
+      }
+      const detail = (await detailRes.json()) as {
+        description_html: string | null;
+      };
+      const jd = (detail.description_html ?? '').trim();
+      if (!jd) {
+        toast({
+          variant: 'error',
+          title: 'Job has no description — cannot tailor a cover letter.',
+        });
+        return;
+      }
+
       const res = await fetch('/api/jobs/tailor/cover-letter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          job_description: jd,
           job_posting_id: jobPostingId,
           company_name: companyName,
           role_title: roleTitle,
         }),
       });
 
-      if (res.status === 422) {
-        const err = (await res.json()) as {
-          detail: { code: string | undefined; message: string | undefined };
-        };
-        if (err.detail?.code === 'gap_gate') {
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          detail?: { code?: string; message?: string } | string;
+        } | null;
+        const detail = body?.detail;
+        if (
+          typeof detail === 'object' &&
+          detail !== null &&
+          detail.code === 'gap_gate'
+        ) {
           toast({
             variant: 'error',
-            title:
-              err.detail.message ?? 'Master doc has gaps — update it first',
+            title: detail.message ?? 'Master doc has gaps — update it first',
           });
+        } else if (typeof detail === 'string' && detail.trim()) {
+          toast({ variant: 'error', title: detail });
         } else {
-          toast({ variant: 'error', title: 'Cover letter generation failed' });
+          toast({
+            variant: 'error',
+            title: `Cover letter generation failed (${res.status})`,
+          });
         }
-        return;
-      }
-
-      if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to generate cover letter' });
         return;
       }
 
