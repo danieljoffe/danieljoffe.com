@@ -248,6 +248,48 @@ class TestComputeTargets:
         # At least 1 week bucket
         assert len(result.score_trend) >= 1
 
+    def test_per_user_path_excludes_excluded_scores(self):
+        """Scores marked ``excluded=true`` (closed jobs, irrelevant matches)
+        must not inflate the funnel / distribution. The list endpoint
+        filters ``excluded = False`` and insights has to mirror that —
+        otherwise pipeline funnel counts balloon by ~4x (one excluded
+        scores row per posting per re-poll).
+
+        This test mocks the mock to track that ``.eq("excluded", False)``
+        is invoked on the ``scores`` table query — exact filter values
+        can't be asserted with the current _mock_supabase shape, so we
+        spy on the chain. A regression here would mean the production
+        funnel returns counts that don't match the list view.
+        """
+        # The MagicMock chain returns the same table mock for every call,
+        # so we record the .eq() arguments to assert excluded filter.
+        eq_calls: list[tuple] = []
+
+        sb = MagicMock()
+        tbl = MagicMock()
+
+        def eq_recorder(*args, **kwargs):
+            eq_calls.append(args)
+            return tbl
+
+        tbl.select.return_value = tbl
+        tbl.eq.side_effect = eq_recorder
+        tbl.in_.return_value = tbl
+        tbl.gte.return_value = tbl
+        tbl.lt.return_value = tbl
+        tbl.order.return_value = tbl
+        tbl.limit.return_value = tbl
+        tbl.execute.return_value.data = []
+        sb.table.return_value = tbl
+
+        compute_targets(sb, since=None, target_ids={"t1"})
+
+        # At least one .eq("excluded", False) on the scores table path.
+        assert ("excluded", False) in eq_calls, (
+            f"expected scores query to filter excluded=False, "
+            f"got eq() calls: {eq_calls}"
+        )
+
     def test_per_user_path_pivots_through_scores_table(self):
         """When ``target_ids`` is passed, membership + score come from
         the ``scores`` table — ``jobs.target_id`` is vestigial and

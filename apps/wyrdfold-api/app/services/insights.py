@@ -92,6 +92,7 @@ def _posting_target_map(
         supabase.table("scores")
         .select("job_posting_id, target_id")
         .in_("target_id", list(target_ids))
+        .eq("excluded", False)
         .execute()
     )
     out: dict[str, set[str]] = defaultdict(set)
@@ -345,8 +346,10 @@ def compute_targets(
     # targets without repeated table queries.
     score_lookup: dict[tuple[str, str], int] = {}
     if posting_ids:
-        sq = supabase.table("scores").select(
-            "job_posting_id, target_id, score"
+        sq = (
+            supabase.table("scores")
+            .select("job_posting_id, target_id, score")
+            .eq("excluded", False)
         )
         if target_ids is not None:
             sq = sq.in_("target_id", list(target_ids))
