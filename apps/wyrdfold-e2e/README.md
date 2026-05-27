@@ -13,7 +13,9 @@ The authed tier depends on a one-shot `auth.setup.ts` that writes a signed-in st
 
 ### One-time: create the e2e test user
 
-This is a real Supabase user — create it once via the dashboard (Authentication → Users → Invite user with password) or via the CLI. Pick something memorable like `e2e@wyrdfold.test`. The user just needs to exist with a known password; no profile data required (specs that need data should seed it themselves).
+This is a real Supabase user — create it once via the dashboard (Authentication → Users → Invite user) or via the existing `pnpm --filter @danieljoffe.com/wyrdfold invite-beta <email>` script (which also seeds the `wyrdfold_beta_invites` allowlist row so the `before-user-created` auth hook lets the row through). Pick something memorable like `e2e@wyrdfold.test`. No profile data required — specs that need data should seed it themselves.
+
+The fixture authenticates by minting an OTP via `auth.admin.generateLink({type:'magiclink'})` and exchanging it via `verifyOtp` — same code path as a real user clicking the magic-link, but without the inbox round-trip.
 
 ### Per-machine: set the env
 
@@ -21,7 +23,8 @@ In `apps/wyrdfold/.env.local` (the dev server picks it up; Playwright inherits v
 
 ```bash
 E2E_TEST_USER_EMAIL=e2e@wyrdfold.test
-E2E_TEST_USER_PASSWORD=<the-password-you-set>
+# Already in your .env.local for dev; the e2e fixture needs it too
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key-from-supabase-dashboard>
 ```
 
 The existing `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_ID` are already required for the dev server — Playwright reuses them.
@@ -41,19 +44,18 @@ pnpm nx e2e wyrdfold-e2e
 
 ## Running in CI
 
-CI currently runs only the **public** tier — `auth.setup.ts` calls `setup.skip()` when the `E2E_TEST_USER_*` vars are missing, and the authed project's `dependencies: ['setup']` chain means no authed spec executes.
+`.github/workflows/ci-full.yml` pipes `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_ID`, `SUPABASE_SERVICE_ROLE_KEY`, and `E2E_TEST_USER_EMAIL` into the e2e step. When all four secrets are populated in the repo settings, the authed tier runs; when any are missing, `auth.setup.ts` calls `setup.skip()` and the authed project's `dependencies: ['setup']` chain means no authed spec executes — the public tier still passes cleanly.
 
 To enable the authed tier in CI:
 
-1. Add `E2E_TEST_USER_EMAIL` and `E2E_TEST_USER_PASSWORD` to the GitHub Actions secrets (e.g. via the `secrets.E2E_TEST_USER_EMAIL` mapping in `.github/workflows/ci.yml`).
-2. Make sure the CI job also has `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_ID` — without them the dev server proxy hard-401s on every API call.
-3. The test user account itself stays out of CI — same one, shared.
+1. Add `SUPABASE_SERVICE_ROLE_KEY` and `E2E_TEST_USER_EMAIL` to the GitHub Actions secrets (`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_ID` are already there).
+2. The test user account itself stays out of CI — same Supabase identity used locally, shared.
 
-## Why password sign-in (and not magic-link)
+## Why OTP via service role (and not password sign-in)
 
-The wyrdfold app uses magic-link auth in production. The Playwright setup uses Supabase password sign-in because magic-link requires either an inbox (slow + flaky) or the `auth.admin.generateLink` endpoint (needs the service-role key, which is a much bigger secret-surface to ship to CI). Password sign-in stays scoped to the anon key.
+The wyrdfold app's login UI is magic-link only (`signInWithOtp`). A password-sign-in fixture would diverge from the production auth path and only work if the test user happened to have a password set in addition to OTP, which is fragile.
 
-The test user is a parallel Supabase identity — it doesn't change anything about how production users authenticate.
+`auth.admin.generateLink({type:'magiclink'})` returns the email OTP token without sending an email; `verifyOtp` then exchanges it for a real session. Same code path as a real user clicking the magic-link in their inbox. The trade-off is the service-role key in CI — broader scope than the anon key, but scoped to a parallel test identity that doesn't touch production users.
 
 ## Adding a new authed spec
 

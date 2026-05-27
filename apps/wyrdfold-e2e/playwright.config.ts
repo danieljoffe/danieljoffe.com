@@ -15,17 +15,18 @@ const baseURL = process.env['BASE_URL'] || `http://localhost:${PORT}`;
 // build the path as a string — same result, no import.
 const AUTH_STORAGE = `${__dirname}/src/.auth/user.json`;
 
-// Auth-fixture availability gate. If the four required env vars aren't
-// set the ``setup`` spec ``test.skip``s, which leaves the storageState
-// file uncreated — and downstream ``authed-chromium`` then crashes on
-// ENOENT trying to load it. Detect that here and just omit the authed
-// project entirely. Public specs still run; authed specs report as
-// "not run" rather than "failed."
+// Auth-fixture availability gate. The setup spec mints an OTP via
+// ``admin.generateLink`` (service-role) and exchanges it via
+// ``verifyOtp`` (anon). All four env vars must be present; otherwise
+// ``setup`` ``test.skip``s, the storageState file never gets written,
+// and downstream ``authed-chromium`` would crash on ENOENT. Detect
+// that here and just omit the authed project entirely. Public specs
+// still run; authed specs report as "not run" rather than "failed."
 const AUTH_ENABLED =
   !!process.env['NEXT_PUBLIC_SUPABASE_URL'] &&
   !!process.env['NEXT_PUBLIC_SUPABASE_ANON_ID'] &&
-  !!process.env['E2E_TEST_USER_EMAIL'] &&
-  !!process.env['E2E_TEST_USER_PASSWORD'];
+  !!process.env['SUPABASE_SERVICE_ROLE_KEY'] &&
+  !!process.env['E2E_TEST_USER_EMAIL'];
 
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
