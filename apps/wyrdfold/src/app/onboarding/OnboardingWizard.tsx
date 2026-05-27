@@ -9,6 +9,7 @@ import WyrdfoldLogo from '@/components/WyrdfoldLogo';
 import ConversationChat from '../_components/ConversationChat';
 import PathChooser from './PathChooser';
 import ResumeUploader from './ResumeUploader';
+import IdentityStep from './IdentityStep';
 import JobUrlInput, { type JobData } from './JobUrlInput';
 import TargetSuggestions from './TargetSuggestions';
 import CompletionScreen from './CompletionScreen';
@@ -17,16 +18,35 @@ export type OnboardingPath = 'A' | 'B' | 'C';
 
 type Step =
   | 'path-chooser'
+  | 'identity'
   | 'upload-resume'
   | 'add-job'
   | 'pick-targets'
   | 'conversation'
   | 'completion';
 
+// ``identity`` runs first thing after path selection in every path.
+// Capturing contact name up front prevents the mid-flow window.prompt
+// from #683 (Generate Resume / Cover Letter would 400 with "No
+// contact name on file" otherwise). Email auto-fills from the
+// Supabase auth session; name is the only required field.
 const STEPS_BY_PATH: Record<OnboardingPath, Step[]> = {
-  A: ['path-chooser', 'upload-resume', 'add-job', 'pick-targets', 'completion'],
-  B: ['path-chooser', 'upload-resume', 'pick-targets', 'completion'],
-  C: ['path-chooser', 'conversation', 'pick-targets', 'completion'],
+  A: [
+    'path-chooser',
+    'identity',
+    'upload-resume',
+    'add-job',
+    'pick-targets',
+    'completion',
+  ],
+  B: [
+    'path-chooser',
+    'identity',
+    'upload-resume',
+    'pick-targets',
+    'completion',
+  ],
+  C: ['path-chooser', 'identity', 'conversation', 'pick-targets', 'completion'],
 };
 
 export default function OnboardingWizard() {
@@ -112,6 +132,9 @@ export default function OnboardingWizard() {
         >
           {currentStep === 'path-chooser' && (
             <PathChooser onSelect={handlePathSelect} onSkip={handleSkip} />
+          )}
+          {currentStep === 'identity' && (
+            <IdentityStep onComplete={goNext} onSkip={handleSkip} />
           )}
           {currentStep === 'upload-resume' && (
             <ResumeUploader onComplete={goNext} onSkip={handleSkip} />
