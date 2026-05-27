@@ -28,6 +28,14 @@ export interface CardTitleProps extends Omit<
 > {
   ref?: Ref<HTMLHeadingElement> | undefined;
   children: ReactNode;
+  /**
+   * Override the rendered heading level. Defaults to ``h3`` (the
+   * underlying ``Heading variant='cardTitle'`` default). Pass ``h2``
+   * when a CardTitle is the first heading inside an ``h1``-titled
+   * page section — otherwise Lighthouse's ``heading-order`` audit
+   * flags the h1→h3 jump as a screen-reader hazard.
+   */
+  as?: 'h2' | 'h3' | 'h4';
 }
 
 export interface CardContentProps extends Omit<
@@ -96,10 +104,20 @@ export function CardTitle({
   children,
   className,
   ref,
+  as,
   ...props
 }: CardTitleProps) {
+  // ``exactOptionalPropertyTypes`` requires we omit ``as`` when undefined
+  // rather than passing ``as={undefined}`` (which doesn't satisfy
+  // ``HeadingLevel`` without ``undefined`` in its union).
   return (
-    <Heading ref={ref} variant='cardTitle' className={className} {...props}>
+    <Heading
+      ref={ref}
+      variant='cardTitle'
+      className={className}
+      {...(as ? { as } : {})}
+      {...props}
+    >
       {children}
     </Heading>
   );
