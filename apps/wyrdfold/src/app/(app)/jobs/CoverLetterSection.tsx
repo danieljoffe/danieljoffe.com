@@ -5,6 +5,7 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { promptForMissingContactName } from './promptForMissingContactName';
 import type { TailoredResumeRecord, TailorResponse } from './types';
@@ -101,25 +102,31 @@ export default function CoverLetterSection({
       }
 
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as {
+        // Same shape as ResumeSection: ``gap_gate`` is a structured 422
+        // we surface specifically; everything else (string detail,
+        // ``llm_budget_exceeded`` 429, unknown shapes) goes through
+        // ``extractApiError``.
+        const peek = (await res
+          .clone()
+          .json()
+          .catch(() => null)) as {
           detail?: { code?: string; message?: string } | string;
         } | null;
-        const detail = body?.detail;
+        const peekDetail = peek?.detail;
         if (
-          typeof detail === 'object' &&
-          detail !== null &&
-          detail.code === 'gap_gate'
+          typeof peekDetail === 'object' &&
+          peekDetail !== null &&
+          peekDetail.code === 'gap_gate'
         ) {
           toast({
             variant: 'error',
-            title: detail.message ?? 'Master doc has gaps — update it first',
+            title:
+              peekDetail.message ?? 'Master doc has gaps — update it first',
           });
-        } else if (typeof detail === 'string' && detail.trim()) {
-          toast({ variant: 'error', title: detail });
         } else {
           toast({
             variant: 'error',
-            title: `Cover letter generation failed (${res.status})`,
+            title: await extractApiError(res, 'Cover letter generation failed'),
           });
         }
         return;

@@ -5,6 +5,7 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { promptForMissingContactName } from './promptForMissingContactName';
 import type { TailoredResumeRecord, TailorResponse } from './types';
@@ -106,32 +107,32 @@ export default function ResumeSection({ jobPostingId }: ResumeSectionProps) {
       }
 
       if (!res.ok) {
-        // The 422 case carries a structured ``detail`` object for the
-        // gap-gate failure mode (so it can show ``message`` + percent /
-        // tier in a future enhancement); other failures (400 ``no
-        // contact name on file``, 404 ``no optimized doc``, 503, etc.)
-        // carry a plain ``detail`` string. Surface the actual cause
-        // instead of a generic "failed" — chasing the wrong cause is
-        // exactly what the analysis-panel fix in #677 addressed.
-        const body = (await res.json().catch(() => null)) as {
+        // ``gap_gate`` is a structured 422 with its own message string
+        // we want to surface as-is — peek for it before falling back
+        // to ``extractApiError`` (which handles plain detail strings
+        // and the structured ``llm_budget_exceeded`` 429, but treats
+        // ``gap_gate`` as a status-prefixed fallback). Order matters.
+        const peek = (await res
+          .clone()
+          .json()
+          .catch(() => null)) as {
           detail?: { code?: string; message?: string } | string;
         } | null;
-        const detail = body?.detail;
+        const peekDetail = peek?.detail;
         if (
-          typeof detail === 'object' &&
-          detail !== null &&
-          detail.code === 'gap_gate'
+          typeof peekDetail === 'object' &&
+          peekDetail !== null &&
+          peekDetail.code === 'gap_gate'
         ) {
           toast({
             variant: 'error',
-            title: detail.message ?? 'Master doc has gaps — update it first',
+            title:
+              peekDetail.message ?? 'Master doc has gaps — update it first',
           });
-        } else if (typeof detail === 'string' && detail.trim()) {
-          toast({ variant: 'error', title: detail });
         } else {
           toast({
             variant: 'error',
-            title: `Resume generation failed (${res.status})`,
+            title: await extractApiError(res, 'Resume generation failed'),
           });
         }
         return;
