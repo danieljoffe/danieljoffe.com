@@ -28,10 +28,27 @@ from app.models.insights import (
     TargetInsights,
     WeeklyCount,
 )
+from app.services.supabase_retry import execute_with_retry_sync
 
 # Supabase .execute().data is typed as list[JSON] (a broad union).
 # In practice every row is a dict — this alias makes casts readable.
 Row = dict[str, Any]
+
+
+def _rows(query: Any, label: str) -> list[Row]:
+    """Run a built supabase query through the transient-retry wrapper and
+    return rows as ``list[Row]``.
+
+    The insights endpoints fan out 4–10 supabase calls per request,
+    each independent. Without the retry wrap a single
+    ``httpx.ReadError`` ([Errno 104] Connection reset by peer — the
+    HTTP/2 stream drops we already handle in the poller via
+    ``supabase_retry``) returns a 500 from the whole endpoint, which
+    crashes the chart on the dashboard. Wrap each query so a transient
+    failure is absorbed by one retry instead of bubbling.
+    """
+    resp = execute_with_retry_sync(lambda: query.execute(), label=label)
+    return cast(list[Row], resp.data or [])
 
 # Funnel stage ordering (used for consistent display)
 FUNNEL_ORDER = [
@@ -88,15 +105,15 @@ def _posting_target_map(
         return None
     if not target_ids:
         return {}
-    resp = (
+    rows = _rows(
         supabase.table("scores")
         .select("job_posting_id, target_id")
         .in_("target_id", list(target_ids))
-        .eq("excluded", False)
-        .execute()
+        .eq("excluded", False),
+        label="insights/posting_target_map",
     )
     out: dict[str, set[str]] = defaultdict(set)
-    for r in cast(list[Row], resp.data or []):
+    for r in rows:
         out[r["job_posting_id"]].add(r["target_id"])
     return dict(out)
 
@@ -132,7 +149,7 @@ def _fetch_postings_window(
         q = q.lt("created_at", until.isoformat())
     if posting_ids is not None:
         q = q.in_("id", list(posting_ids))
-    return cast(list[Row], q.execute().data or [])
+    return _rows(q, label="insights/postings_window")
 
 
 def _fetch_status_logs_window(
@@ -152,7 +169,7 @@ def _fetch_status_logs_window(
         sq = sq.lt("created_at", until.isoformat())
     if posting_ids is not None:
         sq = sq.in_("posting_id", list(posting_ids))
-    return cast(list[Row], sq.execute().data or [])
+    return _rows(sq, label="insights/status_logs_window")
 
 
 def _kpis_from(postings: list[Row], status_logs: list[Row]) -> PipelinePeriodKpis:
@@ -231,7 +248,7 @@ def compute_pipeline(
         rq = rq.eq("document_type", "resume")
         if target_ids is not None:
             rq = rq.in_("job_posting_id", list(posting_ids))
-        resumes = cast(list[Row], rq.execute().data or [])
+        resumes = _rows(rq, label="insights/pipeline_resumes")
 
     # --- Funnel counts ---
     status_counts: Counter[str] = Counter()
@@ -301,7 +318,7 @@ def compute_targets(
     tq = supabase.table("targets").select("id, label")
     if target_ids is not None:
         tq = tq.in_("id", list(target_ids))
-    targets_data = cast(list[Row], tq.execute().data or [])
+    targets_data = _rows(tq, label="insights/targets_labels")
     target_labels = {t["id"]: t["label"] for t in targets_data}
 
     # Resolve target membership via the ``scores`` table. ``jobs.target_id``
@@ -339,7 +356,7 @@ def compute_targets(
         q = q.gte("created_at", since.isoformat())
     if posting_ids is not None:
         q = q.in_("id", list(posting_ids))
-    postings = cast(list[Row], q.execute().data or [])
+    postings = _rows(q, label="insights/targets_postings")
 
     # Per-target score lookup: ``(posting_id, target_id) → score``. Fetched
     # once so the aggregation below stays O(n) over postings x their
@@ -354,7 +371,7 @@ def compute_targets(
         if target_ids is not None:
             sq = sq.in_("target_id", list(target_ids))
         sq = sq.in_("job_posting_id", list(posting_ids))
-        for r in cast(list[Row], sq.execute().data or []):
+        for r in _rows(sq, label="insights/targets_scores"):
             score_lookup[(r["job_posting_id"], r["target_id"])] = int(
                 r.get("score") or 0
             )
@@ -522,9 +539,9 @@ def compute_skills_cost(
             posting_rows: list[Row] = []
         else:
             pq = pq.in_("id", list(target_scoped_posting_ids))
-            posting_rows = cast(list[Row], pq.execute().data or [])
+            posting_rows = _rows(pq, label="insights/skills_cost_postings")
     else:
-        posting_rows = cast(list[Row], pq.execute().data or [])
+        posting_rows = _rows(pq, label="insights/skills_cost_postings")
     posting_scores: dict[str, float] = {}
     visible_posting_ids: set[str] = set()
     for p in posting_rows:
@@ -546,9 +563,9 @@ def compute_skills_cost(
             analyses: list[Row] = []
         else:
             aq = aq.in_("job_posting_id", list(visible_posting_ids))
-            analyses = cast(list[Row], aq.execute().data or [])
+            analyses = _rows(aq, label="insights/skills_cost_analyses")
     else:
-        analyses = cast(list[Row], aq.execute().data or [])
+        analyses = _rows(aq, label="insights/skills_cost_analyses")
 
     # Fetch LLM cost log — has a direct user_id column.
     cq = supabase.table("llm_costs").select("purpose, cost_usd, created_at")
@@ -556,7 +573,7 @@ def compute_skills_cost(
         cq = cq.gte("created_at", since.isoformat())
     if user_id is not None:
         cq = cq.eq("user_id", user_id)
-    cost_logs = cast(list[Row], cq.execute().data or [])
+    cost_logs = _rows(cq, label="insights/skills_cost_llm_costs")
 
     # Fetch tailored resumes for per-resume cost. ``documents`` has no
     # ``target_id`` column (renamed from ``tailored_resumes`` without
@@ -571,7 +588,7 @@ def compute_skills_cost(
         rq = rq.eq("document_type", "resume")
         if target_ids is not None:
             rq = rq.in_("job_posting_id", list(visible_posting_ids))
-        resume_costs = cast(list[Row], rq.execute().data or [])
+        resume_costs = _rows(rq, label="insights/skills_cost_resumes")
 
     # --- Skill frequencies ---
     matched_counts: Counter[str] = Counter()
