@@ -83,8 +83,12 @@ export default defineConfig({
           },
           {
             name: 'authed-chromium',
-            // Add new authed-spec filenames here as the suite grows.
-            testMatch: /onboarding\.spec\.ts/,
+            // ``onboarding`` is grandfathered in (predates the
+            // ``authed-`` prefix convention); new authed specs should
+            // be named ``authed-<feature>.spec.ts`` so the public
+            // projects' ``testIgnore`` glob picks them up
+            // automatically.
+            testMatch: /(onboarding|authed-.*)\.spec\.ts/,
             use: {
               ...devices['Desktop Chrome'],
               storageState: AUTH_STORAGE,
