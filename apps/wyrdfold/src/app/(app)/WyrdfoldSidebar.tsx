@@ -100,7 +100,13 @@ export default function WyrdfoldSidebar() {
             aria-label='WyrdFold home'
             className='flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
           >
-            <WyrdfoldLogo aria-label='WyrdFold' className='h-4 w-5' />
+            {/* Decorative — the visible "WyrdFold" text and the link's
+                aria-label "WyrdFold home" already name this control.
+                The SVG having its own aria-label produced "WyrdFold
+                WyrdFold" in the accessible name, which Lighthouse's
+                ``label-content-name-mismatch`` flagged against the
+                outer "WyrdFold home" override. */}
+            <WyrdfoldLogo aria-hidden className='h-4 w-5' />
             <span className='text-sm font-semibold text-text-primary'>
               WyrdFold
             </span>

@@ -42,7 +42,10 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${
     regularButton
-  } bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700`,
+    // ``text-text-on-brand`` (themed) instead of hardcoded ``text-white``.
+    // Pyre's chartreuse brand-500 with white text was 2.76:1 (below AA);
+    // the token resolves to near-black on pyre and white on indigo.
+  } bg-brand-500 text-text-on-brand hover:bg-brand-600 active:bg-brand-700`,
   secondary: `${
     regularButton
   } bg-surface-elevated text-text-primary hover:bg-surface border border-border`,

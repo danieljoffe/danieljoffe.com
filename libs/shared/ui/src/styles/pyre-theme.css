@@ -79,6 +79,10 @@
   --color-text-tertiary: oklch(0.6 0.02 90);
   --color-text-inverse: oklch(0.1 0.01 270);
   --color-text-brand: oklch(0.78 0.22 127);
+  /* Pyre's brand-500 chartreuse (oklch 0.67 0.28 127 ≈ #65ae00) is too
+     bright for white text — Lighthouse measured 2.76:1, below AA's
+     4.5:1. Pair it with a near-black to clear AA comfortably. */
+  --color-text-on-brand: oklch(0.15 0.02 127);
 
   /* Semantic Colors — Status (semantic hues, dimmed chroma for dark surface) */
   --color-success: oklch(0.72 0.2 145);

@@ -64,7 +64,11 @@ const baseButtonStyles =
 
 const variantButtonStyles: Record<string, string> = {
   primary:
-    'hover:shadow-lg/12.5 bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700',
+    // ``text-text-on-brand`` (tokenized) instead of hardcoded
+    // ``text-white``. Pyre's chartreuse brand-500 with white text was
+    // 2.76:1 — below WCAG AA. The token resolves to a near-black on
+    // pyre and white on indigo so contrast clears AA on both themes.
+    'hover:shadow-lg/12.5 bg-brand-500 text-text-on-brand hover:bg-brand-600 active:bg-brand-700',
   secondary:
     'hover:shadow-lg/12.5 bg-surface-elevated text-text-primary hover:bg-surface border border-border',
   ghost:

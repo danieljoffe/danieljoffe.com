@@ -24,6 +24,8 @@ const PIPELINE_STATUSES = [
   'resume_draft',
   'resume_ready',
   'applied',
+  'interviewing',
+  'offer',
 ] as const;
 
 export default async function WyrdfoldDashboard() {
