@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 
 interface JobsEmptyStateProps {
@@ -46,12 +47,9 @@ export default function JobsEmptyState({ onJobAdded }: JobsEmptyStateProps) {
         body: JSON.stringify({ url: trimmed }),
       });
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as {
-          detail?: string;
-        } | null;
         toast({
           variant: 'error',
-          title: body?.detail || `Could not add job (${res.status})`,
+          title: await extractApiError(res, 'Could not add job'),
         });
         return;
       }

@@ -13,25 +13,10 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Switch } from '@danieljoffe.com/shared-ui/Switch';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
-
-async function extractFastApiError(res: Response): Promise<string | null> {
-  if (res.ok) return null;
-  try {
-    const body = (await res.clone().json()) as { detail?: unknown };
-    if (Array.isArray(body.detail)) {
-      const first = body.detail[0] as { msg?: string } | undefined;
-      if (first?.msg) return first.msg.replace(/^Value error,\s*/, '');
-    } else if (typeof body.detail === 'string') {
-      return body.detail;
-    }
-  } catch {
-    // not JSON / no body — fall through
-  }
-  return null;
-}
 
 interface NotificationPreferences {
   job_notifications_enabled: boolean;
@@ -211,8 +196,7 @@ export default function SettingsPage() {
         body: JSON.stringify(trimmed),
       });
       if (!res.ok) {
-        const message =
-          (await extractFastApiError(res)) ?? 'Failed to save profile';
+        const message = await extractApiError(res, 'Failed to save profile');
         toast({ variant: 'error', title: message });
         lastFailedProfileSigRef.current = sig;
         return;
@@ -266,8 +250,10 @@ export default function SettingsPage() {
         }),
       });
       if (!res.ok) {
-        const message =
-          (await extractFastApiError(res)) ?? 'Failed to save email settings';
+        const message = await extractApiError(
+          res,
+          'Failed to save email settings'
+        );
         toast({ variant: 'error', title: message });
         lastFailedEmailSigRef.current = sig;
         return;
@@ -311,8 +297,10 @@ export default function SettingsPage() {
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const message =
-          (await extractFastApiError(res)) ?? 'Failed to save SMS settings';
+        const message = await extractApiError(
+          res,
+          'Failed to save SMS settings'
+        );
         toast({ variant: 'error', title: message });
         lastFailedSmsSigRef.current = sig;
         return;
