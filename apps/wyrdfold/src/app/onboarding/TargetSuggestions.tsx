@@ -55,9 +55,17 @@ export default function TargetSuggestions({
           method: 'POST',
         });
         if (!res.ok) throw new Error('Failed to create target');
-        const data = (await res.json()) as { label: string };
+        const data = (await res.json()) as { id: string; label: string };
         if (!cancelled) {
           setCreatedLabel(data.label);
+          // Kick off the derive → poll → score pipeline so the new
+          // target actually has matched jobs by the time the user
+          // lands on /dashboard. Path B (suggest) does this after
+          // ``/link``; path A (from-posting) was missing it, so the
+          // user landed on an empty Top Matches block.
+          fetch(`/api/targets/${data.id}/activate`, { method: 'POST' }).catch(
+            () => undefined
+          );
           timerRef.current = setTimeout(onComplete, 2000);
         }
       } catch {

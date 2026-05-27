@@ -594,7 +594,25 @@ async def create_target_from_posting(
                 "Profile derivation failed for posting %s", posting_id
             )
 
-    # Activate the target
+    # Link the calling user to the new target (multi-user flow) so it
+    # actually shows up in ``/targets/mine``. Without this insert, the
+    # onboarding "I have a resume and a role in mind" path completes
+    # with "All set!" but the user lands on a dashboard with zero
+    # targets — the catalog row is created and globally active, but
+    # ``user_targets`` was never populated, so every per-user view is
+    # empty. ``set_active`` only updates the catalog flag; the DB
+    # trigger on ``user_targets`` is what keeps that in sync for
+    # real users. Fall back to the legacy ``set_active`` for api-key
+    # (cron) callers where ``user_id is None`` — they don't have a
+    # user identity to link.
+    if user_id is not None:
+        crud.link_user_to_target(
+            supabase, user_id=user_id, target_id=target.id, is_active=True
+        )
+        # Re-read the target row so the response carries the
+        # trigger-synced ``is_active``.
+        refreshed = crud.get(supabase, target.id)
+        return refreshed or target
     activated = crud.set_active(supabase, target_id=target.id)
     return activated or target
 
