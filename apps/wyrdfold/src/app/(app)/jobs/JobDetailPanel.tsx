@@ -10,6 +10,7 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
 import ResumeSection from './ResumeSection';
@@ -184,29 +185,21 @@ export default function JobDetailPanel({
         // the Score badge + breakdown without a manual page refresh.
         onAnalysisComplete?.();
       } else {
-        // Distinguish the specific "no description in DB" 422 case (which
-        // the route surfaces with ``Job posting has no description to
-        // analyze.``) from every other failure mode (404, 503, LLM
-        // error, network reset). The previous blanket "lack a
-        // description" message was actively misleading — most analysis
-        // failures aren't about the description.
-        const body = (await res.json().catch(() => null)) as {
-          detail?: string;
-          error?: string;
-        } | null;
-        const detail = body?.detail ?? body?.error;
-        if (
-          res.status === 422 &&
-          typeof detail === 'string' &&
-          /no description/i.test(detail)
-        ) {
+        // Distinguish the specific "no description in DB" 422 case (the
+        // route surfaces ``Job posting has no description to analyze.``)
+        // from every other failure mode (404, 503, LLM error, network
+        // reset). Everything else routes through ``extractApiError``,
+        // which understands both string ``detail`` and the structured
+        // ``llm_budget_exceeded`` 429 — the latter previously fell
+        // through to a generic "Analysis failed (429)" with no recovery
+        // hint.
+        const message = await extractApiError(res, 'Analysis failed');
+        if (res.status === 422 && /no description/i.test(message)) {
           setAnalysisError(
             'Analysis skipped — this job posting has no description text.'
           );
-        } else if (typeof detail === 'string' && detail.trim()) {
-          setAnalysisError(`Analysis failed: ${detail}`);
         } else {
-          setAnalysisError(`Analysis failed (${res.status}).`);
+          setAnalysisError(message);
         }
       }
     } catch {

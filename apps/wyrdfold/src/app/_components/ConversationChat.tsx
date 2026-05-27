@@ -9,6 +9,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import { Textarea } from '@danieljoffe.com/shared-ui/Textarea';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 
 interface ConversationChatProps {
   onComplete: () => void;
@@ -21,29 +22,12 @@ interface Message {
   content: string;
 }
 
-/**
- * Extract a usable error message from a failing response. The wyrdfold
- * proxy forwards upstream FastAPI errors as ``{detail: "..."}`` — when
- * that's present and string-shaped, surface it so the toast can name
- * the actual cause (e.g. "No experience profile found", "LLM provider
- * misconfigured") instead of the generic fallback. Outside non-prod
- * envs FastAPI returns a generic "Internal server error", which is
- * also fine to surface.
- */
-async function extractErrorDetail(
-  res: Response,
-  fallback: string
-): Promise<string> {
-  try {
-    const body = (await res.clone().json()) as { detail?: unknown };
-    if (typeof body.detail === 'string' && body.detail.trim()) {
-      return body.detail;
-    }
-  } catch {
-    /* non-JSON body or stream already consumed — fall through */
-  }
-  return fallback;
-}
+// Aliased to keep the existing callsites readable. The shared helper
+// also surfaces the structured ``llm_budget_exceeded`` 429 — the
+// local version was string-only, so hitting the LLM cap during the
+// onboarding conversation showed a generic "Failed to send message"
+// with no hint that the user just needed to wait an hour.
+const extractErrorDetail = extractApiError;
 
 export default function ConversationChat({
   onComplete,
