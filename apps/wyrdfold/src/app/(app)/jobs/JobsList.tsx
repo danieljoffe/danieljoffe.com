@@ -11,6 +11,7 @@ import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
 import BatchActionBar from './BatchActionBar';
 import JobsListView from './JobsListView';
+import JobsThinResultsCallout from './JobsThinResultsCallout';
 import type { JobPosting, JobsFilterState } from './types';
 
 export interface TargetTab {
@@ -77,6 +78,11 @@ export default function JobsList({
     targetId ?? initialTargets[0]?.id
   );
   const [activationStatus, setActivationStatus] = useState<string>('idle');
+  // Total job count for the active target, sourced from
+  // ``/api/targets/{id}/status``. Drives the thin-results CTA. Reset
+  // on tab switch so a fresh target doesn't briefly show the previous
+  // target's count.
+  const [jobsCount, setJobsCount] = useState<number | null>(null);
   const activatingRef = useRef<Set<string>>(new Set());
   const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const { toast } = useToast();
@@ -104,6 +110,7 @@ export default function JobsList({
         if (cancelled) return;
 
         setActivationStatus(data.activation_status);
+        setJobsCount(data.jobs_count);
 
         if (data.activation_status === 'ready') {
           // Jobs are ready — refresh the table
@@ -148,6 +155,7 @@ export default function JobsList({
     (id: string | undefined) => {
       setActiveTargetId(id);
       setActivationStatus('idle');
+      setJobsCount(null);
       setSelectedIds(new Set());
       setFilters(id ? TARGET_FILTERS : INITIAL_FILTERS);
       const url = id ? `/jobs?target=${id}` : '/jobs';
@@ -436,6 +444,28 @@ export default function JobsList({
             analysisTargetId={activeTargetId ?? targets[0]?.id}
             onPostingsLoaded={setVisiblePostings}
           />
+
+          {/* Thin-results CTA. Empty state (0 jobs) is owned by
+              JobsEmptyState inside JobsListTable / JobsListMobile;
+              this one fires in the 1–4 range to keep the user from
+              staring at a sparse list with no path to add more.
+              Only shows once activation is in the ``ready`` state —
+              while deriving / polling, the count is still settling
+              and a "you have few jobs" affordance would be premature. */}
+          {activeTargetId &&
+            activationStatus === 'ready' &&
+            jobsCount !== null &&
+            jobsCount > 0 &&
+            jobsCount < 5 && (
+              <JobsThinResultsCallout
+                jobsCount={jobsCount}
+                targetLabel={
+                  targets.find(t => t.id === activeTargetId)?.label ??
+                  'this target'
+                }
+                onJobAdded={() => setRefreshKey(k => k + 1)}
+              />
+            )}
 
           <BatchActionBar
             selectedCount={selectedIds.size}
