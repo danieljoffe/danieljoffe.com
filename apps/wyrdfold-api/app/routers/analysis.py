@@ -11,6 +11,7 @@ from typing import Any, cast
 from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
+from app.cache import job_list_cache, jobs_cache_prefix
 from app.dependencies import (
     enforce_llm_budget,
     get_current_user_id_optional,
@@ -181,6 +182,19 @@ def _apply_llm_blend(
         supabase.table("jobs").update({"llm_analysis_id": analysis_id}).eq(
             "id", job_posting_id
         ).execute()
+        # Invalidate the in-memory list cache so the new blended score
+        # is reflected immediately. Without this the dashboard +
+        # /jobs ranking shows the old keyword-only score for up to 60s
+        # (the TTLCache default) after the user runs analysis — the
+        # detail endpoint refreshes correctly because it doesn't go
+        # through the list cache. Scope to the owning target + the
+        # untargeted global view; sibling targets aren't affected.
+        job_list_cache.invalidate(
+            prefix=f"{jobs_cache_prefix(target_id=target_id)}:"
+        )
+        job_list_cache.invalidate(
+            prefix=f"{jobs_cache_prefix(target_id=None)}:"
+        )
     except Exception:
         # Best-effort: a stale write here doesn't fail the user's
         # request (the analysis itself succeeded + was returned), but
