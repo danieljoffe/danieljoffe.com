@@ -1,5 +1,8 @@
 {
   "name": "wyrdfold-e2e",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "2.103.0"
+  }
 }

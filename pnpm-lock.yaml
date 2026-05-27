@@ -417,7 +417,11 @@ importers:
         specifier: ^0.34.5
         version: 0.34.5
 
-  apps/wyrdfold-e2e: {}
+  apps/wyrdfold-e2e:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: 2.103.0
+        version: 2.103.0
 
   libs/shared/audit: {}
 
