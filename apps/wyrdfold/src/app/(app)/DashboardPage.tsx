@@ -26,12 +26,19 @@ export interface DashboardInitial {
 }
 
 interface PipelineStat {
-  status: 'new' | 'saved' | 'resume_draft' | 'applied';
+  status: 'new' | 'saved' | 'resume_draft' | 'resume_ready' | 'applied';
   label: string;
   icon: React.ReactNode;
   href: string;
 }
 
+// ``resume_ready`` was missing from the dashboard until 2026-05 — users
+// who'd approved a resume saw "Drafts: 0 / Applied: 0" with no
+// acknowledgment that their work-in-progress existed. ``interviewing``
+// and ``offer`` are deliberately omitted for now: they're rare states
+// in personal-tool usage and adding more counters past 5 makes the
+// row noisy on mobile. Adding them is a one-line change if they
+// start mattering.
 const PIPELINE_STATS: PipelineStat[] = [
   {
     status: 'new',
@@ -50,6 +57,12 @@ const PIPELINE_STATS: PipelineStat[] = [
     label: 'Drafts',
     icon: <FileEdit className='size-4' aria-hidden />,
     href: '/jobs?status=resume_draft',
+  },
+  {
+    status: 'resume_ready',
+    label: 'Ready',
+    icon: <CheckCircle2 className='size-4' aria-hidden />,
+    href: '/jobs?status=resume_ready',
   },
   {
     status: 'applied',
@@ -170,8 +183,9 @@ export default function DashboardPage({ initial }: DashboardPageProps) {
         </Text>
       </div>
 
-      {/* Pipeline stats */}
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+      {/* Pipeline stats — 5 statuses fit nicely on lg+, wrap as 3+2 on
+          smaller screens (mobile keeps 2-up to stay scannable). */}
+      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5'>
         {PIPELINE_STATS.map(stat => (
           <Link
             key={stat.status}

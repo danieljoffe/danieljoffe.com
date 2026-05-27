@@ -16,7 +16,15 @@ interface JobsListResponse {
   page_size: number;
 }
 
-const PIPELINE_STATUSES = ['new', 'saved', 'resume_draft', 'applied'] as const;
+// Mirrors ``PIPELINE_STATS`` in ``DashboardPage.tsx`` — keep in sync so
+// every counter shown on the dashboard has a backing fetch here.
+const PIPELINE_STATUSES = [
+  'new',
+  'saved',
+  'resume_draft',
+  'resume_ready',
+  'applied',
+] as const;
 
 export default async function WyrdfoldDashboard() {
   // ``hasProfile`` checks whether the user has authored prose at all —
