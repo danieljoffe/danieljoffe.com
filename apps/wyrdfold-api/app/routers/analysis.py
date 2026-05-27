@@ -62,6 +62,22 @@ async def create_analysis(
         user_id=user_id,
     )
     if cached is not None:
+        # Re-apply the LLM blend even on a cache hit. The blend writes
+        # the per-target score + flips ``scoring_status`` to
+        # ``complete``, but analyses persisted *before* this code shipped
+        # never had that backfill done — so a returning user whose
+        # analysis was previously cached would still see the
+        # keyword-only score in the list view. ``_apply_llm_blend`` is
+        # idempotent (same blend math, same target, same scorecard),
+        # so re-running it on every cache hit is a cheap no-op once
+        # the row already has the blended score.
+        _apply_llm_blend(
+            supabase,
+            job_posting_id=job_id,
+            target_id=target_id,
+            scorecard=cached.scorecard,
+            analysis_id=cached.id,
+        )
         return cached
 
     # 3. Fetch target (existence check + context for the LLM)
