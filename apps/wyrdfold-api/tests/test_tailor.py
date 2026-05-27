@@ -8,12 +8,12 @@ from app.models.experience import OptimizedPayload, Outcome, Role, Skill
 from app.models.tailor import (
     ContactInfo,
     TailoredBullet,
+    TailoredCoverLetter,
     TailoredEducation,
     TailoredResume,
     TailoredRole,
 )
 from app.services.llm.mock import MockLLMClient
-from app.models.tailor import TailoredCoverLetter
 from app.services.tailor.tailor import (
     DEFAULT_PURPOSE,
     build_user_message,

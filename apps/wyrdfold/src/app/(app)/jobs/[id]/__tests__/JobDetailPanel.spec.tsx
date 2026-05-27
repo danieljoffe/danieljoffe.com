@@ -138,7 +138,57 @@ describe('JobDetailPanel', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders the resume CTA when status is resume_draft', async () => {
+  it('renders the resume CTA whenever a target is selected, regardless of status', async () => {
+    // ResumeSection's existence is now gated only by ``targetId`` (was
+    // ``status === 'resume_draft' || 'resume_ready'``). A new user
+    // opening a fresh ``new`` job needs the Generate CTA to be visible
+    // without first discovering they must flip status. The status flip
+    // itself happens on the backend persistence side-effect.
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('/tailor/by-job/')) {
+        // ResumeSection fetches the existing tailored doc; 200 with a
+        // record means "Review Resume" link appears.
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ id: 'r-1', approved_at: null }),
+        });
+      }
+      if (typeof url === 'string' && url.includes('/api/jobs/analysis/')) {
+        // ``targetId`` triggers an auto-fire LLM analysis useEffect.
+        // Short-circuit with a non-200 so it sets analysisError once
+        // and stops re-trying — the panel still renders the resume
+        // section under it, which is what we're asserting.
+        return Promise.resolve({
+          ok: false,
+          status: 503,
+          json: async () => ({ detail: 'mocked off' }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ entries: [] }),
+      });
+    }) as unknown as typeof fetch;
+
+    render(
+      <JobDetailPanel
+        posting={makeJob({ status: 'resume_draft' })}
+        targetId='t-1'
+        viewFullHref={undefined}
+        onDelete={undefined}
+        onStatusChange={undefined}
+      />
+    );
+    expect(
+      await screen.findByRole('link', { name: /review resume/i })
+    ).toHaveAttribute('href', '/jobs/j-1/resume');
+  });
+
+  it('does NOT render resume / cover-letter sections when no target is selected', () => {
+    // Tailor pipeline needs ``target_id`` — without one the section's
+    // Generate button would 422. Hide the section cleanly instead.
     render(
       <JobDetailPanel
         posting={makeJob({ status: 'resume_draft' })}
@@ -149,8 +199,11 @@ describe('JobDetailPanel', () => {
       />
     );
     expect(
-      await screen.findByRole('link', { name: /review resume/i })
-    ).toHaveAttribute('href', '/jobs/j-1/resume');
+      screen.queryByRole('link', { name: /review resume/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('cover-letter-section-stub')
+    ).not.toBeInTheDocument();
   });
 
   it('fetches status history on mount and renders entries when present', async () => {
