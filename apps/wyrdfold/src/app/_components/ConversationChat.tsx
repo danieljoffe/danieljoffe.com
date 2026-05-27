@@ -100,6 +100,36 @@ export default function ConversationChat({
     };
   }, []);
 
+  /**
+   * Force the conversation to its derive step regardless of the
+   * orchestrator's done-signal. Use when the user has shared enough
+   * detail in their own judgment but the LLM is still probing.
+   * Same derive + onComplete path as the auto-done branch in
+   * ``handleSend``; failures surface the same error UI.
+   */
+  const handleFinishNow = useCallback(async () => {
+    if (sending || deriving) return;
+    setError(null);
+    setDeriving(true);
+    try {
+      const deriveRes = await fetch('/api/career/experience/derive', {
+        method: 'POST',
+      });
+      if (!deriveRes.ok) {
+        throw new Error(
+          await extractErrorDetail(deriveRes, 'Failed to build master document')
+        );
+      }
+      setTimeout(onComplete, 800);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Something went wrong. Try again.'
+      );
+    } finally {
+      setDeriving(false);
+    }
+  }, [sending, deriving, onComplete]);
+
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || sending) return;
@@ -330,7 +360,7 @@ export default function ConversationChat({
 
       {error && <Alert variant='error'>{error}</Alert>}
 
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
         <Button
           name='onboarding-skip-question'
           variant='outline'
@@ -340,15 +370,39 @@ export default function ConversationChat({
         >
           Skip this question
         </Button>
-        <Button
-          name='onboarding-skip-conversation'
-          variant='ghost'
-          size='sm'
-          onClick={onSkip}
-          disabled={sending || deriving}
-        >
-          Skip for now
-        </Button>
+        <div className='flex items-center gap-2'>
+          {/*
+            "Build my profile" lets the user finish on their own terms.
+            The orchestrator only sets ``done=true`` after gathering
+            roles + outcomes for the last 3 positions — by-design to
+            produce a strong profile, but it left no exit for users who
+            ran out of time / patience after 17+ turns. ``Skip for now``
+            still exists for abandoning entirely; this CTA fires
+            ``/derive`` on whatever prose has accumulated and
+            advances the wizard to the completion step. The same
+            ``deriving`` state + handler is reused from the done-branch
+            of ``handleSend`` so the spinner + error toast paths stay
+            consistent.
+          */}
+          <Button
+            name='onboarding-finish-conversation'
+            variant='secondary'
+            size='sm'
+            onClick={handleFinishNow}
+            disabled={loading || sending || deriving || messages.length < 2}
+          >
+            {deriving ? 'Building...' : 'Build my profile'}
+          </Button>
+          <Button
+            name='onboarding-skip-conversation'
+            variant='ghost'
+            size='sm'
+            onClick={onSkip}
+            disabled={sending || deriving}
+          >
+            Skip for now
+          </Button>
+        </div>
       </div>
     </div>
   );

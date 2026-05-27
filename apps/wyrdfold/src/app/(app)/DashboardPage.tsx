@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import {
   ArrowRight,
+  Award,
   Briefcase,
   CheckCircle2,
   FileEdit,
+  MessageCircle,
   Send,
   Sparkles,
   Star,
@@ -26,19 +28,26 @@ export interface DashboardInitial {
 }
 
 interface PipelineStat {
-  status: 'new' | 'saved' | 'resume_draft' | 'resume_ready' | 'applied';
+  status:
+    | 'new'
+    | 'saved'
+    | 'resume_draft'
+    | 'resume_ready'
+    | 'applied'
+    | 'interviewing'
+    | 'offer';
   label: string;
   icon: React.ReactNode;
   href: string;
 }
 
-// ``resume_ready`` was missing from the dashboard until 2026-05 — users
-// who'd approved a resume saw "Drafts: 0 / Applied: 0" with no
-// acknowledgment that their work-in-progress existed. ``interviewing``
-// and ``offer`` are deliberately omitted for now: they're rare states
-// in personal-tool usage and adding more counters past 5 makes the
-// row noisy on mobile. Adding them is a one-line change if they
-// start mattering.
+// Full pipeline view. ``resume_ready`` was added in 2026-05 (#685);
+// ``interviewing`` and ``offer`` were initially deferred to keep the
+// row tight at 5 cells, then promoted here once it became clear the
+// late-stage statuses are exactly the ones a user wants visible (the
+// rare ones are also the ones with the highest emotional weight — a
+// dashboard that hides them is hiding the win). 7 cells now; grid
+// reflows from 2 → 3 → 4 (sm) → 7 (xl) so mobile stays scannable.
 const PIPELINE_STATS: PipelineStat[] = [
   {
     status: 'new',
@@ -69,6 +78,18 @@ const PIPELINE_STATS: PipelineStat[] = [
     label: 'Applied',
     icon: <Send className='size-4' aria-hidden />,
     href: '/jobs?status=applied',
+  },
+  {
+    status: 'interviewing',
+    label: 'Interviewing',
+    icon: <MessageCircle className='size-4' aria-hidden />,
+    href: '/jobs?status=interviewing',
+  },
+  {
+    status: 'offer',
+    label: 'Offer',
+    icon: <Award className='size-4' aria-hidden />,
+    href: '/jobs?status=offer',
   },
 ];
 
@@ -183,9 +204,11 @@ export default function DashboardPage({ initial }: DashboardPageProps) {
         </Text>
       </div>
 
-      {/* Pipeline stats — 5 statuses fit nicely on lg+, wrap as 3+2 on
-          smaller screens (mobile keeps 2-up to stay scannable). */}
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5'>
+      {/* Pipeline stats — 7 statuses (new → saved → drafts → ready →
+          applied → interviewing → offer). Reflow: 2 cols on mobile,
+          3 on sm, 4 on md, 7 on xl so the row stays readable across
+          all widths without horizontal scroll. */}
+      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7'>
         {PIPELINE_STATS.map(stat => (
           <Link
             key={stat.status}

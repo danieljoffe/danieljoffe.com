@@ -18,27 +18,41 @@ import { cn } from '@/lib/cn';
 import { downloadInsightsCsv } from './exportCsv';
 import type { Period } from './types';
 
-const CostChart = dynamic(() => import('./charts/CostChart'), { ssr: false });
+// Pass ``ChartSkeleton`` (declared below) as the dynamic-import
+// ``loading`` placeholder. Recharts containers render at
+// ``height={250}``; with no loading placeholder the chart slots were
+// 0-height until hydrate, then reflowed the page and Lighthouse
+// flagged CLS. ``next/dynamic`` enforces object-literal-at-callsite
+// (https://nextjs.org/docs/messages/invalid-dynamic-options-type)
+// so we can't extract a shared options const — repeat the literal
+// per chart.
+const CostChart = dynamic(() => import('./charts/CostChart'), {
+  ssr: false,
+  loading: () => <ChartSkeleton />,
+});
 const FunnelChart = dynamic(() => import('./charts/FunnelChart'), {
   ssr: false,
+  loading: () => <ChartSkeleton />,
 });
 const ScoreDistributionChart = dynamic(
   () => import('./charts/ScoreDistributionChart'),
-  { ssr: false }
+  { ssr: false, loading: () => <ChartSkeleton /> }
 );
 const SkillFrequencyChart = dynamic(
   () => import('./charts/SkillFrequencyChart'),
-  { ssr: false }
+  { ssr: false, loading: () => <ChartSkeleton /> }
 );
 const TopSkillGaps = dynamic(() => import('./charts/TopSkillGaps'), {
   ssr: false,
+  loading: () => <ChartSkeleton />,
 });
 const TargetComparisonChart = dynamic(
   () => import('./charts/TargetComparisonChart'),
-  { ssr: false }
+  { ssr: false, loading: () => <ChartSkeleton /> }
 );
 const VelocityChart = dynamic(() => import('./charts/VelocityChart'), {
   ssr: false,
+  loading: () => <ChartSkeleton />,
 });
 
 const PERIODS: { id: Period; label: string }[] = [
