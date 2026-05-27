@@ -6,6 +6,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { promptForMissingContactName } from './promptForMissingContactName';
 import type { TailoredResumeRecord, TailorResponse } from './types';
 
 interface ResumeSectionProps {
@@ -74,14 +75,35 @@ export default function ResumeSection({ jobPostingId }: ResumeSectionProps) {
         return;
       }
 
-      const res = await fetch('/api/jobs/tailor/resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job_description: jd,
-          job_posting_id: jobPostingId,
-        }),
-      });
+      const postTailor = () =>
+        fetch('/api/jobs/tailor/resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            job_description: jd,
+            job_posting_id: jobPostingId,
+          }),
+        });
+
+      let res = await postTailor();
+
+      // The onboarding wizard doesn't capture a contact name (Supabase
+      // magic-link auth has none), so first-time users hit the 400
+      // "No contact name on file" gate. Prompt for it inline + retry
+      // rather than dead-ending in Settings.
+      if (!res.ok) {
+        const peek = (await res
+          .clone()
+          .json()
+          .catch(() => null)) as {
+          detail?: { code?: string; message?: string } | string;
+        } | null;
+        const peekDetail =
+          typeof peek?.detail === 'string' ? peek.detail : undefined;
+        if (await promptForMissingContactName(peekDetail)) {
+          res = await postTailor();
+        }
+      }
 
       if (!res.ok) {
         // The 422 case carries a structured ``detail`` object for the
