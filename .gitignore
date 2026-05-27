@@ -93,3 +93,8 @@ apps/root/src/data/generated/
 .claude/settings.local.json
 
 .nx/key/
+
+# Playwright auth fixture — session cookies for the e2e test user.
+# Written by apps/wyrdfold-e2e/src/auth.setup.ts on first run; this
+# file contains a live Supabase JWT and must not be committed.
+apps/wyrdfold-e2e/src/.auth/

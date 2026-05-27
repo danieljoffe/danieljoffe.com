@@ -1,0 +1,98 @@
+import path from 'node:path';
+import { test as setup, expect } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+
+/**
+ * One-shot Supabase password sign-in that produces a storageState
+ * file the authenticated specs reuse. Skips entirely when the four
+ * required env vars are absent — that's the CI default until the
+ * secrets are wired up (see ``apps/wyrdfold-e2e/README.md`` for
+ * setup steps), so the un-authed specs (login, middleware) still run
+ * cleanly there.
+ *
+ * Why password sign-in + manual cookie write instead of magic-link
+ * or admin generateLink:
+ *   - Magic-link needs an inbox / Supabase generateLink admin call,
+ *     which means surfacing the service-role key to CI. Password
+ *     stays at anon-key scope.
+ *   - The supabase-js client stores the session in localStorage by
+ *     default; the wyrdfold app reads it from cookies via
+ *     ``@supabase/ssr``. We construct the cookie blob manually in
+ *     the exact shape ``createServerClient`` parses.
+ */
+
+// CJS context (Playwright transforms TS as CJS), ``__dirname`` is the
+// directory of this file at runtime.
+export const AUTH_STORAGE_STATE = path.join(__dirname, '.auth', 'user.json');
+
+const url = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_ID'];
+const email = process.env['E2E_TEST_USER_EMAIL'];
+const password = process.env['E2E_TEST_USER_PASSWORD'];
+
+setup(
+  'authenticate via Supabase password sign-in',
+  async ({ page, context }) => {
+    // Skip when any env var is missing — CI without the e2e secrets
+    // shouldn't fail this step, it just won't have any authed specs
+    // to run.
+    setup.skip(
+      !url || !anonKey || !email || !password,
+      'E2E auth env not set: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_ID, E2E_TEST_USER_EMAIL, E2E_TEST_USER_PASSWORD. Run setup locally first; see apps/wyrdfold-e2e/README.md.'
+    );
+
+    // TypeScript narrowing — setup.skip with truthy-test guarantees
+    // these are defined but TS can't infer that.
+    if (!url || !anonKey || !email || !password) return;
+
+    const supabase = createClient(url, anonKey);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error || !data.session) {
+      throw new Error(`Sign-in failed: ${error?.message ?? 'no session'}`);
+    }
+
+    // Reconstruct the cookie shape ``@supabase/ssr`` writes on the
+    // browser side. Cookie name format is
+    // ``sb-<project-ref>-auth-token``; the project ref is the first
+    // subdomain segment of ``NEXT_PUBLIC_SUPABASE_URL``. Value is the
+    // base64-prefixed JSON-encoded session.
+    const projectRef = new URL(url).hostname.split('.')[0];
+    const sessionBlob = {
+      access_token: data.session.access_token,
+      token_type: 'bearer',
+      expires_in: data.session.expires_in,
+      expires_at: data.session.expires_at,
+      refresh_token: data.session.refresh_token,
+      user: data.user,
+    };
+    const cookieValue = `base64-${Buffer.from(
+      JSON.stringify(sessionBlob),
+      'utf-8'
+    ).toString('base64')}`;
+
+    await context.addCookies([
+      {
+        name: `sb-${projectRef}-auth-token`,
+        value: cookieValue,
+        domain: 'localhost',
+        path: '/',
+        // Match the middleware-set cookie's flags so the session sticks
+        // across navigations.
+        httpOnly: false,
+        sameSite: 'Lax',
+        expires: data.session.expires_at ?? -1,
+      },
+    ]);
+
+    // Smoke the session by hitting /dashboard. If the cookie wasn't
+    // accepted (wrong shape, expired, wrong domain), middleware
+    // redirects to /login and this assertion fails fast.
+    await page.goto('/dashboard');
+    await expect(page).not.toHaveURL(/\/login/);
+
+    await context.storageState({ path: AUTH_STORAGE_STATE });
+  }
+);
