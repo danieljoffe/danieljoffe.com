@@ -327,6 +327,7 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
               <TargetCard
                 key={target.id}
                 target={target}
+                isActive={user_target.is_active}
                 fitScore={user_target.fit_score}
                 fitScoreReasoning={user_target.fit_score_reasoning}
                 onActivate={handleActivate}
