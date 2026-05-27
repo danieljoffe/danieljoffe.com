@@ -81,6 +81,26 @@ jest.mock('../TargetSuggestions', () => ({
   ),
 }));
 
+jest.mock('../IdentityStep', () => ({
+  __esModule: true,
+  default: ({
+    onComplete,
+    onSkip,
+  }: {
+    onComplete: () => void;
+    onSkip: () => void;
+  }) => (
+    <div data-testid='identity-step-stub'>
+      <button type='button' onClick={onComplete}>
+        identity-complete
+      </button>
+      <button type='button' onClick={onSkip}>
+        identity-skip
+      </button>
+    </div>
+  ),
+}));
+
 jest.mock('../CompletionScreen', () => ({
   __esModule: true,
   default: () => <div data-testid='completion-screen-stub'>completion</div>,
@@ -139,7 +159,7 @@ describe('OnboardingWizard — initial state', () => {
 });
 
 describe('OnboardingWizard — Path A (resume + role)', () => {
-  it('dispatches to ResumeUploader after selecting Path A', async () => {
+  it('dispatches to IdentityStep after selecting Path A', async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard />);
 
@@ -149,10 +169,10 @@ describe('OnboardingWizard — Path A (resume + role)', () => {
       })
     );
 
-    expect(screen.getByTestId('resume-uploader-stub')).toBeInTheDocument();
+    expect(screen.getByTestId('identity-step-stub')).toBeInTheDocument();
   });
 
-  it('shows a progress bar on Path A non-completion steps (1 of 4)', async () => {
+  it('shows a progress bar on Path A non-completion steps', async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard />);
 
@@ -162,14 +182,13 @@ describe('OnboardingWizard — Path A (resume + role)', () => {
       })
     );
 
-    // Path A renders 5 steps total (path-chooser + 4); upload-resume is index 1.
-    // ProgressBar uses percentage: (1+1)/5 = 40%.
+    // Path A has 6 steps; identity is index 1. ProgressBar: Math.round((2/6)*100) = 33.
     const progressBar = screen.getByRole('progressbar');
     expect(progressBar).toHaveAttribute('aria-valuemax', '100');
-    expect(progressBar).toHaveAttribute('aria-valuenow', '40');
+    expect(progressBar).toHaveAttribute('aria-valuenow', '33');
   });
 
-  it('advances through upload-resume -> add-job -> pick-targets -> completion', async () => {
+  it('advances through identity -> upload-resume -> add-job -> pick-targets -> completion', async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard />);
 
@@ -179,15 +198,19 @@ describe('OnboardingWizard — Path A (resume + role)', () => {
       })
     );
 
-    // Step 1: upload-resume -> next
+    // Step 1: identity -> next
+    await user.click(screen.getByRole('button', { name: 'identity-complete' }));
+    expect(screen.getByTestId('resume-uploader-stub')).toBeInTheDocument();
+
+    // Step 2: upload-resume -> next
     await user.click(screen.getByRole('button', { name: 'resume-complete' }));
     expect(screen.getByTestId('job-url-input-stub')).toBeInTheDocument();
 
-    // Step 2: add-job -> next
+    // Step 3: add-job -> next
     await user.click(screen.getByRole('button', { name: 'job-complete' }));
     expect(screen.getByTestId('target-suggestions-stub')).toBeInTheDocument();
 
-    // Step 3: pick-targets -> next
+    // Step 4: pick-targets -> next
     await user.click(screen.getByRole('button', { name: 'targets-complete' }));
     expect(screen.getByTestId('completion-screen-stub')).toBeInTheDocument();
   });
@@ -201,6 +224,7 @@ describe('OnboardingWizard — Path A (resume + role)', () => {
         name: /i have a resume and a role in mind/i,
       })
     );
+    await user.click(screen.getByRole('button', { name: 'identity-complete' }));
     await user.click(screen.getByRole('button', { name: 'resume-complete' }));
     await user.click(screen.getByRole('button', { name: 'job-complete' }));
     await user.click(screen.getByRole('button', { name: 'targets-complete' }));
@@ -210,7 +234,7 @@ describe('OnboardingWizard — Path A (resume + role)', () => {
 });
 
 describe('OnboardingWizard — Path B (resume only)', () => {
-  it('dispatches to ResumeUploader and shows a 3-step progress bar', async () => {
+  it('dispatches to IdentityStep and shows a progress bar', async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard />);
 
@@ -220,12 +244,11 @@ describe('OnboardingWizard — Path B (resume only)', () => {
       })
     );
 
-    expect(screen.getByTestId('resume-uploader-stub')).toBeInTheDocument();
-    // Path B renders 4 steps total (path-chooser + 3); upload-resume is index 1.
-    // ProgressBar uses percentage: (1+1)/4 = 50%.
+    expect(screen.getByTestId('identity-step-stub')).toBeInTheDocument();
+    // Path B has 5 steps; identity is index 1. ProgressBar: Math.round((2/5)*100) = 40.
     const progressBar = screen.getByRole('progressbar');
     expect(progressBar).toHaveAttribute('aria-valuemax', '100');
-    expect(progressBar).toHaveAttribute('aria-valuenow', '50');
+    expect(progressBar).toHaveAttribute('aria-valuenow', '40');
   });
 
   it('skips the add-job step and goes directly to pick-targets', async () => {
@@ -237,6 +260,7 @@ describe('OnboardingWizard — Path B (resume only)', () => {
         name: /i have a resume but i'm exploring roles/i,
       })
     );
+    await user.click(screen.getByRole('button', { name: 'identity-complete' }));
     await user.click(screen.getByRole('button', { name: 'resume-complete' }));
 
     expect(screen.getByTestId('target-suggestions-stub')).toBeInTheDocument();
@@ -245,7 +269,7 @@ describe('OnboardingWizard — Path B (resume only)', () => {
 });
 
 describe('OnboardingWizard — Path C (conversation)', () => {
-  it('dispatches to ConversationChat after selecting Path C', async () => {
+  it('dispatches to IdentityStep after selecting Path C', async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard />);
 
@@ -253,16 +277,19 @@ describe('OnboardingWizard — Path C (conversation)', () => {
       screen.getByRole('button', { name: /i'm not sure where to start/i })
     );
 
-    expect(screen.getByTestId('conversation-chat-stub')).toBeInTheDocument();
+    expect(screen.getByTestId('identity-step-stub')).toBeInTheDocument();
   });
 
-  it('advances from conversation -> pick-targets -> completion', async () => {
+  it('advances from identity -> conversation -> pick-targets -> completion', async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard />);
 
     await user.click(
       screen.getByRole('button', { name: /i'm not sure where to start/i })
     );
+
+    await user.click(screen.getByRole('button', { name: 'identity-complete' }));
+    expect(screen.getByTestId('conversation-chat-stub')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'chat-complete' }));
     expect(screen.getByTestId('target-suggestions-stub')).toBeInTheDocument();
