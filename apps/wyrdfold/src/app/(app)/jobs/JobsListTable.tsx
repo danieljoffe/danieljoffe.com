@@ -272,6 +272,7 @@ export default function JobsListTable({
                           onRefetch();
                         }}
                         onStatusChange={() => onRefetch()}
+                        onAnalysisComplete={onRefetch}
                       />
                     </td>
                   </tr>

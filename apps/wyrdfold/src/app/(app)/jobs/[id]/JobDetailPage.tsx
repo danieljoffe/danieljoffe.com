@@ -85,6 +85,23 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
     setPosting(prev => (prev ? { ...prev, status: newStatus } : prev));
   }, []);
 
+  // Re-fetch the posting after the LLM analysis blend writes the new
+  // per-target score + flips ``scoring_status`` to ``complete``. The
+  // panel's ``onAnalysisComplete`` calls this; without it the Score
+  // badge stays at the keyword-only number (e.g. 70+ → 20 blend stayed
+  // visually at 70+ until the user manually refreshed).
+  const refetchPosting = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/jobs/${id}`);
+      if (!res.ok) return;
+      const data = (await res.json()) as JobPosting;
+      setPosting(data);
+    } catch {
+      // Best-effort — the analysis result is already shown; the stale
+      // score is the worst case, and refreshing the page recovers.
+    }
+  }, [id]);
+
   const handleDelete = useCallback(async () => {
     if (!posting) return;
     /* eslint-disable no-alert -- personal tool, native confirm is fine */
@@ -242,6 +259,7 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
           viewFullHref={undefined}
           onDelete={undefined}
           onStatusChange={handleStatusChange}
+          onAnalysisComplete={refetchPosting}
           hideDelete
           defaultDescriptionOpen
         />

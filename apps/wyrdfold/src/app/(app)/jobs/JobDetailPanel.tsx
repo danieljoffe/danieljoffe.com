@@ -30,6 +30,14 @@ interface JobDetailPanelProps {
   viewFullHref: string | undefined;
   onDelete: (() => void) | undefined;
   onStatusChange: ((status: string) => void) | undefined;
+  /** Fired after the LLM analysis completes. The blend write-back
+   *  (PR #689 / #690 / #691) updates the per-target score + flips
+   *  ``scoring_status`` to ``complete``, but the panel's ``posting``
+   *  prop is still stale until the parent refetches. Pages that own
+   *  ``posting`` state should re-GET ``/api/jobs/{id}`` here so the
+   *  Score badge + breakdown reflect the new blended values without
+   *  the user having to manually refresh. */
+  onAnalysisComplete?: (() => void) | undefined;
   /** Suppress the panel's own Delete action (the page renders one at root). */
   hideDelete?: boolean;
   /** Default-open the JD description block on the full-page detail
@@ -106,6 +114,7 @@ export default function JobDetailPanel({
   viewFullHref,
   onDelete,
   onStatusChange,
+  onAnalysisComplete,
   hideDelete = false,
   defaultDescriptionOpen = false,
 }: JobDetailPanelProps) {
@@ -168,6 +177,12 @@ export default function JobDetailPanel({
       if (res.ok) {
         const data = (await res.json()) as JobAnalysis;
         setAnalysis(data);
+        // Backend blended the LLM score into the per-target ``scores``
+        // row + flipped ``scoring_status`` to ``complete``. The
+        // ``posting`` prop is now stale (still shows the keyword-only
+        // score). Notify the parent so it can refetch and re-render
+        // the Score badge + breakdown without a manual page refresh.
+        onAnalysisComplete?.();
       } else {
         // Distinguish the specific "no description in DB" 422 case (which
         // the route surfaces with ``Job posting has no description to
@@ -199,7 +214,7 @@ export default function JobDetailPanel({
     } finally {
       setAnalyzing(false);
     }
-  }, [posting.id, targetId]);
+  }, [posting.id, targetId, onAnalysisComplete]);
 
   // Auto-trigger analysis on first open when a target is selected.
   // Cache hit returns instantly; cache miss runs the LLM exactly once

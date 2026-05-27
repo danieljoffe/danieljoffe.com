@@ -11,6 +11,20 @@ import type { JobTarget } from './types';
 
 interface TargetCardProps {
   target: JobTarget;
+  /**
+   * THIS user's active flag for the target — read from
+   * ``user_targets.is_active``. ``isActive`` is the shared
+   * catalog flag synced by a DB trigger from any user's active
+   * link, so it can read ``true`` even when this user has the
+   * target deactivated. Reading the catalog flag for per-user UX
+   * (View jobs disabled, Activate/Deactivate label, status badge)
+   * made the dropdown's "View jobs" click-through to
+   * ``/jobs?target=...``, which then server-side-redirected to
+   * the untargeted view because the page filters by
+   * ``user_isActive``. User clicked, ended up nowhere
+   * useful, with no explanation.
+   */
+  isActive: boolean;
   fitScore: number | null;
   fitScoreReasoning: string | null;
   onActivate: (id: string) => void;
@@ -37,6 +51,7 @@ function fitScoreVariant(
 
 export default function TargetCard({
   target,
+  isActive,
   fitScore,
   fitScoreReasoning,
   onActivate,
@@ -58,13 +73,13 @@ export default function TargetCard({
       label: 'View jobs',
       icon: <Briefcase className='size-4' aria-hidden />,
       onClick: () => onViewJobs(target.id),
-      disabled: !target.is_active,
+      disabled: !isActive,
     },
     {
-      label: target.is_active ? 'Deactivate' : 'Activate',
+      label: isActive ? 'Deactivate' : 'Activate',
       icon: <Power className='size-4' aria-hidden />,
       onClick: () =>
-        target.is_active ? onDeactivate(target.id) : onActivate(target.id),
+        isActive ? onDeactivate(target.id) : onActivate(target.id),
     },
     { label: '', divider: true },
     {
@@ -143,11 +158,11 @@ export default function TargetCard({
             <span
               className={cn(
                 'inline-block size-2 rounded-full',
-                target.is_active ? 'bg-success' : 'bg-text-tertiary'
+                isActive ? 'bg-success' : 'bg-text-tertiary'
               )}
               aria-hidden
             />
-            {target.is_active ? 'Active' : 'Inactive'}
+            {isActive ? 'Active' : 'Inactive'}
           </span>
         </div>
       </CardContent>

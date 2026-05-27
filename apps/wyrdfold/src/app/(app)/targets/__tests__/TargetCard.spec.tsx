@@ -45,6 +45,7 @@ describe('TargetCard', () => {
         target={makeTarget()}
         fitScore={null}
         fitScoreReasoning={null}
+        isActive
         onActivate={noop}
         onDeactivate={noop}
         onDelete={noop}
@@ -60,6 +61,7 @@ describe('TargetCard', () => {
         target={makeTarget()}
         fitScore={92}
         fitScoreReasoning='Great match'
+        isActive
         onActivate={noop}
         onDeactivate={noop}
         onDelete={noop}
@@ -75,6 +77,7 @@ describe('TargetCard', () => {
         target={makeTarget()}
         fitScore={null}
         fitScoreReasoning={null}
+        isActive
         onActivate={noop}
         onDeactivate={noop}
         onDelete={noop}
@@ -92,6 +95,7 @@ describe('TargetCard', () => {
         target={makeTarget()}
         fitScore={null}
         fitScoreReasoning={null}
+        isActive
         onActivate={noop}
         onDeactivate={noop}
         onDelete={noop}
@@ -111,6 +115,7 @@ describe('TargetCard', () => {
         target={makeTarget({ is_active: true })}
         fitScore={null}
         fitScoreReasoning={null}
+        isActive
         onActivate={noop}
         onDeactivate={noop}
         onDelete={noop}
@@ -120,12 +125,13 @@ describe('TargetCard', () => {
     expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
-  it('shows an "Inactive" status when target.is_active is false', () => {
+  it('shows an "Inactive" status when isActive is false', () => {
     render(
       <TargetCard
         target={makeTarget({ is_active: false })}
         fitScore={null}
         fitScoreReasoning={null}
+        isActive={false}
         onActivate={noop}
         onDeactivate={noop}
         onDelete={noop}
