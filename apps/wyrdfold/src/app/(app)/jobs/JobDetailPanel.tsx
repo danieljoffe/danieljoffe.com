@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import DOMPurify from 'isomorphic-dompurify';
+import { useCallback, useEffect, useState } from 'react';
 import { ChevronDown, Maximize2 } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
@@ -250,18 +249,31 @@ export default function JobDetailPanel({
   // otherwise the panel just renders the encoded source as text.
   // DOMPurify itself scrubs against XSS — defence-in-depth even
   // though the source is first-party.
-  const sanitizedDescription = useMemo(() => {
+  //
+  // ``description_html`` is only populated on the /jobs/{id} detail
+  // response — the /jobs list omits it. Dynamic-import keeps the
+  // ~35 KB isomorphic-dompurify dep off the list-page bundle.
+  const [sanitizedDescription, setSanitizedDescription] = useState<
+    string | null
+  >(null);
+  useEffect(() => {
     const raw = posting.description_html ?? '';
-    if (!raw.trim()) return null;
-    const decoded =
-      typeof window === 'undefined'
-        ? raw
-        : (() => {
-            const ta = document.createElement('textarea');
-            ta.innerHTML = raw;
-            return ta.value;
-          })();
-    return DOMPurify.sanitize(decoded, { USE_PROFILES: { html: true } });
+    if (!raw.trim()) {
+      setSanitizedDescription(null);
+      return;
+    }
+    let cancelled = false;
+    void import('isomorphic-dompurify').then(mod => {
+      if (cancelled) return;
+      const ta = document.createElement('textarea');
+      ta.innerHTML = raw;
+      setSanitizedDescription(
+        mod.default.sanitize(ta.value, { USE_PROFILES: { html: true } })
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [posting.description_html]);
 
   return (
