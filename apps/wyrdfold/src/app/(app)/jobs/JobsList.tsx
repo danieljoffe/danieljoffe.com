@@ -24,8 +24,15 @@ const INITIAL_FILTERS: JobsFilterState = {
   search: '',
 };
 
+// ``minScore`` empty (= no implicit floor) so the "Any score" label
+// the dropdown shows actually means "any score". The previous default
+// of ``'45'`` silently filtered out matches in the 0–44 range while the
+// dropdown still rendered "Any score" — because ``'45'`` isn't one of
+// the ``MIN_SCORE_OPTIONS`` values (the gaps go 0 → 40 → 70 → 85), the
+// label-lookup fell through to "Any score" and target tabs hard-loaded
+// with an empty list whenever every match scored below 45.
 const TARGET_FILTERS: JobsFilterState = {
-  minScore: '45',
+  minScore: '',
   status: '',
   search: '',
 };
