@@ -99,6 +99,24 @@ export default function JobsList({
       current: ReturnType<typeof setInterval> | undefined;
     } = { current: undefined };
 
+    function clearStatusPoll() {
+      if (statusPollRef.current) {
+        clearInterval(statusPollRef.current);
+        // Null out the ref so a later branch that gates on
+        // ``!statusPollRef.current`` can re-establish polling.
+        // Previously the cleared timer ID lingered, so going
+        // ready → deriving → ready never re-established polling
+        // on the second cycle.
+        statusPollRef.current = undefined;
+      }
+    }
+
+    function ensureStatusPoll() {
+      if (!statusPollRef.current) {
+        statusPollRef.current = setInterval(checkStatus, 3000);
+      }
+    }
+
     async function checkStatus() {
       try {
         const res = await fetch(`/api/targets/${activeTargetId}/status`);
@@ -114,29 +132,33 @@ export default function JobsList({
 
         if (data.activation_status === 'ready') {
           // Jobs are ready — refresh the table
-          if (statusPollRef.current) clearInterval(statusPollRef.current);
+          clearStatusPoll();
           setRefreshKey(k => k + 1);
-        } else if (
-          data.activation_status === 'idle' &&
-          !activatingRef.current.has(activeTargetId!)
-        ) {
-          // Target hasn't been activated yet — trigger activation
-          activatingRef.current.add(activeTargetId!);
-          await fetch(`/api/targets/${activeTargetId}/activate`, {
-            method: 'POST',
-          });
-          // Start polling for status updates
-          statusPollRef.current = setInterval(checkStatus, 3000);
+        } else if (data.activation_status === 'idle') {
+          // Only POST /activate once per session per target;
+          // activatingRef tracks which ones we've already kicked off.
+          // But always ensure polling is running — without this the
+          // user could land on a target whose ref says "already
+          // activated" but whose status hasn't progressed, and the
+          // UI would silently get stuck on 'idle' forever.
+          if (!activatingRef.current.has(activeTargetId!)) {
+            activatingRef.current.add(activeTargetId!);
+            await fetch(`/api/targets/${activeTargetId}/activate`, {
+              method: 'POST',
+            });
+            // Navigation away during the POST shouldn't leave a
+            // no-op poller attached to a cancelled effect.
+            if (cancelled) return;
+          }
+          ensureStatusPoll();
         } else if (
           data.activation_status === 'deriving' ||
           data.activation_status === 'polling'
         ) {
           // Pipeline in progress — keep polling
-          if (!statusPollRef.current) {
-            statusPollRef.current = setInterval(checkStatus, 3000);
-          }
+          ensureStatusPoll();
         } else if (data.activation_status === 'error') {
-          if (statusPollRef.current) clearInterval(statusPollRef.current);
+          clearStatusPoll();
         }
       } catch {
         // Non-critical — will retry on next interval or tab switch
@@ -147,7 +169,7 @@ export default function JobsList({
 
     return () => {
       cancelled = true;
-      if (statusPollRef.current) clearInterval(statusPollRef.current);
+      clearStatusPoll();
     };
   }, [activeTargetId]);
 
