@@ -108,7 +108,12 @@ const config: KnipConfig = {
     // apps/wyrdfold-e2e — Playwright E2E tests for wyrdfold
     // -----------------------------------------------------------------
     'apps/wyrdfold-e2e': {
-      entry: ['src/**/*.spec.ts'],
+      // Playwright spec entry points: ``.spec.ts`` files and
+      // ``auth.setup.ts`` (referenced by the ``setup`` project's
+      // ``testMatch`` regex in playwright.config.ts). Without the
+      // ``.setup.ts`` glob, knip flags it as unused + cascades to
+      // mark ``@supabase/supabase-js`` as an unused dep.
+      entry: ['src/**/*.spec.ts', 'src/**/*.setup.ts'],
       project: ['src/**/*.ts'],
     },
 
