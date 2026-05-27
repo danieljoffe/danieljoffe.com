@@ -2,9 +2,9 @@
 
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { useToast } from '@/state/Toast/ToastProvider';
 import JobCard from './JobCard';
+import JobsEmptyState from './JobsEmptyState';
 import type { JobPosting } from './types';
 
 interface JobsListMobileProps {
@@ -72,11 +72,7 @@ export default function JobsListMobile({
   }
 
   if (postings.length === 0) {
-    return (
-      <Text variant='body' className='py-12 text-center text-text-tertiary'>
-        No jobs found. Try adjusting filters or adding jobs manually.
-      </Text>
-    );
+    return <JobsEmptyState onJobAdded={onRefetch} />;
   }
 
   return (
