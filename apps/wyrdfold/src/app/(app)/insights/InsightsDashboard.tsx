@@ -264,7 +264,7 @@ export default function InsightsDashboard() {
       <Card aria-busy={showVelocitySkeleton}>
         <CardHeader>
           <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
-            <CardTitle>Weekly Activity</CardTitle>
+            <CardTitle as='h2'>Weekly Activity</CardTitle>
             <Text variant='meta'>
               Resumes drafted vs applications submitted, per week
             </Text>
@@ -283,7 +283,7 @@ export default function InsightsDashboard() {
       <div className='grid gap-6 grid-cols-1 lg:grid-cols-2'>
         <Card aria-busy={showFunnelSkeleton}>
           <CardHeader>
-            <CardTitle>Pipeline Funnel</CardTitle>
+            <CardTitle as='h2'>Pipeline Funnel</CardTitle>
           </CardHeader>
           <CardContent>
             {showFunnelSkeleton ? (
@@ -296,7 +296,7 @@ export default function InsightsDashboard() {
 
         <Card aria-busy={showScoreDistSkeleton}>
           <CardHeader>
-            <CardTitle>Score Distribution</CardTitle>
+            <CardTitle as='h2'>Score Distribution</CardTitle>
           </CardHeader>
           <CardContent>
             {showScoreDistSkeleton ? (
@@ -316,7 +316,7 @@ export default function InsightsDashboard() {
         <Card aria-busy={showTargetCmpSkeleton}>
           <CardHeader>
             <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
-              <CardTitle>Target Comparison</CardTitle>
+              <CardTitle as='h2'>Target Comparison</CardTitle>
               <Text variant='meta'>
                 Avg score and interview conversion across your saved targets
               </Text>
@@ -334,7 +334,7 @@ export default function InsightsDashboard() {
         <Card aria-busy={showSkillFreqSkeleton}>
           <CardHeader>
             <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
-              <CardTitle>Skill Mentions</CardTitle>
+              <CardTitle as='h2'>Skill Mentions</CardTitle>
               <Text variant='meta'>
                 How often each skill appears across your analyzed jobs
               </Text>
@@ -354,7 +354,7 @@ export default function InsightsDashboard() {
       <Card aria-busy={showSkillFreqSkeleton}>
         <CardHeader>
           <div className='flex items-baseline gap-x-4 gap-y-1 flex-wrap'>
-            <CardTitle>What to Learn Next</CardTitle>
+            <CardTitle as='h2'>What to Learn Next</CardTitle>
             <Text variant='meta'>
               Skills you&apos;re missing, ranked by impact on high-scoring jobs
             </Text>
@@ -373,7 +373,7 @@ export default function InsightsDashboard() {
       <Card aria-busy={showCostSkeleton}>
         <CardHeader>
           <div className='flex items-baseline gap-4'>
-            <CardTitle>LLM Cost</CardTitle>
+            <CardTitle as='h2'>LLM Cost</CardTitle>
             {skillsCost && (
               <Text variant='meta'>
                 Total: ${skillsCost.total_cost.toFixed(2)}
