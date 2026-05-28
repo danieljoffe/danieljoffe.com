@@ -17,6 +17,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { consumeSse } from '@/lib/consumeSse';
+import { extractApiError } from '@/lib/extractApiError';
 import { parsePartialJson } from '@/lib/parsePartialJson';
 import { useToast } from '@/state/Toast/ToastProvider';
 import ConversationChatModal from '../../_components/ConversationChatModal';
@@ -174,11 +175,7 @@ export default function ProfilePage() {
           body: JSON.stringify({ content: draft }),
         });
         if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(
-            (data as Record<string, string> | null)?.detail ??
-              `Save failed (${res.status})`
-          );
+          throw new Error(await extractApiError(res, 'Save failed'));
         }
         lastSavedProseRef.current = draft;
         toast({ variant: 'success', title: 'Master document saved' });
@@ -215,11 +212,7 @@ export default function ProfilePage() {
           { method: 'POST', body: formData }
         );
         if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(
-            (data as Record<string, string> | null)?.detail ??
-              `Upload failed (${res.status})`
-          );
+          throw new Error(await extractApiError(res, 'Upload failed'));
         }
         toast({ variant: 'success', title: 'Resume uploaded and processed' });
         await fetchData();
@@ -253,7 +246,13 @@ export default function ProfilePage() {
       const res = await fetch('/api/career/experience/derive/stream', {
         method: 'POST',
       });
-      if (!res.ok) throw new Error('Derive failed');
+      // The derive endpoint is LLM-budgeted; ``enforce_llm_budget``
+      // returns a structured ``llm_budget_exceeded`` 429 before the
+      // stream begins. Previously we threw away the response body
+      // here, so users saw the generic "Failed to re-derive
+      // profile" toast with no recovery hint. ``extractApiError``
+      // surfaces the actionable spend / limit message.
+      if (!res.ok) throw new Error(await extractApiError(res, 'Derive failed'));
 
       let streamError: string | null = null;
       await consumeSse(res, (event, data) => {
@@ -281,8 +280,12 @@ export default function ProfilePage() {
           : 'Profile re-derived from experience',
       });
       await fetchData();
-    } catch {
-      toast({ variant: 'error', title: 'Failed to re-derive profile' });
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title:
+          err instanceof Error ? err.message : 'Failed to re-derive profile',
+      });
     } finally {
       setDeriving(false);
       setStreamingPayload(null);
@@ -296,11 +299,7 @@ export default function ProfilePage() {
         method: 'POST',
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(
-          (data as Record<string, string> | null)?.detail ??
-            `Consolidate failed (${res.status})`
-        );
+        throw new Error(await extractApiError(res, 'Consolidate failed'));
       }
       const body = (await res.json()) as {
         no_op: boolean;
