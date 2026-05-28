@@ -1,14 +1,21 @@
 /**
- * Shared between ``ResumeSection`` and ``CoverLetterSection``: when the
- * backend rejects a tailor request with the "No contact name on file"
- * 400, prompt the user inline (native ``window.prompt`` for
- * minimum-friction), PATCH ``/api/profile/identity``, and return whether
- * the caller should retry. The onboarding wizard doesn't capture this
- * field today (Supabase magic-link auth has no name), and the tailor
- * pipeline requires it to render the resume header — so a fresh user
- * always hits this gate on their first Generate click. Without the
- * inline capture they have to context-switch to Settings, copy the
- * Greenhouse JD URL, and start over.
+ * Defensive fallback for the "No contact name on file" 400 from the
+ * tailor pipeline. PR #703 added an Identity step to onboarding that
+ * captures name up front, so the typical post-#703 user never hits
+ * this gate — but this still fires for:
+ *
+ *   - users who onboarded before #703 shipped
+ *   - users who clicked "Skip for now" on the onboarding Identity
+ *     step (skip = exit to /targets, not "save without name")
+ *   - users who cleared their name in Settings → Profile
+ *
+ * Wired into ``ResumeSection``, ``CoverLetterSection``, and
+ * ``JobsList`` batch generate. Prompts the user inline (native
+ * ``window.prompt`` for minimum-friction), PATCHes
+ * ``/api/profile/identity``, and returns whether the caller should
+ * retry. Without the inline capture the user would have to
+ * context-switch to Settings, copy the Greenhouse JD URL, and start
+ * over.
  *
  * Caller pattern:
  *

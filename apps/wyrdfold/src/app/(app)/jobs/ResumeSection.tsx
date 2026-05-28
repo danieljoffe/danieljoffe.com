@@ -88,10 +88,11 @@ export default function ResumeSection({ jobPostingId }: ResumeSectionProps) {
 
       let res = await postTailor();
 
-      // The onboarding wizard doesn't capture a contact name (Supabase
-      // magic-link auth has none), so first-time users hit the 400
-      // "No contact name on file" gate. Prompt for it inline + retry
-      // rather than dead-ending in Settings.
+      // Defensive fallback for the contact-name gate. Pre-#703 users,
+      // users who skipped the onboarding Identity step, or users who
+      // cleared their name in Settings still hit this. Prompt inline +
+      // retry rather than dead-ending in Settings. See
+      // ``promptForMissingContactName`` for the full rationale.
       if (!res.ok) {
         const peek = (await res
           .clone()

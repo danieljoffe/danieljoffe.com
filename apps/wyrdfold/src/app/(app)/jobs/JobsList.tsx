@@ -7,11 +7,13 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import { cn } from '@/lib/cn';
 import BatchActionBar from './BatchActionBar';
 import JobsListView from './JobsListView';
 import JobsThinResultsCallout from './JobsThinResultsCallout';
+import { promptForMissingContactName } from './promptForMissingContactName';
 import type { JobPosting, JobsFilterState } from './types';
 
 export interface TargetTab {
@@ -198,21 +200,47 @@ export default function JobsList({
 
     setGenerating(true);
     try {
-      const res = await fetch('/api/jobs/tailor/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job_posting_ids: [...selectedIds],
-        }),
-      });
+      const postBatch = () =>
+        fetch('/api/jobs/tailor/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            job_posting_ids: [...selectedIds],
+          }),
+        });
+
+      let res = await postBatch();
+
+      // The synchronous batch POST hits the same ``resolve_contact``
+      // gate as the single-job tailor routes — a user who skipped
+      // the onboarding identity step (#703) and clicks batch-generate
+      // would otherwise dead-end on "No contact name on file".
+      // Mirrors the inline-prompt + retry pattern from
+      // ResumeSection / CoverLetterSection.
+      if (!res.ok) {
+        const peek = (await res
+          .clone()
+          .json()
+          .catch(() => null)) as { detail?: unknown } | null;
+        const detailString =
+          typeof peek?.detail === 'string' ? peek.detail : undefined;
+        if (await promptForMissingContactName(detailString)) {
+          res = await postBatch();
+        }
+      }
 
       if (!res.ok) {
-        const err = await res.json().catch(() => null);
+        // ``extractApiError`` understands the structured
+        // ``llm_budget_exceeded`` 429 detail (PR #701) and plain-
+        // string details (404 missing optimized doc, missing job).
+        // The previous ad-hoc ``err.detail`` parser cast a possibly-
+        // object detail to ``Record<string, string>``, so budget-
+        // exceeded errors rendered as the generic fallback instead
+        // of the actionable "$X of $Y, try again in an hour"
+        // message.
         toast({
           variant: 'error',
-          title:
-            (err as Record<string, string> | null)?.detail ??
-            'Batch generation failed',
+          title: await extractApiError(res, 'Batch generation failed'),
         });
         setGenerating(false);
         return;

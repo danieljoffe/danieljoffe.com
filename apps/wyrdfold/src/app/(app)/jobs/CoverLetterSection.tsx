@@ -84,9 +84,9 @@ export default function CoverLetterSection({
 
       let res = await postTailor();
 
-      // Mirrors the contact-name capture in ResumeSection — same gate
-      // on the tailor pipeline, first-time users hit it without ever
-      // visiting Settings.
+      // Defensive fallback for the contact-name gate. See
+      // ``promptForMissingContactName`` for which users still hit
+      // this post-#703.
       if (!res.ok) {
         const peek = (await res
           .clone()
