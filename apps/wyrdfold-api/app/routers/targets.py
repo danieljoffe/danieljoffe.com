@@ -21,7 +21,7 @@ from app.dependencies import (
     get_supabase,
     verify_api_key_or_jwt,
 )
-from app.http_client import get_http_client
+from app.http_client import ResponseTooLargeError, get_with_size_cap
 from app.models.schemas import PollResult
 from app.models.targets import (
     CreateOrLinkResult,
@@ -653,10 +653,17 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
             status_code=422, detail=f"Refusing to fetch JD URL: {exc}"
         ) from exc
 
-    client = get_http_client()
+    # Size-capped streaming fetch — without this, a user-pasted URL
+    # pointing to a huge payload could OOM the API (the shared
+    # client's 15s timeout doesn't help against fast CDNs).
     try:
-        resp = await client.get(url)
+        resp, body_bytes = await get_with_size_cap(url)
         final_url = str(resp.url)
+    except ResponseTooLargeError as exc:
+        raise HTTPException(
+            status_code=413,
+            detail=f"JD page too large to fetch ({exc.size} bytes > {exc.limit}).",
+        ) from exc
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=400, detail="Failed to fetch JD URL") from exc
 
@@ -670,7 +677,13 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
                 detail=f"Refusing to fetch JD URL after redirect: {exc}",
             ) from exc
 
-    html = resp.text if resp.status_code == 200 else ""
+    # The stream was consumed by ``get_with_size_cap`` so ``resp.text``
+    # is empty here; decode the bytes the helper returned.
+    html = (
+        body_bytes.decode("utf-8", errors="replace")
+        if resp.status_code == 200
+        else ""
+    )
     extraction: ExtractionResult
     if html:
         extraction = extract_job_from_html(html, final_url)

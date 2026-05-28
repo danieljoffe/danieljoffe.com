@@ -20,6 +20,34 @@ def _mock_response(
     return resp
 
 
+def _patch_size_cap_fetch(
+    monkeypatch,
+    *,
+    text: str = "",
+    status_code: int = 200,
+    url: str = "https://example.com/jobs/123",
+    side_effect: Exception | None = None,
+) -> AsyncMock:
+    """Stub ``get_with_size_cap`` for ``add_manual_job`` tests.
+
+    The endpoint used to call ``client.get`` directly; the fetch was
+    moved into ``get_with_size_cap`` to stream and enforce a body-size
+    cap (prevents OOM via user-pasted URLs to huge payloads). The
+    helper is the right seam to mock from — it returns the
+    ``(response, body_bytes)`` tuple the caller decodes.
+    """
+    from app.routers import jobs as jobs_router
+
+    if side_effect is not None:
+        mock = AsyncMock(side_effect=side_effect)
+    else:
+        body = text.encode("utf-8")
+        resp = _mock_response(status_code=status_code, text=text, url=url)
+        mock = AsyncMock(return_value=(resp, body))
+    monkeypatch.setattr(jobs_router, "get_with_size_cap", mock)
+    return mock
+
+
 JSONLD_HTML = """
 <html><head>
 <script type="application/ld+json">
@@ -55,10 +83,8 @@ class TestManualJobEndpoint:
         monkeypatch.setattr(jobs_router, "get_active_target", lambda *_a, **_kw: [])
 
     @pytest.mark.asyncio
-    async def test_happy_path_jsonld(self, mock_http_client):
-        mock_http_client.get = AsyncMock(
-            return_value=_mock_response(text=JSONLD_HTML)
-        )
+    async def test_happy_path_jsonld(self, monkeypatch):
+        _patch_size_cap_fetch(monkeypatch, text=JSONLD_HTML)
 
         mock_supabase = MagicMock()
         mock_upsert = MagicMock()
@@ -88,11 +114,9 @@ class TestManualJobEndpoint:
         assert row["score"] >= 0
 
     @pytest.mark.asyncio
-    async def test_user_overrides(self, mock_http_client):
+    async def test_user_overrides(self, monkeypatch):
         # Page with OG tags, but user provides their own title
-        mock_http_client.get = AsyncMock(
-            return_value=_mock_response(text=OG_HTML)
-        )
+        _patch_size_cap_fetch(monkeypatch, text=OG_HTML)
 
         mock_supabase = MagicMock()
         mock_supabase.table.return_value.upsert.return_value.execute.return_value = (
@@ -143,11 +167,9 @@ class TestManualJobEndpoint:
         assert "Banned" in exc_info.value.detail
 
     @pytest.mark.asyncio
-    async def test_extraction_fails_needs_manual_fields(self, mock_http_client):
+    async def test_extraction_fails_needs_manual_fields(self, monkeypatch):
         # Empty page with no extractable metadata
-        mock_http_client.get = AsyncMock(
-            return_value=_mock_response(text="<html><body>Nothing</body></html>")
-        )
+        _patch_size_cap_fetch(monkeypatch, text="<html><body>Nothing</body></html>")
 
         from app.models.schemas import ManualJobRequest
         from app.routers.jobs import add_manual_job
@@ -160,11 +182,9 @@ class TestManualJobEndpoint:
         assert result.posting_id is None
 
     @pytest.mark.asyncio
-    async def test_extraction_fails_with_user_title_succeeds(self, mock_http_client):
+    async def test_extraction_fails_with_user_title_succeeds(self, monkeypatch):
         # Empty page but user provides a title
-        mock_http_client.get = AsyncMock(
-            return_value=_mock_response(text="<html><body>Nothing</body></html>")
-        )
+        _patch_size_cap_fetch(monkeypatch, text="<html><body>Nothing</body></html>")
 
         mock_supabase = MagicMock()
         mock_supabase.table.return_value.upsert.return_value.execute.return_value = (
@@ -185,16 +205,14 @@ class TestManualJobEndpoint:
         assert result.posting_id == "posting-uuid-3"
 
     @pytest.mark.asyncio
-    async def test_dedup_same_url(self, mock_http_client):
+    async def test_dedup_same_url(self, monkeypatch):
         """Same URL should generate same external_id."""
         import hashlib
 
         url = "https://example.com/jobs/same"
         expected_id = str(int(hashlib.sha256(url.encode()).hexdigest()[:15], 16))
 
-        mock_http_client.get = AsyncMock(
-            return_value=_mock_response(text=JSONLD_HTML, url=url)
-        )
+        _patch_size_cap_fetch(monkeypatch, text=JSONLD_HTML, url=url)
 
         mock_supabase = MagicMock()
         mock_supabase.table.return_value.upsert.return_value.execute.return_value = (
@@ -212,9 +230,9 @@ class TestManualJobEndpoint:
         assert row["external_id"] == expected_id
 
     @pytest.mark.asyncio
-    async def test_fetch_error(self, mock_http_client):
-        mock_http_client.get = AsyncMock(
-            side_effect=httpx.ConnectError("Connection refused")
+    async def test_fetch_error(self, monkeypatch):
+        _patch_size_cap_fetch(
+            monkeypatch, side_effect=httpx.ConnectError("Connection refused")
         )
 
         from fastapi import HTTPException
@@ -229,11 +247,9 @@ class TestManualJobEndpoint:
         assert "fetch" in exc_info.value.detail.lower()
 
     @pytest.mark.asyncio
-    async def test_redirect_to_banned(self, mock_http_client):
-        mock_http_client.get = AsyncMock(
-            return_value=_mock_response(
-                text="", url="https://www.ziprecruiter.com/redirect"
-            )
+    async def test_redirect_to_banned(self, monkeypatch):
+        _patch_size_cap_fetch(
+            monkeypatch, text="", url="https://www.ziprecruiter.com/redirect"
         )
 
         from fastapi import HTTPException
