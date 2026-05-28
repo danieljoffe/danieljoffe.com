@@ -17,7 +17,10 @@ from app.dependencies import (
     get_supabase,
     verify_api_key_or_jwt,
 )
-from app.http_client import get_http_client
+from app.http_client import (
+    ResponseTooLargeError,
+    get_with_size_cap,
+)
 from app.models.schemas import (
     ManualJobRequest,
     ManualJobResponse,
@@ -506,11 +509,19 @@ async def add_manual_job(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    # Fetch the page
-    client = get_http_client()
+    # Fetch the page with a hard size cap — without this, a user
+    # pasting a URL to a multi-GB payload (CDN downloads, infinite
+    # streams) would OOM the API, since ``client.get()`` buffers the
+    # whole body before returning. ``get_with_size_cap`` streams and
+    # aborts past ``MAX_USER_FETCH_BYTES``.
     try:
-        resp = await client.get(cleaned)
+        resp, body_bytes = await get_with_size_cap(cleaned)
         final_url = str(resp.url)
+    except ResponseTooLargeError as exc:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Page too large to fetch ({exc.size} bytes > {exc.limit}).",
+        ) from exc
     except httpx.HTTPError:
         raise HTTPException(status_code=400, detail="Failed to fetch URL") from None
 
@@ -536,8 +547,14 @@ async def add_manual_job(
             f"{registrable_domain(final_hostname)}"
         )
 
-    # Extract metadata
-    html = resp.text if resp.status_code == 200 else ""
+    # Extract metadata. ``body_bytes`` came from the size-capped
+    # streaming read; ``resp.text`` is empty here because the stream
+    # was consumed manually, so decode the bytes ourselves.
+    html = (
+        body_bytes.decode("utf-8", errors="replace")
+        if resp.status_code == 200
+        else ""
+    )
     extraction: ExtractionResult
     if html:
         extraction = extract_job_from_html(html, final_url)

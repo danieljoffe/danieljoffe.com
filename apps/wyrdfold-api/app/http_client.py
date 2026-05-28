@@ -44,6 +44,81 @@ async def close_http_client() -> None:
     _client = None
 
 
+# ---- User-URL fetch with size cap ------------------------------------------
+
+# Hard cap on the response-body size we'll accept from a URL the user
+# pasted in. Real Greenhouse / Lever / Workday job pages are tens of
+# KB; 5 MB leaves ample headroom for one-off oddities while still
+# refusing a multi-GB payload that would OOM the API. The 15s
+# ``timeout`` on the shared client doesn't help here — a fast CDN can
+# stream gigabytes within 15 seconds, and ``client.get()`` would
+# buffer the entire body into memory before returning.
+MAX_USER_FETCH_BYTES = 5 * 1024 * 1024
+
+
+class ResponseTooLargeError(Exception):
+    """Raised by ``get_with_size_cap`` when the body exceeds the cap.
+
+    Carries the size we observed (``Content-Length`` advertised, or
+    streamed bytes before we aborted) so callers can include it in
+    user-facing error messages.
+    """
+
+    def __init__(self, message: str, *, size: int, limit: int) -> None:
+        super().__init__(message)
+        self.size = size
+        self.limit = limit
+
+
+async def get_with_size_cap(
+    url: str, *, max_bytes: int = MAX_USER_FETCH_BYTES
+) -> tuple[httpx.Response, bytes]:
+    """GET ``url`` reading at most ``max_bytes`` of the body.
+
+    Streams the response so a user-pasted URL pointing to a huge
+    payload (GB-scale CDN downloads, infinite-stream endpoints) can't
+    OOM the API the way ``client.get()`` would — its default behavior
+    is to buffer the entire body before returning.
+
+    Pre-checks ``Content-Length`` when the server provides it (cheap
+    fail-fast), then enforces the cap against the actually-streamed
+    byte count (catches missing or lying ``Content-Length`` headers).
+
+    Raises ``ResponseTooLargeError`` if either check trips. Caller
+    should map to a 400 / 422. Network failures propagate as the
+    underlying ``httpx.HTTPError``.
+
+    Returns ``(response, body_bytes)``. The response object's
+    ``.text`` / ``.content`` will be empty because the stream was
+    consumed manually — use ``body_bytes`` (or decode it) for the
+    body. ``.status_code``, ``.url``, and ``.headers`` remain valid
+    after the stream context closes.
+    """
+    client = get_http_client()
+    async with client.stream("GET", url) as resp:
+        advertised = resp.headers.get("content-length")
+        if advertised is not None and advertised.isdigit():
+            n = int(advertised)
+            if n > max_bytes:
+                raise ResponseTooLargeError(
+                    f"Content-Length {n} exceeds cap {max_bytes}",
+                    size=n,
+                    limit=max_bytes,
+                )
+        chunks: list[bytes] = []
+        total = 0
+        async for chunk in resp.aiter_bytes():
+            total += len(chunk)
+            if total > max_bytes:
+                raise ResponseTooLargeError(
+                    f"Streamed {total} bytes exceeds cap {max_bytes}",
+                    size=total,
+                    limit=max_bytes,
+                )
+            chunks.append(chunk)
+        return resp, b"".join(chunks)
+
+
 # ---- Retry helper ----------------------------------------------------------
 
 # 429 + 5xx are treated as transient and retried with exponential backoff.
