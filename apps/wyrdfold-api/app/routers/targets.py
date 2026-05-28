@@ -19,6 +19,7 @@ from app.dependencies import (
     get_current_user_id_optional,
     get_llm_client,
     get_supabase,
+    verify_api_key,
     verify_api_key_or_jwt,
 )
 from app.http_client import ResponseTooLargeError, get_with_size_cap
@@ -252,7 +253,11 @@ async def create_target_from_url(
     )
 
 
-@router.get("", response_model=TargetsListResponse)
+@router.get(
+    "",
+    response_model=TargetsListResponse,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 def list_targets(
     supabase: Client = Depends(get_supabase),
 ) -> TargetsListResponse:
@@ -293,7 +298,11 @@ async def suggest(
     return matched
 
 
-@router.get("/active", response_model=TargetsListResponse)
+@router.get(
+    "/active",
+    response_model=TargetsListResponse,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 def get_active_targets(
     supabase: Client = Depends(get_supabase),
 ) -> TargetsListResponse:
@@ -475,12 +484,21 @@ async def derive_target_profile(
     return updated
 
 
-@router.post("/{target_id}/poll-jobs", response_model=PollResult)
+@router.post(
+    "/{target_id}/poll-jobs",
+    response_model=PollResult,
+    dependencies=[Depends(verify_api_key)],
+)
 async def poll_jobs_for_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> PollResult:
-    """Poll all job sources, filtering for jobs matching this target's search keywords."""
+    """Poll all job sources, filtering for jobs matching this target's search keywords.
+
+    Admin / operator-only: gated by ``verify_api_key`` so an
+    unauthenticated caller can't trigger a fan-out poll across all
+    configured ATS sources. Not reachable from the wyrdfold FE.
+    """
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
@@ -492,7 +510,11 @@ async def poll_jobs_for_target(
     return await poll_sources_for_target(supabase, target)
 
 
-@router.get("/{target_id}/status", response_model=TargetStatusResponse)
+@router.get(
+    "/{target_id}/status",
+    response_model=TargetStatusResponse,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 async def get_target_status(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -524,7 +546,11 @@ async def get_target_status(
     )
 
 
-@router.delete("/{target_id}", response_model=DeleteResponse)
+@router.delete(
+    "/{target_id}",
+    response_model=DeleteResponse,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 async def delete_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -805,7 +831,11 @@ async def add_reference_jd(
     return updated
 
 
-@router.get("/{target_id}/reference-jds", response_model=ReferenceJDsListResponse)
+@router.get(
+    "/{target_id}/reference-jds",
+    response_model=ReferenceJDsListResponse,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 async def list_reference_jds(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -817,6 +847,7 @@ async def list_reference_jds(
 @router.delete(
     "/{target_id}/reference-jds/{ref_jd_id}",
     response_model=JobTarget,
+    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 async def delete_reference_jd(
     target_id: str,
