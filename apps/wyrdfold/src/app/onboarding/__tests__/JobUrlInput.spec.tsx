@@ -111,10 +111,16 @@ describe('JobUrlInput', () => {
   });
 
   it('renders an error alert when the API returns a non-OK response', async () => {
+    // ``extractApiError`` reads via ``res.clone().json()`` so the
+    // mock has to expose both. Returning ``this`` keeps the same
+    // mock object intact for the second read.
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 422,
       json: async () => ({ detail: 'Could not parse posting' }),
+      clone() {
+        return this;
+      },
     });
     const user = userEvent.setup();
     render(<JobUrlInput onComplete={jest.fn()} onSkip={jest.fn()} />);

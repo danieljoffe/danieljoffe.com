@@ -9,6 +9,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
+import { extractApiError } from '@/lib/extractApiError';
 
 const ACCEPTED_TYPES = [
   'application/pdf',
@@ -63,11 +64,7 @@ export default function ResumeUploader({
         );
 
         if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(
-            (data as Record<string, string> | null)?.detail ??
-              `Upload failed (${res.status})`
-          );
+          throw new Error(await extractApiError(res, 'Upload failed'));
         }
 
         setUploaded(true);

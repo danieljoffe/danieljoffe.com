@@ -9,6 +9,7 @@ import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import TargetCard from './TargetCard';
 import CreateTargetModal, {
@@ -134,11 +135,7 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
           body: JSON.stringify(body),
         });
         if (!res.ok) {
-          const err = await res.json().catch(() => null);
-          throw new Error(
-            (err as Record<string, string> | null)?.detail ??
-              'Failed to add target'
-          );
+          throw new Error(await extractApiError(res, 'Failed to add target'));
         }
         const result = (await res.json()) as CreateOrLinkResult;
         const alreadyLinked = targets.some(
@@ -228,11 +225,7 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
             }),
           });
           if (!res.ok) {
-            const err = await res.json().catch(() => null);
-            throw new Error(
-              (err as Record<string, string> | null)?.detail ??
-                'Failed to add target'
-            );
+            throw new Error(await extractApiError(res, 'Failed to add target'));
           }
           const result = (await res.json()) as CreateOrLinkResult;
           entry = { user_target: result.user_target, target: result.target };
