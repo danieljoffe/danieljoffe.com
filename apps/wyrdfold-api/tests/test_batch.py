@@ -107,6 +107,10 @@ def _set_mock_data(supabase: MagicMock, data: list[Any]) -> None:
     insert = supabase.table.return_value.insert.return_value
     insert.execute.return_value.data = data
     select = supabase.table.return_value.select.return_value
+    # ``get_batch`` (post user_id scoping): select → eq(id) → is_(user_id) → execute
+    select.eq.return_value.is_.return_value.execute.return_value.data = data
+    # Back-compat for the older single-``eq`` chain (kept for any callers
+    # that still go through it during refactoring).
     select.eq.return_value.execute.return_value.data = data
 
 
@@ -184,14 +188,14 @@ class TestBatchPersistence:
 
     def test_get_batch(self) -> None:
         supabase = _mock_supabase_for_batch()
-        batch = get_batch(supabase, "batch-1")
+        batch = get_batch(supabase, "batch-1", user_id=None)
         assert batch is not None
         assert batch.id == "batch-1"
 
     def test_get_batch_not_found(self) -> None:
         supabase = MagicMock()
         _set_mock_data(supabase, [])
-        batch = get_batch(supabase, "nonexistent")
+        batch = get_batch(supabase, "nonexistent", user_id=None)
         assert batch is None
 
     def test_update_batch(self) -> None:

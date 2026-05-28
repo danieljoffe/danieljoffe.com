@@ -59,9 +59,25 @@ def create_batch(
     return BatchJob.model_validate(data)
 
 
-def get_batch(supabase: Client, batch_id: str) -> BatchJob | None:
-    """Fetch a batch by ID."""
-    resp = supabase.table(TABLE).select("*").eq("id", batch_id).execute()
+def get_batch(
+    supabase: Client, batch_id: str, *, user_id: str | None
+) -> BatchJob | None:
+    """Fetch a batch by ID, scoped to the caller.
+
+    Filters by both ``id`` AND ``user_id`` so a JWT caller can't poll
+    another user's batch by guessing the UUID — the service-role
+    client used by the route bypasses RLS. ``user_id=None`` matches
+    legacy single-tenant rows (api-key / background paths that
+    create batches without a user_id), mirroring the convention used
+    by ``persistence.get`` and ``list_recent``.
+
+    Returns ``None`` both when the row doesn't exist AND when it
+    belongs to another user — same response so existence isn't
+    leaked.
+    """
+    query = supabase.table(TABLE).select("*").eq("id", batch_id)
+    query = query.is_("user_id", "null") if user_id is None else query.eq("user_id", user_id)
+    resp = query.execute()
     if not resp.data:
         return None
     return BatchJob.model_validate(resp.data[0])
@@ -118,7 +134,7 @@ async def process_batch(
     checks for a reusable resume in the same target before running the
     full tailor pipeline (#504).
     """
-    batch = get_batch(supabase, batch_id)
+    batch = get_batch(supabase, batch_id, user_id=user_id)
     if batch is None:
         return
 

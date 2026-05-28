@@ -699,9 +699,10 @@ async def create_batch_resumes(
 async def get_batch_status(
     batch_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> BatchJob:
     """Poll batch processing progress."""
-    batch = get_batch(supabase, batch_id)
+    batch = get_batch(supabase, batch_id, user_id=user_id)
     if batch is None:
         raise HTTPException(status_code=404, detail="batch not found")
     return batch
