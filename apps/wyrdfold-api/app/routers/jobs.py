@@ -15,6 +15,7 @@ from app.dependencies import (
     get_current_user_id,
     get_current_user_id_optional,
     get_supabase,
+    verify_api_key,
     verify_api_key_or_jwt,
 )
 from app.http_client import (
@@ -677,12 +678,19 @@ async def add_manual_job(
     )
 
 
-@router.post("/rescore/{target_id}")
+@router.post("/rescore/{target_id}", dependencies=[Depends(verify_api_key)])
 async def rescore_for_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
-    """Re-score all jobs against a target's scoring profile."""
+    """Re-score all jobs against a target's scoring profile.
+
+    Admin / operator-only: gated by ``verify_api_key`` so an
+    unauthenticated caller can't trigger an O(jobs × scoring_keywords)
+    DB-heavy re-score by hitting the API directly. Not reachable from
+    the wyrdfold FE — only invoked manually from the operator console
+    or from CLI scripts that supply the api key.
+    """
     target = get_target(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
@@ -692,7 +700,7 @@ async def rescore_for_target(
     return {"target_id": target_id, "jobs_scored": scored}
 
 
-@router.post("/backfill-salary")
+@router.post("/backfill-salary", dependencies=[Depends(verify_api_key)])
 async def backfill_salary(
     supabase: Client = Depends(get_supabase),
 ) -> dict[str, Any]:
@@ -701,6 +709,10 @@ async def backfill_salary(
     Per batch of 500, extract salaries in Python then write all rows in a
     single `bulk_update_salaries` RPC — turns ~N row-by-row UPDATEs
     into one statement per batch.
+
+    Admin-only: gated by ``verify_api_key`` so an unauthenticated
+    caller can't trigger a full-table scan + per-row salary extraction.
+    Not reachable from the wyrdfold FE.
     """
     batch_size = 500
     offset = 0

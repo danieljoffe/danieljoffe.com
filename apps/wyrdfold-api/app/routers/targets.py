@@ -149,7 +149,12 @@ async def _activate_pipeline(
 # ---- Target CRUD -----------------------------------------------------------
 
 
-@router.post("", response_model=JobTarget, status_code=201)
+@router.post(
+    "",
+    response_model=JobTarget,
+    status_code=201,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 async def create_target(
     body: TargetCreate,
     supabase: Client = Depends(get_supabase),
@@ -306,7 +311,11 @@ def get_my_targets(
     return MyTargetsListResponse(targets=items)
 
 
-@router.get("/{target_id}", response_model=JobTarget)
+@router.get(
+    "/{target_id}",
+    response_model=JobTarget,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 def get_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -317,7 +326,11 @@ def get_target(
     return target
 
 
-@router.patch("/{target_id}", response_model=JobTarget)
+@router.patch(
+    "/{target_id}",
+    response_model=JobTarget,
+    dependencies=[Depends(verify_api_key_or_jwt)],
+)
 def update_target(
     target_id: str,
     body: TargetUpdate,
