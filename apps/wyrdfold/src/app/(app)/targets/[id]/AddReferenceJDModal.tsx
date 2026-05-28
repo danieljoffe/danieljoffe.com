@@ -7,6 +7,7 @@ import { Input } from '@danieljoffe.com/shared-ui/Input';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 
 interface AddReferenceJDModalProps {
@@ -57,12 +58,9 @@ export default function AddReferenceJDModal({
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => null);
         toast({
           variant: 'error',
-          title:
-            (err as Record<string, string> | null)?.detail ??
-            'Failed to add reference JD',
+          title: await extractApiError(res, 'Failed to add reference JD'),
         });
         setSaving(false);
         return;

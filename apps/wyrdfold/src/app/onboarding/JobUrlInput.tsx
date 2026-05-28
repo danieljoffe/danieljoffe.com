@@ -9,6 +9,7 @@ import { Input } from '@danieljoffe.com/shared-ui/Input';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 
 export interface JobData {
   postingId: string;
@@ -57,11 +58,7 @@ export default function JobUrlInput({ onComplete, onSkip }: JobUrlInputProps) {
         });
 
         if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(
-            (data as Record<string, string> | null)?.detail ??
-              `Failed to add job (${res.status})`
-          );
+          throw new Error(await extractApiError(res, 'Failed to add job'));
         }
 
         const data = (await res.json()) as {

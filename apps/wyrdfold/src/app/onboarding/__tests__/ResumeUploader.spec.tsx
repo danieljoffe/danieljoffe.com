@@ -119,10 +119,15 @@ describe('ResumeUploader', () => {
   });
 
   it('renders the API error message when the upload fails', async () => {
+    // ``extractApiError`` reads via ``res.clone().json()`` so the
+    // mock has to expose both.
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 422,
       json: async () => ({ detail: 'Could not parse resume' }),
+      clone() {
+        return this;
+      },
     });
     const user = userEvent.setup();
     render(<ResumeUploader onComplete={jest.fn()} onSkip={jest.fn()} />);
