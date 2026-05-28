@@ -166,10 +166,32 @@ def persist_cover_letter(
     return insert_row(supabase, row, payload_md=payload_md)
 
 
-def get(supabase: Client, resume_id: str) -> TailoredResumeRecord | None:
-    resp = (
-        supabase.table(TABLE).select("*").eq("id", resume_id).single().execute()
-    )
+def get(
+    supabase: Client,
+    resume_id: str,
+    *,
+    user_id: str | None,
+) -> TailoredResumeRecord | None:
+    """Fetch a tailored document, scoped to the caller.
+
+    Filters by both ``id`` AND ``user_id`` so a JWT caller never reads
+    another user's document by guessing the UUID — the service-role
+    client used here bypasses RLS, so the scoping has to be enforced
+    at the query layer.
+
+    ``user_id=None`` matches the legacy single-tenant rows (api-key
+    cron/poller paths), mirroring the convention used by
+    ``list_recent`` and the upsert paths. Routes that accept JWT
+    callers thread ``get_current_user_id_optional`` through; pass that
+    same value here.
+
+    Returns ``None`` both when the row doesn't exist AND when it
+    exists but belongs to another user — same response so we don't
+    leak the existence of cross-tenant rows.
+    """
+    query = supabase.table(TABLE).select("*").eq("id", resume_id)
+    query = query.is_("user_id", "null") if user_id is None else query.eq("user_id", user_id)
+    resp = query.single().execute()
     if not resp.data:
         return None
     return TailoredResumeRecord.model_validate(cast(dict[str, Any], resp.data))
@@ -298,15 +320,24 @@ def get_by_job(
     supabase: Client,
     job_posting_id: str,
     *,
+    user_id: str | None,
     document_type: DocumentType = "resume",
 ) -> TailoredResumeRecord | None:
-    """Fetch the most recent tailored document of a given type for a job posting."""
-    resp = (
+    """Fetch the most recent tailored document of a given type for a job posting.
+
+    Scoped to the caller via ``user_id`` so the route never returns
+    another user's tailored doc for the same (globally-shared)
+    job posting. ``user_id=None`` matches legacy single-tenant rows.
+    """
+    query = (
         supabase.table(TABLE)
         .select("*")
         .eq("job_posting_id", job_posting_id)
         .eq("document_type", document_type)
-        .order("created_at", desc=True)
+    )
+    query = query.is_("user_id", "null") if user_id is None else query.eq("user_id", user_id)
+    resp = (
+        query.order("created_at", desc=True)
         .limit(1)
         .execute()
     )

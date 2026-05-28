@@ -163,13 +163,15 @@ class TestPersistenceHelpers:
 
         supabase = MagicMock()
         record = _make_record()
+        # Chain: select → eq(job) → eq(doctype) → is_(user_id) → order → limit → execute
+        # (``user_id=None`` legacy path here)
         chain = supabase.table.return_value.select.return_value
-        chain = chain.eq.return_value.eq.return_value
+        chain = chain.eq.return_value.eq.return_value.is_.return_value
         chain.order.return_value.limit.return_value.execute.return_value.data = [
             record.model_dump(mode="json")
         ]
 
-        result = get_by_job(supabase, "job-1")
+        result = get_by_job(supabase, "job-1", user_id=None)
         assert result is not None
         assert result.id == "rec-1"
 
@@ -178,10 +180,10 @@ class TestPersistenceHelpers:
 
         supabase = MagicMock()
         chain = supabase.table.return_value.select.return_value
-        chain = chain.eq.return_value.eq.return_value
+        chain = chain.eq.return_value.eq.return_value.is_.return_value
         chain.order.return_value.limit.return_value.execute.return_value.data = []
 
-        result = get_by_job(supabase, "nonexistent")
+        result = get_by_job(supabase, "nonexistent", user_id=None)
         assert result is None
 
     def test_get_by_job_filters_by_document_type(self) -> None:
@@ -191,10 +193,10 @@ class TestPersistenceHelpers:
 
         supabase = MagicMock()
         chain = supabase.table.return_value.select.return_value
-        chain = chain.eq.return_value.eq.return_value
+        chain = chain.eq.return_value.eq.return_value.is_.return_value
         chain.order.return_value.limit.return_value.execute.return_value.data = []
 
-        get_by_job(supabase, "job-1", document_type="cover_letter")
+        get_by_job(supabase, "job-1", user_id=None, document_type="cover_letter")
 
         # Walk the .eq() calls and assert both the job + the document_type
         # filter were issued.

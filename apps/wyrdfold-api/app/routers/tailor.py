@@ -304,9 +304,10 @@ async def list_tailored_cover_letters(
 async def get_resume_by_job(
     job_posting_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailoredResumeRecord:
     """Most recent resume for a given job posting."""
-    row = persistence.get_by_job(supabase, job_posting_id)
+    row = persistence.get_by_job(supabase, job_posting_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="no resume found for this job posting")
     return row
@@ -316,9 +317,12 @@ async def get_resume_by_job(
 async def get_cover_letter_by_job(
     job_posting_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailoredResumeRecord:
     """Most recent cover letter for a given job posting."""
-    row = persistence.get_by_job(supabase, job_posting_id, document_type="cover_letter")
+    row = persistence.get_by_job(
+        supabase, job_posting_id, user_id=user_id, document_type="cover_letter"
+    )
     if row is None:
         raise HTTPException(status_code=404, detail="no cover letter found for this job posting")
     return row
@@ -328,12 +332,13 @@ async def get_cover_letter_by_job(
 async def export_resumes_zip(
     body: BulkExportRequest,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> Response:
     """Download approved resumes as a single .zip archive."""
     records: list[TailoredResumeRecord] = []
     unapproved: list[str] = []
     for rid in body.resume_ids:
-        row = persistence.get(supabase, rid)
+        row = persistence.get(supabase, rid, user_id=user_id)
         if row is None:
             raise HTTPException(status_code=404, detail=f"resume not found: {rid}")
         if row.approved_at is None:
@@ -376,13 +381,14 @@ async def edit_tailored_resume(
     resume_id: str,
     body: ResumeEditRequest,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailorResponse:
     """Edit a draft resume's markdown. Rejected if already approved.
 
     The .docx isn't re-rendered eagerly — saving is cheap and the
     download endpoint detects a stale hash to re-render lazily.
     """
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored document not found")
     if row.approved_at is not None:
@@ -407,6 +413,7 @@ async def checkpoint_tailored_resume(
     resume_id: str,
     body: ResumeCheckpointRequest | None = None,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, Any]:
     """Snapshot a draft resume's current markdown into version history.
 
@@ -419,7 +426,7 @@ async def checkpoint_tailored_resume(
     Idempotent via dedup: if the latest snapshot already matches, no
     new row is written.
     """
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored document not found")
     if row.approved_at is not None:
@@ -446,9 +453,10 @@ async def checkpoint_tailored_resume(
 async def approve_tailored_resume(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailoredResumeRecord:
     """Approve (lock) a tailored resume or cover letter. Idempotent if already approved."""
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored document not found")
 
@@ -472,9 +480,10 @@ async def approve_tailored_resume(
 async def unapprove_tailored_resume(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailoredResumeRecord:
     """Reopen an approved resume or cover letter for editing. Idempotent if already unlocked."""
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored document not found")
 
@@ -500,8 +509,9 @@ async def unapprove_tailored_resume(
 async def get_tailored_resume(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> TailoredResumeRecord:
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
     return row
@@ -511,9 +521,10 @@ async def get_tailored_resume(
 async def list_resume_versions(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, Any]:
     """Return up to FREE_TIER_VERSION_CAP recent payload snapshots (F3-H)."""
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
     history = versions.list_for_resume(supabase, resume_id)
@@ -527,8 +538,9 @@ async def list_resume_versions(
 async def download_tailored_resume(
     resume_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> Response:
-    row = persistence.get(supabase, resume_id)
+    row = persistence.get(supabase, resume_id, user_id=user_id)
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
 
