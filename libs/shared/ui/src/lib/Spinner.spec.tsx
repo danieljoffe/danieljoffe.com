@@ -27,7 +27,7 @@ describe('Spinner', () => {
 
   it('applies accent variant by default', () => {
     const { container } = render(<Spinner />);
-    expect(container.firstChild).toHaveClass('border-t-accent');
+    expect(container.firstChild).toHaveClass('border-t-brand-500');
   });
 
   it('renders as inline-block element', () => {
