@@ -197,17 +197,36 @@ def get(
     return TailoredResumeRecord.model_validate(cast(dict[str, Any], resp.data))
 
 
+def _scope_to_user(query: Any, user_id: str | None) -> Any:
+    """Apply the standard ``(id-only) → (id + user_id)`` scoping the
+    persistence helpers all share. Centralising the conditional keeps
+    the five mutation functions below identical in shape, so a future
+    change (e.g., a third tenant mode) only happens in one place.
+    """
+    if user_id is None:
+        return query.is_("user_id", "null")
+    return query.eq("user_id", user_id)
+
+
 def update_payload(
     supabase: Client,
     resume_id: str,
     payload_dict: dict[str, Any],
     storage_path: str | None = None,
     version_source: versions.VersionSource = "user_edit",
+    *,
+    user_id: str | None,
 ) -> TailoredResumeRecord:
     """Update the payload JSONB and set updated_at. Optionally update storage_path.
 
     Records a version snapshot before the update lands so history is captured
     even if the live update fails between snapshot and commit (F3-H).
+
+    Defense-in-depth (post-#714): scopes the update by ``user_id`` in
+    addition to ``id`` so a future caller that bypasses the route's
+    ``persistence.get`` ownership check still can't cross-tenant.
+    Same convention as ``persistence.get`` — ``user_id=None`` matches
+    the legacy single-tenant rows.
     """
     versions.record(
         supabase,
@@ -221,7 +240,8 @@ def update_payload(
     }
     if storage_path is not None:
         updates["storage_path"] = storage_path
-    resp = supabase.table(TABLE).update(updates).eq("id", resume_id).execute()
+    query = supabase.table(TABLE).update(updates).eq("id", resume_id)
+    resp = _scope_to_user(query, user_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError(f"Failed to update documents row {resume_id}")
@@ -232,6 +252,8 @@ def update_payload_md(
     supabase: Client,
     resume_id: str,
     payload_md: str,
+    *,
+    user_id: str | None,
 ) -> TailoredResumeRecord:
     """Update the markdown payload and invalidate the cached docx hash.
 
@@ -244,6 +266,8 @@ def update_payload_md(
     that need a snapshot (session-end flush, before approve, before
     re-adapt) call `versions.checkpoint` separately. That keeps the
     free-tier version cap from being flooded by routine keystrokes.
+
+    Defense-in-depth (post-#714): see ``update_payload``.
     """
     updates: dict[str, Any] = {
         "payload_md": payload_md,
@@ -254,7 +278,8 @@ def update_payload_md(
         "docx_payload_md_hash": None,
         "updated_at": "now()",
     }
-    resp = supabase.table(TABLE).update(updates).eq("id", resume_id).execute()
+    query = supabase.table(TABLE).update(updates).eq("id", resume_id)
+    resp = _scope_to_user(query, user_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError(f"Failed to update documents row {resume_id}")
@@ -267,19 +292,23 @@ def mark_docx_rendered(
     *,
     storage_path: str,
     payload_md_hash: str,
+    user_id: str | None,
 ) -> None:
     """Record that the docx for `payload_md_hash` is uploaded to storage_path.
 
     Called after a successful pandoc render + storage upload so future
     downloads can serve the cached bytes when the markdown hasn't
     changed.
+
+    Defense-in-depth (post-#714): see ``update_payload``.
     """
-    supabase.table(TABLE).update(
+    query = supabase.table(TABLE).update(
         {
             "storage_path": storage_path,
             "docx_payload_md_hash": payload_md_hash,
         }
-    ).eq("id", resume_id).execute()
+    ).eq("id", resume_id)
+    _scope_to_user(query, user_id).execute()
 
 
 def mark_job_resume_draft(supabase: Client, job_posting_id: str) -> None:
@@ -298,18 +327,30 @@ def mark_job_resume_draft(supabase: Client, job_posting_id: str) -> None:
     ).eq("id", job_posting_id).execute()
 
 
-def approve(supabase: Client, resume_id: str) -> TailoredResumeRecord:
-    """Set approved_at on a tailored resume."""
-    resp = supabase.table(TABLE).update({"approved_at": "now()"}).eq("id", resume_id).execute()
+def approve(
+    supabase: Client, resume_id: str, *, user_id: str | None
+) -> TailoredResumeRecord:
+    """Set approved_at on a tailored resume.
+
+    Defense-in-depth (post-#714): see ``update_payload``.
+    """
+    query = supabase.table(TABLE).update({"approved_at": "now()"}).eq("id", resume_id)
+    resp = _scope_to_user(query, user_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError(f"Failed to approve documents row {resume_id}")
     return TailoredResumeRecord.model_validate(rows[0])
 
 
-def unapprove(supabase: Client, resume_id: str) -> TailoredResumeRecord:
-    """Clear approved_at on a tailored resume — reopens it for editing."""
-    resp = supabase.table(TABLE).update({"approved_at": None}).eq("id", resume_id).execute()
+def unapprove(
+    supabase: Client, resume_id: str, *, user_id: str | None
+) -> TailoredResumeRecord:
+    """Clear approved_at on a tailored resume — reopens it for editing.
+
+    Defense-in-depth (post-#714): see ``update_payload``.
+    """
+    query = supabase.table(TABLE).update({"approved_at": None}).eq("id", resume_id)
+    resp = _scope_to_user(query, user_id).execute()
     rows = cast(list[dict[str, Any]], resp.data or [])
     if not rows:
         raise RuntimeError(f"Failed to unapprove documents row {resume_id}")
