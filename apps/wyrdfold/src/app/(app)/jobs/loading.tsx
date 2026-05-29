@@ -1,39 +1,53 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
+import JobsTableSkeleton from './JobsTableSkeleton';
 
 export default function FittedJobsLoading() {
   return (
     <div className='flex flex-col gap-6' aria-label='Loading jobs'>
-      {/* Heading + subtitle */}
-      <div className='flex flex-col gap-2'>
-        <Skeleton width={120} size='lg' />
-        <Skeleton width={280} size='sm' />
+      {/* Render the real heading + subtitle so size, line-height, and spacing
+          match the post-load page pixel-for-pixel — no skeleton bar can mimic
+          text-5xl leading-[1.1] perfectly across breakpoints. */}
+      <div>
+        <Heading variant='hero' as='h1'>
+          Jobs
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Postings matched to your active targets
+        </Text>
       </div>
 
-      {/* Tab bar */}
-      <div className='flex gap-1 border-b border-border pb-px'>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} variant='rectangular' width={90} height={36} />
-        ))}
+      {/* Target tab strip (border-b, gap-1) — first tab "All Jobs" is shorter
+          than the target labels, so vary the widths. */}
+      <div className='border-b border-border'>
+        <div className='flex gap-1 pb-px'>
+          <Skeleton variant='rectangular' width={80} height={36} />
+          <Skeleton variant='rectangular' width={210} height={36} />
+          <Skeleton variant='rectangular' width={190} height={36} />
+        </div>
       </div>
 
-      {/* Filter row */}
-      <div className='flex flex-wrap gap-3'>
-        <Skeleton variant='rectangular' width={120} height={36} />
-        <Skeleton variant='rectangular' width={140} height={36} />
-        <Skeleton variant='rectangular' className='h-9 flex-1 min-w-[200px]' />
+      {/* JobsFilter: search input (full-width row) + filter pills */}
+      <div className='flex flex-col gap-2.5'>
+        <Skeleton variant='rectangular' className='h-9 w-full' />
+        <div className='flex flex-wrap items-center gap-2'>
+          <Skeleton
+            variant='rectangular'
+            width={110}
+            height={32}
+            className='rounded-full'
+          />
+          <Skeleton
+            variant='rectangular'
+            width={130}
+            height={32}
+            className='rounded-full'
+          />
+        </div>
       </div>
 
-      {/* List rows — match JobsListTable density */}
-      <div className='space-y-3'>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className='flex items-center gap-3 px-3 py-2'>
-            <Skeleton variant='rectangular' width={40} height={24} />
-            <Skeleton width='40%' size='sm' />
-            <Skeleton width='20%' size='sm' />
-            <Skeleton width='10%' size='sm' />
-          </div>
-        ))}
-      </div>
+      <JobsTableSkeleton />
     </div>
   );
 }

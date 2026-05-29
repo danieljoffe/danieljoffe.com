@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import JobsFilter from './JobsFilter';
 import JobsListMobile from './JobsListMobile';
+import JobsTableSkeleton from './JobsTableSkeleton';
 import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
 
 // Desktop table is heavier (inline expand panel, full table layout, recharts-free
@@ -13,18 +13,7 @@ import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
 // when the viewport is md+.
 const JobsListTable = dynamic(() => import('./JobsListTable'), {
   ssr: false,
-  loading: () => (
-    <div className='space-y-3' aria-label='Loading jobs'>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className='flex items-center gap-3 px-3 py-2'>
-          <Skeleton variant='rectangular' width={40} height={24} />
-          <Skeleton width='40%' size='sm' />
-          <Skeleton width='20%' size='sm' />
-          <Skeleton width='10%' size='sm' />
-        </div>
-      ))}
-    </div>
-  ),
+  loading: () => <JobsTableSkeleton />,
 });
 
 // Was `(min-width: 768px)` — at tablet the 7-column table cramps the Title
@@ -78,6 +67,16 @@ export default function JobsListView({
 }: JobsListViewProps) {
   const [deleteKey, setDeleteKey] = useState(0);
   const isDesktop = useIsDesktop();
+  // ``useIsDesktop`` returns the server snapshot (false) during the first
+  // client render to avoid hydration mismatch, which forces a flash of
+  // ``JobsListMobile`` for desktop users before the matchMedia resolves.
+  // Gate the layout pick behind a one-tick effect so the first render shows
+  // the neutral table skeleton (matching the route loading.tsx) instead of
+  // committing to a mobile layout we'll immediately swap away from.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -128,7 +127,9 @@ export default function JobsListView({
         order={order}
         handleSort={handleSort}
       />
-      {isDesktop ? (
+      {!hydrated ? (
+        <JobsTableSkeleton />
+      ) : isDesktop ? (
         <JobsListTable
           postings={postings}
           loading={loading}

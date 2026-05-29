@@ -58,13 +58,22 @@ export default function JobsListMobile({
     return (
       <div className='flex flex-col gap-3' aria-label='Loading jobs'>
         {Array.from({ length: 5 }).map((_, i) => (
+          // Mirrors the real <JobCard> shape: title row first (with a small
+          // status badge to the right), then a meta row with company + score
+          // pill. Prior version put meta before title and added a 2-line text
+          // body that doesn't exist in JobCard, leaving empty space on swap.
           <div
             key={i}
             className='flex flex-col gap-2 rounded-xl border border-border bg-surface-elevated p-3'
           >
-            <Skeleton width='40%' size='sm' />
-            <Skeleton width='80%' size='md' />
-            <Skeleton variant='text' lines={2} />
+            <div className='flex items-center justify-between gap-2'>
+              <Skeleton width='75%' size='md' />
+              <Skeleton variant='rectangular' width={48} height={20} />
+            </div>
+            <div className='flex items-center gap-2'>
+              <Skeleton width={110} size='sm' />
+              <Skeleton variant='rectangular' width={36} height={20} />
+            </div>
           </div>
         ))}
       </div>
