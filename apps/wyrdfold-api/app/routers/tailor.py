@@ -404,7 +404,9 @@ async def edit_tailored_resume(
             },
         )
 
-    record = persistence.update_payload_md(supabase, resume_id, body.markdown)
+    record = persistence.update_payload_md(
+        supabase, resume_id, body.markdown, user_id=user_id
+    )
     return TailorResponse(record=record, lint_warnings=lint_result.warnings)
 
 
@@ -443,7 +445,9 @@ async def checkpoint_tailored_resume(
                     "violations": [v.model_dump() for v in lint_result.violations],
                 },
             )
-        persistence.update_payload_md(supabase, resume_id, body.markdown)
+        persistence.update_payload_md(
+            supabase, resume_id, body.markdown, user_id=user_id
+        )
 
     recorded = versions.checkpoint(supabase, resume_id)
     return {"recorded": recorded}
@@ -464,7 +468,7 @@ async def approve_tailored_resume(
     if row.approved_at is not None:
         return row
 
-    record = persistence.approve(supabase, resume_id)
+    record = persistence.approve(supabase, resume_id, user_id=user_id)
 
     # Resume approval also advances the linked job posting to resume_ready;
     # cover letters don't drive job status.
@@ -490,7 +494,7 @@ async def unapprove_tailored_resume(
     if row.approved_at is None:
         return row
 
-    record = persistence.unapprove(supabase, resume_id)
+    record = persistence.unapprove(supabase, resume_id, user_id=user_id)
 
     # Mirror the approve side: resume unlock walks the linked job back to
     # resume_draft so the lifecycle stays in sync.
@@ -592,6 +596,7 @@ async def download_tailored_resume(
                 resume_id,
                 storage_path=storage_path,
                 payload_md_hash=expected_hash or md_payload_hash(row.payload_md),
+                user_id=user_id,
             )
         except Exception:
             # Fall through and serve the freshly-rendered bytes regardless;

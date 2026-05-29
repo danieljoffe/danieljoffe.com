@@ -120,11 +120,12 @@ class TestPersistenceHelpers:
 
         supabase = MagicMock()
         updated_record = _make_record()
-        supabase.table.return_value.update.return_value.eq.return_value.execute.return_value.data = [
+        # Chain: update → eq(id) → is_(user_id) → execute (user_id=None path)
+        supabase.table.return_value.update.return_value.eq.return_value.is_.return_value.execute.return_value.data = [
             updated_record.model_dump(mode="json")
         ]
 
-        result = update_payload(supabase, "rec-1", {"summary": "Updated"})
+        result = update_payload(supabase, "rec-1", {"summary": "Updated"}, user_id=None)
         assert result.id == "rec-1"
         supabase.table.assert_called_with("documents")
 
@@ -133,12 +134,16 @@ class TestPersistenceHelpers:
 
         supabase = MagicMock()
         updated_record = _make_record()
-        supabase.table.return_value.update.return_value.eq.return_value.execute.return_value.data = [
+        supabase.table.return_value.update.return_value.eq.return_value.is_.return_value.execute.return_value.data = [
             updated_record.model_dump(mode="json")
         ]
 
         result = update_payload(
-            supabase, "rec-1", {"summary": "Updated"}, storage_path="anon/rec-1.docx"
+            supabase,
+            "rec-1",
+            {"summary": "Updated"},
+            storage_path="anon/rec-1.docx",
+            user_id=None,
         )
         assert result.id == "rec-1"
         # Verify the update call included storage_path
@@ -150,11 +155,11 @@ class TestPersistenceHelpers:
 
         supabase = MagicMock()
         approved_record = _make_record(approved_at=_NOW)
-        supabase.table.return_value.update.return_value.eq.return_value.execute.return_value.data = [
+        supabase.table.return_value.update.return_value.eq.return_value.is_.return_value.execute.return_value.data = [
             approved_record.model_dump(mode="json")
         ]
 
-        result = approve(supabase, "rec-1")
+        result = approve(supabase, "rec-1", user_id=None)
         assert result.id == "rec-1"
         assert result.approved_at is not None
 
@@ -718,12 +723,12 @@ class TestUpdatePayloadMd:
 
         supabase = MagicMock()
         updated = _make_record(payload_md=_GOOD_MD, docx_payload_md_hash=None)
-        supabase.table.return_value.update.return_value.eq.return_value.execute.return_value.data = [
+        supabase.table.return_value.update.return_value.eq.return_value.is_.return_value.execute.return_value.data = [
             updated.model_dump(mode="json")
         ]
 
         with patch("app.services.tailor.versions.record") as mock_record:
-            update_payload_md(supabase, "rec-1", _GOOD_MD)
+            update_payload_md(supabase, "rec-1", _GOOD_MD, user_id=None)
 
         # Update payload includes the markdown and explicitly NULLs the cache hash.
         update_call = supabase.table.return_value.update.call_args[0][0]
@@ -800,7 +805,13 @@ class TestCheckpointEndpoint:
             )
 
         # Save lands first so checkpoint reads the fresh markdown.
-        mock_update.assert_called_once_with(supabase, "rec-1", new_md)
+        # ``user_id`` kwarg comes from the route's ``Depends`` default
+        # when called directly without a real request — the test
+        # exercises the call shape, not the resolved value.
+        mock_update.assert_called_once()
+        args, kwargs = mock_update.call_args
+        assert args[:3] == (supabase, "rec-1", new_md)
+        assert "user_id" in kwargs
         mock_checkpoint.assert_called_once_with(supabase, "rec-1")
 
     @pytest.mark.asyncio
@@ -890,6 +901,7 @@ class TestMarkDocxRendered:
             "rec-1",
             storage_path="anon/rec-1.docx",
             payload_md_hash="hash-xyz",
+            user_id=None,
         )
 
         update_call = supabase.table.return_value.update.call_args[0][0]
@@ -979,12 +991,12 @@ class TestDownloadCache:
         # mark_docx_rendered receives the freshly computed hash, not the stale one.
         from app.services.docx.pandoc_render import md_payload_hash
 
-        mock_mark.assert_called_once_with(
-            supabase,
-            "rec-1",
-            storage_path="anon/rec-1.docx",
-            payload_md_hash=md_payload_hash(_GOOD_MD),
-        )
+        mock_mark.assert_called_once()
+        args, kwargs = mock_mark.call_args
+        assert args == (supabase, "rec-1")
+        assert kwargs["storage_path"] == "anon/rec-1.docx"
+        assert kwargs["payload_md_hash"] == md_payload_hash(_GOOD_MD)
+        assert "user_id" in kwargs
 
     @pytest.mark.asyncio
     async def test_cache_stale_render_succeeds_even_if_upload_fails(self) -> None:
