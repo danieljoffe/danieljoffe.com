@@ -339,7 +339,14 @@ export default function JobsList({
       });
 
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Export failed' });
+        // ``/tailor/export-zip`` surfaces actionable detail (e.g.,
+        // ``"resumes not yet approved: id1, id2"``) — without
+        // ``extractApiError`` the user just saw "Export failed" and
+        // had to guess which selected resume was the holdup.
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Export failed'),
+        });
         return;
       }
 

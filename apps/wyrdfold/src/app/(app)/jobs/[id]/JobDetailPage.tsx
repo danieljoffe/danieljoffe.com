@@ -10,6 +10,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type { UserTargetWithTarget } from '../../targets/types';
 import JobDetailPanel from '../JobDetailPanel';
@@ -40,12 +41,16 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
           if (!cancelled) setNotFound(true);
           return;
         }
-        if (!res.ok) throw new Error('Failed to load job');
+        if (!res.ok)
+          throw new Error(await extractApiError(res, 'Failed to load job'));
         const data = (await res.json()) as JobPosting;
         if (!cancelled) setPosting(data);
-      } catch {
+      } catch (err) {
         if (!cancelled)
-          toast({ variant: 'error', title: 'Failed to load job' });
+          toast({
+            variant: 'error',
+            title: err instanceof Error ? err.message : 'Failed to load job',
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }

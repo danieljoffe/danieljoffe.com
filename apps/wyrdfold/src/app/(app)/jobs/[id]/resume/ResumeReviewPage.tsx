@@ -8,6 +8,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
   JobPosting,
@@ -97,7 +98,10 @@ export default function ResumeReviewPage({
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}/versions`);
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to load version history' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to load version history'),
+        });
         return;
       }
       const data = (await res.json()) as ResumeVersionsResponse;
@@ -143,7 +147,10 @@ export default function ResumeReviewPage({
         return false;
       }
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to save changes' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to save changes'),
+        });
         setSaveStatus('error');
         return false;
       }
@@ -247,7 +254,10 @@ export default function ResumeReviewPage({
         method: 'POST',
       });
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to approve resume' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to approve resume'),
+        });
         return;
       }
       const approved = (await res.json()) as TailoredResumeRecord;
@@ -268,7 +278,10 @@ export default function ResumeReviewPage({
         method: 'POST',
       });
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to unlock resume' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to unlock resume'),
+        });
         return;
       }
       const reopened = (await res.json()) as TailoredResumeRecord;
@@ -288,7 +301,10 @@ export default function ResumeReviewPage({
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}/download`);
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Download failed' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Download failed'),
+        });
         return;
       }
       const blob = await res.blob();
@@ -331,7 +347,15 @@ export default function ResumeReviewPage({
         }),
       });
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Re-adapt failed' });
+        // LLM-budgeted route — without ``extractApiError`` here, hitting
+        // the daily/hourly LLM cap would render as the generic
+        // "Re-adapt failed" with no recovery hint instead of the
+        // structured "$X of $Y budget reached — try again in an hour"
+        // message (PR #701).
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Re-adapt failed'),
+        });
         return;
       }
       toast({ variant: 'success', title: 'Resume re-adapted with AI' });
