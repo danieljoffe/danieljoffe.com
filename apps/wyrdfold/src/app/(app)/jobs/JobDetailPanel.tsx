@@ -6,6 +6,7 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
@@ -473,7 +474,14 @@ export default function JobDetailPanel({
               )}
             </div>
           ) : analyzing ? (
-            <Skeleton variant='text' lines={3} />
+            <div
+              className='flex items-center gap-2'
+              role='status'
+              aria-live='polite'
+            >
+              <Spinner size='sm' />
+              <Text variant='meta'>Running LLM analysis…</Text>
+            </div>
           ) : (
             <div>
               {analysisError && (
