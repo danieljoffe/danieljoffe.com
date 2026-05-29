@@ -9,6 +9,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Alert } from '@danieljoffe.com/shared-ui/Alert';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { cn } from '@/lib/cn';
 import type {
   JobTarget,
@@ -54,7 +55,17 @@ export default function TargetSuggestions({
         const res = await fetch(`/api/targets/from-posting/${postingId}`, {
           method: 'POST',
         });
-        if (!res.ok) throw new Error('Failed to create target');
+        if (!res.ok) {
+          // LLM-budgeted route — surface the structured
+          // ``llm_budget_exceeded`` 429 detail (PR #701) when present,
+          // but keep the friendly "you can create one manually"
+          // fallback for unknown errors. Pass empty fallback to
+          // ``extractApiError`` so we can distinguish "no useful
+          // detail" (only the status code came back) from "real
+          // server message".
+          const detail = await extractApiError(res, '');
+          throw new Error(detail);
+        }
         const data = (await res.json()) as { id: string; label: string };
         if (!cancelled) {
           setCreatedLabel(data.label);
@@ -68,10 +79,18 @@ export default function TargetSuggestions({
           );
           timerRef.current = setTimeout(onComplete, 2000);
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
+          const message = err instanceof Error ? err.message.trim() : '';
+          // ``message`` shaped like " (500)" / "(429)" means
+          // ``extractApiError`` only had a status code to work with —
+          // prefer the friendly fallback in that case. A real detail
+          // string (e.g., "LLM hourly budget reached...") wins.
+          const onlyStatus = /^\(\d+\)$/.test(message);
           setError(
-            'Could not auto-create target. You can create one manually.'
+            message && !onlyStatus
+              ? message
+              : 'Could not auto-create target. You can create one manually.'
           );
         }
       } finally {
@@ -93,18 +112,30 @@ export default function TargetSuggestions({
     async function fetchSuggestions() {
       try {
         const res = await fetch('/api/targets/suggest', { method: 'POST' });
-        if (!res.ok) throw new Error('Failed to load suggestions');
+        if (!res.ok) {
+          const detail = await extractApiError(res, '');
+          throw new Error(detail);
+        }
         const data = (await res.json()) as MatchedSuggestions;
         if (!cancelled && data.matches?.length > 0) {
           setSuggestions(data.matches);
           // Pre-select all suggestions
           setSelected(new Set(data.matches.map(m => m.suggestion.label)));
         }
-      } catch {
-        if (!cancelled)
+      } catch (err) {
+        if (!cancelled) {
+          // Same friendly-fallback pattern as the from-posting branch:
+          // surface a real server detail (LLM budget exceeded etc.)
+          // when present, fall back to the manual-creation hint when
+          // we only got a bare status code.
+          const message = err instanceof Error ? err.message.trim() : '';
+          const onlyStatus = /^\(\d+\)$/.test(message);
           setError(
-            'Could not generate suggestions. You can create targets manually.'
+            message && !onlyStatus
+              ? message
+              : 'Could not generate suggestions. You can create targets manually.'
           );
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
