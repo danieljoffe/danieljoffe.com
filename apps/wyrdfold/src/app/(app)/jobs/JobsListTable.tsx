@@ -3,11 +3,11 @@
 import { Fragment, useState } from 'react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
 import JobsEmptyState from './JobsEmptyState';
+import JobsTableSkeleton from './JobsTableSkeleton';
 import StatusIndicator from './StatusIndicator';
 import {
   MANUAL_SOURCE_ID,
@@ -111,18 +111,7 @@ export default function JobsListTable({
   }
 
   if (loading && postings.length === 0) {
-    return (
-      <div className='space-y-3' aria-label='Loading jobs'>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className='flex items-center gap-3 px-3 py-2'>
-            <Skeleton variant='rectangular' width={40} height={24} />
-            <Skeleton width='40%' size='sm' />
-            <Skeleton width='20%' size='sm' />
-            <Skeleton width='10%' size='sm' />
-          </div>
-        ))}
-      </div>
-    );
+    return <JobsTableSkeleton />;
   }
 
   if (postings.length === 0) {

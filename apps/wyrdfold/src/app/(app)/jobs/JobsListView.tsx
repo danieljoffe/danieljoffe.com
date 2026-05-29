@@ -2,92 +2,18 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';
 import JobsFilter from './JobsFilter';
 import JobsListMobile from './JobsListMobile';
+import JobsTableSkeleton from './JobsTableSkeleton';
 import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
 
 // Desktop table is heavier (inline expand panel, full table layout, recharts-free
 // but still pulls JobDetailPanel + history). Phones never need it — load only
 // when the viewport is md+.
-// Title-column widths so successive rows don't look uniform.
-const JOBS_TABLE_SKELETON_TITLE_WIDTHS = [
-  220, 260, 180, 240, 200, 280, 170, 230,
-];
-
 const JobsListTable = dynamic(() => import('./JobsListTable'), {
   ssr: false,
-  loading: () => (
-    // Mirrors JobsListTable's 8-column structure so the swap doesn't shift
-    // column widths. Same skeleton is used by the route-level loading.tsx;
-    // promote to a shared component when a third call site appears.
-    <div className='overflow-x-auto' aria-label='Loading jobs'>
-      <table className='w-full text-sm' aria-hidden='true'>
-        <thead>
-          <tr className='border-b border-border text-left'>
-            <th className='px-3 py-2 w-10'>
-              <Skeleton variant='rectangular' width={16} height={16} />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={50} size='sm' />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={50} size='sm' />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={40} size='sm' />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={70} size='sm' />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={56} size='sm' />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={50} size='sm' />
-            </th>
-            <th className='px-3 py-2'>
-              <Skeleton width={60} size='sm' />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {JOBS_TABLE_SKELETON_TITLE_WIDTHS.map((titleWidth, i) => (
-            <tr key={i} className='border-b border-border'>
-              <td className='px-3 py-2 w-10'>
-                <Skeleton variant='rectangular' width={16} height={16} />
-              </td>
-              <td className='px-3 py-2'>
-                <div className='inline-flex items-center gap-1.5'>
-                  <Skeleton variant='circular' width={8} height={8} />
-                  <Skeleton width={56} size='sm' />
-                </div>
-              </td>
-              <td className='px-3 py-2'>
-                <Skeleton variant='rectangular' width={36} height={22} />
-              </td>
-              <td className='px-3 py-2'>
-                <Skeleton width={titleWidth} size='md' />
-              </td>
-              <td className='px-3 py-2'>
-                <Skeleton width={110} size='md' />
-              </td>
-              <td className='px-3 py-2'>
-                <Skeleton width={56} size='sm' />
-              </td>
-              <td className='px-3 py-2'>
-                <Skeleton width={140} size='sm' />
-              </td>
-              <td className='px-3 py-2'>
-                <Skeleton width={120} size='sm' />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  ),
+  loading: () => <JobsTableSkeleton />,
 });
 
 // Was `(min-width: 768px)` — at tablet the 7-column table cramps the Title
@@ -141,6 +67,16 @@ export default function JobsListView({
 }: JobsListViewProps) {
   const [deleteKey, setDeleteKey] = useState(0);
   const isDesktop = useIsDesktop();
+  // ``useIsDesktop`` returns the server snapshot (false) during the first
+  // client render to avoid hydration mismatch, which forces a flash of
+  // ``JobsListMobile`` for desktop users before the matchMedia resolves.
+  // Gate the layout pick behind a one-tick effect so the first render shows
+  // the neutral table skeleton (matching the route loading.tsx) instead of
+  // committing to a mobile layout we'll immediately swap away from.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const extraParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -191,7 +127,9 @@ export default function JobsListView({
         order={order}
         handleSort={handleSort}
       />
-      {isDesktop ? (
+      {!hydrated ? (
+        <JobsTableSkeleton />
+      ) : isDesktop ? (
         <JobsListTable
           postings={postings}
           loading={loading}
