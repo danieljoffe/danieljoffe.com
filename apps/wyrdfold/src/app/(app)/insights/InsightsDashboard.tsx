@@ -392,7 +392,7 @@ export default function InsightsDashboard() {
               <Text variant='meta'>
                 Total: ${skillsCost.total_cost.toFixed(2)}
                 {skillsCost.avg_cost_per_resume !== null &&
-                  ` | Avg/resume: $${skillsCost.avg_cost_per_resume.toFixed(3)}`}
+                  ` | Avg/resume: $${skillsCost.avg_cost_per_resume.toFixed(2)}`}
               </Text>
             )}
           </div>

@@ -522,7 +522,7 @@ export default function SettingsPage() {
               the email provider credentials.
             </Text>
           )}
-          {prefs?.email && (
+          {emailAvailable && prefs?.email && (
             <Text variant='meta' className='text-text-tertiary'>
               Sending to: {prefs.email}
             </Text>

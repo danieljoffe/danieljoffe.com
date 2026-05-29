@@ -16,6 +16,11 @@ export interface MoreSheetItem {
 }
 
 interface MoreSheetProps {
+  /**
+   * Stable id used by the trigger button's `aria-controls` so assistive
+   * tech can link the "More" button to this dialog.
+   */
+  id: string;
   open: boolean;
   onClose: () => void;
   items: MoreSheetItem[];
@@ -30,6 +35,7 @@ interface MoreSheetProps {
  * sidebar bundle on every authed page.
  */
 export default function MoreSheet({
+  id,
   open,
   onClose,
   items,
@@ -76,6 +82,7 @@ export default function MoreSheet({
 
       <div
         ref={sheetRef}
+        id={id}
         role='dialog'
         aria-label='More navigation'
         aria-modal='true'
