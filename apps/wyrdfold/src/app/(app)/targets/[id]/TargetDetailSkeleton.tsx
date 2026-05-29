@@ -26,11 +26,12 @@ export default function TargetDetailSkeleton() {
     <div className='flex flex-col gap-4' aria-label='Loading target'>
       <Skeleton width={120} size='sm' />
 
-      {/* Target label heading (hero variant ~40-48px tall) + Edit pencil button
-          + status badge. Earlier height={32} read short next to the swapped-in
-          hero h1, causing the rest of the page to shift up. */}
+      {/* Target label heading (hero h1 = text-4xl sm:text-5xl leading-[1.1] →
+          ~48px content on >=640px viewports) + Edit pencil button + status
+          badge. Title width is a best-guess for a mid-length label; very long
+          or very short ones will still cause a small horizontal shift. */}
       <div className='flex items-center gap-3'>
-        <Skeleton variant='rectangular' width={280} height={44} />
+        <Skeleton variant='rectangular' width={280} height={48} />
         <Skeleton variant='rectangular' width={32} height={32} />
         <Skeleton variant='rectangular' width={56} height={20} />
       </div>

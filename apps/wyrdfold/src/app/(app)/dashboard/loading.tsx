@@ -1,4 +1,6 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 // Mirrors apps/wyrdfold/src/app/(app)/DashboardPage.tsx so the swap from
 // skeleton to populated dashboard doesn't shift the pipeline-stats grid or
@@ -7,10 +9,16 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 export default function DashboardLoading() {
   return (
     <div className='flex flex-col gap-6' aria-label='Loading dashboard'>
-      {/* Hero h1 "Dashboard" + body subtitle "Your job search at a glance" */}
+      {/* Real heading + subtitle so size, line-height, and spacing match
+          DashboardPage exactly — no skeleton bar matches text-5xl leading-[1.1]
+          across breakpoints. */}
       <div>
-        <Skeleton variant='rectangular' width={180} height={40} />
-        <Skeleton className='mt-2 w-64' size='md' />
+        <Heading variant='hero' as='h1'>
+          Dashboard
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Your job search at a glance
+        </Text>
       </div>
 
       {/* Pipeline stats — 7 statuses, reflows 2 / 3 / 4 / 7 cols.

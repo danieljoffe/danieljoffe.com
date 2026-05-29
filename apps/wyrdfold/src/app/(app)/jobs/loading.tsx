@@ -1,15 +1,21 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 import JobsTableSkeleton from './JobsTableSkeleton';
 
 export default function FittedJobsLoading() {
   return (
     <div className='flex flex-col gap-6' aria-label='Loading jobs'>
-      {/* Heading "Jobs" (hero h1 ~ text-4xl sm:text-5xl) + subtitle */}
+      {/* Render the real heading + subtitle so size, line-height, and spacing
+          match the post-load page pixel-for-pixel — no skeleton bar can mimic
+          text-5xl leading-[1.1] perfectly across breakpoints. */}
       <div>
-        <Skeleton variant='rectangular' width={140} height={40} />
-        <div className='mt-2'>
-          <Skeleton width={280} size='md' />
-        </div>
+        <Heading variant='hero' as='h1'>
+          Jobs
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Postings matched to your active targets
+        </Text>
       </div>
 
       {/* Target tab strip (border-b, gap-1) — first tab "All Jobs" is shorter

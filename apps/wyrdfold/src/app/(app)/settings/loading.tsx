@@ -1,13 +1,20 @@
 import { Card, CardContent, CardHeader } from '@danieljoffe.com/shared-ui/Card';
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 export default function SettingsLoading() {
   return (
     <div className='flex flex-col gap-6' aria-label='Loading settings'>
-      {/* Hero h1 "Settings" + body subtitle. */}
+      {/* Real heading + subtitle so size, line-height, and spacing match
+          SettingsPage pixel-for-pixel. */}
       <div>
-        <Skeleton variant='rectangular' width={140} height={40} />
-        <Skeleton className='mt-2 w-72' size='md' />
+        <Heading variant='hero' as='h1'>
+          Settings
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Notification preferences and alerts
+        </Text>
       </div>
 
       {/* Profile section. CardTitle is text-sm semibold (~16px) — earlier

@@ -3,12 +3,15 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 export default function AppLoading() {
   return (
     <div role='status' aria-label='Loading' className='flex flex-col gap-6'>
-      {/* Hero h1 + subtitle. variant='text' size='lg' is h-3..h-5 (~20px);
-          the real heading is hero (text-4xl sm:text-5xl ~40-48px), so a
-          rectangular placeholder at h=40 lands closer to the actual height. */}
+      {/* Hero h1 + subtitle. Real Heading variant='hero' is text-4xl sm:text-5xl
+          leading-[1.1] — ~48px content on >=640px viewports. Subtitle is
+          variant='body' (text-sm = 14px) with mt-1 (4px) above. We can't pick
+          a page-specific title here (this is the layout-level fallback for
+          routes without their own loading.tsx), so keep a generic rectangular
+          placeholder sized to the desktop hero. */}
       <div>
-        <Skeleton variant='rectangular' width={140} height={40} />
-        <Skeleton className='mt-2 w-56' size='md' />
+        <Skeleton variant='rectangular' width={140} height={48} />
+        <Skeleton className='mt-1 w-56' height={14} variant='rectangular' />
       </div>
       {/* Generic stacked-card placeholder. Each leaf has its own loading.tsx,
           so this rarely fires; keep it neutral rather than impersonate any

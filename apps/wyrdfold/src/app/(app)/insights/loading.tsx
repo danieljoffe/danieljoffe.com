@@ -1,12 +1,19 @@
+import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Text } from '@danieljoffe.com/shared-ui/Text';
 
 export default function InsightsLoading() {
   return (
     <div className='flex flex-col gap-6'>
-      {/* Hero h1 "Insights" + body subtitle. */}
+      {/* Real heading + subtitle so size and spacing match the post-load
+          InsightsDashboard pixel-for-pixel. */}
       <div>
-        <Skeleton variant='rectangular' width={160} height={40} />
-        <Skeleton className='mt-2 w-72' size='md' />
+        <Heading variant='hero' as='h1'>
+          Insights
+        </Heading>
+        <Text variant='body' className='mt-1 text-text-secondary'>
+          Track your job search progress
+        </Text>
       </div>
 
       {/* Period segmented control. */}
