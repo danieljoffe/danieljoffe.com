@@ -386,9 +386,13 @@ export default function ResumeReviewPage({
     setVersionsOpen(false);
   }
 
+  // The ``(app)/layout.tsx`` wrapper already supplies the page's
+  // ``<main id="main-content">`` landmark. Wrapping page-level content
+  // in a second ``<main>`` here gave SR users two main landmarks per
+  // page (WCAG 1.3.1 / ARIA spec). Use ``<div>`` instead.
   if (notFound) {
     return (
-      <main className='mx-auto max-w-4xl p-6'>
+      <div className='mx-auto max-w-4xl p-6'>
         <Heading variant='hero' as='h1'>
           Resume not found
         </Heading>
@@ -402,15 +406,16 @@ export default function ResumeReviewPage({
         >
           <ArrowLeft className='h-4 w-4' /> Back to job
         </Link>
-      </main>
+      </div>
     );
   }
 
   if (loading || !record || !posting) {
     return (
-      <main
+      <div
         className='mx-auto max-w-4xl space-y-4 p-6'
         aria-label='Loading resume'
+        role='status'
       >
         {/* Back link */}
         <Skeleton className='h-5 w-24' />
@@ -443,7 +448,7 @@ export default function ResumeReviewPage({
 
         {/* Markdown editor */}
         <Skeleton variant='rectangular' className='h-[60vh] w-full' />
-      </main>
+      </div>
     );
   }
 
@@ -452,7 +457,7 @@ export default function ResumeReviewPage({
     record.warnings?.includes('reused_from_similar_job') ?? false;
 
   return (
-    <main className='mx-auto max-w-4xl space-y-4 p-6'>
+    <div className='mx-auto max-w-4xl space-y-4 p-6'>
       <div className='flex items-center justify-between'>
         <Link
           href={`/jobs/${jobPostingId}`}
@@ -687,7 +692,7 @@ export default function ResumeReviewPage({
           </Text>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
