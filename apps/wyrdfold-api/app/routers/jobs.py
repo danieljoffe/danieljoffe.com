@@ -203,6 +203,16 @@ def _list_jobs_for_target_two_query(
         if total is None:
             total = len(postings)
             postings = postings[offset : offset + page_size]
+    else:
+        # Restore page_ids order — Supabase's in_() filter doesn't preserve
+        # list order, so even though page_ids was already sorted by score at
+        # the scores layer, the postings query returns rows in storage order.
+        order_index = {jid: i for i, jid in enumerate(page_ids)}
+        postings.sort(
+            key=lambda p: order_index.get(
+                cast(dict[str, Any], p)["id"], len(page_ids)
+            )
+        )
 
     return {"postings": postings, "total": total, "page": page, "page_size": page_size}
 
@@ -345,6 +355,16 @@ def _list_jobs_across_user_targets(
         if total is None:
             total = len(postings)
             postings = postings[offset : offset + page_size]
+    else:
+        # Restore page_ids order — Supabase's in_() filter doesn't preserve
+        # list order, so even though page_ids was already sorted by score at
+        # the scores layer, the postings query returns rows in storage order.
+        order_index = {jid: i for i, jid in enumerate(page_ids)}
+        postings.sort(
+            key=lambda p: order_index.get(
+                cast(dict[str, Any], p)["id"], len(page_ids)
+            )
+        )
 
     return {"postings": postings, "total": total, "page": page, "page_size": page_size}
 
