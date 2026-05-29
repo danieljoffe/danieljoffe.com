@@ -1,18 +1,28 @@
 /**
- * Pyre — chartreuse on near-black, intrinsically dark.
+ * Pyre — chartreuse over neutral surfaces. Light by default; dark
+ * mode activates via the ``.dark`` class on ``<html>``, set by
+ * ``wyrdfold/state/Theme/ThemeProvider`` based on
+ * localStorage + ``prefers-color-scheme``.
  *
- * Standalone replacement for indigo-theme.css. WyrdFold imports this
- * file once at the app root; every shared-ui component reskins via
- * the same semantic token names. No light/dark switch — Pyre is one
- * palette.
+ * Originally shipped dark-only (the original docstring said "No
+ * light/dark switch — Pyre is one palette"), but the
+ * ``DarkModeToggle`` button + ``ThemeProvider`` were giving users a
+ * non-functional affordance: the toggle cycled state + flipped the
+ * ``.dark`` class on ``<html>``, but the theme had no rules scoped
+ * to ``.dark`` vs the default, so the page stayed dark regardless.
  *
- * Token *names* mirror indigo-theme.css exactly so the two themes are
- * drop-in-compatible. Token *values* differ.
+ * Token *names* mirror indigo-theme.css exactly so the two themes
+ * stay drop-in-compatible. Token *values* differ.
  *
- * Color decisions (placeholders pending final brand tuning):
- *   brand   = chartreuse, oklch hue 127, peak chroma at L≈0.67
- *   surface = near-black, oklch hue 270 with minimal chroma
- *   text    = near-white at L≈0.96 over surface (≥ 14:1 contrast)
+ * Color decisions:
+ *   brand   = chartreuse, oklch hue 127, peak chroma at L≈0.67.
+ *             Same in both modes — the brand colour doesn't flip.
+ *   surface = light: near-white at L≈0.98 (hue 270);
+ *             dark:  near-black at L≈0.10 (hue 270).
+ *   text    = light: near-black at L≈0.18 (≥ 14:1 over surface);
+ *             dark:  near-white at L≈0.96 (≥ 14:1 over surface).
+ *   status  = both modes use mid-lightness hues so the foreground
+ *             reads at WCAG AA over the corresponding surface.
  *
  * For Storybook coexistence with indigo, see pyre-storybook-preview.css —
  * that file scopes Pyre tokens under a `.pyre` class so the indigo theme
@@ -31,15 +41,15 @@
   --font-sans: ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
 
-  /* Shadows — heavier opacity values for the dark surface */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  /* Shadows — light defaults; dark mode overrides below. */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   --shadow-lg:
-    0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   --shadow-xl:
-    0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
 
   /* Animation */
   --animate-fade-in: fade-in 0.2s ease-out;
@@ -48,7 +58,7 @@
   --animate-slide-out-down: slide-out-down 0.15s ease-in forwards;
   --animate-scale-in: scale-in 0.15s ease-out;
 
-  /* Colors — Brand (chartreuse, oklch hue 127) */
+  /* Colors — Brand (chartreuse, oklch hue 127). Identical across modes. */
   --color-brand-50: oklch(0.97 0.05 127);
   --color-brand-100: oklch(0.93 0.1 127);
   --color-brand-200: oklch(0.87 0.16 127);
@@ -61,30 +71,83 @@
   --color-brand-900: oklch(0.3 0.12 127);
   --color-brand-950: oklch(0.2 0.08 127);
 
-  /* Semantic Colors — Surface (near-black, hue 270) */
+  /* Semantic Colors — Surface (light mode, near-white hue 270) */
+  --color-surface: oklch(0.99 0.005 270);
+  --color-surface-secondary: oklch(0.97 0.005 270);
+  --color-surface-tertiary: oklch(0.94 0.005 270);
+  --color-surface-elevated: oklch(1 0 0);
+  --color-surface-overlay: rgba(15, 15, 25, 0.4);
+
+  /* Semantic Colors — Border (light mode) */
+  --color-border: oklch(0.9 0.005 270);
+  --color-border-secondary: oklch(0.82 0.005 270);
+  --color-border-focus: oklch(0.55 0.28 127);
+
+  /* Semantic Colors — Text (light mode, near-black hue 270) */
+  --color-text-primary: oklch(0.18 0.01 270);
+  --color-text-secondary: oklch(0.4 0.02 270);
+  --color-text-tertiary: oklch(0.55 0.02 270);
+  --color-text-inverse: oklch(0.98 0.005 270);
+  --color-text-brand: oklch(0.4 0.22 127);
+  /* Brand-500 chartreuse over a near-black foreground clears WCAG
+     AA in both modes (foreground is the dark token; surface is
+     bright). */
+  --color-text-on-brand: oklch(0.15 0.02 127);
+
+  /* Semantic Colors — Status (light mode: mid-lightness hues
+     readable on near-white surfaces) */
+  --color-success: oklch(0.52 0.18 145);
+  --color-success-light: oklch(0.94 0.05 145);
+  --color-warning: oklch(0.6 0.16 70);
+  --color-warning-light: oklch(0.95 0.05 70);
+  --color-error: oklch(0.55 0.22 25);
+  --color-error-light: oklch(0.94 0.05 25);
+  --color-info: oklch(0.52 0.2 230);
+  --color-info-light: oklch(0.94 0.05 230);
+}
+
+/*
+ * Dark mode overrides. ThemeProvider toggles ``.dark`` on
+ * ``<html>``; only the tokens that need to flip are repeated here
+ * (the radius / font / animation / brand-color values stay the
+ * same so a future palette tweak only happens in one place).
+ *
+ * Values match what shipped pre-fix when Pyre was dark-only — so
+ * users who land in dark mode (the typical OS default in the
+ * existing user base) get the identical palette they had before
+ * this PR. The new tokens are the light-mode defaults.
+ */
+.dark {
+  /* Shadows — heavier opacity values for the dark surface */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+
+  /* Surface — near-black, hue 270 */
   --color-surface: oklch(0.1 0.01 270);
   --color-surface-secondary: oklch(0.13 0.01 270);
   --color-surface-tertiary: oklch(0.16 0.01 270);
   --color-surface-elevated: oklch(0.13 0.01 270);
   --color-surface-overlay: rgba(0, 0, 0, 0.7);
 
-  /* Semantic Colors — Border */
+  /* Border */
   --color-border: oklch(0.22 0.01 270);
   --color-border-secondary: oklch(0.3 0.01 270);
   --color-border-focus: oklch(0.67 0.28 127);
 
-  /* Semantic Colors — Text */
+  /* Text — near-white */
   --color-text-primary: oklch(0.96 0.01 90);
   --color-text-secondary: oklch(0.75 0.02 90);
   --color-text-tertiary: oklch(0.6 0.02 90);
   --color-text-inverse: oklch(0.1 0.01 270);
   --color-text-brand: oklch(0.78 0.22 127);
-  /* Pyre's brand-500 chartreuse (oklch 0.67 0.28 127 ≈ #65ae00) is too
-     bright for white text — Lighthouse measured 2.76:1, below AA's
-     4.5:1. Pair it with a near-black to clear AA comfortably. */
-  --color-text-on-brand: oklch(0.15 0.02 127);
 
-  /* Semantic Colors — Status (semantic hues, dimmed chroma for dark surface) */
+  /* Status (semantic hues, dimmed chroma for dark surface) */
   --color-success: oklch(0.72 0.2 145);
   --color-success-light: oklch(0.25 0.05 145);
   --color-warning: oklch(0.78 0.18 70);

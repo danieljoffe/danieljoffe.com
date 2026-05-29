@@ -22,7 +22,26 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en' className='pyre dark'>
+    // ``pyre`` namespaces the design-token reset; ``ThemeProvider``
+    // toggles ``dark`` on the html element based on the stored theme
+    // preference (system / light / dark). To avoid a light-flash for
+    // users whose preference is dark (the typical OS default for
+    // this app), the inline script tag below sets the class
+    // synchronously before React hydrates.
+    <html lang='en' className='pyre'>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+  try {
+    const stored = localStorage.getItem('theme');
+    const isDark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) document.documentElement.classList.add('dark');
+  } catch (_) {}
+})();`,
+          }}
+        />
+      </head>
       <body>
         {/* WCAG 2.4.1 Bypass Blocks — keyboard/SR users skip past the
             sidebar (~7 nav links + sign-out) on every authed route.
