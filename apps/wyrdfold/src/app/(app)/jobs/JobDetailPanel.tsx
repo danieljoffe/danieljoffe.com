@@ -124,6 +124,10 @@ export default function JobDetailPanel({
   const [deleting, setDeleting] = useState(false);
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [analyzingStartedAt, setAnalyzingStartedAt] = useState<number | null>(
+    null
+  );
+  const [analyzingElapsedS, setAnalyzingElapsedS] = useState(0);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [history, setHistory] = useState<StatusLogEntry[]>([]);
   const { toast } = useToast();
@@ -169,9 +173,28 @@ export default function JobDetailPanel({
     }
   }
 
+  // Tick elapsed seconds while the analysis is running. Renders the
+  // "Running… 5s" hint next to the section caption so the user always
+  // sees a moving indicator even if the inline skeleton below scrolls
+  // out of view.
+  useEffect(() => {
+    if (!analyzing || analyzingStartedAt === null) {
+      setAnalyzingElapsedS(0);
+      return;
+    }
+    const tick = () =>
+      setAnalyzingElapsedS(
+        Math.floor((Date.now() - analyzingStartedAt) / 1000)
+      );
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [analyzing, analyzingStartedAt]);
+
   const runAnalysis = useCallback(async () => {
     if (!targetId) return;
     setAnalyzing(true);
+    setAnalyzingStartedAt(Date.now());
     setAnalysisError(null);
     try {
       const res = await fetch(
@@ -209,6 +232,7 @@ export default function JobDetailPanel({
       setAnalysisError('Network error running analysis.');
     } finally {
       setAnalyzing(false);
+      setAnalyzingStartedAt(null);
     }
   }, [posting.id, targetId, onAnalysisComplete]);
 
@@ -426,9 +450,19 @@ export default function JobDetailPanel({
           hint lives at the list level so it shows once, not per-row. */}
       {targetId && (
         <div>
-          <Text variant='caption' className='mb-1'>
-            LLM Analysis
-          </Text>
+          <div className='flex items-center gap-2 mb-1'>
+            <Text variant='caption'>LLM Analysis</Text>
+            {analyzing && (
+              <span
+                className='inline-flex items-center gap-1.5'
+                role='status'
+                aria-live='polite'
+              >
+                <Spinner size='sm' aria-label='Running LLM analysis' />
+                <Text variant='meta'>Running… {analyzingElapsedS}s</Text>
+              </span>
+            )}
+          </div>
           {analysis ? (
             <div className='space-y-2'>
               <Text variant='body'>{analysis.recommendation}</Text>
@@ -474,14 +508,10 @@ export default function JobDetailPanel({
               )}
             </div>
           ) : analyzing ? (
-            <div
-              className='flex items-center gap-2'
-              role='status'
-              aria-live='polite'
-            >
-              <Spinner size='sm' />
-              <Text variant='meta'>Running LLM analysis…</Text>
-            </div>
+            // Content-shape placeholder. The live indicator (spinner +
+            // elapsed counter) sits next to the section caption above so
+            // it stays visible no matter how this body region scrolls.
+            <Skeleton variant='text' lines={3} />
           ) : (
             <div>
               {analysisError && (
