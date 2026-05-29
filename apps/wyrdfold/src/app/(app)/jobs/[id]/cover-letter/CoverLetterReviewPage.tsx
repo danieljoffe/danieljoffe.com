@@ -374,7 +374,7 @@ export default function CoverLetterReviewPage({
     }
   }
 
-  function restoreVersion(version: ResumeVersion) {
+  async function restoreVersion(version: ResumeVersion) {
     const md = (version as ResumeVersion & { payload_md?: string | null })
       .payload_md;
     if (!md) {
@@ -384,6 +384,20 @@ export default function CoverLetterReviewPage({
       });
       return;
     }
+    /* eslint-disable no-alert -- personal tool, native confirm is fine */
+    if (
+      !window.confirm(
+        'Load this version? Your current draft is saved as a version first so you can roll back.'
+      )
+    )
+      /* eslint-enable no-alert */
+      return;
+    // Mirrors ResumeReviewPage — snapshot the live draft before
+    // ``setMarkdown(md)`` so the autosave that follows doesn't
+    // overwrite the live document without leaving a recoverable
+    // entry in version history.
+    await flushPendingSave();
+    await recordCheckpoint();
     setMarkdown(md);
     setSaveStatus('pending');
     setVersionsOpen(false);
@@ -575,6 +589,10 @@ export default function CoverLetterReviewPage({
                         name={`restore-version-${v.id}`}
                         variant='ghost'
                         size='sm'
+                        // Disambiguate "Load" for SR users when
+                        // multiple versions exist — see the same
+                        // pattern in ResumeReviewPage.
+                        aria-label={`Load ${v.source.replace('_', ' ')} version from ${new Date(v.created_at).toLocaleString()}`}
                         onClick={() => restoreVersion(v)}
                       >
                         Load
