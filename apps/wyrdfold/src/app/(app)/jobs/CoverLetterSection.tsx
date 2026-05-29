@@ -32,12 +32,10 @@ export default function CoverLetterSection({
       const res = await fetch(
         `/api/jobs/tailor/by-job/${jobPostingId}/cover-letter`
       );
-      if (res.status === 404) {
-        setRecord(null);
-        return;
-      }
+      // The route returns 200 with a ``null`` body when no record
+      // exists yet — see ``ResumeSection`` for the rationale.
       if (!res.ok) return;
-      const data = (await res.json()) as TailoredResumeRecord;
+      const data = (await res.json()) as TailoredResumeRecord | null;
       setRecord(data);
     } catch {
       // Non-critical — silently fail on initial load

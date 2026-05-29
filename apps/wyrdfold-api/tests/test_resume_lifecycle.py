@@ -680,25 +680,26 @@ class TestGetByJob:
         assert result.job_posting_id == "job-1"
 
     @pytest.mark.asyncio
-    async def test_get_by_job_not_found(self) -> None:
-        from fastapi import HTTPException
-
+    async def test_get_by_job_returns_none_when_missing(self) -> None:
+        """The route returns ``None`` (200 + null body) instead of raising
+        a 404 when no record exists — the FE consumer treats null as
+        "no record yet, render the Generate CTA", and dropping the 404
+        avoids polluting Sentry with a console error on every
+        job-detail visit before generation.
+        """
         from app.routers import tailor as tailor_router
 
         supabase = MagicMock()
 
-        with (
-            patch(
-                "app.services.tailor.persistence.get_by_job",
-                return_value=None,
-            ),
-            pytest.raises(HTTPException) as exc_info,
+        with patch(
+            "app.services.tailor.persistence.get_by_job",
+            return_value=None,
         ):
-            await tailor_router.get_resume_by_job(
+            result = await tailor_router.get_resume_by_job(
                 job_posting_id="nonexistent",
                 supabase=supabase,
             )
-        assert exc_info.value.status_code == 404
+        assert result is None
 
 
 # ---------------------------------------------------------------------------

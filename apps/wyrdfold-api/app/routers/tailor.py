@@ -305,12 +305,17 @@ async def get_resume_by_job(
     job_posting_id: str,
     supabase: Client = Depends(get_supabase),
     user_id: str | None = Depends(get_current_user_id_optional),
-) -> TailoredResumeRecord:
-    """Most recent resume for a given job posting."""
-    row = persistence.get_by_job(supabase, job_posting_id, user_id=user_id)
-    if row is None:
-        raise HTTPException(status_code=404, detail="no resume found for this job posting")
-    return row
+) -> TailoredResumeRecord | None:
+    """Most recent resume for a given job posting, or ``null`` if none exists.
+
+    Returns ``null`` with a 200 status (rather than 404) for the
+    "no record yet" case so the browser doesn't log a "Failed to
+    load resource: 404" console error on every job-detail visit
+    before generation. The FE consumer (``ResumeSection``) treats
+    ``null`` and 404 the same way — render a "Generate Resume"
+    CTA — so dropping the 404 is a no-op for the user.
+    """
+    return persistence.get_by_job(supabase, job_posting_id, user_id=user_id)
 
 
 @router.get("/cover-letters/by-job/{job_posting_id}")
@@ -318,14 +323,14 @@ async def get_cover_letter_by_job(
     job_posting_id: str,
     supabase: Client = Depends(get_supabase),
     user_id: str | None = Depends(get_current_user_id_optional),
-) -> TailoredResumeRecord:
-    """Most recent cover letter for a given job posting."""
-    row = persistence.get_by_job(
+) -> TailoredResumeRecord | None:
+    """Most recent cover letter for a given job posting, or ``null``
+    if none exists. See ``get_resume_by_job`` for the 200-with-null
+    rationale.
+    """
+    return persistence.get_by_job(
         supabase, job_posting_id, user_id=user_id, document_type="cover_letter"
     )
-    if row is None:
-        raise HTTPException(status_code=404, detail="no cover letter found for this job posting")
-    return row
 
 
 @router.post("/resumes/export-zip")
