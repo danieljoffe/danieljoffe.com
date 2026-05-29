@@ -32,6 +32,17 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
   const router = useRouter();
   const { toast } = useToast();
 
+  // Reflect the 404 state in the tab title so the browser tab/history
+  // doesn't read "Job Detail | WyrdFold" for a job that doesn't exist.
+  useEffect(() => {
+    if (!notFound) return;
+    const previousTitle = document.title;
+    document.title = 'Job not found | WyrdFold';
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [notFound]);
+
   useEffect(() => {
     let cancelled = false;
     async function load() {

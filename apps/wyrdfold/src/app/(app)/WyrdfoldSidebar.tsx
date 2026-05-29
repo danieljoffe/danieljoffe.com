@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useId } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -68,6 +68,9 @@ export default function WyrdfoldSidebar() {
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
+  // Stable id linking the "More" trigger to the MoreSheet dialog so
+  // assistive tech can announce the relationship (aria-controls).
+  const moreSheetId = useId();
 
   const closeSheet = useCallback(() => {
     setSheetOpen(false);
@@ -188,6 +191,7 @@ export default function WyrdfoldSidebar() {
             ref={moreButtonRef}
             onClick={sheetOpen ? closeSheet : () => setSheetOpen(true)}
             aria-expanded={sheetOpen}
+            aria-controls={moreSheetId}
             aria-label={sheetOpen ? 'Close more menu' : 'Open more menu'}
             className={cn(
               'flex flex-col items-center justify-center flex-1 gap-0.5 p-0 rounded-none hover:scale-100 text-[10px] font-medium transition-colors cursor-pointer',
@@ -207,6 +211,7 @@ export default function WyrdfoldSidebar() {
           the user taps "More". */}
       {sheetOpen && (
         <MoreSheet
+          id={moreSheetId}
           open={sheetOpen}
           onClose={closeSheet}
           items={MORE_ITEMS}
