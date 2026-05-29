@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Pencil } from 'lucide-react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type { JobTarget, TargetReferenceJD } from '../types';
 import ScoringProfileEditor from './ScoringProfileEditor';
@@ -76,12 +77,16 @@ export default function TargetDetail({ id }: TargetDetailProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ label: trimmed }),
       });
-      if (!res.ok) throw new Error('Failed to update label');
+      if (!res.ok)
+        throw new Error(await extractApiError(res, 'Failed to update label'));
       setTarget(prev => (prev ? { ...prev, label: trimmed } : prev));
       setEditingLabel(false);
       toast({ variant: 'success', title: 'Label updated' });
-    } catch {
-      toast({ variant: 'error', title: 'Failed to update label' });
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title: err instanceof Error ? err.message : 'Failed to update label',
+      });
     } finally {
       setSavingLabel(false);
     }

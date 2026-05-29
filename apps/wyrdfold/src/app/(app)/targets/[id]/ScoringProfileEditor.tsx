@@ -13,6 +13,7 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Input } from '@danieljoffe.com/shared-ui/Input';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
   JobTarget,
@@ -65,11 +66,15 @@ export default function ScoringProfileEditor({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scoring_profile: profile }),
       });
-      if (!res.ok) throw new Error('Save failed');
+      if (!res.ok) throw new Error(await extractApiError(res, 'Save failed'));
       toast({ variant: 'success', title: 'Scoring profile saved' });
       onSaved();
-    } catch {
-      toast({ variant: 'error', title: 'Failed to save scoring profile' });
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title:
+          err instanceof Error ? err.message : 'Failed to save scoring profile',
+      });
     } finally {
       setSaving(false);
     }
