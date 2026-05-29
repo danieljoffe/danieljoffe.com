@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Lock, RotateCcw, Unlock } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  Lock,
+  MoreVertical,
+  RotateCcw,
+  Unlock,
+} from 'lucide-react';
+import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
@@ -584,6 +593,10 @@ export default function CoverLetterReviewPage({
           <Text variant='caption' as='span'>
             Cover letter markdown
           </Text>
+          {/* Same rationale as ResumeReviewPage: Download stays as
+              a standalone icon (frequent, free, non-destructive);
+              Re-generate (LLM-billed) and Lock/Unlock move behind a
+              ``⋮`` menu to prevent mis-tap of high-cost actions. */}
           <div className='flex items-center gap-1'>
             <Button
               name='download-cover-letter-docx'
@@ -597,55 +610,52 @@ export default function CoverLetterReviewPage({
             >
               <Download className='h-4 w-4' aria-hidden='true' />
             </Button>
-            <Button
-              name='regenerate-cover-letter'
-              variant='ghost'
-              size='sm'
-              iconOnly
-              aria-label='Re-generate cover letter with AI'
-              title='Re-generate with AI'
-              onClick={handleRegenerate}
-              disabled={
-                regenerating ||
-                approving ||
-                saveStatus === 'saving' ||
-                isApproved
+            <Dropdown
+              align='right'
+              trigger={
+                <span
+                  className='inline-flex h-8 w-8 items-center justify-center rounded text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
+                  aria-label='More actions'
+                  title='More actions'
+                >
+                  <MoreVertical className='h-4 w-4' aria-hidden='true' />
+                </span>
               }
-            >
-              <RotateCcw className='h-4 w-4' aria-hidden='true' />
-            </Button>
-            {isApproved ? (
-              <Button
-                name='unlock-cover-letter'
-                variant='ghost'
-                size='sm'
-                iconOnly
-                aria-label='Unlock cover letter for editing'
-                title='Unlock for editing'
-                onClick={handleUnapprove}
-                disabled={unapproving}
-              >
-                <Unlock className='h-4 w-4' aria-hidden='true' />
-              </Button>
-            ) : (
-              <Button
-                name='lock-cover-letter'
-                variant='ghost'
-                size='sm'
-                iconOnly
-                aria-label='Lock cover letter from editing'
-                title='Lock from editing'
-                onClick={handleApprove}
-                disabled={
-                  approving ||
-                  saveStatus === 'pending' ||
-                  saveStatus === 'saving' ||
-                  saveStatus === 'error'
-                }
-              >
-                <Lock className='h-4 w-4' aria-hidden='true' />
-              </Button>
-            )}
+              items={[
+                {
+                  label: 'Re-generate with AI',
+                  icon: <RotateCcw className='size-4' aria-hidden />,
+                  onClick: handleRegenerate,
+                  disabled:
+                    regenerating ||
+                    approving ||
+                    saveStatus === 'saving' ||
+                    isApproved,
+                },
+                ...(isApproved
+                  ? [
+                      {
+                        label: 'Unlock for editing',
+                        icon: <Unlock className='size-4' aria-hidden />,
+                        onClick: handleUnapprove,
+                        disabled: unapproving,
+                      } satisfies DropdownItem,
+                    ]
+                  : [
+                      {
+                        label: 'Lock from editing',
+                        icon: <Lock className='size-4' aria-hidden />,
+                        onClick: handleApprove,
+                        danger: true,
+                        disabled:
+                          approving ||
+                          saveStatus === 'pending' ||
+                          saveStatus === 'saving' ||
+                          saveStatus === 'error',
+                      } satisfies DropdownItem,
+                    ]),
+              ]}
+            />
           </div>
         </div>
         <textarea

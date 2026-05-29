@@ -2,8 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Lock, RotateCcw, Unlock } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  Lock,
+  MoreVertical,
+  RotateCcw,
+  Unlock,
+} from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -605,6 +614,15 @@ export default function ResumeReviewPage({
           <Text variant='caption' as='span'>
             Resume markdown
           </Text>
+          {/* Download stays as a standalone icon — it's frequent,
+              non-destructive, and free. Re-adapt (LLM-billed) and
+              Lock/Unlock (irreversible from the lock side) move
+              behind a ``⋮`` menu so they can't be mis-tapped when
+              the user meant to download. Found via a real
+              chrome-devtools session: the previous icon row was
+              28×28 buttons in a tight cluster — adjacent 44×44
+              touch targets overlapped, so a sloppy tap on
+              Download could fire Re-adapt instead. */}
           <div className='flex items-center gap-1'>
             <Button
               name='download-docx'
@@ -618,52 +636,56 @@ export default function ResumeReviewPage({
             >
               <Download className='h-4 w-4' aria-hidden='true' />
             </Button>
-            <Button
-              name='readapt-resume'
-              variant='ghost'
-              size='sm'
-              iconOnly
-              aria-label='Re-adapt resume with AI'
-              title='Re-adapt with AI'
-              onClick={handleReadapt}
-              disabled={
-                readapting || approving || saveStatus === 'saving' || isApproved
+            <Dropdown
+              align='right'
+              trigger={
+                <span
+                  className='inline-flex h-8 w-8 items-center justify-center rounded text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
+                  aria-label='More actions'
+                  title='More actions'
+                >
+                  <MoreVertical className='h-4 w-4' aria-hidden='true' />
+                </span>
               }
-            >
-              <RotateCcw className='h-4 w-4' aria-hidden='true' />
-            </Button>
-            {isApproved ? (
-              <Button
-                name='unlock-resume'
-                variant='ghost'
-                size='sm'
-                iconOnly
-                aria-label='Unlock resume for editing'
-                title='Unlock for editing'
-                onClick={handleUnapprove}
-                disabled={unapproving}
-              >
-                <Unlock className='h-4 w-4' aria-hidden='true' />
-              </Button>
-            ) : (
-              <Button
-                name='lock-resume'
-                variant='ghost'
-                size='sm'
-                iconOnly
-                aria-label='Lock resume from editing'
-                title='Lock from editing'
-                onClick={handleApprove}
-                disabled={
-                  approving ||
-                  saveStatus === 'pending' ||
-                  saveStatus === 'saving' ||
-                  saveStatus === 'error'
-                }
-              >
-                <Lock className='h-4 w-4' aria-hidden='true' />
-              </Button>
-            )}
+              items={[
+                {
+                  label: 'Re-adapt with AI',
+                  icon: <RotateCcw className='size-4' aria-hidden />,
+                  onClick: handleReadapt,
+                  disabled:
+                    readapting ||
+                    approving ||
+                    saveStatus === 'saving' ||
+                    isApproved,
+                },
+                ...(isApproved
+                  ? [
+                      {
+                        label: 'Unlock for editing',
+                        icon: <Unlock className='size-4' aria-hidden />,
+                        onClick: handleUnapprove,
+                        disabled: unapproving,
+                      } satisfies DropdownItem,
+                    ]
+                  : [
+                      {
+                        label: 'Lock from editing',
+                        icon: <Lock className='size-4' aria-hidden />,
+                        onClick: handleApprove,
+                        // Lock is mostly-irreversible (Unlock is
+                        // available via the menu, but the doc
+                        // status flips downstream) — mark danger
+                        // so the menu styles it accordingly.
+                        danger: true,
+                        disabled:
+                          approving ||
+                          saveStatus === 'pending' ||
+                          saveStatus === 'saving' ||
+                          saveStatus === 'error',
+                      } satisfies DropdownItem,
+                    ]),
+              ]}
+            />
           </div>
         </div>
         <textarea
