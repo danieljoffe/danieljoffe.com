@@ -8,6 +8,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
   CoverLetterPayload,
@@ -98,7 +99,10 @@ export default function CoverLetterReviewPage({
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}/versions`);
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to load version history' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to load version history'),
+        });
         return;
       }
       const data = (await res.json()) as ResumeVersionsResponse;
@@ -141,7 +145,10 @@ export default function CoverLetterReviewPage({
         return false;
       }
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to save changes' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to save changes'),
+        });
         setSaveStatus('error');
         return false;
       }
@@ -234,7 +241,10 @@ export default function CoverLetterReviewPage({
         method: 'POST',
       });
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to lock cover letter' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to lock cover letter'),
+        });
         return;
       }
       const approved = (await res.json()) as TailoredResumeRecord;
@@ -258,7 +268,10 @@ export default function CoverLetterReviewPage({
         method: 'POST',
       });
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Failed to unlock cover letter' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to unlock cover letter'),
+        });
         return;
       }
       const reopened = (await res.json()) as TailoredResumeRecord;
@@ -281,7 +294,10 @@ export default function CoverLetterReviewPage({
     try {
       const res = await fetch(`/api/jobs/tailor/${record.id}/download`);
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Download failed' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Download failed'),
+        });
         return;
       }
       const blob = await res.blob();
@@ -326,7 +342,14 @@ export default function CoverLetterReviewPage({
         }),
       });
       if (!res.ok) {
-        toast({ variant: 'error', title: 'Re-generation failed' });
+        // LLM-budgeted route — without ``extractApiError`` here, hitting
+        // the daily/hourly cap would render as the generic
+        // "Re-generation failed" instead of the structured "$X of $Y
+        // budget reached" message (PR #701).
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Re-generation failed'),
+        });
         return;
       }
       toast({ variant: 'success', title: 'Cover letter re-generated with AI' });
