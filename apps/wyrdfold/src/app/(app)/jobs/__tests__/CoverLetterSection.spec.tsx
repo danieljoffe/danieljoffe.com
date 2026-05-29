@@ -75,10 +75,15 @@ afterAll(() => {
 
 describe('CoverLetterSection', () => {
   it('renders the empty/not-started state with a Generate CTA when no record exists', async () => {
+    // ``/api/jobs/tailor/by-job/{id}/cover-letter`` now returns 200
+    // with a ``null`` body when no record exists (was 404). The
+    // section treats both null and the old 404 the same way —
+    // render the Generate CTA — see the route docstring for the
+    // browser-console-noise rationale.
     global.fetch = jest.fn().mockResolvedValue({
-      ok: false,
-      status: 404,
-      json: async () => ({}),
+      ok: true,
+      status: 200,
+      json: async () => null,
     }) as unknown as typeof fetch;
 
     render(
@@ -142,12 +147,15 @@ describe('CoverLetterSection', () => {
     const calls: string[] = [];
     global.fetch = jest.fn().mockImplementation((url: string) => {
       calls.push(url);
-      // Initial fetch — 404 (no existing record)
+      // Initial fetch — 200 with null body (no existing record).
+      // Switched from 404 in the by-job route to avoid the
+      // browser auto-logging a console error on every job-detail
+      // visit before generation.
       if (calls.length === 1) {
         return Promise.resolve({
-          ok: false,
-          status: 404,
-          json: async () => ({}),
+          ok: true,
+          status: 200,
+          json: async () => null,
         });
       }
       // Generate POST — 500
