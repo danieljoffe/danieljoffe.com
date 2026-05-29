@@ -377,7 +377,7 @@ export default function ResumeReviewPage({
     }
   }
 
-  function restoreVersion(version: ResumeVersion) {
+  async function restoreVersion(version: ResumeVersion) {
     // Versions before the markdown pivot stored only structured payload.
     // Newer versions include payload_md. We fall back to current markdown
     // if the snapshot has no markdown to restore.
@@ -390,6 +390,22 @@ export default function ResumeReviewPage({
       });
       return;
     }
+    /* eslint-disable no-alert -- personal tool, native confirm is fine */
+    if (
+      !window.confirm(
+        'Load this version? Your current draft is saved as a version first so you can roll back.'
+      )
+    )
+      /* eslint-enable no-alert */
+      return;
+    // Snapshot the current draft before swapping markdown so the
+    // pre-restore content is recoverable from the same version
+    // history dropdown. Mirrors handleReadapt's pre-mutate pattern.
+    // Without this, the autosave that fires after ``setMarkdown(md)``
+    // overwrites the live document with the loaded version and the
+    // unsnapshotted pre-restore content is lost.
+    await flushPendingSave();
+    await recordCheckpoint();
     setMarkdown(md);
     setSaveStatus('pending');
     setVersionsOpen(false);
@@ -596,6 +612,12 @@ export default function ResumeReviewPage({
                         name={`restore-version-${v.id}`}
                         variant='ghost'
                         size='sm'
+                        // "Load" by itself is ambiguous to SR users
+                        // when several versions are listed — they'd
+                        // hear "Load" repeated with no way to
+                        // distinguish. Disambiguate via the version
+                        // source + timestamp.
+                        aria-label={`Load ${v.source.replace('_', ' ')} version from ${new Date(v.created_at).toLocaleString()}`}
                         onClick={() => restoreVersion(v)}
                       >
                         Load
