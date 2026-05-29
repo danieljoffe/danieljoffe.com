@@ -55,14 +55,19 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         const res = await fetch(`/api/targets/${id}/activate`, {
           method: 'POST',
         });
-        if (!res.ok) throw new Error('Activate failed');
+        if (!res.ok)
+          throw new Error(await extractApiError(res, 'Activate failed'));
         toast({ variant: 'success', title: 'Target activated' });
         // RSC re-render rather than a second client fetch — saves a
         // round-trip and keeps the targets page authoritative on the
         // server.
         router.refresh();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to activate target' });
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title:
+            err instanceof Error ? err.message : 'Failed to activate target',
+        });
       }
     },
     [toast, router]
@@ -74,11 +79,16 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         const res = await fetch(`/api/targets/${id}/deactivate`, {
           method: 'POST',
         });
-        if (!res.ok) throw new Error('Deactivate failed');
+        if (!res.ok)
+          throw new Error(await extractApiError(res, 'Deactivate failed'));
         toast({ variant: 'success', title: 'Target deactivated' });
         router.refresh();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to deactivate target' });
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title:
+            err instanceof Error ? err.message : 'Failed to deactivate target',
+        });
       }
     },
     [toast, router]
@@ -92,14 +102,18 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
 
       try {
         const res = await fetch(`/api/targets/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Delete failed');
+        if (!res.ok)
+          throw new Error(await extractApiError(res, 'Delete failed'));
         toast({ variant: 'success', title: 'Target deleted' });
         // Optimistic removal so the card disappears instantly; refresh
         // brings authoritative state to backstop the optimistic delete.
         setTargets(prev => prev.filter(t => t.target.id !== id));
         router.refresh();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to delete target' });
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title: err instanceof Error ? err.message : 'Failed to delete target',
+        });
       }
     },
     [toast, router]
@@ -191,7 +205,8 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
     setSuggestions([]);
     try {
       const res = await fetch('/api/targets/suggest', { method: 'POST' });
-      if (!res.ok) throw new Error('Suggest failed');
+      if (!res.ok)
+        throw new Error(await extractApiError(res, 'Suggest failed'));
       const data = (await res.json()) as MatchedSuggestions;
       setSuggestions(data.matches);
       if (data.matches.length === 0) {
@@ -202,8 +217,12 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
             'Your existing targets already cover roles that fit your experience.',
         });
       }
-    } catch {
-      toast({ variant: 'error', title: 'Failed to generate suggestions' });
+    } catch (err) {
+      toast({
+        variant: 'error',
+        title:
+          err instanceof Error ? err.message : 'Failed to generate suggestions',
+      });
     } finally {
       setSuggesting(false);
     }

@@ -10,6 +10,7 @@ import {
 } from '@danieljoffe.com/shared-ui/Card';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type { TargetReferenceJD } from '../types';
 import AddReferenceJDModal from './AddReferenceJDModal';
@@ -46,11 +47,18 @@ export default function ReferenceJDList({
           `/api/targets/${targetId}/reference-jds/${refId}`,
           { method: 'DELETE' }
         );
-        if (!res.ok) throw new Error('Delete failed');
+        if (!res.ok)
+          throw new Error(await extractApiError(res, 'Delete failed'));
         toast({ variant: 'success', title: 'Reference JD removed' });
         onChanged();
-      } catch {
-        toast({ variant: 'error', title: 'Failed to delete reference JD' });
+      } catch (err) {
+        toast({
+          variant: 'error',
+          title:
+            err instanceof Error
+              ? err.message
+              : 'Failed to delete reference JD',
+        });
       } finally {
         setDeletingId(null);
       }
