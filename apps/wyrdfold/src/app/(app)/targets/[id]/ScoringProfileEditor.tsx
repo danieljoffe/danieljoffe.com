@@ -297,6 +297,14 @@ export default function ScoringProfileEditor({
                         }
                         step={0.1}
                         min={0}
+                        // Chrome's a11y tree reports ``aria-valuemax="0"``
+                        // when ``max`` is omitted on ``<input type=number>``
+                        // — screen readers then announce "max reached" on
+                        // every value > 0 and keyboard arrow-step gets the
+                        // wrong upper limit. ``max=10`` keeps the editor's
+                        // useful range while making the SR announcement
+                        // honest. (WCAG 2.1 SC 4.1.2.)
+                        max={10}
                         className='w-16 rounded border border-border bg-surface px-2 py-1 text-xs text-text-primary'
                       />
                     </label>
@@ -464,6 +472,10 @@ export default function ScoringProfileEditor({
                 })
               }
               step={0.1}
+              // See category-weight block above — explicit bounds keep
+              // the a11y tree honest.
+              min={0}
+              max={10}
               className='w-16 rounded border border-border bg-surface px-2 py-1 text-xs text-text-primary'
             />
           </label>
@@ -505,6 +517,11 @@ export default function ScoringProfileEditor({
                 })
               }
               step={1}
+              // Penalty weights are always negative (drag the score
+              // down). See category-weight block for the broader a11y
+              // rationale on explicit bounds.
+              min={-100}
+              max={0}
               className='w-16 rounded border border-border bg-surface px-2 py-1 text-xs text-text-primary'
             />
           </label>
