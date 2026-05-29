@@ -4,16 +4,17 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 export default function SettingsLoading() {
   return (
     <div className='flex flex-col gap-6' aria-label='Loading settings'>
-      {/* Heading + subtitle */}
+      {/* Hero h1 "Settings" + body subtitle. */}
       <div>
-        <Skeleton variant='text' size='lg' className='w-32' />
-        <Skeleton variant='text' className='mt-2 w-56' />
+        <Skeleton variant='rectangular' width={140} height={40} />
+        <Skeleton className='mt-2 w-72' size='md' />
       </div>
 
-      {/* Profile section */}
+      {/* Profile section. CardTitle is text-sm semibold (~16px) — earlier
+          height={20} read taller than the real title. */}
       <Card>
         <CardHeader>
-          <Skeleton width={120} height={20} />
+          <Skeleton width={120} height={16} />
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
           <Skeleton width='80%' size='sm' />
@@ -32,7 +33,7 @@ export default function SettingsLoading() {
       <Card>
         <CardHeader>
           <div className='flex items-center justify-between gap-3'>
-            <Skeleton width={160} height={20} />
+            <Skeleton width={160} height={16} />
             <Skeleton variant='rectangular' width={80} height={24} />
           </div>
         </CardHeader>

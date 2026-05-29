@@ -11,18 +11,81 @@ import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
 // Desktop table is heavier (inline expand panel, full table layout, recharts-free
 // but still pulls JobDetailPanel + history). Phones never need it — load only
 // when the viewport is md+.
+// Title-column widths so successive rows don't look uniform.
+const JOBS_TABLE_SKELETON_TITLE_WIDTHS = [
+  220, 260, 180, 240, 200, 280, 170, 230,
+];
+
 const JobsListTable = dynamic(() => import('./JobsListTable'), {
   ssr: false,
   loading: () => (
-    <div className='space-y-3' aria-label='Loading jobs'>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className='flex items-center gap-3 px-3 py-2'>
-          <Skeleton variant='rectangular' width={40} height={24} />
-          <Skeleton width='40%' size='sm' />
-          <Skeleton width='20%' size='sm' />
-          <Skeleton width='10%' size='sm' />
-        </div>
-      ))}
+    // Mirrors JobsListTable's 8-column structure so the swap doesn't shift
+    // column widths. Same skeleton is used by the route-level loading.tsx;
+    // promote to a shared component when a third call site appears.
+    <div className='overflow-x-auto' aria-label='Loading jobs'>
+      <table className='w-full text-sm' aria-hidden='true'>
+        <thead>
+          <tr className='border-b border-border text-left'>
+            <th className='px-3 py-2 w-10'>
+              <Skeleton variant='rectangular' width={16} height={16} />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={50} size='sm' />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={50} size='sm' />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={40} size='sm' />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={70} size='sm' />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={56} size='sm' />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={50} size='sm' />
+            </th>
+            <th className='px-3 py-2'>
+              <Skeleton width={60} size='sm' />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {JOBS_TABLE_SKELETON_TITLE_WIDTHS.map((titleWidth, i) => (
+            <tr key={i} className='border-b border-border'>
+              <td className='px-3 py-2 w-10'>
+                <Skeleton variant='rectangular' width={16} height={16} />
+              </td>
+              <td className='px-3 py-2'>
+                <div className='inline-flex items-center gap-1.5'>
+                  <Skeleton variant='circular' width={8} height={8} />
+                  <Skeleton width={56} size='sm' />
+                </div>
+              </td>
+              <td className='px-3 py-2'>
+                <Skeleton variant='rectangular' width={36} height={22} />
+              </td>
+              <td className='px-3 py-2'>
+                <Skeleton width={titleWidth} size='md' />
+              </td>
+              <td className='px-3 py-2'>
+                <Skeleton width={110} size='md' />
+              </td>
+              <td className='px-3 py-2'>
+                <Skeleton width={56} size='sm' />
+              </td>
+              <td className='px-3 py-2'>
+                <Skeleton width={140} size='sm' />
+              </td>
+              <td className='px-3 py-2'>
+                <Skeleton width={120} size='sm' />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   ),
 });

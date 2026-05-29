@@ -445,10 +445,10 @@ export default function ResumeReviewPage({
         {/* Back link */}
         <Skeleton className='h-5 w-24' />
 
-        {/* Title + subtitle */}
+        {/* Hero h1 "Review Resume" + body subtitle ("Job Title — Company"). */}
         <div className='space-y-2'>
-          <Skeleton className='h-8 w-2/3' />
-          <Skeleton className='h-4 w-1/2' />
+          <Skeleton variant='rectangular' className='h-10 w-72' />
+          <Skeleton className='h-4 w-80' />
         </div>
 
         {/* Cost stats bar */}

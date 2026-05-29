@@ -4,10 +4,10 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 export default function ProfileLoading() {
   return (
     <div className='flex flex-col gap-6' aria-label='Loading profile'>
-      {/* Heading + subtitle */}
+      {/* Hero h1 "Profile" + body subtitle. */}
       <div>
-        <Skeleton variant='text' size='lg' className='w-32' />
-        <Skeleton variant='text' className='mt-2 w-56' />
+        <Skeleton variant='rectangular' width={140} height={40} />
+        <Skeleton className='mt-2 w-72' size='md' />
       </div>
 
       {/* Document Health card */}
@@ -36,7 +36,9 @@ export default function ProfileLoading() {
             <Skeleton variant='rectangular' width={140} height={32} />
             <Skeleton variant='rectangular' width={160} height={32} />
           </div>
-          <Skeleton variant='rectangular' height={200} />
+          {/* Master Document body — rendered markdown can be 400-800px tall;
+              200 caused the page to grow significantly on swap. */}
+          <Skeleton variant='rectangular' height={400} />
         </CardContent>
       </Card>
 
