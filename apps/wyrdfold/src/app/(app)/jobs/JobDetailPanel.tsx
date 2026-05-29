@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ChevronDown, Maximize2 } from 'lucide-react';
+import { ChevronDown, Maximize2, MoreVertical } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
@@ -283,13 +283,13 @@ export default function JobDetailPanel({
   }, [posting.description_html]);
 
   return (
-    <div className='border-t border-border bg-surface-tertiary p-4 space-y-4'>
-      {/* Status dropdown + score */}
-      <div>
-        <Text variant='caption' className='mb-1'>
-          Status
-        </Text>
-        <div className='flex items-center justify-between gap-3'>
+    <div className='border-t border-border bg-surface-tertiary p-4 space-y-6'>
+      {/* Single header row: status + score inline on the left, secondary
+          actions on the right. Drops the standalone "Status" caption — the
+          dropdown trigger is self-evident and the caption only added a row
+          of low-information text at the top of an already-busy panel. */}
+      <div className='flex items-center justify-between gap-3'>
+        <div className='flex items-center gap-3 min-w-0'>
           <Dropdown
             trigger={
               <span
@@ -330,41 +330,166 @@ export default function JobDetailPanel({
               onClick: () => updateStatus(s),
             }))}
           />
-          <span
-            className='inline-flex items-center gap-1.5 shrink-0'
+          <Badge
+            variant={
+              posting.score >= 70
+                ? 'success'
+                : posting.score >= 40
+                  ? 'warning'
+                  : 'error'
+            }
+            size='sm'
             aria-label={`Match score ${posting.score}`}
           >
-            <Text variant='meta' className='text-text-tertiary'>
-              Score
-            </Text>
-            <Badge
-              variant={
-                posting.score >= 70
-                  ? 'success'
-                  : posting.score >= 40
-                    ? 'warning'
-                    : 'error'
-              }
+            {posting.score}
+          </Badge>
+        </div>
+        {/* Secondary actions live in the top-right so the visual weight
+            stays at the start of the panel where Status/Score also sit. */}
+        <div className='flex items-center gap-1 shrink-0'>
+          {viewFullHref && (
+            <Button
+              as='link'
+              href={viewFullHref}
+              variant='ghost'
               size='sm'
+              name='view-full-job'
+              aria-label='Open full view'
             >
-              {posting.score}
-            </Badge>
-          </span>
+              <Maximize2 className='size-4' aria-hidden />
+            </Button>
+          )}
+          {!hideDelete && (
+            <Dropdown
+              trigger={
+                <span
+                  className='inline-flex size-8 items-center justify-center rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                  aria-label='More actions'
+                >
+                  <MoreVertical className='size-4' aria-hidden />
+                </span>
+              }
+              items={[
+                {
+                  label: deleting ? 'Deleting…' : 'Delete',
+                  danger: true,
+                  disabled: deleting,
+                  onClick: handleDelete,
+                },
+              ]}
+            />
+          )}
         </div>
       </div>
 
-      {/* Score breakdown — auto-rendered on load so users see immediately
-          how the score was assembled. */}
-      <div>
-        <Text variant='caption' className='mb-2'>
-          Score Breakdown
-        </Text>
-        {breakdown ? (
-          <ScoreBreakdownList breakdown={breakdown} />
-        ) : (
-          <Skeleton variant='text' lines={3} />
+      {/* Two-column main body: Score Breakdown on the left, LLM Analysis on
+          the right. The previous stacked-section layout forced the eye down
+          the page through six labeled blocks; pairing the two scoring panels
+          keeps both visible without scrolling and reads as "here's why we
+          score it, here's what the model thinks". */}
+      <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+        {/* Score breakdown */}
+        <div>
+          <Text variant='caption' className='mb-2'>
+            Score Breakdown
+          </Text>
+          {breakdown ? (
+            <ScoreBreakdownList breakdown={breakdown} />
+          ) : (
+            <Skeleton variant='text' lines={3} />
+          )}
+        </div>
+
+        {/* LLM Analysis — only when a target is selected. The "pick a
+            target" hint lives at the list level so it shows once, not per
+            row. Rendered inline here as the right column of the body grid;
+            the standalone section it occupied before is gone. */}
+        {targetId && (
+          <div>
+            <Text variant='caption' className='mb-1'>
+              LLM Analysis
+            </Text>
+            {analysis ? (
+              <div className='space-y-2'>
+                <Text variant='body'>{analysis.recommendation}</Text>
+                <div className='flex flex-wrap gap-2'>
+                  <Badge
+                    variant={
+                      analysis.scorecard.seniority_fit === 'strong'
+                        ? 'success'
+                        : analysis.scorecard.seniority_fit === 'moderate'
+                          ? 'warning'
+                          : 'error'
+                    }
+                    size='sm'
+                  >
+                    Seniority: {analysis.scorecard.seniority_fit}
+                  </Badge>
+                  <Badge
+                    variant={
+                      analysis.scorecard.domain_fit === 'strong'
+                        ? 'success'
+                        : analysis.scorecard.domain_fit === 'moderate'
+                          ? 'warning'
+                          : 'error'
+                    }
+                    size='sm'
+                  >
+                    Domain: {analysis.scorecard.domain_fit}
+                  </Badge>
+                </div>
+                {analysis.scorecard.skills_missing.length > 0 && (
+                  <div>
+                    <Text variant='meta' className='mb-1'>
+                      Missing skills
+                    </Text>
+                    <div className='flex flex-wrap gap-1'>
+                      {analysis.scorecard.skills_missing.map(skill => (
+                        <Badge key={skill} variant='error' size='sm'>
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : analyzing ? (
+              <Skeleton variant='text' lines={3} />
+            ) : (
+              <div>
+                {analysisError && (
+                  <Text variant='error' className='mb-2'>
+                    {analysisError}
+                  </Text>
+                )}
+                <Button
+                  name='analyze-job'
+                  variant='secondary'
+                  size='sm'
+                  onClick={runAnalysis}
+                >
+                  Retry analysis
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {/* Tailor row — Resume and Cover Letter side-by-side. Halves the
+          vertical space they used when stacked and pairs the two related
+          actions visually. The components manage their own internal layout
+          (status pill + generate/review button). */}
+      {targetId && (
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          <ResumeSection jobPostingId={posting.id} />
+          <CoverLetterSection
+            jobPostingId={posting.id}
+            companyName={posting.company_name}
+            roleTitle={posting.title}
+          />
+        </div>
+      )}
 
       {/* Job description body — rendered from the upstream JD HTML.
           Wrapped in ``<details>`` so the inline list panel stays compact;
@@ -418,133 +543,6 @@ export default function JobDetailPanel({
               </Text>
             )}
           </div>
-        </div>
-      )}
-
-      {/* LLM Analysis — only when a target is selected. The "pick a target"
-          hint lives at the list level so it shows once, not per-row. */}
-      {targetId && (
-        <div>
-          <Text variant='caption' className='mb-1'>
-            LLM Analysis
-          </Text>
-          {analysis ? (
-            <div className='space-y-2'>
-              <Text variant='body'>{analysis.recommendation}</Text>
-              <div className='flex flex-wrap gap-2'>
-                <Badge
-                  variant={
-                    analysis.scorecard.seniority_fit === 'strong'
-                      ? 'success'
-                      : analysis.scorecard.seniority_fit === 'moderate'
-                        ? 'warning'
-                        : 'error'
-                  }
-                  size='sm'
-                >
-                  Seniority: {analysis.scorecard.seniority_fit}
-                </Badge>
-                <Badge
-                  variant={
-                    analysis.scorecard.domain_fit === 'strong'
-                      ? 'success'
-                      : analysis.scorecard.domain_fit === 'moderate'
-                        ? 'warning'
-                        : 'error'
-                  }
-                  size='sm'
-                >
-                  Domain: {analysis.scorecard.domain_fit}
-                </Badge>
-              </div>
-              {analysis.scorecard.skills_missing.length > 0 && (
-                <div>
-                  <Text variant='meta' className='mb-1'>
-                    Missing skills
-                  </Text>
-                  <div className='flex flex-wrap gap-1'>
-                    {analysis.scorecard.skills_missing.map(skill => (
-                      <Badge key={skill} variant='error' size='sm'>
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : analyzing ? (
-            <Skeleton variant='text' lines={3} />
-          ) : (
-            <div>
-              {analysisError && (
-                <Text variant='error' className='mb-2'>
-                  {analysisError}
-                </Text>
-              )}
-              <Button
-                name='analyze-job'
-                variant='secondary'
-                size='sm'
-                onClick={runAnalysis}
-              >
-                Retry analysis
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/*
-        Resume + cover letter lifecycle — both sections internally fetch
-        the tailored record (if any) and decide between "Generate" and
-        "Review" based on its actual existence, not on the
-        loosely-correlated job status. We render them for every status
-        (was gated to ``resume_draft`` / ``resume_ready`` only), because
-        a new user clicking into a fresh "new" job has no way to discover
-        they must first flip status before the Generate buttons appear.
-        The status flip happens automatically on first generate via the
-        backend's persistence side-effect; surfacing the controls up
-        front matches the user's mental model ("I want to tailor for
-        this role"). Only requires a target_id — the tailor pipeline
-        needs it.
-      */}
-      {targetId && <ResumeSection jobPostingId={posting.id} />}
-
-      {/* Cover letter */}
-      {targetId && (
-        <CoverLetterSection
-          jobPostingId={posting.id}
-          companyName={posting.company_name}
-          roleTitle={posting.title}
-        />
-      )}
-
-      {/* Actions */}
-      {(viewFullHref || !hideDelete) && (
-        <div className='flex flex-wrap gap-2'>
-          {viewFullHref && (
-            <Button
-              as='link'
-              href={viewFullHref}
-              variant='secondary'
-              size='sm'
-              name='view-full-job'
-            >
-              <Maximize2 className='size-4' aria-hidden />
-              Open full view
-            </Button>
-          )}
-          {!hideDelete && (
-            <Button
-              name='delete-posting'
-              variant='error'
-              size='sm'
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          )}
         </div>
       )}
     </div>
