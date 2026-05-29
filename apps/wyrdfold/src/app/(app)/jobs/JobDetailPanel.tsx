@@ -156,10 +156,13 @@ export default function JobDetailPanel({
         onStatusChange?.(newStatus);
         fetchHistory();
       } else {
-        toast({ variant: 'error', title: 'Failed to update status' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to update status'),
+        });
       }
     } catch {
-      toast({ variant: 'error', title: 'Failed to update status' });
+      toast({ variant: 'error', title: 'Network error updating status' });
     } finally {
       setUpdating(false);
     }
@@ -231,10 +234,13 @@ export default function JobDetailPanel({
         toast({ variant: 'success', title: 'Job deleted' });
         onDelete?.();
       } else {
-        toast({ variant: 'error', title: 'Failed to delete job' });
+        toast({
+          variant: 'error',
+          title: await extractApiError(res, 'Failed to delete job'),
+        });
       }
     } catch {
-      toast({ variant: 'error', title: 'Failed to delete job' });
+      toast({ variant: 'error', title: 'Network error deleting job' });
     } finally {
       setDeleting(false);
     }
