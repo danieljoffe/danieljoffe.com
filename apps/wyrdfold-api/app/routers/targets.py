@@ -150,12 +150,7 @@ async def _activate_pipeline(
 # ---- Target CRUD -----------------------------------------------------------
 
 
-@router.post(
-    "",
-    response_model=JobTarget,
-    status_code=201,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.post("", response_model=JobTarget, status_code=201)
 async def create_target(
     body: TargetCreate,
     supabase: Client = Depends(get_supabase),
@@ -253,11 +248,7 @@ async def create_target_from_url(
     )
 
 
-@router.get(
-    "",
-    response_model=TargetsListResponse,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.get("", response_model=TargetsListResponse)
 def list_targets(
     supabase: Client = Depends(get_supabase),
 ) -> TargetsListResponse:
@@ -298,11 +289,7 @@ async def suggest(
     return matched
 
 
-@router.get(
-    "/active",
-    response_model=TargetsListResponse,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.get("/active", response_model=TargetsListResponse)
 def get_active_targets(
     supabase: Client = Depends(get_supabase),
 ) -> TargetsListResponse:
@@ -320,11 +307,7 @@ def get_my_targets(
     return MyTargetsListResponse(targets=items)
 
 
-@router.get(
-    "/{target_id}",
-    response_model=JobTarget,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.get("/{target_id}", response_model=JobTarget)
 def get_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -335,11 +318,7 @@ def get_target(
     return target
 
 
-@router.patch(
-    "/{target_id}",
-    response_model=JobTarget,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.patch("/{target_id}", response_model=JobTarget)
 def update_target(
     target_id: str,
     body: TargetUpdate,
@@ -510,11 +489,7 @@ async def poll_jobs_for_target(
     return await poll_sources_for_target(supabase, target)
 
 
-@router.get(
-    "/{target_id}/status",
-    response_model=TargetStatusResponse,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.get("/{target_id}/status", response_model=TargetStatusResponse)
 async def get_target_status(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -546,11 +521,7 @@ async def get_target_status(
     )
 
 
-@router.delete(
-    "/{target_id}",
-    response_model=DeleteResponse,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.delete("/{target_id}", response_model=DeleteResponse)
 async def delete_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -831,11 +802,7 @@ async def add_reference_jd(
     return updated
 
 
-@router.get(
-    "/{target_id}/reference-jds",
-    response_model=ReferenceJDsListResponse,
-    dependencies=[Depends(verify_api_key_or_jwt)],
-)
+@router.get("/{target_id}/reference-jds", response_model=ReferenceJDsListResponse)
 async def list_reference_jds(
     target_id: str,
     supabase: Client = Depends(get_supabase),
@@ -847,7 +814,6 @@ async def list_reference_jds(
 @router.delete(
     "/{target_id}/reference-jds/{ref_jd_id}",
     response_model=JobTarget,
-    dependencies=[Depends(verify_api_key_or_jwt)],
 )
 async def delete_reference_jd(
     target_id: str,
