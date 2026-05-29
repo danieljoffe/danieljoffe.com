@@ -140,9 +140,15 @@ def _list_jobs_for_target_two_query(
     if min_score is not None:
         ts_query = ts_query.gte("score", min_score)
 
-    # Push sort + pagination to the scores query when sorting by score
+    # Push sort + pagination to the scores query when sorting by score.
+    # Chain a deterministic ``job_posting_id`` tiebreaker so rows with
+    # identical scores (very common at the same-score buckets) keep a
+    # stable position — without this, the last row of page N could
+    # reappear as the first row of page N+1.
     if sort_col == "score":
-        ts_query = ts_query.order("score", desc=not ascending)
+        ts_query = ts_query.order("score", desc=not ascending).order(
+            "job_posting_id"
+        )
     # For non-score sorts we still need all qualifying IDs (sorted in Python after join)
     # but we can at least get the total count from Supabase
     ts_resp = ts_query.execute()
@@ -289,9 +295,15 @@ def _list_jobs_across_user_targets(
     if sort_col == "score" and not status and not company and not search:
         # Sort + paginate at the scores layer when no posting-level filters
         # require us to load every candidate posting first.
+        # ``(score, job_posting_id)`` tuple key gives a deterministic
+        # tiebreaker — without the id leg, rows with identical scores
+        # could reorder between paginated calls (Python's ``sorted`` is
+        # stable, but only with respect to the input order, and the
+        # input order is itself non-deterministic since ``best.keys()``
+        # iterates a dict).
         ranked_ids = sorted(
             best.keys(),
-            key=lambda jid: best[jid]["score"],
+            key=lambda jid: (best[jid]["score"], jid),
             reverse=not ascending,
         )
         page_ids = ranked_ids[offset : offset + page_size]
