@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useId } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -70,7 +70,16 @@ export default function WyrdfoldSidebar() {
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   // Stable id linking the "More" trigger to the MoreSheet dialog so
   // assistive tech can announce the relationship (aria-controls).
-  const moreSheetId = useId();
+  // A static string instead of ``useId()`` because:
+  //
+  //   1. There's exactly one mobile sidebar per page, so id collisions
+  //      aren't possible.
+  //   2. ``useId()`` produced a SSR/CSR mismatch in Next 16 Turbopack
+  //      dev — Server emitted ``aria-controls="_R_xxx_"`` on the
+  //      button but the client hydration pass dropped it, triggering
+  //      a React hydration error overlay. Static id avoids the issue
+  //      entirely.
+  const moreSheetId = 'wyrdfold-mobile-more-sheet';
 
   const closeSheet = useCallback(() => {
     setSheetOpen(false);
