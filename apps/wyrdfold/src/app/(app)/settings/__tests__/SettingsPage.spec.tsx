@@ -57,22 +57,15 @@ afterEach(() => {
 });
 
 describe('SettingsPage', () => {
-  it('renders the Profile section once preferences load', async () => {
+  it('no longer renders the Identity card — moved to /profile', async () => {
     render(<SettingsPage />);
-    expect(await screen.findByText('Profile')).toBeInTheDocument();
-    // Identity name pre-filled from server.
-    const nameInput = (await screen.findByLabelText(
-      /Name/i
-    )) as HTMLInputElement;
-    expect(nameInput.value).toBe('Daniel');
-  });
-
-  it('marks PII inputs with data-sentry-mask', async () => {
-    render(<SettingsPage />);
-    const nameInput = await screen.findByLabelText(/Name/i);
-    expect(nameInput).toHaveAttribute('data-sentry-mask');
-    const emailInput = await screen.findByLabelText(/^Email$/i);
-    expect(emailInput).toHaveAttribute('data-sentry-mask');
+    // Wait for prefs to settle so the page has finished rendering its cards.
+    expect(await screen.findByText(/email notifications/i)).toBeInTheDocument();
+    // Pre-refactor "Profile" CardTitle is gone. Use a strict match so we don't
+    // false-positive on "Profile" appearing in other strings (Sentry mask
+    // attributes, etc.).
+    expect(screen.queryByRole('heading', { name: /^Profile$/i })).toBeNull();
+    expect(screen.queryByLabelText(/^Name$/i)).toBeNull();
   });
 
   it('renders the email + SMS notification sections when those channels are available', async () => {

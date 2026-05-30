@@ -21,6 +21,7 @@ import { extractApiError } from '@/lib/extractApiError';
 import { parsePartialJson } from '@/lib/parsePartialJson';
 import { useToast } from '@/state/Toast/ToastProvider';
 import ConversationChatModal from '../../_components/ConversationChatModal';
+import ProfileIdentityCard from './ProfileIdentityCard';
 import type {
   Gap,
   GapHealthResult,
@@ -479,6 +480,23 @@ export default function ProfilePage() {
         </Card>
       )}
 
+      {/* Gaps to Fill — sits directly under Document Health so the "are
+          there gaps?" answer and the "what are they?" answer are adjacent.
+          Hidden entirely when no gaps; default-collapsed when present so
+          the card doesn't dominate the page above the master document. */}
+      {gapHealth && gapHealth.gaps.length > 0 && (
+        <GapsList
+          gaps={gapHealth.gaps}
+          tier={gapHealth.tier}
+          onOpenChat={() => setChatOpen(true)}
+        />
+      )}
+
+      {/* Identity (resume + cover-letter contact header). Moved here from
+          /settings since it's part of the candidate's profile, not their
+          notification preferences. */}
+      <ProfileIdentityCard />
+
       {/* Master Document */}
       <Card>
         <CardHeader>
@@ -682,15 +700,6 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      {/* Gaps */}
-      {gapHealth && gapHealth.gaps.length > 0 && (
-        <GapsList
-          gaps={gapHealth.gaps}
-          tier={gapHealth.tier}
-          onOpenChat={() => setChatOpen(true)}
-        />
-      )}
-
       {fileInput}
 
       <ConversationChatModal
@@ -713,6 +722,10 @@ function GapsList({
   tier: GapTier;
   onOpenChat: () => void;
 }) {
+  // Default to collapsed because the card lives near the top of the page —
+  // the user usually wants the count + "answer questions" CTA at a glance,
+  // not a wall of every gap.
+  const [open, setOpen] = useState(false);
   const visible = gaps.slice(0, 10);
   const count = gaps.length;
   const cta = (
@@ -732,52 +745,66 @@ function GapsList({
   return (
     <Card>
       <CardHeader>
-        <div className='flex items-center justify-between'>
+        <button
+          type='button'
+          onClick={() => setOpen(o => !o)}
+          aria-expanded={open}
+          aria-controls='gaps-list-body'
+          className='flex w-full items-center justify-between gap-2 text-left'
+        >
           <CardTitle>Gaps to Fill</CardTitle>
-          <Badge variant='default' size='sm'>
-            {count} {count === 1 ? 'gap' : 'gaps'}
-          </Badge>
-        </div>
+          <div className='flex items-center gap-2'>
+            <Badge variant='default' size='sm'>
+              {count} {count === 1 ? 'gap' : 'gaps'}
+            </Badge>
+            <RefreshCw
+              className={`size-4 text-text-tertiary transition-transform ${open ? 'rotate-90' : ''}`}
+              aria-hidden
+            />
+          </div>
+        </button>
       </CardHeader>
-      <CardContent className='flex flex-col gap-4'>
-        <div className='flex flex-col divide-y divide-border'>
-          {visible.map((gap, i) => (
-            <div
-              key={`${gap.kind}-${gap.ref}-${i}`}
-              className='flex items-start gap-3 py-2.5 first:pt-0 last:pb-0'
-            >
-              <Badge
-                variant={gapBadgeVariant(gap.kind)}
-                size='sm'
-                className='shrink-0 mt-0.5'
+      {open && (
+        <CardContent className='flex flex-col gap-4' id='gaps-list-body'>
+          <div className='flex flex-col divide-y divide-border'>
+            {visible.map((gap, i) => (
+              <div
+                key={`${gap.kind}-${gap.ref}-${i}`}
+                className='flex items-start gap-3 py-2.5 first:pt-0 last:pb-0'
               >
-                {GAP_KIND_LABELS[gap.kind] ?? gap.kind}
-              </Badge>
-              <Text variant='caption' className='text-text-secondary'>
-                {gap.context}
+                <Badge
+                  variant={gapBadgeVariant(gap.kind)}
+                  size='sm'
+                  className='shrink-0 mt-0.5'
+                >
+                  {GAP_KIND_LABELS[gap.kind] ?? gap.kind}
+                </Badge>
+                <Text variant='caption' className='text-text-secondary'>
+                  {gap.context}
+                </Text>
+              </div>
+            ))}
+            {gaps.length > 10 && (
+              <Text variant='caption' className='pt-2 text-text-tertiary'>
+                +{gaps.length - 10} more gaps
               </Text>
-            </div>
-          ))}
-          {gaps.length > 10 && (
-            <Text variant='caption' className='pt-2 text-text-tertiary'>
-              +{gaps.length - 10} more gaps
-            </Text>
+            )}
+          </div>
+          {tier === 'red' ? (
+            <Alert variant='warning'>
+              <div className='flex flex-col items-start gap-2'>
+                <span>
+                  Critical gaps detected. Generated resumes will be missing
+                  outcomes and metrics until you fill them in.
+                </span>
+                {cta}
+              </div>
+            </Alert>
+          ) : (
+            cta
           )}
-        </div>
-        {tier === 'red' ? (
-          <Alert variant='warning'>
-            <div className='flex flex-col items-start gap-2'>
-              <span>
-                Critical gaps detected. Generated resumes will be missing
-                outcomes and metrics until you fill them in.
-              </span>
-              {cta}
-            </div>
-          </Alert>
-        ) : (
-          cta
-        )}
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }
