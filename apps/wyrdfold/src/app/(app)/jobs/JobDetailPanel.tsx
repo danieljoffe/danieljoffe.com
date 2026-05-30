@@ -6,6 +6,7 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
@@ -123,6 +124,10 @@ export default function JobDetailPanel({
   const [deleting, setDeleting] = useState(false);
   const [analysis, setAnalysis] = useState<JobAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [analyzingStartedAt, setAnalyzingStartedAt] = useState<number | null>(
+    null
+  );
+  const [analyzingElapsedS, setAnalyzingElapsedS] = useState(0);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [history, setHistory] = useState<StatusLogEntry[]>([]);
   const { toast } = useToast();
@@ -168,9 +173,31 @@ export default function JobDetailPanel({
     }
   }
 
+  // Tick the elapsed-seconds counter while an analysis is in flight. LLM
+  // calls take 20–30s; without a moving number next to the section caption
+  // the user has no signal between "click" and "result" and the panel
+  // appears hung. The skeleton placeholder below the caption uses the same
+  // ``bg-surface-tertiary`` as the panel surface, so it was invisible —
+  // surfacing the indicator next to the caption guarantees something
+  // moves regardless of the body fill.
+  useEffect(() => {
+    if (!analyzing || analyzingStartedAt === null) {
+      setAnalyzingElapsedS(0);
+      return;
+    }
+    const tick = () =>
+      setAnalyzingElapsedS(
+        Math.floor((Date.now() - analyzingStartedAt) / 1000)
+      );
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [analyzing, analyzingStartedAt]);
+
   const runAnalysis = useCallback(async () => {
     if (!targetId) return;
     setAnalyzing(true);
+    setAnalyzingStartedAt(Date.now());
     setAnalysisError(null);
     try {
       const res = await fetch(
@@ -208,6 +235,7 @@ export default function JobDetailPanel({
       setAnalysisError('Network error running analysis.');
     } finally {
       setAnalyzing(false);
+      setAnalyzingStartedAt(null);
     }
   }, [posting.id, targetId, onAnalysisComplete]);
 
@@ -423,9 +451,19 @@ export default function JobDetailPanel({
             the standalone section it occupied before is gone. */}
         {targetId && (
           <div>
-            <Text variant='caption' className='mb-1'>
-              LLM Analysis
-            </Text>
+            <div className='mb-1 flex items-center gap-2'>
+              <Text variant='caption'>LLM Analysis</Text>
+              {analyzing && (
+                <span
+                  className='inline-flex items-center gap-1.5'
+                  role='status'
+                  aria-live='polite'
+                >
+                  <Spinner size='sm' aria-label='Running LLM analysis' />
+                  <Text variant='meta'>Running… {analyzingElapsedS}s</Text>
+                </span>
+              )}
+            </div>
             {analysis ? (
               <div className='space-y-2'>
                 <Text variant='body'>{analysis.recommendation}</Text>
@@ -471,7 +509,18 @@ export default function JobDetailPanel({
                 )}
               </div>
             ) : analyzing ? (
-              <Skeleton variant='text' lines={3} />
+              // Inline placeholder bars rather than ``<Skeleton>``: the
+              // shared component's ``bg-surface-tertiary`` fill matches the
+              // panel's ``bg-surface-tertiary`` surface exactly, so the
+              // pulse rendered against its own colour and was invisible.
+              // ``bg-surface-elevated`` lifts above the panel surface
+              // (white in light, off-black in dark) for a real placeholder
+              // that pulses visibly against the tertiary backdrop.
+              <div className='space-y-2'>
+                <div className='h-4 rounded-xs bg-surface-elevated animate-pulse motion-reduce:animate-none' />
+                <div className='h-4 rounded-xs bg-surface-elevated animate-pulse motion-reduce:animate-none' />
+                <div className='h-4 w-3/4 rounded-xs bg-surface-elevated animate-pulse motion-reduce:animate-none' />
+              </div>
             ) : (
               <div>
                 {analysisError && (
