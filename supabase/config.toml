@@ -150,10 +150,25 @@ max_indexes = 5
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
-# in emails.
-site_url = "http://127.0.0.1:3000"
+# in emails. Use ``localhost`` rather than ``127.0.0.1`` so cookies set on the
+# auth callback are visible to the rest of the dev app (browsers treat the two
+# hosts as separate origins for session storage).
+site_url = "http://localhost:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+# Supabase substitutes ``site_url`` silently when ``emailRedirectTo`` does not
+# exactly match one of these entries — so we list every dev variant the app
+# might be served from (localhost vs. 127.0.0.1, port 3000 vs. 3100, with and
+# without ``/auth/callback``). HTTP only — local dev does not terminate TLS.
+additional_redirect_urls = [
+  "http://localhost:3000",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3100",
+  "http://localhost:3100/auth/callback",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3000/auth/callback",
+  "http://127.0.0.1:3100",
+  "http://127.0.0.1:3100/auth/callback",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to the local API URL (http://127.0.0.1:<port>/auth/v1).
