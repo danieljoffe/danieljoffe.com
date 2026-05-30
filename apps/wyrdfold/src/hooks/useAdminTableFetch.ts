@@ -35,6 +35,20 @@ export function useAdminTableFetch<T, S extends string>({
     defaultOrder
   );
 
+  // Reset to page 1 whenever filters change. Without this, a user on page 2+
+  // who types in the search box (or flips a status / score filter) keeps
+  // ``offset = (page - 1) * pageSize`` from the prior view — most searches
+  // narrow results so the new page is empty and the UI looks like the
+  // search didn't fire. ``useTableSort`` already does this on sort change;
+  // the filter path was the missing half. Serialize for the dep check so
+  // we react to value changes, not just reference changes (useMemo in the
+  // caller already gives a fresh ref on each filter change, but the
+  // serialized check is robust either way).
+  const extraParamsKey = JSON.stringify(extraParams ?? {});
+  useEffect(() => {
+    setPage(1);
+  }, [extraParamsKey]);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
