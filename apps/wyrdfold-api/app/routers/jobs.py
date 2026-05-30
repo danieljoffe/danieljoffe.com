@@ -697,6 +697,26 @@ async def add_manual_job(
         except Exception:
             logger.exception("Global score update failed for manual job %s", posting_id)
 
+        # Force-include this posting in the user's /jobs view regardless of
+        # what the negative-keyword pass decided. The scorer flags
+        # ``excluded=True`` whenever a negative keyword matches in the title
+        # or any "requirements"/"default" section of the JD — perfectly
+        # sensible for the poller (which fires for jobs nobody asked for),
+        # but wrong here: the user explicitly pasted this URL. Mentions of
+        # "mentor junior engineers" or "collaborate with the data analyst
+        # team" silently buried the job. Keep the score breakdown honest
+        # (the negative penalty stays in the breakdown so the badge color
+        # still tells the user this isn't a great fit) but make the row
+        # visible so the user can act on it.
+        try:
+            supabase.table("scores").update({"excluded": False}).eq(
+                "job_posting_id", posting_id
+            ).execute()
+        except Exception:
+            logger.exception(
+                "Force-include update failed for manual job %s", posting_id
+            )
+
     # Invalidate job list cache after adding a new posting
     job_list_cache.invalidate()
 
