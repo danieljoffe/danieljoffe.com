@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ChevronDown, Maximize2 } from 'lucide-react';
+import { ChevronDown, Maximize2, MoreVertical } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
@@ -283,86 +283,213 @@ export default function JobDetailPanel({
   }, [posting.description_html]);
 
   return (
-    <div className='border-t border-border bg-surface-tertiary p-4 space-y-4'>
-      {/* Status dropdown + score */}
-      <div>
-        <Text variant='caption' className='mb-1'>
-          Status
-        </Text>
-        <div className='flex items-center justify-between gap-3'>
+    <div className='border-t border-border bg-surface-tertiary p-4 space-y-6'>
+      {/* Single header toolbar:
+            [status] | [score] | [resume] | [cover letter] | [open ↗] | [⋯]
+          Tailor actions live in the toolbar rather than a separate row so the
+          panel reads top-down as one strip of decisions plus the analysis
+          body, instead of six labeled stacks. */}
+      <div className='flex flex-wrap items-center gap-2 md:flex-nowrap md:gap-3'>
+        <Dropdown
+          trigger={
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
+                updating
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-surface-tertiary'
+              )}
+              aria-disabled={updating || undefined}
+            >
+              <span
+                className={cn(
+                  'inline-block size-2 rounded-full',
+                  STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
+                )}
+                aria-hidden
+              />
+              <span className='capitalize'>{formatStatus(status)}</span>
+              <ChevronDown className='size-4 text-text-tertiary' aria-hidden />
+            </span>
+          }
+          items={JOB_STATUSES.map<DropdownItem>(s => ({
+            label: formatStatus(s),
+            icon: (
+              <span
+                className={cn(
+                  'inline-block size-2 rounded-full',
+                  STATUS_DOT_CLASS[s]
+                )}
+                aria-hidden
+              />
+            ),
+            disabled: updating || status === s,
+            onClick: () => updateStatus(s),
+          }))}
+        />
+        <Badge
+          variant={
+            posting.score >= 70
+              ? 'success'
+              : posting.score >= 40
+                ? 'warning'
+                : 'error'
+          }
+          size='sm'
+          aria-label={`Match score ${posting.score}`}
+        >
+          {posting.score}
+        </Badge>
+
+        {/* Resume + Cover Letter as compact pills in the toolbar. Only when
+            a target is selected — tailoring requires one. The components
+            keep all their generate/review/view state internally; passing
+            ``compact`` switches them to a single-button render. */}
+        {targetId && (
+          <>
+            <ResumeSection jobPostingId={posting.id} compact />
+            <CoverLetterSection
+              jobPostingId={posting.id}
+              companyName={posting.company_name}
+              roleTitle={posting.title}
+              compact
+            />
+          </>
+        )}
+
+        {/* The remaining icons push to the right of the toolbar. ``ml-auto``
+            on the first right-aligned item lets the flex row wrap naturally
+            on narrow viewports without splitting Status/Score from the
+            tailor buttons. */}
+        {viewFullHref && (
+          <Button
+            as='link'
+            href={viewFullHref}
+            variant='ghost'
+            size='sm'
+            name='view-full-job'
+            aria-label='Open full view'
+            className='ml-auto'
+          >
+            <Maximize2 className='size-4' aria-hidden />
+          </Button>
+        )}
+        {!hideDelete && (
           <Dropdown
             trigger={
               <span
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
-                  updating
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-surface-tertiary'
+                  'inline-flex size-8 items-center justify-center rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
+                  !viewFullHref && 'ml-auto'
                 )}
-                aria-disabled={updating || undefined}
+                aria-label='More actions'
               >
-                <span
-                  className={cn(
-                    'inline-block size-2 rounded-full',
-                    STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
-                  )}
-                  aria-hidden
-                />
-                <span className='capitalize'>{formatStatus(status)}</span>
-                <ChevronDown
-                  className='size-4 text-text-tertiary'
-                  aria-hidden
-                />
+                <MoreVertical className='size-4' aria-hidden />
               </span>
             }
-            items={JOB_STATUSES.map<DropdownItem>(s => ({
-              label: formatStatus(s),
-              icon: (
-                <span
-                  className={cn(
-                    'inline-block size-2 rounded-full',
-                    STATUS_DOT_CLASS[s]
-                  )}
-                  aria-hidden
-                />
-              ),
-              disabled: updating || status === s,
-              onClick: () => updateStatus(s),
-            }))}
+            items={[
+              {
+                label: deleting ? 'Deleting…' : 'Delete',
+                danger: true,
+                disabled: deleting,
+                onClick: handleDelete,
+              },
+            ]}
           />
-          <span
-            className='inline-flex items-center gap-1.5 shrink-0'
-            aria-label={`Match score ${posting.score}`}
-          >
-            <Text variant='meta' className='text-text-tertiary'>
-              Score
-            </Text>
-            <Badge
-              variant={
-                posting.score >= 70
-                  ? 'success'
-                  : posting.score >= 40
-                    ? 'warning'
-                    : 'error'
-              }
-              size='sm'
-            >
-              {posting.score}
-            </Badge>
-          </span>
-        </div>
+        )}
       </div>
 
-      {/* Score breakdown — auto-rendered on load so users see immediately
-          how the score was assembled. */}
-      <div>
-        <Text variant='caption' className='mb-2'>
-          Score Breakdown
-        </Text>
-        {breakdown ? (
-          <ScoreBreakdownList breakdown={breakdown} />
-        ) : (
-          <Skeleton variant='text' lines={3} />
+      {/* Two-column main body: Score Breakdown on the left, LLM Analysis on
+          the right. The previous stacked-section layout forced the eye down
+          the page through six labeled blocks; pairing the two scoring panels
+          keeps both visible without scrolling and reads as "here's why we
+          score it, here's what the model thinks". */}
+      <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+        {/* Score breakdown */}
+        <div>
+          <Text variant='caption' className='mb-2'>
+            Score Breakdown
+          </Text>
+          {breakdown ? (
+            <ScoreBreakdownList breakdown={breakdown} />
+          ) : (
+            <Skeleton variant='text' lines={3} />
+          )}
+        </div>
+
+        {/* LLM Analysis — only when a target is selected. The "pick a
+            target" hint lives at the list level so it shows once, not per
+            row. Rendered inline here as the right column of the body grid;
+            the standalone section it occupied before is gone. */}
+        {targetId && (
+          <div>
+            <Text variant='caption' className='mb-1'>
+              LLM Analysis
+            </Text>
+            {analysis ? (
+              <div className='space-y-2'>
+                <Text variant='body'>{analysis.recommendation}</Text>
+                <div className='flex flex-wrap gap-2'>
+                  <Badge
+                    variant={
+                      analysis.scorecard.seniority_fit === 'strong'
+                        ? 'success'
+                        : analysis.scorecard.seniority_fit === 'moderate'
+                          ? 'warning'
+                          : 'error'
+                    }
+                    size='sm'
+                  >
+                    Seniority: {analysis.scorecard.seniority_fit}
+                  </Badge>
+                  <Badge
+                    variant={
+                      analysis.scorecard.domain_fit === 'strong'
+                        ? 'success'
+                        : analysis.scorecard.domain_fit === 'moderate'
+                          ? 'warning'
+                          : 'error'
+                    }
+                    size='sm'
+                  >
+                    Domain: {analysis.scorecard.domain_fit}
+                  </Badge>
+                </div>
+                {analysis.scorecard.skills_missing.length > 0 && (
+                  <div>
+                    <Text variant='meta' className='mb-1'>
+                      Missing skills
+                    </Text>
+                    <div className='flex flex-wrap gap-1'>
+                      {analysis.scorecard.skills_missing.map(skill => (
+                        <Badge key={skill} variant='error' size='sm'>
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : analyzing ? (
+              <Skeleton variant='text' lines={3} />
+            ) : (
+              <div>
+                {analysisError && (
+                  <Text variant='error' className='mb-2'>
+                    {analysisError}
+                  </Text>
+                )}
+                <Button
+                  name='analyze-job'
+                  variant='secondary'
+                  size='sm'
+                  onClick={runAnalysis}
+                >
+                  Retry analysis
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -418,133 +545,6 @@ export default function JobDetailPanel({
               </Text>
             )}
           </div>
-        </div>
-      )}
-
-      {/* LLM Analysis — only when a target is selected. The "pick a target"
-          hint lives at the list level so it shows once, not per-row. */}
-      {targetId && (
-        <div>
-          <Text variant='caption' className='mb-1'>
-            LLM Analysis
-          </Text>
-          {analysis ? (
-            <div className='space-y-2'>
-              <Text variant='body'>{analysis.recommendation}</Text>
-              <div className='flex flex-wrap gap-2'>
-                <Badge
-                  variant={
-                    analysis.scorecard.seniority_fit === 'strong'
-                      ? 'success'
-                      : analysis.scorecard.seniority_fit === 'moderate'
-                        ? 'warning'
-                        : 'error'
-                  }
-                  size='sm'
-                >
-                  Seniority: {analysis.scorecard.seniority_fit}
-                </Badge>
-                <Badge
-                  variant={
-                    analysis.scorecard.domain_fit === 'strong'
-                      ? 'success'
-                      : analysis.scorecard.domain_fit === 'moderate'
-                        ? 'warning'
-                        : 'error'
-                  }
-                  size='sm'
-                >
-                  Domain: {analysis.scorecard.domain_fit}
-                </Badge>
-              </div>
-              {analysis.scorecard.skills_missing.length > 0 && (
-                <div>
-                  <Text variant='meta' className='mb-1'>
-                    Missing skills
-                  </Text>
-                  <div className='flex flex-wrap gap-1'>
-                    {analysis.scorecard.skills_missing.map(skill => (
-                      <Badge key={skill} variant='error' size='sm'>
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : analyzing ? (
-            <Skeleton variant='text' lines={3} />
-          ) : (
-            <div>
-              {analysisError && (
-                <Text variant='error' className='mb-2'>
-                  {analysisError}
-                </Text>
-              )}
-              <Button
-                name='analyze-job'
-                variant='secondary'
-                size='sm'
-                onClick={runAnalysis}
-              >
-                Retry analysis
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/*
-        Resume + cover letter lifecycle — both sections internally fetch
-        the tailored record (if any) and decide between "Generate" and
-        "Review" based on its actual existence, not on the
-        loosely-correlated job status. We render them for every status
-        (was gated to ``resume_draft`` / ``resume_ready`` only), because
-        a new user clicking into a fresh "new" job has no way to discover
-        they must first flip status before the Generate buttons appear.
-        The status flip happens automatically on first generate via the
-        backend's persistence side-effect; surfacing the controls up
-        front matches the user's mental model ("I want to tailor for
-        this role"). Only requires a target_id — the tailor pipeline
-        needs it.
-      */}
-      {targetId && <ResumeSection jobPostingId={posting.id} />}
-
-      {/* Cover letter */}
-      {targetId && (
-        <CoverLetterSection
-          jobPostingId={posting.id}
-          companyName={posting.company_name}
-          roleTitle={posting.title}
-        />
-      )}
-
-      {/* Actions */}
-      {(viewFullHref || !hideDelete) && (
-        <div className='flex flex-wrap gap-2'>
-          {viewFullHref && (
-            <Button
-              as='link'
-              href={viewFullHref}
-              variant='secondary'
-              size='sm'
-              name='view-full-job'
-            >
-              <Maximize2 className='size-4' aria-hidden />
-              Open full view
-            </Button>
-          )}
-          {!hideDelete && (
-            <Button
-              name='delete-posting'
-              variant='error'
-              size='sm'
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          )}
         </div>
       )}
     </div>

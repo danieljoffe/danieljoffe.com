@@ -12,6 +12,10 @@ import type { TailoredResumeRecord, TailorResponse } from './types';
 
 interface ResumeSectionProps {
   jobPostingId: string;
+  /** Compact pill mode — drops the caption/status-badge stack and renders
+   *  just the action button (Generate / Review / View). Used in the inline
+   *  preview panel's top toolbar where a full section would crowd the row. */
+  compact?: boolean;
 }
 
 /**
@@ -24,7 +28,10 @@ interface ResumeSectionProps {
  * existed, leaving the user staring at a "Resume not found" dead-end
  * page with nowhere to generate one.
  */
-export default function ResumeSection({ jobPostingId }: ResumeSectionProps) {
+export default function ResumeSection({
+  jobPostingId,
+  compact = false,
+}: ResumeSectionProps) {
   const [record, setRecord] = useState<TailoredResumeRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -153,6 +160,13 @@ export default function ResumeSection({ jobPostingId }: ResumeSectionProps) {
   }
 
   if (loading) {
+    if (compact) {
+      return (
+        <Button name='resume-loading' variant='secondary' size='sm' disabled>
+          Resume…
+        </Button>
+      );
+    }
     return (
       <div className='flex flex-col gap-2'>
         <div className='flex items-center gap-2'>
@@ -180,6 +194,44 @@ export default function ResumeSection({ jobPostingId }: ResumeSectionProps) {
       : isApproved
         ? 'success'
         : 'info';
+
+  // Compact mode: single button that conveys both state and action via its
+  // label. No caption row, no status pill — the toolbar context handles
+  // labeling and the button verb is enough ("Review Resume" implies a draft
+  // exists; "Generate Resume" implies it doesn't).
+  if (compact) {
+    if (generating) {
+      return (
+        <Button name='resume-generating' variant='secondary' size='sm' disabled>
+          <Spinner size='sm' aria-label='Generating resume' />
+          <span>Generating…</span>
+        </Button>
+      );
+    }
+    if (!record) {
+      return (
+        <Button
+          name='generate-resume'
+          variant='primary'
+          size='sm'
+          onClick={handleGenerate}
+        >
+          Generate Resume
+        </Button>
+      );
+    }
+    return (
+      <Button
+        as='link'
+        href={`/jobs/${jobPostingId}/resume`}
+        variant={isApproved ? 'secondary' : 'primary'}
+        size='sm'
+        name={isApproved ? 'view-approved-resume' : 'review-resume'}
+      >
+        {isApproved ? 'View Resume' : 'Review Resume'}
+      </Button>
+    );
+  }
 
   return (
     <div className='flex flex-col gap-2'>
