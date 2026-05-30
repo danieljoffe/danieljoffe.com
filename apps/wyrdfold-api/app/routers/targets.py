@@ -5,6 +5,7 @@ triggers LLM-powered profile derivation and merges the result into the
 target's composite scoring profile.
 """
 
+import asyncio
 import logging
 from typing import Any, cast
 
@@ -51,6 +52,7 @@ from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.poller import poll_sources_for_target
 from app.services.scoring import strip_html
+from app.services.target_scoring import score_title_and_upsert
 from app.services.targets import crud, from_input
 from app.services.targets.derive_profile import DEFAULT_PURPOSE, derive_profile_from_jd
 from app.services.targets.derive_profile_from_label import (
@@ -80,6 +82,47 @@ router = APIRouter(
 
 
 # ---- Background pipeline for activation ------------------------------------
+
+
+_RETRO_SCORE_BATCH = 500
+
+
+def _retro_score_existing_jobs(supabase: Client, target: JobTarget) -> int:
+    """Stage-1 score every posting in the ``jobs`` table against ``target``.
+
+    Used during target activation so jobs that pre-date the target still
+    appear under it in the UI. Iterates in batches of ``_RETRO_SCORE_BATCH``
+    so we never load the full job table into memory at once.
+    ``score_title_and_upsert`` returns ``None`` for jobs whose titles don't
+    match any keyword — those create no row. The return value is the
+    number of jobs we actually wrote a score row for, useful for log/UI
+    diagnostics on "ready but jobs_count=0".
+    """
+    written = 0
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("jobs")
+            .select("id, title")
+            .range(offset, offset + _RETRO_SCORE_BATCH - 1)
+            .execute()
+        )
+        rows = cast(list[dict[str, Any]], resp.data or [])
+        if not rows:
+            break
+        for row in rows:
+            result = score_title_and_upsert(
+                supabase,
+                job_posting_id=row["id"],
+                title=row["title"],
+                target=target,
+            )
+            if result is not None:
+                written += 1
+        if len(rows) < _RETRO_SCORE_BATCH:
+            break
+        offset += _RETRO_SCORE_BATCH
+    return written
 
 
 async def _activate_pipeline(
@@ -137,6 +180,24 @@ async def _activate_pipeline(
             poll_result.sources_polled,
             poll_result.new_jobs,
         )
+
+        # Step 3: retro-score every existing posting against the new target.
+        # The poller stage-1-scores jobs at insert time, so anything that
+        # existed before this target activated had no scores row for it —
+        # the /jobs page filtered by this target would otherwise be empty
+        # even when there are plenty of matching titles already in the
+        # database. ``score_title_and_upsert`` returns ``None`` (no row
+        # written) when no keywords match, so this only creates rows where
+        # the title actually scores against the new profile.
+        retro_scored = await asyncio.to_thread(
+            _retro_score_existing_jobs, supabase, target
+        )
+        logger.info(
+            "Activation pipeline for target %s: retro-scored %d existing jobs",
+            target_id,
+            retro_scored,
+        )
+
         crud.update(
             supabase, target_id, TargetUpdate(activation_status="ready")
         )
