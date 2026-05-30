@@ -14,12 +14,16 @@ interface CoverLetterSectionProps {
   jobPostingId: string;
   companyName: string;
   roleTitle: string;
+  /** Compact pill mode — drops the caption/status-badge stack and renders
+   *  just the action button. Used in the inline preview panel's toolbar. */
+  compact?: boolean;
 }
 
 export default function CoverLetterSection({
   jobPostingId,
   companyName,
   roleTitle,
+  compact = false,
 }: CoverLetterSectionProps) {
   const [record, setRecord] = useState<TailoredResumeRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -144,6 +148,18 @@ export default function CoverLetterSection({
   }
 
   if (loading) {
+    if (compact) {
+      return (
+        <Button
+          name='cover-letter-loading'
+          variant='secondary'
+          size='sm'
+          disabled
+        >
+          Cover letter…
+        </Button>
+      );
+    }
     return (
       <div className='flex flex-col gap-2'>
         <div className='flex items-center gap-2'>
@@ -171,6 +187,47 @@ export default function CoverLetterSection({
       : isApproved
         ? 'success'
         : 'info';
+
+  // Compact mode: single button that conveys both state and action via its
+  // label. See ResumeSection for the rationale.
+  if (compact) {
+    if (generating) {
+      return (
+        <Button
+          name='cover-letter-generating'
+          variant='secondary'
+          size='sm'
+          disabled
+        >
+          <Spinner size='sm' aria-label='Generating cover letter' />
+          <span>Generating…</span>
+        </Button>
+      );
+    }
+    if (!record) {
+      return (
+        <Button
+          name='generate-cover-letter'
+          variant='secondary'
+          size='sm'
+          onClick={handleGenerate}
+        >
+          Generate Cover Letter
+        </Button>
+      );
+    }
+    return (
+      <Button
+        as='link'
+        href={`/jobs/${jobPostingId}/cover-letter`}
+        variant={isApproved ? 'secondary' : 'primary'}
+        size='sm'
+        name='review-cover-letter'
+      >
+        {isApproved ? 'View Cover Letter' : 'Review Cover Letter'}
+      </Button>
+    );
+  }
 
   return (
     <div className='flex flex-col gap-2'>

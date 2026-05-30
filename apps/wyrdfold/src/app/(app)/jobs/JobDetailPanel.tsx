@@ -284,102 +284,119 @@ export default function JobDetailPanel({
 
   return (
     <div className='border-t border-border bg-surface-tertiary p-4 space-y-6'>
-      {/* Single header row: status + score inline on the left, secondary
-          actions on the right. Drops the standalone "Status" caption — the
-          dropdown trigger is self-evident and the caption only added a row
-          of low-information text at the top of an already-busy panel. */}
-      <div className='flex items-center justify-between gap-3'>
-        <div className='flex items-center gap-3 min-w-0'>
+      {/* Single header toolbar:
+            [status] | [score] | [resume] | [cover letter] | [open ↗] | [⋯]
+          Tailor actions live in the toolbar rather than a separate row so the
+          panel reads top-down as one strip of decisions plus the analysis
+          body, instead of six labeled stacks. */}
+      <div className='flex flex-wrap items-center gap-2 md:flex-nowrap md:gap-3'>
+        <Dropdown
+          trigger={
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
+                updating
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-surface-tertiary'
+              )}
+              aria-disabled={updating || undefined}
+            >
+              <span
+                className={cn(
+                  'inline-block size-2 rounded-full',
+                  STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
+                )}
+                aria-hidden
+              />
+              <span className='capitalize'>{formatStatus(status)}</span>
+              <ChevronDown className='size-4 text-text-tertiary' aria-hidden />
+            </span>
+          }
+          items={JOB_STATUSES.map<DropdownItem>(s => ({
+            label: formatStatus(s),
+            icon: (
+              <span
+                className={cn(
+                  'inline-block size-2 rounded-full',
+                  STATUS_DOT_CLASS[s]
+                )}
+                aria-hidden
+              />
+            ),
+            disabled: updating || status === s,
+            onClick: () => updateStatus(s),
+          }))}
+        />
+        <Badge
+          variant={
+            posting.score >= 70
+              ? 'success'
+              : posting.score >= 40
+                ? 'warning'
+                : 'error'
+          }
+          size='sm'
+          aria-label={`Match score ${posting.score}`}
+        >
+          {posting.score}
+        </Badge>
+
+        {/* Resume + Cover Letter as compact pills in the toolbar. Only when
+            a target is selected — tailoring requires one. The components
+            keep all their generate/review/view state internally; passing
+            ``compact`` switches them to a single-button render. */}
+        {targetId && (
+          <>
+            <ResumeSection jobPostingId={posting.id} compact />
+            <CoverLetterSection
+              jobPostingId={posting.id}
+              companyName={posting.company_name}
+              roleTitle={posting.title}
+              compact
+            />
+          </>
+        )}
+
+        {/* The remaining icons push to the right of the toolbar. ``ml-auto``
+            on the first right-aligned item lets the flex row wrap naturally
+            on narrow viewports without splitting Status/Score from the
+            tailor buttons. */}
+        {viewFullHref && (
+          <Button
+            as='link'
+            href={viewFullHref}
+            variant='ghost'
+            size='sm'
+            name='view-full-job'
+            aria-label='Open full view'
+            className='ml-auto'
+          >
+            <Maximize2 className='size-4' aria-hidden />
+          </Button>
+        )}
+        {!hideDelete && (
           <Dropdown
             trigger={
               <span
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-md border border-border bg-surface-elevated px-3 py-1.5 text-sm transition-colors',
-                  updating
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-surface-tertiary'
+                  'inline-flex size-8 items-center justify-center rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
+                  !viewFullHref && 'ml-auto'
                 )}
-                aria-disabled={updating || undefined}
+                aria-label='More actions'
               >
-                <span
-                  className={cn(
-                    'inline-block size-2 rounded-full',
-                    STATUS_DOT_CLASS[status as JobStatus] ?? 'bg-text-tertiary'
-                  )}
-                  aria-hidden
-                />
-                <span className='capitalize'>{formatStatus(status)}</span>
-                <ChevronDown
-                  className='size-4 text-text-tertiary'
-                  aria-hidden
-                />
+                <MoreVertical className='size-4' aria-hidden />
               </span>
             }
-            items={JOB_STATUSES.map<DropdownItem>(s => ({
-              label: formatStatus(s),
-              icon: (
-                <span
-                  className={cn(
-                    'inline-block size-2 rounded-full',
-                    STATUS_DOT_CLASS[s]
-                  )}
-                  aria-hidden
-                />
-              ),
-              disabled: updating || status === s,
-              onClick: () => updateStatus(s),
-            }))}
+            items={[
+              {
+                label: deleting ? 'Deleting…' : 'Delete',
+                danger: true,
+                disabled: deleting,
+                onClick: handleDelete,
+              },
+            ]}
           />
-          <Badge
-            variant={
-              posting.score >= 70
-                ? 'success'
-                : posting.score >= 40
-                  ? 'warning'
-                  : 'error'
-            }
-            size='sm'
-            aria-label={`Match score ${posting.score}`}
-          >
-            {posting.score}
-          </Badge>
-        </div>
-        {/* Secondary actions live in the top-right so the visual weight
-            stays at the start of the panel where Status/Score also sit. */}
-        <div className='flex items-center gap-1 shrink-0'>
-          {viewFullHref && (
-            <Button
-              as='link'
-              href={viewFullHref}
-              variant='ghost'
-              size='sm'
-              name='view-full-job'
-              aria-label='Open full view'
-            >
-              <Maximize2 className='size-4' aria-hidden />
-            </Button>
-          )}
-          {!hideDelete && (
-            <Dropdown
-              trigger={
-                <span
-                  className='inline-flex size-8 items-center justify-center rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
-                  aria-label='More actions'
-                >
-                  <MoreVertical className='size-4' aria-hidden />
-                </span>
-              }
-              items={[
-                {
-                  label: deleting ? 'Deleting…' : 'Delete',
-                  danger: true,
-                  disabled: deleting,
-                  onClick: handleDelete,
-                },
-              ]}
-            />
-          )}
-        </div>
+        )}
       </div>
 
       {/* Two-column main body: Score Breakdown on the left, LLM Analysis on
@@ -475,21 +492,6 @@ export default function JobDetailPanel({
           </div>
         )}
       </div>
-
-      {/* Tailor row — Resume and Cover Letter side-by-side. Halves the
-          vertical space they used when stacked and pairs the two related
-          actions visually. The components manage their own internal layout
-          (status pill + generate/review button). */}
-      {targetId && (
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-          <ResumeSection jobPostingId={posting.id} />
-          <CoverLetterSection
-            jobPostingId={posting.id}
-            companyName={posting.company_name}
-            roleTitle={posting.title}
-          />
-        </div>
-      )}
 
       {/* Job description body — rendered from the upstream JD HTML.
           Wrapped in ``<details>`` so the inline list panel stays compact;
