@@ -30,27 +30,9 @@ interface NotificationPreferences {
   sms_available: boolean;
 }
 
-interface IdentityFields {
-  name: string | null;
-  email: string | null;
-  phone_number: string | null;
-  location: string | null;
-  linkedin_url: string | null;
-  website_url: string | null;
-}
+// Identity fields moved to apps/wyrdfold/src/app/(app)/profile/ProfileIdentityCard.tsx.
 
-type Section = 'profile' | 'email' | 'sms';
-
-function profileSig(fields: {
-  name: string;
-  email: string;
-  phone_number: string;
-  location: string;
-  linkedin_url: string;
-  website_url: string;
-}): string {
-  return JSON.stringify(fields);
-}
+type Section = 'email' | 'sms';
 
 function emailSig(enabled: boolean, threshold: number): string {
   return JSON.stringify({
@@ -102,29 +84,16 @@ export default function SettingsPage() {
   const [smsDailyLimit, setSmsDailyLimit] = useState('5');
   const [phoneNumber, setPhoneNumber] = useState('');
 
-  // Profile identity (F3-A): contact info used for resume + cover-letter headers.
-  const [identityName, setIdentityName] = useState('');
-  const [identityEmail, setIdentityEmail] = useState('');
-  const [identityPhone, setIdentityPhone] = useState('');
-  const [identityLocation, setIdentityLocation] = useState('');
-  const [identityLinkedin, setIdentityLinkedin] = useState('');
-  const [identityWebsite, setIdentityWebsite] = useState('');
-
   // Server-known signatures — autosave fires only when local state diverges.
   // Failed-sigs prevent retry-loops when the server rejects a value.
-  const lastProfileSigRef = useRef<string | null>(null);
   const lastEmailSigRef = useRef<string | null>(null);
   const lastSmsSigRef = useRef<string | null>(null);
-  const lastFailedProfileSigRef = useRef<string | null>(null);
   const lastFailedEmailSigRef = useRef<string | null>(null);
   const lastFailedSmsSigRef = useRef<string | null>(null);
 
   const fetchPrefs = useCallback(async () => {
     try {
-      const [prefsRes, identityRes] = await Promise.all([
-        fetch('/api/profile/notifications'),
-        fetch('/api/profile/identity'),
-      ]);
+      const prefsRes = await fetch('/api/profile/notifications');
       if (prefsRes.ok) {
         const data = (await prefsRes.json()) as NotificationPreferences;
         setPrefs(data);
@@ -145,23 +114,6 @@ export default function SettingsPage() {
           data.phone_number ?? null
         );
       }
-      if (identityRes.ok) {
-        const data = (await identityRes.json()) as IdentityFields;
-        setIdentityName(data.name ?? '');
-        setIdentityEmail(data.email ?? '');
-        setIdentityPhone(data.phone_number ?? '');
-        setIdentityLocation(data.location ?? '');
-        setIdentityLinkedin(data.linkedin_url ?? '');
-        setIdentityWebsite(data.website_url ?? '');
-        lastProfileSigRef.current = profileSig({
-          name: (data.name ?? '').trim(),
-          email: (data.email ?? '').trim(),
-          phone_number: (data.phone_number ?? '').trim(),
-          location: (data.location ?? '').trim(),
-          linkedin_url: (data.linkedin_url ?? '').trim(),
-          website_url: (data.website_url ?? '').trim(),
-        });
-      }
     } catch {
       toast({
         variant: 'error',
@@ -177,64 +129,6 @@ export default function SettingsPage() {
   }, [fetchPrefs]);
 
   // -- Save handlers ----------------------------------------------------------
-
-  const handleSaveProfile = useCallback(async () => {
-    const trimmed = {
-      name: identityName.trim(),
-      email: identityEmail.trim(),
-      phone_number: identityPhone.trim(),
-      location: identityLocation.trim(),
-      linkedin_url: identityLinkedin.trim(),
-      website_url: identityWebsite.trim(),
-    };
-    const sig = profileSig(trimmed);
-    setSavingSection('profile');
-    try {
-      const res = await fetch('/api/profile/identity', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trimmed),
-      });
-      if (!res.ok) {
-        const message = await extractApiError(res, 'Failed to save profile');
-        toast({ variant: 'error', title: message });
-        lastFailedProfileSigRef.current = sig;
-        return;
-      }
-      const data = (await res.json()) as IdentityFields;
-      // Re-sync from server response so normalized values (e.g. E.164 phone)
-      // replace the typed input.
-      setIdentityName(data.name ?? '');
-      setIdentityEmail(data.email ?? '');
-      setIdentityPhone(data.phone_number ?? '');
-      setIdentityLocation(data.location ?? '');
-      setIdentityLinkedin(data.linkedin_url ?? '');
-      setIdentityWebsite(data.website_url ?? '');
-      lastProfileSigRef.current = profileSig({
-        name: (data.name ?? '').trim(),
-        email: (data.email ?? '').trim(),
-        phone_number: (data.phone_number ?? '').trim(),
-        location: (data.location ?? '').trim(),
-        linkedin_url: (data.linkedin_url ?? '').trim(),
-        website_url: (data.website_url ?? '').trim(),
-      });
-      lastFailedProfileSigRef.current = null;
-      toast({ variant: 'success', title: 'Profile saved' });
-    } catch {
-      toast({ variant: 'error', title: 'Failed to save profile' });
-      lastFailedProfileSigRef.current = sig;
-    } finally {
-      setSavingSection(null);
-    }
-  }, [
-    identityName,
-    identityEmail,
-    identityPhone,
-    identityLocation,
-    identityLinkedin,
-    identityWebsite,
-    toast,
-  ]);
 
   const handleSaveEmail = useCallback(async () => {
     const threshold = parseInt(emailThreshold, 10) || 100;
@@ -330,34 +224,6 @@ export default function SettingsPage() {
   // -- Autosave effects -------------------------------------------------------
 
   useEffect(() => {
-    if (lastProfileSigRef.current === null) return;
-    if (savingSection === 'profile') return;
-    const sig = profileSig({
-      name: identityName.trim(),
-      email: identityEmail.trim(),
-      phone_number: identityPhone.trim(),
-      location: identityLocation.trim(),
-      linkedin_url: identityLinkedin.trim(),
-      website_url: identityWebsite.trim(),
-    });
-    if (sig === lastProfileSigRef.current) return;
-    if (sig === lastFailedProfileSigRef.current) return;
-    const handle = setTimeout(() => {
-      handleSaveProfile();
-    }, AUTOSAVE_DEBOUNCE_MS);
-    return () => clearTimeout(handle);
-  }, [
-    identityName,
-    identityEmail,
-    identityPhone,
-    identityLocation,
-    identityLinkedin,
-    identityWebsite,
-    savingSection,
-    handleSaveProfile,
-  ]);
-
-  useEffect(() => {
     if (lastEmailSigRef.current === null) return;
     if (savingSection === 'email') return;
     const sig = emailSig(emailEnabled, parseInt(emailThreshold, 10) || 100);
@@ -420,80 +286,8 @@ export default function SettingsPage() {
         </Text>
       </div>
 
-      {/* Profile (resume + cover-letter contact info) */}
-      <Card>
-        <CardHeader>
-          <div className='flex items-center justify-between gap-3'>
-            <CardTitle>Profile</CardTitle>
-            <SavingIndicator active={savingSection === 'profile'} />
-          </div>
-        </CardHeader>
-        <CardContent className='flex flex-col gap-4'>
-          <Text variant='caption' className='text-text-secondary'>
-            Used as the contact header on every generated resume and cover
-            letter. Name is required before you can generate.
-          </Text>
-          <div className='grid gap-4 sm:grid-cols-2'>
-            <Input
-              label='Name'
-              value={identityName}
-              onChange={e => setIdentityName(e.target.value)}
-              placeholder='Full name'
-              autoComplete='name'
-              required
-              data-sentry-mask
-            />
-            <Input
-              label='Email'
-              type='email'
-              value={identityEmail}
-              onChange={e => setIdentityEmail(e.target.value)}
-              placeholder='name@example.com'
-              autoComplete='email'
-              inputMode='email'
-              data-sentry-mask
-            />
-            <Input
-              label='Phone'
-              type='tel'
-              value={identityPhone}
-              onChange={e => setIdentityPhone(e.target.value)}
-              placeholder='+1 555 555 5555'
-              autoComplete='tel'
-              inputMode='tel'
-              data-sentry-mask
-            />
-            <Input
-              label='Location'
-              value={identityLocation}
-              onChange={e => setIdentityLocation(e.target.value)}
-              placeholder='City, State'
-              autoComplete='address-level2'
-              data-sentry-mask
-            />
-            <Input
-              label='LinkedIn URL'
-              type='url'
-              value={identityLinkedin}
-              onChange={e => setIdentityLinkedin(e.target.value)}
-              placeholder='https://linkedin.com/in/username'
-              autoComplete='url'
-              inputMode='url'
-              data-sentry-mask
-            />
-            <Input
-              label='Website'
-              type='url'
-              value={identityWebsite}
-              onChange={e => setIdentityWebsite(e.target.value)}
-              placeholder='https://example.com'
-              autoComplete='url'
-              inputMode='url'
-              data-sentry-mask
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Identity (contact header used on generated resumes + cover letters)
+          lives on /profile now — see ProfileIdentityCard. */}
 
       {/* Email Notifications */}
       <Card>
