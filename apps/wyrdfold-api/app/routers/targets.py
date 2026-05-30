@@ -52,6 +52,10 @@ from app.services.llm import cost_log
 from app.services.llm.client import LLMClient
 from app.services.poller import poll_sources_for_target
 from app.services.scoring import strip_html
+from app.services.source_discovery import (
+    DiscoveryRunStats,
+    run_discovery_for_target,
+)
 from app.services.target_scoring import score_title_and_upsert
 from app.services.targets import crud, from_input
 from app.services.targets.derive_profile import DEFAULT_PURPOSE, derive_profile_from_jd
@@ -416,6 +420,44 @@ async def activate_target(
         _activate_pipeline, supabase, llm, refreshed, user_id
     )
     return refreshed
+
+
+@router.post(
+    "/{target_id}/discover-sources",
+    response_model=DiscoveryRunStats,
+)
+async def discover_sources_for_target_endpoint(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
+) -> DiscoveryRunStats:
+    """Trigger Brave-Search-driven source discovery for one target.
+
+    Synchronous on the request (no BackgroundTask) so the caller gets the
+    actual stats back in the response. A full run for a target with 15
+    keywords × 6 ATS site filters issues up to 90 Brave queries plus one
+    detect_ats call per result URL; in practice it takes 30–90 seconds.
+    Acceptable for an operator-triggered endpoint — when we wire this to
+    cron, we'll move it to a BackgroundTask path.
+
+    Caller must own the target (JWT path enforces user_id; the read-by-id
+    confirms the target exists). Cron-style bulk discovery across all
+    active targets isn't exposed here yet — separate follow-up PR.
+    """
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+
+    # Verify the caller is linked to this target. Discovery is target-driven
+    # so it's only meaningful for the user's own targets — and we don't want
+    # to let a JWT caller burn the global Brave quota on someone else's
+    # search keywords.
+    if target_id not in crud.get_user_target_ids(supabase, user_id):
+        raise HTTPException(
+            status_code=403, detail="Target is not linked to this user"
+        )
+
+    return await run_discovery_for_target(supabase, target)
 
 
 @router.post("/{target_id}/deactivate", response_model=JobTarget)
