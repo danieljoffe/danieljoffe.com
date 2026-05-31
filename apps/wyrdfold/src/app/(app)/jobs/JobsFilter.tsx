@@ -55,16 +55,41 @@ export default function JobsFilter({
   handleSort,
 }: JobsFilterProps) {
   const [searchDraft, setSearchDraft] = useState(filters.search);
+  const [excludeLocationsDraft, setExcludeLocationsDraft] = useState(
+    filters.excludeLocations
+  );
+  const [onlyLocationsDraft, setOnlyLocationsDraft] = useState(
+    filters.onlyLocations
+  );
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     timerRef.current = setTimeout(() => {
-      if (searchDraft !== filters.search) {
-        onChange({ ...filters, search: searchDraft });
+      const next = {
+        ...filters,
+        search: searchDraft,
+        excludeLocations: excludeLocationsDraft,
+        onlyLocations: onlyLocationsDraft,
+      };
+      // Skip the call when nothing changed — the debounce fires once per
+      // render of this effect so we'd otherwise trigger an extra refetch
+      // on every parent re-render.
+      if (
+        next.search !== filters.search ||
+        next.excludeLocations !== filters.excludeLocations ||
+        next.onlyLocations !== filters.onlyLocations
+      ) {
+        onChange(next);
       }
     }, 300);
     return () => clearTimeout(timerRef.current);
-  }, [searchDraft, filters, onChange]);
+  }, [
+    searchDraft,
+    excludeLocationsDraft,
+    onlyLocationsDraft,
+    filters,
+    onChange,
+  ]);
 
   const minScoreLabel =
     MIN_SCORE_OPTIONS.find(o => o.value === filters.minScore)?.label ??
@@ -167,6 +192,26 @@ export default function JobsFilter({
             align='right'
           />
         </div>
+      </div>
+      {/* Location filters — comma-separated free-text. Substring match
+          against the job's location field on the API side. Two inputs so
+          a user can express "only US-or-Remote" and "never India" in the
+          same query. */}
+      <div className='grid gap-2 sm:grid-cols-2'>
+        <Input
+          size='sm'
+          value={onlyLocationsDraft}
+          onChange={e => setOnlyLocationsDraft(e.target.value)}
+          placeholder='Only locations (e.g. Remote, US)'
+          aria-label='Only show jobs in locations'
+        />
+        <Input
+          size='sm'
+          value={excludeLocationsDraft}
+          onChange={e => setExcludeLocationsDraft(e.target.value)}
+          placeholder='Exclude locations (e.g. India, Brazil)'
+          aria-label='Exclude jobs in locations'
+        />
       </div>
     </div>
   );

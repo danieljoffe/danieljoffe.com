@@ -59,6 +59,13 @@ export interface JobsFilterState {
   minScore: string;
   status: string;
   search: string;
+  /** Comma-separated location terms to exclude. Substring match against
+   *  the job's ``location`` field (case-insensitive on the API side).
+   *  Empty string = no exclusion. */
+  excludeLocations: string;
+  /** Comma-separated location terms — show only postings whose location
+   *  contains at least one of them. Empty string = no restriction. */
+  onlyLocations: string;
 }
 
 export type JobsSortColumn = 'score' | 'created_at' | 'company_name' | 'title';

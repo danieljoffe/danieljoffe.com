@@ -49,7 +49,13 @@ function setMatchMedia(matches: boolean) {
 }
 
 const baseProps = {
-  filters: { minScore: '', status: '', search: '' },
+  filters: {
+    minScore: '',
+    status: '',
+    search: '',
+    excludeLocations: '',
+    onlyLocations: '',
+  },
   onFiltersChange: () => undefined,
   selectedIds: new Set<string>(),
   onSelectionChange: () => undefined,

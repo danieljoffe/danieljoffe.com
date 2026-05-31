@@ -374,6 +374,60 @@ def _list_jobs_across_user_targets(
 # the event loop and serialize concurrent /jobs reads.
 
 
+def _parse_location_list(raw: str | None) -> list[str]:
+    """Split a comma-separated filter (e.g. ``"India, Brazil, Berlin"``) into
+    individual trimmed terms. Empty/None → empty list. Terms are lowercased
+    here because the Python-side post-filter does case-insensitive substring
+    matching against ``job.location`` (which is stored mixed-case)."""
+    if not raw:
+        return []
+    return [t.strip().lower() for t in raw.split(",") if t.strip()]
+
+
+def _location_passes(
+    location: str | None,
+    *,
+    exclude_terms: list[str],
+    only_terms: list[str],
+) -> bool:
+    """True when a posting's ``location`` should be visible under the user's
+    location filter. ``only_terms`` is OR (any match wins). ``exclude_terms``
+    is OR (any match excludes). Missing location is OK for ``only_terms``
+    (we can't prove it doesn't match) but excluded only when a term explicitly
+    targets ``""`` — the typical case keeps it visible.
+    """
+    loc = (location or "").lower()
+    if only_terms and not any(term in loc for term in only_terms):
+        return False
+    return not (exclude_terms and any(term in loc for term in exclude_terms))
+
+
+def _apply_location_filter(
+    postings: list[dict[str, Any]],
+    *,
+    exclude_terms: list[str],
+    only_terms: list[str],
+) -> list[dict[str, Any]]:
+    """Drop postings whose ``location`` field fails the include/exclude
+    terms. Applied post-fetch so we don't have to thread Supabase ``or_``
+    chains through every list-jobs path; the trade-off is that pagination
+    becomes approximate (a page can shrink when the filter trims rows),
+    which matches how ``status``/``search`` already work in the two-query
+    fallback path. Acceptable for an opt-in filter that most users won't
+    enable."""
+    if not exclude_terms and not only_terms:
+        return postings
+    return [
+        p
+        for p in postings
+        if _location_passes(
+            p.get("location"),
+            exclude_terms=exclude_terms,
+            only_terms=only_terms,
+        )
+    ]
+
+
 @router.get("")
 def list_jobs(
     page: int = Query(1, ge=1),
@@ -388,9 +442,13 @@ def list_jobs(
     company: str | None = Query(None, max_length=200),
     search: str | None = Query(None, max_length=200),
     target_id: str | None = Query(None),
+    exclude_locations: str | None = Query(None, max_length=500),
+    only_locations: str | None = Query(None, max_length=500),
     supabase: Client = Depends(get_supabase),
     user_id: str | None = Depends(get_current_user_id_optional),
 ) -> dict[str, Any]:
+    exclude_terms = _parse_location_list(exclude_locations)
+    only_terms = _parse_location_list(only_locations)
     offset = (page - 1) * page_size
     ascending = order == "asc"
 
@@ -407,6 +465,11 @@ def list_jobs(
         status=status,
         company=company,
         search=search,
+        # Comma-joined here so two callers with the same set of terms in
+        # different order share a cache entry. Terms are already lowercased
+        # by ``_parse_location_list``.
+        exclude_locations=",".join(sorted(exclude_terms)) or None,
+        only_locations=",".join(sorted(only_terms)) or None,
         user_id=user_id,
     )
     cached: dict[str, Any] | None = job_list_cache.get(cache_key)
@@ -453,6 +516,11 @@ def list_jobs(
             company=company,
             search=search,
         )
+        result["postings"] = _apply_location_filter(
+            result["postings"],
+            exclude_terms=exclude_terms,
+            only_terms=only_terms,
+        )
         job_list_cache.set(cache_key, result)
         return result
 
@@ -473,6 +541,11 @@ def list_jobs(
             status=status,
             company=company,
             search=search,
+        )
+        result["postings"] = _apply_location_filter(
+            result["postings"],
+            exclude_terms=exclude_terms,
+            only_terms=only_terms,
         )
         job_list_cache.set(cache_key, result)
         return result
@@ -495,7 +568,11 @@ def list_jobs(
     resp = query.execute()
 
     operator_result: dict[str, Any] = {
-        "postings": list(resp.data or []),
+        "postings": _apply_location_filter(
+            cast(list[dict[str, Any]], list(resp.data or [])),
+            exclude_terms=exclude_terms,
+            only_terms=only_terms,
+        ),
         "total": resp.count or 0,
         "page": page,
         "page_size": page_size,
