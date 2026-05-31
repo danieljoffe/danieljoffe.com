@@ -90,7 +90,16 @@ def _list_jobs_for_target_rpc(
     status: str | None,
     company: str | None,
     search: str | None,
+    exclude_terms: list[str],
+    only_terms: list[str],
 ) -> dict[str, Any]:
+    # The RPC paginates server-side with no knowledge of the location
+    # filter, so its ``total`` would be the pre-filter count and pages
+    # would render half-empty (or empty) once the filter trims rows.
+    # Force the fallback two-query path which can fetch the full set
+    # and paginate from the post-filter list.
+    if exclude_terms or only_terms:
+        raise RuntimeError("RPC path skipped: location filter requires post-fetch pagination")
     """List jobs via server-side join RPC (single round-trip)."""
     resp = supabase.rpc(
         "get_target_jobs",
@@ -128,9 +137,12 @@ def _list_jobs_for_target_two_query(
     status: str | None,
     company: str | None,
     search: str | None,
+    exclude_terms: list[str],
+    only_terms: list[str],
 ) -> dict[str, Any]:
     """Fallback: two-query pattern with pagination pushed to the scores layer."""
     sort_col = "score" if sort == "score" else sort
+    has_location_filter = bool(exclude_terms or only_terms)
     ts_query = (
         supabase.table("scores")
         .select("job_posting_id, score, score_breakdown, scoring_status", count=CountMethod.exact)
@@ -159,8 +171,19 @@ def _list_jobs_for_target_two_query(
 
     score_lookup = {r["job_posting_id"]: r for r in ts_rows}
 
-    # For score-sorted queries, paginate at the scores layer
-    if sort_col == "score" and not status and not company and not search:
+    # For score-sorted queries, paginate at the scores layer — but only if
+    # no post-fetch filter can drop rows AFTER that pagination. Location
+    # filtering is post-fetch (we don't push it into Supabase), so when
+    # it's active we have to load every candidate posting, filter, and
+    # paginate from the filtered set — otherwise pagination would show
+    # the pre-filter total and pages would render half-empty.
+    if (
+        sort_col == "score"
+        and not status
+        and not company
+        and not search
+        and not has_location_filter
+    ):
         page_ids = [r["job_posting_id"] for r in ts_rows[offset : offset + page_size]]
         total = len(ts_rows) if ts_resp.count is None else ts_resp.count
     else:
@@ -193,6 +216,16 @@ def _list_jobs_for_target_two_query(
 
     # Sort + paginate in Python only when we couldn't do it server-side
     if total is None or sort_col != "score":
+        if has_location_filter:
+            postings = cast(
+                Any,
+                _apply_location_filter(
+                    cast(list[dict[str, Any]], postings),
+                    exclude_terms=exclude_terms,
+                    only_terms=only_terms,
+                ),
+            )
+
         def _sort_key(p: Any) -> Any:
             val = cast(dict[str, Any], p).get(sort)
             if val is None:
@@ -230,11 +263,15 @@ def _list_jobs_for_target(
     status: str | None,
     company: str | None,
     search: str | None,
+    exclude_terms: list[str],
+    only_terms: list[str],
 ) -> dict[str, Any]:
     """List jobs for a target view, sorted/paginated by target-specific scores.
 
     Tries the server-side RPC join first (single round-trip). Falls back to the
     optimized two-query pattern if the RPC function hasn't been deployed yet.
+    The two-query path also takes over when location filters are active, since
+    the RPC paginates server-side with no knowledge of the location filter.
     """
     kwargs: dict[str, Any] = {
         "target_id": target_id,
@@ -247,6 +284,8 @@ def _list_jobs_for_target(
         "status": status,
         "company": company,
         "search": search,
+        "exclude_terms": exclude_terms,
+        "only_terms": only_terms,
     }
     try:
         return _list_jobs_for_target_rpc(supabase, **kwargs)
@@ -268,6 +307,8 @@ def _list_jobs_across_user_targets(
     status: str | None,
     company: str | None,
     search: str | None,
+    exclude_terms: list[str],
+    only_terms: list[str],
 ) -> dict[str, Any]:
     """Untargeted list — returns the union of jobs scored against any of the
     user's active targets, deduplicated by job id.
@@ -302,9 +343,17 @@ def _list_jobs_across_user_targets(
         if existing is None or row["score"] > existing["score"]:
             best[jid] = row
 
-    if sort_col == "score" and not status and not company and not search:
-        # Sort + paginate at the scores layer when no posting-level filters
-        # require us to load every candidate posting first.
+    has_location_filter = bool(exclude_terms or only_terms)
+    if (
+        sort_col == "score"
+        and not status
+        and not company
+        and not search
+        and not has_location_filter
+    ):
+        # Sort + paginate at the scores layer when no post-fetch filter
+        # could drop rows AFTER that pagination (location is post-fetch,
+        # so when it's active we have to filter the full set first).
         # ``(score, job_posting_id)`` tuple key gives a deterministic
         # tiebreaker — without the id leg, rows with identical scores
         # could reorder between paginated calls (Python's ``sorted`` is
@@ -344,6 +393,15 @@ def _list_jobs_across_user_targets(
             p["scoring_status"] = ts.get("scoring_status", "stage1")
 
     if total is None or sort_col != "score":
+        if has_location_filter:
+            postings = cast(
+                Any,
+                _apply_location_filter(
+                    cast(list[dict[str, Any]], postings),
+                    exclude_terms=exclude_terms,
+                    only_terms=only_terms,
+                ),
+            )
 
         def _sort_key(p: Any) -> Any:
             val = cast(dict[str, Any], p).get(sort)
@@ -515,9 +573,6 @@ def list_jobs(
             status=status,
             company=company,
             search=search,
-        )
-        result["postings"] = _apply_location_filter(
-            result["postings"],
             exclude_terms=exclude_terms,
             only_terms=only_terms,
         )
@@ -541,9 +596,6 @@ def list_jobs(
             status=status,
             company=company,
             search=search,
-        )
-        result["postings"] = _apply_location_filter(
-            result["postings"],
             exclude_terms=exclude_terms,
             only_terms=only_terms,
         )
@@ -564,19 +616,37 @@ def list_jobs(
     if search:
         query = query.ilike("title", f"%{search}%")
 
-    query = query.order(sort, desc=not ascending).range(offset, offset + page_size - 1)
-    resp = query.execute()
-
-    operator_result: dict[str, Any] = {
-        "postings": _apply_location_filter(
-            cast(list[dict[str, Any]], list(resp.data or [])),
+    has_location_filter = bool(exclude_terms or only_terms)
+    if has_location_filter:
+        # Location is post-fetch — server-side ``.range()`` would return
+        # a pre-filter page whose total is wrong and whose contents may
+        # mostly get trimmed. Fetch the full (pre-location) set ordered
+        # server-side, filter in Python, then paginate from the result.
+        query = query.order(sort, desc=not ascending)
+        resp = query.execute()
+        all_rows = cast(list[dict[str, Any]], list(resp.data or []))
+        filtered = _apply_location_filter(
+            all_rows,
             exclude_terms=exclude_terms,
             only_terms=only_terms,
-        ),
-        "total": resp.count or 0,
-        "page": page,
-        "page_size": page_size,
-    }
+        )
+        operator_result: dict[str, Any] = {
+            "postings": filtered[offset : offset + page_size],
+            "total": len(filtered),
+            "page": page,
+            "page_size": page_size,
+        }
+    else:
+        query = query.order(sort, desc=not ascending).range(
+            offset, offset + page_size - 1
+        )
+        resp = query.execute()
+        operator_result = {
+            "postings": cast(list[dict[str, Any]], list(resp.data or [])),
+            "total": resp.count or 0,
+            "page": page,
+            "page_size": page_size,
+        }
     job_list_cache.set(cache_key, operator_result)
     return operator_result
 
