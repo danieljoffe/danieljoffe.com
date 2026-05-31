@@ -67,6 +67,19 @@ class Settings(BaseSettings):
     poll_scheduler_enabled: bool = False
     poll_tick_minutes: int = Field(default=30, ge=1, le=1440)
 
+    # Brave Search API — powers the target-driven source-discovery loop. Set
+    # the key to enable; empty key disables discovery entirely (the service
+    # logs a warning and exits cleanly). 2,000 free queries/month is plenty
+    # for daily-per-target with a query cap. Get one at https://brave.com/search/api/.
+    brave_search_api_key: str = Field(default="", repr=False)
+    # Hard cap on total Brave queries fired per discovery run, across all
+    # targets and keywords. The free tier is 2,000/month; at 200/day across
+    # daily runs we'd burn through it in 10 days, so 200 is the ceiling for a
+    # single run and the per-target loop fans out within that budget.
+    discovery_query_cap_per_run: int = Field(default=200, ge=1, le=2000)
+    # Per-keyword result depth — top N URLs we look at from each search.
+    discovery_results_per_query: int = Field(default=20, ge=1, le=50)
+
     @property
     def cors_allowed_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
