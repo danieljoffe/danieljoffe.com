@@ -222,27 +222,37 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
           <ArrowLeft className='size-5' aria-hidden />
         </Link>
         <div className='flex-1 min-w-0'>
-          <div className='flex items-center gap-2 min-w-0'>
+          {posting.absolute_url ? (
+            <a
+              href={posting.absolute_url}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='group inline-flex items-center gap-2 min-w-0 max-w-full text-text-primary hover:text-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-md'
+              aria-label={`Open original posting for ${posting.title} in a new tab`}
+            >
+              <ExternalLink
+                className='size-5 shrink-0 text-brand-500'
+                aria-hidden
+              />
+              <Heading
+                variant='component'
+                as='h1'
+                className='min-w-0 truncate underline decoration-dotted decoration-text-tertiary underline-offset-4 group-hover:decoration-brand-500'
+                title={posting.title}
+              >
+                {posting.title}
+              </Heading>
+            </a>
+          ) : (
             <Heading
               variant='component'
               as='h1'
-              className='flex-1 min-w-0 truncate'
+              className='min-w-0 truncate'
               title={posting.title}
             >
               {posting.title}
             </Heading>
-            {posting.absolute_url && (
-              <a
-                href={posting.absolute_url}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='shrink-0 p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
-                aria-label='View original posting'
-              >
-                <ExternalLink className='size-5' aria-hidden />
-              </a>
-            )}
-          </div>
+          )}
           <div className='mt-1 flex flex-col gap-0.5 text-text-secondary'>
             <div className='flex flex-wrap items-center gap-2'>
               <Text variant='caption' className='text-text-secondary'>
@@ -254,14 +264,14 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
                 </Badge>
               )}
             </div>
-            {posting.salary_text && (
-              <Text variant='caption' className='text-text-secondary'>
-                {posting.salary_text}
-              </Text>
-            )}
             {posting.location && (
               <Text variant='caption' className='text-text-secondary'>
                 {posting.location}
+              </Text>
+            )}
+            {posting.salary_text && (
+              <Text variant='caption' className='text-text-secondary'>
+                {posting.salary_text}
               </Text>
             )}
           </div>
