@@ -59,11 +59,15 @@ export default function JobsList({
       search: urlState.search,
       status: urlState.status || initialStatus || '',
       minScore: urlState.minScore || initialMinScore || '',
+      excludeLocations: urlState.excludeLocations,
+      onlyLocations: urlState.onlyLocations,
     }),
     [
       urlState.search,
       urlState.status,
       urlState.minScore,
+      urlState.excludeLocations,
+      urlState.onlyLocations,
       initialStatus,
       initialMinScore,
     ]
@@ -75,6 +79,8 @@ export default function JobsList({
         search: next.search || null,
         status: next.status || null,
         minScore: next.minScore || null,
+        excludeLocations: next.excludeLocations || null,
+        onlyLocations: next.onlyLocations || null,
         // Filter changes always reset to page 1 — match
         // ``useAdminTableFetch``'s ``extraParams`` reset.
         page: 1,
@@ -232,6 +238,8 @@ export default function JobsList({
           search: null,
           status: null,
           minScore: null,
+          excludeLocations: null,
+          onlyLocations: null,
           page: 1,
         },
         'push'

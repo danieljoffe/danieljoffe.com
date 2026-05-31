@@ -23,6 +23,8 @@ const KEYS = {
   search: 'q',
   status: 's',
   minScore: 'score',
+  excludeLocations: 'exclude',
+  onlyLocations: 'only',
   sort: 'sort',
   order: 'order',
   page: 'page',
@@ -35,6 +37,8 @@ interface JobsUrlState {
   search: string;
   status: string;
   minScore: string;
+  excludeLocations: string;
+  onlyLocations: string;
   sort: string;
   order: JobsUrlOrder;
   page: number;
@@ -91,6 +95,8 @@ export function useJobsUrlState({
       search: searchParams.get(KEYS.search) ?? '',
       status: searchParams.get(KEYS.status) ?? '',
       minScore: searchParams.get(KEYS.minScore) ?? '',
+      excludeLocations: searchParams.get(KEYS.excludeLocations) ?? '',
+      onlyLocations: searchParams.get(KEYS.onlyLocations) ?? '',
       sort: searchParams.get(KEYS.sort) ?? defaultSort,
       order: parseOrder(searchParams.get(KEYS.order)) ?? defaultOrder,
       page: parsePage(searchParams.get(KEYS.page)),
@@ -111,6 +117,10 @@ export function useJobsUrlState({
       if ('search' in patch) apply(KEYS.search, patch.search);
       if ('status' in patch) apply(KEYS.status, patch.status);
       if ('minScore' in patch) apply(KEYS.minScore, patch.minScore);
+      if ('excludeLocations' in patch)
+        apply(KEYS.excludeLocations, patch.excludeLocations);
+      if ('onlyLocations' in patch)
+        apply(KEYS.onlyLocations, patch.onlyLocations);
       if ('sort' in patch) apply(KEYS.sort, patch.sort);
       if ('order' in patch) apply(KEYS.order, patch.order);
       if ('page' in patch) {

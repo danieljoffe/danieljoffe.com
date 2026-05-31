@@ -102,6 +102,9 @@ export default function JobsListView({
     if (filters.minScore) params.min_score = filters.minScore;
     if (filters.status) params.status = filters.status;
     if (filters.search) params.search = filters.search;
+    if (filters.excludeLocations)
+      params.exclude_locations = filters.excludeLocations;
+    if (filters.onlyLocations) params.only_locations = filters.onlyLocations;
     const combined = refreshKey + deleteKey;
     if (combined) params._r = String(combined);
     return params;

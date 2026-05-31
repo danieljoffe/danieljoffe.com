@@ -9,6 +9,8 @@ const baseFilters: JobsFilterState = {
   minScore: '',
   status: '',
   search: '',
+  excludeLocations: '',
+  onlyLocations: '',
 };
 
 describe('JobsFilter', () => {
