@@ -14,6 +14,23 @@ interface UseAdminTableFetchOptions<S extends string> {
   dataKey: string;
   /** Additional query params to include (e.g. filters) */
   extraParams?: Record<string, string>;
+  /** External source of truth for sort/order/page (e.g. URL query params).
+   *  When provided, the hook re-initialises its internal state any time
+   *  the controlled value changes. Used so browser back/forward restores
+   *  the table state without losing the filter bar. */
+  controlled?:
+    | {
+        sort: S;
+        order: 'asc' | 'desc';
+        page: number;
+      }
+    | undefined;
+  /** Fired whenever the user sorts. Lets the caller mirror the change
+   *  into URL state so the back button restores it. */
+  onSortChange?: ((sort: S, order: 'asc' | 'desc') => void) | undefined;
+  /** Fired whenever the page changes (user click, sort reset, filter
+   *  reset). Lets the caller mirror the change into URL state. */
+  onPageChange?: ((page: number) => void) | undefined;
 }
 
 export function useAdminTableFetch<T, S extends string>({
@@ -23,16 +40,40 @@ export function useAdminTableFetch<T, S extends string>({
   pageSize = 20,
   dataKey,
   extraParams,
+  controlled,
+  onSortChange,
+  onPageChange,
 }: UseAdminTableFetchOptions<S>) {
   const [data, setData] = useState<T[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
+  const [page, setPageState] = useState(controlled?.page ?? 1);
   const [loading, setLoading] = useState(true);
+
+  // Re-sync the page from the controlled value (e.g. user hit browser
+  // back from page 3 → page 1).
+  useEffect(() => {
+    if (controlled) setPageState(controlled.page);
+  }, [controlled?.page, controlled]);
+
+  // ``setPage`` flows through the URL callback (when provided) so the
+  // pagination bar's click → state update → URL update is one path.
+  const setPage = useCallback(
+    (next: number) => {
+      setPageState(next);
+      onPageChange?.(next);
+    },
+    [onPageChange]
+  );
 
   const { sort, order, handleSort, sortIndicator } = useTableSort<S>(
     defaultSort,
-    () => setPage(1),
-    defaultOrder
+    (nextSort, nextOrder) => {
+      setPageState(1);
+      onPageChange?.(1);
+      onSortChange?.(nextSort, nextOrder);
+    },
+    defaultOrder,
+    controlled ? { sort: controlled.sort, order: controlled.order } : undefined
   );
 
   // Reset to page 1 whenever filters change. Without this, a user on page 2+

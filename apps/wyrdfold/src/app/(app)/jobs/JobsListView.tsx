@@ -53,6 +53,21 @@ interface JobsListViewProps {
    *  the "All Jobs" tab. */
   analysisTargetId: string | undefined;
   onPostingsLoaded?: ((postings: JobPosting[]) => void) | undefined;
+  /** URL-backed sort/order/page state, when the parent owns it. The
+   *  parent (JobsList) plumbs this from ``useJobsUrlState`` so browser
+   *  back/forward restores the table state. Optional so other callers
+   *  of JobsListView don't need to know about the URL plumbing. */
+  controlledTableState?:
+    | {
+        sort: JobsSortColumn;
+        order: 'asc' | 'desc';
+        page: number;
+      }
+    | undefined;
+  onTableSortChange?:
+    | ((sort: JobsSortColumn, order: 'asc' | 'desc') => void)
+    | undefined;
+  onTablePageChange?: ((page: number) => void) | undefined;
 }
 
 export default function JobsListView({
@@ -64,6 +79,9 @@ export default function JobsListView({
   targetId,
   analysisTargetId,
   onPostingsLoaded,
+  controlledTableState,
+  onTableSortChange,
+  onTablePageChange,
 }: JobsListViewProps) {
   const [deleteKey, setDeleteKey] = useState(0);
   const isDesktop = useIsDesktop();
@@ -107,6 +125,9 @@ export default function JobsListView({
     pageSize: 20,
     dataKey: 'postings',
     extraParams,
+    controlled: controlledTableState,
+    onSortChange: onTableSortChange,
+    onPageChange: onTablePageChange,
   });
 
   useEffect(() => {
