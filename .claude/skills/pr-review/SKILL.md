@@ -144,23 +144,27 @@ Merge findings from all agents. Deduplicate by `file:line` — if multiple agent
 
 ### Step 9: Output unified report
 
+Lead with a one-line **Verdict** that says, at a glance, whether the PR is mergeable. The verdict is derived deterministically from the finding counts (see the table below) — don't editorialise.
+
 ```markdown
 ## PR Review Summary
+
+**Verdict**: <BLOCK | NEEDS-ACK | READY> — <one-sentence reason>
 
 **Branch**: <branch> → <base>
 **Files in PR**: <total> | **Reviewed**: <count> | **Skipped**: <count> (deleted/binary/meta/docs)
 **Reviewers run**: <list>
 **Skipped reviewers**: <list with reason>
 
-### Critical (must fix)
+### Critical (must fix — blocks merge)
 
 - [ ] file:line — description (reviewer)
 
-### Warnings (should fix)
+### Warnings (should fix — explicit ack required)
 
 - [ ] file:line — description (reviewer)
 
-### Suggestions (nice to have)
+### Suggestions (nice to have — advisory)
 
 - [ ] file:line — description (reviewer)
 
@@ -172,6 +176,18 @@ Merge findings from all agents. Deduplicate by `file:line` — if multiple agent
 
 <count> files not reviewed: <breakdown by reason>
 ```
+
+**Verdict derivation table:**
+
+| Critical | Warnings | Verdict     | Meaning                                                                                 |
+| -------- | -------- | ----------- | --------------------------------------------------------------------------------------- |
+| ≥ 1      | any      | `BLOCK`     | Merge blocked. Critical findings must be resolved (or downgraded with rationale) first. |
+| 0        | ≥ 1      | `NEEDS-ACK` | User must explicitly acknowledge each warning before merging (a "ship it anyway" call). |
+| 0        | 0        | `READY`     | Mergeable. Suggestions are advisory and do not gate.                                    |
+
+The verdict is informational — the skill does not block any git operation. It's a clear signal so the user (or a downstream merge-gate workflow) can act without re-reading the whole report.
+
+**Downgrading a Critical to a Warning** is allowed when the user provides a written rationale (e.g. "false positive — this path is api-key only, not user-reachable"). Note the downgrade inline next to the finding.
 
 ## Rules
 
