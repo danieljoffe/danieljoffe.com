@@ -90,6 +90,8 @@ def test_target_two_query_restores_score_desc_order() -> None:
         status=None,
         company=None,
         search=None,
+        exclude_terms=[],
+        only_terms=[],
     )
 
     assert [p["id"] for p in result["postings"]] == ["j-high", "j-mid", "j-low"]
@@ -125,8 +127,51 @@ def test_across_user_targets_restores_score_desc_order() -> None:
         status=None,
         company=None,
         search=None,
+        exclude_terms=[],
+        only_terms=[],
     )
 
     assert [p["id"] for p in result["postings"]] == ["j-high", "j-mid", "j-low"]
     assert [p["score"] for p in result["postings"]] == [80, 50, 20]
     assert result["total"] == 3
+
+
+def test_target_two_query_location_filter_paginates_post_filter_set() -> None:
+    """Regression: when a location filter is active, ``total`` must reflect
+    the post-filter row count — not the pre-filter scores-layer count.
+    Previously the API returned ``total=3`` for a query that only matched 1
+    row after filtering, which made the UI render 4+ near-empty pages."""
+    ts_rows = [
+        {"job_posting_id": "j-remote", "score": 90, "score_breakdown": {}, "scoring_status": "complete"},
+        {"job_posting_id": "j-india", "score": 70, "score_breakdown": {}, "scoring_status": "complete"},
+        {"job_posting_id": "j-brazil", "score": 50, "score_breakdown": {}, "scoring_status": "complete"},
+    ]
+    postings = [
+        {"id": "j-remote", "title": "remote role", "location": "Remote · US"},
+        {"id": "j-india", "title": "india role", "location": "Bangalore, India"},
+        {"id": "j-brazil", "title": "brazil role", "location": "São Paulo, Brazil"},
+    ]
+    sb = _supabase_with(
+        {"scores": _Resp(ts_rows, count=3), "jobs": _Resp(postings)}
+    )
+
+    result = _list_jobs_for_target_two_query(
+        sb,
+        target_id="t-1",
+        offset=0,
+        page=1,
+        page_size=10,
+        sort="score",
+        ascending=False,
+        min_score=None,
+        status=None,
+        company=None,
+        search=None,
+        exclude_terms=["india", "brazil"],
+        only_terms=[],
+    )
+
+    assert [p["id"] for p in result["postings"]] == ["j-remote"]
+    # The crux of the regression: total should be the post-filter count,
+    # not the 3 pre-filter scores rows.
+    assert result["total"] == 1
