@@ -182,10 +182,66 @@ def _title_matches_any_target(title: str, targets: list[JobTarget]) -> bool:
     return False
 
 
+# Tokens we drop before token-overlap matching — pure connective words
+# that contribute no signal. Kept short on purpose; anything role-specific
+# (e.g. "engineering", "operations") stays in.
+_MATCH_STOPWORDS: frozenset[str] = frozenset(
+    {"of", "the", "and", "a", "an", "for", "to", "in", "on", "at"}
+)
+
+# Minimum fraction of a keyword's content tokens that must appear in the
+# title for a token-overlap match. 0.6 means a 5-token keyword needs 3 of
+# those tokens in the title — strict enough that "Director" alone doesn't
+# match "Director of CX Operations", lax enough that "Director, Customer
+# Experience" matches both "director of customer experience" and
+# "head of customer experience".
+_MATCH_MIN_OVERLAP_RATIO: float = 0.6
+
+
+def _content_tokens(text: str) -> list[str]:
+    """Lower-case word-boundary split with stopwords removed.
+
+    Used by ``_title_matches_target`` on both sides of the comparison so
+    matching is symmetric (token-by-token rather than substring-by-substring).
+    """
+    raw = text.lower().replace(",", " ").replace("/", " ").split()
+    return [t for t in raw if t and t not in _MATCH_STOPWORDS]
+
+
 def _title_matches_target(title: str, keywords: list[str]) -> bool:
-    """Check if a job title matches any of the target's search keywords."""
-    title_lower = title.lower()
-    return any(kw.lower() in title_lower for kw in keywords)
+    """Token-overlap match between a job title and any of the target's
+    search keywords.
+
+    Previous version used pure substring match — ``"director of cx operations"
+    in title_lower`` — which silently dropped almost every real posting
+    because companies rarely include filler words verbatim in their titles
+    ("Director, Customer Experience" doesn't contain "director of cx
+    operations"). The new matcher tokenizes both sides on word boundaries,
+    drops stopwords, and accepts the keyword when at least
+    ``_MATCH_MIN_OVERLAP_RATIO`` of its content tokens appear as substrings
+    of the title's tokens. Substring (not exact) so plurals and
+    "Customer-Centric" → "Customer" still match.
+    """
+    if not keywords:
+        return False
+    title_tokens = _content_tokens(title)
+    if not title_tokens:
+        return False
+    for keyword in keywords:
+        kw_tokens = _content_tokens(keyword)
+        if not kw_tokens:
+            continue
+        # Fast path: a 1-token keyword degenerates to plain substring match.
+        if len(kw_tokens) == 1:
+            if any(kw_tokens[0] in t for t in title_tokens):
+                return True
+            continue
+        hits = sum(
+            1 for kw in kw_tokens if any(kw in t for t in title_tokens)
+        )
+        if hits / len(kw_tokens) >= _MATCH_MIN_OVERLAP_RATIO:
+            return True
+    return False
 
 
 def _is_us_location(location: str | None) -> bool:
@@ -916,6 +972,30 @@ async def _poll_one_source_for_target(
     except Exception:
         logger.exception("Poll failed for %s (target %s)", company_name, target.label)
         summary["error"] = f"{company_name}: poll failed"
+
+    # Stamp ``last_polled_at`` on the source row whenever we made it past
+    # the fetcher dispatch — including the "polled but zero matches against
+    # this target" case, which previously left the column null and gave
+    # operators no signal that the source was actually being touched. We
+    # explicitly skip on the "unknown provider" branch above (that path
+    # returns early before reaching here) so a misconfigured row doesn't
+    # silently look healthy.
+    if summary.get("polled"):
+        try:
+            source_id_for_stamp = source.get("id")
+            if source_id_for_stamp:
+                await asyncio.to_thread(
+                    supabase.table("sources")
+                    .update({"last_polled_at": datetime.now(UTC).isoformat()})
+                    .eq("id", source_id_for_stamp)
+                    .execute
+                )
+        except Exception:
+            # Non-fatal — the actual poll already happened, this is just
+            # the operator-visibility stamp.
+            logger.exception(
+                "Failed to update last_polled_at for source %s", company_name
+            )
 
     return summary
 
