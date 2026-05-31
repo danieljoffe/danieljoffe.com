@@ -29,9 +29,9 @@ const KEYS = {
   target: 'target',
 } as const;
 
-export type JobsUrlOrder = 'asc' | 'desc';
+type JobsUrlOrder = 'asc' | 'desc';
 
-export interface JobsUrlState {
+interface JobsUrlState {
   search: string;
   status: string;
   minScore: string;
@@ -43,7 +43,7 @@ export interface JobsUrlState {
 
 /** Patch shape: pass only the keys you want to change. ``null`` clears
  *  the key. Omitted keys are left untouched. */
-export type JobsUrlPatch = Partial<{
+type JobsUrlPatch = Partial<{
   [K in keyof JobsUrlState]: JobsUrlState[K] | null;
 }>;
 
