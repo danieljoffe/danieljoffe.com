@@ -14,7 +14,9 @@ about. See ``.tmp/chatgpt-report.md`` discussion for the trade-offs.
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import random
 from dataclasses import dataclass
 from typing import Any, cast
 
@@ -68,6 +70,34 @@ class _SearchHit:
     url: str
 
 
+# Brave retry policy. 429 (rate limit) and 5xx (transient backend) are
+# retryable; everything else (auth, malformed query, etc.) is a config
+# error that retrying won't fix.
+_BRAVE_RETRYABLE_STATUSES = frozenset({429, 500, 502, 503, 504})
+_BRAVE_MAX_ATTEMPTS = 3
+_BRAVE_BACKOFF_BASE_SECONDS = 0.5
+# Hard ceiling on a single retry sleep — we never want to sit on a
+# request-bound endpoint for more than this, even if the server says so.
+_BRAVE_MAX_RETRY_SLEEP_SECONDS = 30.0
+
+
+def _parse_retry_after(value: str) -> float | None:
+    """Brave (like most APIs) returns ``Retry-After`` as either a number of
+    seconds (``"5"``) or an HTTP-date (``"Wed, 21 Oct 2026 07:28:00 GMT"``).
+    We only handle the integer form here — the date form is uncommon for
+    rate-limit responses and parsing it pulls in ``email.utils.parsedate_to_datetime``,
+    which we don't otherwise need. Returns None if the header is missing or
+    can't be parsed.
+    """
+    try:
+        seconds = float(value.strip())
+    except (TypeError, ValueError):
+        return None
+    if seconds < 0:
+        return None
+    return min(seconds, _BRAVE_MAX_RETRY_SLEEP_SECONDS)
+
+
 async def _brave_search(
     client: httpx.AsyncClient,
     *,
@@ -76,22 +106,82 @@ async def _brave_search(
 ) -> list[str]:
     """Issue a single Brave Search query, return the result URLs.
 
-    Returns ``[]`` on any error (rate limit, network, auth). The caller logs
-    and moves on — partial discovery is better than zero discovery.
+    Retries up to ``_BRAVE_MAX_ATTEMPTS`` on 429 + 5xx. For 429 we honour the
+    server's ``Retry-After`` header when present; otherwise we fall back to
+    exponential backoff with jitter so concurrent runners don't synchronise
+    their retries into a thundering herd. Non-retryable status codes (4xx
+    other than 429, transport errors that aren't network-flaky) return ``[]``
+    immediately so the caller can move on.
     """
     headers = {
         "Accept": "application/json",
         "X-Subscription-Token": settings.brave_search_api_key,
     }
     params: dict[str, str | int] = {"q": query, "count": count}
-    try:
-        resp = await client.get(
-            _BRAVE_URL, headers=headers, params=params, timeout=15.0
-        )
-    except httpx.HTTPError as exc:
-        logger.warning("brave search transport error for %r: %s", query, exc)
-        return []
-    if resp.status_code != 200:
+
+    for attempt in range(1, _BRAVE_MAX_ATTEMPTS + 1):
+        try:
+            resp = await client.get(
+                _BRAVE_URL, headers=headers, params=params, timeout=15.0
+            )
+        except httpx.HTTPError as exc:
+            logger.warning(
+                "brave search transport error for %r (attempt %d/%d): %s",
+                query,
+                attempt,
+                _BRAVE_MAX_ATTEMPTS,
+                exc,
+            )
+            if attempt >= _BRAVE_MAX_ATTEMPTS:
+                return []
+            await asyncio.sleep(
+                _backoff_with_jitter(attempt)
+            )
+            continue
+
+        if resp.status_code == 200:
+            try:
+                body = resp.json()
+            except ValueError:
+                logger.warning("brave search returned non-JSON for %r", query)
+                return []
+            results = body.get("web", {}).get("results", []) or []
+            return [r["url"] for r in results if isinstance(r.get("url"), str)]
+
+        if resp.status_code in _BRAVE_RETRYABLE_STATUSES:
+            if attempt >= _BRAVE_MAX_ATTEMPTS:
+                logger.warning(
+                    "brave search %d for %r — retries exhausted",
+                    resp.status_code,
+                    query,
+                )
+                return []
+            # 429: prefer server's Retry-After. 5xx: exponential backoff.
+            sleep_seconds: float
+            if resp.status_code == 429:
+                retry_after = _parse_retry_after(
+                    resp.headers.get("retry-after", "")
+                )
+                sleep_seconds = (
+                    retry_after
+                    if retry_after is not None
+                    else _backoff_with_jitter(attempt)
+                )
+            else:
+                sleep_seconds = _backoff_with_jitter(attempt)
+            logger.info(
+                "brave search %d for %r — retrying in %.1fs (attempt %d/%d)",
+                resp.status_code,
+                query,
+                sleep_seconds,
+                attempt,
+                _BRAVE_MAX_ATTEMPTS,
+            )
+            await asyncio.sleep(sleep_seconds)
+            continue
+
+        # Non-retryable (401, 403, 400, anything else 4xx). Surfacing the
+        # body for debugging — these are almost always config errors.
         logger.warning(
             "brave search %d for %r — first 200 bytes: %r",
             resp.status_code,
@@ -99,13 +189,22 @@ async def _brave_search(
             resp.text[:200],
         )
         return []
-    try:
-        body = resp.json()
-    except ValueError:
-        logger.warning("brave search returned non-JSON for %r", query)
-        return []
-    results = body.get("web", {}).get("results", []) or []
-    return [r["url"] for r in results if isinstance(r.get("url"), str)]
+
+    # Loop exited without returning (shouldn't happen given the explicit
+    # returns above, but keeps mypy happy).
+    return []
+
+
+def _backoff_with_jitter(attempt: int) -> float:
+    """Exponential backoff (0.5s, 1s, 2s, ...) with ±30% jitter so concurrent
+    workers don't all retry on the same wall-clock tick.
+    """
+    base = _BRAVE_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1))
+    # ruff S311: this is jitter for retry backoff, not a security primitive —
+    # the standard library PRNG is correct here.
+    jitter: float = 0.7 + random.random() * 0.6  # noqa: S311 — in [0.7, 1.3)
+    sleep: float = min(base * jitter, _BRAVE_MAX_RETRY_SLEEP_SECONDS)
+    return sleep
 
 
 def _existing_board_tokens(supabase: Client) -> set[str]:
@@ -155,39 +254,55 @@ def _log_discovery(
 
 
 def _insert_source(supabase: Client, *, detect: DetectResult) -> bool:
-    """Upsert ``detect.board_token`` into ``sources``. Return True if a new
-    row landed, False if it was a duplicate or write failed.
+    """Atomically upsert ``detect.board_token`` into ``sources``. Return True
+    if a new row was inserted, False if a row already existed.
 
-    Uses the ``board_token`` unique constraint via on_conflict + count to
-    distinguish "I created" from "already existed" — Supabase's upsert
-    returns the row regardless, so we have to check whether the
-    ``created_at`` we get back is recent.
-
-    Simpler approach: try an INSERT, if the unique constraint blows up,
-    treat as duplicate.
+    Delegates to the ``insert_source_if_not_exists`` Postgres RPC (see
+    migration 20260530160000) so the duplicate-vs-inserted decision happens
+    inside the database and comes back as a boolean. The previous
+    try-insert-catch-exception pattern silently treated *every* error —
+    transient connection issues, RLS misconfigurations, NOT NULL violations
+    on columns added later — as "duplicate", masking real write failures.
     """
     try:
-        supabase.table("sources").insert(
+        resp = supabase.rpc(
+            "insert_source_if_not_exists",
             {
-                "provider": detect.provider,
-                "board_token": detect.board_token,
-                "company_name": detect.company_name,
-                "enabled": True,
-            }
+                "p_provider": detect.provider,
+                "p_board_token": detect.board_token,
+                "p_company_name": detect.company_name,
+            },
         ).execute()
-        return True
     except Exception as exc:
-        # Any error (duplicate constraint, transient connection, etc.) lands
-        # in this branch. The dedup snapshot upstream catches the common
-        # duplicate case before we get here, so anything reaching this
-        # except is either a race or a real write error — both are fine to
-        # treat as "not inserted" from the caller's POV.
-        logger.debug(
-            "sources insert skipped (likely duplicate) for %s: %s",
+        # A genuine error from the RPC call (network, RLS, etc.). Surface
+        # it loudly — the caller marks the row as ``duplicate`` for stats
+        # purposes but at least the operator can see something broke.
+        logger.warning(
+            "insert_source_if_not_exists RPC failed for %s: %s",
             detect.board_token,
             exc,
         )
         return False
+
+    # The function returns ``boolean``. Supabase's postgrest layer wraps
+    # scalar-returning RPCs as ``resp.data == True`` (or a single-row list
+    # depending on the schema-cache state), so accept both shapes.
+    data = resp.data
+    if isinstance(data, bool):
+        return data
+    if isinstance(data, list) and data:
+        first = data[0]
+        if isinstance(first, bool):
+            return first
+        if isinstance(first, dict):
+            inserted = first.get("insert_source_if_not_exists")
+            if isinstance(inserted, bool):
+                return inserted
+    # Unknown response shape — log and treat as not-inserted to be safe.
+    logger.warning(
+        "insert_source_if_not_exists returned unexpected shape: %r", data
+    )
+    return False
 
 
 async def run_discovery_for_target(
@@ -243,94 +358,126 @@ async def run_discovery_for_target(
     cap = settings.discovery_query_cap_per_run
     per_query_count = settings.discovery_results_per_query
 
+    # Build the query plan upfront so we can fan out the Brave fetches
+    # concurrently. The cap applies to the *number of queries*, not the
+    # number of URLs we process — once the cap is exhausted we stop adding
+    # to the plan but still process everything we already pulled.
+    query_plan: list[tuple[str, str]] = []
+    for keyword in keywords:
+        for site_filter in _ATS_SITE_FILTERS:
+            if len(query_plan) >= cap:
+                break
+            query_plan.append((keyword, site_filter))
+        if len(query_plan) >= cap:
+            logger.info(
+                "discovery cap of %d queries hit for target %s — truncating plan",
+                cap,
+                target.id,
+            )
+            break
+    queries_issued = len(query_plan)
+
+    # Concurrency: 8 simultaneous Brave queries. Brave's free tier docs
+    # don't publish a strict concurrent-connection ceiling, but 8 is well
+    # under any reasonable threshold and still cuts ~85% off wall time for
+    # a 90-query run. Keep the detect_ats + insert path sequential below so
+    # we don't (a) hammer the downstream ATSs with parallel probes (each
+    # ats_detect already manages its own probe cadence) and (b) introduce
+    # races on the in-process ``existing_tokens`` set.
+    brave_semaphore = asyncio.Semaphore(8)
+
     async with httpx.AsyncClient() as brave_client:
-        for keyword in keywords:
-            for site_filter in _ATS_SITE_FILTERS:
-                if queries_issued >= cap:
-                    logger.info(
-                        "discovery cap of %d queries hit for target %s — stopping",
-                        cap,
-                        target.id,
-                    )
-                    return DiscoveryRunStats(
-                        target_id=target.id,
-                        queries_issued=queries_issued,
-                        urls_examined=urls_examined,
-                        inserted=inserted,
-                        duplicates=duplicates,
-                        unclassified=unclassified,
-                        filtered=filtered,
-                    )
-
-                query = f'"{keyword}" site:{site_filter}'
+        async def _bounded_brave(
+            kw: str, site: str
+        ) -> tuple[str, str, list[str]]:
+            async with brave_semaphore:
                 urls = await _brave_search(
-                    brave_client, query=query, count=per_query_count
+                    brave_client,
+                    query=f'"{kw}" site:{site}',
+                    count=per_query_count,
                 )
-                queries_issued += 1
+            return kw, site, urls
 
-                for url in urls:
-                    urls_examined += 1
-                    hit = _SearchHit(
-                        keyword=keyword, site_filter=site_filter, url=url
-                    )
-                    # detect_ats has its own httpx client — it manages probe
-                    # cadence + provider fallback internally.
-                    detect = await detect_ats(url)
-                    if detect is None:
-                        unclassified += 1
-                        _log_discovery(
-                            supabase,
-                            target_id=target.id,
-                            hit=hit,
-                            detect=None,
-                            outcome="unclassified",
-                        )
-                        continue
-                    if detect.job_count == 0:
-                        # ATS classified the URL but the board has no live
-                        # postings. Polling it would just burn requests on a
-                        # dead board — skip but log so we can revisit if we
-                        # change our mind later.
-                        filtered += 1
-                        _log_discovery(
-                            supabase,
-                            target_id=target.id,
-                            hit=hit,
-                            detect=detect,
-                            outcome="filtered",
-                        )
-                        continue
-                    if detect.board_token in existing_tokens:
-                        duplicates += 1
-                        _log_discovery(
-                            supabase,
-                            target_id=target.id,
-                            hit=hit,
-                            detect=detect,
-                            outcome="duplicate",
-                        )
-                        continue
-                    if _insert_source(supabase, detect=detect):
-                        existing_tokens.add(detect.board_token)
-                        inserted += 1
-                        _log_discovery(
-                            supabase,
-                            target_id=target.id,
-                            hit=hit,
-                            detect=detect,
-                            outcome="inserted",
-                        )
-                    else:
-                        # Insert was rejected (race with another runner, or
-                        # write error). Treat as duplicate-ish for stats.
-                        duplicates += 1
-                        _log_discovery(
-                            supabase,
-                            target_id=target.id,
-                            hit=hit,
-                            detect=detect,
-                            outcome="duplicate",
-                        )
+        # Fire all queries. Brave failures already return [] internally so
+        # ``gather`` won't blow up — but pass ``return_exceptions=True`` as
+        # a belt-and-braces guard against a future bug.
+        plan_results = await asyncio.gather(
+            *[_bounded_brave(kw, site) for kw, site in query_plan],
+            return_exceptions=True,
+        )
+
+    # Flatten the per-query results into individual URL hits, preserving
+    # which keyword/site filter surfaced each URL (for the audit log).
+    hits: list[_SearchHit] = []
+    for plan_result in plan_results:
+        if isinstance(plan_result, BaseException):
+            logger.warning("brave query raised: %s", plan_result)
+            continue
+        kw, site, urls = plan_result
+        for url in urls:
+            hits.append(_SearchHit(keyword=kw, site_filter=site, url=url))
+
+    # Process hits sequentially — see the comment on ``brave_semaphore``.
+    for hit in hits:
+        urls_examined += 1
+        # detect_ats has its own httpx client — it manages probe
+        # cadence + provider fallback internally.
+        detect = await detect_ats(hit.url)
+        if detect is None:
+            unclassified += 1
+            _log_discovery(
+                supabase,
+                target_id=target.id,
+                hit=hit,
+                detect=None,
+                outcome="unclassified",
+            )
+            continue
+        if detect.job_count == 0:
+            # ATS classified the URL but the board has no live postings.
+            # Polling it would just burn requests on a dead board — skip but
+            # log so we can revisit if we change our mind later.
+            filtered += 1
+            _log_discovery(
+                supabase,
+                target_id=target.id,
+                hit=hit,
+                detect=detect,
+                outcome="filtered",
+            )
+            continue
+        if detect.board_token in existing_tokens:
+            duplicates += 1
+            _log_discovery(
+                supabase,
+                target_id=target.id,
+                hit=hit,
+                detect=detect,
+                outcome="duplicate",
+            )
+            continue
+        if _insert_source(supabase, detect=detect):
+            existing_tokens.add(detect.board_token)
+            inserted += 1
+            _log_discovery(
+                supabase,
+                target_id=target.id,
+                hit=hit,
+                detect=detect,
+                outcome="inserted",
+            )
+        else:
+            # Insert was rejected (race with another runner, RPC error, or
+            # the RPC returned a shape we couldn't interpret). Treat as
+            # duplicate for stats; the RPC itself logs the underlying cause.
+            duplicates += 1
+            _log_discovery(
+                supabase,
+                target_id=target.id,
+                hit=hit,
+                detect=detect,
+                outcome="duplicate",
+            )
 
     return DiscoveryRunStats(
         target_id=target.id,
