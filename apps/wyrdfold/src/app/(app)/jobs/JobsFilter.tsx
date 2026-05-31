@@ -6,6 +6,8 @@ import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
 import { Input } from '@danieljoffe.com/shared-ui/Input';
 import { cn } from '@/lib/cn';
+import JobsActiveFilterChips from './JobsActiveFilterChips';
+import JobsLocationFilter from './JobsLocationFilter';
 import {
   formatStatus,
   JOB_STATUSES,
@@ -16,7 +18,10 @@ import {
 } from './types';
 
 const PILL_CLASS =
-  'inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs text-text-primary hover:bg-surface-secondary';
+  'inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs text-text-primary hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
+
+const PILL_ACTIVE_CLASS =
+  'border-brand-500/60 bg-brand-500/10 text-text-primary';
 
 const MIN_SCORE_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: 'Any score' },
@@ -55,41 +60,23 @@ export default function JobsFilter({
   handleSort,
 }: JobsFilterProps) {
   const [searchDraft, setSearchDraft] = useState(filters.search);
-  const [excludeLocationsDraft, setExcludeLocationsDraft] = useState(
-    filters.excludeLocations
-  );
-  const [onlyLocationsDraft, setOnlyLocationsDraft] = useState(
-    filters.onlyLocations
-  );
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Re-sync the search draft when the parent clears filters (e.g. via the
+  // chip row's X button or a tab switch). Without this the input would
+  // keep showing the stale value.
+  useEffect(() => {
+    setSearchDraft(filters.search);
+  }, [filters.search]);
 
   useEffect(() => {
     timerRef.current = setTimeout(() => {
-      const next = {
-        ...filters,
-        search: searchDraft,
-        excludeLocations: excludeLocationsDraft,
-        onlyLocations: onlyLocationsDraft,
-      };
-      // Skip the call when nothing changed — the debounce fires once per
-      // render of this effect so we'd otherwise trigger an extra refetch
-      // on every parent re-render.
-      if (
-        next.search !== filters.search ||
-        next.excludeLocations !== filters.excludeLocations ||
-        next.onlyLocations !== filters.onlyLocations
-      ) {
-        onChange(next);
+      if (searchDraft !== filters.search) {
+        onChange({ ...filters, search: searchDraft });
       }
     }, 300);
     return () => clearTimeout(timerRef.current);
-  }, [
-    searchDraft,
-    excludeLocationsDraft,
-    onlyLocationsDraft,
-    filters,
-    onChange,
-  ]);
+  }, [searchDraft, filters, onChange]);
 
   const minScoreLabel =
     MIN_SCORE_OPTIONS.find(o => o.value === filters.minScore)?.label ??
@@ -140,18 +127,24 @@ export default function JobsFilter({
   }));
 
   return (
-    <div className='flex flex-col gap-2.5'>
-      <Input
-        size='sm'
-        value={searchDraft}
-        onChange={e => setSearchDraft(e.target.value)}
-        placeholder='Search by title...'
-        aria-label='Search by title'
-      />
+    <div className='flex flex-col gap-2'>
+      {/* Single-row toolbar: search expands, pills cluster at the right.
+          On narrow viewports the pills wrap below the search. */}
       <div className='flex flex-wrap items-center gap-2'>
+        <div className='min-w-[12rem] flex-1'>
+          <Input
+            size='sm'
+            value={searchDraft}
+            onChange={e => setSearchDraft(e.target.value)}
+            placeholder='Search by title...'
+            aria-label='Search by title'
+          />
+        </div>
         <Dropdown
           trigger={
-            <span className={PILL_CLASS}>
+            <span
+              className={cn(PILL_CLASS, filters.minScore && PILL_ACTIVE_CLASS)}
+            >
               {minScoreLabel}
               <ChevronDown className='size-3 text-text-tertiary' aria-hidden />
             </span>
@@ -160,7 +153,13 @@ export default function JobsFilter({
         />
         <Dropdown
           trigger={
-            <span className={cn(PILL_CLASS, 'capitalize')}>
+            <span
+              className={cn(
+                PILL_CLASS,
+                'capitalize',
+                filters.status && PILL_ACTIVE_CLASS
+              )}
+            >
               {filters.status && (
                 <span
                   className={cn(
@@ -175,6 +174,17 @@ export default function JobsFilter({
             </span>
           }
           items={statusItems}
+        />
+        <JobsLocationFilter
+          only={filters.onlyLocations}
+          exclude={filters.excludeLocations}
+          onChange={({ only, exclude }) =>
+            onChange({
+              ...filters,
+              onlyLocations: only,
+              excludeLocations: exclude,
+            })
+          }
         />
         {/* Sort pill is mobile-only — desktop uses sortable column headers. */}
         <div className='md:hidden'>
@@ -193,26 +203,7 @@ export default function JobsFilter({
           />
         </div>
       </div>
-      {/* Location filters — comma-separated free-text. Substring match
-          against the job's location field on the API side. Two inputs so
-          a user can express "only US-or-Remote" and "never India" in the
-          same query. */}
-      <div className='grid gap-2 sm:grid-cols-2'>
-        <Input
-          size='sm'
-          value={onlyLocationsDraft}
-          onChange={e => setOnlyLocationsDraft(e.target.value)}
-          placeholder='Only locations (e.g. Remote, US)'
-          aria-label='Only show jobs in locations'
-        />
-        <Input
-          size='sm'
-          value={excludeLocationsDraft}
-          onChange={e => setExcludeLocationsDraft(e.target.value)}
-          placeholder='Exclude locations (e.g. India, Brazil)'
-          aria-label='Exclude jobs in locations'
-        />
-      </div>
+      <JobsActiveFilterChips filters={filters} onChange={onChange} />
     </div>
   );
 }

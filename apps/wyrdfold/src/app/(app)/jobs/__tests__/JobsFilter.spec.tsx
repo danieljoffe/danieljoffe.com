@@ -64,7 +64,7 @@ describe('JobsFilter', () => {
     jest.useRealTimers();
   });
 
-  it('reflects the active min-score filter label', () => {
+  it('reflects the active min-score filter label on the pill', () => {
     render(
       <JobsFilter
         filters={{ ...baseFilters, minScore: '70' }}
@@ -74,10 +74,15 @@ describe('JobsFilter', () => {
         handleSort={() => undefined}
       />
     );
-    expect(screen.getByText(/score 70\+/i)).toBeInTheDocument();
+    // Matches both the pill (a Dropdown trigger button) and the chip row.
+    // Querying by button role pins us to the pill — the chip itself is a
+    // span; only its remove ``×`` is a button (and has a different name).
+    expect(
+      screen.getByRole('button', { name: /score 70\+/i })
+    ).toBeInTheDocument();
   });
 
-  it('shows the status label when a status filter is active', () => {
+  it('shows the status label on the pill when a status filter is active', () => {
     render(
       <JobsFilter
         filters={{ ...baseFilters, status: 'resume_draft' }}
@@ -87,7 +92,63 @@ describe('JobsFilter', () => {
         handleSort={() => undefined}
       />
     );
-    expect(screen.getByText(/resume draft/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /resume draft/i })
+    ).toBeInTheDocument();
+  });
+
+  it('renders active-filter chips with a Clear all link when 2+ filters are set', async () => {
+    const onChange = jest.fn();
+    render(
+      <JobsFilter
+        filters={{
+          ...baseFilters,
+          minScore: '70',
+          status: 'applied',
+          onlyLocations: 'Remote',
+        }}
+        onChange={onChange}
+        sort='score'
+        order='desc'
+        handleSort={() => undefined}
+      />
+    );
+
+    const region = screen.getByRole('region', { name: /active filters/i });
+    expect(region).toBeInTheDocument();
+    // Three chips → Clear all is visible.
+    const clearAll = screen.getByRole('button', { name: /clear all/i });
+    await userEvent.setup().click(clearAll);
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: '',
+        minScore: '',
+        status: '',
+        onlyLocations: '',
+        excludeLocations: '',
+      })
+    );
+  });
+
+  it('removes a single filter via its chip × button', async () => {
+    const onChange = jest.fn();
+    render(
+      <JobsFilter
+        filters={{ ...baseFilters, minScore: '70' }}
+        onChange={onChange}
+        sort='score'
+        order='desc'
+        handleSort={() => undefined}
+      />
+    );
+
+    const removeBtn = screen.getByRole('button', {
+      name: /remove minscore filter/i,
+    });
+    await userEvent.setup().click(removeBtn);
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ minScore: '' })
+    );
   });
 
   it('uses "All statuses" when no status filter is selected', () => {
