@@ -70,11 +70,16 @@ export default function JobsFilter({
   }, [filters.search]);
 
   useEffect(() => {
+    // 600ms is comfortably above the median sustained-typing inter-key
+    // gap (~150-200ms) and gives users room to correct a mistyped word
+    // or finish typing a multi-word query like "customer director"
+    // without firing 3 requests on the way. 300ms (previous) felt
+    // jumpy — every backspace fired a fetch.
     timerRef.current = setTimeout(() => {
       if (searchDraft !== filters.search) {
         onChange({ ...filters, search: searchDraft });
       }
-    }, 300);
+    }, 600);
     return () => clearTimeout(timerRef.current);
   }, [searchDraft, filters, onChange]);
 

@@ -77,6 +77,57 @@ _JP_SELECT_COLS = (
 _JP_DETAIL_SELECT_COLS = _JP_SELECT_COLS + ", description_html"
 
 
+def _tokenize_search(raw: str | None) -> list[str]:
+    """Split a search query into individual tokens. ``"customer director"``
+    → ``["customer", "director"]``. Empty/None → ``[]``. Dedupes case-
+    insensitively (keeps first-seen casing) so a redundant typo doesn't
+    inflate the OR chain."""
+    if not raw:
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for tok in raw.split():
+        t = tok.strip()
+        if not t:
+            continue
+        lo = t.lower()
+        if lo in seen:
+            continue
+        seen.add(lo)
+        out.append(t)
+    return out
+
+
+def _apply_title_search(query: Any, search: str | None) -> Any:
+    """Apply a search filter to a query against the jobs.title column.
+
+    - 0 tokens → no filter
+    - 1 token → single ``ilike`` (unchanged behaviour, fastest path)
+    - 2+ tokens → OR chain so ``"customer director"`` matches titles
+      containing EITHER word ("Director of Customer Success" or
+      "Customer Experience Lead"). Matches the user's mental model of a
+      filter, not a phrase search.
+
+    Each token is escaped for PostgREST's OR-list syntax: commas and
+    parens would otherwise terminate the list / change grouping."""
+    tokens = _tokenize_search(search)
+    if not tokens:
+        return query
+    if len(tokens) == 1:
+        return query.ilike("title", f"%{tokens[0]}%")
+    # PostgREST or() takes a comma-separated list. Each token gets ``*``
+    # wildcards (PostgREST's ilike uses ``*`` not ``%`` inside or_).
+    parts = [f"title.ilike.*{_escape_or_token(t)}*" for t in tokens]
+    return query.or_(",".join(parts))
+
+
+def _escape_or_token(t: str) -> str:
+    """PostgREST's or-list grammar uses commas and parens as separators.
+    A token with either would be parsed as multiple filters or a group.
+    Strip them — they have no semantic value in a search query."""
+    return t.replace(",", "").replace("(", "").replace(")", "")
+
+
 def _list_jobs_for_target_rpc(
     supabase: Client,
     *,
@@ -100,6 +151,11 @@ def _list_jobs_for_target_rpc(
     # and paginate from the post-filter list.
     if exclude_terms or only_terms:
         raise RuntimeError("RPC path skipped: location filter requires post-fetch pagination")
+    # Multi-word search ("customer director") should OR each token across
+    # the title — the RPC's ``p_search`` is a single ilike, so bypass it
+    # whenever the user typed more than one word.
+    if search and len(_tokenize_search(search)) > 1:
+        raise RuntimeError("RPC path skipped: multi-word search uses OR semantics")
     """List jobs via server-side join RPC (single round-trip)."""
     resp = supabase.rpc(
         "get_target_jobs",
@@ -199,8 +255,7 @@ def _list_jobs_for_target_two_query(
         jp_query = jp_query.eq("status", status)
     if company:
         jp_query = jp_query.eq("company_name", company)
-    if search:
-        jp_query = jp_query.ilike("title", f"%{search}%")
+    jp_query = _apply_title_search(jp_query, search)
 
     jp_resp = jp_query.execute()
     postings = list(jp_resp.data or [])
@@ -379,8 +434,7 @@ def _list_jobs_across_user_targets(
         jp_query = jp_query.eq("status", status)
     if company:
         jp_query = jp_query.eq("company_name", company)
-    if search:
-        jp_query = jp_query.ilike("title", f"%{search}%")
+    jp_query = _apply_title_search(jp_query, search)
     jp_resp = jp_query.execute()
     postings = list(jp_resp.data or [])
 
@@ -613,8 +667,7 @@ def list_jobs(
         query = query.eq("status", status)
     if company:
         query = query.eq("company_name", company)
-    if search:
-        query = query.ilike("title", f"%{search}%")
+    query = _apply_title_search(query, search)
 
     has_location_filter = bool(exclude_terms or only_terms)
     if has_location_filter:

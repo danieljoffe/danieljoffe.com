@@ -29,7 +29,7 @@ describe('JobsFilter', () => {
     ).toBeInTheDocument();
   });
 
-  it('debounces search input and forwards a single onChange after 300ms', async () => {
+  it('debounces search input and forwards a single onChange after 600ms', async () => {
     jest.useFakeTimers();
     const onChange = jest.fn();
     render(
@@ -50,10 +50,15 @@ describe('JobsFilter', () => {
       'react'
     );
 
+    // 500ms is still inside the debounce window — no call yet.
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
     expect(onChange).not.toHaveBeenCalled();
 
+    // Crossing 600ms fires it.
     act(() => {
-      jest.advanceTimersByTime(400);
+      jest.advanceTimersByTime(200);
     });
 
     await waitFor(() => {
