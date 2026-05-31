@@ -7,15 +7,54 @@ import type { JobPosting, JobsFilterState } from '../types';
 const mockReplace = jest.fn();
 const mockToast = jest.fn();
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    replace: (...args: unknown[]) => mockReplace(...args),
-    refresh: jest.fn(),
-    prefetch: jest.fn(),
-    back: jest.fn(),
-  }),
-}));
+// Live URL-state mock that triggers re-renders on write — push/replace
+// re-parse the query string, bump a tick counter, and notify the
+// subscribed components. Real Next.js does this via the App Router's
+// navigation context; the mock has to recreate enough of that contract
+// for ``useSearchParams`` to fire updates.
+type Listener = () => void;
+const navState: { params: URLSearchParams; listeners: Set<Listener> } = {
+  params: new URLSearchParams(),
+  listeners: new Set(),
+};
+const writeUrl = (url: unknown) => {
+  if (typeof url !== 'string') return;
+  const qs = url.includes('?') ? url.split('?', 2)[1] : '';
+  navState.params = new URLSearchParams(qs);
+  navState.listeners.forEach(l => l());
+};
+
+jest.mock('next/navigation', () => {
+  const { useEffect, useState } =
+    jest.requireActual<typeof import('react')>('react');
+  return {
+    useRouter: () => ({
+      push: (...args: unknown[]) => {
+        writeUrl(args[0]);
+        mockReplace(...args);
+      },
+      replace: (...args: unknown[]) => {
+        writeUrl(args[0]);
+        mockReplace(...args);
+      },
+      refresh: jest.fn(),
+      prefetch: jest.fn(),
+      back: jest.fn(),
+    }),
+    useSearchParams: () => {
+      const [, setTick] = useState(0);
+      useEffect(() => {
+        const listener = () => setTick(t => t + 1);
+        navState.listeners.add(listener);
+        return () => {
+          navState.listeners.delete(listener);
+        };
+      }, []);
+      return navState.params;
+    },
+    usePathname: () => '/jobs',
+  };
+});
 
 jest.mock('@/state/Toast/ToastProvider', () => ({
   useToast: () => ({
@@ -157,6 +196,9 @@ beforeEach(() => {
   mockPostings = [];
   mockLoading = false;
   lastJobsListViewProps = null;
+  // Reset the URL-state mock between tests so test order doesn't matter.
+  navState.params = new URLSearchParams();
+  navState.listeners.clear();
   global.fetch = jest.fn().mockResolvedValue({
     ok: true,
     json: async () => ({ activation_status: 'ready', jobs_count: 0 }),

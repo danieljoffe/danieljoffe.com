@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
@@ -14,31 +13,13 @@ import BatchActionBar from './BatchActionBar';
 import JobsListView from './JobsListView';
 import JobsThinResultsCallout from './JobsThinResultsCallout';
 import { promptForMissingContactName } from './promptForMissingContactName';
-import type { JobPosting, JobsFilterState } from './types';
+import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
+import { useJobsUrlState } from './useJobsUrlState';
 
 export interface TargetTab {
   id: string;
   label: string;
 }
-
-const INITIAL_FILTERS: JobsFilterState = {
-  minScore: '',
-  status: '',
-  search: '',
-};
-
-// ``minScore`` empty (= no implicit floor) so the "Any score" label
-// the dropdown shows actually means "any score". The previous default
-// of ``'45'`` silently filtered out matches in the 0–44 range while the
-// dropdown still rendered "Any score" — because ``'45'`` isn't one of
-// the ``MIN_SCORE_OPTIONS`` values (the gaps go 0 → 40 → 70 → 85), the
-// label-lookup fell through to "Any score" and target tabs hard-loaded
-// with an empty list whenever every match scored below 45.
-const TARGET_FILTERS: JobsFilterState = {
-  minScore: '',
-  status: '',
-  search: '',
-};
 
 const BATCH_POLL_INTERVAL = 3000;
 
@@ -55,14 +36,85 @@ export default function JobsList({
   initialMinScore,
   initialTargets,
 }: JobsListProps) {
-  const [filters, setFilters] = useState<JobsFilterState>(() => {
-    const base = targetId ? TARGET_FILTERS : INITIAL_FILTERS;
-    return {
-      ...base,
-      ...(initialStatus ? { status: initialStatus } : {}),
-      ...(initialMinScore ? { minScore: initialMinScore } : {}),
-    };
+  // Single source of truth for filters / sort / page / target — backed by
+  // URL query params so browser back/forward restores every dimension of
+  // the page state. The ``initialStatus`` and ``initialMinScore`` props
+  // were the previous server-side prelude to this state; they're now
+  // strictly fallbacks for the (rare) case where the URL has no params
+  // (e.g. server-side prerender before client hydration).
+  const defaultTargetId = targetId ?? initialTargets[0]?.id;
+  const { state: urlState, setState: setUrlState } = useJobsUrlState({
+    defaultSort: 'score',
+    defaultOrder: 'desc',
+    defaultTargetId,
   });
+
+  // Derived filter view for the existing JobsFilter component — keeps that
+  // component oblivious to the URL plumbing. Falls back to the server-side
+  // ``initialStatus`` / ``initialMinScore`` props only when the URL has no
+  // value for that key, so a deep-linked ``/jobs?status=applied`` URL still
+  // pins the filter on the first client render.
+  const filters: JobsFilterState = useMemo(
+    () => ({
+      search: urlState.search,
+      status: urlState.status || initialStatus || '',
+      minScore: urlState.minScore || initialMinScore || '',
+    }),
+    [
+      urlState.search,
+      urlState.status,
+      urlState.minScore,
+      initialStatus,
+      initialMinScore,
+    ]
+  );
+
+  const setFilters = useCallback(
+    (next: JobsFilterState) => {
+      setUrlState({
+        search: next.search || null,
+        status: next.status || null,
+        minScore: next.minScore || null,
+        // Filter changes always reset to page 1 — match
+        // ``useAdminTableFetch``'s ``extraParams`` reset.
+        page: 1,
+      });
+    },
+    [setUrlState]
+  );
+
+  const activeTargetId = urlState.targetId;
+
+  // Sort/order/page wiring for ``useAdminTableFetch``. Defined here so we
+  // can hand them down to JobsListView as a controlled trio + change
+  // callbacks. Sort defaults are mirrored from ``useJobsUrlState`` so the
+  // values match.
+  const controlledTableState = useMemo(
+    () => ({
+      sort: urlState.sort as JobsSortColumn,
+      order: urlState.order,
+      page: urlState.page,
+    }),
+    [urlState.sort, urlState.order, urlState.page]
+  );
+
+  const onTableSortChange = useCallback(
+    (sort: JobsSortColumn, order: 'asc' | 'desc') => {
+      // Sort changes reset to page 1 and create a history entry so back
+      // restores the old sort.
+      setUrlState({ sort, order, page: 1 }, 'push');
+    },
+    [setUrlState]
+  );
+
+  const onTablePageChange = useCallback(
+    (page: number) => {
+      // Page changes create history entries so the back button works.
+      setUrlState({ page }, 'push');
+    },
+    [setUrlState]
+  );
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
   const [generating, setGenerating] = useState(false);
@@ -71,14 +123,6 @@ export default function JobsList({
   >(undefined);
   const [exporting, setExporting] = useState(false);
   const [visiblePostings, setVisiblePostings] = useState<JobPosting[]>([]);
-  // When there's no ``?target=...`` in the URL, fall back to the first
-  // active target. The /jobs API's untargeted "global view" filters by
-  // ``jobs.target_id`` — a column the poller never populates — so without
-  // an explicit target_id every authenticated user gets an empty list.
-  // Auto-selecting the first tab keeps /jobs useful as a default landing.
-  const [activeTargetId, setActiveTargetId] = useState<string | undefined>(
-    targetId ?? initialTargets[0]?.id
-  );
   const [activationStatus, setActivationStatus] = useState<string>('idle');
   // Total job count for the active target, sourced from
   // ``/api/targets/{id}/status``. Drives the thin-results CTA. Reset
@@ -88,7 +132,6 @@ export default function JobsList({
   const activatingRef = useRef<Set<string>>(new Set());
   const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const { toast } = useToast();
-  const router = useRouter();
 
   const targets = initialTargets;
 
@@ -177,15 +220,24 @@ export default function JobsList({
 
   const handleTabChange = useCallback(
     (id: string | undefined) => {
-      setActiveTargetId(id);
       setActivationStatus('idle');
       setJobsCount(null);
       setSelectedIds(new Set());
-      setFilters(id ? TARGET_FILTERS : INITIAL_FILTERS);
-      const url = id ? `/jobs?target=${id}` : '/jobs';
-      router.replace(url, { scroll: false });
+      // Tab change resets all filters AND the page, then writes the new
+      // target to the URL with ``push`` so the back button restores the
+      // previous tab.
+      setUrlState(
+        {
+          targetId: id ?? null,
+          search: null,
+          status: null,
+          minScore: null,
+          page: 1,
+        },
+        'push'
+      );
     },
-    [router]
+    [setUrlState]
   );
 
   // Cleanup polling on unmount
@@ -500,6 +552,9 @@ export default function JobsList({
             targetId={activeTargetId}
             analysisTargetId={activeTargetId ?? targets[0]?.id}
             onPostingsLoaded={setVisiblePostings}
+            controlledTableState={controlledTableState}
+            onTableSortChange={onTableSortChange}
+            onTablePageChange={onTablePageChange}
           />
 
           {/* Thin-results CTA. Empty state (0 jobs) is owned by
