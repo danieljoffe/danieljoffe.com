@@ -5,7 +5,6 @@ EITHER token, not the exact substring. The single-word path stays a
 single ilike so existing behaviour is unchanged.
 """
 
-from typing import Any
 from unittest.mock import MagicMock
 
 from app.routers.jobs import _apply_title_search, _tokenize_search
