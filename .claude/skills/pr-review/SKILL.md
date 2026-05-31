@@ -194,6 +194,27 @@ The verdict is informational — the skill does not block any git operation. It'
 
 **Downgrading a Critical to a Warning** is allowed when the user provides a written rationale (e.g. "false positive — this path is api-key only, not user-reachable"). Note the downgrade inline next to the finding.
 
+### Step 10: Append to the audit log
+
+After printing the report, append a one-line summary to `.claude/docs/pr-review-log.md` so trends in findings (recurring categories, agent miss patterns) stay visible across runs. The log is the dataset that lets us tune reviewer prompts over time — what got flagged, what got accepted, what got ignored.
+
+Use the `Edit` tool to append (the file is checked in; do not `echo >>` it).
+
+Entry shape (one line per run, newest at the bottom):
+
+```markdown
+- `YYYY-MM-DD` PR#<number> · <branch> · <verdict> · C:<n> W:<n> S:<n> · <reviewers run, comma-separated> · <one-sentence summary>
+```
+
+Then, **on the next conversation turn after the user has dispositioned the findings** (merged the PR with or without fixes, or explicitly closed it), update the log entry inline with a `→ Disposition: <action>` suffix. Acceptable dispositions:
+
+- `merged-as-is` — all findings either fixed or downgraded
+- `merged-with-followup` — non-blocking findings deferred to a tracked TODO
+- `closed-without-merge` — PR abandoned
+- `findings-overruled: <reason>` — user shipped despite blocking findings
+
+The log is append-only — don't rewrite old entries except to add the disposition suffix. If a finding category recurs as a false positive (3+ identical flags across runs), open a follow-up to tune the relevant reviewer's prompt.
+
 ## Rules
 
 - Read-only analysis — no code changes.
@@ -202,3 +223,4 @@ The verdict is informational — the skill does not block any git operation. It'
 - Binary and snapshot files are always skipped.
 - Test files route to e2e-reviewer only.
 - Skill/meta files (`.claude/`) are always skipped.
+- The audit log is the only file the skill writes to. Do not delete or rewrite past entries.
