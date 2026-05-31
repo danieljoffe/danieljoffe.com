@@ -230,10 +230,6 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
               className='group inline-flex items-center gap-2 min-w-0 max-w-full text-text-primary hover:text-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-md'
               aria-label={`Open original posting for ${posting.title} in a new tab`}
             >
-              <ExternalLink
-                className='size-5 shrink-0 text-brand-500'
-                aria-hidden
-              />
               <Heading
                 variant='component'
                 as='h1'
@@ -242,6 +238,10 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
               >
                 {posting.title}
               </Heading>
+              <ExternalLink
+                className='size-5 shrink-0 text-brand-500'
+                aria-hidden
+              />
             </a>
           ) : (
             <Heading
