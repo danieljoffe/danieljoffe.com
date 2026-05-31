@@ -131,7 +131,7 @@ export default function JobsFilter({
       {/* Single-row toolbar: search expands, pills cluster at the right.
           On narrow viewports the pills wrap below the search. */}
       <div className='flex flex-wrap items-center gap-2'>
-        <div className='min-w-[12rem] flex-1'>
+        <div className='min-w-[12rem] max-w-sm flex-1'>
           <Input
             size='sm'
             value={searchDraft}
