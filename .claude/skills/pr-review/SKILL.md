@@ -71,13 +71,18 @@ Parse into a structured manifest. For each file determine:
 ### Step 3: Apply guardrails
 
 Count **reviewable files** = total minus `deleted`, `binary`, `skill-meta`, `docs`.
+Sum **reviewable lines** = `lines_changed` across the same set.
 
-| Reviewable files | Action                                                                        |
-| ---------------- | ----------------------------------------------------------------------------- |
-| 0                | Report clean — nothing to review. Stop.                                       |
-| 1–30             | Proceed normally.                                                             |
-| 31–80            | Warn the user. Suggest `--only` for focused review. Proceed.                  |
-| >80              | **Refuse** unless `--force`. Print the manifest summary and suggest `--only`. |
+| Reviewable files | Reviewable lines | Action                                                                        |
+| ---------------- | ---------------- | ----------------------------------------------------------------------------- |
+| 0                | any              | Report clean — nothing to review. Stop.                                       |
+| 1–30             | ≤ 400            | Proceed normally.                                                             |
+| 1–30             | 401–1500         | Warn the user about PR size. Suggest splitting. Proceed.                      |
+| 31–80            | ≤ 1500           | Warn the user. Suggest `--only` for focused review. Proceed.                  |
+| 31–80            | > 1500           | **Refuse** unless `--force`. Suggest splitting or `--only`.                   |
+| > 80             | any              | **Refuse** unless `--force`. Print the manifest summary and suggest `--only`. |
+
+The LOC threshold catches the 5-file / 2000-line refactor that slips past a pure file-count check. ~400 LOC is the reviewer-attention upper bound for a single PR — beyond it, real bugs hide in volume and findings get less specific.
 
 ### Step 4: Route files to reviewers
 
