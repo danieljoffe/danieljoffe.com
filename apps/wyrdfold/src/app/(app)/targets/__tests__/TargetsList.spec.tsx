@@ -65,7 +65,7 @@ describe('TargetsList', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders one card per target plus a top-right add button when populated', () => {
+  it('renders one card per target plus add/suggest buttons below the grid when populated', () => {
     render(
       <TargetsList
         initialTargets={[
@@ -77,7 +77,10 @@ describe('TargetsList', () => {
     expect(screen.getByText('Senior Frontend Engineer')).toBeInTheDocument();
     expect(screen.getByText('Full Stack Engineer')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^create target$/i })
+      screen.getByRole('button', { name: /^add target$/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /suggest from experience/i })
     ).toBeInTheDocument();
   });
 });
