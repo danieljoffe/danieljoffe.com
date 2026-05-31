@@ -283,22 +283,6 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
 
   return (
     <div className='flex flex-col gap-6'>
-      {hasContent && (
-        <div className='flex justify-end'>
-          <Button
-            name='target-create'
-            variant='primary'
-            size='sm'
-            iconOnly
-            aria-label='Create target'
-            className='rounded-full'
-            onClick={() => setModalOpen(true)}
-          >
-            <Plus className='size-4' aria-hidden />
-          </Button>
-        </div>
-      )}
-
       {!hasContent ? (
         <Card>
           <CardContent className='flex flex-col items-center gap-3 py-12'>
@@ -350,7 +334,16 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
             ))}
           </div>
 
-          <div className='flex items-center justify-center'>
+          <div className='flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center'>
+            <Button
+              name='target-create'
+              variant='primary'
+              size='sm'
+              onClick={() => setModalOpen(true)}
+            >
+              <Plus className='size-4' aria-hidden />
+              <span>Add Target</span>
+            </Button>
             <Button
               name='target-suggest'
               variant='outline'
