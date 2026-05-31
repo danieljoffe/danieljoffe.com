@@ -170,7 +170,7 @@ describe('JobDetailPage — happy path', () => {
       '/jobs'
     );
     const external = screen.getByRole('link', {
-      name: /view original posting/i,
+      name: /open original posting for senior frontend engineer/i,
     });
     expect(external).toHaveAttribute('href', 'https://example.com/job-42');
     expect(external).toHaveAttribute('target', '_blank');
