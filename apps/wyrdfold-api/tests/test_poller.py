@@ -6,7 +6,11 @@ from app.models.targets import (
     ScoringProfile,
     SeniorityProfile,
 )
-from app.services.poller import _is_us_location, _title_matches_any_target
+from app.services.poller import (
+    _is_us_location,
+    _title_matches_any_target,
+    _title_matches_target,
+)
 
 
 def _make_target(core_keywords: dict[str, int]) -> JobTarget:
@@ -52,6 +56,74 @@ def test_title_matches_with_multiple_targets():
 
 def test_empty_targets_no_match():
     assert _title_matches_any_target("Senior React Engineer", []) is False
+
+
+# ---- _title_matches_target token-overlap behaviour --------------------------
+#
+# The previous matcher did a plain substring check: "director of cx operations"
+# had to literally appear in the title. Real postings almost never match that
+# verbatim — companies rewrite titles ("Director, Customer Experience"
+# without "of cx", "VP Customer Operations" with no "director"). The new
+# matcher tokenizes both sides and requires a content-token overlap, which
+# is the actual behaviour these tests guard.
+
+
+def test_multi_token_keyword_matches_reordered_title():
+    """The bug-from-prod case: pasted "director of cx operations" keyword
+    against a title that contains the same content tokens in a different
+    order with different filler words.
+    """
+    keywords = ["director of cx operations"]
+    assert _title_matches_target("Director, CX Operations", keywords) is True
+
+
+def test_multi_token_keyword_matches_when_stopwords_differ():
+    """Filler words ('of', 'and') shouldn't gate the match either way."""
+    keywords = ["head of customer experience"]
+    assert _title_matches_target("Head, Customer Experience", keywords) is True
+
+
+def test_single_token_keyword_still_substring_matches():
+    """1-token keywords (the existing common case) keep the old behaviour:
+    pure substring against the title. Plurals and compound words still match.
+    """
+    keywords = ["engineer"]
+    assert _title_matches_target("Senior Software Engineer", keywords) is True
+    assert _title_matches_target("Engineering Manager", keywords) is True
+
+
+def test_overlap_below_threshold_does_not_match():
+    """A keyword with 5 content tokens needs >= 3 to land. Only 1 hit on a
+    long keyword should be rejected so we don't surface every job whose title
+    happens to mention "director".
+    """
+    keywords = ["director of customer experience transformation"]
+    # Only "director" overlaps — 1 of 4 content tokens, below the 0.6 ratio.
+    assert _title_matches_target("Director of Engineering", keywords) is False
+
+
+def test_disjoint_keywords_do_not_match():
+    keywords = ["software engineer", "frontend developer"]
+    assert (
+        _title_matches_target("Director of Customer Experience", keywords) is False
+    )
+
+
+def test_any_one_of_several_keywords_is_enough():
+    """The function returns True as soon as one keyword in the list
+    overlaps — used by the caller to spread a target's full keyword list
+    against each posting.
+    """
+    keywords = ["product manager", "director of cx operations"]
+    assert _title_matches_target("Director, CX Operations", keywords) is True
+
+
+def test_empty_keyword_list_does_not_match():
+    assert _title_matches_target("Director of Engineering", []) is False
+
+
+def test_empty_title_does_not_match():
+    assert _title_matches_target("", ["director of cx operations"]) is False
 
 
 class TestIsUsLocation:
