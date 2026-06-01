@@ -13,6 +13,7 @@ import { cn } from '@/lib/cn';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import CoverLetterSection from './CoverLetterSection';
+import JobFeedbackSection from './JobFeedbackSection';
 import ResumeSection from './ResumeSection';
 import StatusIndicator from './StatusIndicator';
 import {
@@ -560,6 +561,10 @@ export default function JobDetailPanel({
           />
         </details>
       )}
+
+      {/* Relevance feedback — only shown when viewing under a specific
+          target, since the signal is target-scoped. */}
+      {targetId && <JobFeedbackSection jobId={posting.id} targetId={targetId} />}
 
       {/* Status History */}
       {history.length > 0 && (
