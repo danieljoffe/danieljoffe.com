@@ -17,6 +17,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import MarkdownPreviewEditor from '@/components/MarkdownPreviewEditor';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
@@ -676,17 +677,14 @@ export default function CoverLetterReviewPage({
             />
           </div>
         </div>
-        <textarea
-          aria-label='Cover letter markdown'
-          className='min-h-[60vh] w-full resize-y rounded-md border border-border bg-surface p-4 font-mono text-sm leading-relaxed disabled:cursor-not-allowed disabled:opacity-60'
+        <MarkdownPreviewEditor
+          ariaLabel='Cover letter markdown'
           value={markdown}
-          onChange={e => {
-            setMarkdown(e.target.value);
+          onChange={next => {
+            setMarkdown(next);
             setSaveStatus('pending');
           }}
           disabled={isApproved || regenerating || approving || unapproving}
-          spellCheck
-          data-sentry-mask
         />
         <div className='flex items-center justify-between gap-2'>
           <Text

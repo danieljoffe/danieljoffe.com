@@ -17,6 +17,7 @@ import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
+import MarkdownPreviewEditor from '@/components/MarkdownPreviewEditor';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
@@ -710,17 +711,14 @@ export default function ResumeReviewPage({
             />
           </div>
         </div>
-        <textarea
-          aria-label='Resume markdown'
-          className='min-h-[60vh] w-full resize-y rounded-md border border-border bg-surface p-4 font-mono text-sm leading-relaxed disabled:cursor-not-allowed disabled:opacity-60'
+        <MarkdownPreviewEditor
+          ariaLabel='Resume markdown'
           value={markdown}
-          onChange={e => {
-            setMarkdown(e.target.value);
+          onChange={next => {
+            setMarkdown(next);
             setSaveStatus('pending');
           }}
           disabled={isApproved || readapting || approving || unapproving}
-          spellCheck
-          data-sentry-mask
         />
         <div className='flex items-center justify-between gap-2'>
           <Text
