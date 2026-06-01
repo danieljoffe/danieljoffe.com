@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -57,6 +57,10 @@ export default function ResumeReviewPage({
   const [record, setRecord] = useState<TailoredResumeRecord | null>(null);
   const [markdown, setMarkdown] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  // Filename the user types in the download field; empty string means
+  // "fall back to the slug-derived default". Reset on reload (we don't
+  // persist a custom name on the resume row in v1).
+  const [customFilename, setCustomFilename] = useState('');
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -69,6 +73,18 @@ export default function ResumeReviewPage({
   const [versionCap, setVersionCap] = useState<number>(5);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
+
+  // Slug-derived filename baseline. Recomputed when the loaded record
+  // or posting changes. Falls back to a literal when ``contact.name``
+  // is absent — the production API populates it, but unit-test fixtures
+  // often elide payload internals.
+  const defaultFilename = useMemo(() => {
+    if (!record || !posting) return '';
+    const name =
+      (record.payload as { contact?: { name?: string } }).contact?.name ??
+      'resume';
+    return `${slugify(name)}-${slugify(posting.company_name)}-${new Date().toISOString().slice(0, 10)}`;
+  }, [record, posting]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -321,10 +337,15 @@ export default function ResumeReviewPage({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const userSlug = slugify(record.payload.contact.name);
-      const companySlug = slugify(posting.company_name);
-      const date = new Date().toISOString().slice(0, 10);
-      a.download = `${userSlug}-${companySlug}-${date}.docx`;
+      // Strip path separators on save — browsers tolerate them but a
+      // download attribute with ``/`` confuses the OS file picker. We
+      // don't lowercase / slugify the user's input here: if they typed
+      // capital letters or spaces, that's their intent.
+      const safe = (customFilename.trim() || defaultFilename).replace(
+        /[\\/]/g,
+        '_'
+      );
+      a.download = `${safe}.docx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -634,9 +655,30 @@ export default function ResumeReviewPage({
 
       <div>
         <div className='mb-1 flex items-center justify-between gap-2'>
-          <Text variant='caption' as='span'>
-            Resume markdown
-          </Text>
+          <div className='flex min-w-0 flex-1 items-center gap-1'>
+            <label htmlFor='resume-filename' className='sr-only'>
+              Download filename
+            </label>
+            <input
+              id='resume-filename'
+              type='text'
+              value={customFilename}
+              placeholder={defaultFilename}
+              onChange={e => setCustomFilename(e.target.value)}
+              maxLength={120}
+              disabled={isApproved}
+              className='min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60'
+              aria-describedby='resume-filename-suffix'
+            />
+            <Text
+              variant='meta'
+              as='span'
+              className='text-text-tertiary'
+              id='resume-filename-suffix'
+            >
+              .docx
+            </Text>
+          </div>
           {/* Download stays as a standalone icon — it's frequent,
               non-destructive, and free. Re-adapt (LLM-billed) and
               Lock/Unlock (irreversible from the lock side) move

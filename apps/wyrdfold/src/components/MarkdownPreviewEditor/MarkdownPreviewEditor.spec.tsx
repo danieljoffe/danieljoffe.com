@@ -94,6 +94,37 @@ describe('MarkdownPreviewEditor', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it('renders the formatting toolbar when editable', async () => {
+    await renderEditor({ value: '# Hi' });
+    const toolbar = screen.getByRole('toolbar', { name: /formatting/i });
+    expect(toolbar).toBeInTheDocument();
+    // Each formatting affordance has an accessible name so SR users
+    // can discover the same set the visual toolbar exposes.
+    expect(
+      screen.getByRole('button', { name: 'Heading 1' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Bold' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Bullet list' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Link' })).toBeInTheDocument();
+  });
+
+  it('hides the toolbar when disabled (approved/locked state)', async () => {
+    await renderEditor({ value: '# Locked', disabled: true });
+    expect(
+      screen.queryByRole('toolbar', { name: /formatting/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it('reflects bold via aria-pressed when content is bold', async () => {
+    await renderEditor({ value: '**hello**' });
+    // The editor places its cursor at start by default; for an
+    // all-bold document the bold mark is active at the entry point.
+    const boldButton = screen.getByRole('button', { name: 'Bold' });
+    expect(boldButton).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('syncs external value changes into the editor (restoreVersion path)', async () => {
     // When the parent calls `setMarkdown(versionMd)` from a version
     // restore, the editor must adopt the new content. Without the

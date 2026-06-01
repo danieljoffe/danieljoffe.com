@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -21,7 +21,6 @@ import MarkdownPreviewEditor from '@/components/MarkdownPreviewEditor';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import type {
-  CoverLetterPayload,
   JobPosting,
   LintViolation,
   ResumeVersion,
@@ -58,6 +57,9 @@ export default function CoverLetterReviewPage({
   const [record, setRecord] = useState<TailoredResumeRecord | null>(null);
   const [markdown, setMarkdown] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  // Filename the user types in the download field; empty string means
+  // "fall back to the slug-derived default". Reset on reload.
+  const [customFilename, setCustomFilename] = useState('');
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -70,6 +72,14 @@ export default function CoverLetterReviewPage({
   const [versionCap, setVersionCap] = useState<number>(5);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
+
+  const defaultFilename = useMemo(() => {
+    if (!record || !posting) return '';
+    const name =
+      (record.payload as { contact?: { name?: string } }).contact?.name ??
+      'cover-letter';
+    return `${slugify(name)}-${slugify(posting.company_name)}-cover-letter-${new Date().toISOString().slice(0, 10)}`;
+  }, [record, posting]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -314,11 +324,13 @@ export default function CoverLetterReviewPage({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const payload = record.payload as CoverLetterPayload;
-      const userSlug = slugify(payload.contact.name);
-      const companySlug = slugify(posting.company_name);
-      const date = new Date().toISOString().slice(0, 10);
-      a.download = `${userSlug}-${companySlug}-cover-letter-${date}.docx`;
+      // Strip path separators on save — browsers tolerate them but a
+      // download attribute with ``/`` confuses the OS file picker.
+      const safe = (customFilename.trim() || defaultFilename).replace(
+        /[\\/]/g,
+        '_'
+      );
+      a.download = `${safe}.docx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -609,9 +621,30 @@ export default function CoverLetterReviewPage({
 
       <div>
         <div className='mb-1 flex items-center justify-between gap-2'>
-          <Text variant='caption' as='span'>
-            Cover letter markdown
-          </Text>
+          <div className='flex min-w-0 flex-1 items-center gap-1'>
+            <label htmlFor='cover-letter-filename' className='sr-only'>
+              Download filename
+            </label>
+            <input
+              id='cover-letter-filename'
+              type='text'
+              value={customFilename}
+              placeholder={defaultFilename}
+              onChange={e => setCustomFilename(e.target.value)}
+              maxLength={120}
+              disabled={isApproved}
+              className='min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60'
+              aria-describedby='cover-letter-filename-suffix'
+            />
+            <Text
+              variant='meta'
+              as='span'
+              className='text-text-tertiary'
+              id='cover-letter-filename-suffix'
+            >
+              .docx
+            </Text>
+          </div>
           {/* Same rationale as ResumeReviewPage: Download stays as
               a standalone icon (frequent, free, non-destructive);
               Re-generate (LLM-billed) and Lock/Unlock move behind a
