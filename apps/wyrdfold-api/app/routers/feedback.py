@@ -1,10 +1,14 @@
-"""Feedback endpoints — per-(user, target) signal capture + learner trigger.
+"""Feedback endpoints — per-(user, target) signal capture + learner triggers.
 
 Routes:
 - ``POST   /jobs/{job_id}/feedback`` — upsert a signal
 - ``DELETE /jobs/{job_id}/feedback`` — undo (used by toast Undo)
 - ``GET    /targets/{target_id}/feedback`` — list a user's rows
-- ``POST   /targets/{target_id}/learn`` — force the learner to run now
+- ``POST   /targets/{target_id}/learn`` — deterministic learner (v1)
+- ``POST   /targets/{target_id}/learn-llm`` — LLM ProfilePatch learner (v2)
+- ``GET    /targets/{target_id}/learning-log`` — audit list for settings UI
+- ``POST   /targets/{target_id}/learn/{run_id}/apply`` — accept a staged patch
+- ``POST   /targets/{target_id}/learn/{run_id}/reject`` — reject a staged patch
 
 Auth: JWT (``get_current_user_id``). API-key only callers are not
 expected here — feedback is fundamentally per-user.
@@ -12,23 +16,30 @@ expected here — feedback is fundamentally per-user.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from supabase import Client
 
-from app.dependencies import get_current_user_id, get_supabase
+from app.dependencies import get_current_user_id, get_llm_client, get_supabase
 from app.models.feedback import (
     FeedbackCreate,
     FeedbackCreateResponse,
     FeedbackList,
     LearnerPatchSummary,
 )
+from app.models.learning import LearningRunResult, TargetLearningLogRow
 from app.services.feedback import (
     delete_feedback,
     list_for_target,
     maybe_run_learner,
     upsert_feedback,
+)
+from app.services.llm.client import LLMClient
+from app.services.llm_learner import (
+    apply_staged_patch,
+    reject_staged_patch,
+    run_llm_learner,
 )
 
 router = APIRouter(tags=["feedback"])
@@ -134,6 +145,101 @@ async def run_learner_now(
     if not _target_exists_for_user(supabase, user_id, target_id):
         raise HTTPException(status_code=404, detail="Target not found for user")
     return maybe_run_learner(supabase, user_id=user_id, target_id=target_id)
+
+
+@router.post(
+    "/targets/{target_id}/learn-llm",
+    response_model=LearningRunResult | None,
+)
+async def run_llm_learner_now(
+    target_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+) -> Any:
+    """Force-run the LLM ProfilePatch learner.
+
+    Returns ``None`` if there's nothing to learn from (below threshold).
+    Returns a result with ``applied=True`` when the patch was auto-applied
+    (confidence ≥ 0.6), or ``applied=False`` when it was staged for review.
+    """
+    if not _target_exists_for_user(supabase, user_id, target_id):
+        raise HTTPException(status_code=404, detail="Target not found for user")
+    return await run_llm_learner(
+        supabase, llm, user_id=user_id, target_id=target_id
+    )
+
+
+@router.get(
+    "/targets/{target_id}/learning-log",
+    response_model=list[TargetLearningLogRow],
+)
+async def list_learning_log(
+    target_id: str,
+    status: str | None = Query(
+        default=None, pattern="^(applied|staged|rejected)$"
+    ),
+    limit: int = Query(50, ge=1, le=200),
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase),
+) -> list[TargetLearningLogRow]:
+    if not _target_exists_for_user(supabase, user_id, target_id):
+        raise HTTPException(status_code=404, detail="Target not found for user")
+    query = (
+        supabase.table("target_learning_log")
+        .select("*")
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .order("created_at", desc=True)
+        .limit(limit)
+    )
+    if status:
+        query = query.eq("status", status)
+    resp = query.execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return [TargetLearningLogRow.model_validate(r) for r in rows]
+
+
+@router.post(
+    "/targets/{target_id}/learn/{run_id}/apply",
+    response_model=LearningRunResult,
+)
+async def apply_learning_run(
+    target_id: str,
+    run_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase),
+) -> Any:
+    if not _target_exists_for_user(supabase, user_id, target_id):
+        raise HTTPException(status_code=404, detail="Target not found for user")
+    result = apply_staged_patch(supabase, user_id=user_id, run_id=run_id)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No staged patch with that run_id for this user",
+        )
+    return result
+
+
+@router.post(
+    "/targets/{target_id}/learn/{run_id}/reject",
+    response_model=LearningRunResult,
+)
+async def reject_learning_run(
+    target_id: str,
+    run_id: str,
+    user_id: str = Depends(get_current_user_id),
+    supabase: Client = Depends(get_supabase),
+) -> Any:
+    if not _target_exists_for_user(supabase, user_id, target_id):
+        raise HTTPException(status_code=404, detail="Target not found for user")
+    result = reject_staged_patch(supabase, user_id=user_id, run_id=run_id)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No staged patch with that run_id for this user",
+        )
+    return result
 
 
 # ---- BackgroundTasks wrapper ----------------------------------------------
