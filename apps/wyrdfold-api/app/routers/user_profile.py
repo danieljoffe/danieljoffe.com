@@ -23,6 +23,8 @@ from app.models.user_profile import (
     IdentityFieldsUpdate,
     NotificationPreferences,
     NotificationPreferencesUpdate,
+    ResumeStyleSettings,
+    ResumeStyleSettingsUpdate,
 )
 
 
@@ -60,6 +62,8 @@ _PREFS_COLUMNS = (
 )
 
 _IDENTITY_COLUMNS = "name, email, phone_number, location, linkedin_url, website_url"
+
+_RESUME_STYLE_COLUMNS = "resume_style_settings"
 
 
 async def _get_or_create_profile(
@@ -218,3 +222,58 @@ async def update_identity(
 
     merged = {**profile, **updates}
     return IdentityFields(**merged)
+
+
+# ---------------------------------------------------------------------------
+# Resume style (docx typography preset for tailored resume / cover-letter export)
+# ---------------------------------------------------------------------------
+
+
+def _read_style(row: dict[str, Any]) -> ResumeStyleSettings:
+    """Parse the stored JSONB into settings; fall back to defaults when the
+    column is NULL (user hasn't chosen yet) or somehow malformed."""
+    stored = row.get("resume_style_settings")
+    if not stored:
+        return ResumeStyleSettings()
+    try:
+        return ResumeStyleSettings.model_validate(stored)
+    except ValueError:
+        return ResumeStyleSettings()
+
+
+@router.get("/resume-style")
+async def get_resume_style(
+    user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
+    supabase: Client = Depends(get_supabase),
+) -> ResumeStyleSettings:
+    row = await _get_or_create_profile(
+        supabase, user_id, _RESUME_STYLE_COLUMNS, seed_email=user_email
+    )
+    return _read_style(row)
+
+
+@router.patch("/resume-style")
+async def update_resume_style(
+    body: ResumeStyleSettingsUpdate,
+    user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
+    supabase: Client = Depends(get_supabase),
+) -> ResumeStyleSettings:
+    profile = await _get_or_create_profile(
+        supabase, user_id, _RESUME_STYLE_COLUMNS, seed_email=user_email
+    )
+    current = _read_style(profile)
+
+    updates = body.model_dump(exclude_none=True)
+    if not updates:
+        return current
+
+    merged = current.model_copy(update=updates)
+    await asyncio.to_thread(
+        lambda: supabase.table("user_profiles")
+        .update({"resume_style_settings": merged.model_dump()})
+        .eq("user_id", user_id)
+        .execute()
+    )
+    return merged
