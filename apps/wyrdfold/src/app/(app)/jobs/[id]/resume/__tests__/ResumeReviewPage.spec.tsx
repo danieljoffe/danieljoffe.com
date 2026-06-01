@@ -108,6 +108,23 @@ describe('ResumeReviewPage', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText(/Loading resume/i)).toBeNull();
     });
+
+    // The TipTap-backed editor surface exposes the same aria-label the
+    // old textarea did, so existing flow tests keep working. Smoke-check
+    // it actually rendered the loaded markdown (vs being a hollow div).
+    const surface = await screen.findByLabelText('Resume markdown');
+    expect(surface.getAttribute('contenteditable')).toBe('true');
+    expect(surface.textContent).toContain('Resume markdown');
+
+    // Filename input is present with a slug-derived placeholder. The
+    // placeholder is exposed via getByPlaceholderText since the input
+    // value starts empty until the user types.
+    const filenameInput = screen.getByLabelText(
+      'Download filename'
+    ) as HTMLInputElement;
+    expect(filenameInput).toBeInTheDocument();
+    expect(filenameInput.placeholder).toMatch(/-acme-/);
+    expect(filenameInput.value).toBe('');
   });
 
   it('toasts an error when the network call rejects', async () => {
