@@ -22,7 +22,6 @@ from app.models.feedback import (
     FeedbackCreate,
     FeedbackCreateResponse,
     FeedbackList,
-    FeedbackRow,
     LearnerPatchSummary,
 )
 from app.services.feedback import (
