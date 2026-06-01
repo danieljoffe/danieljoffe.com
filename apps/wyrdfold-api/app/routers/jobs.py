@@ -109,6 +109,31 @@ def _tokenize_search(raw: str | None) -> list[str]:
 _IN_CHUNK_SIZE = 200
 
 
+def _default_min_score_for_user(
+    supabase: Client, user_id: str
+) -> int | None:
+    """Return the user's ``job_score_threshold`` for use as the default
+    list filter. ``None`` when the profile row is missing or the
+    threshold is 0 (the user explicitly opted out of any floor).
+    """
+    resp = (
+        supabase.table("user_profiles")
+        .select("job_score_threshold")
+        .eq("user_id", user_id)
+        .maybe_single()
+        .execute()
+    )
+    if resp is None:
+        return None
+    row = cast(dict[str, Any] | None, resp.data)
+    if row is None:
+        return None
+    threshold = row.get("job_score_threshold")
+    if not isinstance(threshold, int) or threshold <= 0:
+        return None
+    return threshold
+
+
 def _fetch_jobs_chunked(
     supabase: Client,
     page_ids: list[str],
@@ -616,6 +641,7 @@ def list_jobs(
                 "total": 0,
                 "page": page,
                 "page_size": page_size,
+                "applied_min_score": min_score,
             }
             job_list_cache.set(cache_key, empty)
             return empty
@@ -625,9 +651,20 @@ def list_jobs(
                 "total": 0,
                 "page": page,
                 "page_size": page_size,
+                "applied_min_score": min_score,
             }
             job_list_cache.set(cache_key, empty)
             return empty
+
+    # When no chip is set, fall back to the user's stored threshold —
+    # historically ``user_profiles.job_score_threshold`` only gated SMS
+    # notifications, so a senior user with threshold 70 still saw 5k+
+    # rows of noise in the list. Caller can pass ``min_score=0`` to
+    # explicitly opt out of the default; ``applied_min_score`` is
+    # echoed in the response so the UI can render a "filtered to ≥N"
+    # chip with a clear affordance.
+    if min_score is None and user_id is not None:
+        min_score = _default_min_score_for_user(supabase, user_id)
 
     # Target view: sort/paginate by target-specific scores
     if target_id:
@@ -646,6 +683,7 @@ def list_jobs(
             exclude_terms=exclude_terms,
             only_terms=only_terms,
         )
+        result["applied_min_score"] = min_score
         job_list_cache.set(cache_key, result)
         return result
 
@@ -669,6 +707,7 @@ def list_jobs(
             exclude_terms=exclude_terms,
             only_terms=only_terms,
         )
+        result["applied_min_score"] = min_score
         job_list_cache.set(cache_key, result)
         return result
 
@@ -715,6 +754,7 @@ def list_jobs(
             "total": resp.count or 0,
             "page": page,
             "page_size": page_size,
+            "applied_min_score": min_score,
         }
     job_list_cache.set(cache_key, operator_result)
     return operator_result

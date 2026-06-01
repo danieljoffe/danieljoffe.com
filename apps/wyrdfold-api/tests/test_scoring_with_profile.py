@@ -274,8 +274,8 @@ def test_role_title_credit_is_capped_per_match():
     # but the role_titles bucket is a single fixed credit.
     matched_role_keywords = [m for m in result.matched_keywords if m in keywords]
     assert len(matched_role_keywords) == 3
-    # Fixed credit is _ROLE_TITLE_WEIGHT * _TITLE_WEIGHT = 15 * 2 = 30.0
-    assert result.breakdown.role_titles == 30.0
+    # Fixed credit is _ROLE_TITLE_WEIGHT * _TITLE_WEIGHT = 40 * 2 = 80.0
+    assert result.breakdown.role_titles == 80.0
 
 
 def test_role_title_does_not_override_negative_keyword():

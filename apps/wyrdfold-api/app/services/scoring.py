@@ -182,12 +182,19 @@ _SENIORITY_SIGNAL_WEIGHT = 2.0
 _TITLE_WEIGHT = 2.0
 _DEFAULT_NORMALIZER = 30.0
 # Per-target ``search_keywords`` are the user's role-title intent (e.g.
-# "director of customer experience"). They were previously only used by
-# the poller to fetch jobs from boards — never scored. A title that hits
-# any of them is the single strongest signal of "this is the right kind
-# of role", so we credit it once at a high weight, applied via the same
-# ``_TITLE_WEIGHT`` boost the category keywords use when matched in title.
-_ROLE_TITLE_WEIGHT = 15.0
+# "director of customer experience"). A title that hits any of them is
+# the single strongest signal of "this is the right kind of role", so
+# the credit needs to *dominate* — not just contribute alongside 40
+# other keyword buckets that pad ``_calc_max_possible``.
+#
+# 15.0 (the original from PR #768) put a perfect title match at only
+# ~19% of a senior profile's max-possible — Checkr's "Director of
+# Customer Success" scored 27 against Melissa's Director target,
+# ranking behind "Executive Communications Manager" (33) which is
+# wholly off-topic. 40.0 puts a title-intent match at roughly half a
+# senior profile's max-possible solo, and combined with any JD-side
+# matches genuinely relevant postings push past the 70 threshold.
+_ROLE_TITLE_WEIGHT = 40.0
 
 # Senior-tier seniority levels. When ``profile.seniority.level`` is one of
 # these, common junior-IC title tokens get auto-prepended to the negative
