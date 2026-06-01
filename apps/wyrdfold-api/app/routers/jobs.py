@@ -98,6 +98,45 @@ def _tokenize_search(raw: str | None) -> list[str]:
     return out
 
 
+# PostgREST `id=in.(uuid,uuid,...)` is URL-encoded into the query string.
+# 200 UUIDs (36 chars each, plus commas and the `id.in.()` wrapper) lands
+# around 7.5 KB — well under the proxy + nginx + supabase defaults of
+# 8-16 KB. Above ~250 the URL silently truncates and the upstream
+# returns plain ``Bad Request`` (not JSON), which then crashes the
+# postgrest-py error decoder. ``has_location_filter`` and ``search``
+# both force ``page_ids = list(score_lookup.keys())`` — a few thousand
+# UUIDs after the May poll-cycle ingest. Chunked.
+_IN_CHUNK_SIZE = 200
+
+
+def _fetch_jobs_chunked(
+    supabase: Client,
+    page_ids: list[str],
+    *,
+    status: str | None,
+    company: str | None,
+    search: str | None,
+) -> list[dict[str, Any]]:
+    """Fetch ``jobs`` rows for many IDs in chunks, applying the
+    status/company/title filters per request. Caller is responsible for
+    re-sorting by score after the merge (chunk order is not preserved).
+    """
+    if not page_ids:
+        return []
+    out: list[dict[str, Any]] = []
+    for i in range(0, len(page_ids), _IN_CHUNK_SIZE):
+        chunk = page_ids[i : i + _IN_CHUNK_SIZE]
+        q = supabase.table("jobs").select(_JP_SELECT_COLS).in_("id", chunk)
+        if status:
+            q = q.eq("status", status)
+        if company:
+            q = q.eq("company_name", company)
+        q = _apply_title_search(q, search)
+        resp = q.execute()
+        out.extend(cast(list[dict[str, Any]], resp.data or []))
+    return out
+
+
 def _apply_title_search(query: Any, search: str | None) -> Any:
     """Apply a search filter to a query against the jobs.title column.
 
@@ -246,23 +285,12 @@ def _list_jobs_for_target_two_query(
         page_ids = list(score_lookup.keys())
         total = None  # will be computed after posting-level filters
 
-    jp_query = (
-        supabase.table("jobs")
-        .select(_JP_SELECT_COLS)
-        .in_("id", page_ids)
+    postings: list[dict[str, Any]] = _fetch_jobs_chunked(
+        supabase, page_ids, status=status, company=company, search=search
     )
-    if status:
-        jp_query = jp_query.eq("status", status)
-    if company:
-        jp_query = jp_query.eq("company_name", company)
-    jp_query = _apply_title_search(jp_query, search)
-
-    jp_resp = jp_query.execute()
-    postings = list(jp_resp.data or [])
 
     # Overlay target scores
-    for posting in postings:
-        p = cast(dict[str, Any], posting)
+    for p in postings:
         ts = score_lookup.get(p["id"])
         if ts:
             p["score"] = ts["score"]
@@ -272,17 +300,14 @@ def _list_jobs_for_target_two_query(
     # Sort + paginate in Python only when we couldn't do it server-side
     if total is None or sort_col != "score":
         if has_location_filter:
-            postings = cast(
-                Any,
-                _apply_location_filter(
-                    cast(list[dict[str, Any]], postings),
-                    exclude_terms=exclude_terms,
-                    only_terms=only_terms,
-                ),
+            postings = _apply_location_filter(
+                postings,
+                exclude_terms=exclude_terms,
+                only_terms=only_terms,
             )
 
-        def _sort_key(p: Any) -> Any:
-            val = cast(dict[str, Any], p).get(sort)
+        def _sort_key(p: dict[str, Any]) -> Any:
+            val = p.get(sort)
             if val is None:
                 return 0 if sort == "score" else ""
             return val
@@ -298,7 +323,7 @@ def _list_jobs_for_target_two_query(
         order_index = {jid: i for i, jid in enumerate(page_ids)}
         postings.sort(
             key=lambda p: order_index.get(
-                cast(dict[str, Any], p)["id"], len(page_ids)
+                p["id"], len(page_ids)
             )
         )
 
@@ -429,17 +454,11 @@ def _list_jobs_across_user_targets(
     if not page_ids:
         return {"postings": [], "total": total or 0, "page": page, "page_size": page_size}
 
-    jp_query = supabase.table("jobs").select(_JP_SELECT_COLS).in_("id", page_ids)
-    if status:
-        jp_query = jp_query.eq("status", status)
-    if company:
-        jp_query = jp_query.eq("company_name", company)
-    jp_query = _apply_title_search(jp_query, search)
-    jp_resp = jp_query.execute()
-    postings = list(jp_resp.data or [])
+    postings: list[dict[str, Any]] = _fetch_jobs_chunked(
+        supabase, page_ids, status=status, company=company, search=search
+    )
 
-    for posting in postings:
-        p = cast(dict[str, Any], posting)
+    for p in postings:
         ts = best.get(p["id"])
         if ts:
             p["score"] = ts["score"]
@@ -448,17 +467,14 @@ def _list_jobs_across_user_targets(
 
     if total is None or sort_col != "score":
         if has_location_filter:
-            postings = cast(
-                Any,
-                _apply_location_filter(
-                    cast(list[dict[str, Any]], postings),
-                    exclude_terms=exclude_terms,
-                    only_terms=only_terms,
-                ),
+            postings = _apply_location_filter(
+                postings,
+                exclude_terms=exclude_terms,
+                only_terms=only_terms,
             )
 
-        def _sort_key(p: Any) -> Any:
-            val = cast(dict[str, Any], p).get(sort)
+        def _sort_key(p: dict[str, Any]) -> Any:
+            val = p.get(sort)
             if val is None:
                 return 0 if sort == "score" else ""
             return val
@@ -474,7 +490,7 @@ def _list_jobs_across_user_targets(
         order_index = {jid: i for i, jid in enumerate(page_ids)}
         postings.sort(
             key=lambda p: order_index.get(
-                cast(dict[str, Any], p)["id"], len(page_ids)
+                p["id"], len(page_ids)
             )
         )
 
