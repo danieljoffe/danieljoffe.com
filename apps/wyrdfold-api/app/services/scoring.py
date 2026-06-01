@@ -24,12 +24,18 @@ _WORD_BOUNDARY_CACHE: dict[str, re.Pattern[str]] = {}
 def _keyword_in_text(keyword: str, text: str) -> bool:
     """Match a keyword against lowered text.
 
-    Short alphabetic keywords (≤3 chars) use word-boundary regex to avoid
-    false positives (e.g., "Go" matching "Google"). Non-alphabetic short
-    keywords ("c#", "c++") and longer keywords use fast substring match.
+    Alphabetic single-word keywords ALWAYS use word-boundary regex so
+    "lead" does not match "leadership", "rep" does not match "repository",
+    "go" does not match "google". The prior 3-char gate let everything
+    longer than 3 chars fall through to substring match, which silently
+    produced director-vs-rep false positives in the wild.
+
+    Non-alphabetic ("c#", "c++") and multi-word ("director of cx") keywords
+    fall back to substring match since regex word-boundaries don't reliably
+    handle non-alpha tokens and ATS authors rarely mirror our exact spacing.
     """
     kw_lower = keyword.lower()
-    if len(kw_lower) <= 3 and kw_lower.isalpha():
+    if kw_lower.isalpha():
         if kw_lower not in _WORD_BOUNDARY_CACHE:
             _WORD_BOUNDARY_CACHE[kw_lower] = re.compile(rf"\b{re.escape(kw_lower)}\b")
         return bool(_WORD_BOUNDARY_CACHE[kw_lower].search(text))
@@ -183,6 +189,142 @@ _DEFAULT_NORMALIZER = 30.0
 # ``_TITLE_WEIGHT`` boost the category keywords use when matched in title.
 _ROLE_TITLE_WEIGHT = 15.0
 
+# Senior-tier seniority levels. When ``profile.seniority.level`` is one of
+# these, common junior-IC title tokens get auto-prepended to the negative
+# keyword list, so a Director target never scores a Rep / Associate /
+# Coordinator title above zero regardless of how many JD-side keywords
+# happen to incidentally match.
+_SENIOR_LEVELS: frozenset[str] = frozenset(
+    {
+        "director",
+        "vp",
+        "vice president",
+        "head",
+        "head of",
+        "principal",
+        "staff",
+        "executive",
+        "chief",
+    }
+)
+
+# Junior-IC title tokens that are noise for senior targets. Single-word,
+# alpha-only so the word-boundary matcher catches them cleanly without
+# accidentally hitting phrases like "agentic" (-> "agent").
+_JUNIOR_TITLE_TOKENS: tuple[str, ...] = (
+    "junior",
+    "jr",
+    "intern",
+    "internship",
+    "trainee",
+    "apprentice",
+    "associate",
+    "rep",
+    "representative",
+    "coordinator",
+    "specialist",
+    "assistant",
+    "agent",
+)
+
+# Coarse seniority tier ladder. Higher number = more senior. A title
+# ranked >1 tier below the profile's level earns a heavy penalty
+# (``_TIER_PENALTY_PER_DELTA`` per tier of gap beyond the first).
+# Word-boundary matching means "senior" doesn't hit "seniors" and
+# "director" doesn't hit "directorate".
+_TITLE_TIERS: dict[int, tuple[str, ...]] = {
+    0: ("intern", "internship", "trainee", "apprentice"),
+    1: (
+        "junior",
+        "jr",
+        "associate",
+        "rep",
+        "representative",
+        "coordinator",
+        "specialist",
+        "assistant",
+        "agent",
+    ),
+    2: ("analyst",),
+    3: ("engineer", "designer", "manager", "developer"),
+    4: ("senior", "sr", "lead"),
+    5: ("staff", "principal"),
+    6: ("director",),
+    7: ("head", "vp"),
+    8: ("chief", "executive"),
+}
+
+_LEVEL_TO_TIER: dict[str, int] = {
+    level.lower(): tier
+    for tier, levels in _TITLE_TIERS.items()
+    for level in levels
+}
+# Multi-word level aliases the LLM emits for ``profile.seniority.level``.
+_LEVEL_TO_TIER["vice president"] = 7
+_LEVEL_TO_TIER["head of"] = 7
+
+_TIER_PENALTY_PER_DELTA = -10.0
+
+
+def _is_senior_target(profile: ScoringProfile) -> bool:
+    """True if this profile targets a senior-tier role (director+)."""
+    level = (profile.seniority.level or "").strip().lower()
+    return bool(level) and level in _SENIOR_LEVELS
+
+
+def _effective_negative_keywords(profile: ScoringProfile) -> list[str]:
+    """Return user-set negatives plus auto-junior tokens for senior targets.
+
+    Junior tokens get folded in deterministically rather than asked from
+    the LLM during profile derivation — the LLM was inconsistent about
+    listing them (only emitted "junior" / "intern" / "entry-level"),
+    which meant "Customer Service Representative" titles still slipped
+    through to a Director target.
+    """
+    base = list(profile.negative.keywords)
+    if _is_senior_target(profile):
+        existing = {kw.lower() for kw in base}
+        for kw in _JUNIOR_TITLE_TOKENS:
+            if kw not in existing:
+                base.append(kw)
+    return base
+
+
+def _highest_title_tier(title_lower: str) -> int | None:
+    """Return the highest seniority tier any token in the title matches."""
+    for tier in sorted(_TITLE_TIERS.keys(), reverse=True):
+        for token in _TITLE_TIERS[tier]:
+            if _keyword_in_text(token, title_lower):
+                return tier
+    return None
+
+
+def _seniority_tier_penalty(
+    title_lower: str, profile_level: str | None
+) -> float:
+    """Penalty when the title sits more than one tier below the profile.
+
+    Same tier or one below = no penalty (e.g. a Manager title for a
+    Director target is a soft mismatch, not noise). Two or more tiers
+    below scales linearly: Manager-for-Director = 0, Engineer-for-Director
+    = -10, Rep-for-Director = -40.
+
+    Returns 0.0 when the profile has no level set or no seniority signal
+    appears in the title at all — we can't penalize what we can't classify.
+    """
+    if not profile_level:
+        return 0.0
+    target_tier = _LEVEL_TO_TIER.get(profile_level.strip().lower())
+    if target_tier is None:
+        return 0.0
+    title_tier = _highest_title_tier(title_lower)
+    if title_tier is None:
+        return 0.0
+    delta = title_tier - target_tier
+    if delta >= -1:
+        return 0.0
+    return _TIER_PENALTY_PER_DELTA * abs(delta + 1)
+
 
 def _score_role_titles(
     search_keywords: list[str] | None, title_lower: str
@@ -327,7 +469,7 @@ def score_job_with_profile(
 
     # ---- Negative keywords (only in title + requirements sections) ----
     negative_sections = {"requirements", "default"}
-    for keyword in profile.negative.keywords:
+    for keyword in _effective_negative_keywords(profile):
         # Check title
         if _keyword_or_alias_in_text(keyword, title_lower):
             breakdown.negative += profile.negative.weight
@@ -342,6 +484,14 @@ def score_job_with_profile(
                 breakdown.negative += profile.negative.weight
                 excluded = True
                 break
+
+    # ---- Seniority-tier penalty ----
+    # Pushes "Engineer" / "Rep" titles below the floor for a Director
+    # target even when no explicit negative-keyword matches. Stacks
+    # additively with the negative bucket since both are deductions.
+    breakdown.negative += _seniority_tier_penalty(
+        title_lower, profile.seniority.level
+    )
 
     # Dynamic normalization
     raw = (
@@ -428,11 +578,16 @@ def score_title_against_profile(
         breakdown.role_titles += role_title_points
         all_matched.extend(role_title_matches)
 
-    # Negative keywords
-    for keyword in profile.negative.keywords:
+    # Negative keywords (user-set + auto-junior for senior targets)
+    for keyword in _effective_negative_keywords(profile):
         if _keyword_or_alias_in_text(keyword, title_lower):
             breakdown.negative += profile.negative.weight
             excluded = True
+
+    # Seniority-tier penalty — see _seniority_tier_penalty docstring
+    breakdown.negative += _seniority_tier_penalty(
+        title_lower, profile.seniority.level
+    )
 
     raw = (
         breakdown.role_titles
