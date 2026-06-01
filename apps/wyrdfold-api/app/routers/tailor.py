@@ -23,6 +23,7 @@ from typing import Any, cast
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import Response
+from pydantic import ValidationError
 from supabase import Client
 
 from app.dependencies import (
@@ -44,6 +45,7 @@ from app.models.tailor import (
     TailorRequest,
     TailorResponse,
 )
+from app.models.user_profile import ResumeStyleSettings
 from app.services.ats_lint import lint_markdown
 from app.services.batch import create_batch, get_batch, process_batch
 from app.services.docx.pandoc_render import (
@@ -543,6 +545,43 @@ async def list_resume_versions(
     }
 
 
+def _fetch_user_resume_style(
+    supabase: Client, user_id: str
+) -> ResumeStyleSettings | None:
+    """Read the user's saved default resume style, or None if unset/malformed."""
+    resp = (
+        supabase.table("user_profiles")
+        .select("resume_style_settings")
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    stored = rows[0].get("resume_style_settings") if rows else None
+    if not stored:
+        return None
+    try:
+        return ResumeStyleSettings.model_validate(stored)
+    except ValidationError:
+        return None
+
+
+def _resolve_render_style(
+    supabase: Client, row: TailoredResumeRecord, user_id: str | None
+) -> ResumeStyleSettings | None:
+    """Effective docx style for a download: per-record override, else the
+    user's profile default, else None (today's unstyled pandoc render).
+    """
+    if row.style_settings:
+        try:
+            return ResumeStyleSettings.model_validate(row.style_settings)
+        except ValidationError:
+            pass
+    if user_id is not None:
+        return _fetch_user_resume_style(supabase, user_id)
+    return None
+
+
 @router.get("/resumes/{resume_id}/download")
 async def download_tailored_resume(
     resume_id: str,
@@ -553,7 +592,10 @@ async def download_tailored_resume(
     if row is None:
         raise HTTPException(status_code=404, detail="tailored resume not found")
 
-    expected_hash = md_payload_hash(row.payload_md) if row.payload_md else None
+    style = _resolve_render_style(supabase, row, user_id)
+    expected_hash = (
+        md_payload_hash(row.payload_md, style) if row.payload_md else None
+    )
     cache_fresh = (
         row.storage_path is not None
         and expected_hash is not None
@@ -581,7 +623,7 @@ async def download_tailored_resume(
             )
 
         try:
-            data = md_to_docx(row.payload_md)
+            data = md_to_docx(row.payload_md, style)
         except PandocNotInstalledError as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
         except PandocRenderError as exc:
@@ -600,7 +642,7 @@ async def download_tailored_resume(
                 supabase,
                 resume_id,
                 storage_path=storage_path,
-                payload_md_hash=expected_hash or md_payload_hash(row.payload_md),
+                payload_md_hash=expected_hash or md_payload_hash(row.payload_md, style),
                 user_id=user_id,
             )
         except Exception:

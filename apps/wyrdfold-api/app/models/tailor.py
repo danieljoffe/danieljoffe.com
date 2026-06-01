@@ -194,6 +194,9 @@ class TailoredResumeRecord(BaseModel):
     job_posting_id: str | None
     document_type: DocumentType = "resume"
     resume_type: str
+    style_settings: dict[str, Any] | None = None
+    """Per-record docx style override ({preset, accent}); None falls back to
+    the user's profile default, then to today's unstyled render."""
     jd_snapshot: str
     jd_snapshot_hash: str
     payload: dict[str, Any]

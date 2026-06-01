@@ -988,7 +988,9 @@ class TestDownloadCache:
             )
 
         assert response.body == b"PKfresh-bytes"
-        mock_render.assert_called_once_with(_GOOD_MD)
+        # Style resolves to None here (no per-record override, no user default),
+        # so the render is the unstyled pandoc path — same output as before.
+        mock_render.assert_called_once_with(_GOOD_MD, None)
         # mark_docx_rendered receives the freshly computed hash, not the stale one.
         from app.services.docx.pandoc_render import md_payload_hash
 
