@@ -16,6 +16,7 @@ from app.observability import init_sentry
 from app.routers import (
     analysis,
     experience,
+    feedback,
     insights,
     jobs,
     poll,
@@ -187,6 +188,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
 
 app.include_router(analysis.router)
 app.include_router(experience.router)
+app.include_router(feedback.router)
 app.include_router(insights.router)
 app.include_router(jobs.router)
 app.include_router(poll.router)
