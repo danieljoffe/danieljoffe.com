@@ -1,6 +1,7 @@
 """Pydantic models for user profile — notification + identity fields."""
 
 import re
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -89,3 +90,38 @@ class IdentityFieldsUpdate(BaseModel):
     @classmethod
     def _validate_phone(cls, value: str | None) -> str | None:
         return _normalize_phone(value)
+
+
+# ---------------------------------------------------------------------------
+# Resume style (docx typography presets — see app/services/docx/style.py)
+# ---------------------------------------------------------------------------
+
+# Curated, author-owned looks. Users pick from this closed set rather than
+# tuning fonts/sizes individually — every combination is designer-vetted, so a
+# user cannot produce a broken resume. The typography behind each preset lives
+# server-side in app/services/docx/style.py and is intentionally NOT exposed.
+ResumeStylePreset = Literal["modern", "classic", "compact", "executive"]
+
+# Applied to the name + section headings only (ATS parsers ignore color).
+# "black" is the no-accent option for conservative / regulated audiences.
+ResumeStyleAccent = Literal["slate", "navy", "black", "burgundy", "forest"]
+
+
+class ResumeStyleSettings(BaseModel):
+    """A user's resume style choice. Two enums, nothing free-form.
+
+    Stored as JSONB on ``user_profiles.resume_style_settings`` (the default)
+    and ``documents.style_settings`` (per-record override, deferred UI). A
+    NULL column means "no choice yet" and renders today's unstyled pandoc
+    default — see ``download_tailored_resume``.
+    """
+
+    preset: ResumeStylePreset = "modern"
+    accent: ResumeStyleAccent = "slate"
+
+
+class ResumeStyleSettingsUpdate(BaseModel):
+    """Write model — both optional so the UI can PATCH one axis at a time."""
+
+    preset: ResumeStylePreset | None = None
+    accent: ResumeStyleAccent | None = None

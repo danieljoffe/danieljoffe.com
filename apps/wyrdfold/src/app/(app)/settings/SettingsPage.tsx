@@ -9,12 +9,22 @@ import {
 } from '@danieljoffe.com/shared-ui/Card';
 import { Heading } from '@danieljoffe.com/shared-ui/Heading';
 import { Input } from '@danieljoffe.com/shared-ui/Input';
+import { Select } from '@danieljoffe.com/shared-ui/Select';
 import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { Switch } from '@danieljoffe.com/shared-ui/Switch';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
+import { ResumeStylePreview } from './ResumeStylePreview';
+import {
+  ACCENT_OPTIONS,
+  DEFAULT_RESUME_STYLE,
+  PRESET_OPTIONS,
+  type ResumeStyleAccent,
+  type ResumeStylePreset,
+  type ResumeStyleSettings,
+} from './resumeStyle';
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
 
@@ -55,6 +65,13 @@ function smsSig(
   });
 }
 
+function styleSig(
+  preset: ResumeStylePreset,
+  accent: ResumeStyleAccent
+): string {
+  return JSON.stringify({ preset, accent });
+}
+
 function SavingIndicator({ active }: { active: boolean }) {
   if (!active) return null;
   return (
@@ -83,6 +100,13 @@ export default function SettingsPage() {
   const [smsThreshold, setSmsThreshold] = useState('100');
   const [smsDailyLimit, setSmsDailyLimit] = useState('5');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [savingStyle, setSavingStyle] = useState(false);
+  const [stylePreset, setStylePreset] = useState<ResumeStylePreset>(
+    DEFAULT_RESUME_STYLE.preset
+  );
+  const [styleAccent, setStyleAccent] = useState<ResumeStyleAccent>(
+    DEFAULT_RESUME_STYLE.accent
+  );
 
   // Server-known signatures — autosave fires only when local state diverges.
   // Failed-sigs prevent retry-loops when the server rejects a value.
@@ -90,10 +114,15 @@ export default function SettingsPage() {
   const lastSmsSigRef = useRef<string | null>(null);
   const lastFailedEmailSigRef = useRef<string | null>(null);
   const lastFailedSmsSigRef = useRef<string | null>(null);
+  const lastStyleSigRef = useRef<string | null>(null);
+  const lastFailedStyleSigRef = useRef<string | null>(null);
 
   const fetchPrefs = useCallback(async () => {
     try {
-      const prefsRes = await fetch('/api/profile/notifications');
+      const [prefsRes, styleRes] = await Promise.all([
+        fetch('/api/profile/notifications'),
+        fetch('/api/profile/resume-style'),
+      ]);
       if (prefsRes.ok) {
         const data = (await prefsRes.json()) as NotificationPreferences;
         setPrefs(data);
@@ -113,6 +142,12 @@ export default function SettingsPage() {
           data.sms_daily_limit,
           data.phone_number ?? null
         );
+      }
+      if (styleRes.ok) {
+        const style = (await styleRes.json()) as ResumeStyleSettings;
+        setStylePreset(style.preset);
+        setStyleAccent(style.accent);
+        lastStyleSigRef.current = styleSig(style.preset, style.accent);
       }
     } catch {
       toast({
@@ -221,6 +256,38 @@ export default function SettingsPage() {
     }
   }, [smsEnabled, smsThreshold, smsDailyLimit, phoneNumber, toast]);
 
+  const handleSaveStyle = useCallback(async () => {
+    const sig = styleSig(stylePreset, styleAccent);
+    setSavingStyle(true);
+    try {
+      const res = await fetch('/api/profile/resume-style', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preset: stylePreset, accent: styleAccent }),
+      });
+      if (!res.ok) {
+        const message = await extractApiError(
+          res,
+          'Failed to save resume style'
+        );
+        toast({ variant: 'error', title: message });
+        lastFailedStyleSigRef.current = sig;
+        return;
+      }
+      const data = (await res.json()) as ResumeStyleSettings;
+      setStylePreset(data.preset);
+      setStyleAccent(data.accent);
+      lastStyleSigRef.current = styleSig(data.preset, data.accent);
+      lastFailedStyleSigRef.current = null;
+      toast({ variant: 'success', title: 'Resume style saved' });
+    } catch {
+      toast({ variant: 'error', title: 'Failed to save resume style' });
+      lastFailedStyleSigRef.current = sig;
+    } finally {
+      setSavingStyle(false);
+    }
+  }, [stylePreset, styleAccent, toast]);
+
   // -- Autosave effects -------------------------------------------------------
 
   useEffect(() => {
@@ -258,6 +325,18 @@ export default function SettingsPage() {
     savingSection,
     handleSaveSms,
   ]);
+
+  useEffect(() => {
+    if (lastStyleSigRef.current === null) return;
+    if (savingStyle) return;
+    const sig = styleSig(stylePreset, styleAccent);
+    if (sig === lastStyleSigRef.current) return;
+    if (sig === lastFailedStyleSigRef.current) return;
+    const handle = setTimeout(() => {
+      handleSaveStyle();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [stylePreset, styleAccent, savingStyle, handleSaveStyle]);
 
   const emailAvailable = prefs?.email_available ?? false;
   const smsAvailable = prefs?.sms_available ?? false;
@@ -397,6 +476,41 @@ export default function SettingsPage() {
               disabled={!smsEnabled || !smsAvailable}
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Resume style */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-center gap-3'>
+            <CardTitle>Resume style</CardTitle>
+            <SavingIndicator active={savingStyle} />
+          </div>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-4'>
+          <Text variant='caption' className='text-text-secondary'>
+            Pick how your tailored resume and cover-letter .docx exports look.
+            Applies to every new download — no regeneration needed.
+          </Text>
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <Select
+              label='Style'
+              value={stylePreset}
+              onChange={e =>
+                setStylePreset(e.target.value as ResumeStylePreset)
+              }
+              options={PRESET_OPTIONS}
+            />
+            <Select
+              label='Accent color'
+              value={styleAccent}
+              onChange={e =>
+                setStyleAccent(e.target.value as ResumeStyleAccent)
+              }
+              options={ACCENT_OPTIONS}
+            />
+          </div>
+          <ResumeStylePreview preset={stylePreset} accent={styleAccent} />
         </CardContent>
       </Card>
     </div>
