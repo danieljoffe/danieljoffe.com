@@ -124,7 +124,7 @@ class _FakeQuery:
     we want from a test fake.
     """
 
-    def __init__(self, fake: "_FakeSupabase", table: str) -> None:
+    def __init__(self, fake: _FakeSupabase, table: str) -> None:
         self._fake = fake
         self._table = table
         self._op: str | None = None
@@ -133,52 +133,52 @@ class _FakeQuery:
         self._range: tuple[int, int] | None = None
         self._single = False
 
-    def select(self, *_args: Any, **_kwargs: Any) -> "_FakeQuery":
+    def select(self, *_args: Any, **_kwargs: Any) -> _FakeQuery:
         self._op = "select"
         return self
 
-    def insert(self, payload: Any) -> "_FakeQuery":
+    def insert(self, payload: Any) -> _FakeQuery:
         self._op = "insert"
         self._payload = payload
         return self
 
-    def upsert(self, payload: Any, **_kwargs: Any) -> "_FakeQuery":
+    def upsert(self, payload: Any, **_kwargs: Any) -> _FakeQuery:
         self._op = "upsert"
         self._payload = payload
         return self
 
-    def update(self, payload: Any) -> "_FakeQuery":
+    def update(self, payload: Any) -> _FakeQuery:
         self._op = "update"
         self._payload = payload
         return self
 
-    def delete(self) -> "_FakeQuery":
+    def delete(self) -> _FakeQuery:
         self._op = "delete"
         return self
 
-    def eq(self, col: str, val: Any) -> "_FakeQuery":
+    def eq(self, col: str, val: Any) -> _FakeQuery:
         self._filters.append(("eq", col, val))
         return self
 
-    def is_(self, col: str, val: Any) -> "_FakeQuery":
+    def is_(self, col: str, val: Any) -> _FakeQuery:
         self._filters.append(("is", col, val))
         return self
 
-    def in_(self, col: str, val: Any) -> "_FakeQuery":
+    def in_(self, col: str, val: Any) -> _FakeQuery:
         self._filters.append(("in", col, val))
         return self
 
-    def order(self, *_args: Any, **_kwargs: Any) -> "_FakeQuery":
+    def order(self, *_args: Any, **_kwargs: Any) -> _FakeQuery:
         return self
 
-    def limit(self, _n: int) -> "_FakeQuery":
+    def limit(self, _n: int) -> _FakeQuery:
         return self
 
-    def range(self, start: int, end: int) -> "_FakeQuery":
+    def range(self, start: int, end: int) -> _FakeQuery:
         self._range = (start, end)
         return self
 
-    def single(self) -> "_FakeQuery":
+    def single(self) -> _FakeQuery:
         self._single = True
         return self
 
