@@ -398,6 +398,9 @@ importers:
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.103.0)
+      '@tiptap/core':
+        specifier: ^3.24.0
+        version: 3.24.0(@tiptap/pm@3.24.0)
       '@tiptap/extension-link':
         specifier: ^3.24.0
         version: 3.24.0(@tiptap/core@3.24.0(@tiptap/pm@3.24.0))(@tiptap/pm@3.24.0)
