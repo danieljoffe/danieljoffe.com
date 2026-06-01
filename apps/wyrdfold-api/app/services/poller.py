@@ -430,7 +430,6 @@ async def _run_llm_scoring_for_row(
 async def _poll_one_source(
     source: dict[str, Any],
     supabase: Client,
-    optimized_doc: OptimizedDoc | None = None,
 ) -> dict[str, Any]:
     """Poll a single job source. Returns a per-source summary dict.
 
@@ -620,26 +619,55 @@ async def _poll_one_source(
                     logger.exception("Batch global score update failed after stage 2")
 
             # ---- Stage 3: LLM scoring for qualified jobs (concurrent) ----
-            # Cache key is (job, target, optimized) — pick the first active
-            # target as the canonical one for the poller's cache row. The
-            # user-facing analysis flow re-uses the same row when viewing
-            # the job under that target, and runs its own LLM call for
-            # other targets on demand.
-            if optimized_doc is not None and active_targets:
+            # Each user gets one LLM analysis per job against their primary
+            # active target, using their personal optimized doc. Previously
+            # this fetched a single ``user_id IS NULL`` optimized doc which
+            # has never existed in production — so stage 3 silently no-op'd
+            # since the multi-user migration. ``get_latest`` caches per
+            # user_id so repeated lookups within a poll are free.
+            user_optimized: dict[str, OptimizedDoc] = {}
+            primary_by_user: dict[str, JobTarget] = {}
+            for t in active_targets:
+                if t.user_id in primary_by_user:
+                    continue
+                doc = await asyncio.to_thread(
+                    get_latest_optimized, supabase, t.user_id
+                )
+                if doc is None:
+                    # User has no optimized doc yet (onboarding incomplete)
+                    # — skip stage 3 for them but keep stage 2 results.
+                    logger.info(
+                        "No optimized doc for user %s; skipping stage 3 for %s",
+                        t.user_id,
+                        company_name,
+                    )
+                    continue
+                user_optimized[t.user_id] = doc
+                primary_by_user[t.user_id] = t
+
+            if primary_by_user:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
-                primary_target = active_targets[0]
 
-                async def _llm_one(row_data: dict[str, Any]) -> None:
+                async def _llm_one(
+                    row_data: dict[str, Any],
+                    target: JobTarget,
+                    doc: OptimizedDoc,
+                ) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
-                            supabase, row_data, optimized_doc, llm, primary_target
+                            supabase, row_data, doc, llm, target
                         )
 
                 await asyncio.gather(
                     *(
-                        _llm_one(cast(dict[str, Any], r))
+                        _llm_one(
+                            cast(dict[str, Any], r),
+                            primary_by_user[uid],
+                            user_optimized[uid],
+                        )
                         for r in upsert_resp.data or []
+                        for uid in primary_by_user
                     )
                 )
         else:
@@ -719,15 +747,16 @@ async def poll_all_sources(supabase: Client) -> PollResult:
     sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 
-    # Fetch optimized doc once for all sources
-    optimized_doc = await asyncio.to_thread(get_latest_optimized, supabase, None)
+    # Optimized doc is fetched per-user inside ``_poll_one_source`` now —
+    # the previous shared-doc fetch (``user_id=None``) never returned a
+    # row in the multi-user schema, silently disabling stage 3.
 
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
         async with semaphore:
             return await _poll_one_source(
-                cast(dict[str, Any], raw_source), supabase, optimized_doc
+                cast(dict[str, Any], raw_source), supabase
             )
 
     summaries = await asyncio.gather(*(_worker(s) for s in sources))
@@ -806,13 +835,11 @@ async def poll_due_sources(supabase: Client) -> PollResult:
             sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
         )
 
-    optimized_doc = await asyncio.to_thread(get_latest_optimized, supabase, None)
-
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(source: dict[str, Any]) -> dict[str, Any]:
         async with semaphore:
-            return await _poll_one_source(source, supabase, optimized_doc)
+            return await _poll_one_source(source, supabase)
 
     summaries = await asyncio.gather(*(_worker(s) for s in due))
 
@@ -837,7 +864,6 @@ async def _poll_one_source_for_target(
     source: dict[str, Any],
     supabase: Client,
     target: JobTarget,
-    optimized_doc: OptimizedDoc | None = None,
 ) -> dict[str, Any]:
     """Poll a single source for a specific target. Three-stage pipeline."""
     summary: dict[str, Any] = {"polled": False, "new": 0, "updated": 0, "error": None}
@@ -955,7 +981,13 @@ async def _poll_one_source_for_target(
                 except Exception:
                     logger.exception("Batch global score update failed after stage 2")
 
-            # Stage 3: LLM scoring for qualified jobs (concurrent)
+            # Stage 3: LLM scoring for qualified jobs (concurrent).
+            # Fetch the optimized doc for the target's owning user — the
+            # ``get_latest(None)`` pre-fix never returned anything since
+            # no system-wide doc exists in the multi-user schema.
+            optimized_doc = await asyncio.to_thread(
+                get_latest_optimized, supabase, target.user_id
+            )
             if optimized_doc is not None:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
@@ -971,6 +1003,12 @@ async def _poll_one_source_for_target(
                         _llm_one_t(cast(dict[str, Any], r))
                         for r in upsert_resp.data or []
                     )
+                )
+            else:
+                logger.info(
+                    "No optimized doc for user %s; skipping stage 3 for target %s",
+                    target.user_id,
+                    target.label,
                 )
 
     except Exception:
@@ -1016,15 +1054,16 @@ async def poll_sources_for_target(supabase: Client, target: JobTarget) -> PollRe
     sources_resp = await asyncio.to_thread(sources_query.execute)
     sources = sources_resp.data or []
 
-    # Fetch optimized doc once for all sources
-    optimized_doc = await asyncio.to_thread(get_latest_optimized, supabase, None)
+    # Optimized doc is fetched per-user inside
+    # ``_poll_one_source_for_target`` now — the previous shared-doc fetch
+    # (``user_id=None``) never returned a row in the multi-user schema.
 
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
         async with semaphore:
             return await _poll_one_source_for_target(
-                cast(dict[str, Any], raw_source), supabase, target, optimized_doc
+                cast(dict[str, Any], raw_source), supabase, target
             )
 
     summaries = await asyncio.gather(*(_worker(s) for s in sources))
