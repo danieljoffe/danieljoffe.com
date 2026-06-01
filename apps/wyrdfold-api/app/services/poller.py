@@ -170,10 +170,20 @@ _NON_US_HINTS: tuple[str, ...] = (
 
 
 def _title_matches_any_target(title: str, targets: list[JobTarget]) -> bool:
-    """Check if a job title matches any active target's scoring profile.
+    """Check if a job title is worth ingesting for at least one target.
 
-    Uses stage 1 title scoring — if any target's keywords match the title,
-    the job is worth ingesting.
+    Admission rules per target (any one target admitting → admit):
+      1. Excluded by negative keywords → admit anyway, so the scoring
+         pipeline records the rejection (excluded=True) for audit.
+         Without this, junior-vs-director hits would silently vanish
+         instead of being explainable in the UI.
+      2. Matched scoring keywords AND (search_keywords overlap matches
+         the title, OR the target has no search_keywords). This is the
+         AND-semantics fix from the relevance-matcher research doc:
+         a title that only hits incidental skill/seniority tokens but
+         doesn't look like the *kind* of role the user is hunting for
+         (no search-keyword overlap) is rejected at the door rather
+         than ingested as low-score noise.
     """
     for target in targets:
         result = score_title_against_profile(
@@ -181,8 +191,18 @@ def _title_matches_any_target(title: str, targets: list[JobTarget]) -> bool:
             target.scoring_profile,
             search_keywords=target.search_keywords,
         )
-        if result.matched_keywords or result.excluded:
+        if result.excluded:
             return True
+        if not result.matched_keywords:
+            continue
+        # Empty search_keywords means we can't gate on role-title intent;
+        # fall back to legacy "any keyword match admits" semantics so a
+        # draft / legacy profile doesn't ingestion-block itself.
+        if target.search_keywords and not _title_matches_target(
+            title, target.search_keywords
+        ):
+            continue
+        return True
     return False
 
 

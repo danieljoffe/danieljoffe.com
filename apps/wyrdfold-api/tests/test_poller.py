@@ -170,3 +170,75 @@ class TestIsUsLocation:
     def test_case_insensitive(self):
         assert _is_us_location("BERLIN, GERMANY") is False
         assert _is_us_location("berlin") is False
+
+
+# ---- AND-semantics ingestion gate ------------------------------------------
+#
+# The gate used to admit on (matched_keywords or excluded). When a target
+# has search_keywords set, admission now also requires a search-keyword
+# token-overlap with the title — so incidental keyword hits don't ingest
+# off-topic postings into the user's list.
+
+
+def _target_with_keywords(
+    core_keywords: dict[str, int],
+    search_keywords: list[str],
+) -> JobTarget:
+    return JobTarget(
+        id="t-with-kw",
+        label="Director CX",
+        scoring_profile=ScoringProfile(
+            categories={
+                "core_skills": CategoryProfile(
+                    keywords=core_keywords, weight=2.0
+                ),
+            },
+            seniority=SeniorityProfile(signals=["director", "head of"]),
+        ),
+        search_keywords=search_keywords,
+        is_active=True,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+
+
+def test_and_semantics_admits_when_search_keyword_overlaps():
+    target = _target_with_keywords(
+        {"Zendesk": 3},
+        ["director of customer experience", "head of cx"],
+    )
+    # Title has a search-keyword overlap AND a seniority signal hit
+    # ("director"), so it passes both halves of the AND.
+    assert _title_matches_any_target("Director of Customer Experience", [target]) is True
+
+
+def test_and_semantics_rejects_keyword_match_without_search_overlap():
+    """Regression: a job whose title only matches a generic profile signal
+    ('director') but has no search-keyword overlap should NOT be ingested."""
+    target = _target_with_keywords(
+        {"Zendesk": 3},
+        ["director of customer experience"],
+    )
+    # "Director of Engineering" hits the "director" seniority signal but
+    # is not a customer-experience role — rejected at the door.
+    assert _title_matches_any_target("Director of Engineering", [target]) is False
+
+
+def test_and_semantics_falls_back_when_search_keywords_empty():
+    """Targets with empty search_keywords (legacy/draft profiles) keep
+    the old OR semantics so they don't accidentally ingestion-block."""
+    legacy_target = _make_target({"react": 3})  # search_keywords=[]
+    assert _title_matches_any_target("Senior React Engineer", [legacy_target]) is True
+
+
+def test_and_semantics_admits_excluded_for_audit():
+    """Hard-exclude (negative keyword) still admits so the scorer can
+    record excluded=True — preserves the audit trail."""
+    target = _target_with_keywords(
+        {"Zendesk": 3},
+        ["director of cx"],
+    )
+    target.scoring_profile.negative.keywords = ["junior"]
+    # The title hits 'junior' (negative) but no search-keyword overlap.
+    # Excluded path admits regardless.
+    assert _title_matches_any_target("Junior Random Role", [target]) is True
