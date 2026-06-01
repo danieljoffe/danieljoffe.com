@@ -427,6 +427,58 @@ async def _run_llm_scoring_for_row(
             await asyncio.to_thread(mark_target_scores_complete, supabase, job_id)
 
 
+async def _resolve_user_targets_for_stage3(
+    supabase: Client,
+    active_targets: list[JobTarget],
+    company_name: str,
+) -> tuple[dict[str, JobTarget], dict[str, OptimizedDoc]]:
+    """Pair each user with a primary active target + their optimized doc.
+
+    Targets are global; ``user_targets`` is the junction. We fetch the
+    junction once, build (user_id → first active target) and (user_id →
+    optimized doc) maps, and skip users whose optimized doc hasn't been
+    generated yet (onboarding incomplete) — keyword scoring still runs
+    for them via stage 1 + stage 2.
+
+    Returns ``(primary_by_user, user_optimized)``. ``company_name`` is
+    used only for the skip-log message.
+    """
+    if not active_targets:
+        return {}, {}
+
+    target_ids = [t.id for t in active_targets]
+    junction_resp = await asyncio.to_thread(
+        supabase.table("user_targets")
+        .select("target_id, user_id")
+        .eq("is_active", True)
+        .in_("target_id", target_ids)
+        .execute
+    )
+    junction_rows = cast(list[dict[str, Any]], junction_resp.data or [])
+    users_by_target: dict[str, list[str]] = {}
+    for row in junction_rows:
+        users_by_target.setdefault(row["target_id"], []).append(row["user_id"])
+
+    primary_by_user: dict[str, JobTarget] = {}
+    user_optimized: dict[str, OptimizedDoc] = {}
+    for t in active_targets:
+        for user_id in users_by_target.get(t.id, []):
+            if user_id in primary_by_user:
+                continue
+            doc = await asyncio.to_thread(get_latest_optimized, supabase, user_id)
+            if doc is None:
+                logger.info(
+                    "No optimized doc for user %s; skipping stage 3 for %s",
+                    user_id,
+                    company_name,
+                )
+                continue
+            primary_by_user[user_id] = t
+            user_optimized[user_id] = doc
+
+    return primary_by_user, user_optimized
+
+
 async def _poll_one_source(
     source: dict[str, Any],
     supabase: Client,
@@ -619,31 +671,19 @@ async def _poll_one_source(
                     logger.exception("Batch global score update failed after stage 2")
 
             # ---- Stage 3: LLM scoring for qualified jobs (concurrent) ----
-            # Each user gets one LLM analysis per job against their primary
-            # active target, using their personal optimized doc. Previously
-            # this fetched a single ``user_id IS NULL`` optimized doc which
-            # has never existed in production — so stage 3 silently no-op'd
-            # since the multi-user migration. ``get_latest`` caches per
-            # user_id so repeated lookups within a poll are free.
-            user_optimized: dict[str, OptimizedDoc] = {}
-            primary_by_user: dict[str, JobTarget] = {}
-            for t in active_targets:
-                if t.user_id in primary_by_user:
-                    continue
-                doc = await asyncio.to_thread(
-                    get_latest_optimized, supabase, t.user_id
-                )
-                if doc is None:
-                    # User has no optimized doc yet (onboarding incomplete)
-                    # — skip stage 3 for them but keep stage 2 results.
-                    logger.info(
-                        "No optimized doc for user %s; skipping stage 3 for %s",
-                        t.user_id,
-                        company_name,
-                    )
-                    continue
-                user_optimized[t.user_id] = doc
-                primary_by_user[t.user_id] = t
+            # Each user with an active target gets one LLM analysis per
+            # job, using their personal optimized doc. Previously this
+            # fetched a single ``user_id IS NULL`` optimized doc which
+            # has never existed in production — so stage 3 silently
+            # no-op'd since the multi-user migration.
+            #
+            # Targets are global rows (no user_id column); the user link
+            # lives on ``user_targets``. One query maps active target IDs
+            # to their owning users, then we group: per user pick the
+            # first active target and that user's latest optimized doc.
+            primary_by_user, user_optimized = await _resolve_user_targets_for_stage3(
+                supabase, active_targets, company_name
+            )
 
             if primary_by_user:
                 llm = get_default_llm_client()
@@ -982,33 +1022,33 @@ async def _poll_one_source_for_target(
                     logger.exception("Batch global score update failed after stage 2")
 
             # Stage 3: LLM scoring for qualified jobs (concurrent).
-            # Fetch the optimized doc for the target's owning user — the
-            # ``get_latest(None)`` pre-fix never returned anything since
-            # no system-wide doc exists in the multi-user schema.
-            optimized_doc = await asyncio.to_thread(
-                get_latest_optimized, supabase, target.user_id
+            # JobTarget is a global row with no user_id — resolve owning
+            # users via the user_targets junction, then fetch each user's
+            # optimized doc. The pre-fix ``get_latest(None)`` returned
+            # nothing since no system-wide doc exists in the multi-user
+            # schema.
+            primary_by_user, user_optimized = await _resolve_user_targets_for_stage3(
+                supabase, [target], company_name
             )
-            if optimized_doc is not None:
+            if primary_by_user:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
 
-                async def _llm_one_t(row_data: dict[str, Any]) -> None:
+                async def _llm_one_t(
+                    row_data: dict[str, Any],
+                    doc: OptimizedDoc,
+                ) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
-                            supabase, row_data, optimized_doc, llm, target
+                            supabase, row_data, doc, llm, target
                         )
 
                 await asyncio.gather(
                     *(
-                        _llm_one_t(cast(dict[str, Any], r))
+                        _llm_one_t(cast(dict[str, Any], r), user_optimized[uid])
                         for r in upsert_resp.data or []
+                        for uid in primary_by_user
                     )
-                )
-            else:
-                logger.info(
-                    "No optimized doc for user %s; skipping stage 3 for target %s",
-                    target.user_id,
-                    target.label,
                 )
 
     except Exception:
