@@ -113,27 +113,30 @@ def _build_reference_docx_cached(
     color = _rgb(ACCENT_HEX[accent])
 
     doc = Document(io.BytesIO(_default_reference_bytes()))
-    style_names = {s.name for s in doc.styles}
 
-    # Body text: font + size + line/paragraph spacing inherit from Normal.
-    normal = doc.styles["Normal"]
-    _apply_font(normal, name=spec.font, size_pt=spec.body_pt)
-    pf = normal.paragraph_format
-    pf.line_spacing = spec.line_spacing
-    pf.space_after = Pt(spec.space_after_pt)
-
-    # Title = the resume owner's name (pandoc maps the top-level ``#``).
-    if "Title" in style_names:
-        title = doc.styles["Title"]
-        title.font.name = spec.font
-        _apply_accent(title, color, size_pt=spec.name_pt)
-
-    # Section headings.
-    for heading in _HEADING_STYLES:
-        if heading in style_names:
-            h = doc.styles[heading]
-            h.font.name = spec.font
-            _apply_accent(h, color, size_pt=spec.heading_pt)
+    # Mutate the style objects in place during iteration rather than indexing
+    # ``doc.styles[name]``. python-docx's name-based lookup round-trips through
+    # a UI<->internal name translation (BabelFish), and pandoc versions differ
+    # in whether they store e.g. "Heading 1" vs the internal "heading 1" — so
+    # ``doc.styles["Heading 1"]`` raises KeyError on some pandoc builds even
+    # though the style is present. Matching the iterated ``style.name`` avoids
+    # that mismatch entirely. Only Normal/Title/Heading* (paragraph styles) are
+    # touched, so ``.font`` / ``.paragraph_format`` are always valid here.
+    for style in doc.styles:
+        name = style.name
+        if name == "Normal":
+            # Body text: font + size + spacing; everything else inherits.
+            _apply_font(style, name=spec.font, size_pt=spec.body_pt)
+            pf = style.paragraph_format
+            pf.line_spacing = spec.line_spacing
+            pf.space_after = Pt(spec.space_after_pt)
+        elif name == "Title":
+            # The resume owner's name (pandoc maps the top-level ``#``).
+            style.font.name = spec.font
+            _apply_accent(style, color, size_pt=spec.name_pt)
+        elif name in _HEADING_STYLES:
+            style.font.name = spec.font
+            _apply_accent(style, color, size_pt=spec.heading_pt)
 
     buf = io.BytesIO()
     doc.save(buf)

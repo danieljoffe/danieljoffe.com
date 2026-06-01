@@ -19,6 +19,7 @@ import { useToast } from '@/state/Toast/ToastProvider';
 import { ResumeStylePreview } from './ResumeStylePreview';
 import {
   ACCENT_OPTIONS,
+  DEFAULT_RESUME_STYLE,
   PRESET_OPTIONS,
   type ResumeStyleAccent,
   type ResumeStylePreset,
@@ -100,8 +101,12 @@ export default function SettingsPage() {
   const [smsDailyLimit, setSmsDailyLimit] = useState('5');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [savingStyle, setSavingStyle] = useState(false);
-  const [stylePreset, setStylePreset] = useState<ResumeStylePreset>('modern');
-  const [styleAccent, setStyleAccent] = useState<ResumeStyleAccent>('slate');
+  const [stylePreset, setStylePreset] = useState<ResumeStylePreset>(
+    DEFAULT_RESUME_STYLE.preset
+  );
+  const [styleAccent, setStyleAccent] = useState<ResumeStyleAccent>(
+    DEFAULT_RESUME_STYLE.accent
+  );
 
   // Server-known signatures — autosave fires only when local state diverges.
   // Failed-sigs prevent retry-loops when the server rejects a value.
