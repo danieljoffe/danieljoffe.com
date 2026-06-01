@@ -104,3 +104,25 @@ def test_title_multiple_keywords():
     result = score_title_against_profile("React TypeScript Engineer", profile)
     assert len(result.matched_keywords) >= 2
     assert result.score > 0
+
+
+def test_title_search_keywords_lift_role_intent():
+    """Stage 1: title matches against the target's search_keywords lift
+    the score via the previously-dead role_titles dimension."""
+    profile = _profile(core={"Zendesk": 3}, seniority_signals=["director"])
+    keywords = [
+        "director of customer experience",
+        "director of cx operations",
+    ]
+    with_keywords = score_title_against_profile(
+        "Director of Customer Experience",
+        profile,
+        search_keywords=keywords,
+    )
+    without_keywords = score_title_against_profile(
+        "Director of Customer Experience",
+        profile,
+    )
+    assert with_keywords.breakdown.role_titles > 0
+    assert without_keywords.breakdown.role_titles == 0
+    assert with_keywords.score > without_keywords.score

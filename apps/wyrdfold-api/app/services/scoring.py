@@ -175,9 +175,38 @@ _CATEGORY_TO_FIELD: dict[str, str] = {
 _SENIORITY_SIGNAL_WEIGHT = 2.0
 _TITLE_WEIGHT = 2.0
 _DEFAULT_NORMALIZER = 30.0
+# Per-target ``search_keywords`` are the user's role-title intent (e.g.
+# "director of customer experience"). They were previously only used by
+# the poller to fetch jobs from boards — never scored. A title that hits
+# any of them is the single strongest signal of "this is the right kind
+# of role", so we credit it once at a high weight, applied via the same
+# ``_TITLE_WEIGHT`` boost the category keywords use when matched in title.
+_ROLE_TITLE_WEIGHT = 15.0
 
 
-def _calc_max_possible(profile: ScoringProfile) -> float:
+def _score_role_titles(
+    search_keywords: list[str] | None, title_lower: str
+) -> tuple[float, list[str]]:
+    """Score the target's role-intent keywords against the job title.
+
+    Returns ``(points, matched_keywords)``. Credit is binary: any number
+    of matches earns a single fixed credit. Stacking matches (e.g. a
+    title that hits three near-synonym variants) does not multiply the
+    score — the user's intent is captured by *any* match.
+    """
+    if not search_keywords:
+        return 0.0, []
+    matched = [
+        kw for kw in search_keywords if _keyword_or_alias_in_text(kw, title_lower)
+    ]
+    if not matched:
+        return 0.0, []
+    return _ROLE_TITLE_WEIGHT * _TITLE_WEIGHT, matched
+
+
+def _calc_max_possible(
+    profile: ScoringProfile, search_keywords: list[str] | None = None
+) -> float:
     """Calculate the maximum possible raw score for a profile.
 
     Used as the normalizer so scores represent a true percentage of how
@@ -189,6 +218,8 @@ def _calc_max_possible(profile: ScoringProfile) -> float:
             total += kw_weight * cat_profile.weight
     total += len(profile.seniority.signals) * _SENIORITY_SIGNAL_WEIGHT
     total += len(profile.domain.signals) * profile.domain.weight
+    if search_keywords:
+        total += _ROLE_TITLE_WEIGHT * _TITLE_WEIGHT
     return total
 
 
@@ -198,6 +229,7 @@ def score_job_with_profile(
     profile: ScoringProfile,
     *,
     parsed_jd: ParsedJD | None = None,
+    search_keywords: list[str] | None = None,
 ) -> ScoreResult:
     """Score a job posting against a target's ScoringProfile (stage 2).
 
@@ -285,6 +317,14 @@ def score_job_with_profile(
             breakdown.domain_skills += signal_points
             all_matched.append(signal)
 
+    # ---- Role-title intent (search_keywords) ----
+    role_title_points, role_title_matches = _score_role_titles(
+        search_keywords, title_lower
+    )
+    if role_title_matches:
+        breakdown.role_titles += role_title_points
+        all_matched.extend(role_title_matches)
+
     # ---- Negative keywords (only in title + requirements sections) ----
     negative_sections = {"requirements", "default"}
     for keyword in profile.negative.keywords:
@@ -312,7 +352,7 @@ def score_job_with_profile(
         + breakdown.negative
     )
 
-    max_possible = _calc_max_possible(profile)
+    max_possible = _calc_max_possible(profile, search_keywords)
     normalizer = max(max_possible, 1.0)
     score = max(0, min(100, round((raw / normalizer) * 100)))
     if excluded:
@@ -329,17 +369,26 @@ def score_job_with_profile(
 # ---- Stage 1: Title-only scoring ------------------------------------------
 
 
-def _calc_title_max_possible(profile: ScoringProfile) -> float:
+def _calc_title_max_possible(
+    profile: ScoringProfile, search_keywords: list[str] | None = None
+) -> float:
     """Max possible raw score from title matching alone."""
     total = 0.0
     for cat_profile in profile.categories.values():
         for kw_weight in cat_profile.keywords.values():
             total += kw_weight * cat_profile.weight
     total += len(profile.seniority.signals) * _SENIORITY_SIGNAL_WEIGHT
+    if search_keywords:
+        total += _ROLE_TITLE_WEIGHT * _TITLE_WEIGHT
     return total
 
 
-def score_title_against_profile(title: str, profile: ScoringProfile) -> ScoreResult:
+def score_title_against_profile(
+    title: str,
+    profile: ScoringProfile,
+    *,
+    search_keywords: list[str] | None = None,
+) -> ScoreResult:
     """Fast title-only scoring against a target's ScoringProfile.
 
     Stage 1 of the three-stage pipeline. Checks if any of the target's
@@ -371,6 +420,14 @@ def score_title_against_profile(title: str, profile: ScoringProfile) -> ScoreRes
             breakdown.seniority_signals += _SENIORITY_SIGNAL_WEIGHT
             all_matched.append(signal)
 
+    # Role-title intent (search_keywords)
+    role_title_points, role_title_matches = _score_role_titles(
+        search_keywords, title_lower
+    )
+    if role_title_matches:
+        breakdown.role_titles += role_title_points
+        all_matched.extend(role_title_matches)
+
     # Negative keywords
     for keyword in profile.negative.keywords:
         if _keyword_or_alias_in_text(keyword, title_lower):
@@ -385,7 +442,7 @@ def score_title_against_profile(title: str, profile: ScoringProfile) -> ScoreRes
         + breakdown.negative
     )
 
-    max_possible = _calc_title_max_possible(profile)
+    max_possible = _calc_title_max_possible(profile, search_keywords)
     normalizer = max(max_possible, 1.0)
     score = max(0, min(100, round((raw / normalizer) * 100)))
     if excluded:

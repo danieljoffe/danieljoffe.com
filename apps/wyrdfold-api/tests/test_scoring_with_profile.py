@@ -199,3 +199,96 @@ def test_matched_keywords_deduplicated():
         profile,
     )
     assert result.matched_keywords.count("React") == 1
+
+
+# ---- Role-title intent (search_keywords) ----------------------------------
+
+
+def test_search_keywords_lift_matching_title():
+    """A title that hits the target's role-intent keywords scores high.
+
+    Regression for the bug where ``score_breakdown.role_titles`` was a
+    dead field — the scorer never wrote to it, so a title-perfect match
+    like "Director of Customer Experience" scored the same as a random
+    title with one tangential keyword.
+    """
+    profile = _profile(
+        core={"Zendesk": 3},
+        seniority_signals=["director"],
+    )
+    keywords = [
+        "director of customer experience",
+        "head of customer experience",
+        "director of cx operations",
+    ]
+
+    with_keywords = score_job_with_profile(
+        "Director of Customer Experience",
+        "<p>Some unrelated description.</p>",
+        profile,
+        search_keywords=keywords,
+    )
+    without_keywords = score_job_with_profile(
+        "Director of Customer Experience",
+        "<p>Some unrelated description.</p>",
+        profile,
+    )
+    assert with_keywords.breakdown.role_titles > 0
+    assert without_keywords.breakdown.role_titles == 0
+    assert with_keywords.score > without_keywords.score
+
+
+def test_search_keywords_none_preserves_legacy_behavior():
+    """Targets without search_keywords (or with an empty list) get the
+    exact pre-fix scoring — no max_possible inflation, no role_titles."""
+    profile = _profile(core={"React": 3})
+    a = score_job_with_profile("React Engineer", "<p>React.</p>", profile)
+    b = score_job_with_profile(
+        "React Engineer", "<p>React.</p>", profile, search_keywords=[]
+    )
+    c = score_job_with_profile(
+        "React Engineer", "<p>React.</p>", profile, search_keywords=None
+    )
+    assert a.score == b.score == c.score
+    assert b.breakdown.role_titles == 0
+
+
+def test_role_title_credit_is_capped_per_match():
+    """Multiple near-synonym keywords matching the same title earn a
+    single credit, not N. Otherwise a profile with 15 keyword variants
+    would dominate every other signal."""
+    profile = _profile(core={"React": 3})
+    # All three keywords are substring-present in the test title.
+    keywords = [
+        "director of customer",
+        "customer experience",
+        "experience operations",
+    ]
+    result = score_job_with_profile(
+        "Director of Customer Experience Operations",
+        "<p>React.</p>",
+        profile,
+        search_keywords=keywords,
+    )
+    # All three matches surface in matched_keywords for transparency,
+    # but the role_titles bucket is a single fixed credit.
+    matched_role_keywords = [m for m in result.matched_keywords if m in keywords]
+    assert len(matched_role_keywords) == 3
+    # Fixed credit is _ROLE_TITLE_WEIGHT * _TITLE_WEIGHT = 15 * 2 = 30.0
+    assert result.breakdown.role_titles == 30.0
+
+
+def test_role_title_does_not_override_negative_keyword():
+    """A title-match win should not rescue an excluded posting."""
+    profile = _profile(
+        core={"React": 3},
+        negative_keywords=["junior"],
+    )
+    result = score_job_with_profile(
+        "Junior Director of Customer Experience",
+        "<p>Anything.</p>",
+        profile,
+        search_keywords=["director of customer experience"],
+    )
+    assert result.excluded is True
+    assert result.score == 0
