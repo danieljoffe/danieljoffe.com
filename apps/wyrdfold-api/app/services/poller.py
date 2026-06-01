@@ -176,7 +176,11 @@ def _title_matches_any_target(title: str, targets: list[JobTarget]) -> bool:
     the job is worth ingesting.
     """
     for target in targets:
-        result = score_title_against_profile(title, target.scoring_profile)
+        result = score_title_against_profile(
+            title,
+            target.scoring_profile,
+            search_keywords=target.search_keywords,
+        )
         if result.matched_keywords or result.excluded:
             return True
     return False

@@ -106,7 +106,11 @@ def score_title_and_upsert(
 
     Returns the upserted score, or None if no keywords matched (skip).
     """
-    result = score_title_against_profile(title, target.scoring_profile)
+    result = score_title_against_profile(
+        title,
+        target.scoring_profile,
+        search_keywords=target.search_keywords,
+    )
     if not result.matched_keywords and not result.excluded:
         return None
 
@@ -140,7 +144,11 @@ def score_and_upsert(
     Pass ``parsed_jd`` to reuse a pre-parsed JD across multiple targets.
     """
     result = score_job_with_profile(
-        title, description_html, target.scoring_profile, parsed_jd=parsed_jd
+        title,
+        description_html,
+        target.scoring_profile,
+        parsed_jd=parsed_jd,
+        search_keywords=target.search_keywords,
     )
 
     return _upsert_score(
@@ -209,7 +217,11 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
             description_html = job.get("description_html") or ""
             parsed = parse_jd(description_html)
             result = score_job_with_profile(
-                job["title"], description_html, target.scoring_profile, parsed_jd=parsed
+                job["title"],
+                description_html,
+                target.scoring_profile,
+                parsed_jd=parsed,
+                search_keywords=target.search_keywords,
             )
             rows_to_upsert.append(
                 {
