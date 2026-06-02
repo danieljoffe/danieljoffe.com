@@ -72,10 +72,6 @@ class JobTarget(BaseModel):
     )
     profile_version: int = 1
     is_active: bool
-    # Voyage-3-lite (512 dim) embedding of ``label``. Used by the
-    # ingestion-time relevance pre-filter in the poller. Computed
-    # lazily on first poll if NULL; recomputed if ``label`` changes.
-    label_embedding: list[float] | None = None
     # Few-shot title pools for the upcoming Phase 1 LLM triage. Seeded
     # at target creation from the same LLM call that derives the
     # scoring profile; later (Phase 1 PR) augmented from user 👍/👎
