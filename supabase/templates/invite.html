@@ -116,7 +116,7 @@
                   <tr>
                     <td bgcolor="#8FC900" style="border-radius: 8px">
                       <a
-                        href="{{ .ConfirmationURL }}"
+                        href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite"
                         style="
                           display: inline-block;
                           padding: 14px 28px;
@@ -144,9 +144,9 @@
                   If the button doesn't work, paste this link into your
                   browser:<br />
                   <a
-                    href="{{ .ConfirmationURL }}"
+                    href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite"
                     style="color: #bef264; word-break: break-all"
-                    >{{ .ConfirmationURL }}</a
+                    >{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite</a
                   >
                 </p>
               </td>

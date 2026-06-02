@@ -104,7 +104,7 @@
                   <tr>
                     <td bgcolor="#8FC900" style="border-radius: 8px">
                       <a
-                        href="{{ .ConfirmationURL }}"
+                        href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink"
                         style="
                           display: inline-block;
                           padding: 14px 28px;
@@ -132,9 +132,9 @@
                   The link works once and expires in an hour. If it doesn't
                   work, paste this into your browser:<br />
                   <a
-                    href="{{ .ConfirmationURL }}"
+                    href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink"
                     style="color: #bef264; word-break: break-all"
-                    >{{ .ConfirmationURL }}</a
+                    >{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink</a
                   >
                 </p>
               </td>
