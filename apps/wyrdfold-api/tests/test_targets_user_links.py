@@ -116,3 +116,141 @@ def test_fit_score_result_enforces_score_bounds() -> None:
         FitScoreResult(fit_score=101, reasoning="ok")
     with pytest.raises(ValueError):
         FitScoreResult(fit_score=-1, reasoning="ok")
+
+
+# ---------------------------------------------------------------------------
+# (3) Active-target limit
+# ---------------------------------------------------------------------------
+
+
+def _mock_supabase_for_link(
+    *,
+    existing_row: dict[str, Any] | None,
+    active_count: int,
+) -> MagicMock:
+    """Build a Supabase mock that returns deterministic answers for the
+    two reads link_user_to_target performs before its upsert: (1) "is
+    this (user, target) pair already linked, and was it active?" and
+    (2) "how many active links does this user already have?".
+    """
+    supabase = MagicMock()
+    table = supabase.table.return_value
+
+    # Existing-row check: select().eq().eq().limit().execute()
+    existing_chain = table.select.return_value.eq.return_value.eq.return_value.limit.return_value.execute
+    existing_chain.return_value.data = [existing_row] if existing_row else []
+
+    # Count check: select().eq().eq().limit().execute() — same chain in
+    # MagicMock, so we shim ``.count`` on the same return value.
+    existing_chain.return_value.count = active_count
+
+    # Upsert: returns a row that matches what we wrote.
+    table.upsert.return_value.execute.return_value.data = [
+        _user_target_row(is_active=True)
+    ]
+    return supabase
+
+
+def test_link_user_to_target_allows_when_under_limit() -> None:
+    supabase = _mock_supabase_for_link(existing_row=None, active_count=2)
+
+    result = crud.link_user_to_target(
+        supabase, user_id="user-1", target_id="target-1", is_active=True
+    )
+
+    assert result.is_active is True
+
+
+def test_link_user_to_target_raises_when_at_limit_and_new_target() -> None:
+    """At the cap, activating a NEW target raises."""
+    supabase = _mock_supabase_for_link(
+        existing_row=None,
+        active_count=crud.MAX_ACTIVE_TARGETS_PER_USER,
+    )
+
+    with pytest.raises(crud.ActiveTargetLimitError) as ex:
+        crud.link_user_to_target(
+            supabase, user_id="user-1", target_id="new-target", is_active=True
+        )
+    assert ex.value.current_count == crud.MAX_ACTIVE_TARGETS_PER_USER
+    assert ex.value.limit == crud.MAX_ACTIVE_TARGETS_PER_USER
+    # And critically: no upsert fired.
+    supabase.table.return_value.upsert.assert_not_called()
+
+
+def test_link_user_to_target_allows_reupsert_of_already_active_row() -> None:
+    """At the cap, re-upserting an ALREADY-ACTIVE row is fine — no net
+    change. Lets callers refresh ``fit_score`` on the row without
+    tripping the limit.
+    """
+    supabase = _mock_supabase_for_link(
+        existing_row=_user_target_row(is_active=True),
+        active_count=crud.MAX_ACTIVE_TARGETS_PER_USER,
+    )
+
+    # Doesn't raise.
+    result = crud.link_user_to_target(
+        supabase,
+        user_id="user-1",
+        target_id="target-1",
+        is_active=True,
+        fit_score=85,
+    )
+    assert result is not None
+    # Upsert fired as expected.
+    supabase.table.return_value.upsert.assert_called_once()
+
+
+def test_link_user_to_target_with_enforce_active_limit_false_bypasses_cap() -> None:
+    """Internal callers (future backfill scripts) can opt out of the
+    cap. Defaults to ``True`` so the path remains safe by default.
+    """
+    supabase = _mock_supabase_for_link(
+        existing_row=None,
+        active_count=crud.MAX_ACTIVE_TARGETS_PER_USER + 10,
+    )
+
+    result = crud.link_user_to_target(
+        supabase,
+        user_id="user-1",
+        target_id="target-1",
+        is_active=True,
+        enforce_active_limit=False,
+    )
+    assert result is not None
+
+
+def test_link_user_to_target_skips_count_when_is_active_false() -> None:
+    """Deactivation never trips the cap — we're removing an active
+    target, not adding one.
+    """
+    supabase = MagicMock()
+    supabase.table.return_value.upsert.return_value.execute.return_value.data = [
+        _user_target_row(is_active=False)
+    ]
+
+    result = crud.link_user_to_target(
+        supabase, user_id="user-1", target_id="target-1", is_active=False
+    )
+
+    assert result.is_active is False
+    # The "existing row" / "count" reads never happened — only the
+    # upsert. (Verified by checking that .select() wasn't called.)
+    supabase.table.return_value.select.assert_not_called()
+
+
+def test_count_active_for_user_uses_exact_count_head() -> None:
+    """``count_active_for_user`` only needs a row count, not the rows
+    themselves — verify it asks Supabase for ``count='exact'`` with a
+    ``limit(1)`` so we don't ship a payload we don't use.
+    """
+    supabase = MagicMock()
+    chain = supabase.table.return_value.select.return_value.eq.return_value.eq.return_value.limit.return_value.execute
+    chain.return_value.count = 3
+
+    n = crud.count_active_for_user(supabase, "user-1")
+
+    assert n == 3
+    select_args = supabase.table.return_value.select.call_args
+    # First positional arg or 'count' kwarg should signal exact-count semantics.
+    assert select_args.kwargs.get("count") == "exact"
