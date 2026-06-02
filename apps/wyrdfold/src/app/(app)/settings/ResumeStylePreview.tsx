@@ -42,10 +42,10 @@ export function ResumeStylePreview({
       }}
     >
       <div style={{ fontSize: px(p.namePt), color, fontWeight: 700 }}>
-        Daniel Joffe
+        Name LastName
       </div>
       <div style={{ fontSize: px(p.bodyPt), color: '#555555' }}>
-        San Francisco, CA · daniel@example.com
+        Remote, USA · user@example.com
       </div>
       <div
         style={{

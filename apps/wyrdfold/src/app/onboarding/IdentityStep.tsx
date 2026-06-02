@@ -109,7 +109,7 @@ export default function IdentityStep({
           required
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder='Daniel Joffe'
+          placeholder='Name LastName'
           autoComplete='name'
           autoFocus
           disabled={loading || saving}
