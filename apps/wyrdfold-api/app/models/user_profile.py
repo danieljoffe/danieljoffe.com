@@ -30,13 +30,22 @@ def _normalize_phone(value: str | None) -> str | None:
 
 
 class NotificationPreferences(BaseModel):
-    """Read model for notification preferences."""
+    """Read model for notification + jobs-list preferences.
+
+    ``list_min_score`` is intentionally separate from
+    ``job_score_threshold`` (email) and ``sms_score_threshold`` —
+    historically the email threshold was reused as the list filter, but
+    the email/SMS UIs are disabled until SMTP + Twilio are configured,
+    leaving users no way to control the list view. NULL means "no
+    auto-filter" — caller must pass ``min_score`` explicitly via chip.
+    """
 
     job_notifications_enabled: bool = False
     job_score_threshold: int = 100
     sms_notifications_enabled: bool = False
     sms_score_threshold: int = 100
     sms_daily_limit: int = 5
+    list_min_score: int | None = None
     phone_number: str | None = None
     email: str | None = None
     # Server-derived: false when the operator hasn't configured the
@@ -55,6 +64,10 @@ class NotificationPreferencesUpdate(BaseModel):
     sms_notifications_enabled: bool | None = None
     sms_score_threshold: int | None = Field(default=None, ge=0, le=200)
     sms_daily_limit: int | None = Field(default=None, ge=1, le=50)
+    # 0..100 matches the score range. ``None`` here means "don't touch
+    # the column" (default for partial PATCH); to clear an existing
+    # value the caller passes 0 (semantically "no floor").
+    list_min_score: int | None = Field(default=None, ge=0, le=100)
     phone_number: str | None = Field(default=None, max_length=20)
 
     @field_validator("phone_number", mode="before")

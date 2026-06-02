@@ -19,6 +19,7 @@ const NOTIFICATIONS = {
   sms_notifications_enabled: false,
   sms_score_threshold: 90,
   sms_daily_limit: 5,
+  list_min_score: null,
   phone_number: null,
   email: 'me@example.com',
   email_available: true,

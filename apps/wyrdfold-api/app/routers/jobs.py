@@ -112,13 +112,21 @@ _IN_CHUNK_SIZE = 200
 def _default_min_score_for_user(
     supabase: Client, user_id: str
 ) -> int | None:
-    """Return the user's ``job_score_threshold`` for use as the default
-    list filter. ``None`` when the profile row is missing or the
-    threshold is 0 (the user explicitly opted out of any floor).
+    """Return the user's ``list_min_score`` for use as the default list
+    filter when no ``min_score`` chip is set. ``None`` when:
+
+    - the profile row is missing,
+    - the column is NULL (user hasn't opted in to a default), or
+    - the stored value is 0 (semantic clear — caller wants no floor).
+
+    Decoupled from ``job_score_threshold`` (email notifications) and
+    ``sms_score_threshold`` (SMS) because those notification UIs are
+    disabled until SMTP / Twilio are configured, leaving users no way
+    to tune the list view if it were piggybacked on those fields.
     """
     resp = (
         supabase.table("user_profiles")
-        .select("job_score_threshold")
+        .select("list_min_score")
         .eq("user_id", user_id)
         .maybe_single()
         .execute()
@@ -128,10 +136,10 @@ def _default_min_score_for_user(
     row = cast(dict[str, Any] | None, resp.data)
     if row is None:
         return None
-    threshold = row.get("job_score_threshold")
-    if not isinstance(threshold, int) or threshold <= 0:
+    value = row.get("list_min_score")
+    if not isinstance(value, int) or value <= 0:
         return None
-    return threshold
+    return value
 
 
 def _fetch_jobs_chunked(

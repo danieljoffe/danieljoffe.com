@@ -34,6 +34,7 @@ interface NotificationPreferences {
   sms_notifications_enabled: boolean;
   sms_score_threshold: number;
   sms_daily_limit: number;
+  list_min_score: number | null;
   phone_number: string | null;
   email: string | null;
   email_available: boolean;
@@ -42,7 +43,7 @@ interface NotificationPreferences {
 
 // Identity fields moved to apps/wyrdfold/src/app/(app)/profile/ProfileIdentityCard.tsx.
 
-type Section = 'email' | 'sms';
+type Section = 'list' | 'email' | 'sms';
 
 function emailSig(enabled: boolean, threshold: number): string {
   return JSON.stringify({
@@ -63,6 +64,10 @@ function smsSig(
     sms_daily_limit: dailyLimit,
     phone_number: phone,
   });
+}
+
+function listSig(value: number | null): string {
+  return JSON.stringify({ list_min_score: value });
 }
 
 function styleSig(
@@ -87,6 +92,16 @@ function SavingIndicator({ active }: { active: boolean }) {
   );
 }
 
+// Parses the score-threshold input. Empty / non-numeric / 0 → null
+// (semantic clear — caller wants no floor). Otherwise clamps to 0-100.
+function parseListThreshold(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const n = parseInt(trimmed, 10);
+  if (Number.isNaN(n) || n <= 0) return null;
+  return Math.min(100, Math.max(0, n));
+}
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<Section | null>(null);
@@ -100,6 +115,7 @@ export default function SettingsPage() {
   const [smsThreshold, setSmsThreshold] = useState('100');
   const [smsDailyLimit, setSmsDailyLimit] = useState('5');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [listMinScoreRaw, setListMinScoreRaw] = useState('');
   const [savingStyle, setSavingStyle] = useState(false);
   const [stylePreset, setStylePreset] = useState<ResumeStylePreset>(
     DEFAULT_RESUME_STYLE.preset
@@ -112,8 +128,10 @@ export default function SettingsPage() {
   // Failed-sigs prevent retry-loops when the server rejects a value.
   const lastEmailSigRef = useRef<string | null>(null);
   const lastSmsSigRef = useRef<string | null>(null);
+  const lastListSigRef = useRef<string | null>(null);
   const lastFailedEmailSigRef = useRef<string | null>(null);
   const lastFailedSmsSigRef = useRef<string | null>(null);
+  const lastFailedListSigRef = useRef<string | null>(null);
   const lastStyleSigRef = useRef<string | null>(null);
   const lastFailedStyleSigRef = useRef<string | null>(null);
 
@@ -132,6 +150,11 @@ export default function SettingsPage() {
         setSmsThreshold(String(data.sms_score_threshold));
         setSmsDailyLimit(String(data.sms_daily_limit));
         setPhoneNumber(data.phone_number ?? '');
+        setListMinScoreRaw(
+          data.list_min_score !== null && data.list_min_score !== undefined
+            ? String(data.list_min_score)
+            : ''
+        );
         lastEmailSigRef.current = emailSig(
           data.job_notifications_enabled,
           data.job_score_threshold
@@ -142,6 +165,7 @@ export default function SettingsPage() {
           data.sms_daily_limit,
           data.phone_number ?? null
         );
+        lastListSigRef.current = listSig(data.list_min_score ?? null);
       }
       if (styleRes.ok) {
         const style = (await styleRes.json()) as ResumeStyleSettings;
@@ -164,6 +188,46 @@ export default function SettingsPage() {
   }, [fetchPrefs]);
 
   // -- Save handlers ----------------------------------------------------------
+
+  const handleSaveList = useCallback(async () => {
+    const parsed = parseListThreshold(listMinScoreRaw);
+    const sig = listSig(parsed);
+    setSavingSection('list');
+    try {
+      // ``null`` → clear semantics — send 0 to indicate "no floor" per the
+      // backend contract (the API rejects negative values and treats 0 as
+      // "remove the default-min-score filter").
+      const res = await fetch('/api/profile/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ list_min_score: parsed ?? 0 }),
+      });
+      if (!res.ok) {
+        const message = await extractApiError(
+          res,
+          'Failed to save score threshold'
+        );
+        toast({ variant: 'error', title: message });
+        lastFailedListSigRef.current = sig;
+        return;
+      }
+      const data = (await res.json()) as NotificationPreferences;
+      setPrefs(data);
+      setListMinScoreRaw(
+        data.list_min_score !== null && data.list_min_score !== undefined
+          ? String(data.list_min_score)
+          : ''
+      );
+      lastListSigRef.current = listSig(data.list_min_score ?? null);
+      lastFailedListSigRef.current = null;
+      toast({ variant: 'success', title: 'Score threshold saved' });
+    } catch {
+      toast({ variant: 'error', title: 'Failed to save score threshold' });
+      lastFailedListSigRef.current = sig;
+    } finally {
+      setSavingSection(null);
+    }
+  }, [listMinScoreRaw, toast]);
 
   const handleSaveEmail = useCallback(async () => {
     const threshold = parseInt(emailThreshold, 10) || 100;
@@ -291,6 +355,18 @@ export default function SettingsPage() {
   // -- Autosave effects -------------------------------------------------------
 
   useEffect(() => {
+    if (lastListSigRef.current === null) return;
+    if (savingSection === 'list') return;
+    const sig = listSig(parseListThreshold(listMinScoreRaw));
+    if (sig === lastListSigRef.current) return;
+    if (sig === lastFailedListSigRef.current) return;
+    const handle = setTimeout(() => {
+      handleSaveList();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [listMinScoreRaw, savingSection, handleSaveList]);
+
+  useEffect(() => {
     if (lastEmailSigRef.current === null) return;
     if (savingSection === 'email') return;
     const sig = emailSig(emailEnabled, parseInt(emailThreshold, 10) || 100);
@@ -361,55 +437,78 @@ export default function SettingsPage() {
           Settings
         </Heading>
         <Text variant='body' className='mt-1 text-text-secondary'>
-          Notification preferences and alerts
+          Resume style, list filtering, and notification alerts
         </Text>
       </div>
 
       {/* Identity (contact header used on generated resumes + cover letters)
-          lives on /profile now — see ProfileIdentityCard. */}
+          lives on /profile now — see ProfileIdentityCard.
 
-      {/* Email Notifications */}
+          Card order matches Daniel's spec (most-used first):
+          1. Resume style — touched every download
+          2. Score threshold — touched whenever the list feels noisy
+          3. SMS notifications — disabled until Twilio is configured
+          4. Email notifications — disabled until SMTP is configured */}
+
+      {/* Resume style */}
       <Card>
         <CardHeader>
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <div className='flex items-center gap-3'>
-              <CardTitle>Email Notifications</CardTitle>
-              <SavingIndicator active={savingSection === 'email'} />
-            </div>
-            <Switch
-              checked={emailEnabled && emailAvailable}
-              onChange={setEmailEnabled}
-              label='Enabled'
-              disabled={!emailAvailable}
-            />
+          <div className='flex items-center gap-3'>
+            <CardTitle>Resume style</CardTitle>
+            <SavingIndicator active={savingStyle} />
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
           <Text variant='caption' className='text-text-secondary'>
-            Get email alerts when new jobs score above your threshold. Powered
-            by Resend.
+            Pick how your tailored resume and cover-letter .docx exports look.
+            Applies to every new download — no regeneration needed.
           </Text>
-          {!emailAvailable && (
-            <Text variant='meta' className='text-text-tertiary'>
-              Email notifications are unavailable until the operator configures
-              the email provider credentials.
-            </Text>
-          )}
-          {emailAvailable && prefs?.email && (
-            <Text variant='meta' className='text-text-tertiary'>
-              Sending to: {prefs.email}
-            </Text>
-          )}
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <Select
+              label='Style'
+              value={stylePreset}
+              onChange={e =>
+                setStylePreset(e.target.value as ResumeStylePreset)
+              }
+              options={PRESET_OPTIONS}
+            />
+            <Select
+              label='Accent color'
+              value={styleAccent}
+              onChange={e =>
+                setStyleAccent(e.target.value as ResumeStyleAccent)
+              }
+              options={ACCENT_OPTIONS}
+            />
+          </div>
+          <ResumeStylePreview preset={stylePreset} accent={styleAccent} />
+        </CardContent>
+      </Card>
+
+      {/* Score threshold (jobs-list default filter) */}
+      <Card>
+        <CardHeader>
+          <div className='flex items-center gap-3'>
+            <CardTitle>Score threshold</CardTitle>
+            <SavingIndicator active={savingSection === 'list'} />
+          </div>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-4'>
+          <Text variant='caption' className='text-text-secondary'>
+            Hide jobs scoring below this value from the list. Leave empty to
+            show everything — your chip filters still work. Independent of
+            email and SMS notification thresholds.
+          </Text>
           <div className='max-w-xs'>
             <Input
-              label='Score threshold'
+              label='Minimum score'
               type='number'
-              value={emailThreshold}
-              onChange={e => setEmailThreshold(e.target.value)}
+              value={listMinScoreRaw}
+              onChange={e => setListMinScoreRaw(e.target.value)}
               min={0}
               max={100}
-              helperText='Minimum job score to trigger an email alert (0-100)'
-              disabled={!emailEnabled || !emailAvailable}
+              placeholder='No filter'
+              helperText='0 or empty = show all jobs'
             />
           </div>
         </CardContent>
@@ -479,38 +578,50 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Resume style */}
+      {/* Email Notifications */}
       <Card>
         <CardHeader>
-          <div className='flex items-center gap-3'>
-            <CardTitle>Resume style</CardTitle>
-            <SavingIndicator active={savingStyle} />
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <div className='flex items-center gap-3'>
+              <CardTitle>Email Notifications</CardTitle>
+              <SavingIndicator active={savingSection === 'email'} />
+            </div>
+            <Switch
+              checked={emailEnabled && emailAvailable}
+              onChange={setEmailEnabled}
+              label='Enabled'
+              disabled={!emailAvailable}
+            />
           </div>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
           <Text variant='caption' className='text-text-secondary'>
-            Pick how your tailored resume and cover-letter .docx exports look.
-            Applies to every new download — no regeneration needed.
+            Get email alerts when new jobs score above your threshold. Powered
+            by Resend.
           </Text>
-          <div className='grid gap-4 sm:grid-cols-2'>
-            <Select
-              label='Style'
-              value={stylePreset}
-              onChange={e =>
-                setStylePreset(e.target.value as ResumeStylePreset)
-              }
-              options={PRESET_OPTIONS}
-            />
-            <Select
-              label='Accent color'
-              value={styleAccent}
-              onChange={e =>
-                setStyleAccent(e.target.value as ResumeStyleAccent)
-              }
-              options={ACCENT_OPTIONS}
+          {!emailAvailable && (
+            <Text variant='meta' className='text-text-tertiary'>
+              Email notifications are unavailable until the operator configures
+              the email provider credentials.
+            </Text>
+          )}
+          {emailAvailable && prefs?.email && (
+            <Text variant='meta' className='text-text-tertiary'>
+              Sending to: {prefs.email}
+            </Text>
+          )}
+          <div className='max-w-xs'>
+            <Input
+              label='Score threshold'
+              type='number'
+              value={emailThreshold}
+              onChange={e => setEmailThreshold(e.target.value)}
+              min={0}
+              max={100}
+              helperText='Minimum job score to trigger an email alert (0-100)'
+              disabled={!emailEnabled || !emailAvailable}
             />
           </div>
-          <ResumeStylePreview preset={stylePreset} accent={styleAccent} />
         </CardContent>
       </Card>
     </div>
