@@ -229,18 +229,21 @@ def exclude_cosine_failures(
     embeddings on both sides AND cosine < ``threshold``, set
     ``excluded=true``. Never flips ``excluded`` back to false.
     """
-    base = (
-        supabase.table("scores")
-        .select("id, job_posting_id, target_id")
-        .eq("excluded", False)
-    )
-    if target_id_filter:
-        base = base.eq("target_id", target_id_filter)
-
     rows: list[dict[str, Any]] = []
     offset = 0
     while True:
-        resp = base.range(offset, offset + PAGE_SIZE - 1).execute()
+        # Rebuild each iteration — PostgREST builder methods accumulate
+        # URL params rather than replacing them, so reusing one builder
+        # across paged ``.range()`` calls produces ``?offset=0&offset=1000&...``
+        # and a 400 once the URL exceeds the row-count limit.
+        query = (
+            supabase.table("scores")
+            .select("id, job_posting_id, target_id")
+            .eq("excluded", False)
+        )
+        if target_id_filter:
+            query = query.eq("target_id", target_id_filter)
+        resp = query.range(offset, offset + PAGE_SIZE - 1).execute()
         page = cast(list[dict[str, Any]], resp.data or [])
         rows.extend(page)
         if len(page) < PAGE_SIZE:
@@ -257,8 +260,12 @@ def exclude_cosine_failures(
         logger.info(
             "loading title_embedding for %d jobs not seen in this run", len(missing)
         )
-        for i in range(0, len(missing), PAGE_SIZE):
-            chunk_ids = missing[i : i + PAGE_SIZE]
+        # PostgREST encodes ``in_`` as ``id=in.(uuid1,uuid2,...)``.
+        # 1000 UUIDs ~= 36 KB, well past typical proxy URL limits
+        # (8-16 KB). 100 UUIDs is ~3.6 KB, comfortably under.
+        in_chunk = 100
+        for i in range(0, len(missing), in_chunk):
+            chunk_ids = missing[i : i + in_chunk]
             resp = (
                 supabase.table("jobs")
                 .select("id, title_embedding")

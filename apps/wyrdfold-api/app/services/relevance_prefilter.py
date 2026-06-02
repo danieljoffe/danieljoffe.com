@@ -43,13 +43,27 @@ PREFILTER_MODEL: EmbeddingModelId = "voyage-3-lite"
 # ``vector(512)`` to match (see migration 20260601160000).
 PREFILTER_VECTOR_DIMS = 512
 
-# Cosine threshold. ``voyage-3-lite`` cosines on related job titles
-# typically land in 0.55-0.85 range; tangential ones in 0.35-0.55;
-# completely off-topic below 0.35. 0.55 catches the obvious off-topic
-# noise (Pharmacy Tech vs Director of CX) without dropping near-misses
-# the keyword scorer can still rank. Tune after observing precision on
-# Melissa's corpus.
-PREFILTER_THRESHOLD: float = 0.55
+# Cosine threshold. Calibrated against a 500-job sample under Melissa's
+# "Director of CX Operations & Transformation" target:
+#
+#   threshold 0.55: excludes  1% of jobs  (effectively pass-through)
+#   threshold 0.65: excludes 12%
+#   threshold 0.70: excludes 36%
+#   threshold 0.75: excludes 75%
+#   threshold 0.78: excludes 91%  <- chosen
+#   threshold 0.82: excludes 99%  (starts dropping legitimate matches
+#                                   like "Director of Customer Success"
+#                                   which sits at 0.85)
+#
+# Short job titles cluster tighter in voyage-3-lite than the docs
+# suggest — corporate Director-level roles all sit in 0.75-0.85 vs each
+# other regardless of domain. 0.78 strikes the best balance we found:
+# trims out "Senior Software Engineer" / "Pharmacy Technician" / "Sales
+# Rep" cleanly while keeping near-matches like "Head of Customer
+# Operations". The residual noise (Director of GTM Systems etc., which
+# also sit around 0.80) is the next iteration's problem — feedback
+# loop, asymmetric query/document embeddings, or full-JD context.
+PREFILTER_THRESHOLD: float = 0.78
 
 
 def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
