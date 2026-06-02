@@ -84,6 +84,12 @@ def _upsert_score(
         "excluded": excluded,
         "scoring_status": scoring_status,
         "scored_profile_version": scored_profile_version,
+        # Initialise recency_score to the raw fit score (fresh-posting,
+        # decay multiplier 1.0). Correct as-is when RECENCY_DECAY_ENABLED
+        # is off; when on, the poller's ``refresh_recency_scores`` pass
+        # overwrites it with the age-decayed value later in the cycle.
+        # Keeping it non-NULL means a flag flip is a pure sort change.
+        "recency_score": score,
         "updated_at": datetime.now(UTC).isoformat(),
     }
     if promising is not None:
@@ -298,6 +304,10 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
                 "excluded": result.excluded or excluded_by_prefilter,
                 "scoring_status": "stage2",
                 "scored_profile_version": target.profile_version,
+                # Reset recency_score to the new raw score; the next poll
+                # cycle's refresh pass re-applies age decay (see
+                # ``_upsert_score`` and ``app/services/recency.py``).
+                "recency_score": result.score,
                 "updated_at": now,
             }
             # Pass-through ``promising`` only when it's set on the

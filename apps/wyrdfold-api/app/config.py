@@ -57,6 +57,14 @@ class Settings(BaseSettings):
     # downstream keyword scoring.
     phase1_triage_enabled: bool = False
 
+    # Recency decay (#5). When True the /jobs list sorts/paginates by
+    # ``scores.recency_score`` (the fit score decayed by posting age via
+    # ``app/services/recency.py``) and the poller refreshes that column
+    # each cycle. When False the multiplier is 1.0 (recency_score ==
+    # score) and the list sorts by raw fit score exactly as before — the
+    # flag is a pure sort change, safe to flip per-deploy.
+    recency_decay_enabled: bool = False
+
     # Email/SMS notifications — Next.js app URL and shared secret for job alerts.
     next_app_url: str = ""
     job_alert_secret: str = Field(default="", repr=False)

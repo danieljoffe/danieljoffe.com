@@ -34,6 +34,7 @@ from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import enqueue as enqueue_llm_cost
 from app.services.llm.cost_log import record as record_llm_cost
+from app.services.recency import refresh_recency_scores
 from app.services.relevance.title_triage import (
     PHASE1_BATCH_SIZE,
     PHASE1_PURPOSE,
@@ -817,6 +818,22 @@ async def _poll_one_source(
                         for uid in primary_by_user
                     )
                 )
+
+            # ---- Recency decay refresh (#5) ----
+            # Re-derive ``scores.recency_score`` for every row touched
+            # this cycle from the job's age, now that the fit scores are
+            # settled. Gated on the flag so a disabled rollout skips the
+            # extra writes — recency_score already mirrors score from the
+            # upsert in that case, so the list sort is unaffected.
+            if settings.recency_decay_enabled and stage2_ids:
+                try:
+                    await asyncio.to_thread(
+                        refresh_recency_scores, supabase, stage2_ids
+                    )
+                except Exception:
+                    logger.exception(
+                        "Recency refresh failed for %s", company_name
+                    )
         else:
             existing_resp = await asyncio.to_thread(existing_query.execute)
 
