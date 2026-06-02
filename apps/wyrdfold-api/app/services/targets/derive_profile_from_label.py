@@ -65,6 +65,26 @@ Return JSON matching this exact schema:
     "react developer",
     "frontend developer",
     "web developer"
+  ],
+  "example_promising_titles": [
+    "Senior Frontend Engineer",
+    "Staff Web Engineer",
+    "Principal Frontend Engineer",
+    "Senior UI Engineer",
+    "Staff Full-Stack Engineer",
+    "Frontend Platform Engineer",
+    "Senior React Engineer",
+    "Web Platform Engineer"
+  ],
+  "example_unpromising_titles": [
+    "Senior Product Designer",
+    "Product Marketing Manager",
+    "Data Scientist",
+    "Security Engineer",
+    "Customer Success Manager",
+    "Sales Development Representative",
+    "Backend Engineer",
+    "Mobile Engineer"
   ]
 }
 
@@ -94,6 +114,35 @@ career pages, so be broad: include both formal and informal variations.
 - Do NOT include technology names — only role titles.
 - Do NOT include seniority prefixes (no "senior", "staff", "lead") — \
 the system handles seniority matching separately.
+
+Rules for example_promising_titles:
+- 6-10 concrete, properly-cased job titles a user pursuing this target \
+would consider strong matches. Include realistic seniority prefixes \
+(Senior, Staff, Principal) — these are full titles a hiring page would \
+post, not search keywords.
+- Span the range of acceptable seniorities for the target. If the \
+target is a senior+ role, include staff/principal variants too — same \
+career direction, slightly different rung.
+- Include close-adjacent role variants the user would still pursue \
+(e.g., for a Frontend Engineer target: also "Full-Stack Engineer", \
+"Web Platform Engineer").
+- These titles become POSITIVE few-shot anchors for a downstream binary \
+classifier that decides which new job postings to evaluate deeply, so \
+choose titles whose meaning is unambiguous.
+
+Rules for example_unpromising_titles:
+- 6-10 concrete job titles that look adjacent but are NOT what the user \
+wants. The harder cases — same seniority, same company-type, different \
+role function — are the most valuable.
+- Examples for a Frontend Engineer target: "Senior Product Designer", \
+"Product Marketing Manager", "Data Scientist", "Sales Engineer". These \
+share keywords (TypeScript, accessibility, design system) but the \
+ROLE itself is different.
+- Avoid obvious negatives ("Nurse", "Truck Driver") — those waste prompt \
+space. Pick close-but-wrong roles that the keyword scorer alone would \
+admit on incidental matches.
+- These become NEGATIVE few-shot anchors. Be precise about role \
+function, not technology overlap.
 
 Return ONLY the JSON object. No prose, no markdown, no code fences."""
 

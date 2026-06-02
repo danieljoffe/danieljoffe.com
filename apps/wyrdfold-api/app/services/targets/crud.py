@@ -53,6 +53,8 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
         profile_version=row.get("profile_version", 1),
         is_active=row["is_active"],
         label_embedding=embedding,
+        example_promising_titles=row.get("example_promising_titles") or [],
+        example_unpromising_titles=row.get("example_unpromising_titles") or [],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -157,6 +159,10 @@ def update(
         updates["is_active"] = payload.is_active
     if payload.profile_version is not None:
         updates["profile_version"] = payload.profile_version
+    if payload.example_promising_titles is not None:
+        updates["example_promising_titles"] = payload.example_promising_titles
+    if payload.example_unpromising_titles is not None:
+        updates["example_unpromising_titles"] = payload.example_unpromising_titles
 
     resp = (
         supabase.table(TARGETS_TABLE).update(updates).eq("id", target_id).execute()

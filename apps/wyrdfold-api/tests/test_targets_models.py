@@ -127,3 +127,95 @@ def test_target_reference_jd_from_dict():
     }
     jd = TargetReferenceJD.model_validate(raw)
     assert jd.extracted_profile.categories["core_skills"].keywords["React"] == 3
+
+
+# ---- Example title pools (Phase 1 LLM triage seed) ------------------------
+
+
+def test_job_target_defaults_example_title_pools_to_empty():
+    """Targets created before the Phase 1 LLM triage migration have NULL
+    columns in the DB → JobTarget should fall back to empty lists so
+    the Phase 1 grader can run "no examples available" path cleanly.
+    """
+    raw = {
+        "id": "t-1",
+        "label": "Director of CX Operations",
+        "scoring_profile": {"categories": {}},
+        "is_active": True,
+        "created_at": "2026-06-01T00:00:00Z",
+        "updated_at": "2026-06-01T00:00:00Z",
+        # NO example_promising_titles, NO example_unpromising_titles.
+    }
+    t = JobTarget.model_validate(raw)
+    assert t.example_promising_titles == []
+    assert t.example_unpromising_titles == []
+
+
+def test_job_target_round_trips_example_title_pools():
+    raw = {
+        "id": "t-1",
+        "label": "Director of CX Operations",
+        "scoring_profile": {"categories": {}},
+        "is_active": True,
+        "created_at": "2026-06-01T00:00:00Z",
+        "updated_at": "2026-06-01T00:00:00Z",
+        "example_promising_titles": [
+            "Director of Customer Success",
+            "Head of CS Operations",
+            "VP Customer Experience",
+        ],
+        "example_unpromising_titles": [
+            "Director of Sales Operations",
+            "Marketing Director",
+        ],
+    }
+    t = JobTarget.model_validate(raw)
+    assert "Director of Customer Success" in t.example_promising_titles
+    assert "Marketing Director" in t.example_unpromising_titles
+
+
+def test_derived_target_defaults_example_title_pools_to_empty():
+    """The LLM-output schema: legacy outputs that pre-date the prompt
+    extension still validate (fields default to empty lists). Phase 1
+    treats empty pools as "fall back to label-only grading"."""
+    from app.models.targets import DerivedTarget
+
+    raw = {
+        "scoring_profile": {"categories": {}},
+        "search_keywords": ["frontend engineer"],
+    }
+    d = DerivedTarget.model_validate(raw)
+    assert d.example_promising_titles == []
+    assert d.example_unpromising_titles == []
+
+
+def test_derived_target_with_example_title_pools():
+    from app.models.targets import DerivedTarget
+
+    raw = {
+        "scoring_profile": {"categories": {}},
+        "search_keywords": ["frontend engineer"],
+        "example_promising_titles": ["Senior Frontend Engineer", "Staff Web Engineer"],
+        "example_unpromising_titles": ["Senior Product Designer"],
+    }
+    d = DerivedTarget.model_validate(raw)
+    assert len(d.example_promising_titles) == 2
+    assert d.example_unpromising_titles == ["Senior Product Designer"]
+
+
+def test_target_update_passes_through_example_title_pools():
+    """``TargetUpdate`` must carry the new fields through so derive →
+    update flows can persist them. Both fields are ``None`` by default
+    so unrelated updates don't accidentally null out the pool."""
+    from app.models.targets import TargetUpdate
+
+    upd = TargetUpdate(
+        example_promising_titles=["Senior Frontend Engineer"],
+        example_unpromising_titles=["Senior Product Designer"],
+    )
+    assert upd.example_promising_titles == ["Senior Frontend Engineer"]
+    assert upd.example_unpromising_titles == ["Senior Product Designer"]
+    # Unrelated update: pools stay None (= "don't touch").
+    upd2 = TargetUpdate(label="Renamed Target")
+    assert upd2.example_promising_titles is None
+    assert upd2.example_unpromising_titles is None

@@ -166,6 +166,8 @@ async def _activate_pipeline(
                 TargetUpdate(
                     scoring_profile=derived.scoring_profile,
                     search_keywords=derived.search_keywords,
+                    example_promising_titles=derived.example_promising_titles,
+                    example_unpromising_titles=derived.example_unpromising_titles,
                 ),
             )
             if updated is None:
@@ -590,6 +592,8 @@ async def derive_target_profile(
         TargetUpdate(
             scoring_profile=derived.scoring_profile,
             search_keywords=derived.search_keywords,
+            example_promising_titles=derived.example_promising_titles,
+            example_unpromising_titles=derived.example_unpromising_titles,
             profile_version=target.profile_version + 1,
         ),
     )
@@ -740,6 +744,8 @@ async def create_target_from_posting(
                 TargetUpdate(
                     scoring_profile=derived.scoring_profile,
                     search_keywords=derived.search_keywords,
+                    example_promising_titles=derived.example_promising_titles,
+                    example_unpromising_titles=derived.example_unpromising_titles,
                 ),
             )
         except Exception:
@@ -936,13 +942,18 @@ async def add_reference_jd(
     all_ref_jds = crud.list_reference_jds(supabase, target_id)
     composite = merge_profiles([jd.extracted_profile for jd in all_ref_jds])
 
-    # Update target with merged profile + search keywords, bump version for re-scoring
+    # Update target with merged profile + search keywords, bump version for re-scoring.
+    # Example title pools come from the LATEST JD only — these are concrete
+    # examples not weighted aggregates, and merging across JDs would dilute
+    # the few-shot signal. The latest JD overwrites; pools stay coherent.
     updated = crud.update(
         supabase,
         target_id,
         TargetUpdate(
             scoring_profile=composite,
             search_keywords=derived.search_keywords,
+            example_promising_titles=derived.example_promising_titles,
+            example_unpromising_titles=derived.example_unpromising_titles,
             profile_version=target.profile_version + 1,
         ),
     )

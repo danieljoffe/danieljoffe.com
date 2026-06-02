@@ -55,6 +55,22 @@ extract a scoring profile and search keywords as JSON matching this exact schema
     "front-end engineer",
     "ui engineer",
     "react developer"
+  ],
+  "example_promising_titles": [
+    "Senior Frontend Engineer",
+    "Staff Web Engineer",
+    "Principal Frontend Engineer",
+    "Senior UI Engineer",
+    "Staff Full-Stack Engineer",
+    "Frontend Platform Engineer"
+  ],
+  "example_unpromising_titles": [
+    "Senior Product Designer",
+    "Product Marketing Manager",
+    "Data Scientist",
+    "Security Engineer",
+    "Customer Success Manager",
+    "Backend Engineer"
   ]
 }
 
@@ -79,6 +95,24 @@ Rules for search_keywords:
 - These are used for substring matching against job titles, so be broad.
 - Do NOT include technology names — only role titles.
 - Do NOT include seniority prefixes — the system handles seniority separately.
+
+Rules for example_promising_titles:
+- 6-10 concrete, properly-cased job titles that match the role this JD \
+describes. Include realistic seniority prefixes (Senior, Staff, Principal) \
+— these are full titles a hiring page would post.
+- Span the range of acceptable seniorities. If this JD is a staff role, \
+include senior + staff + principal variants — same career direction.
+- Include close-adjacent role variants the user would still pursue.
+- These become POSITIVE few-shot anchors for a downstream binary \
+classifier that gates which new postings to score deeply.
+
+Rules for example_unpromising_titles:
+- 6-10 concrete job titles that look adjacent but are NOT what this JD \
+is about. Same seniority, different role function — the hard cases.
+- Avoid obvious negatives. Pick close-but-wrong roles that share \
+keywords (TypeScript, accessibility, design system, cross-functional) \
+but a different ROLE FUNCTION.
+- These become NEGATIVE few-shot anchors.
 
 Return ONLY the JSON object. No prose, no markdown, no code fences."""
 
