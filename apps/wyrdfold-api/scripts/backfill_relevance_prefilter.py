@@ -45,6 +45,9 @@ from app.services.relevance_prefilter import (
     PREFILTER_THRESHOLD,
     cosine_similarity,
 )
+from app.services.relevance_prefilter import (
+    parse_pgvector as _parse_pgvector,  # re-export for tests
+)
 from app.supabase_pool import get_supabase_pool, init_supabase
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -59,24 +62,6 @@ PAGE_SIZE = 1000
 # the per-row UPDATEs are sequential — keep the chunk small enough that
 # a partial failure doesn't lose much work.
 UPDATE_BATCH = 200
-
-
-def _parse_pgvector(value: Any) -> list[float] | None:
-    """PostgREST returns ``vector(N)`` columns as either a JSON list or a
-    Postgres-style ``"[0.1,0.2,...]"`` string depending on encoder
-    configuration. Normalise both to a plain ``list[float]`` so callers
-    can ``cosine_similarity`` without caring.
-    """
-    if value is None:
-        return None
-    if isinstance(value, list):
-        return [float(x) for x in value]
-    if isinstance(value, str):
-        s = value.strip().lstrip("[").rstrip("]")
-        if not s:
-            return None
-        return [float(x) for x in s.split(",")]
-    return None
 
 
 async def backfill_target_label_embeddings(

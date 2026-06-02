@@ -141,6 +141,51 @@ def test_score_and_upsert_raises_on_empty_response() -> None:
         )
 
 
+def test_score_and_upsert_excluded_by_prefilter_forces_true() -> None:
+    """When the caller signals a prefilter rejection, the upserted row
+    must carry ``excluded=True`` regardless of what the keyword scorer
+    decided. This is the contract the poller relies on so that re-scores
+    preserve cosine exclusions.
+    """
+    supabase = _make_supabase_mock(upsert_data=[_upserted_score_row()])
+    # A target with NO negative keywords — the scorer would normally
+    # leave ``excluded=False`` for any input.
+    target = _target(core={"React": 3})
+
+    score_and_upsert(
+        supabase,
+        job_posting_id="job-1",
+        title="Pharmacy Technician",
+        description_html="<p>Filling prescriptions.</p>",
+        target=target,
+        excluded_by_prefilter=True,
+    )
+
+    payload = supabase.table.return_value.upsert.call_args.args[0]
+    assert payload["excluded"] is True
+
+
+def test_score_and_upsert_excluded_by_prefilter_false_preserves_scorer() -> None:
+    """``excluded_by_prefilter=False`` is the default and must not change
+    the scorer's verdict — negative keyword matches still exclude the row.
+    """
+    supabase = _make_supabase_mock(upsert_data=[_upserted_score_row()])
+    # ``junior`` is in the negative list (see ``_target`` fixture).
+    target = _target(core={"React": 3})
+
+    score_and_upsert(
+        supabase,
+        job_posting_id="job-1",
+        title="Junior React Developer",
+        description_html="<p>Junior role on the React team.</p>",
+        target=target,
+        excluded_by_prefilter=False,
+    )
+
+    payload = supabase.table.return_value.upsert.call_args.args[0]
+    assert payload["excluded"] is True  # scorer excluded via negative keyword
+
+
 # ---------------------------------------------------------------------------
 # bulk_score_for_target
 # ---------------------------------------------------------------------------
@@ -192,6 +237,69 @@ def test_bulk_score_for_target_scores_stage1_jobs(
     count = bulk_score_for_target(supabase, target)
 
     assert count == 2
+
+
+def test_bulk_score_for_target_excludes_cosine_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Bulk re-score must apply the same prefilter the ingestion path
+    does. Without this guarantee, every re-score (cron, deploy, learner
+    bump) wipes cosine exclusions and the noise floor walks back up — the
+    regression we hit after the post-PR-#782 Railway deploy.
+    """
+    monkeypatch.setattr(_BATCH_UPDATE_PATH, MagicMock())
+
+    jts_rows = [{"job_posting_id": "good"}, {"job_posting_id": "bad"}]
+    jobs = [
+        {
+            "id": "good",
+            "title": "Senior Frontend Engineer",
+            "description_html": "<p>React.</p>",
+            "title_embedding": [1.0, 0.0],  # parallel to target embedding
+        },
+        {
+            "id": "bad",
+            "title": "Sales Development Representative",
+            "description_html": "<p>Outbound sales.</p>",
+            "title_embedding": [0.0, 1.0],  # orthogonal -> cosine 0 -> excludes
+        },
+    ]
+    upsert_rows = [
+        _upserted_score_row(job_posting_id="good"),
+        _upserted_score_row(job_posting_id="bad"),
+    ]
+
+    supabase = MagicMock()
+    range_calls = {"n": 0}
+
+    def range_side_effect(*args: Any, **kwargs: Any) -> MagicMock:
+        range_calls["n"] += 1
+        mock = MagicMock()
+        mock.execute.return_value.data = jts_rows if range_calls["n"] == 1 else []
+        return mock
+
+    supabase.table.return_value.select.return_value.eq.return_value.lt.return_value.range.side_effect = (
+        range_side_effect
+    )
+    supabase.table.return_value.select.return_value.in_.return_value.execute.return_value.data = (
+        jobs
+    )
+    supabase.table.return_value.upsert.return_value.execute.return_value.data = (
+        upsert_rows
+    )
+
+    target = _target(core={"React": 3})
+    # Make the target's label embedding parallel to "good" job's title
+    # embedding (cosine 1.0) and orthogonal to "bad" (cosine 0).
+    target.label_embedding = [1.0, 0.0]
+
+    count = bulk_score_for_target(supabase, target)
+
+    assert count == 2
+    payload = supabase.table.return_value.upsert.call_args.args[0]
+    by_id = {row["job_posting_id"]: row for row in payload}
+    assert by_id["good"]["excluded"] is False, "above-threshold cosine kept"
+    assert by_id["bad"]["excluded"] is True, "below-threshold cosine excluded"
 
 
 def test_bulk_score_for_target_handles_no_stale_jobs() -> None:

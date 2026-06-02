@@ -28,10 +28,33 @@ from __future__ import annotations
 import logging
 import math
 from collections.abc import Sequence
+from typing import Any
 
 from app.models.embeddings import EmbeddingModelId
 
 logger = logging.getLogger(__name__)
+
+
+def parse_pgvector(value: Any) -> list[float] | None:
+    """Normalize a PostgREST-returned ``vector(N)`` column to
+    ``list[float] | None``.
+
+    PostgREST encodes pgvector columns inconsistently depending on
+    encoder config — sometimes a JSON array, sometimes a Postgres
+    bracketed string ``"[0.1,0.2,...]"``. Empty-bracket ``"[]"``
+    collapses to ``None`` so the gate's fail-open branch kicks in
+    rather than comparing against a zero-length vector.
+    """
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return [float(x) for x in value]
+    if isinstance(value, str):
+        s = value.strip().lstrip("[").rstrip("]")
+        if not s:
+            return None
+        return [float(x) for x in s.split(",")]
+    return None
 
 # Model used for both target labels and job titles. Same model on both
 # sides is required for cosine to be meaningful — different model

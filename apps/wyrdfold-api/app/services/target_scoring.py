@@ -26,6 +26,10 @@ from supabase import Client
 from app.models.schemas import JobTargetScore, ScoreBreakdown, ScoringStatus
 from app.models.targets import JobTarget
 from app.services.jd_parser import ParsedJD, parse_jd
+from app.services.relevance_prefilter import (
+    parse_pgvector,
+    title_passes_prefilter,
+)
 from app.services.scoring import score_job_with_profile, score_title_against_profile
 from app.services.supabase_retry import execute_with_retry_sync
 
@@ -138,10 +142,19 @@ def score_and_upsert(
     description_html: str,
     target: JobTarget,
     parsed_jd: ParsedJD | None = None,
+    excluded_by_prefilter: bool = False,
 ) -> JobTargetScore:
     """Stage 2: Score one job's full JD against one target and upsert.
 
     Pass ``parsed_jd`` to reuse a pre-parsed JD across multiple targets.
+
+    ``excluded_by_prefilter`` is OR-ed with the scorer's own ``excluded``
+    flag. The poller pre-computes cosine(target_label, job_title) once
+    per (target, job) pair and passes the result here, so a re-score
+    triggered by anything (cron, deploy, learner) preserves the prefilter
+    exclusion the same way the ingestion path does. Without this, the
+    scorer's negative-keyword-only ``excluded`` overwrites cosine-based
+    exclusions on every re-score and the noise floor walks back up.
     """
     result = score_job_with_profile(
         title,
@@ -158,7 +171,7 @@ def score_and_upsert(
         score=result.score,
         breakdown=result.breakdown,
         matched_keywords=result.matched_keywords,
-        excluded=result.excluded,
+        excluded=result.excluded or excluded_by_prefilter,
         scoring_status="stage2",
         scored_profile_version=target.profile_version,
     )
@@ -198,12 +211,17 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
     if not all_job_ids:
         return 0
 
+    # Resolve the target's cosine prefilter once per bulk run.
+    # Fail-open: if the target has no embedding yet, the prefilter check
+    # below returns True for every job, matching ingestion-path semantics.
+    target_label_embedding = parse_pgvector(target.label_embedding)
+
     # Score those jobs in batches
     for i in range(0, len(all_job_ids), batch_size):
         batch_ids = all_job_ids[i : i + batch_size]
         resp = (
             supabase.table("jobs")
-            .select("id, title, description_html")
+            .select("id, title, description_html, title_embedding")
             .in_("id", batch_ids)
             .execute()
         )
@@ -223,6 +241,13 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
                 parsed_jd=parsed,
                 search_keywords=target.search_keywords,
             )
+            # OR with the cosine gate so a bulk rescore preserves
+            # prefilter exclusions; otherwise scorer-only ``excluded``
+            # overwrites them and the noise floor walks back up.
+            title_embedding = parse_pgvector(job.get("title_embedding"))
+            excluded_by_prefilter = not title_passes_prefilter(
+                title_embedding, [target_label_embedding]
+            )
             rows_to_upsert.append(
                 {
                     "job_posting_id": job["id"],
@@ -230,7 +255,7 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
                     "score": result.score,
                     "score_breakdown": result.breakdown.model_dump(),
                     "matched_keywords": result.matched_keywords,
-                    "excluded": result.excluded,
+                    "excluded": result.excluded or excluded_by_prefilter,
                     "scoring_status": "stage2",
                     "scored_profile_version": target.profile_version,
                     "updated_at": now,

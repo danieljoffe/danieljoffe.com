@@ -35,6 +35,7 @@ from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import enqueue as enqueue_llm_cost
 from app.services.relevance_prefilter import (
+    parse_pgvector,
     prepare_prefilter,
     title_passes_prefilter,
 )
@@ -687,12 +688,31 @@ async def _poll_one_source(
                 rd = cast(dict[str, Any], raw_row)
                 jd_cache[rd["id"]] = parse_jd(rd.get("description_html") or "")
 
-            for active_target in active_targets:
+            for ti, active_target in enumerate(active_targets):
+                # Per-target cosine: the source-level gate at line 577
+                # admits a posting that passes cosine for ANY active
+                # target, but Stage 2 scores it against ALL targets.
+                # Without this per-(target, job) check, a software-eng
+                # posting that passes for Daniel's target gets a
+                # ``excluded=false`` scores row for Melissa's CX target.
+                t_embed = (
+                    target_label_embeddings[ti]
+                    if ti < len(target_label_embeddings)
+                    else None
+                )
 
                 async def _full_score_one(
-                    row_data: dict[str, Any], target: JobTarget = active_target
+                    row_data: dict[str, Any],
+                    target: JobTarget = active_target,
+                    target_embed: list[float] | None = t_embed,
                 ) -> None:
                     try:
+                        title_embed = parse_pgvector(
+                            row_data.get("title_embedding")
+                        )
+                        prefilter_excluded = not title_passes_prefilter(
+                            title_embed, [target_embed]
+                        )
                         await asyncio.to_thread(
                             target_score_and_upsert,
                             supabase,
@@ -701,6 +721,7 @@ async def _poll_one_source(
                             description_html=row_data.get("description_html", ""),
                             target=target,
                             parsed_jd=jd_cache.get(row_data["id"]),
+                            excluded_by_prefilter=prefilter_excluded,
                         )
                     except Exception:
                         logger.exception(
