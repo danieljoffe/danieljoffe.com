@@ -38,6 +38,7 @@ def _target(
     *,
     target_id: str = "target-1",
     core: dict[str, int] | None = None,
+    is_active: bool = True,
 ) -> JobTarget:
     cats: dict[str, CategoryProfile] = {}
     if core is not None:
@@ -51,7 +52,7 @@ def _target(
             domain=DomainProfile(signals=["fintech"], weight=0.5),
             negative=NegativeProfile(keywords=["junior"], weight=-10.0),
         ),
-        is_active=True,
+        is_active=is_active,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -312,6 +313,23 @@ def test_bulk_score_for_target_handles_no_stale_jobs() -> None:
     count = bulk_score_for_target(supabase, target)
 
     assert count == 0
+
+
+def test_bulk_score_for_target_skips_inactive_target() -> None:
+    """Inactive targets short-circuit before any DB read.
+
+    ``targets.is_active=False`` means no user currently has this target
+    enabled (the trigger off ``user_targets`` ORs across users). Re-scoring
+    would just burn LLM/CPU on rows nobody will see in the list view.
+    """
+    supabase = MagicMock()
+    target = _target(core={"React": 3}, is_active=False)
+
+    count = bulk_score_for_target(supabase, target)
+
+    assert count == 0
+    # And critically: zero DB traffic — no select, no upsert.
+    supabase.table.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

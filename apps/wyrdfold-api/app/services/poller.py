@@ -1188,7 +1188,25 @@ async def _poll_one_source_for_target(
 
 
 async def poll_sources_for_target(supabase: Client, target: JobTarget) -> PollResult:
-    """Poll all enabled sources, filtering for jobs matching a target's search keywords."""
+    """Poll all enabled sources, filtering for jobs matching a target's search keywords.
+
+    Skips inactive targets entirely (returns an empty ``PollResult``).
+    The ``targets.is_active`` flag is the OR across all users via the
+    user_targets trigger; if it's ``False`` no one currently has the
+    target enabled, so a per-target poll would fan out work nobody
+    will see. The /activate endpoint sets ``is_active`` to ``True``
+    before calling this, so the activation pipeline still works.
+    """
+    if not target.is_active:
+        logger.info(
+            "poll_sources_for_target: skipping inactive target %s (%s)",
+            target.id,
+            target.label,
+        )
+        return PollResult(
+            sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
+        )
+
     if not target.search_keywords:
         return PollResult(
             sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0,

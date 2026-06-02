@@ -184,7 +184,20 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
     ``scored_profile_version`` is less than the target's current
     ``profile_version`` (lazy re-scoring). Used by the re-score endpoint
     when a target's profile changes.
+
+    Skips inactive targets entirely. The ``targets.is_active`` flag is
+    the OR across all users via the user_targets trigger; if it's
+    ``False`` nobody currently has this target enabled, so the
+    re-score would just burn LLM/CPU on rows nobody will see.
     """
+    if not target.is_active:
+        logger.info(
+            "bulk_score_for_target: skipping inactive target %s (%s)",
+            target.id,
+            target.label,
+        )
+        return 0
+
     batch_size = 500
     offset = 0
     total_scored = 0
