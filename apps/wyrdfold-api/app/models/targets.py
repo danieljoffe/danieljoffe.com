@@ -72,6 +72,10 @@ class JobTarget(BaseModel):
     )
     profile_version: int = 1
     is_active: bool
+    # Voyage-3-lite (512 dim) embedding of ``label``. Used by the
+    # ingestion-time relevance pre-filter in the poller. Computed
+    # lazily on first poll if NULL; recomputed if ``label`` changes.
+    label_embedding: list[float] | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -27,6 +27,21 @@ REF_JDS_TABLE = "reference_jds"
 
 def _parse_target(row: dict[str, Any]) -> JobTarget:
     """Parse a raw Supabase row into a JobTarget, handling JSONB fields."""
+    # PostgREST returns pgvector columns as either a list of floats or a
+    # ``[0.1,0.2,...]`` string depending on the encoder. Normalize both
+    # shapes to list[float] | None so callers can treat it uniformly.
+    raw_embed = row.get("label_embedding")
+    embedding: list[float] | None
+    if raw_embed is None:
+        embedding = None
+    elif isinstance(raw_embed, list):
+        embedding = [float(x) for x in raw_embed]
+    elif isinstance(raw_embed, str):
+        stripped = raw_embed.strip().lstrip("[").rstrip("]")
+        embedding = [float(x) for x in stripped.split(",") if x.strip()] if stripped else None
+    else:
+        embedding = None
+
     return JobTarget(
         id=row["id"],
         label=row["label"],
@@ -37,6 +52,7 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
         activation_status=row.get("activation_status") or "idle",
         profile_version=row.get("profile_version", 1),
         is_active=row["is_active"],
+        label_embedding=embedding,
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
