@@ -77,10 +77,10 @@ class _TableChain:
     def __init__(self, resp: _Resp) -> None:
         self._resp = resp
 
-    def select(self, *_a: Any, **_kw: Any) -> "_TableChain":
+    def select(self, *_a: Any, **_kw: Any) -> _TableChain:
         return self
 
-    def in_(self, *_a: Any, **_kw: Any) -> "_TableChain":
+    def in_(self, *_a: Any, **_kw: Any) -> _TableChain:
         return self
 
     def execute(self) -> _Resp:
@@ -179,25 +179,25 @@ class _ListChain:
     def __init__(self, resp: _ListResp) -> None:
         self._resp = resp
 
-    def select(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def select(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
-    def eq(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def eq(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
-    def in_(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def in_(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
-    def gte(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def gte(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
-    def ilike(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def ilike(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
-    def order(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def order(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
-    def range(self, *_a: Any, **_kw: Any) -> "_ListChain":
+    def range(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
     def execute(self) -> _ListResp:
