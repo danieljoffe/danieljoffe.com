@@ -156,7 +156,6 @@ export default function JobsList({
     // the restore writes its own values back into the URL, which is
     // already guarded by the ref check above but reads more clearly
     // with a small dep array.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTargetId, persistence, setUrlState]);
 
   // Sort/order/page wiring for ``useAdminTableFetch``. Defined here so we
