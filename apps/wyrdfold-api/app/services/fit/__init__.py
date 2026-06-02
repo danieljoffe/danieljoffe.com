@@ -25,14 +25,22 @@ from app.services.fit.job_fit import (
     JobFitResult,
     derive_job_fit,
 )
+from app.services.fit.phase2_runner import (
+    PHASE2_BATCH_SIZE,
+    PHASE2_FIRST_BATCH,
+    run_phase2_for_jobs,
+)
 from app.services.fit.score_persistence import score_with_phase2_and_persist
 
 __all__ = [
     "DEFAULT_DAILY_CAP",
     "JOB_FIT_PURPOSE",
+    "PHASE2_BATCH_SIZE",
+    "PHASE2_FIRST_BATCH",
     "AxisScores",
     "JobFitResult",
     "derive_job_fit",
     "phase2_quota_remaining",
+    "run_phase2_for_jobs",
     "score_with_phase2_and_persist",
 ]

@@ -26,6 +26,7 @@ from app.services.ashby import fetch_ashby_jobs
 from app.services.experience.optimized import get_latest as get_latest_optimized
 from app.services.extract import extract_salary_from_text
 from app.services.firecrawl import fetch_firecrawl_jobs
+from app.services.fit import run_phase2_for_jobs
 from app.services.greenhouse import fetch_board_jobs
 from app.services.jd_parser import parse_jd
 from app.services.jsonld import fetch_jsonld_jobs
@@ -34,6 +35,7 @@ from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import enqueue as enqueue_llm_cost
 from app.services.llm.cost_log import record as record_llm_cost
+from app.services.recency import refresh_recency_scores
 from app.services.relevance.title_triage import (
     PHASE1_BATCH_SIZE,
     PHASE1_PURPOSE,
@@ -792,7 +794,46 @@ async def _poll_one_source(
                 supabase, active_targets, company_name
             )
 
-            if primary_by_user:
+            if settings.phase2_enabled and primary_by_user:
+                # ---- Phase 2: LLM job-fit grading (#6) ----
+                # Replaces the legacy Stage 3 keyword+LLM blend with the
+                # Sonnet scorecard. ``run_phase2_for_jobs`` gates on the
+                # Phase 1 ``promising`` verdict, honours the re-grade
+                # contract, enforces the per-target daily cap, and applies
+                # progressive batching. We re-aggregate the global
+                # ``jobs.score`` afterwards because Phase 2 rewrites
+                # ``scores.score`` (Stage 2's keyword value was a
+                # placeholder until graded).
+                llm = get_default_llm_client()
+                cycle_rows = [
+                    cast(dict[str, Any], r) for r in upsert_resp.data or []
+                ]
+                for uid, p2_target in primary_by_user.items():
+                    try:
+                        await run_phase2_for_jobs(
+                            supabase,
+                            llm,
+                            target=p2_target,
+                            payload=user_optimized[uid].payload,
+                            jobs=cycle_rows,
+                            user_id=uid,
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Phase 2 grading failed for user %s / target %s",
+                            uid,
+                            p2_target.id,
+                        )
+                if stage2_ids:
+                    try:
+                        await asyncio.to_thread(
+                            batch_update_global_scores, supabase, stage2_ids
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Global score update failed after Phase 2"
+                        )
+            elif primary_by_user:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
 
@@ -817,6 +858,22 @@ async def _poll_one_source(
                         for uid in primary_by_user
                     )
                 )
+
+            # ---- Recency decay refresh (#5) ----
+            # Re-derive ``scores.recency_score`` for every row touched
+            # this cycle from the job's age, now that the fit scores are
+            # settled. Gated on the flag so a disabled rollout skips the
+            # extra writes — recency_score already mirrors score from the
+            # upsert in that case, so the list sort is unaffected.
+            if settings.recency_decay_enabled and stage2_ids:
+                try:
+                    await asyncio.to_thread(
+                        refresh_recency_scores, supabase, stage2_ids
+                    )
+                except Exception:
+                    logger.exception(
+                        "Recency refresh failed for %s", company_name
+                    )
         else:
             existing_resp = await asyncio.to_thread(existing_query.execute)
 

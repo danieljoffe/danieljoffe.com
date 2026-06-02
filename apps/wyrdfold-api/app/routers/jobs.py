@@ -11,6 +11,7 @@ from postgrest.types import CountMethod
 from supabase import Client
 
 from app.cache import job_list_cache, jobs_cache_prefix, make_cache_key
+from app.config import settings
 from app.dependencies import (
     get_current_user_id,
     get_current_user_id_optional,
@@ -228,6 +229,11 @@ def _list_jobs_for_target_rpc(
     # whenever the user typed more than one word.
     if search and len(_tokenize_search(search)) > 1:
         raise RuntimeError("RPC path skipped: multi-word search uses OR semantics")
+    # Recency decay sorts by ``scores.recency_score``, which the deployed
+    # RPC doesn't return or order by. The two-query fallback handles that
+    # column directly, so force it when the flag is on.
+    if settings.recency_decay_enabled and sort == "score":
+        raise RuntimeError("RPC path skipped: recency-decay sort handled in two-query path")
     """List jobs via server-side join RPC (single round-trip)."""
     resp = supabase.rpc(
         "get_target_jobs",
@@ -270,10 +276,22 @@ def _list_jobs_for_target_two_query(
 ) -> dict[str, Any]:
     """Fallback: two-query pattern with pagination pushed to the scores layer."""
     sort_col = "score" if sort == "score" else sort
+    # When recency decay is on, the logical "score" sort orders by the
+    # decayed ``recency_score`` column instead of the raw fit score.
+    # min_score still filters on the raw ``score`` (the user's fit floor
+    # is a quality bar, not a recency bar); only the ORDER BY changes.
+    order_col = (
+        "recency_score"
+        if sort_col == "score" and settings.recency_decay_enabled
+        else "score"
+    )
     has_location_filter = bool(exclude_terms or only_terms)
     ts_query = (
         supabase.table("scores")
-        .select("job_posting_id, score, score_breakdown, scoring_status", count=CountMethod.exact)
+        .select(
+            "job_posting_id, score, recency_score, score_breakdown, scoring_status",
+            count=CountMethod.exact,
+        )
         .eq("target_id", target_id)
         .eq("excluded", False)
     )
@@ -286,7 +304,7 @@ def _list_jobs_for_target_two_query(
     # stable position — without this, the last row of page N could
     # reappear as the first row of page N+1.
     if sort_col == "score":
-        ts_query = ts_query.order("score", desc=not ascending).order(
+        ts_query = ts_query.order(order_col, desc=not ascending).order(
             "job_posting_id"
         )
     # For non-score sorts we still need all qualifying IDs (sorted in Python after join)
@@ -340,9 +358,15 @@ def _list_jobs_for_target_two_query(
             )
 
         def _sort_key(p: dict[str, Any]) -> Any:
+            if sort == "score":
+                # Order by recency_score (or raw score when decay is off);
+                # read from the scores lookup so we don't leak an internal
+                # column into the postings response.
+                ts = score_lookup.get(p["id"]) or {}
+                return ts.get(order_col) or 0
             val = p.get(sort)
             if val is None:
-                return 0 if sort == "score" else ""
+                return ""
             return val
 
         postings.sort(key=_sort_key, reverse=not ascending)
@@ -433,10 +457,21 @@ def _list_jobs_across_user_targets(
     filter rejected every row.
     """
     sort_col = "score" if sort == "score" else sort
+    # See ``_list_jobs_for_target_two_query``: the "score" sort orders by
+    # the decayed ``recency_score`` when the flag is on; min_score still
+    # filters on the raw fit score.
+    order_col = (
+        "recency_score"
+        if sort_col == "score" and settings.recency_decay_enabled
+        else "score"
+    )
 
     score_query = (
         supabase.table("scores")
-        .select("job_posting_id, target_id, score, score_breakdown, scoring_status")
+        .select(
+            "job_posting_id, target_id, score, recency_score, "
+            "score_breakdown, scoring_status"
+        )
         .in_("target_id", list(user_target_ids))
         .eq("excluded", False)
     )
@@ -475,7 +510,7 @@ def _list_jobs_across_user_targets(
         # iterates a dict).
         ranked_ids = sorted(
             best.keys(),
-            key=lambda jid: (best[jid]["score"], jid),
+            key=lambda jid: (best[jid].get(order_col) or 0, jid),
             reverse=not ascending,
         )
         page_ids = ranked_ids[offset : offset + page_size]
@@ -507,9 +542,15 @@ def _list_jobs_across_user_targets(
             )
 
         def _sort_key(p: dict[str, Any]) -> Any:
+            if sort == "score":
+                # Order by recency_score (or raw score when decay is off);
+                # read from the per-job best-score lookup so we don't leak
+                # an internal column into the postings response.
+                ts = best.get(p["id"]) or {}
+                return ts.get(order_col) or 0
             val = p.get(sort)
             if val is None:
-                return 0 if sort == "score" else ""
+                return ""
             return val
 
         postings.sort(key=_sort_key, reverse=not ascending)
