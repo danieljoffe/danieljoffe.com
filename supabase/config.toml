@@ -153,6 +153,15 @@ enabled = true
 # in emails. Use ``localhost`` rather than ``127.0.0.1`` so cookies set on the
 # auth callback are visible to the rest of the dev app (browsers treat the two
 # hosts as separate origins for session storage).
+#
+# !!! LOCAL-ONLY !!!  This value is for ``supabase start`` (local dev).
+# A bare ``supabase config push`` will overwrite the production project's
+# site_url with this localhost string and silently break every emailed
+# magic link / invite (they'll all point at localhost:3000). The
+# ``[remotes.production]`` block at the bottom of this file pins the
+# correct production value — push with ``--linked-to production`` (or use
+# the dashboard) so the override applies. See the comment near
+# ``[remotes.production]`` for the full rationale.
 site_url = "http://localhost:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 # Supabase substitutes ``site_url`` silently when ``emailRedirectTo`` does not
@@ -407,3 +416,54 @@ s3_region = "env(S3_REGION)"
 s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
+
+# ============================================================================
+# Remote-specific overrides
+# ============================================================================
+#
+# Why this block exists
+# ---------------------
+# Everything ABOVE this section is the LOCAL-DEV config (loaded by
+# ``supabase start``). A bare ``supabase config push`` diffs the *entire*
+# local config against the linked remote and pushes the local values —
+# including ``site_url = "http://localhost:3000"`` and the
+# localhost-only ``additional_redirect_urls``. That has already caused one
+# production outage: every emailed magic-link / invite suddenly pointed at
+# ``http://localhost:3000/auth/callback`` and the prod hostname was
+# dropped from the allowlist, so even hand-crafted ``emailRedirectTo``
+# values silently fell back to localhost.
+#
+# The ``[remotes.<name>]`` blocks are the CLI's intended fix: values
+# under a remote block are merged on top of the base config when pushing
+# to that specific remote. ALWAYS push to production via:
+#
+#     supabase config push --linked-to production
+#
+# (or use the Supabase dashboard for one-off changes — Auth > URL
+# Configuration for site_url + redirect URLs, Auth > Email Templates for
+# the HTML.)
+#
+# When you add a new auth-related field that differs between local and
+# production, mirror it under ``[remotes.production.auth]`` so the next
+# push doesn't drift them apart again.
+
+[remotes.production]
+project_id = "grwmzluuqyczatkxorfa"
+
+[remotes.production.auth]
+# Production URL Supabase substitutes for ``{{ .SiteURL }}`` in email
+# templates and uses as the fallback redirect when ``emailRedirectTo``
+# isn't in the allowlist. Pinning this here prevents the localhost
+# default from leaking into prod.
+site_url = "https://wyrdfold.com"
+# Production-allowed post-auth redirects. We deliberately also list the
+# localhost variants so a dev can OAuth-test against the prod auth
+# server (preview deploys, debugging) without a config push round-trip.
+additional_redirect_urls = [
+  "https://wyrdfold.com",
+  "https://wyrdfold.com/auth/callback",
+  "http://localhost:3000",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3100",
+  "http://localhost:3100/auth/callback",
+]
