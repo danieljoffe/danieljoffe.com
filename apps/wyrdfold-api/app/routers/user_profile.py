@@ -58,7 +58,7 @@ router = APIRouter(
 _PREFS_COLUMNS = (
     "job_notifications_enabled, job_score_threshold,"
     " sms_notifications_enabled, sms_score_threshold,"
-    " sms_daily_limit, phone_number, email"
+    " sms_daily_limit, list_min_score, phone_number, email"
 )
 
 _IDENTITY_COLUMNS = "name, email, phone_number, location, linkedin_url, website_url"
