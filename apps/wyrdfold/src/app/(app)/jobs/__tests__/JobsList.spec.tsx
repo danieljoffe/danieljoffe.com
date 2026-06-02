@@ -234,16 +234,16 @@ describe('JobsList — with targets', () => {
     expect(
       screen.getByRole('group', { name: /filter jobs by target/i })
     ).toBeInTheDocument();
-    // No URL ``?target=`` was provided, so the page falls back to the
-    // first active target — the API's untargeted list path is broken
-    // (filters by an unpopulated ``jobs.target_id`` column) and would
-    // render an empty list. Auto-selecting the first tab keeps /jobs
-    // useful as a default landing.
-    expect(screen.getByRole('button', { name: /^frontend$/i })).toHaveAttribute(
+    // No URL ``?target=`` was provided, so the page defaults to the
+    // cross-target "All Jobs" view rather than auto-selecting the first
+    // target. Per-target views require an explicit tab click (which
+    // writes ``?target=X``), so a fresh ``/jobs`` landing no longer
+    // pins users to a target they didn't pick.
+    expect(screen.getByRole('button', { name: /all jobs/i })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
-    expect(screen.getByRole('button', { name: /all jobs/i })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /^frontend$/i })).toHaveAttribute(
       'aria-pressed',
       'false'
     );
