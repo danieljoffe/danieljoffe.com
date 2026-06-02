@@ -248,12 +248,37 @@ async def reject_learning_run(
 def _safe_run_learner(supabase: Client, user_id: str, target_id: str) -> None:
     """BackgroundTasks consumes exceptions but logs them poorly. Wrap so
     a learner failure can't surface as an opaque 500 on a subsequent
-    request, while still emitting a usable traceback in logs."""
+    request, while still emitting a usable traceback in logs.
+
+    When the deterministic learner actually mutated the profile (returned
+    a ``LearnerPatchSummary``), follow up with a ``bulk_score_for_target``
+    pass so the user sees the lifted/lowered scores on their next page
+    load instead of having to wait for the next poll cycle. The patch
+    bumped ``profile_version`` already, so ``bulk_score_for_target`` only
+    touches rows whose ``scored_profile_version`` is now stale.
+    """
     import logging
+
+    from app.services.target_scoring import bulk_score_for_target
+    from app.services.targets.crud import get as get_target
 
     logger = logging.getLogger("app.routers.feedback")
     try:
-        maybe_run_learner(supabase, user_id=user_id, target_id=target_id)
+        patch = maybe_run_learner(supabase, user_id=user_id, target_id=target_id)
+        if patch is None:
+            return
+        target = get_target(supabase, target_id)
+        if target is None:
+            return
+        n = bulk_score_for_target(supabase, target)
+        logger.info(
+            "Feedback learner triggered re-score for target=%s: "
+            "+%d negatives %s, %d rows re-scored",
+            target_id,
+            len(patch.added_negative_keywords),
+            patch.added_negative_keywords,
+            n,
+        )
     except Exception:
         logger.exception(
             "Feedback learner failed for (user=%s, target=%s)",
