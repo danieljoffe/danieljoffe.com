@@ -15,16 +15,24 @@ can render consistent breakdowns. Phase 1 (``relevance.title_triage``)
 gates which jobs reach the Phase 2 grader at all.
 """
 
+from app.services.fit.daily_cap import (
+    DEFAULT_DAILY_CAP,
+    phase2_quota_remaining,
+)
 from app.services.fit.job_fit import (
     JOB_FIT_PURPOSE,
     AxisScores,
     JobFitResult,
     derive_job_fit,
 )
+from app.services.fit.score_persistence import score_with_phase2_and_persist
 
 __all__ = [
+    "DEFAULT_DAILY_CAP",
     "JOB_FIT_PURPOSE",
     "AxisScores",
     "JobFitResult",
     "derive_job_fit",
+    "phase2_quota_remaining",
+    "score_with_phase2_and_persist",
 ]
