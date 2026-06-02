@@ -444,7 +444,7 @@ export default function SettingsPage() {
       {/* Identity (contact header used on generated resumes + cover letters)
           lives on /profile now — see ProfileIdentityCard.
 
-          Card order matches Daniel's spec (most-used first):
+          Card order (most-used first):
           1. Resume style — touched every download
           2. Score threshold — touched whenever the list feels noisy
           3. SMS notifications — disabled until Twilio is configured
