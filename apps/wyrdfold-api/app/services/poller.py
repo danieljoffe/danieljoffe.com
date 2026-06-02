@@ -23,6 +23,7 @@ from app.services.analysis.persistence import (
 )
 from app.services.analysis.scoring import blend_scores, scorecard_to_numeric
 from app.services.ashby import fetch_ashby_jobs
+from app.services.embeddings import get_default_client as get_default_embeddings_client
 from app.services.experience.optimized import get_latest as get_latest_optimized
 from app.services.extract import extract_salary_from_text
 from app.services.firecrawl import fetch_firecrawl_jobs
@@ -33,6 +34,10 @@ from app.services.lever import fetch_lever_jobs
 from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import enqueue as enqueue_llm_cost
+from app.services.relevance_prefilter import (
+    prepare_prefilter,
+    title_passes_prefilter,
+)
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_title_against_profile, strip_html
 from app.services.smartrecruiters import fetch_smartrecruiters_jobs
@@ -539,8 +544,38 @@ async def _poll_one_source(
         # Fetch active targets once — used for title filtering and scoring
         active_targets = get_active_target(supabase)
 
+        # Embedding pre-filter (Voyage cosine on title vs target labels).
+        # Cuts the candidate set structurally before the keyword scorer
+        # ever runs — see ``relevance_prefilter.py``. Lazy-fills any
+        # missing ``target.label_embedding`` rows during this call.
+        target_label_embeddings: list[list[float] | None] = []
+        title_embeddings: list[list[float] | None] = []
+        if active_targets and jobs:
+            try:
+                target_label_embeddings, title_embeddings = await prepare_prefilter(
+                    supabase,
+                    get_default_embeddings_client(),
+                    active_targets,
+                    [job.title for job in jobs],
+                )
+            except Exception:
+                # Fail-open: any embedding/network issue must not stop
+                # ingestion. Empty lists make ``title_passes_prefilter``
+                # admit everything below.
+                logger.exception(
+                    "Pre-filter setup failed for %s; admitting all titles",
+                    company_name,
+                )
+                target_label_embeddings = []
+                title_embeddings = []
+
         rows_to_upsert: list[dict[str, Any]] = []
-        for job in jobs:
+        for idx, job in enumerate(jobs):
+            title_embed = (
+                title_embeddings[idx] if idx < len(title_embeddings) else None
+            )
+            if not title_passes_prefilter(title_embed, target_label_embeddings):
+                continue
             # Filter by target relevance instead of static keyword list
             if active_targets and not _title_matches_any_target(job.title, active_targets):
                 continue
@@ -554,6 +589,7 @@ async def _poll_one_source(
                     "external_id": job.external_id,
                     "source_id": source_id,
                     "title": job.title,
+                    "title_embedding": title_embed,
                     "company_name": company_name,
                     "location": job.location_name,
                     "department": job.department,
@@ -942,8 +978,35 @@ async def _poll_one_source_for_target(
         jobs = await fetcher(board_token)
         summary["polled"] = True
 
+        # Embedding pre-filter against this single target. Same semantics
+        # as ``_poll_one_source`` but the candidate set is one target, so
+        # the cosine check is per-job-vs-one-vector.
+        target_label_embeddings: list[list[float] | None] = []
+        title_embeddings: list[list[float] | None] = []
+        if jobs:
+            try:
+                target_label_embeddings, title_embeddings = await prepare_prefilter(
+                    supabase,
+                    get_default_embeddings_client(),
+                    [target],
+                    [job.title for job in jobs],
+                )
+            except Exception:
+                logger.exception(
+                    "Pre-filter setup failed for %s (target %s); admitting all titles",
+                    company_name,
+                    target.label,
+                )
+                target_label_embeddings = []
+                title_embeddings = []
+
         rows_to_upsert: list[dict[str, Any]] = []
-        for job in jobs:
+        for idx, job in enumerate(jobs):
+            title_embed = (
+                title_embeddings[idx] if idx < len(title_embeddings) else None
+            )
+            if not title_passes_prefilter(title_embed, target_label_embeddings):
+                continue
             if not _title_matches_target(job.title, target.search_keywords):
                 continue
             if not _is_us_location(job.location_name):
@@ -956,6 +1019,7 @@ async def _poll_one_source_for_target(
                     "external_id": job.external_id,
                     "source_id": source_id,
                     "title": job.title,
+                    "title_embedding": title_embed,
                     "company_name": company_name,
                     "location": job.location_name,
                     "department": job.department,
