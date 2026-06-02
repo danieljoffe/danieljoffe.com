@@ -69,7 +69,7 @@ function coerce(raw: unknown): JobsFilterState | null {
   return allEmpty ? null : out;
 }
 
-export interface JobsFilterPersistence {
+interface JobsFilterPersistence {
   read: (targetId: string | undefined) => JobsFilterState | null;
   write: (targetId: string | undefined, filters: JobsFilterState) => void;
   clear: (targetId: string | undefined) => void;
