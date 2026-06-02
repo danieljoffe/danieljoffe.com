@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     voyage_timeout_seconds: float = Field(default=60.0, ge=1.0, le=600.0)
     voyage_max_retries: int = Field(default=2, ge=0, le=10)
 
+    # Phase 1 LLM title triage. When True, the poller's ingestion-time
+    # gate uses the Haiku-backed binary classifier in
+    # ``app/services/relevance/title_triage.py`` instead of the legacy
+    # cosine prefilter (which proved structurally weak for short job
+    # titles — see plan-llm-scoring-migration.md). Ships FALSE so the
+    # PR can be validated per-target in DEV before flipping on. When
+    # False the poller is pass-through (no gate); precision relies on
+    # downstream keyword scoring.
+    phase1_triage_enabled: bool = False
+
     # Email/SMS notifications — Next.js app URL and shared secret for job alerts.
     next_app_url: str = ""
     job_alert_secret: str = Field(default="", repr=False)

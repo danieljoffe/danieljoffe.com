@@ -240,29 +240,39 @@ def test_bulk_score_for_target_scores_stage1_jobs(
     assert count == 2
 
 
-def test_bulk_score_for_target_excludes_cosine_failures(
+def test_bulk_score_for_target_preserves_phase1_promising_verdict(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Bulk re-score must apply the same prefilter the ingestion path
-    does. Without this guarantee, every re-score (cron, deploy, learner
-    bump) wipes cosine exclusions and the noise floor walks back up — the
-    regression we hit after the post-PR-#782 Railway deploy.
+    """Bulk re-score must preserve the Phase 1 verdict on every
+    ``scores`` row. Without this, a target's ``profile_version`` bump
+    (feedback learner, manual /rescore, deploy-triggered poll) would
+    re-admit jobs Phase 1 previously dropped — exactly the regression
+    we hit after the post-PR-#782 Railway deploy, just now with the
+    Phase 1 verdict instead of cosine.
+
+    Mechanism: bulk_score_for_target pre-loads ``scores.promising`` per
+    job and uses it as the ``excluded_by_prefilter`` floor on each
+    rescore. promising=False -> excluded stays True even if the keyword
+    scorer would admit; promising=True/None -> scorer decides.
     """
     monkeypatch.setattr(_BATCH_UPDATE_PATH, MagicMock())
 
     jts_rows = [{"job_posting_id": "good"}, {"job_posting_id": "bad"}]
+    # Existing scores rows: Phase 1 previously admitted "good", rejected "bad".
+    existing_promising_rows = [
+        {"job_posting_id": "good", "promising": True},
+        {"job_posting_id": "bad", "promising": False},
+    ]
     jobs = [
         {
             "id": "good",
             "title": "Senior Frontend Engineer",
             "description_html": "<p>React.</p>",
-            "title_embedding": [1.0, 0.0],  # parallel to target embedding
         },
         {
             "id": "bad",
             "title": "Sales Development Representative",
             "description_html": "<p>Outbound sales.</p>",
-            "title_embedding": [0.0, 1.0],  # orthogonal -> cosine 0 -> excludes
         },
     ]
     upsert_rows = [
@@ -279,8 +289,17 @@ def test_bulk_score_for_target_excludes_cosine_failures(
         mock.execute.return_value.data = jts_rows if range_calls["n"] == 1 else []
         return mock
 
+    # Stale-row paging: ``.select().eq().lt().range()``.
     supabase.table.return_value.select.return_value.eq.return_value.lt.return_value.range.side_effect = (
         range_side_effect
+    )
+    # ``.select().eq().in_()`` is used both for the existing-promising
+    # lookup (scores table) AND would be used for jobs if the jobs
+    # query didn't use ``.select().in_()`` — distinguish by the depth
+    # of the chain. The existing-promising path returns the verdict
+    # rows; the jobs path returns the job rows.
+    supabase.table.return_value.select.return_value.eq.return_value.in_.return_value.execute.return_value.data = (
+        existing_promising_rows
     )
     supabase.table.return_value.select.return_value.in_.return_value.execute.return_value.data = (
         jobs
@@ -290,17 +309,17 @@ def test_bulk_score_for_target_excludes_cosine_failures(
     )
 
     target = _target(core={"React": 3})
-    # Make the target's label embedding parallel to "good" job's title
-    # embedding (cosine 1.0) and orthogonal to "bad" (cosine 0).
-    target.label_embedding = [1.0, 0.0]
-
     count = bulk_score_for_target(supabase, target)
 
     assert count == 2
     payload = supabase.table.return_value.upsert.call_args.args[0]
     by_id = {row["job_posting_id"]: row for row in payload}
-    assert by_id["good"]["excluded"] is False, "above-threshold cosine kept"
-    assert by_id["bad"]["excluded"] is True, "below-threshold cosine excluded"
+    assert by_id["good"]["excluded"] is False, "Phase 1 promising row kept"
+    assert by_id["bad"]["excluded"] is True, "Phase 1 not-promising row excluded"
+    # And ``promising`` carries through on the upsert so a future re-read
+    # still finds the verdict.
+    assert by_id["good"]["promising"] is True
+    assert by_id["bad"]["promising"] is False
 
 
 def test_bulk_score_for_target_handles_no_stale_jobs() -> None:

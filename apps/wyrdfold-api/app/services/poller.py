@@ -23,7 +23,6 @@ from app.services.analysis.persistence import (
 )
 from app.services.analysis.scoring import blend_scores, scorecard_to_numeric
 from app.services.ashby import fetch_ashby_jobs
-from app.services.embeddings import get_default_client as get_default_embeddings_client
 from app.services.experience.optimized import get_latest as get_latest_optimized
 from app.services.extract import extract_salary_from_text
 from app.services.firecrawl import fetch_firecrawl_jobs
@@ -34,10 +33,11 @@ from app.services.lever import fetch_lever_jobs
 from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import enqueue as enqueue_llm_cost
-from app.services.relevance_prefilter import (
-    parse_pgvector,
-    prepare_prefilter,
-    title_passes_prefilter,
+from app.services.llm.cost_log import record as record_llm_cost
+from app.services.relevance.title_triage import (
+    PHASE1_BATCH_SIZE,
+    PHASE1_PURPOSE,
+    triage_titles,
 )
 from app.services.sanitize import sanitize_html
 from app.services.scoring import score_title_against_profile, strip_html
@@ -545,37 +545,70 @@ async def _poll_one_source(
         # Fetch active targets once — used for title filtering and scoring
         active_targets = get_active_target(supabase)
 
-        # Embedding pre-filter (Voyage cosine on title vs target labels).
-        # Cuts the candidate set structurally before the keyword scorer
-        # ever runs — see ``relevance_prefilter.py``. Lazy-fills any
-        # missing ``target.label_embedding`` rows during this call.
-        target_label_embeddings: list[list[float] | None] = []
-        title_embeddings: list[list[float] | None] = []
-        if active_targets and jobs:
-            try:
-                target_label_embeddings, title_embeddings = await prepare_prefilter(
-                    supabase,
-                    get_default_embeddings_client(),
-                    active_targets,
-                    [job.title for job in jobs],
-                )
-            except Exception:
-                # Fail-open: any embedding/network issue must not stop
-                # ingestion. Empty lists make ``title_passes_prefilter``
-                # admit everything below.
-                logger.exception(
-                    "Pre-filter setup failed for %s; admitting all titles",
-                    company_name,
-                )
-                target_label_embeddings = []
-                title_embeddings = []
+        # Phase 1: per-target LLM binary title triage (replaces cosine
+        # prefilter). See ``app/services/relevance/title_triage.py``.
+        # Verdicts: phase1_verdicts[target.id][1-based job idx] -> bool.
+        # Missing entries treated as fail-open admit. Behind a feature
+        # flag so the PR can ship dark; when flag is False the gate
+        # admits everything (pass-through) and we rely on downstream
+        # keyword scoring for filtering.
+        phase1_verdicts: dict[str, dict[int, bool]] = {}
+        if settings.phase1_triage_enabled and active_targets and jobs:
+            llm = get_default_llm_client()
+            titles = [job.title for job in jobs]
+            for active_target in active_targets:
+                # Chunk to PHASE1_BATCH_SIZE per call. Sources usually
+                # return well under one batch (10-200 jobs); larger
+                # sources spread cost across multiple calls.
+                target_verdicts: dict[int, bool] = {}
+                for start in range(0, len(titles), PHASE1_BATCH_SIZE):
+                    batch = titles[start : start + PHASE1_BATCH_SIZE]
+                    verdicts, result = await triage_titles(
+                        llm, target=active_target, titles=batch
+                    )
+                    if result is not None:
+                        try:
+                            record_llm_cost(
+                                supabase,
+                                user_id=None,
+                                purpose=PHASE1_PURPOSE,
+                                result=result,
+                                metadata={
+                                    "target_id": active_target.id,
+                                    "source": company_name,
+                                    "batch_size": len(batch),
+                                },
+                            )
+                        except Exception:
+                            logger.exception(
+                                "Failed to record Phase 1 cost for target %s",
+                                active_target.id,
+                            )
+                    # Shift batch-local ids to global (1-based) job indices.
+                    for batch_idx, promising in verdicts.items():
+                        global_idx = start + batch_idx  # batch_idx is 1-based
+                        target_verdicts[global_idx] = promising
+                phase1_verdicts[active_target.id] = target_verdicts
+
+        def _any_target_admits(global_job_idx: int) -> bool:
+            """``global_job_idx`` is 1-based (matches Phase 1's id contract)."""
+            if not phase1_verdicts:
+                return True  # gate disabled or no targets — admit
+            for target_verdicts in phase1_verdicts.values():
+                if target_verdicts.get(global_job_idx, True):
+                    return True
+            return False
 
         rows_to_upsert: list[dict[str, Any]] = []
+        # Parallel map: external_id → 1-based Phase 1 idx. Stage 2 uses
+        # this to look up per-(job, target) verdicts after the upsert
+        # has resolved DB ids. Kept out of the upsert payload because
+        # the jobs table doesn't have a column for it.
+        phase1_idx_by_external_id: dict[str, int] = {}
         for idx, job in enumerate(jobs):
-            title_embed = (
-                title_embeddings[idx] if idx < len(title_embeddings) else None
-            )
-            if not title_passes_prefilter(title_embed, target_label_embeddings):
+            # Phase 1 IDs are 1-based; the per-target verdict-check
+            # below uses the same idx + 1 convention.
+            if not _any_target_admits(idx + 1):
                 continue
             # Filter by target relevance instead of static keyword list
             if active_targets and not _title_matches_any_target(job.title, active_targets):
@@ -585,12 +618,12 @@ async def _poll_one_source(
 
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
 
+            phase1_idx_by_external_id[job.external_id] = idx + 1
             rows_to_upsert.append(
                 {
                     "external_id": job.external_id,
                     "source_id": source_id,
                     "title": job.title,
-                    "title_embedding": title_embed,
                     "company_name": company_name,
                     "location": job.location_name,
                     "department": job.department,
@@ -688,30 +721,26 @@ async def _poll_one_source(
                 rd = cast(dict[str, Any], raw_row)
                 jd_cache[rd["id"]] = parse_jd(rd.get("description_html") or "")
 
-            for ti, active_target in enumerate(active_targets):
-                # Per-target cosine: the source-level gate at line 577
-                # admits a posting that passes cosine for ANY active
-                # target, but Stage 2 scores it against ALL targets.
-                # Without this per-(target, job) check, a software-eng
-                # posting that passes for Daniel's target gets a
-                # ``excluded=false`` scores row for Melissa's CX target.
-                t_embed = (
-                    target_label_embeddings[ti]
-                    if ti < len(target_label_embeddings)
-                    else None
-                )
+            for active_target in active_targets:
+                # Per-target Phase 1 verdicts (None when flag off): keyed by
+                # the 1-based job idx assigned during the candidate-build
+                # loop above. Each row in upsert_resp carries an
+                # ``external_id`` we look up to get the idx, then to get the
+                # verdict. Missing entries are fail-open (admit).
+                target_verdicts = phase1_verdicts.get(active_target.id, {})
 
                 async def _full_score_one(
                     row_data: dict[str, Any],
                     target: JobTarget = active_target,
-                    target_embed: list[float] | None = t_embed,
+                    verdicts: dict[int, bool] = target_verdicts,
                 ) -> None:
                     try:
-                        title_embed = parse_pgvector(
-                            row_data.get("title_embedding")
-                        )
-                        prefilter_excluded = not title_passes_prefilter(
-                            title_embed, [target_embed]
+                        ext_id = row_data.get("external_id", "")
+                        phase1_idx = phase1_idx_by_external_id.get(ext_id)
+                        promising = (
+                            verdicts.get(phase1_idx, True)
+                            if phase1_idx is not None
+                            else True
                         )
                         await asyncio.to_thread(
                             target_score_and_upsert,
@@ -721,7 +750,8 @@ async def _poll_one_source(
                             description_html=row_data.get("description_html", ""),
                             target=target,
                             parsed_jd=jd_cache.get(row_data["id"]),
-                            excluded_by_prefilter=prefilter_excluded,
+                            excluded_by_prefilter=not promising,
+                            promising=promising if phase1_verdicts else None,
                         )
                     except Exception:
                         logger.exception(
@@ -999,34 +1029,45 @@ async def _poll_one_source_for_target(
         jobs = await fetcher(board_token)
         summary["polled"] = True
 
-        # Embedding pre-filter against this single target. Same semantics
-        # as ``_poll_one_source`` but the candidate set is one target, so
-        # the cosine check is per-job-vs-one-vector.
-        target_label_embeddings: list[list[float] | None] = []
-        title_embeddings: list[list[float] | None] = []
-        if jobs:
-            try:
-                target_label_embeddings, title_embeddings = await prepare_prefilter(
-                    supabase,
-                    get_default_embeddings_client(),
-                    [target],
-                    [job.title for job in jobs],
+        # Phase 1 per-target triage (single target). Same semantics as
+        # ``_poll_one_source`` but the candidate set is one target, so
+        # ``phase1_verdicts`` collapses to a single dict.
+        target_verdicts: dict[int, bool] = {}
+        if settings.phase1_triage_enabled and jobs:
+            llm = get_default_llm_client()
+            titles = [job.title for job in jobs]
+            for start in range(0, len(titles), PHASE1_BATCH_SIZE):
+                batch = titles[start : start + PHASE1_BATCH_SIZE]
+                verdicts, result = await triage_titles(
+                    llm, target=target, titles=batch
                 )
-            except Exception:
-                logger.exception(
-                    "Pre-filter setup failed for %s (target %s); admitting all titles",
-                    company_name,
-                    target.label,
-                )
-                target_label_embeddings = []
-                title_embeddings = []
+                if result is not None:
+                    try:
+                        record_llm_cost(
+                            supabase,
+                            user_id=None,
+                            purpose=PHASE1_PURPOSE,
+                            result=result,
+                            metadata={
+                                "target_id": target.id,
+                                "source": company_name,
+                                "batch_size": len(batch),
+                            },
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Failed to record Phase 1 cost for target %s",
+                            target.id,
+                        )
+                for batch_idx, promising in verdicts.items():
+                    target_verdicts[start + batch_idx] = promising
 
         rows_to_upsert: list[dict[str, Any]] = []
+        phase1_idx_by_external_id: dict[str, int] = {}
         for idx, job in enumerate(jobs):
-            title_embed = (
-                title_embeddings[idx] if idx < len(title_embeddings) else None
-            )
-            if not title_passes_prefilter(title_embed, target_label_embeddings):
+            # Phase 1 ids are 1-based. Fail-open when no verdict (gate
+            # disabled or LLM dropped the entry).
+            if target_verdicts and not target_verdicts.get(idx + 1, True):
                 continue
             if not _title_matches_target(job.title, target.search_keywords):
                 continue
@@ -1035,12 +1076,12 @@ async def _poll_one_source_for_target(
 
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
 
+            phase1_idx_by_external_id[job.external_id] = idx + 1
             rows_to_upsert.append(
                 {
                     "external_id": job.external_id,
                     "source_id": source_id,
                     "title": job.title,
-                    "title_embedding": title_embed,
                     "company_name": company_name,
                     "location": job.location_name,
                     "department": job.department,
@@ -1096,6 +1137,18 @@ async def _poll_one_source_for_target(
 
             async def _full_score_one(row_data: dict[str, Any]) -> None:
                 try:
+                    # Phase 1 verdict for this (job, this-target) pair.
+                    # The gate already filtered out non-promising jobs
+                    # above, so every row here is promising — but we
+                    # still want ``scores.promising=True`` persisted so
+                    # Phase 2 candidate selection can rely on it.
+                    ext_id = row_data.get("external_id", "")
+                    phase1_idx = phase1_idx_by_external_id.get(ext_id)
+                    promising = (
+                        target_verdicts.get(phase1_idx, True)
+                        if phase1_idx is not None
+                        else True
+                    )
                     await asyncio.to_thread(
                         target_score_and_upsert,
                         supabase,
@@ -1104,6 +1157,8 @@ async def _poll_one_source_for_target(
                         description_html=row_data.get("description_html", ""),
                         target=target,
                         parsed_jd=jd_cache.get(row_data["id"]),
+                        excluded_by_prefilter=not promising,
+                        promising=promising if target_verdicts else None,
                     )
                 except Exception:
                     logger.exception(

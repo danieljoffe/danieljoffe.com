@@ -26,10 +26,6 @@ from supabase import Client
 from app.models.schemas import JobTargetScore, ScoreBreakdown, ScoringStatus
 from app.models.targets import JobTarget
 from app.services.jd_parser import ParsedJD, parse_jd
-from app.services.relevance_prefilter import (
-    parse_pgvector,
-    title_passes_prefilter,
-)
 from app.services.scoring import score_job_with_profile, score_title_against_profile
 from app.services.supabase_retry import execute_with_retry_sync
 
@@ -69,8 +65,16 @@ def _upsert_score(
     excluded: bool,
     scoring_status: ScoringStatus,
     scored_profile_version: int = 1,
+    promising: bool | None = None,
 ) -> JobTargetScore:
-    """Upsert a score row and return the parsed result."""
+    """Upsert a score row and return the parsed result.
+
+    ``promising`` is the Phase 1 LLM triage verdict for this (job, target)
+    pair (see ``app/services/relevance/title_triage.py``). Pass ``None``
+    to leave the column untouched on re-upserts; pass ``True`` / ``False``
+    to set explicitly. The default ``None`` means legacy keyword-scoring
+    callsites don't need to know about Phase 1.
+    """
     row: dict[str, Any] = {
         "job_posting_id": job_posting_id,
         "target_id": target_id,
@@ -82,6 +86,8 @@ def _upsert_score(
         "scored_profile_version": scored_profile_version,
         "updated_at": datetime.now(UTC).isoformat(),
     }
+    if promising is not None:
+        row["promising"] = promising
     # Idempotent upsert (`on_conflict` matches the unique constraint), so
     # retrying on a Supabase HTTP/2 stream drop is safe.
     resp = execute_with_retry_sync(
@@ -143,18 +149,25 @@ def score_and_upsert(
     target: JobTarget,
     parsed_jd: ParsedJD | None = None,
     excluded_by_prefilter: bool = False,
+    promising: bool | None = None,
 ) -> JobTargetScore:
     """Stage 2: Score one job's full JD against one target and upsert.
 
     Pass ``parsed_jd`` to reuse a pre-parsed JD across multiple targets.
 
     ``excluded_by_prefilter`` is OR-ed with the scorer's own ``excluded``
-    flag. The poller pre-computes cosine(target_label, job_title) once
-    per (target, job) pair and passes the result here, so a re-score
-    triggered by anything (cron, deploy, learner) preserves the prefilter
-    exclusion the same way the ingestion path does. Without this, the
-    scorer's negative-keyword-only ``excluded`` overwrites cosine-based
-    exclusions on every re-score and the noise floor walks back up.
+    flag. The poller pre-computes the Phase 1 LLM verdict per
+    (target, job) pair and passes it through here so a re-score triggered
+    by anything (cron, deploy, learner) preserves the gate the same way
+    the ingestion path does. Without this, the scorer's negative-keyword-
+    only ``excluded`` overwrites prefilter exclusions on every re-score
+    and the noise floor walks back up.
+
+    ``promising`` mirrors the same verdict for persistence on
+    ``scores.promising`` — Stage 2 candidate selection in Phase 2 reads
+    that column. Pass ``None`` to leave the column unchanged on re-
+    upserts (the default — keyword-only callers don't need to know about
+    Phase 1).
     """
     result = score_job_with_profile(
         title,
@@ -174,6 +187,7 @@ def score_and_upsert(
         excluded=result.excluded or excluded_by_prefilter,
         scoring_status="stage2",
         scored_profile_version=target.profile_version,
+        promising=promising,
     )
 
 
@@ -224,17 +238,33 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
     if not all_job_ids:
         return 0
 
-    # Resolve the target's cosine prefilter once per bulk run.
-    # Fail-open: if the target has no embedding yet, the prefilter check
-    # below returns True for every job, matching ingestion-path semantics.
-    target_label_embedding = parse_pgvector(target.label_embedding)
+    # Pre-load existing ``promising`` verdicts so the rescore preserves
+    # the Phase 1 verdict instead of overwriting it via scorer-only
+    # ``excluded``. Without this, a target's ``profile_version`` bump
+    # (feedback learner, manual /rescore) would re-admit jobs that
+    # Phase 1 previously dropped. Keyed by job_posting_id (per-target
+    # row already filtered by ``eq("target_id", ...)`` above).
+    existing_promising_by_job: dict[str, bool | None] = {}
+    for i in range(0, len(all_job_ids), batch_size):
+        batch_ids = all_job_ids[i : i + batch_size]
+        resp = (
+            supabase.table(TABLE)
+            .select("job_posting_id, promising")
+            .eq("target_id", target.id)
+            .in_("job_posting_id", batch_ids)
+            .execute()
+        )
+        for existing_row in cast(list[dict[str, Any]], resp.data or []):
+            existing_promising_by_job[existing_row["job_posting_id"]] = (
+                existing_row.get("promising")
+            )
 
     # Score those jobs in batches
     for i in range(0, len(all_job_ids), batch_size):
         batch_ids = all_job_ids[i : i + batch_size]
         resp = (
             supabase.table("jobs")
-            .select("id, title, description_html, title_embedding")
+            .select("id, title, description_html")
             .in_("id", batch_ids)
             .execute()
         )
@@ -254,26 +284,28 @@ def bulk_score_for_target(supabase: Client, target: JobTarget) -> int:
                 parsed_jd=parsed,
                 search_keywords=target.search_keywords,
             )
-            # OR with the cosine gate so a bulk rescore preserves
-            # prefilter exclusions; otherwise scorer-only ``excluded``
-            # overwrites them and the noise floor walks back up.
-            title_embedding = parse_pgvector(job.get("title_embedding"))
-            excluded_by_prefilter = not title_passes_prefilter(
-                title_embedding, [target_label_embedding]
-            )
-            rows_to_upsert.append(
-                {
-                    "job_posting_id": job["id"],
-                    "target_id": target.id,
-                    "score": result.score,
-                    "score_breakdown": result.breakdown.model_dump(),
-                    "matched_keywords": result.matched_keywords,
-                    "excluded": result.excluded or excluded_by_prefilter,
-                    "scoring_status": "stage2",
-                    "scored_profile_version": target.profile_version,
-                    "updated_at": now,
-                }
-            )
+            # Preserve the Phase 1 verdict from the existing row:
+            # promising=False -> excluded=True regardless of scorer.
+            # promising=True or None -> rely on scorer's own excluded.
+            existing_promising = existing_promising_by_job.get(job["id"])
+            excluded_by_prefilter = existing_promising is False
+            row: dict[str, Any] = {
+                "job_posting_id": job["id"],
+                "target_id": target.id,
+                "score": result.score,
+                "score_breakdown": result.breakdown.model_dump(),
+                "matched_keywords": result.matched_keywords,
+                "excluded": result.excluded or excluded_by_prefilter,
+                "scoring_status": "stage2",
+                "scored_profile_version": target.profile_version,
+                "updated_at": now,
+            }
+            # Pass-through ``promising`` only when it's set on the
+            # existing row; ``None`` leaves the column unchanged on
+            # this upsert (preserving the legacy/null state).
+            if existing_promising is not None:
+                row["promising"] = existing_promising
+            rows_to_upsert.append(row)
 
         if rows_to_upsert:
             supabase.table(TABLE).upsert(
