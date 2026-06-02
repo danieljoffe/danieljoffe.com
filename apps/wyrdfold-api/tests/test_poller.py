@@ -242,3 +242,53 @@ def test_and_semantics_admits_excluded_for_audit():
     # The title hits 'junior' (negative) but no search-keyword overlap.
     # Excluded path admits regardless.
     assert _title_matches_any_target("Junior Random Role", [target]) is True
+
+
+# ---- poll_sources_for_target: inactive-target guard -----------------------
+
+
+def _full_target(*, is_active: bool, search_keywords: list[str]) -> JobTarget:
+    """Build a target with a real search_keywords list so the inactive
+    guard is exercised in isolation from the 'empty keywords' guard.
+    """
+    return JobTarget(
+        id="t-1",
+        label="Staff Frontend Engineer",
+        scoring_profile=ScoringProfile(
+            categories={
+                "core_skills": CategoryProfile(keywords={"react": 3}, weight=2.0),
+            },
+            seniority=SeniorityProfile(signals=["staff"]),
+        ),
+        search_keywords=search_keywords,
+        is_active=is_active,
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+
+
+def test_poll_sources_for_target_skips_inactive_target() -> None:
+    """Inactive targets short-circuit before any sources query.
+
+    ``targets.is_active=False`` means no user currently has the target
+    enabled (trigger OR across user_targets). Fanning out a per-target
+    poll across every ATS source for a target nobody will see is pure
+    waste — return an empty PollResult immediately.
+    """
+    import asyncio
+    from unittest.mock import MagicMock
+
+    from app.services.poller import poll_sources_for_target
+
+    supabase = MagicMock()
+    target = _full_target(is_active=False, search_keywords=["frontend engineer"])
+
+    result = asyncio.run(poll_sources_for_target(supabase, target))
+
+    assert result.sources_polled == 0
+    assert result.new_jobs == 0
+    assert result.updated_jobs == 0
+    assert result.archived_jobs == 0
+    assert result.errors == []
+    # Critically: no DB traffic.
+    supabase.table.assert_not_called()
