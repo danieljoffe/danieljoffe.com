@@ -464,6 +464,4 @@ additional_redirect_urls = [
   "https://wyrdfold.com/auth/callback",
   "http://localhost:3000",
   "http://localhost:3000/auth/callback",
-  "http://localhost:3100",
-  "http://localhost:3100/auth/callback",
 ]
