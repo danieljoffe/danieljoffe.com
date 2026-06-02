@@ -1,0 +1,38 @@
+# Build artifacts and caches (already in .gitignore but uploading
+# them was tripping Vercel's per-deploy size limit).
+.next
+**/.next
+.nx
+.nx/cache
+.nx/workspace-data
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+**/coverage
+storybook-static
+**/storybook-static
+.venv
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+.tmp
+test-results
+test-results-*
+playwright-report-json
+.lighthouseci
+.playwright-mcp
+.claude
+.git
+
+# Other apps in the monorepo — deployed separately.
+# wyrdfold only imports from libs/shared/* so the rest are upload-only ballast.
+apps/root
+apps/root-e2e
+apps/audit-api
+apps/audit-scan-service
+apps/wyrdfold-api
+apps/wyrdfold-e2e

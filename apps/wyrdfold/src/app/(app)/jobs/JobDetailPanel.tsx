@@ -564,7 +564,9 @@ export default function JobDetailPanel({
 
       {/* Relevance feedback — only shown when viewing under a specific
           target, since the signal is target-scoped. */}
-      {targetId && <JobFeedbackSection jobId={posting.id} targetId={targetId} />}
+      {targetId && (
+        <JobFeedbackSection jobId={posting.id} targetId={targetId} />
+      )}
 
       {/* Status History */}
       {history.length > 0 && (

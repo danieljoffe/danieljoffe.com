@@ -117,11 +117,11 @@ export default function JobFeedbackSection({
       className='mb-3 rounded-md border border-border bg-surface-secondary p-3'
     >
       <Text variant='meta' className='text-text-secondary'>
-        Your feedback affects how we grade jobs for this target. We learn
-        from patterns across your marks — when several jobs share an
-        irrelevant token we auto-add it to the target&rsquo;s negative
-        keywords and re-score the list in the background. You can also
-        manually edit the target&rsquo;s scoring profile from Settings.
+        Your feedback affects how we grade jobs for this target. We learn from
+        patterns across your marks — when several jobs share an irrelevant token
+        we auto-add it to the target&rsquo;s negative keywords and re-score the
+        list in the background. You can also manually edit the target&rsquo;s
+        scoring profile from Settings.
       </Text>
     </div>
   ) : null;

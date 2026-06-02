@@ -496,8 +496,8 @@ export default function SettingsPage() {
         <CardContent className='flex flex-col gap-4'>
           <Text variant='caption' className='text-text-secondary'>
             Hide jobs scoring below this value from the list. Leave empty to
-            show everything — your chip filters still work. Independent of
-            email and SMS notification thresholds.
+            show everything — your chip filters still work. Independent of email
+            and SMS notification thresholds.
           </Text>
           <div className='max-w-xs'>
             <Input
