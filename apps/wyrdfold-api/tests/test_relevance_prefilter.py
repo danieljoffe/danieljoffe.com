@@ -86,17 +86,16 @@ class TestTitlePassesPrefilter:
         targets: list[list[float] | None] = [[0.0, 1.0], [0.0, -1.0]]
         assert title_passes_prefilter(title, targets, threshold=0.5) is False
 
-    def test_default_threshold_is_the_module_constant(self) -> None:
-        # Sanity: a slightly-related title should pass at the module
-        # default but fail at a higher threshold. Locks the calibration
-        # we shipped with.
-        title = [1.0, 0.5]
-        target = [1.0, 0.6]
-        passes_default = title_passes_prefilter(title, [target])
-        passes_stricter = title_passes_prefilter(title, [target], threshold=0.999)
-        assert passes_default is True
-        assert passes_stricter is False
-        assert PREFILTER_THRESHOLD < 1.0  # guard against degenerate retune
+    def test_default_threshold_in_expected_range(self) -> None:
+        # Calibration guardrail. We shipped with 0.55, learned voyage-3-lite
+        # cosines run hot on short job titles (most Director-level corporate
+        # roles cluster 0.75-0.85 regardless of domain), and retuned to 0.78.
+        # If a future change drops below 0.6 we're effectively letting
+        # everything through; above 0.85 we start dropping legit near-matches
+        # like "Director of Customer Success" (which sits at ~0.85 vs
+        # "Director of CX Operations & Transformation"). Either direction
+        # warrants a code review.
+        assert 0.6 <= PREFILTER_THRESHOLD <= 0.85
 
 
 # ---- prepare_prefilter (mock client + fake supabase) ---------------------
