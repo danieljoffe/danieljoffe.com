@@ -76,6 +76,12 @@ class JobTarget(BaseModel):
     # ingestion-time relevance pre-filter in the poller. Computed
     # lazily on first poll if NULL; recomputed if ``label`` changes.
     label_embedding: list[float] | None = None
+    # Few-shot title pools for the upcoming Phase 1 LLM triage. Seeded
+    # at target creation from the same LLM call that derives the
+    # scoring profile; later (Phase 1 PR) augmented from user 👍/👎
+    # feedback once enough labels accumulate per target.
+    example_promising_titles: list[str] = Field(default_factory=list)
+    example_unpromising_titles: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 
@@ -173,6 +179,8 @@ class TargetUpdate(BaseModel):
     activation_status: str | None = None
     is_active: bool | None = None
     profile_version: int | None = None
+    example_promising_titles: list[str] | None = None
+    example_unpromising_titles: list[str] | None = None
 
 
 class TargetFromManual(BaseModel):
@@ -222,10 +230,21 @@ class ReferenceJDAdd(BaseModel):
 
 
 class DerivedTarget(BaseModel):
-    """LLM output: scoring profile + search keywords derived from a target."""
+    """LLM output: scoring profile + search keywords + few-shot title
+    pools derived from a target.
+
+    The example_*_titles lists seed the Phase 1 binary triage prompt:
+    promising = positive few-shot anchors, unpromising = negative
+    anchors. Both default to empty so legacy LLM outputs that pre-date
+    the prompt extension still validate cleanly (the Phase 1 grader
+    treats empty lists as "no examples available" and degrades to
+    label-only grading).
+    """
 
     scoring_profile: ScoringProfile
     search_keywords: list[str] = Field(default_factory=list)
+    example_promising_titles: list[str] = Field(default_factory=list)
+    example_unpromising_titles: list[str] = Field(default_factory=list)
 
 
 class TargetSuggestion(BaseModel):
