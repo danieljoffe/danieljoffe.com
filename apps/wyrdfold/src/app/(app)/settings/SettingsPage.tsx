@@ -437,7 +437,7 @@ export default function SettingsPage() {
           Settings
         </Heading>
         <Text variant='body' className='mt-1 text-text-secondary'>
-          Resume style, list filtering, and notification alerts
+          Preferences for downloads, the jobs list, and alerts
         </Text>
       </div>
 
