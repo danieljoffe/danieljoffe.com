@@ -308,6 +308,41 @@ def list_user_targets_with_targets(
 # ---- User-Target junction CRUD ----------------------------------------------
 
 
+MAX_ACTIVE_TARGETS_PER_USER = 5
+"""Per-user cap on simultaneously active targets.
+
+Caps fan-out of the upcoming LLM scoring pipeline (Phase 1/2 spend
+scales with active targets) and keeps a single user from scattering
+attention across a long list of marginal targets. Inactive targets are
+not counted — a user can keep arbitrarily many as "saved searches" they
+cycle between.
+"""
+
+
+class ActiveTargetLimitError(Exception):
+    """Raised when activating a target would exceed the per-user cap."""
+
+    def __init__(self, current_count: int, limit: int) -> None:
+        self.current_count = current_count
+        self.limit = limit
+        super().__init__(
+            f"Active target limit ({limit}) reached; currently {current_count} active"
+        )
+
+
+def count_active_for_user(supabase: Client, user_id: str) -> int:
+    """Return the number of user_targets rows with ``is_active=True`` for this user."""
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("id", count="exact")  # type: ignore[arg-type]
+        .eq("user_id", user_id)
+        .eq("is_active", True)
+        .limit(1)
+        .execute()
+    )
+    return resp.count or 0
+
+
 def link_user_to_target(
     supabase: Client,
     *,
@@ -316,8 +351,39 @@ def link_user_to_target(
     is_active: bool = True,
     fit_score: int | None = None,
     fit_score_reasoning: str | None = None,
+    enforce_active_limit: bool = True,
 ) -> UserTarget:
-    """Link a user to a target (upsert). The DB trigger syncs targets.is_active."""
+    """Link a user to a target (upsert). The DB trigger syncs targets.is_active.
+
+    Raises ``ActiveTargetLimitError`` when ``is_active=True`` would push
+    the user above ``MAX_ACTIVE_TARGETS_PER_USER`` — but ONLY when this
+    call introduces a new active link. Re-upserting an already-active
+    link (e.g., refreshing fit_score on a row the user already has
+    active) is exempt because no net change happens.
+
+    Pass ``enforce_active_limit=False`` for internal callers that need
+    to bypass the cap — e.g., a future migration backfilling
+    user_targets rows from a different source.
+    """
+    if is_active and enforce_active_limit:
+        # Determine whether this upsert will INCREASE the active count
+        # or just refresh an already-active row. Skip the count check
+        # for the latter to keep idempotent updates free.
+        existing_resp = (
+            supabase.table(USER_TARGETS_TABLE)
+            .select("is_active")
+            .eq("user_id", user_id)
+            .eq("target_id", target_id)
+            .limit(1)
+            .execute()
+        )
+        existing = cast(list[dict[str, Any]], existing_resp.data or [])
+        already_active = bool(existing and existing[0].get("is_active"))
+        if not already_active:
+            current = count_active_for_user(supabase, user_id)
+            if current >= MAX_ACTIVE_TARGETS_PER_USER:
+                raise ActiveTargetLimitError(current, MAX_ACTIVE_TARGETS_PER_USER)
+
     row: dict[str, Any] = {
         "user_id": user_id,
         "target_id": target_id,

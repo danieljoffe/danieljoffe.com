@@ -411,9 +411,27 @@ async def activate_target(
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
 
-    crud.link_user_to_target(
-        supabase, user_id=user_id, target_id=target_id, is_active=True
-    )
+    try:
+        crud.link_user_to_target(
+            supabase, user_id=user_id, target_id=target_id, is_active=True
+        )
+    except crud.ActiveTargetLimitError as e:
+        # 409 Conflict — the request was well-formed but conflicts with
+        # current state (the user is already at the active-target cap).
+        # Frontend reads ``error`` to switch on this case specifically and
+        # offers a deactivate picker rather than a generic toast.
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "ACTIVE_LIMIT",
+                "limit": e.limit,
+                "active_count": e.current_count,
+                "message": (
+                    f"You already have {e.current_count} active targets "
+                    f"(limit {e.limit}) — deactivate one first."
+                ),
+            },
+        ) from e
     refreshed = crud.get(supabase, target_id) or target
 
     background_tasks.add_task(
@@ -511,13 +529,27 @@ async def link_target(
         fit_score = fit_result.fit_score
         fit_reasoning = fit_result.reasoning
 
-    return crud.link_user_to_target(
-        supabase,
-        user_id=user_id,
-        target_id=target_id,
-        fit_score=fit_score,
-        fit_score_reasoning=fit_reasoning,
-    )
+    try:
+        return crud.link_user_to_target(
+            supabase,
+            user_id=user_id,
+            target_id=target_id,
+            fit_score=fit_score,
+            fit_score_reasoning=fit_reasoning,
+        )
+    except crud.ActiveTargetLimitError as e:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "ACTIVE_LIMIT",
+                "limit": e.limit,
+                "active_count": e.current_count,
+                "message": (
+                    f"You already have {e.current_count} active targets "
+                    f"(limit {e.limit}) — deactivate one first."
+                ),
+            },
+        ) from e
 
 
 @router.post(
@@ -727,9 +759,23 @@ async def create_target_from_posting(
     # (cron) callers where ``user_id is None`` — they don't have a
     # user identity to link.
     if user_id is not None:
-        crud.link_user_to_target(
-            supabase, user_id=user_id, target_id=target.id, is_active=True
-        )
+        try:
+            crud.link_user_to_target(
+                supabase, user_id=user_id, target_id=target.id, is_active=True
+            )
+        except crud.ActiveTargetLimitError as e:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": "ACTIVE_LIMIT",
+                    "limit": e.limit,
+                    "active_count": e.current_count,
+                    "message": (
+                        f"You already have {e.current_count} active targets "
+                        f"(limit {e.limit}) — deactivate one first."
+                    ),
+                },
+            ) from e
         # Re-read the target row so the response carries the
         # trigger-synced ``is_active``.
         refreshed = crud.get(supabase, target.id)
