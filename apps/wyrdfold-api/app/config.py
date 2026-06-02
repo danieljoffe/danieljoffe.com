@@ -65,6 +65,15 @@ class Settings(BaseSettings):
     # flag is a pure sort change, safe to flip per-deploy.
     recency_decay_enabled: bool = False
 
+    # Phase 2 LLM job-fit grading (#6). When True the poller runs the
+    # Sonnet-backed ``score_with_phase2_and_persist`` over promising
+    # (Phase 1) jobs in place of the legacy Stage 3 keyword+LLM blend,
+    # progressively batched and bounded by the per-target daily cap. When
+    # False the poller runs the legacy Stage 3 path unchanged. Phase 2
+    # only grades rows Phase 1 marked ``promising``, so it requires
+    # ``phase1_triage_enabled`` to surface any work.
+    phase2_enabled: bool = False
+
     # Email/SMS notifications — Next.js app URL and shared secret for job alerts.
     next_app_url: str = ""
     job_alert_secret: str = Field(default="", repr=False)
