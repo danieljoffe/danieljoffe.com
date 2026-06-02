@@ -14,6 +14,7 @@ import JobsListView from './JobsListView';
 import JobsThinResultsCallout from './JobsThinResultsCallout';
 import { promptForMissingContactName } from './promptForMissingContactName';
 import type { JobPosting, JobsFilterState, JobsSortColumn } from './types';
+import { useJobsFilterPersistence } from './useJobsFilterPersistence';
 import { useJobsUrlState } from './useJobsUrlState';
 
 export interface TargetTab {
@@ -90,6 +91,73 @@ export default function JobsList({
   );
 
   const activeTargetId = urlState.targetId;
+
+  // Per-target filter persistence. localStorage-backed; survives reloads
+  // and out-of-page navigation but not browser-data clears. Writes happen
+  // on every filter change (below). Reads happen on tab change + on first
+  // mount when the URL has no filter params (just below). See
+  // ``useJobsFilterPersistence`` for the storage key scheme.
+  const persistence = useJobsFilterPersistence();
+
+  // Track whether we've attempted a restore for the current target so a
+  // user-triggered "clear all filters" doesn't immediately re-apply the
+  // saved snapshot on the next render.
+  const restoredForTargetRef = useRef<string | null | undefined>(null);
+
+  // Snapshot to localStorage whenever the live filters change. Writes
+  // are keyed by the current target (or the All Jobs sentinel) so each
+  // target remembers its own filter state independently.
+  useEffect(() => {
+    persistence.write(activeTargetId, {
+      search: urlState.search,
+      status: urlState.status,
+      minScore: urlState.minScore,
+      excludeLocations: urlState.excludeLocations,
+      onlyLocations: urlState.onlyLocations,
+    });
+  }, [
+    persistence,
+    activeTargetId,
+    urlState.search,
+    urlState.status,
+    urlState.minScore,
+    urlState.excludeLocations,
+    urlState.onlyLocations,
+  ]);
+
+  // Restore from localStorage on first mount per target if the URL has
+  // no filter params. Deep links (``/jobs?q=react``) win over the
+  // stored snapshot — the URL is always authoritative when populated.
+  useEffect(() => {
+    if (restoredForTargetRef.current === activeTargetId) return;
+    restoredForTargetRef.current = activeTargetId;
+
+    const urlBare =
+      !urlState.search &&
+      !urlState.status &&
+      !urlState.minScore &&
+      !urlState.excludeLocations &&
+      !urlState.onlyLocations;
+    if (!urlBare) return;
+
+    const saved = persistence.read(activeTargetId);
+    if (!saved) return;
+
+    setUrlState({
+      search: saved.search || null,
+      status: saved.status || null,
+      minScore: saved.minScore || null,
+      excludeLocations: saved.excludeLocations || null,
+      onlyLocations: saved.onlyLocations || null,
+      page: 1,
+    });
+    // Intentionally narrow deps: we only want this to fire on the first
+    // render per target. Including ``urlState`` would re-trigger after
+    // the restore writes its own values back into the URL, which is
+    // already guarded by the ref check above but reads more clearly
+    // with a small dep array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTargetId, persistence, setUrlState]);
 
   // Sort/order/page wiring for ``useAdminTableFetch``. Defined here so we
   // can hand them down to JobsListView as a controlled trio + change
@@ -229,23 +297,25 @@ export default function JobsList({
       setActivationStatus('idle');
       setJobsCount(null);
       setSelectedIds(new Set());
-      // Tab change resets all filters AND the page, then writes the new
-      // target to the URL with ``push`` so the back button restores the
-      // previous tab.
+      // Tab change writes the new target with ``push`` so the back
+      // button restores the previous tab. Filters carry the saved
+      // snapshot for the destination target (each tab remembers its
+      // own filters) — falls back to empty when there's nothing saved.
+      const saved = persistence.read(id);
       setUrlState(
         {
           targetId: id ?? null,
-          search: null,
-          status: null,
-          minScore: null,
-          excludeLocations: null,
-          onlyLocations: null,
+          search: saved?.search || null,
+          status: saved?.status || null,
+          minScore: saved?.minScore || null,
+          excludeLocations: saved?.excludeLocations || null,
+          onlyLocations: saved?.onlyLocations || null,
           page: 1,
         },
         'push'
       );
     },
-    [setUrlState]
+    [persistence, setUrlState]
   );
 
   // Cleanup polling on unmount
