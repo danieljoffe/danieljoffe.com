@@ -42,7 +42,11 @@ export default function JobsList({
   // were the previous server-side prelude to this state; they're now
   // strictly fallbacks for the (rare) case where the URL has no params
   // (e.g. server-side prerender before client hydration).
-  const defaultTargetId = targetId ?? initialTargets[0]?.id;
+  // Default to All Jobs (undefined targetId) when no `?target=X` is in the
+  // URL. Previously this fell through to ``initialTargets[0]`` which made
+  // the first active target sticky as the "default tab"; users with
+  // multiple targets kept landing on a per-target view they didn't pick.
+  const defaultTargetId = targetId;
   const { state: urlState, setState: setUrlState } = useJobsUrlState({
     defaultSort: 'score',
     defaultOrder: 'desc',

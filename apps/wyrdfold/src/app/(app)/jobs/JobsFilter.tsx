@@ -141,6 +141,19 @@ export default function JobsFilter({
             size='sm'
             value={searchDraft}
             onChange={e => setSearchDraft(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                // Short-circuit the 600ms debounce so the user can
+                // commit a query immediately. The pending timer would
+                // re-fire with the same draft and become a no-op
+                // (``searchDraft !== filters.search`` would already be
+                // false by then), so we don't bother clearing it.
+                e.preventDefault();
+                if (searchDraft !== filters.search) {
+                  onChange({ ...filters, search: searchDraft });
+                }
+              }
+            }}
             placeholder='Search by title...'
             aria-label='Search by title'
           />
