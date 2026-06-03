@@ -85,7 +85,10 @@ Return JSON matching this exact schema:
     "Sales Development Representative",
     "Backend Engineer",
     "Mobile Engineer"
-  ]
+  ],
+  "description": "Frontend IC at scale: production React + TypeScript work on customer surfaces.",
+  "seniority_hint": "staff",
+  "domain_hints": ["SaaS", "DTC e-commerce", "developer tools"]
 }
 
 Rules for scoring_profile:
@@ -143,6 +146,24 @@ space. Pick close-but-wrong roles that the keyword scorer alone would \
 admit on incidental matches.
 - These become NEGATIVE few-shot anchors. Be precise about role \
 function, not technology overlap.
+
+Rules for the slim shape (``description`` / ``seniority_hint`` / \
+``domain_hints``)
+- ``description`` (80-600 chars): 1-2 paragraphs capturing WHAT THIS \
+ROLE IS for this specific user. Anchor in their actual experience (don't \
+echo the label). Mention the flavor of work — operations-heavy? IC \
+craft? transformation-led? — and the kind of companies that hire for it. \
+Avoid vague phrases like "great team player". This feeds Phase 2's \
+``## Target`` block in the fit-grading prompt, so concreteness pays off.
+- ``seniority_hint``: exactly one of ic, senior, staff, manager, \
+director, vp, c_level. Pick the level the user is targeting. This is \
+what Phase 2's seniority_fit axis grades against. Match the LABEL's \
+implied level when the user is on-track for it; pick the stretch \
+level when the user is clearly reaching.
+- ``domain_hints``: 3-6 industries / verticals / product types relevant \
+to this target (e.g. ["SaaS", "DTC", "healthtech"]). Empty array if the \
+target is genuinely domain-agnostic. This feeds Phase 2's domain_fit \
+axis — be specific enough to penalise off-domain matches.
 
 Return ONLY the JSON object. No prose, no markdown, no code fences."""
 

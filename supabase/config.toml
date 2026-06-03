@@ -251,15 +251,26 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # WyrdFold beta — branded email templates.
-# Sent by `auth.admin.inviteUserByEmail` (script: apps/wyrdfold/scripts/invite-beta-tester.ts).
-[auth.email.template.invite]
-subject = "You're in — welcome to the WyrdFold beta"
-content_path = "./supabase/templates/invite.html"
-
-# Sent by `signInWithOtp` from apps/wyrdfold/src/app/login/MagicLinkForm.tsx.
-[auth.email.template.magic_link]
-subject = "Your WyrdFold sign-in link"
-content_path = "./supabase/templates/magic-link.html"
+#
+# !!! IMPORTANT !!! NO email template blocks live here in the base
+# config. The full configuration (subject lines AND content_path) is in
+# ``[remotes.production.auth.email.template.*]`` at the bottom of this
+# file. Reason: Supabase free-tier preview projects (used by the
+# PR-level Supabase Preview CI check) reject ANY email template
+# modification call with:
+#
+#   "Email template modification is not available for free tier projects
+#    using the default email provider. Please upgrade your plan or
+#    configure a custom SMTP provider."
+#
+# This applies even to subject-only edits — declaring an
+# ``[auth.email.template.*]`` block at all is enough to trigger the API
+# call that the free tier refuses. So the entire block lives under the
+# production remote and never touches preview.
+#
+# Local development uses Inbucket (auth.email.inbucket on the [auth.email]
+# block above) which doesn't care about template overrides — it captures
+# outbound mail regardless of body content.
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
@@ -465,3 +476,18 @@ additional_redirect_urls = [
   "http://localhost:3000",
   "http://localhost:3000/auth/callback",
 ]
+
+# Email templates — production-only. Free-tier preview projects reject
+# any email template API call (subject-only edits included) with a 400,
+# so the entire configuration (subject + HTML body) lives here rather
+# than in the base ``[auth.email.template.*]`` blocks.
+
+# Sent by ``auth.admin.inviteUserByEmail`` (script: apps/wyrdfold/scripts/invite-beta-tester.ts).
+[remotes.production.auth.email.template.invite]
+subject = "You're in — welcome to the WyrdFold beta"
+content_path = "./supabase/templates/invite.html"
+
+# Sent by ``signInWithOtp`` from apps/wyrdfold/src/app/login/MagicLinkForm.tsx.
+[remotes.production.auth.email.template.magic_link]
+subject = "Your WyrdFold sign-in link"
+content_path = "./supabase/templates/magic-link.html"

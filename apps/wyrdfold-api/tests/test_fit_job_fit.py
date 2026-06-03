@@ -134,18 +134,38 @@ class TestBuildUserMessage:
         assert "8+ years" in msg
         assert "React" in msg
 
-    def test_includes_target_section_with_keywords(self) -> None:
+    def test_includes_target_section_slim_shape_preferred(self) -> None:
+        """When the slim shape (description / seniority_hint /
+        domain_hints) is populated, Phase 2 uses it instead of dumping
+        keyword categories. The keyword block was the legacy fallback."""
         msg = _build_user_message(
             payload=_payload(),
-            target=_target(),
+            target=_target(),  # has description set
             job_title="Senior Frontend Engineer",
             jd_text="<p>React shop.</p>",
         )
         assert "## Target: Staff Frontend Engineer" in msg
-        # Core keywords surface; seniority + domain + negatives too.
+        # Slim shape content present.
+        assert "Web platform leadership at a consumer SaaS." in msg
+        # Legacy keyword block suppressed when slim shape is populated.
+        assert "core_skills" not in msg
+        assert "junior" not in msg
+
+    def test_includes_target_section_legacy_fallback(self) -> None:
+        """When the slim shape is NOT populated (legacy target), Phase 2
+        falls back to dumping scoring_profile.categories as it always did."""
+        legacy = _target()
+        legacy.description = None  # legacy targets lack slim fields
+        msg = _build_user_message(
+            payload=_payload(),
+            target=legacy,
+            job_title="Senior Frontend Engineer",
+            jd_text="<p>React shop.</p>",
+        )
+        assert "## Target: Staff Frontend Engineer" in msg
+        # Legacy keyword + negative block restored.
         assert "core_skills" in msg
         assert "staff" in msg
-        assert "saas" in msg
         assert "junior" in msg
 
     def test_includes_job_posting_section_last(self) -> None:

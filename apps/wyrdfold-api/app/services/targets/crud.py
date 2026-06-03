@@ -39,6 +39,9 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
         is_active=row["is_active"],
         example_promising_titles=row.get("example_promising_titles") or [],
         example_unpromising_titles=row.get("example_unpromising_titles") or [],
+        # Slim shape (NULL on legacy rows until PR B backfill).
+        seniority_hint=row.get("seniority_hint"),
+        domain_hints=row.get("domain_hints") or [],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -147,6 +150,13 @@ def update(
         updates["example_promising_titles"] = payload.example_promising_titles
     if payload.example_unpromising_titles is not None:
         updates["example_unpromising_titles"] = payload.example_unpromising_titles
+    # Slim shape (PR A of plan-wyrdfold-streamlined-target.md). None on
+    # the partial = "don't touch the column"; pass an empty list / "" to
+    # explicitly clear.
+    if payload.seniority_hint is not None:
+        updates["seniority_hint"] = payload.seniority_hint
+    if payload.domain_hints is not None:
+        updates["domain_hints"] = payload.domain_hints
 
     resp = (
         supabase.table(TARGETS_TABLE).update(updates).eq("id", target_id).execute()
