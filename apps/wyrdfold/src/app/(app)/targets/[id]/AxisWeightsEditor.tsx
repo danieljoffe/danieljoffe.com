@@ -43,11 +43,10 @@ interface AxisWeightsEditorProps {
 /**
  * Per-(user, target) tunable axis weights panel.
  *
- * Lives inside a collapsible "Advanced" section so casual users aren't
- * confronted with four sliders the moment they open a target. The
- * normalized preview is the safety UI from the plan — users see the
- * effective blend before saving, since the backend renormalizes any
- * non-zero set of inputs.
+ * Always-visible top-level section on the target page. The normalized
+ * preview is the safety UI from the plan — users see the effective
+ * blend before saving, since the backend renormalizes any non-zero
+ * set of inputs.
  */
 export default function AxisWeightsEditor({
   targetId,
@@ -59,7 +58,6 @@ export default function AxisWeightsEditor({
   };
 
   const [draft, setDraft] = useState<AxisWeights>(savedWeights);
-  const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [undoing, setUndoing] = useState(false);
@@ -156,20 +154,7 @@ export default function AxisWeightsEditor({
     <Card>
       <CardHeader>
         <div className='flex items-baseline justify-between gap-2'>
-          <CardTitle>
-            <button
-              type='button'
-              onClick={() => setOpen(o => !o)}
-              aria-expanded={open}
-              aria-controls='axis-weights-panel'
-              className='flex items-center gap-2 text-left'
-            >
-              <span>Advanced: weight axes</span>
-              <span aria-hidden className='text-text-tertiary text-sm'>
-                {open ? '▾' : '▸'}
-              </span>
-            </button>
-          </CardTitle>
+          <CardTitle>Weight axes</CardTitle>
           {userTarget.axis_weights === null ? (
             <Badge variant='default' size='sm'>
               Defaults
@@ -187,147 +172,142 @@ export default function AxisWeightsEditor({
         </Text>
       </CardHeader>
 
-      {open && (
-        <CardContent id='axis-weights-panel' className='flex flex-col gap-5'>
-          <div className='flex flex-col gap-4'>
-            {AXIS_KEYS.map(axis => {
-              const value = draft[axis];
-              const inputId = `axis-${axis}`;
-              return (
-                <div key={axis} className='flex flex-col gap-1'>
-                  <div className='flex items-center justify-between gap-2'>
-                    <label
-                      htmlFor={inputId}
-                      className='text-sm font-medium text-text-primary'
-                    >
-                      {AXIS_LABELS[axis]}
-                    </label>
-                    <Text
-                      variant='meta'
-                      className='text-text-secondary tabular-nums'
-                    >
-                      {formatAxisWeightPercent(value)}
-                    </Text>
-                  </div>
-                  <input
-                    id={inputId}
-                    type='range'
-                    min={AXIS_WEIGHT_MIN}
-                    max={AXIS_WEIGHT_MAX}
-                    step={AXIS_WEIGHT_STEP}
-                    value={value}
-                    onChange={e => updateAxis(axis, parseFloat(e.target.value))}
-                    aria-label={`${AXIS_LABELS[axis]} weight`}
-                    aria-describedby={`${inputId}-hint`}
-                    disabled={anyBusy}
-                    className='w-full accent-brand-500'
-                  />
-                  <Text
-                    id={`${inputId}-hint`}
-                    variant='meta'
-                    className='text-text-tertiary'
+      <CardContent className='flex flex-col gap-5'>
+        <div className='flex flex-col gap-4'>
+          {AXIS_KEYS.map(axis => {
+            const value = draft[axis];
+            const inputId = `axis-${axis}`;
+            return (
+              <div key={axis} className='flex flex-col gap-1'>
+                <div className='flex items-center justify-between gap-2'>
+                  <label
+                    htmlFor={inputId}
+                    className='text-sm font-medium text-text-primary'
                   >
-                    {AXIS_HINTS[axis]}
+                    {AXIS_LABELS[axis]}
+                  </label>
+                  <Text
+                    variant='meta'
+                    className='text-text-secondary tabular-nums'
+                  >
+                    {formatAxisWeightPercent(value)}
                   </Text>
                 </div>
-              );
-            })}
-          </div>
+                <input
+                  id={inputId}
+                  type='range'
+                  min={AXIS_WEIGHT_MIN}
+                  max={AXIS_WEIGHT_MAX}
+                  step={AXIS_WEIGHT_STEP}
+                  value={value}
+                  onChange={e => updateAxis(axis, parseFloat(e.target.value))}
+                  aria-label={`${AXIS_LABELS[axis]} weight`}
+                  aria-describedby={`${inputId}-hint`}
+                  disabled={anyBusy}
+                  className='w-full accent-brand-500'
+                />
+                <Text
+                  id={`${inputId}-hint`}
+                  variant='meta'
+                  className='text-text-tertiary'
+                >
+                  {AXIS_HINTS[axis]}
+                </Text>
+              </div>
+            );
+          })}
+        </div>
 
-          {/* Normalized preview — the safety UI. Shows exactly what the
+        {/* Normalized preview — the safety UI. Shows exactly what the
               backend will apply, since weights are renormalized at read
               time. */}
-          <div
-            className='rounded-lg border border-border bg-surface px-3 py-2'
-            aria-live='polite'
-          >
-            <Text variant='meta' className='text-text-secondary mb-1'>
-              Will apply as (renormalized to sum to 100%):
+        <div
+          className='rounded-lg border border-border bg-surface px-3 py-2'
+          aria-live='polite'
+        >
+          <Text variant='meta' className='text-text-secondary mb-1'>
+            Will apply as (renormalized to sum to 100%):
+          </Text>
+          <div className='grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4'>
+            {AXIS_KEYS.map(axis => (
+              <div
+                key={axis}
+                className='flex items-center justify-between gap-2'
+              >
+                <Text variant='meta' className='text-text-secondary'>
+                  {AXIS_LABELS[axis]}
+                </Text>
+                <Text variant='meta' className='text-text-primary tabular-nums'>
+                  {formatAxisWeightPercent(normalized[axis])}
+                </Text>
+              </div>
+            ))}
+          </div>
+          {draftIsDefault && (
+            <Text variant='meta' className='text-text-tertiary mt-2'>
+              These are the default weights — saving has the same effect as
+              resetting.
             </Text>
-            <div className='grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4'>
-              {AXIS_KEYS.map(axis => (
-                <div
-                  key={axis}
-                  className='flex items-center justify-between gap-2'
-                >
-                  <Text variant='meta' className='text-text-secondary'>
-                    {AXIS_LABELS[axis]}
-                  </Text>
-                  <Text
-                    variant='meta'
-                    className='text-text-primary tabular-nums'
-                  >
-                    {formatAxisWeightPercent(normalized[axis])}
-                  </Text>
-                </div>
-              ))}
-            </div>
-            {draftIsDefault && (
-              <Text variant='meta' className='text-text-tertiary mt-2'>
-                These are the default weights — saving has the same effect as
-                resetting.
-              </Text>
-            )}
-          </div>
+          )}
+        </div>
 
-          <div className='flex flex-wrap items-center justify-end gap-2'>
-            <Button
-              name='axis-weights-undo'
-              variant='ghost'
-              size='sm'
-              onClick={handleUndo}
-              disabled={!canUndo || anyBusy}
-            >
-              {undoing ? (
-                <>
-                  <Spinner size='sm' />
-                  <span>Undoing…</span>
-                </>
-              ) : (
-                <>
-                  <Undo2 className='size-4' aria-hidden />
-                  <span>Undo</span>
-                </>
-              )}
-            </Button>
-            <Button
-              name='axis-weights-reset'
-              variant='ghost'
-              size='sm'
-              onClick={handleReset}
-              disabled={anyBusy || userTarget.axis_weights === null}
-            >
-              {resetting ? (
-                <>
-                  <Spinner size='sm' />
-                  <span>Resetting…</span>
-                </>
-              ) : (
-                <>
-                  <RotateCcw className='size-4' aria-hidden />
-                  <span>Reset</span>
-                </>
-              )}
-            </Button>
-            <Button
-              name='axis-weights-save'
-              variant='primary'
-              size='sm'
-              onClick={handleSave}
-              disabled={!isDirty || anyBusy}
-            >
-              {saving ? (
-                <>
-                  <Spinner size='sm' />
-                  <span>Saving…</span>
-                </>
-              ) : (
-                'Save'
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      )}
+        <div className='flex flex-wrap items-center justify-end gap-2'>
+          <Button
+            name='axis-weights-undo'
+            variant='ghost'
+            size='sm'
+            onClick={handleUndo}
+            disabled={!canUndo || anyBusy}
+          >
+            {undoing ? (
+              <>
+                <Spinner size='sm' />
+                <span>Undoing…</span>
+              </>
+            ) : (
+              <>
+                <Undo2 className='size-4' aria-hidden />
+                <span>Undo</span>
+              </>
+            )}
+          </Button>
+          <Button
+            name='axis-weights-reset'
+            variant='ghost'
+            size='sm'
+            onClick={handleReset}
+            disabled={anyBusy || userTarget.axis_weights === null}
+          >
+            {resetting ? (
+              <>
+                <Spinner size='sm' />
+                <span>Resetting…</span>
+              </>
+            ) : (
+              <>
+                <RotateCcw className='size-4' aria-hidden />
+                <span>Reset</span>
+              </>
+            )}
+          </Button>
+          <Button
+            name='axis-weights-save'
+            variant='primary'
+            size='sm'
+            onClick={handleSave}
+            disabled={!isDirty || anyBusy}
+          >
+            {saving ? (
+              <>
+                <Spinner size='sm' />
+                <span>Saving…</span>
+              </>
+            ) : (
+              'Save'
+            )}
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }
