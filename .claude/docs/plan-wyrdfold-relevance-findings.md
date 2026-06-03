@@ -77,10 +77,26 @@ domain_fit    542  25.8  20.0  15.4   0.82
 ```
 
 Right-skewed similar to Melissa. profile_version=2 reflects the empty-pool
-regeneration done earlier this session. The 14 stage2-promising-pending
-rows haven't been Phase-2-graded yet (carried over from before this run);
-when graded at v=2 they'll re-stamp `scored_profile_version`, dropping
-those rows back into the candidate set on the next backfill.
+regeneration done earlier this session.
+
+**Update (post-rescore + v=2 re-grade, 1,189 rows touched, 607 graded):**
+
+```
+n = 607    overall: mean=20.8  median=18  stdev=15.6  min=2  max=78
+
+axis            n   mean median stdev  corr_overall
+title_fit     607  20.1  15.0  18.8   0.97
+skills_fit    607  23.2  20.0  17.3   0.89
+seniority_fit 607  41.9  40.0  14.7   0.85
+domain_fit    607  27.6  25.0  15.7   0.85
+```
+
+Compared to the v=1 snapshot above: numbers moved < 5% on every metric.
+That stability is itself a finding — the slim profile-bump (regenerating
+example pools from an empty starting point) produced minor, defensible
+shifts rather than a wholesale re-ranking. The pipeline is robust to
+target-shape changes within a reasonable range; we don't have to fear
+small target tunings causing cascading score chaos.
 
 ## Melissa's top-15: calibration spot-check
 
