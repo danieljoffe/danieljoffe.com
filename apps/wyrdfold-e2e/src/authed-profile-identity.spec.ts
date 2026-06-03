@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Authenticated round-trip for the Settings → Profile identity card
- * (added in #703 / extended in F3-A). Verifies the full FE → API →
- * DB → API → FE loop without burning LLM credits:
+ * Authenticated round-trip for the Profile identity card (added in
+ * #703 / extended in F3-A; moved from /settings to /profile in the
+ * settings refactor — see ``SettingsPage.tsx:444`` "Identity ...
+ * lives on /profile now"). Verifies the full FE → API → DB → API → FE
+ * loop without burning LLM credits:
  *
  *   1. ``GET /api/profile/identity`` populates the Name input on
  *      mount.
@@ -23,19 +25,19 @@ import { test, expect } from '@playwright/test';
  *     ``_get_or_create_profile``).
  *   - PATCH /identity regression (Pydantic shape drift, empty-string
  *     clear-to-NULL behavior, autosave debouncer never firing).
- *   - The Settings page never re-syncing from the server response
+ *   - The Profile page never re-syncing from the server response
  *     (the page does a setState from the PATCH response in the
  *     handleSaveProfile path — this catches a regression where it
  *     drops that re-sync).
  */
-test.describe('settings identity round-trip', () => {
+test.describe('profile identity round-trip', () => {
   test('Name edits persist across reload', async ({ page }) => {
     const TEST_NAME = `E2E Test User ${Date.now()}`;
 
-    await page.goto('/settings');
+    await page.goto('/profile');
 
-    // Wait for the Settings page to mount. The Name input lives in
-    // the Profile card; the Skeleton is replaced once GET /identity
+    // Wait for the Profile page to mount. The Name input lives in
+    // ProfileIdentityCard; the Skeleton is replaced once GET /identity
     // resolves.
     const nameInput = page.getByLabel('Name', { exact: true });
     await expect(nameInput).toBeVisible();
