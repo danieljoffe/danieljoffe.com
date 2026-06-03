@@ -7,6 +7,7 @@ while keeping the original intact for backward compatibility.
 """
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -47,6 +48,9 @@ class ScoringProfile(BaseModel):
 # ---- Row models (DB read shapes) -------------------------------------------
 
 
+SeniorityHint = Literal["ic", "senior", "staff", "manager", "director", "vp", "c_level"]
+
+
 class JobTarget(BaseModel):
     id: str
     label: str
@@ -78,6 +82,11 @@ class JobTarget(BaseModel):
     # feedback once enough labels accumulate per target.
     example_promising_titles: list[str] = Field(default_factory=list)
     example_unpromising_titles: list[str] = Field(default_factory=list)
+    # Slim shape (PR A of plan-wyrdfold-streamlined-target.md). NULL/empty
+    # on legacy rows until PR B's backfill; new targets populate at
+    # creation alongside the legacy scoring_profile.
+    seniority_hint: SeniorityHint | None = None
+    domain_hints: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 
@@ -177,6 +186,10 @@ class TargetUpdate(BaseModel):
     profile_version: int | None = None
     example_promising_titles: list[str] | None = None
     example_unpromising_titles: list[str] | None = None
+    # Slim shape additions (PR A of plan-wyrdfold-streamlined-target.md).
+    # Update partials: None leaves the column unchanged on the DB side.
+    seniority_hint: SeniorityHint | None = None
+    domain_hints: list[str] | None = None
 
 
 class TargetFromManual(BaseModel):
@@ -227,7 +240,7 @@ class ReferenceJDAdd(BaseModel):
 
 class DerivedTarget(BaseModel):
     """LLM output: scoring profile + search keywords + few-shot title
-    pools derived from a target.
+    pools + slim shape fields derived from a target.
 
     The example_*_titles lists seed the Phase 1 binary triage prompt:
     promising = positive few-shot anchors, unpromising = negative
@@ -235,12 +248,23 @@ class DerivedTarget(BaseModel):
     the prompt extension still validate cleanly (the Phase 1 grader
     treats empty lists as "no examples available" and degrades to
     label-only grading).
+
+    The ``description`` / ``seniority_hint`` / ``domain_hints`` triple is
+    the slim target shape (PR A of plan-wyrdfold-streamlined-target.md).
+    They default to None / empty so legacy LLM outputs that don't include
+    them still validate; new derivations populate them.
     """
 
     scoring_profile: ScoringProfile
     search_keywords: list[str] = Field(default_factory=list)
     example_promising_titles: list[str] = Field(default_factory=list)
     example_unpromising_titles: list[str] = Field(default_factory=list)
+    # Slim shape — optional in the model so legacy LLM outputs that
+    # don't include these fields still validate. The prompt asks for
+    # them; reality may serve old-prompt cached responses for a while.
+    description: str | None = Field(default=None, max_length=800)
+    seniority_hint: SeniorityHint | None = None
+    domain_hints: list[str] = Field(default_factory=list, max_length=8)
 
 
 class TargetSuggestion(BaseModel):

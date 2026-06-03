@@ -170,27 +170,41 @@ def _build_user_message(
     parts.append("## User profile")
     parts.append(_profile_summary(payload))
 
-    # Target context.
+    # Target context. The slim shape (description + seniority_hint +
+    # domain_hints) carries strictly more signal than the legacy
+    # scoring_profile categories prose — prefer it when populated.
+    # Legacy targets (NULL slim fields) fall back to the keyword block.
     target_lines = [f"## Target: {target.label}"]
+    has_slim = bool(target.description or target.seniority_hint or target.domain_hints)
+
     if target.description:
         target_lines.append(target.description)
-
-    profile = target.scoring_profile
-    if profile.seniority.level:
-        target_lines.append(f"Seniority level: {profile.seniority.level}")
-    if profile.categories:
-        for cat_name, cat in profile.categories.items():
-            if cat.keywords:
-                top_kws = list(cat.keywords.keys())[:10]
-                target_lines.append(
-                    f"{cat_name} (weight {cat.weight}x): {', '.join(top_kws)}"
-                )
-    if profile.domain.signals:
-        target_lines.append(f"Domain signals: {', '.join(profile.domain.signals)}")
-    if profile.negative.keywords:
+    if target.seniority_hint:
+        target_lines.append(f"Seniority level: {target.seniority_hint}")
+    elif target.scoring_profile.seniority.level:
+        target_lines.append(f"Seniority level: {target.scoring_profile.seniority.level}")
+    if target.domain_hints:
+        target_lines.append(f"Domain: {', '.join(target.domain_hints)}")
+    elif target.scoring_profile.domain.signals:
         target_lines.append(
-            f"Negative keywords: {', '.join(profile.negative.keywords)}"
+            f"Domain signals: {', '.join(target.scoring_profile.domain.signals)}"
         )
+
+    if not has_slim:
+        # Legacy fallback: dump the scoring_profile categories. Phase 2
+        # uses these as loose context, not weighted scoring inputs.
+        profile = target.scoring_profile
+        if profile.categories:
+            for cat_name, cat in profile.categories.items():
+                if cat.keywords:
+                    top_kws = list(cat.keywords.keys())[:10]
+                    target_lines.append(
+                        f"{cat_name} (weight {cat.weight}x): {', '.join(top_kws)}"
+                    )
+        if profile.negative.keywords:
+            target_lines.append(
+                f"Negative keywords: {', '.join(profile.negative.keywords)}"
+            )
     parts.append("\n".join(target_lines))
 
     # Job posting (last — cache-unfriendly, varies per call).

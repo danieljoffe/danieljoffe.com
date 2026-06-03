@@ -168,6 +168,12 @@ async def _activate_pipeline(
                     search_keywords=derived.search_keywords,
                     example_promising_titles=derived.example_promising_titles,
                     example_unpromising_titles=derived.example_unpromising_titles,
+                    # Slim shape — populated when the LLM emits them (new
+                    # prompt); silently dropped when None (legacy /
+                    # cached old-prompt responses).
+                    description=derived.description,
+                    seniority_hint=derived.seniority_hint,
+                    domain_hints=derived.domain_hints or None,
                 ),
             )
             if updated is None:
@@ -594,6 +600,9 @@ async def derive_target_profile(
             search_keywords=derived.search_keywords,
             example_promising_titles=derived.example_promising_titles,
             example_unpromising_titles=derived.example_unpromising_titles,
+            description=derived.description,
+            seniority_hint=derived.seniority_hint,
+            domain_hints=derived.domain_hints or None,
             profile_version=target.profile_version + 1,
         ),
     )
