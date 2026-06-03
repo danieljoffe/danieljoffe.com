@@ -8,10 +8,16 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type { JobTarget, TargetReferenceJD } from '../types';
+import type {
+  JobTarget,
+  TargetReferenceJD,
+  UserTarget,
+  UserTargetWithTarget,
+} from '../types';
 import ScoringProfileEditor from './ScoringProfileEditor';
 import ReferenceJDList from './ReferenceJDList';
 import TargetDetailSkeleton from './TargetDetailSkeleton';
+import AxisWeightsEditor from './AxisWeightsEditor';
 
 interface TargetDetailProps {
   id: string;
@@ -19,6 +25,7 @@ interface TargetDetailProps {
 
 export default function TargetDetail({ id }: TargetDetailProps) {
   const [target, setTarget] = useState<JobTarget | null>(null);
+  const [userTarget, setUserTarget] = useState<UserTarget | null>(null);
   const [referenceJDs, setReferenceJDs] = useState<TargetReferenceJD[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingLabel, setEditingLabel] = useState(false);
@@ -38,6 +45,28 @@ export default function TargetDetail({ id }: TargetDetailProps) {
     }
   }, [id, toast]);
 
+  /**
+   * Pull this user's `user_target` row out of `/targets/mine`. We need
+   * it for the axis-weights editor (which lives on this page, but reads
+   * from `user_targets`, not the shared `targets` row). The list is
+   * small (per-user, dozens of rows at most) — one round-trip is fine
+   * for v1. Future optimization: a per-target `/user-target` endpoint.
+   */
+  const fetchUserTarget = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/targets/mine`);
+      if (!res.ok) throw new Error('Failed to fetch user target');
+      const payload = (await res.json()) as {
+        targets: UserTargetWithTarget[];
+      };
+      const match = payload.targets.find(t => t.target.id === id);
+      setUserTarget(match?.user_target ?? null);
+    } catch {
+      // Non-fatal — the axis weights editor will just not render.
+      // The rest of the page still works.
+    }
+  }, [id]);
+
   const fetchReferenceJDs = useCallback(async () => {
     try {
       const res = await fetch(`/api/targets/${id}/reference-jds`);
@@ -54,14 +83,18 @@ export default function TargetDetail({ id }: TargetDetailProps) {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([fetchTarget(), fetchReferenceJDs()]).finally(() => {
+    Promise.all([
+      fetchTarget(),
+      fetchReferenceJDs(),
+      fetchUserTarget(),
+    ]).finally(() => {
       if (!cancelled) setLoading(false);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [fetchTarget, fetchReferenceJDs]);
+  }, [fetchTarget, fetchReferenceJDs, fetchUserTarget]);
 
   const handleSaveLabel = useCallback(async () => {
     const trimmed = labelDraft.trim();
@@ -185,6 +218,14 @@ export default function TargetDetail({ id }: TargetDetailProps) {
       </div>
 
       <ScoringProfileEditor target={target} onSaved={fetchTarget} />
+
+      {userTarget && (
+        <AxisWeightsEditor
+          targetId={id}
+          userTarget={userTarget}
+          onUpdated={setUserTarget}
+        />
+      )}
 
       <ReferenceJDList
         targetId={id}
