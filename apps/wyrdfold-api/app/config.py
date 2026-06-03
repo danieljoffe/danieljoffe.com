@@ -33,7 +33,12 @@ class Settings(BaseSettings):
     llm_provider: Literal["mock", "anthropic"] = "mock"
     anthropic_api_key: str = Field(default="", repr=False)
     anthropic_timeout_seconds: float = Field(default=600.0, ge=1.0, le=3600.0)
-    anthropic_max_retries: int = Field(default=2, ge=0, le=10)
+    # Bumped from 2 → 5 alongside the V3 prompt rollout. The default-2 budget
+    # exhausts on a small fraction of cases during burst load (e.g. Phase 2
+    # backfill grading dozens of jobs in under a minute); 5 gives Anthropic
+    # rate-limit retries enough headroom to recover without sacrificing
+    # responsiveness. Each retry uses exponential backoff inside the SDK.
+    anthropic_max_retries: int = Field(default=5, ge=0, le=10)
 
     # URL validation — enable to validate job URLs during polling.
     validate_poll_urls: bool = True
