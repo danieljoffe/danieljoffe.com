@@ -179,6 +179,87 @@ profile slot. Same `purpose = "target.derive.slim"` for cost logging.
 Cost: ~3K input + ~500 output ≈ $0.012/derivation at Sonnet 4.6 (vs ~3 calls
 in the legacy flow at ~$0.020 total). Cheaper AND simpler.
 
+## Lateral target discovery (first-class capability)
+
+The slim-target shape unlocks a feature the legacy keyword target couldn't
+support well: **mine the master document for lateral / adjacent target
+roles the user is already competitive for** but might not have considered.
+
+**The problem.** A user signs up with one target in mind ("Director of CX
+Operations"). Their master doc contains evidence for many adjacent
+targets — Director of Customer Success Operations, VP of Customer
+Experience, Head of Support Engineering, Director of Member Experience —
+same career altitude, different vocabulary that's gatekept by industry
+naming conventions. Today they have to know each variant exists and add
+each manually. Most users don't, so they undercount their candidate
+pool.
+
+**The capability.** A new function alongside `derive_slim_target`:
+
+```python
+async def suggest_lateral_targets(
+    llm: LLMClient,
+    *,
+    payload: OptimizedPayload,
+    current_targets: list[JobTarget] = [],   # don't re-suggest these
+    max_suggestions: int = 8,
+) -> list[SuggestedTarget]:
+    ...
+
+class SuggestedTarget(BaseModel):
+    label: str
+    one_line_reasoning: str  # why this user is competitive for it
+    confidence: int  # 0-100
+    lateral_relationship: str  # how it differs from current targets
+    primary_industry: str | None  # CX SaaS, payroll fintech, etc.
+```
+
+**Prompt shape.** One Sonnet call. System prompt: "Given the user's full
+career evidence, propose 5-10 distinct target roles they're competitive
+for. Span industries; include at least one career-stretch suggestion;
+exclude exact duplicates of current targets. For each, output {label,
+reasoning, confidence, lateral_relationship, primary_industry}."
+
+**Where it lives in the user flow.**
+
+- **Onboarding:** after the user uploads their master doc, the platform
+  runs `suggest_lateral_targets` and presents 5-10 candidate targets.
+  User picks 3-5 to activate. Each picked target then runs
+  `derive_slim_target` to produce its slim shape. Total cost:
+  ~$0.05 (suggestion) + ~$0.012 × N picked (derivation) = ~$0.10
+  for a 5-target onboarding.
+- **Existing-user growth:** weekly cron OR on-demand "find more targets"
+  button. Reruns suggestion with `current_targets` populated, surfaces
+  fresh adjacents the user hasn't tried. Same cost as onboarding.
+
+**Why this needs the slim shape (not the legacy one).** Auto-creating
+targets requires the derivation to be (a) cheap, (b) self-contained, (c)
+low-friction for the user to review. The legacy keyword profile is too
+heavyweight: 30+ keywords with weights, category structures, seniority
+signals — a wall of config the user can't meaningfully review per
+suggestion. The slim shape is reviewable at a glance: label +
+description + seniority + 10 example titles. Users can scan-and-pick.
+
+**Why this changes the product mental model.** Today: "tell me your
+target, I'll find jobs." With lateral discovery: "tell me your career,
+I'll find your targets." Reduces vocabulary-gatekeeping; expands
+candidate pool 3-5x for users whose target-naming knowledge is
+incomplete (which is most users, including senior ones in niche
+industries).
+
+**Sequencing.** Ships as **PR D** in the rollout (after PR A schema +
+PR B backfill, before PR C cleanup). Doesn't block any of A/B/C; can
+ship in parallel. Adds: `app/services/targets/lateral.py` (the
+suggester) + frontend onboarding flow change + an optional cron entry
+for periodic refresh.
+
+**Connection to Phase 1 example pools.** Suggested targets that get
+activated automatically grow the cross-target "promising example pool":
+if 3 users have a "Director of CX Operations" target and another user
+activates a suggested "Director of Customer Success Operations" target,
+the example_promising_titles from the related targets can cross-pollinate
+(opt-in). Future improvement; out of scope for the initial PR D.
+
 ## Phase 1 prompt update
 
 Phase 1 (`relevance/title_triage.py`) already consumes example pools. Add the
@@ -287,6 +368,126 @@ Three PRs, each independently revertable.
    - Remove keyword Stage 2 scoring entirely (`bulk_score_for_target`, the keyword `score_and_upsert` path, related tests).
    - Drop `scoring_profile` writes from `derive_slim_target` outputs (already NULL there).
    - Eventually drop the `scoring_profile` column itself (separate cleanup once nothing reads it).
+
+4. **PR D — lateral target discovery** (parallel with A/B/C)
+   - `suggest_lateral_targets()` + onboarding flow change + optional refresh cron.
+   - See "Lateral target discovery" section above.
+
+5. **PR E — user-tunable axis weights** (after PR A so axis fields exist; can ship before C)
+   - See "User-tunable axis weights" section below.
+
+## User-tunable axis weights (PR E)
+
+The legacy `scoring_profile.categories.*.weight` was LLM-set internal config feeding a keyword scorer the new pipeline doesn't use. The weighting CONCEPT was right, just applied to the wrong layer. PR E moves it from "hidden keyword weights consumed by Stage 2" to **"4 visible sliders the user controls, applied to Phase 2's axis breakdown at display time"**.
+
+### Mental model
+
+| Layer          | Purpose                                    | Lives on                             |
+| -------------- | ------------------------------------------ | ------------------------------------ |
+| `target`       | "what role am I looking for"               | `targets` (slim shape)               |
+| `axis_weights` | "how I weigh tradeoffs between dimensions" | `user_targets` (per-user-per-target) |
+| `filters`      | "what I won't consider at all"             | URL params / saved view              |
+
+### Schema
+
+```sql
+alter table public.user_targets
+  add column if not exists axis_weights jsonb default '{
+    "title_fit": 0.25,
+    "skills_fit": 0.25,
+    "seniority_fit": 0.25,
+    "domain_fit": 0.25
+  }'::jsonb;
+
+alter table public.user_targets
+  add column if not exists axis_weights_previous jsonb;
+
+comment on column public.user_targets.axis_weights is
+  'User-tunable weights applied to Phase 2 axis scores at read time to '
+  'produce display_score. Defaults to equal quartile (matches Sonnet''s '
+  'holistic judgment). Adjusting weights does NOT trigger re-grading.';
+comment on column public.user_targets.axis_weights_previous is
+  'One-step-back snapshot for the "undo" button. Only the most recent '
+  'previous state is kept; not a full history.';
+```
+
+Validation: each axis ∈ [0, 1], sum constrained loosely (we'll renormalize at read-time if it drifts).
+
+### Read-time math (`/jobs` router)
+
+```python
+def display_score(axes: dict[str, int], weights: dict[str, float]) -> int:
+    total = sum(weights.values()) or 1.0
+    return round(sum(axes.get(a, 0) * weights.get(a, 0.25) for a in AXES) / total * 4)
+    # × 4 because equal weights of 0.25 should reproduce the existing axis-mean
+    # (not divide-by-1 sum). Tuned so default weights ≈ Sonnet's overall score.
+```
+
+The `× 4` factor is so default weights (0.25 each) produce a display_score very close to Sonnet's holistic `fit_score`. We'll calibrate against the eval set so the transition is smooth.
+
+### Safety design (user-facing)
+
+#### 1. Pre-change preview (before "Save")
+
+> Your top 10 would reorder: 4 jobs change position
+> 7 jobs currently below your 50-score floor would now appear
+> 2 jobs you've already dismissed would re-surface
+
+Pure math on existing axis scores. No LLM cost. Computed inline when the user drags a slider; debounced.
+
+#### 2. Warning copy on edit screen
+
+> ⚠️ Adjusting these weights changes how every job is scored for this target. Scores you've grown used to — and the order jobs appear — will shift. Start with small changes (0.30 → 0.35) and watch your list for a few days before adjusting further.
+
+#### 3. One-click undo
+
+"Undo last change" button reverts to `axis_weights_previous`. Snapshot the prior state on every save.
+
+#### 4. Settings-buried
+
+Lives under target settings → "Advanced". The 95% of users who don't tune weights never see them. No surfacing on the main jobs list.
+
+#### 5. Reset to defaults
+
+Always-visible button. Resets to equal-quartile.
+
+### Three feedback loops (architecture)
+
+| Loop                            | Driven by                           | Affects                              | Cost                                           |
+| ------------------------------- | ----------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| **Example pools**               | aggregate 👍/👎 at target           | Phase 1 admit/reject                 | Free at read; one LLM call when ≥5 thumbs/side |
+| **Weight suggestions**          | aggregate 👍/👎 + axis correlations | Display scoring (user-facing nudges) | Pure math, no LLM                              |
+| **Per-target prompt iteration** | manual operator decision            | Phase 2 grading itself               | LLM call per re-grade                          |
+
+All three are independent and can ship on their own timelines.
+
+### Feedback-driven weight suggestions (sub-feature, ships LAST)
+
+Once plan item #7 (feedback example pool) has enough 👍/👎 data per target (≥10 each side):
+
+```
+"We noticed 8 of your 10 👍'd jobs had domain_fit < 50. Want to weight domain less for this target?"
+[Adjust weights] [Dismiss]
+```
+
+Cheap to compute: per-target axis correlation with thumbs sign. **Defer until plan item #7 ships** — without feedback signal there's nothing to suggest.
+
+### Why feedback survives weight changes cleanly
+
+Feedback signals "is this job actually a fit for me", which is independent of "how was the score computed". The Phase 2 axis_scores (the raw signal) don't change when weights change — only the display_score does. So example pools keep evolving correctly; re-grading isn't needed when weights change.
+
+### Sub-feature priority within PR E
+
+1. **`user_targets.axis_weights` + read-time math** (1 day, backend) — the basic capability
+2. **Pre-change preview + warning copy + undo** (1 day, frontend) — the safety net
+3. **Feedback-driven weight suggestions** (deferred until plan item #7 lands)
+
+### Acceptance criteria (PR E)
+
+- Equal-quartile defaults produce display_score within ±2 of Sonnet's `fit_score` on the eval set.
+- Adjusting weights produces immediate UI re-sort (no DB write needed for read).
+- "Undo last change" reverts in one click.
+- Settings page doesn't surface weights to users who haven't entered the Advanced section.
 
 ## Acceptance criteria
 

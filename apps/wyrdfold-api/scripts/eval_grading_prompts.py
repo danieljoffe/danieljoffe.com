@@ -251,6 +251,7 @@ async def _grade_one(
     target: JobTarget,
     title: str,
     jd_text: str,
+    max_tokens: int,
 ) -> tuple[JobFitResult | None, int, int, float]:
     """Returns ``(fit_or_None, input_tokens, output_tokens, cost_usd)``."""
     user_message = _build_user_message(
@@ -264,7 +265,7 @@ async def _grade_one(
             messages=[Message(role="user", content=user_message)],
             schema=JobFitResult,
             purpose=f"{JOB_FIT_PURPOSE}.eval",
-            max_tokens=512,
+            max_tokens=max_tokens,
             cache_system=True,
         )
     except Exception:
@@ -286,6 +287,8 @@ async def run_eval(
     system_prompt: str,
     target_filter: str | None,
     cap: int,
+    max_tokens: int,
+    pause_seconds: float = 0.0,
 ) -> list[dict[str, Any]]:
     """Re-grade each case. Returns list of result dicts aligned with cases."""
     cases = eval_set["cases"]
@@ -323,11 +326,19 @@ async def run_eval(
             target=target,
             title=case["title"],
             jd_text=case["jd_text"],
+            max_tokens=max_tokens,
         )
         results.append({
             "case": case, "fit": fit,
             "tok_in": tin, "tok_out": tout, "cost_usd": cost,
         })
+        # Optional inter-call pause to avoid bursting Anthropic's rate
+        # limit. Production traffic is naturally paced; this harness can
+        # otherwise issue 30+ calls in <60s, which trips ANTHROPIC_MAX_RETRIES
+        # on a small fraction of cases. Pass --rate-limit-pause 0.5 to insert
+        # a half-second between calls; cheap insurance for tight eval runs.
+        if pause_seconds > 0 and i < len(cases):
+            await asyncio.sleep(pause_seconds)
     return results
 
 
@@ -544,9 +555,47 @@ async def main_async(args: argparse.Namespace) -> None:
         system_prompt=system_prompt,
         target_filter=args.target,
         cap=args.eval_size,
+        max_tokens=args.max_tokens,
+        pause_seconds=args.rate_limit_pause,
     )
     metrics = compute_metrics(results, cast(ModelId, args.model))
     print(format_report(metrics, cast(ModelId, args.model), prompt_label))
+
+    if args.save_results:
+        # Per-row dump for downstream tooling (e.g. judge_grading_variants).
+        # The case is kept verbatim and the variant's output is added under
+        # "variant" — judges can then compare side-by-side without re-doing
+        # the LLM call.
+        out_rows: list[dict[str, Any]] = []
+        for r in results:
+            fit = r["fit"]
+            out_rows.append({
+                "case": r["case"],
+                "variant_score": fit.fit_score if fit else None,
+                "variant_axes": fit.axes.model_dump() if fit else None,
+                "variant_reasoning": fit.reasoning if fit else None,
+                "tok_in": r["tok_in"],
+                "tok_out": r["tok_out"],
+                "cost_usd": r["cost_usd"],
+            })
+        payload = {
+            "model": args.model,
+            "prompt_label": prompt_label,
+            "prompt_file": args.prompt_file,
+            "eval_size": args.eval_size,
+            "seed": args.seed,
+            "metrics": {k: v for k, v in metrics.items() if not isinstance(v, dict)},
+            "axis_rmse": metrics.get("axis_rmse"),
+            "rows": out_rows,
+        }
+        out_path = Path(args.save_results)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        # One-shot write after all LLM calls have finished — pathlib here
+        # is fine, the async hot path is already done.
+        out_path.write_text(  # noqa: ASYNC240
+            json.dumps(payload, indent=2, sort_keys=True)
+        )
+        logger.info("Per-row results saved to %s", out_path)
 
 
 def main() -> None:
@@ -584,6 +633,26 @@ def main() -> None:
     )
     parser.add_argument(
         "--seed", type=int, default=42, help="RNG seed for middle-band sampling."
+    )
+    parser.add_argument(
+        "--save-results",
+        default=None,
+        help="Path to write per-row JSON (for downstream judge / comparison tooling).",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=512,
+        help="Max output tokens per grade. Bump (e.g. 1024) for prompt variants "
+        "that produce longer reasoning to avoid mid-JSON truncation.",
+    )
+    parser.add_argument(
+        "--rate-limit-pause",
+        type=float,
+        default=0.0,
+        help="Seconds to sleep between sequential grades. Use 0.5 - 1.0 to "
+        "avoid Anthropic rate-limit retry exhaustion on 30+ case runs. "
+        "Default 0 (no pause).",
     )
     args = parser.parse_args()
     asyncio.run(main_async(args))
