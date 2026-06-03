@@ -29,6 +29,7 @@ from app.models.schemas import (
     UrlValidateRequest,
     UrlValidateResponse,
 )
+from app.models.targets import AxisWeights
 from app.services.extract import (
     MANUAL_SOURCE_ID,
     ExtractionResult,
@@ -36,6 +37,7 @@ from app.services.extract import (
     extract_job_from_html,
     extract_salary_from_text,
 )
+from app.services.fit.axis_weights import display_score_or_passthrough
 from app.services.jd_parser import parse_jd
 from app.services.sanitize import sanitize_html
 from app.services.scoring import strip_html
@@ -48,7 +50,11 @@ from app.services.target_scoring import (
 )
 from app.services.targets.crud import get as get_target
 from app.services.targets.crud import get_active as get_active_target
-from app.services.targets.crud import get_user_target_ids
+from app.services.targets.crud import (
+    get_user_target,
+    get_user_target_ids,
+    list_user_targets,
+)
 from app.services.validate import (
     assert_safe_host,
     is_banned_domain,
@@ -273,8 +279,20 @@ def _list_jobs_for_target_two_query(
     search: str | None,
     exclude_terms: list[str],
     only_terms: list[str],
+    axis_weights: AxisWeights | None = None,
 ) -> dict[str, Any]:
-    """Fallback: two-query pattern with pagination pushed to the scores layer."""
+    """Fallback: two-query pattern with pagination pushed to the scores layer.
+
+    ``axis_weights`` is the per-(user, target) read-time multiplier on
+    Phase 2's axis scores. When non-None, the response's per-row ``score``
+    field is replaced with the weighted display score computed from
+    ``axis_scores``. Sort order is unchanged in this iteration —
+    server-side ORDER BY still keys on ``recency_score`` (when decay is
+    on) or ``score`` so pagination stays cheap. A future iteration will
+    push the weighted sort into Python when weights diverge from
+    defaults. See plan-wyrdfold-streamlined-target.md "User-tunable axis
+    weights".
+    """
     sort_col = "score" if sort == "score" else sort
     # When recency decay is on, the logical "score" sort orders by the
     # decayed ``recency_score`` column instead of the raw fit score.
@@ -289,7 +307,8 @@ def _list_jobs_for_target_two_query(
     ts_query = (
         supabase.table("scores")
         .select(
-            "job_posting_id, score, recency_score, score_breakdown, scoring_status",
+            "job_posting_id, score, recency_score, score_breakdown, "
+            "scoring_status, axis_scores",
             count=CountMethod.exact,
         )
         .eq("target_id", target_id)
@@ -340,11 +359,19 @@ def _list_jobs_for_target_two_query(
         supabase, page_ids, status=status, company=company, search=search
     )
 
-    # Overlay target scores
+    # Overlay target scores. When axis_weights are set for this
+    # (user, target) pairing, the displayed ``score`` is the weighted
+    # combination of axis_scores; otherwise it's the raw Sonnet score.
+    # The original is preserved alongside as ``raw_score`` so the
+    # frontend can show both (and so debugging is easy).
     for p in postings:
         ts = score_lookup.get(p["id"])
         if ts:
-            p["score"] = ts["score"]
+            raw_score = int(ts["score"])
+            p["score"] = display_score_or_passthrough(
+                ts.get("axis_scores"), raw_score, axis_weights
+            )
+            p["raw_score"] = raw_score
             p["score_breakdown"] = ts.get("score_breakdown")
             p["scoring_status"] = ts.get("scoring_status", "stage1")
 
@@ -402,6 +429,7 @@ def _list_jobs_for_target(
     search: str | None,
     exclude_terms: list[str],
     only_terms: list[str],
+    axis_weights: AxisWeights | None = None,
 ) -> dict[str, Any]:
     """List jobs for a target view, sorted/paginated by target-specific scores.
 
@@ -409,6 +437,11 @@ def _list_jobs_for_target(
     optimized two-query pattern if the RPC function hasn't been deployed yet.
     The two-query path also takes over when location filters are active, since
     the RPC paginates server-side with no knowledge of the location filter.
+
+    When ``axis_weights`` is set we skip the RPC and use the two-query path —
+    the RPC doesn't return ``axis_scores`` so it can't apply the overlay. This
+    keeps the v1 behaviour: the displayed ``score`` is the weighted blend,
+    sort order is unchanged (still raw / recency).
     """
     kwargs: dict[str, Any] = {
         "target_id": target_id,
@@ -424,6 +457,10 @@ def _list_jobs_for_target(
         "exclude_terms": exclude_terms,
         "only_terms": only_terms,
     }
+    if axis_weights is not None:
+        return _list_jobs_for_target_two_query(
+            supabase, axis_weights=axis_weights, **kwargs
+        )
     try:
         return _list_jobs_for_target_rpc(supabase, **kwargs)
     except Exception:
@@ -446,15 +483,21 @@ def _list_jobs_across_user_targets(
     search: str | None,
     exclude_terms: list[str],
     only_terms: list[str],
+    weights_by_target: dict[str, AxisWeights] | None = None,
 ) -> dict[str, Any]:
     """Untargeted list — returns the union of jobs scored against any of the
     user's active targets, deduplicated by job id.
 
     Two-query pattern, mirroring ``_list_jobs_for_target_two_query`` but
     aggregating by ``max(score)`` across the user's targets so each job
-    appears once. Replaces the previous "global view" path which filtered
-    by ``jobs.target_id`` — a column the poller never populates, so that
-    filter rejected every row.
+    appears once.
+
+    ``weights_by_target`` maps target_id → AxisWeights for any user-target
+    pairing with custom weights set; absent / None means use raw score.
+    The displayed ``score`` per row applies the weights for that row's
+    target. The deduplication still keys on raw ``max(score)`` so the
+    "best representative target" picked per job is stable across users
+    with different weights (only the displayed number differs).
     """
     sort_col = "score" if sort == "score" else sort
     # See ``_list_jobs_for_target_two_query``: the "score" sort orders by
@@ -470,7 +513,7 @@ def _list_jobs_across_user_targets(
         supabase.table("scores")
         .select(
             "job_posting_id, target_id, score, recency_score, "
-            "score_breakdown, scoring_status"
+            "axis_scores, score_breakdown, scoring_status"
         )
         .in_("target_id", list(user_target_ids))
         .eq("excluded", False)
@@ -526,10 +569,17 @@ def _list_jobs_across_user_targets(
         supabase, page_ids, status=status, company=company, search=search
     )
 
+    weights_by_target = weights_by_target or {}
     for p in postings:
         ts = best.get(p["id"])
         if ts:
-            p["score"] = ts["score"]
+            raw_score = int(ts["score"])
+            tid = cast(str | None, ts.get("target_id"))
+            w = weights_by_target.get(tid) if tid else None
+            p["score"] = display_score_or_passthrough(
+                ts.get("axis_scores"), raw_score, w
+            )
+            p["raw_score"] = raw_score
             p["score_breakdown"] = ts.get("score_breakdown")
             p["scoring_status"] = ts.get("scoring_status", "stage1")
 
@@ -717,6 +767,14 @@ def list_jobs(
 
     # Target view: sort/paginate by target-specific scores
     if target_id:
+        # Per-pairing axis weights override the displayed score for this
+        # user's target view. JWT-only — api-key callers get raw scores
+        # (no user identity to scope weights by).
+        axis_weights: AxisWeights | None = None
+        if user_id is not None:
+            ut = get_user_target(supabase, user_id, target_id)
+            if ut is not None:
+                axis_weights = ut.axis_weights
         result = _list_jobs_for_target(
             supabase,
             target_id=target_id,
@@ -731,6 +789,7 @@ def list_jobs(
             search=search,
             exclude_terms=exclude_terms,
             only_terms=only_terms,
+            axis_weights=axis_weights,
         )
         result["applied_min_score"] = min_score
         job_list_cache.set(cache_key, result)
@@ -741,6 +800,12 @@ def list_jobs(
     # callers (cron/poller) we keep the old "table scan" path: they need
     # to operate on the whole table by design (rescore-all, backfill).
     if user_target_ids is not None:
+        # Build target_id -> AxisWeights map for any pairings that have
+        # custom weights set. Missing entries fall through to raw score.
+        weights_by_target: dict[str, AxisWeights] = {}
+        for ut in list_user_targets(supabase, user_id):  # type: ignore[arg-type]
+            if ut.axis_weights is not None:
+                weights_by_target[ut.target_id] = ut.axis_weights
         result = _list_jobs_across_user_targets(
             supabase,
             user_target_ids=user_target_ids,
@@ -755,6 +820,7 @@ def list_jobs(
             search=search,
             exclude_terms=exclude_terms,
             only_terms=only_terms,
+            weights_by_target=weights_by_target or None,
         )
         result["applied_min_score"] = min_score
         job_list_cache.set(cache_key, result)
