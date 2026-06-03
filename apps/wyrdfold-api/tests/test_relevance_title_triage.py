@@ -150,7 +150,11 @@ class TestTriageTitles:
             titles=["Senior FE", "Sales Lead", "Web Engineer"],
         )
 
-        assert verdicts == {1: True, 2: False, 3: True}
+        # Now returns dict[int, TitleVerdict] (confidence field optional).
+        assert set(verdicts.keys()) == {1, 2, 3}
+        assert verdicts[1].promising is True
+        assert verdicts[2].promising is False
+        assert verdicts[3].promising is True
         assert result is not None  # MagicMock, but not None
 
     @pytest.mark.asyncio
@@ -200,7 +204,8 @@ class TestTriageTitles:
 
         llm = MagicMock()
         verdicts, _ = await triage_titles(llm, target=_target(), titles=["A"])
-        assert verdicts == {1: False}
+        assert set(verdicts.keys()) == {1}
+        assert verdicts[1].promising is False
 
     @pytest.mark.asyncio
     async def test_missing_verdict_omitted_from_dict(
@@ -229,7 +234,8 @@ class TestTriageTitles:
 
         # Only the present id is in the dict; caller treats missing as
         # admit (fail-open).
-        assert verdicts == {1: True}
+        assert set(verdicts.keys()) == {1}
+        assert verdicts[1].promising is True
         assert 2 not in verdicts
 
 

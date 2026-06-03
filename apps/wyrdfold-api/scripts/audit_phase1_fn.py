@@ -124,10 +124,10 @@ async def _audit_target(
             model=_AUDIT_MODEL,
             purpose=_AUDIT_PURPOSE,
         )
-        for batch_idx, promising in verdicts.items():
+        for batch_idx, verdict in verdicts.items():
             # batch_idx is 1-based; map to original (job_id, title).
             orig_idx = start + batch_idx - 1
-            if 0 <= orig_idx < len(pairs) and promising is True:
+            if 0 <= orig_idx < len(pairs) and verdict.promising is True:
                 fns += 1
                 fn_examples.append(pairs[orig_idx][1])
     rate = fns / len(pairs) if pairs else 0.0

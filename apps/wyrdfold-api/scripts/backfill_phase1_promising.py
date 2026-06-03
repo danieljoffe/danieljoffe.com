@@ -191,14 +191,21 @@ async def _grade_and_persist_target(
         # both promising AND excluded based on the verdict.
         for batch_idx_zero, row in enumerate(chunk):
             batch_idx = batch_idx_zero + 1  # Phase 1 ids are 1-based
-            promising = verdicts.get(batch_idx)
-            if promising is None:
+            verdict = verdicts.get(batch_idx)
+            if verdict is None:
                 # No verdict (LLM omitted or fail-open from triage call).
                 # Leave the row untouched (promising stays NULL).
                 fail_open_count += 1
                 continue
 
+            promising = verdict.promising
             update_payload: dict[str, Any] = {"promising": promising}
+            # Persist the model's confidence too — used by
+            # phase2_runner to order Phase 2 candidates. ``None`` from
+            # pre-confidence prompt versions is fine; the column stays
+            # NULL and the runner treats it as lowest priority.
+            if verdict.confidence is not None:
+                update_payload["phase1_confidence"] = verdict.confidence
             # When Phase 1 rejects a row, also mark excluded=true so
             # the row drops out of the list view immediately. We don't
             # un-exclude on promising=true because the scorer may have
