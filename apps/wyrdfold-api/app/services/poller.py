@@ -39,6 +39,7 @@ from app.services.recency import refresh_recency_scores
 from app.services.relevance.title_triage import (
     PHASE1_BATCH_SIZE,
     PHASE1_PURPOSE,
+    TitleVerdict,
     triage_titles,
 )
 from app.services.sanitize import sanitize_html
@@ -554,7 +555,7 @@ async def _poll_one_source(
         # flag so the PR can ship dark; when flag is False the gate
         # admits everything (pass-through) and we rely on downstream
         # keyword scoring for filtering.
-        phase1_verdicts: dict[str, dict[int, bool]] = {}
+        phase1_verdicts: dict[str, dict[int, TitleVerdict]] = {}
         if settings.phase1_triage_enabled and active_targets and jobs:
             llm = get_default_llm_client()
             titles = [job.title for job in jobs]
@@ -562,7 +563,7 @@ async def _poll_one_source(
                 # Chunk to PHASE1_BATCH_SIZE per call. Sources usually
                 # return well under one batch (10-200 jobs); larger
                 # sources spread cost across multiple calls.
-                target_verdicts: dict[int, bool] = {}
+                target_verdicts: dict[int, TitleVerdict] = {}
                 for start in range(0, len(titles), PHASE1_BATCH_SIZE):
                     batch = titles[start : start + PHASE1_BATCH_SIZE]
                     verdicts, result = await triage_titles(
@@ -587,17 +588,23 @@ async def _poll_one_source(
                                 active_target.id,
                             )
                     # Shift batch-local ids to global (1-based) job indices.
-                    for batch_idx, promising in verdicts.items():
+                    for batch_idx, verdict in verdicts.items():
                         global_idx = start + batch_idx  # batch_idx is 1-based
-                        target_verdicts[global_idx] = promising
+                        target_verdicts[global_idx] = verdict
                 phase1_verdicts[active_target.id] = target_verdicts
 
         def _any_target_admits(global_job_idx: int) -> bool:
-            """``global_job_idx`` is 1-based (matches Phase 1's id contract)."""
+            """``global_job_idx`` is 1-based (matches Phase 1's id contract).
+
+            Fail-open: a missing verdict (LLM didn't return an id) is
+            treated as PROMISING. Same semantics as before the
+            confidence rollout.
+            """
             if not phase1_verdicts:
                 return True  # gate disabled or no targets — admit
             for target_verdicts in phase1_verdicts.values():
-                if target_verdicts.get(global_job_idx, True):
+                v = target_verdicts.get(global_job_idx)
+                if v is None or v.promising:
                     return True
             return False
 
@@ -734,16 +741,20 @@ async def _poll_one_source(
                 async def _full_score_one(
                     row_data: dict[str, Any],
                     target: JobTarget = active_target,
-                    verdicts: dict[int, bool] = target_verdicts,
+                    verdicts: dict[int, TitleVerdict] = target_verdicts,
                 ) -> None:
                     try:
                         ext_id = row_data.get("external_id", "")
                         phase1_idx = phase1_idx_by_external_id.get(ext_id)
-                        promising = (
-                            verdicts.get(phase1_idx, True)
+                        verdict = (
+                            verdicts.get(phase1_idx)
                             if phase1_idx is not None
-                            else True
+                            else None
                         )
+                        # Fail-open: missing verdict = admit (matches the
+                        # pre-confidence rollout's `.get(idx, True)` default).
+                        promising = verdict.promising if verdict is not None else True
+                        phase1_confidence = verdict.confidence if verdict is not None else None
                         await asyncio.to_thread(
                             target_score_and_upsert,
                             supabase,
@@ -754,6 +765,7 @@ async def _poll_one_source(
                             parsed_jd=jd_cache.get(row_data["id"]),
                             excluded_by_prefilter=not promising,
                             promising=promising if phase1_verdicts else None,
+                            phase1_confidence=phase1_confidence,
                         )
                     except Exception:
                         logger.exception(
@@ -1089,7 +1101,7 @@ async def _poll_one_source_for_target(
         # Phase 1 per-target triage (single target). Same semantics as
         # ``_poll_one_source`` but the candidate set is one target, so
         # ``phase1_verdicts`` collapses to a single dict.
-        target_verdicts: dict[int, bool] = {}
+        target_verdicts: dict[int, TitleVerdict] = {}
         if settings.phase1_triage_enabled and jobs:
             llm = get_default_llm_client()
             titles = [job.title for job in jobs]
@@ -1116,16 +1128,18 @@ async def _poll_one_source_for_target(
                             "Failed to record Phase 1 cost for target %s",
                             target.id,
                         )
-                for batch_idx, promising in verdicts.items():
-                    target_verdicts[start + batch_idx] = promising
+                for batch_idx, verdict in verdicts.items():
+                    target_verdicts[start + batch_idx] = verdict
 
         rows_to_upsert: list[dict[str, Any]] = []
         phase1_idx_by_external_id: dict[str, int] = {}
         for idx, job in enumerate(jobs):
             # Phase 1 ids are 1-based. Fail-open when no verdict (gate
             # disabled or LLM dropped the entry).
-            if target_verdicts and not target_verdicts.get(idx + 1, True):
-                continue
+            if target_verdicts:
+                v = target_verdicts.get(idx + 1)
+                if v is not None and not v.promising:
+                    continue
             if not _title_matches_target(job.title, target.search_keywords):
                 continue
             if not _is_us_location(job.location_name):
@@ -1201,10 +1215,14 @@ async def _poll_one_source_for_target(
                     # Phase 2 candidate selection can rely on it.
                     ext_id = row_data.get("external_id", "")
                     phase1_idx = phase1_idx_by_external_id.get(ext_id)
-                    promising = (
-                        target_verdicts.get(phase1_idx, True)
+                    verdict = (
+                        target_verdicts.get(phase1_idx)
                         if phase1_idx is not None
-                        else True
+                        else None
+                    )
+                    promising = verdict.promising if verdict is not None else True
+                    phase1_confidence = (
+                        verdict.confidence if verdict is not None else None
                     )
                     await asyncio.to_thread(
                         target_score_and_upsert,
@@ -1216,6 +1234,7 @@ async def _poll_one_source_for_target(
                         parsed_jd=jd_cache.get(row_data["id"]),
                         excluded_by_prefilter=not promising,
                         promising=promising if target_verdicts else None,
+                        phase1_confidence=phase1_confidence,
                     )
                 except Exception:
                     logger.exception(

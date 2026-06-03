@@ -66,6 +66,7 @@ def _upsert_score(
     scoring_status: ScoringStatus,
     scored_profile_version: int = 1,
     promising: bool | None = None,
+    phase1_confidence: int | None = None,
 ) -> JobTargetScore:
     """Upsert a score row and return the parsed result.
 
@@ -74,6 +75,11 @@ def _upsert_score(
     to leave the column untouched on re-upserts; pass ``True`` / ``False``
     to set explicitly. The default ``None`` means legacy keyword-scoring
     callsites don't need to know about Phase 1.
+
+    ``phase1_confidence`` (0-100) is the model's certainty in its Phase 1
+    verdict. Same None-leaves-untouched semantics. Used by
+    ``phase2_runner`` to order candidates by phase1_confidence DESC so
+    the daily Sonnet cap goes to highest-likelihood-promising jobs first.
     """
     row: dict[str, Any] = {
         "job_posting_id": job_posting_id,
@@ -94,6 +100,8 @@ def _upsert_score(
     }
     if promising is not None:
         row["promising"] = promising
+    if phase1_confidence is not None:
+        row["phase1_confidence"] = phase1_confidence
     # Idempotent upsert (`on_conflict` matches the unique constraint), so
     # retrying on a Supabase HTTP/2 stream drop is safe.
     resp = execute_with_retry_sync(
@@ -156,6 +164,7 @@ def score_and_upsert(
     parsed_jd: ParsedJD | None = None,
     excluded_by_prefilter: bool = False,
     promising: bool | None = None,
+    phase1_confidence: int | None = None,
 ) -> JobTargetScore:
     """Stage 2: Score one job's full JD against one target and upsert.
 
@@ -194,6 +203,7 @@ def score_and_upsert(
         scoring_status="stage2",
         scored_profile_version=target.profile_version,
         promising=promising,
+        phase1_confidence=phase1_confidence,
     )
 
 

@@ -82,20 +82,26 @@ def _needs_phase2(
 
 def _fetch_phase2_state(
     supabase: Client, target_id: str, job_ids: list[str]
-) -> dict[str, tuple[bool | None, str | None, int | None]]:
-    """Read (promising, scoring_status, scored_profile_version) per job.
+) -> dict[str, tuple[bool | None, str | None, int | None, int | None]]:
+    """Read (promising, scoring_status, scored_profile_version, phase1_confidence) per job.
 
     Keyed by ``job_posting_id`` for this one target. Jobs with no scores
     row (Phase 1 dropped them under this target) are simply absent from
-    the result and never become candidates.
+    the result and never become candidates. ``phase1_confidence`` is None
+    for rows triaged before the confidence column existed — the runner's
+    ordering treats None as "lowest priority" so legacy rows still grade
+    but newer high-confidence rows go first.
     """
-    state: dict[str, tuple[bool | None, str | None, int | None]] = {}
+    state: dict[
+        str, tuple[bool | None, str | None, int | None, int | None]
+    ] = {}
     for i in range(0, len(job_ids), _STATE_CHUNK_SIZE):
         chunk = job_ids[i : i + _STATE_CHUNK_SIZE]
         resp = (
             supabase.table("scores")
             .select(
-                "job_posting_id, promising, scoring_status, scored_profile_version"
+                "job_posting_id, promising, scoring_status, "
+                "scored_profile_version, phase1_confidence"
             )
             .eq("target_id", target_id)
             .in_("job_posting_id", chunk)
@@ -106,6 +112,7 @@ def _fetch_phase2_state(
                 row.get("promising"),
                 row.get("scoring_status"),
                 row.get("scored_profile_version"),
+                row.get("phase1_confidence"),
             )
     return state
 
@@ -162,17 +169,29 @@ async def run_phase2_for_jobs(
         jid
         for jid in job_ids
         if jid in state
-        and _needs_phase2(*state[jid], target.profile_version)
+        # Pass only the first 3 fields — confidence is for ordering, not gating.
+        and _needs_phase2(*state[jid][:3], target.profile_version)
     ]
     if not candidates:
         return 0
 
-    # Newest-first so the freshest promising postings claim the quota
-    # before older ones. ``first_seen_at`` is an ISO-8601 string, sortable
-    # lexically; missing values sort last.
-    candidates.sort(
-        key=lambda jid: job_by_id[jid].get("first_seen_at") or "", reverse=True
-    )
+    # Order candidates so the Phase 2 daily cap goes to the highest-leverage
+    # jobs first:
+    #   1) phase1_confidence DESC — Haiku's certainty in the promising
+    #      verdict (None sorts last; legacy rows get graded eventually).
+    #   2) first_seen_at DESC — among equal-confidence rows, prefer the
+    #      freshest.
+    # ``first_seen_at`` is an ISO-8601 string, sortable lexically; missing
+    # values sort last.
+    def _priority(jid: str) -> tuple[int, str]:
+        conf = state[jid][3]  # phase1_confidence
+        # Treat None as -1 so any real confidence wins; combined with
+        # reverse=True the highest confidence comes first.
+        c = int(conf) if conf is not None else -1
+        seen = job_by_id[jid].get("first_seen_at") or ""
+        return (c, seen)
+
+    candidates.sort(key=_priority, reverse=True)
 
     # Daily cap: don't grade more than the target's remaining quota. This
     # is a soft, best-effort budget — concurrent poll cycles for the same

@@ -242,3 +242,91 @@ async def test_empty_jobs_short_circuits(
     )
     assert n == 0
     assert graded == []
+
+
+# ---- Phase 1 confidence ordering ------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_orders_candidates_by_confidence_desc(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When the daily cap bites, the highest-confidence jobs grade first."""
+    graded = _patch_grader(monkeypatch)
+    _patch_quota(monkeypatch, 2)  # only two grades allowed
+    # 4 promising candidates at the same first_seen_at; confidences differ.
+    rows = [
+        {"job_posting_id": "j-low-1", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 30},
+        {"job_posting_id": "j-high", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 95},
+        {"job_posting_id": "j-mid", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 70},
+        {"job_posting_id": "j-low-2", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 40},
+    ]
+    jobs = [
+        {"id": jid, "title": "x", "description_html": "",
+         "first_seen_at": "2026-04-01T00:00:00+00:00"}
+        for jid in ("j-low-1", "j-high", "j-mid", "j-low-2")
+    ]
+    n = await run_phase2_for_jobs(
+        _supabase(rows), MagicMock(), target=_target(1), payload=_payload(), jobs=jobs
+    )
+    assert n == 2
+    # j-high (95) + j-mid (70) — NOT the lower-confidence ones.
+    assert set(graded) == {"j-high", "j-mid"}
+
+
+@pytest.mark.asyncio
+async def test_null_confidence_sorts_below_any_real_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Legacy rows (no confidence captured yet) still grade — but real-
+    confidence rows go first when there's contention for the cap."""
+    graded = _patch_grader(monkeypatch)
+    _patch_quota(monkeypatch, 1)
+    rows = [
+        {"job_posting_id": "j-legacy", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": None},
+        {"job_posting_id": "j-confident", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 50},
+    ]
+    jobs = [
+        {"id": "j-legacy", "title": "a", "description_html": "",
+         "first_seen_at": "2026-04-02T00:00:00+00:00"},  # NEWER
+        {"id": "j-confident", "title": "b", "description_html": "",
+         "first_seen_at": "2026-04-01T00:00:00+00:00"},  # OLDER but has confidence
+    ]
+    n = await run_phase2_for_jobs(
+        _supabase(rows), MagicMock(), target=_target(1), payload=_payload(), jobs=jobs
+    )
+    assert n == 1
+    # Confidence wins over first_seen_at — j-confident graded, j-legacy deferred.
+    assert graded == ["j-confident"]
+
+
+@pytest.mark.asyncio
+async def test_confidence_ties_break_by_first_seen_at_desc(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Equal confidence → freshest first."""
+    graded = _patch_grader(monkeypatch)
+    _patch_quota(monkeypatch, 1)
+    rows = [
+        {"job_posting_id": "j-old", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 80},
+        {"job_posting_id": "j-new", "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 80},
+    ]
+    jobs = [
+        {"id": "j-old", "title": "a", "description_html": "",
+         "first_seen_at": "2026-01-01T00:00:00+00:00"},
+        {"id": "j-new", "title": "b", "description_html": "",
+         "first_seen_at": "2026-04-01T00:00:00+00:00"},
+    ]
+    n = await run_phase2_for_jobs(
+        _supabase(rows), MagicMock(), target=_target(1), payload=_payload(), jobs=jobs
+    )
+    assert n == 1
+    assert graded == ["j-new"]

@@ -104,19 +104,38 @@ tech "Director of CX" target).
 - Clearly off-discipline even if the title shares a word ("Director of \
 Sales" for a "Director of CX" target).
 
+Also include a confidence score (0-100) per verdict — how certain you \
+are about the promising/unpromising call. Use this scale:
+
+- 90-100: bullseye obvious. "Director of CX Operations" for a "Director \
+of CX Operations" target (promising 100); "Senior Frontend Engineer" \
+for the same target (unpromising 100).
+- 70-89: confident. Adjacent specialisation or one-rung-off seniority \
+that fits cleanly under the lean-promising rule (or its inverse for \
+unpromising).
+- 40-69: legitimately ambiguous — could go either way. Use this band \
+honestly; downstream tooling will rely on it to deprioritise borderline \
+cases when the Phase 2 cap bites.
+- 0-39: hedged. You're guessing. Still emit a verdict (the lean-promising \
+rule applies here too), but flag your low certainty.
+
+Confidence is the model's certainty in its verdict, NOT a fit score. \
+A high-confidence UNPROMISING is just as useful as a high-confidence \
+PROMISING — both let downstream tooling skip Phase 2 work.
+
 Return JSON matching this exact schema:
 
 {
   "verdicts": [
-    {"id": 1, "promising": true},
-    {"id": 2, "promising": false},
-    {"id": 3, "promising": true}
+    {"id": 1, "promising": true,  "confidence": 95},
+    {"id": 2, "promising": false, "confidence": 88},
+    {"id": 3, "promising": true,  "confidence": 55}
   ]
 }
 
 One verdict per input title, keyed by the input id. Do NOT omit ids — \
-if you can't decide, default to PROMISING. Return ONLY the JSON \
-object. No prose, no markdown, no code fences."""
+if you can't decide, default to PROMISING with confidence < 50. Return \
+ONLY the JSON object. No prose, no markdown, no code fences."""
 
 
 class TitleVerdict(BaseModel):
@@ -125,10 +144,18 @@ class TitleVerdict(BaseModel):
     ``id`` matches the 1-based position in the input batch — the caller
     maps it back to a job_id. We use integer ids (not the job UUID)
     because numeric ids are cheaper for the model to track than UUIDs.
+
+    ``confidence`` is optional for back-compat: pre-confidence-prompt
+    responses don't include it (defaults to None). When present, it's
+    the model's 0-100 certainty in the ``promising`` verdict (not a fit
+    score — see prompt). The poller persists this to
+    ``scores.phase1_confidence`` so ``phase2_runner`` can order
+    Phase 2 candidates by confidence DESC.
     """
 
     id: int = Field(ge=1)
     promising: bool
+    confidence: int | None = Field(default=None, ge=0, le=100)
 
 
 class TitleTriageResponse(BaseModel):
@@ -177,14 +204,16 @@ async def triage_titles(
     titles: list[str],
     model: ModelId = PHASE1_MODEL,
     purpose: str = PHASE1_PURPOSE,
-) -> tuple[dict[int, bool], LLMResult | None]:
+) -> tuple[dict[int, TitleVerdict], LLMResult | None]:
     """Grade up to ``PHASE1_BATCH_SIZE`` titles against one target.
 
-    Returns ``(verdict_by_index, llm_result)`` where:
-    - ``verdict_by_index`` maps the 1-based input index to ``True`` /
-      ``False``. Indices missing from the dict mean "no verdict";
-      callers must treat that as fail-open (admit the job) so a partial
-      LLM hiccup doesn't drop relevant postings.
+    Returns ``(verdicts_by_index, llm_result)`` where:
+    - ``verdicts_by_index`` maps the 1-based input index to a
+      ``TitleVerdict`` carrying ``promising`` (bool) and ``confidence``
+      (int 0-100, or None on legacy / partial responses). Indices missing
+      from the dict mean "no verdict"; callers must treat that as
+      fail-open (admit the job) so a partial LLM hiccup doesn't drop
+      relevant postings.
     - ``llm_result`` is the LLMResult for cost logging, or ``None`` if
       the call failed entirely (caller logs the exception via the
       ``logger`` import).
@@ -230,5 +259,5 @@ async def triage_titles(
 
     # Map verdicts by id. Tolerate the model returning duplicates (last
     # one wins) or omitting ids (treated as fail-open by the caller's
-    # ``.get(i, True)`` pattern).
-    return {v.id: v.promising for v in parsed.verdicts}, result
+    # ``.get(i)``-returns-None pattern).
+    return {v.id: v for v in parsed.verdicts}, result
