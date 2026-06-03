@@ -11,6 +11,7 @@ from typing import Any, cast
 from supabase import Client
 
 from app.models.targets import (
+    AxisWeights,
     JobTarget,
     ScoringProfile,
     TargetCreate,
@@ -49,6 +50,8 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
 
 def _parse_user_target(row: dict[str, Any]) -> UserTarget:
     """Parse a raw Supabase row into a UserTarget."""
+    aw_raw = row.get("axis_weights")
+    awp_raw = row.get("axis_weights_previous")
     return UserTarget(
         id=row["id"],
         user_id=row["user_id"],
@@ -56,6 +59,10 @@ def _parse_user_target(row: dict[str, Any]) -> UserTarget:
         is_active=row["is_active"],
         fit_score=row.get("fit_score"),
         fit_score_reasoning=row.get("fit_score_reasoning"),
+        axis_weights=AxisWeights.model_validate(aw_raw) if aw_raw else None,
+        axis_weights_previous=(
+            AxisWeights.model_validate(awp_raw) if awp_raw else None
+        ),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )

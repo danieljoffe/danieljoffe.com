@@ -91,6 +91,37 @@ class JobTarget(BaseModel):
     updated_at: datetime
 
 
+class AxisWeights(BaseModel):
+    """User-tunable per-axis multiplier for Phase 2's four-axis scorecard.
+
+    Each axis weight is in [0, 1]. Defaults are equal quartile (0.25
+    each) so the display_score reproduces Sonnet's holistic ``score`` —
+    setting weights to defaults is behaviorally identical to not setting
+    them. NULL in the DB column means "use defaults"; the router
+    short-circuits the math when weights are unset.
+
+    See plan-wyrdfold-streamlined-target.md "User-tunable axis weights".
+    """
+
+    title_fit: float = Field(default=0.25, ge=0.0, le=1.0)
+    skills_fit: float = Field(default=0.25, ge=0.0, le=1.0)
+    seniority_fit: float = Field(default=0.25, ge=0.0, le=1.0)
+    domain_fit: float = Field(default=0.25, ge=0.0, le=1.0)
+
+    def is_default(self) -> bool:
+        """True iff every axis is exactly the default quartile.
+
+        The router can skip the per-row math when this is True — no
+        change vs the raw ``score`` value.
+        """
+        return (
+            self.title_fit == 0.25
+            and self.skills_fit == 0.25
+            and self.seniority_fit == 0.25
+            and self.domain_fit == 0.25
+        )
+
+
 class UserTarget(BaseModel):
     """Junction row linking a user to a shared target."""
 
@@ -100,6 +131,11 @@ class UserTarget(BaseModel):
     is_active: bool
     fit_score: int | None = None
     fit_score_reasoning: str | None = None
+    # PR E (plan-wyrdfold-streamlined-target.md). NULL = use defaults
+    # (equal quartile); router skips per-row math. axis_weights_previous
+    # holds the one-step-back snapshot for the undo button.
+    axis_weights: AxisWeights | None = None
+    axis_weights_previous: AxisWeights | None = None
     created_at: datetime
     updated_at: datetime
 
