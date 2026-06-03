@@ -98,7 +98,7 @@ user has done before? Greater weight for targets where domain is part \
 of the user's intent (e.g., "Director of CX Operations" in a SaaS \
 context); lighter weight when the target is domain-agnostic.
 
-Overall fit_score guidance
+Overall fit_score guidance (same bands as baseline)
 - 85-100: excellent across the board; title squarely matches, skills \
 overlap is strong, seniority lines up. Strong recommend.
 - 70-84: solid match with one minor gap (e.g., right title + skills, \
@@ -111,12 +111,24 @@ weak skills overlap, off seniority).
 - 0-29: wrong role function or domain entirely. Should not have \
 reached you if Phase 1 was working — flag it loudly.
 
-Reasoning rules
-- 1-2 sentences. Lead with the strongest match dimension; close with \
-the biggest gap. Mention specific skills / titles / seniority cues — \
-no generic phrases like "good cultural fit".
-- Anchor in evidence from the JD and the user profile. Don't speculate \
-about the company or invent skills the user didn't list.
+Reasoning rules — STRICT (evidence-first):
+- The reasoning string MUST cite at least one specific JD phrase in \
+quotes (e.g., 'the JD asks for "5+ years of React"').
+- The reasoning string MUST cite at least one specific item from the \
+user profile (specific skill, prior company, named outcome) — not a \
+category label.
+- Lead with the STRONGEST matched dimension and name it explicitly: \
+"Title:", "Skills:", "Seniority:", or "Domain:".
+- Close with the BIGGEST GAP, also named explicitly.
+- Hard ban: words like "strong", "great", "well", "alignment", \
+"synergy", "cultural fit" — these are confidence words without \
+evidence. Replace with the underlying fact.
+- 2-3 sentences. Longer if you must, but every sentence must carry a \
+specific fact.
+
+The discipline of forcing concrete evidence in the reasoning should \
+naturally calibrate the score — a score of 80+ that you cannot back up \
+with quoted evidence is a wrong score.
 
 Return JSON matching this exact schema:
 
@@ -128,9 +140,11 @@ Return JSON matching this exact schema:
     "seniority_fit": 85,
     "domain_fit": 70
   },
-  "reasoning": "Title and seniority squarely match a Staff Frontend role; \
-React/TypeScript/Storybook all present in your profile. Missing the \
-e-commerce domain experience the JD emphasises."
+  "reasoning": "Title: 'Staff Frontend Engineer' matches the target \
+exactly. Skills: the JD asks for 'React, TypeScript, accessibility' \
+which appear as headline strengths in your FightCamp work (Lighthouse \
++40, WCAG audit). Gap — Domain: the JD names 'AI safety surfaces' \
+which is absent from your e-commerce/healthtech profile."
 }
 
 Return ONLY the JSON object. No prose, no markdown, no code fences."""
@@ -220,6 +234,12 @@ async def derive_job_fit(
         messages=[Message(role="user", content=user_message)],
         schema=JobFitResult,
         purpose=purpose,
-        max_tokens=512,
+        # 1024 (was 512) to give Sonnet headroom for the evidence-first
+        # reasoning. Sonnet only emits as many tokens as it needs, so the
+        # cost impact is minimal — the prior 512 cap occasionally truncated
+        # mid-JSON on softer / vaguer CX-style JDs where the model tried
+        # harder to find quotable evidence. See plan-wyrdfold-relevance-
+        # findings.md "Experiment 3" for the diagnostic chain.
+        max_tokens=1024,
         cache_system=True,
     )
