@@ -1,258 +1,185 @@
 # Implementation Plan: Logistics Chips on Job Rows
 
-**Author:** Claude (overnight session, 2026-06-02)
-**Status:** Small UX/data PR. ~half-day to ~one-day total.
+**Author:** Claude (2026-06-02; pivoted 2026-06-03 to Phase-2-piggyback extraction)
+**Status:** Small-to-medium PR. Prompt + schema + FE component. Half-day to one day.
 
 ## Goal
 
-Render location, salary, and a few high-signal "dealbreaker" cues (visa,
-timezone, full-remote) as **informational inline chips** on every job row
-and at the top of the detail panel.
+Render high-signal **logistics** (remote vs onsite, salary range, location) as inline chips on every job row and prominently in the detail panel.
 
-**Do not** factor any of these into `score` or `recency_score`. They're
-information surfaces, not ranking signals. (Rationale: see the discussion
-under "Logistics: filters vs weights" in the conversation transcript; data
-quality is too uneven to base ranking on these, and user intent on these
-dimensions is binary, not weighted.)
+The chips never affect `score`, `recency_score`, or sort order. They are **filters and informational surfaces**, not ranking signals.
+
+See also: the "Concepts" block in `plan-wyrdfold-streamlined-target.md`. **Axis weights** tune the displayed score. **Logistics filters** drop or surface rows based on hard criteria. They are independent mechanisms and never collide in code.
 
 ## Why now
 
-Once the scoring noise is gone (Phase 1 + Phase 2 + recency are live, see
-the migration plan), the next bottleneck for "did I find what I want?" is
-the user manually scanning rows for dealbreakers. Right now they see only
-title / company / score / salary-text / location-string. The location and
-salary strings are noisy and easy to miss; visa/timezone hints aren't
-surfaced at all.
+The scoring pipeline (Phase 1 + Phase 2 + recency) is the primary noise reducer. The remaining bottleneck for "did I find what I want?" is the user scanning rows for dealbreakers — "is this remote?", "is the pay in the band?", "is it in my country?". Today the only signal is the noisy free-text `jobs.location` and `jobs.salary_text`. Chips fix that.
 
-Chips reduce that scan time without polluting the score.
+## Approach: piggyback on Phase 2 grading
 
-## What renders
+Phase 2 (Sonnet) already reads the full JD body to produce axis scores. Adding a small `logistics_filters` JSON section to the same prompt costs near-zero tokens, avoids a separate extraction pipeline, and produces higher-quality output than regex.
 
-Three chip families on each row (and prominently in the detail panel):
+Specifically:
 
-### 1. Location chip (always shown)
+- **No new model call.** One prompt change, one JSON section added to the schema. Same Sonnet pass.
+- **No separate extractor service.** The Phase 2 grader writes the structured data alongside the axis scores.
+- **No `jobs.logistics` column.** The data lives on `scores.logistics_filters jsonb`, alongside the axis scores it was extracted with. (Conceptually: this is "what the grader observed about this job", same lifetime as the score itself.)
+- **Backfill via the existing Phase 2 backfill scripts** — no new tooling.
 
-Normalize the raw `jobs.location` string into one of:
+### What we extract (v1)
 
-| Render           | Trigger                                                       |
-| ---------------- | ------------------------------------------------------------- |
-| `🌐 Remote`      | location contains "Remote" / "Anywhere" with no specific city |
-| `🏠 Remote – US` | "Remote - US" / "Remote United States"                        |
-| `🏢 Hybrid – SF` | "Hybrid" + first city, when a single city is named            |
-| `🏢 SF, NYC, +3` | multiple cities listed (n>2 truncated)                        |
-| `🌍 London, UK`  | single non-US city                                            |
-| `📍 ?`           | location is blank or unparseable                              |
+```json
+{
+  "remote_status": "remote" | "hybrid" | "onsite" | "unspecified",
+  "salary_min": 150000,
+  "salary_max": 180000,
+  "salary_currency": "USD",
+  "salary_unit": "year" | "hour",
+  "location_city": "San Francisco" | null,
+  "location_country": "US" | null
+}
+```
 
-Pure presentation; no backend change. Component reads `jobs.location` and
-runs a small normalizer.
+All fields nullable. The grader emits `"unspecified"` / null when the JD is ambiguous — far better than a regex's silent miss or false positive.
 
-### 2. Salary chip (always shown)
+### What we deliberately don't extract (v1)
 
-| Render             | Trigger                               |
-| ------------------ | ------------------------------------- |
-| `💰 $260k – $350k` | salary_text parses into a range       |
-| `💰 $200k+`        | salary_text parses with only a floor  |
-| `💰 $200k`         | salary_text is a single value         |
-| (no chip)          | `salary_text` is empty or unparseable |
+- **Visa sponsorship**: most JDs don't say. The LLM would have to guess from boilerplate. Out of scope until we have a more reliable signal (e.g. company-level metadata).
+- **Timezone**: noisy and overlapping with `remote_status`. Defer.
+- **Security clearance / relocation / on-site-only requirement**: low-signal long tail. Add later if user feedback demands.
 
-Two states: shown when parseable, omitted entirely when not. Avoid
-rendering "not disclosed" as a chip — too noisy at the row level.
-
-Use the existing `extract_salary_from_text` (backend) for the parse; expose
-the parsed range as a small client utility too so the chip can render
-without a round-trip.
-
-### 3. Logistics flag chips (when applicable)
-
-Small backend extractor (`app/services/logistics.py`) that scans
-`description_html` for high-signal cues, persisted on the row:
-
-| Cue                   | Trigger phrases (case-insensitive, word-boundary)                                | Chip                     |
-| --------------------- | -------------------------------------------------------------------------------- | ------------------------ |
-| `visa.no`             | "no visa sponsorship", "not provide visa", "do not sponsor", "unable to sponsor" | `🛂 No visa`             |
-| `visa.yes`            | "visa sponsorship available", "we sponsor", "happy to sponsor"                   | `🛂 Sponsors visa`       |
-| `timezone.us`         | "US time zone", "PST", "EST hours", "must overlap US", "Americas time zone"      | `🕐 US hours`            |
-| `timezone.eu`         | "European time zone", "GMT", "CET hours", "EU hours"                             | `🕐 EU hours`            |
-| `onsite`              | "must be in office", "fully on-site", "no remote", "in-office requirement"       | `🏢 On-site only`        |
-| `relocation.required` | "willing to relocate", "relocation required"                                     | `📦 Relocation required` |
-| `clearance.required`  | "security clearance", "TS/SCI", "secret clearance"                               | `🛡️ Clearance required`  |
-
-Conservative matching: short, specific phrases only. Better to miss a cue
-than to false-positive on a casual mention.
-
-A row may have multiple flag chips; truncate to first 2 on the list view
-(`+N more` overflow), show all in the detail panel.
+Keep the v1 schema small. Adding fields later is cheap; removing them is not.
 
 ## Backend changes
 
 ### Migration
 
 ```sql
--- 20260603160000_jobs_logistics_jsonb.sql
+-- 20260603160000_scores_logistics_filters.sql
 
-alter table public.jobs
-  add column if not exists logistics jsonb default '{}'::jsonb;
+alter table public.scores
+  add column if not exists logistics_filters jsonb;
 
-comment on column public.jobs.logistics is
-  'Parsed logistics cues for chip rendering: {visa: "yes"|"no"|null, '
-  'timezone: "us"|"eu"|null, onsite: bool, relocation: bool, clearance: bool}. '
-  'Populated by app/services/logistics.py on ingestion + by a one-time '
-  'backfill script. Informational only — NOT used in scoring.';
-
--- No backfill in the migration itself; see scripts/backfill_logistics.py.
+comment on column public.scores.logistics_filters is
+  'Structured logistics fields extracted by the Phase 2 grader: '
+  '{remote_status, salary_min, salary_max, salary_currency, salary_unit, '
+  'location_city, location_country}. Powers logistics chips and filter '
+  'query params on /jobs. Informational / filtering only — NOT used in scoring.';
 ```
 
-### Extractor module
+No backfill in the migration. Existing Phase 2 backfill script picks up the new column on its next pass (set `LOGISTICS_EXTRACTION_ENABLED=true`).
 
-```python
-# apps/wyrdfold-api/app/services/logistics.py
-"""Parse high-signal logistics cues from a job's description HTML.
+### Prompt change (`app/services/fit/job_fit.py`)
 
-Populated by the poller at ingestion and by a one-time backfill script.
-Designed to be conservative — better to miss a cue than to false-positive
-on a casual mention.
+Add a new section to the Sonnet schema. The grader already returns axis scores + score breakdown; add `logistics` as a sibling object. Update the JSON schema validator, the Pydantic model, and the system prompt with extraction guidance:
 
-The result powers the logistics chips on the /jobs list and detail panel.
-It is NOT used in scoring; see plan-wyrdfold-logistics-chips.md.
-"""
-
-from __future__ import annotations
-import re
-from typing import Literal, TypedDict
-from app.services.scoring import strip_html
-
-class JobLogistics(TypedDict):
-    visa: Literal["yes", "no"] | None
-    timezone: Literal["us", "eu"] | None
-    onsite: bool
-    relocation: bool
-    clearance: bool
-
-# patterns as a const dict so they're testable in isolation
-_PATTERNS: dict[str, list[str]] = {
-    "visa.no": [r"\bno visa sponsorship\b", r"\b(do |will )?not sponsor\b", r"\bunable to sponsor\b"],
-    "visa.yes": [r"\bvisa sponsorship (available|provided|offered)\b", r"\bwe (will )?sponsor\b", r"\bhappy to sponsor\b"],
-    "timezone.us": [r"\bUS time ?zone\b", r"\bPST hours\b", r"\bEST hours\b", r"\bmust overlap US\b", r"\bAmericas time ?zone\b"],
-    "timezone.eu": [r"\bEuropean time ?zone\b", r"\bGMT hours\b", r"\bCET hours\b", r"\bEU hours\b"],
-    "onsite": [r"\bmust be in (the )?office\b", r"\bfully on[- ]site\b", r"\bno remote\b", r"\bin[- ]office requirement\b"],
-    "relocation.required": [r"\brelocation required\b", r"\bwilling to relocate\b"],
-    "clearance.required": [r"\bsecurity clearance\b", r"\bTS/SCI\b", r"\bsecret clearance\b"],
-}
-
-_COMPILED = {k: [re.compile(p, re.IGNORECASE) for p in pats] for k, pats in _PATTERNS.items()}
-
-def extract_logistics(description_html: str) -> JobLogistics:
-    text = strip_html(description_html or "")
-    def hit(key: str) -> bool:
-        return any(p.search(text) for p in _COMPILED[key])
-    visa: Literal["yes", "no"] | None = (
-        "no" if hit("visa.no") else "yes" if hit("visa.yes") else None
-    )
-    tz: Literal["us", "eu"] | None = (
-        "us" if hit("timezone.us") else "eu" if hit("timezone.eu") else None
-    )
-    return {
-        "visa": visa,
-        "timezone": tz,
-        "onsite": hit("onsite"),
-        "relocation": hit("relocation.required"),
-        "clearance": hit("clearance.required"),
-    }
-```
-
-### Poller integration
-
-In `app/services/poller.py`, in the row-build loop (around the upsert), add
-`"logistics": extract_logistics(job.content)` to each
-`rows_to_upsert` entry. One-line change.
-
-### Backfill script
-
-`scripts/backfill_logistics.py` — iterate `jobs` where `logistics = '{}'`,
-parse, write back. Paginated, idempotent, ~free (no LLM).
+> For `logistics.remote_status`: pick `"remote"` if the JD allows full-remote with no office requirement; `"hybrid"` if any in-office days are required; `"onsite"` if no remote work is permitted; `"unspecified"` if the JD is ambiguous. Lean `"unspecified"` over guessing.
+>
+> For `logistics.salary_min` / `salary_max`: extract numeric values only when explicit ("$150,000–$180,000"). Convert "150K" to 150000. `currency` is the ISO 4217 code ("USD", "EUR"). `unit` is `"year"` for annual figures, `"hour"` for hourly. Null all fields if no salary is disclosed.
+>
+> For `logistics.location_city` / `location_country`: extract the primary office city / country when named ("San Francisco" / "US"). Null when remote-only with no anchor location.
 
 ### API surface
 
-`/jobs` response already returns the full job row. Add `logistics` to the
-default select list in `apps/wyrdfold-api/app/routers/jobs.py` (per the
-two-query and across-targets paths) so the frontend can render without a
-second round-trip.
+`/jobs` already returns the `scores` join. Add `logistics_filters` to the SELECT list in `apps/wyrdfold-api/app/routers/jobs.py` (both `_list_jobs_for_target_two_query` and `_list_jobs_across_user_targets`).
+
+New optional query params on `/jobs`:
+
+| Param         | Behaviour                                                                   |
+| ------------- | --------------------------------------------------------------------------- |
+| `remote_only` | `true` → drop rows where `logistics_filters.remote_status != "remote"`      |
+| `min_salary`  | int → drop rows where `salary_max` is null or `< min_salary` (USD assumed)  |
+| `country`     | string ISO code → drop rows where `location_country` != value (null passes) |
+
+Filters apply post-fetch (same pattern as the existing location text filter), so they compose with the existing min-score / status / company filters.
 
 ## Frontend changes
-
-### New component
-
-`apps/wyrdfold/src/components/JobLogisticsChips.tsx` — pure component that
-takes `{ location, salaryText, logistics }` props and renders the chip row.
-Two variants:
-
-- `compact` (default) — first 2 flag chips + `+N` overflow; used in `JobsListTable`.
-- `full` — all chips; used in `JobDetailPanel` header.
-
-Reuse the existing chip primitive from `@danieljoffe.com/shared-ui` if one
-exists (`Badge`, `Chip`); otherwise build a thin local one.
-
-Pure presentation, no hooks; works in server + client contexts.
 
 ### Types
 
 ```ts
 // apps/wyrdfold/src/app/(app)/jobs/types.ts
-export interface JobLogistics {
-  visa: 'yes' | 'no' | null;
-  timezone: 'us' | 'eu' | null;
-  onsite: boolean;
-  relocation: boolean;
-  clearance: boolean;
+export interface LogisticsFilters {
+  remote_status: 'remote' | 'hybrid' | 'onsite' | 'unspecified';
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_currency: string | null;
+  salary_unit: 'year' | 'hour' | null;
+  location_city: string | null;
+  location_country: string | null;
 }
-// Add to existing JobRow:
-//   logistics?: JobLogistics | undefined;
+// On the existing JobRow:
+//   logistics_filters?: LogisticsFilters | null;
 ```
 
-### List integration
+### `LogisticsChips` component
 
-In `apps/wyrdfold/src/app/(app)/jobs/JobsListTable.tsx`, add the chip row
-below the title cell. Hide if no chips would render (all fields null/false).
+`apps/wyrdfold/src/components/LogisticsChips.tsx` — pure component taking `{ filters }`. Renders:
+
+- **Remote chip** (always when known): `Remote` / `Hybrid` / `On-site`. Omit when `unspecified`.
+- **Salary chip** (when both min and max present): formatted range with currency. Falls back to "$150k+" for floor-only.
+- **Location chip** (when present): `City, CC` (e.g. `San Francisco, US`). Skip when remote-only with no anchor.
+
+Two variants:
+
+- `compact` (list rows) — chips inline below the title cell.
+- `full` (detail panel) — chips in a dedicated header row.
+
+Pure presentation, no hooks. Use the existing `Badge` primitive from `@danieljoffe.com/shared-ui`.
+
+### Filter pills above `JobsListTable`
+
+Three filter controls above the list, wired to the new query params:
+
+- "Remote only" toggle → `remote_only=true`
+- Salary slider (50k–500k step 10k) → `min_salary={value}`
+- Country selector (auto-populated from the visible rows' `location_country`) → `country={code}`
+
+Pills update the URL query string so filter state survives reload + share.
 
 ### Detail panel integration
 
-In `apps/wyrdfold/src/app/(app)/jobs/JobDetailPanel.tsx`, add a `<JobLogisticsChips variant="full" />` row directly under the title block. Visible regardless of fit-score state.
+In `apps/wyrdfold/src/app/(app)/jobs/JobDetailPanel.tsx`, add `<LogisticsChips variant="full" filters={job.logistics_filters} />` directly under the title block. Visible regardless of fit-score state.
 
 ## Tests
 
-- **Backend unit**: `tests/test_logistics.py` — happy paths for each cue + confirm conservative matching (no false-positives on "visa-related questions during interviews" or "team works across timezones").
-- **Backend integration**: poller writes `logistics` on new rows; backfill is idempotent.
-- **Frontend unit**: `JobLogisticsChips.test.tsx` — renders correct chip for each input combination; compact-vs-full variants; renders nothing when everything is null/empty.
-- **Frontend RTL**: list row shows chips; detail panel header shows chips.
+- **Backend unit**: `tests/test_logistics_extraction.py` — Phase 2 grader writes `logistics_filters` correctly given canned JDs; missing data → null fields; "150K" → 150000; hybrid keywords distinguishable from full-remote.
+- **Backend integration**: `/jobs?remote_only=true` filters; `min_salary` filters; `country` filters; combined filters compose.
+- **Frontend unit**: `LogisticsChips.spec.tsx` — renders correct chip per filters object; omits sensibly when data is null; compact vs full variants.
+- **Frontend RTL**: list row renders chips; filter pills update URL params and re-fetch; detail panel header shows chips.
 
-## What's deliberately out of scope
+## What's deliberately out of scope (v1)
 
-- **Scoring**: chips never affect `score`, `recency_score`, or sort order.
-- **User filters**: this PR is information surfacing only. A follow-up could add filter pills like "Sponsors visa" / "Remote only" wired to query params — but that's a separate UX PR. (And the right place to add `salary_floor` and `remote_preference` as user-level defaults; see streamlined-target plan for the data shape.)
-- **Salary normalization across currencies**: today we render `salary_text` as-is; multi-currency comparison is a separate problem.
-- **Detecting "remote in X country only"**: too noisy to extract reliably; leave to user filters.
+- **Visa sponsorship, timezone, clearance, relocation chips** — see "What we deliberately don't extract" above.
+- **Multi-currency salary comparison** — render raw with currency code; let users mentally convert until we have demand for a comparison view.
+- **User-level filter defaults** ("always show remote only") — keep filters URL-state for v1; persist to `user_profiles` in a follow-up.
+- **"Remote in X country only" detection** — too noisy to extract; covered loosely by `location_country` + `remote_status` together.
+- **Sort by salary** — v1 sort stays score / recency.
 
 ## Acceptance criteria
 
-- Every `/jobs` row renders a location chip and (when parseable) a salary chip.
-- Backend extractor is conservative (a target false-positive rate <2% on a 50-row spot-check audit).
-- Logistics chip in the detail panel surfaces all extracted cues.
-- Zero changes to `score`, `recency_score`, or list sort order.
-- Backfill script populates `logistics` on all existing rows.
-- Wyrdfold tests green; Lighthouse score unchanged on the /jobs page.
+- Phase 2 grader populates `scores.logistics_filters` on all newly-graded jobs.
+- Backfill script populates the column on all historical Phase-2-graded scores.
+- `/jobs` returns `logistics_filters` on every row.
+- `/jobs?remote_only=true`, `?min_salary=150000`, `?country=US` filter as expected.
+- List rows render the chips compactly; detail panel renders them fully.
+- Filter pills above the list survive page reload via URL state.
+- Zero changes to `score`, `recency_score`, sort order, or any user-target axis-weights behaviour.
+- Wyrdfold + wyrdfold-api tests green.
 
 ## Estimated work
 
-- Backend extractor + tests: 2 hours.
-- Migration + poller wiring + API response: 1 hour.
-- Backfill script: 30 min.
-- Frontend component + types + integration: 2-3 hours.
-- E2E + Storybook story + a11y check: 1 hour.
+- Prompt + Pydantic model + grader test: 1-2 hours.
+- Migration + API SELECT + filter params + tests: 2 hours.
+- Backfill rerun against prod: ~free, automatic.
+- Frontend types + chip component + tests: 2 hours.
+- Filter pills above list (URL state + re-fetch): 2 hours.
+- E2E + visual regression: 1 hour.
 
-Total: half day to one full day depending on shared-ui chip primitive availability.
+Total: ~one day.
 
 ## Connection to other plans
 
-- **Streamlined target creation** (plan-wyrdfold-streamlined-target.md): the slim target shape can later add user-level `salary_floor` and `location_preferences` as filter defaults. These chips would gain a "matched"/"mismatched" visual state in that follow-up.
-- **Relevance diagnosis** (plan-wyrdfold-relevance-diagnosis.md): orthogonal; chips don't touch scoring so no regression risk.
-- **Phase 3 deep dive** (migration plan #8): when shipped, the verdict (apply/stretch/skip) will fold logistics into the recommendation. Chips become the at-a-glance signal; verdict becomes the considered take.
+- **Streamlined target creation** (`plan-wyrdfold-streamlined-target.md`): the slim target shape can later add user-level `salary_floor` and `location_preferences` as filter defaults that pre-populate the pills.
+- **Relevance diagnosis** (`plan-wyrdfold-relevance-diagnosis.md`): orthogonal; chips don't touch scoring so no regression risk to the axes.
+- **Phase 3 deep dive** (migration plan #8): when shipped, the verdict (apply / stretch / skip) folds logistics into the recommendation. Chips remain the at-a-glance signal; verdict becomes the considered take.

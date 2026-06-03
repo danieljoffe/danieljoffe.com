@@ -4,6 +4,76 @@
 **Status:** Architectural change. Ships as a phased migration (additive first, drop legacy second).
 **Prereq:** Phase 1 + Phase 2 in production with `PHASE1_TRIAGE_ENABLED=true` and `PHASE2_ENABLED=true` (✅ done). Relevance diagnosis (separate plan) should run first to validate which Phase 2 axes are pulling weight.
 
+## Concepts (canonical vocabulary)
+
+Several mechanisms share related wording. Pin them down once so the rest of the doc — and the code — never conflates them.
+
+| Term                  | What it is                                                                                          | Where it lives                                                                                                                                                                  |
+| --------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Axis scores**       | Four 0–100 numbers Phase 2 emits per job: `title_fit`, `skills_fit`, `seniority_fit`, `domain_fit`. | `scores.axis_scores` jsonb. Set at grading time, immutable after.                                                                                                               |
+| **Display score**     | The number rendered to the user on a job row. Defaults to the raw Phase 2 score.                    | Computed at read time. Equals the axis blend when the user has axis weights set, else equals the raw score.                                                                     |
+| **Axis weights**      | Per-(user, target) multipliers that re-weight the four axes into the display score.                 | `user_targets.axis_weights` jsonb. Set via `PATCH /targets/{id}/axis-weights`. **Tunes the score; does not filter the list.**                                                   |
+| **Logistics filters** | Pre-list filters on remote/hybrid/onsite, salary band, etc. Drop rows from view based on criteria.  | `scores.logistics_filters` jsonb (extracted by Phase 2 grader — see `plan-wyrdfold-logistics-chips.md`). Applied via `/jobs?…` query params. **Filters the list; not a score.** |
+| **Logistics chips**   | The FE rendering of `logistics_filters` as filter pills above the job list.                         | UI only.                                                                                                                                                                        |
+| **Slim target shape** | The new target schema: `description`, `seniority_hint`, `domain_hints`, search/example keywords.    | `targets` table — `description`, `seniority_hint`, `domain_hints` columns. Replaces legacy `scoring_profile`.                                                                   |
+| **Lateral discovery** | Sonnet mines master payload → adjacent target suggestions the user is competitive for.              | `app/services/targets/lateral_discovery.py`. One-off call; suggestions persisted in `target_suggestions` table (planned).                                                       |
+
+**Axis weights vs logistics filters: independent.** Axis weights change _how the score is computed_. Logistics filters drop rows from the list _before/after the score is shown_. They never collide in the data path. Treat them as different mechanisms in code, in the UI, and in conversation.
+
+**Code discipline.** Never reuse the word "logistics" inside scoring code (axis names, score-breakdown keys, prompt section headers). Reserve it for the filter pipeline. The fourth axis is `domain_fit`, not `logistics_fit`, and there is no plan to rename it.
+
+## Pipeline (end-to-end)
+
+```
+                    ┌──────────────────┐
+   Job ingested ──▶ │ Phase 1 triage   │ ──▶ promising? ──┐
+                    │ (Haiku, title)   │                  │
+                    └──────────────────┘                  │
+                                                          ▼
+                    ┌─────────────────────────────────────────────┐
+                    │ Phase 2 grading (Sonnet, JD body)           │
+                    │                                             │
+                    │   emits:  axis_scores  { title_fit,         │
+                    │                          skills_fit,        │
+                    │                          seniority_fit,     │
+                    │                          domain_fit }       │
+                    │           raw_score    (current blend)      │
+                    │           logistics_filters { remote_status,│
+                    │                                salary_min,  │
+                    │                                salary_max,  │
+                    │                                … }          │
+                    └─────────────────────────────────────────────┘
+                                          │
+                                          ▼
+                    ┌──────────────────────────────────────────┐
+                    │ /jobs read path (per user, per request)  │
+                    │                                          │
+                    │   1. Look up user's axis_weights for     │
+                    │      this (user, target) pairing.        │
+                    │   2. Compute display_score from          │
+                    │      axis_scores × axis_weights          │
+                    │      (passthrough = raw_score if none).  │
+                    │   3. Apply logistics filters from        │
+                    │      query params (remote=true, etc.)    │
+                    │      against scores.logistics_filters.   │
+                    │   4. Sort by raw_score / recency_score.  │
+                    │      (Sort-by-display is v2.)            │
+                    └──────────────────────────────────────────┘
+                                          │
+                                          ▼
+                                     job list page
+                                  ┌───────────────────┐
+                                  │  [chips: Remote]  │ ← logistics_filters
+                                  │  [chips: $150k+]  │
+                                  │  ─────────────    │
+                                  │  Job A   88       │ ← display_score
+                                  │  Job B   85       │
+                                  │  Job C   82       │
+                                  └───────────────────┘
+```
+
+Axis-weight sliders live on the per-target settings page. Logistics chips live above the job list. The two never share a parent UI region.
+
 ## Goal
 
 Align target _creation_ with how the new pipeline actually _scores_. Today,
