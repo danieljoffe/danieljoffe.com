@@ -39,6 +39,22 @@ export interface JobTarget {
   updated_at: string;
 }
 
+/**
+ * Per-(user, target) read-time multiplier on Phase 2's four-axis scorecard.
+ *
+ * All four weights are in [0, 1]. Defaults are equal quartile (0.25
+ * each) so the displayed score reproduces the underlying holistic
+ * `raw_score`. The backend does NOT auto-normalize the inputs — at
+ * read time it divides by the sum, so any values that sum to a non-zero
+ * positive number produce a valid normalized blend.
+ */
+export interface AxisWeights {
+  title_fit: number;
+  skills_fit: number;
+  seniority_fit: number;
+  domain_fit: number;
+}
+
 export interface UserTarget {
   id: string;
   user_id: string;
@@ -46,9 +62,30 @@ export interface UserTarget {
   is_active: boolean;
   fit_score: number | null;
   fit_score_reasoning: string | null;
+  /** NULL = use defaults (equal quartile). Wyrdfold-API PR E. */
+  axis_weights: AxisWeights | null;
+  /** One-step-back snapshot for the undo button. NULL = nothing to undo. */
+  axis_weights_previous: AxisWeights | null;
   created_at: string;
   updated_at: string;
 }
+
+export const DEFAULT_AXIS_WEIGHTS: AxisWeights = {
+  title_fit: 0.25,
+  skills_fit: 0.25,
+  seniority_fit: 0.25,
+  domain_fit: 0.25,
+};
+
+/** Order matters: this is the canonical render order for the four sliders. */
+export const AXIS_KEYS = [
+  'title_fit',
+  'skills_fit',
+  'seniority_fit',
+  'domain_fit',
+] as const satisfies readonly (keyof AxisWeights)[];
+
+export type AxisKey = (typeof AXIS_KEYS)[number];
 
 export interface UserTargetWithTarget {
   user_target: UserTarget;
