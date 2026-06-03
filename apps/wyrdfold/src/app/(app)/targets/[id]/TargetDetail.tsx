@@ -46,21 +46,17 @@ export default function TargetDetail({ id }: TargetDetailProps) {
   }, [id, toast]);
 
   /**
-   * Pull this user's `user_target` row out of `/targets/mine`. We need
-   * it for the axis-weights editor (which lives on this page, but reads
-   * from `user_targets`, not the shared `targets` row). The list is
-   * small (per-user, dozens of rows at most) — one round-trip is fine
-   * for v1. Future optimization: a per-target `/user-target` endpoint.
+   * Fetch this user's `user_target` row for the current target. Powers
+   * the axis-weights editor (which reads from `user_targets`, not the
+   * shared `targets` row). One round-trip via the per-target endpoint —
+   * supersedes the old fetch-all-/mine pattern.
    */
   const fetchUserTarget = useCallback(async () => {
     try {
-      const res = await fetch(`/api/targets/mine`);
+      const res = await fetch(`/api/targets/${id}/user-target`);
       if (!res.ok) throw new Error('Failed to fetch user target');
-      const payload = (await res.json()) as {
-        targets: UserTargetWithTarget[];
-      };
-      const match = payload.targets.find(t => t.target.id === id);
-      setUserTarget(match?.user_target ?? null);
+      const payload = (await res.json()) as UserTargetWithTarget;
+      setUserTarget(payload.user_target);
     } catch {
       // Non-fatal — the axis weights editor will just not render.
       // The rest of the page still works.
