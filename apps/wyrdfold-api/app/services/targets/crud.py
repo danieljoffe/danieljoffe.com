@@ -485,6 +485,88 @@ def set_user_target_inactive(
     return _parse_user_target(rows[0]) if rows else None
 
 
+def set_user_target_axis_weights(
+    supabase: Client,
+    *,
+    user_id: str,
+    target_id: str,
+    weights: AxisWeights | None,
+) -> UserTarget | None:
+    """Set (or clear) the user-tunable axis weights for this user-target pair.
+
+    Snapshots the prior ``axis_weights`` value into ``axis_weights_previous``
+    so the UI's "undo last change" button can revert in one click. Only
+    the most recent prior state is kept — full history is YAGNI for v1
+    (see plan-wyrdfold-streamlined-target.md "User-tunable axis weights").
+
+    Passing ``weights=None`` resets to defaults (DB column becomes NULL).
+    The previous value is still snapshotted so the user can undo "reset
+    to default" too.
+
+    Returns the updated ``UserTarget`` or ``None`` if no row exists for
+    this (user, target) pairing.
+    """
+    current = get_user_target(supabase, user_id, target_id)
+    if current is None:
+        return None
+    updates: dict[str, Any] = {
+        "axis_weights": weights.model_dump() if weights is not None else None,
+        "axis_weights_previous": (
+            current.axis_weights.model_dump()
+            if current.axis_weights is not None
+            else None
+        ),
+        "updated_at": datetime.now(UTC).isoformat(),
+    }
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .update(updates)
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return _parse_user_target(rows[0]) if rows else None
+
+
+def undo_user_target_axis_weights(
+    supabase: Client, *, user_id: str, target_id: str
+) -> UserTarget | None:
+    """Revert ``axis_weights`` to ``axis_weights_previous``.
+
+    Swaps the two columns (previous → current, current → previous).
+    Idempotent in the sense that calling twice toggles back and forth —
+    that's actually the intended behaviour: "Undo" then "Undo" returns
+    to where you started.
+
+    Returns ``None`` if the (user, target) row doesn't exist OR if
+    there's no previous state to revert to (caller should 422).
+    """
+    current = get_user_target(supabase, user_id, target_id)
+    if current is None:
+        return None
+    new_current = current.axis_weights_previous
+    new_previous = current.axis_weights
+    updates: dict[str, Any] = {
+        "axis_weights": (
+            new_current.model_dump() if new_current is not None else None
+        ),
+        "axis_weights_previous": (
+            new_previous.model_dump() if new_previous is not None else None
+        ),
+        "updated_at": datetime.now(UTC).isoformat(),
+    }
+    resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .update(updates)
+        .eq("user_id", user_id)
+        .eq("target_id", target_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return _parse_user_target(rows[0]) if rows else None
+
+
 # ---- Reference JD CRUD -----------------------------------------------------
 
 

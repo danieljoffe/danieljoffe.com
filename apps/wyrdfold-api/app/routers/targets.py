@@ -14,6 +14,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from postgrest.types import CountMethod
 from supabase import Client
 
+from app.cache import job_list_cache, jobs_cache_prefix
 from app.dependencies import (
     enforce_llm_budget,
     get_current_user_id,
@@ -26,6 +27,7 @@ from app.dependencies import (
 from app.http_client import ResponseTooLargeError, get_with_size_cap
 from app.models.schemas import PollResult
 from app.models.targets import (
+    AxisWeights,
     CreateOrLinkResult,
     DeleteResponse,
     JobTarget,
@@ -555,6 +557,108 @@ async def deactivate_target(
         supabase, user_id=user_id, target_id=target_id
     )
     return crud.get(supabase, target_id) or target
+
+
+# ---- Axis weights (PR E follow-up) ----------------------------------------
+#
+# Per-(user, target) read-time multipliers for the four Phase 2 axes.
+# See plan-wyrdfold-streamlined-target.md "User-tunable axis weights".
+#
+# - PATCH /targets/{id}/axis-weights — set new weights; snapshots prior
+#   into axis_weights_previous so /undo can revert in one click.
+# - POST  /targets/{id}/axis-weights/undo — swap current ↔ previous.
+# - DELETE /targets/{id}/axis-weights — reset to defaults (NULL); also
+#   snapshots, so undo recovers the prior custom weights.
+
+
+@router.patch("/{target_id}/axis-weights", response_model=UserTarget)
+async def set_axis_weights(
+    target_id: str,
+    weights: AxisWeights,
+    supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
+) -> UserTarget:
+    """Set the user's per-target axis weights.
+
+    Snapshots the prior value into ``axis_weights_previous`` so the
+    /undo endpoint can revert. Pure read-time math — does NOT trigger
+    any re-grade; existing scores rows are unchanged.
+    """
+    updated = crud.set_user_target_axis_weights(
+        supabase,
+        user_id=user_id,
+        target_id=target_id,
+        weights=weights,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No user_targets row for (user, target). Link the target first.",
+        )
+    _invalidate_jobs_cache_for_target(target_id)
+    return updated
+
+
+@router.delete("/{target_id}/axis-weights", response_model=UserTarget)
+async def reset_axis_weights(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
+) -> UserTarget:
+    """Reset axis_weights to defaults (NULL — equal quartile).
+
+    Same snapshot behaviour as PATCH: the prior custom weights move to
+    ``axis_weights_previous`` so /undo can put them back. "Reset" and
+    "undo" cancel each other out in one round-trip.
+    """
+    updated = crud.set_user_target_axis_weights(
+        supabase,
+        user_id=user_id,
+        target_id=target_id,
+        weights=None,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No user_targets row for (user, target). Link the target first.",
+        )
+    _invalidate_jobs_cache_for_target(target_id)
+    return updated
+
+
+@router.post("/{target_id}/axis-weights/undo", response_model=UserTarget)
+async def undo_axis_weights(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
+) -> UserTarget:
+    """Swap ``axis_weights`` and ``axis_weights_previous``.
+
+    The button-press behind the safety-design's "Undo last change". Two
+    consecutive undos toggle back and forth — that's the intended
+    contract (undo, then change-my-mind-and-redo).
+    """
+    updated = crud.undo_user_target_axis_weights(
+        supabase, user_id=user_id, target_id=target_id
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No user_targets row for (user, target).",
+        )
+    _invalidate_jobs_cache_for_target(target_id)
+    return updated
+
+
+def _invalidate_jobs_cache_for_target(target_id: str) -> None:
+    """Bust the jobs list cache for this target plus the untargeted view.
+
+    The untargeted view ("global") merges scores across the user's targets,
+    so a weight change on any one target can shift its displayed scores.
+    Sibling targets are untouched.
+    """
+    job_list_cache.invalidate(prefix=jobs_cache_prefix(target_id=target_id))
+    job_list_cache.invalidate(prefix=jobs_cache_prefix(target_id=None))
 
 
 @router.post(
