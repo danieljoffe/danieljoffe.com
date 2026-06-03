@@ -142,20 +142,13 @@ I'll add an ADR for the limits framework once 2-3 of these ship as a pattern.
 
 ## Open questions for Daniel's review
 
-1. **Phase 2 deferred grading UX.** When a job is promising but not in the top-100/day for Phase 2, what does the user see? Options:
-   - "Pending score" badge — shows in the list, sorted at the bottom
-   - Hidden until graded — list view only shows graded rows
-   - Sorted by Phase 1 confidence (if we capture it) — partial signal until Phase 2 lands
-     My lean: pending badge + sort to bottom. Surfaces breadth, doesn't lose them.
+1. **Phase 2 deferred grading UX.** ✅ **Resolved 2026-06-03:** "Pending score" badge, sorted to the bottom of the list. Surfaces breadth without losing the un-graded jobs.
 
-2. **Cosine deprecation timing.** Two options:
-   - Drop the columns + code path in the Phase 1 PR.
-   - Keep columns for one release in case we need to roll back. Drop in a cleanup PR.
-     My lean: keep one release. Cheap insurance.
+2. **Cosine deprecation timing.** ✅ **Resolved 2026-06-02:** Columns dropped in PR #794 (`chore/wyrdfold-drop-cosine-columns`) after Phase 1 shipped.
 
-3. **Per-target Phase 2 spend visibility.** Should we surface "$X spent grading jobs for this target this month" in target settings? Helps Daniel feel agency over costs as we scale.
+3. **Per-target Phase 2 spend visibility.** ✅ **Resolved 2026-06-03:** Surface "$X spent grading jobs for this target this month" in target settings. Sources from `llm_costs` with `purpose='fit.job'` and `metadata.target_id` (same query shape as `phase2_quota_remaining`).
 
-4. **Phase 1 confidence signal.** Bool is the contract, but we could log confidence (0-100) for analytics — "Phase 1 was 53% sure on this one, Phase 2 graded it 81". Useful for tuning the bias.
+4. **Phase 1 confidence signal.** ✅ **Resolved 2026-06-03:** Capture confidence (0-100) alongside the bool. Extend `TitleVerdict` with an optional `confidence: int` field and log it (no behaviour change — Phase 1 still gates on bool). Useful both for analytics ("Phase 1 was 53% sure on this one, Phase 2 graded it 81") and for ordering Phase 2 candidates by confidence instead of first_seen_at.
 
 ## Rollback plan
 

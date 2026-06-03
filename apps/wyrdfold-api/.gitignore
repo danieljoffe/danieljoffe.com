@@ -7,3 +7,7 @@ __pycache__/
 dist/
 .venv/
 .env
+
+# Generated artifacts from diagnostic scripts (e.g. audit_phase1_fn.py).
+# Committing these would leak job titles + per-target sample sets.
+scripts/.audit-logs/
