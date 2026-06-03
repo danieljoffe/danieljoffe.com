@@ -26,6 +26,7 @@ from apscheduler.triggers.interval import IntervalTrigger  # type: ignore[import
 from app.cache import job_list_cache
 from app.config import settings
 from app.services.poller import poll_due_sources
+from app.services.url_health import run_url_health_check
 from app.supabase_pool import get_supabase_pool
 
 if TYPE_CHECKING:
@@ -60,6 +61,28 @@ async def _run_scheduled_poll() -> None:
         logger.exception("scheduled poll raised")
 
 
+async def _run_scheduled_url_health() -> None:
+    """Tick body — HEAD-check the oldest batch of job URLs and archive dead ones.
+
+    See ``app/services/url_health.py``. Errors are logged but never raised
+    (same pattern as ``_run_scheduled_poll``). Invalidates the list cache
+    when jobs were archived this tick so users see the updated state on
+    next page load.
+    """
+    try:
+        client = get_supabase_pool()
+        if client is None:
+            logger.warning(
+                "scheduled url_health skipped — supabase client not initialized"
+            )
+            return
+        summary = await run_url_health_check(client)
+        if summary["archived"] > 0:
+            job_list_cache.invalidate()
+    except Exception:
+        logger.exception("scheduled url_health raised")
+
+
 def build_scheduler(
     *, tick_minutes: int, job_func: Callable[[], Awaitable[None]] = _run_scheduled_poll
 ) -> AsyncIOScheduler:
@@ -87,12 +110,51 @@ def start_scheduler_if_enabled() -> AsyncIOScheduler | None:
 
     Called from the FastAPI lifespan; the returned handle is what the
     lifespan must shut down on exit.
+
+    Two independent recurring jobs may run on the same scheduler:
+      - ``poll_due_sources`` — gated on ``POLL_SCHEDULER_ENABLED``
+      - ``url_health_check`` — gated on ``URL_HEALTH_CHECK_ENABLED``
+
+    If both flags are off, no scheduler is started. If only one flag is on,
+    only that job is registered. Sharing one scheduler avoids two thread
+    pools competing in the same FastAPI process.
     """
-    if not settings.poll_scheduler_enabled:
-        logger.info("poll scheduler disabled (set POLL_SCHEDULER_ENABLED=true to enable)")
+    if not (settings.poll_scheduler_enabled or settings.url_health_check_enabled):
+        logger.info(
+            "schedulers disabled (set POLL_SCHEDULER_ENABLED=true or "
+            "URL_HEALTH_CHECK_ENABLED=true to enable)"
+        )
         return None
 
-    scheduler = build_scheduler(tick_minutes=settings.poll_tick_minutes)
+    scheduler = AsyncIOScheduler()
+
+    if settings.poll_scheduler_enabled:
+        scheduler.add_job(
+            _run_scheduled_poll,
+            IntervalTrigger(minutes=settings.poll_tick_minutes),
+            id="poll_due_sources",
+            max_instances=1,
+            coalesce=True,
+            replace_existing=True,
+        )
+        logger.info(
+            "poll scheduler registered (tick every %d min)",
+            settings.poll_tick_minutes,
+        )
+
+    if settings.url_health_check_enabled:
+        scheduler.add_job(
+            _run_scheduled_url_health,
+            IntervalTrigger(hours=settings.url_health_tick_hours),
+            id="url_health_check",
+            max_instances=1,
+            coalesce=True,
+            replace_existing=True,
+        )
+        logger.info(
+            "url_health scheduler registered (tick every %d h)",
+            settings.url_health_tick_hours,
+        )
+
     scheduler.start()
-    logger.info("poll scheduler started (tick every %d min)", settings.poll_tick_minutes)
     return scheduler

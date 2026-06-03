@@ -43,6 +43,18 @@ class Settings(BaseSettings):
     # URL validation — enable to validate job URLs during polling.
     validate_poll_urls: bool = True
 
+    # Periodic job URL health checks (see app/services/url_health.py).
+    # Off by default. When enabled, the scheduler ticks every
+    # ``url_health_tick_hours`` and HEAD-checks the oldest
+    # ``url_health_batch_size`` live jobs. Jobs that fail
+    # ``url_health_failure_threshold`` consecutive checks (4xx or network
+    # error) get archived and their heavy fields NULL'd to reclaim space.
+    url_health_check_enabled: bool = False
+    url_health_tick_hours: int = Field(default=24, ge=1, le=720)
+    url_health_batch_size: int = Field(default=50, ge=1, le=500)
+    url_health_concurrency: int = Field(default=10, ge=1, le=50)
+    url_health_failure_threshold: int = Field(default=3, ge=1, le=10)
+
     # Firecrawl — set API key to enable JS-rendered page extraction fallback.
     firecrawl_api_key: str = Field(default="", repr=False)
 
