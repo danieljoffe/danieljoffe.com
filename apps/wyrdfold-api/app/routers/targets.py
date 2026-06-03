@@ -71,6 +71,13 @@ from app.services.targets.fit_score import (
 from app.services.targets.fit_score import (
     derive_fit_score,
 )
+from app.services.targets.lateral_discovery import (
+    DEFAULT_PURPOSE as LATERAL_PURPOSE,
+)
+from app.services.targets.lateral_discovery import (
+    LateralSuggestions,
+    suggest_lateral_targets,
+)
 from app.services.targets.match import suggest_and_match
 from app.services.targets.merge import merge_profiles
 from app.services.targets.suggest import DEFAULT_PURPOSE as SUGGEST_PURPOSE
@@ -360,6 +367,54 @@ async def suggest(
         metadata={"user_id": user_id},
     )
     return matched
+
+
+@router.post(
+    "/suggest-lateral",
+    response_model=LateralSuggestions,
+    dependencies=[Depends(enforce_llm_budget)],
+)
+async def suggest_lateral(
+    supabase: Client = Depends(get_supabase),
+    llm: LLMClient = Depends(get_llm_client),
+    user_id: str = Depends(get_current_user_id),
+) -> LateralSuggestions:
+    """Mine the master payload for adjacent target roles.
+
+    Distinct from ``POST /targets/suggest`` (the onboarding flow): this
+    one returns LATERAL siblings of targets the user is ALREADY
+    pursuing. Spans industries, includes at least one career-stretch.
+    See ``services.targets.lateral_discovery.suggest_lateral_targets``.
+
+    Each suggestion is a slim-shape-compatible label + reasoning +
+    confidence; the activation flow plugs them into
+    ``derive_profile_from_label`` to materialise the full target.
+    """
+    doc = optimized.get_latest(supabase, user_id=user_id)
+    if doc is None:
+        raise HTTPException(status_code=422, detail="No experience profile found")
+
+    # Use the user's CURRENT active targets as the exclusion list so we
+    # don't re-suggest what they already have. list_for_user is
+    # user-scoped (via user_targets junction), not the global active
+    # list — exactly what we want for personalised suggestions.
+    current = crud.list_for_user(supabase, user_id=user_id)
+
+    suggestions, result = await suggest_lateral_targets(
+        llm, payload=doc.payload, current_targets=current
+    )
+    cost_log.record(
+        supabase,
+        user_id=user_id,
+        purpose=LATERAL_PURPOSE,
+        result=result,
+        metadata={
+            "user_id": user_id,
+            "current_targets_count": len(current),
+            "suggestions_count": len(suggestions.suggestions),
+        },
+    )
+    return suggestions
 
 
 @router.get("/active", response_model=TargetsListResponse)
