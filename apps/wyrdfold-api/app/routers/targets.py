@@ -43,6 +43,7 @@ from app.models.targets import (
     TargetStatusResponse,
     TargetUpdate,
     UserTarget,
+    UserTargetWithTarget,
 )
 from app.services.experience import optimized
 from app.services.extract import (
@@ -446,6 +447,33 @@ def get_target(
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
     return target
+
+
+@router.get("/{target_id}/user-target", response_model=UserTargetWithTarget)
+def get_my_user_target(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
+) -> UserTargetWithTarget:
+    """Return the current user's user_targets row for a specific target,
+    paired with the shared target data.
+
+    Saves the FE from fetching the entire ``/mine`` list just to find one
+    row when rendering a per-target settings page. JWT-only (no api-key
+    fallback) because there is no "current user" without a JWT.
+    """
+    ut = crud.get_user_target(supabase, user_id, target_id)
+    if ut is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No user_targets row for (user, target).",
+        )
+    target = crud.get(supabase, target_id)
+    if target is None:
+        # user_targets row exists but the shared target was deleted —
+        # data integrity issue, surface as a 404 not a 500.
+        raise HTTPException(status_code=404, detail="Target not found")
+    return UserTargetWithTarget(user_target=ut, target=target)
 
 
 @router.patch("/{target_id}", response_model=JobTarget)
