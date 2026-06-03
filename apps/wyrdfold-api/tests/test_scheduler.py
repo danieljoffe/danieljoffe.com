@@ -20,27 +20,69 @@ def test_build_scheduler_registers_single_job() -> None:
     assert jobs[0].id == "poll_due_sources"
 
 
-def test_start_scheduler_returns_none_when_disabled() -> None:
-    """Default settings have the scheduler off — verify nothing starts."""
+def test_start_scheduler_returns_none_when_both_disabled() -> None:
+    """Default settings have both schedulers off — verify nothing starts."""
     with patch("app.scheduler.settings") as mock_settings:
         mock_settings.poll_scheduler_enabled = False
+        mock_settings.url_health_check_enabled = False
         result = start_scheduler_if_enabled()
     assert result is None
 
 
 @pytest.mark.asyncio
-async def test_start_scheduler_returns_running_handle_when_enabled() -> None:
+async def test_start_scheduler_registers_only_poll_when_only_poll_enabled() -> None:
     """AsyncIOScheduler binds to the running loop, so this test has to
     be async — production calls it from inside the FastAPI lifespan."""
     with patch("app.scheduler.settings") as mock_settings:
         mock_settings.poll_scheduler_enabled = True
         mock_settings.poll_tick_minutes = 30
+        mock_settings.url_health_check_enabled = False
         scheduler = start_scheduler_if_enabled()
 
     assert scheduler is not None
     try:
         assert scheduler.running is True
-        assert len(scheduler.get_jobs()) == 1
+        jobs = scheduler.get_jobs()
+        assert len(jobs) == 1
+        assert jobs[0].id == "poll_due_sources"
+    finally:
+        scheduler.shutdown(wait=False)
+
+
+@pytest.mark.asyncio
+async def test_start_scheduler_registers_only_url_health_when_only_url_health_enabled() -> None:
+    """URL-health-only operation — verify only the url_health_check job lands."""
+    with patch("app.scheduler.settings") as mock_settings:
+        mock_settings.poll_scheduler_enabled = False
+        mock_settings.url_health_check_enabled = True
+        mock_settings.url_health_tick_hours = 6
+        scheduler = start_scheduler_if_enabled()
+
+    assert scheduler is not None
+    try:
+        assert scheduler.running is True
+        jobs = scheduler.get_jobs()
+        assert len(jobs) == 1
+        assert jobs[0].id == "url_health_check"
+    finally:
+        scheduler.shutdown(wait=False)
+
+
+@pytest.mark.asyncio
+async def test_start_scheduler_registers_both_jobs_when_both_enabled() -> None:
+    """Both flags on — both jobs live on the single shared scheduler."""
+    with patch("app.scheduler.settings") as mock_settings:
+        mock_settings.poll_scheduler_enabled = True
+        mock_settings.poll_tick_minutes = 30
+        mock_settings.url_health_check_enabled = True
+        mock_settings.url_health_tick_hours = 6
+        scheduler = start_scheduler_if_enabled()
+
+    assert scheduler is not None
+    try:
+        assert scheduler.running is True
+        ids = {j.id for j in scheduler.get_jobs()}
+        assert ids == {"poll_due_sources", "url_health_check"}
     finally:
         scheduler.shutdown(wait=False)
 
