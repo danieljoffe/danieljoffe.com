@@ -29,8 +29,12 @@ class Settings(BaseSettings):
     twilio_auth_token: str = Field(default="", repr=False)
     twilio_phone_number: str = ""
 
-    # LLM provider — set to "anthropic" to use the real SDK; mock is the safe default.
-    llm_provider: Literal["mock", "anthropic"] = "mock"
+    # LLM provider — "anthropic" uses the Anthropic SDK direct; "openrouter"
+    # routes the same Anthropic-shaped calls through OpenRouter (one billing
+    # relationship, optional cross-provider fallback). Mock is the safe
+    # default for tests + local dev. See
+    # plan-wyrdfold-openrouter-migration.md for the migration roadmap.
+    llm_provider: Literal["mock", "anthropic", "openrouter"] = "mock"
     anthropic_api_key: str = Field(default="", repr=False)
     anthropic_timeout_seconds: float = Field(default=600.0, ge=1.0, le=3600.0)
     # Bumped from 2 → 5 alongside the V3 prompt rollout. The default-2 budget
@@ -39,6 +43,14 @@ class Settings(BaseSettings):
     # rate-limit retries enough headroom to recover without sacrificing
     # responsiveness. Each retry uses exponential backoff inside the SDK.
     anthropic_max_retries: int = Field(default=5, ge=0, le=10)
+
+    # OpenRouter (PR A of plan-wyrdfold-openrouter-migration.md). Drop-in
+    # replacement for the Anthropic SDK that routes through
+    # https://openrouter.ai. ZDR is enabled account-wide in the OR
+    # dashboard, not per-request.
+    openrouter_api_key: str = Field(default="", repr=False)
+    openrouter_timeout_seconds: float = Field(default=600.0, ge=1.0, le=3600.0)
+    openrouter_max_retries: int = Field(default=3, ge=0, le=10)
 
     # URL validation — enable to validate job URLs during polling.
     validate_poll_urls: bool = True
