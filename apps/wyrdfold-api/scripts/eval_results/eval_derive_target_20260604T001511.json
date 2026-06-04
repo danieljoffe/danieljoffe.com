@@ -1,0 +1,3509 @@
+{
+  "captured_at_unix": 1780557401,
+  "report": {
+    "baseline": "sonnet-4.6",
+    "per_label": [
+      {
+        "label": "Staff Frontend Engineer",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": true,
+            "hint_jaccard": 0.2105,
+            "keyword_jaccard": 0.5263,
+            "seniority_match": true,
+            "description_len": 545,
+            "baseline_description_len": 784
+          }
+        }
+      },
+      {
+        "label": "Director of CX Operations",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": true,
+            "hint_jaccard": 0.5333,
+            "keyword_jaccard": 0.7692,
+            "seniority_match": true,
+            "description_len": 746,
+            "baseline_description_len": 784
+          }
+        }
+      },
+      {
+        "label": "Senior Data Scientist",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": false,
+            "hint_jaccard": null,
+            "keyword_jaccard": null
+          }
+        }
+      },
+      {
+        "label": "Head of Content",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": true,
+            "hint_jaccard": 0.4706,
+            "keyword_jaccard": 0.35,
+            "seniority_match": true,
+            "description_len": 598,
+            "baseline_description_len": 695
+          }
+        }
+      },
+      {
+        "label": "Plant Operations Manager",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": false,
+            "hint_jaccard": null,
+            "keyword_jaccard": null
+          }
+        }
+      },
+      {
+        "label": "Engineering Manager, Platform",
+        "baseline_ok": false,
+        "comparisons": {}
+      },
+      {
+        "label": "Principal Product Designer",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": false,
+            "hint_jaccard": null,
+            "keyword_jaccard": null
+          }
+        }
+      },
+      {
+        "label": "VP of Customer Success",
+        "baseline_ok": false,
+        "comparisons": {}
+      },
+      {
+        "label": "Senior DevOps Engineer",
+        "baseline_ok": false,
+        "comparisons": {}
+      },
+      {
+        "label": "Director of Marketing Operations",
+        "baseline_ok": true,
+        "comparisons": {
+          "sonnet-4.5": {
+            "schema_ok": false,
+            "hint_jaccard": null,
+            "keyword_jaccard": null
+          }
+        }
+      }
+    ],
+    "per_model": {
+      "sonnet-4.5": {
+        "schema_ok": "5/10",
+        "total_cost_usd": 0.23617,
+        "avg_latency_ms": 15104,
+        "errors": 5,
+        "mean_hint_jaccard": 0.4048,
+        "mean_keyword_jaccard": 0.5485
+      },
+      "sonnet-4.6": {
+        "schema_ok": "7/10",
+        "total_cost_usd": 0.25292,
+        "avg_latency_ms": 19383,
+        "errors": 3,
+        "mean_hint_jaccard": null,
+        "mean_keyword_jaccard": null
+      }
+    }
+  },
+  "results": [
+    {
+      "label": "Staff Frontend Engineer",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Salesforce": 3,
+                "Zendesk": 3,
+                "NetSuite": 3,
+                "Oracle": 3,
+                "API Integration": 2,
+                "Process Automation": 3,
+                "Workflow Design": 3,
+                "System Integration": 3
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Shopify": 2,
+                "CRM": 2,
+                "Agile": 2,
+                "Cross-functional Collaboration": 2,
+                "Data Analytics": 2,
+                "KPI Dashboards": 2,
+                "Project Management": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "AI": 1,
+                "Machine Learning": 1,
+                "Predictive Analytics": 1,
+                "Change Management": 1,
+                "E-commerce": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "director",
+              "head of",
+              "vp",
+              "executive",
+              "leadership",
+              "strategic"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "customer experience",
+              "support operations",
+              "service delivery",
+              "customer success",
+              "operations"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "frontend",
+              "react",
+              "javascript",
+              "typescript",
+              "css",
+              "html",
+              "ui",
+              "web development",
+              "software engineer",
+              "software developer",
+              "programmer",
+              "coding",
+              "engineering",
+              "developer",
+              "junior",
+              "intern",
+              "entry-level"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "director of customer experience",
+          "head of customer support",
+          "vp customer success",
+          "director customer operations",
+          "head of client services",
+          "director of support",
+          "customer experience leader",
+          "cx director",
+          "support operations director",
+          "head of customer service",
+          "customer success director",
+          "operations director"
+        ],
+        "example_promising_titles": [
+          "Director of Customer Experience",
+          "VP of Customer Success",
+          "Head of Customer Support Operations",
+          "Director of Global Support",
+          "VP of Client Services",
+          "Head of CX Operations",
+          "Director of Customer Operations",
+          "VP of Support and Services"
+        ],
+        "example_unpromising_titles": [
+          "Staff Frontend Engineer",
+          "Senior Software Engineer",
+          "Principal Engineer",
+          "Lead Web Developer",
+          "Senior React Engineer",
+          "Frontend Platform Engineer",
+          "Software Development Manager",
+          "Engineering Manager"
+        ],
+        "description": "CX operations executive specializing in enterprise system integration (Salesforce, Oracle, NetSuite, Zendesk) and AI-driven automation at scale. Builds cross-platform workflows connecting support, order management, and fulfillment systems for DTC and B2B channels. Proven track record transforming underperforming support orgs through process reengineering, data infrastructure, and strategic vendor partnerships. Thrives in rapid-growth e-commerce and SaaS environments requiring both operational excellence and technical architecture thinking.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B SaaS",
+          "Customer Experience Platforms",
+          "Support Operations",
+          "Enterprise Software"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 545,
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B SaaS",
+          "Customer Experience Platforms",
+          "Support Operations",
+          "Enterprise Software"
+        ],
+        "search_keywords": [
+          "director of customer experience",
+          "head of customer support",
+          "vp customer success",
+          "director customer operations",
+          "head of client services",
+          "director of support",
+          "customer experience leader",
+          "cx director",
+          "support operations director",
+          "head of customer service",
+          "customer success director",
+          "operations director"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Salesforce\": 3,\n          \"Zendesk\": 3,\n          \"NetSuite\": 3,\n          \"Oracle\": 3,\n   ",
+      "latency_ms": 13184,
+      "cost_usd": 0.021444,
+      "usage": {
+        "prompt_tokens": 2708,
+        "completion_tokens": 888,
+        "total_tokens": 3596
+      },
+      "error": null
+    },
+    {
+      "label": "Director of CX Operations",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce Service Cloud": 3,
+                "NetSuite": 3,
+                "Process Automation": 3,
+                "Customer Journey Mapping": 3,
+                "Change Management": 3,
+                "Quality Assurance": 3,
+                "Voice of Customer": 3,
+                "KPI Dashboards": 3,
+                "Omnichannel Support": 3,
+                "Workforce Management": 3,
+                "BPO Management": 2,
+                "Contact Center Operations": 2,
+                "IVR": 2,
+                "CSAT": 2,
+                "NPS": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "AI Chatbots": 2,
+                "Sentiment Analysis": 2,
+                "Agile Project Management": 2,
+                "Cross-Functional Collaboration": 2,
+                "Data-Driven Decision Making": 2,
+                "Predictive Analytics": 2,
+                "CRM": 2,
+                "Oracle": 2,
+                "Shopify": 2,
+                "Process Reengineering": 2,
+                "Order-to-Cash Workflows": 2,
+                "3PL Integration": 1,
+                "Looker": 1,
+                "Jira": 1,
+                "Asana": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Gorgias": 1,
+                "Qualtrics": 1,
+                "Medallia": 1,
+                "Playvox": 1,
+                "Verint": 1,
+                "RingCentral": 1,
+                "Go-to-Market Strategy": 1,
+                "Community Management": 1,
+                "Customer Effort Score": 1,
+                "e-Learning": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "director",
+              "head of",
+              "vp",
+              "10+ years",
+              "executive",
+              "leadership"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "DTC",
+              "e-commerce",
+              "B2C",
+              "B2B2C",
+              "retail",
+              "consumer brands",
+              "SaaS"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "manager",
+              "senior manager",
+              "associate",
+              "coordinator",
+              "specialist",
+              "analyst",
+              "individual contributor",
+              "IC"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "director of customer experience",
+          "director of cx",
+          "head of customer experience",
+          "head of cx",
+          "director of customer service",
+          "director of support operations",
+          "director of customer support",
+          "head of customer service",
+          "head of support",
+          "cx operations director",
+          "customer operations director",
+          "director of client services",
+          "vp customer experience"
+        ],
+        "example_promising_titles": [
+          "Director of Customer Experience",
+          "Director of CX Operations",
+          "Head of Customer Experience",
+          "VP of Customer Support",
+          "Director of Customer Service Operations",
+          "Head of Customer Operations",
+          "Director of Support Operations",
+          "VP of Customer Success Operations",
+          "Director of Global Customer Support",
+          "Head of Client Services"
+        ],
+        "example_unpromising_titles": [
+          "Director of Product Management",
+          "Director of Sales Operations",
+          "Head of People Operations",
+          "Director of Marketing",
+          "VP of Engineering",
+          "Director of Business Operations",
+          "Chief Revenue Officer",
+          "Director of Supply Chain",
+          "Head of Data Analytics",
+          "VP of Finance"
+        ],
+        "description": "CX Operations leader for high-growth DTC/B2C environments. This user excels at transforming fragmented support systems into scalable operations through AI-driven automation, cross-functional process design, and data infrastructure that converts customer insight into business outcomes. Strong on 3PL/order-to-cash orchestration, contact center optimization, and delivering measurable efficiency gains (70%+ TTR reductions, 86% backlog cuts, $400K+ monthly cost avoidance). Target companies: consumer brands scaling past $50M ARR, e-commerce platforms managing omnichannel complexity, or SaaS companies operationalizing enterprise support. This is an execution-focused director role \u2014 not strategic executive positioning, not frontline management.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "consumer brands",
+          "B2C SaaS",
+          "retail tech",
+          "B2B2C platforms",
+          "subscription commerce"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 746,
+        "domain_hints": [
+          "DTC e-commerce",
+          "consumer brands",
+          "B2C SaaS",
+          "retail tech",
+          "B2B2C platforms",
+          "subscription commerce"
+        ],
+        "search_keywords": [
+          "director of customer experience",
+          "director of cx",
+          "head of customer experience",
+          "head of cx",
+          "director of customer service",
+          "director of support operations",
+          "director of customer support",
+          "head of customer service",
+          "head of support",
+          "cx operations director",
+          "customer operations director",
+          "director of client services",
+          "vp customer experience"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"NetSuite\": 3,\n          \"P",
+      "latency_ms": 17325,
+      "cost_usd": 0.02652,
+      "usage": {
+        "prompt_tokens": 2710,
+        "completion_tokens": 1226,
+        "total_tokens": 3936
+      },
+      "error": null
+    },
+    {
+      "label": "Staff Frontend Engineer",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce Service Cloud": 3,
+                "Salesforce": 2,
+                "AI Chatbots": 3,
+                "Process Automation": 3,
+                "Customer Journey Mapping": 3,
+                "Omnichannel Support": 3,
+                "Voice of Customer": 2,
+                "KPI Dashboards": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "NetSuite": 2,
+                "Agile Project Management": 2,
+                "Quality Assurance": 2,
+                "BPO Management": 2,
+                "Workforce Management": 2,
+                "Predictive Analytics": 2,
+                "Sentiment Analysis": 2,
+                "Change Management": 2,
+                "CSAT": 1,
+                "NPS": 1,
+                "Shopify": 1,
+                "Oracle": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Looker": 1,
+                "Jira": 1,
+                "Zapier": 1,
+                "Gorgias": 1,
+                "Qualtrics": 1,
+                "Medallia": 1,
+                "IVR": 1,
+                "3PL Integration": 1,
+                "Go-to-Market Strategy": 1,
+                "TikTok Shop": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "director",
+              "head of",
+              "VP",
+              "senior director",
+              "staff",
+              "principal",
+              "strategic",
+              "executive",
+              "leadership",
+              "cross-functional",
+              "P&L",
+              "org design"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "DTC",
+              "e-commerce",
+              "beauty",
+              "consumer goods",
+              "B2B",
+              "B2C",
+              "B2B2C",
+              "SaaS",
+              "healthtech",
+              "retail",
+              "subscription"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "associate",
+              "coordinator",
+              "specialist",
+              "tier 1",
+              "agent",
+              "representative",
+              "individual contributor only",
+              "no direct reports"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "customer experience",
+          "customer service",
+          "customer success",
+          "client services",
+          "cx leader",
+          "cx operations",
+          "customer operations",
+          "support operations",
+          "contact center",
+          "member services",
+          "customer support",
+          "service delivery",
+          "client experience",
+          "cx strategy"
+        ],
+        "example_promising_titles": [
+          "VP of Customer Experience",
+          "Director of Customer Experience",
+          "Senior Director of Customer Success",
+          "Head of Customer Operations",
+          "VP of Customer Support",
+          "Director of CX Strategy and Operations",
+          "Senior Director of Client Services",
+          "Head of CX and Support",
+          "VP of Support Operations",
+          "Director of Customer Service and Support"
+        ],
+        "example_unpromising_titles": [
+          "Senior Product Manager, Customer Experience",
+          "Customer Success Manager",
+          "CX Research Lead",
+          "UX Researcher",
+          "Sales Operations Director",
+          "Revenue Operations Manager",
+          "Director of Account Management",
+          "Head of Community",
+          "Director of Marketing Operations",
+          "Customer Data Analyst"
+        ],
+        "description": "Senior CX and customer operations executive with a record of transforming support infrastructure \u2014 deploying AI chatbots, reengineering workflows, eliminating manual processes, and driving measurable outcomes ($300K+ monthly revenue recovered, 73% TTR reduction, 86% backlog reduction). Targets director-to-VP level roles leading cross-functional CX orgs across DTC e-commerce, beauty/wellness, SaaS, and subscription brands. Work is operations-heavy and transformation-led: standing up new channels (TikTok Shop, omnichannel), integrating platforms (Zendesk, Salesforce Service Cloud, NetSuite, Oracle), managing BPO and WFM, and embedding data-driven QA and VOC programs. Best-fit companies are scaling consumer or B2B SaaS businesses that treat CX as a revenue and retention lever.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "beauty and wellness",
+          "SaaS",
+          "subscription commerce",
+          "B2B2C",
+          "consumer goods"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 784,
+        "domain_hints": [
+          "DTC e-commerce",
+          "beauty and wellness",
+          "SaaS",
+          "subscription commerce",
+          "B2B2C",
+          "consumer goods"
+        ],
+        "search_keywords": [
+          "customer experience",
+          "customer service",
+          "customer success",
+          "client services",
+          "cx leader",
+          "cx operations",
+          "customer operations",
+          "support operations",
+          "contact center",
+          "member services",
+          "customer support",
+          "service delivery",
+          "client experience",
+          "cx strategy"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"Salesforce\": 2,\n          ",
+      "latency_ms": 20447,
+      "cost_usd": 0.025902,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 1185,
+        "total_tokens": 3894
+      },
+      "error": null
+    },
+    {
+      "label": "Director of CX Operations",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce Service Cloud": 3,
+                "AI Chatbots": 3,
+                "Process Automation": 3,
+                "BPO Management": 3,
+                "Omnichannel Support": 3,
+                "KPI Dashboards": 3,
+                "Voice of Customer": 2,
+                "Customer Journey Mapping": 3,
+                "Change Management": 3,
+                "Workforce Management": 3,
+                "Quality Assurance": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Salesforce": 2,
+                "NetSuite": 2,
+                "Oracle": 2,
+                "Predictive Analytics": 2,
+                "CSAT": 2,
+                "NPS": 2,
+                "Customer Effort Score": 2,
+                "Sentiment Analysis": 2,
+                "Order-to-Cash Workflows": 2,
+                "3PL Integration": 2,
+                "Agile Project Management": 2,
+                "Go-to-Market Strategy": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Shopify": 1,
+                "Looker": 1,
+                "Medallia": 1,
+                "Qualtrics": 1,
+                "Playvox": 1,
+                "Gorgias": 1,
+                "IVR": 1,
+                "Zapier": 1,
+                "Community Management": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "director",
+              "head of",
+              "VP",
+              "vice president",
+              "senior director",
+              "lead",
+              "oversee",
+              "own the strategy",
+              "cross-functional leadership",
+              "P&L"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "DTC",
+              "e-commerce",
+              "B2C",
+              "B2B",
+              "B2B2C",
+              "consumer brands",
+              "SaaS",
+              "healthtech",
+              "beauty",
+              "retail",
+              "subscription"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "associate",
+              "coordinator",
+              "specialist",
+              "manager",
+              "analyst",
+              "individual contributor",
+              "no direct reports"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "director of cx operations",
+          "director of customer experience",
+          "director of customer service",
+          "director of customer success",
+          "director of customer support",
+          "head of customer experience",
+          "head of customer service",
+          "head of customer operations",
+          "head of cx",
+          "vp of customer experience",
+          "vp of customer service",
+          "vp of cx",
+          "customer experience director",
+          "customer operations director",
+          "cx operations director"
+        ],
+        "example_promising_titles": [
+          "Director of CX Operations",
+          "Director of Customer Experience",
+          "Director of Customer Service and Support",
+          "Head of Customer Experience",
+          "Senior Director of Customer Operations",
+          "VP of Customer Experience",
+          "Director of Customer Operations",
+          "Head of CX and Support Operations"
+        ],
+        "example_unpromising_titles": [
+          "Director of Product Management",
+          "Director of Marketing Operations",
+          "Director of Sales Operations",
+          "Director of People Operations",
+          "Customer Success Manager",
+          "Customer Experience Manager",
+          "Director of Revenue Operations",
+          "Director of Business Operations",
+          "Community Director",
+          "Director of Brand Experience"
+        ],
+        "description": "Senior CX operations leader with a decade of director-level tenure transforming support infrastructure at DTC, B2B, and B2B2C companies \u2014 from scaling omnichannel systems and deploying AI-driven tooling to reengineering claims, order, and escalation workflows. This role sits at the intersection of CX strategy and operational execution: owning the full support stack (Zendesk, Salesforce Service Cloud, Oracle, NetSuite), driving measurable outcomes like 73% TTR reductions and 86% backlog cuts, and leading BPO relationships, workforce planning, and cross-functional programs. Best-fit companies are consumer brands, e-commerce-native businesses, SaaS platforms, and operationally complex B2B2C orgs that need a hands-on leader who can both set strategy and rewire broken processes.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B2C",
+          "consumer brands",
+          "SaaS",
+          "subscription commerce",
+          "beauty and wellness"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 784,
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B2C",
+          "consumer brands",
+          "SaaS",
+          "subscription commerce",
+          "beauty and wellness"
+        ],
+        "search_keywords": [
+          "director of cx operations",
+          "director of customer experience",
+          "director of customer service",
+          "director of customer success",
+          "director of customer support",
+          "head of customer experience",
+          "head of customer service",
+          "head of customer operations",
+          "head of cx",
+          "vp of customer experience",
+          "vp of customer service",
+          "vp of cx",
+          "customer experience director",
+          "customer operations director",
+          "cx operations director"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"AI Chatbots\": 3,\n         ",
+      "latency_ms": 21631,
+      "cost_usd": 0.026268,
+      "usage": {
+        "prompt_tokens": 2711,
+        "completion_tokens": 1209,
+        "total_tokens": 3920
+      },
+      "error": null
+    },
+    {
+      "label": "Senior Data Scientist",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Python": 3,
+                "SQL": 3,
+                "Machine Learning": 3,
+                "Statistical Analysis": 3,
+                "A/B Testing": 3,
+                "Predictive Modeling": 3,
+                "Data Visualization": 2,
+                "Experimentation": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Tableau": 2,
+                "Looker": 2,
+                "R": 2,
+                "Customer Analytics": 2,
+                "Causal Inference": 2,
+                "Feature Engineering": 2,
+                "NLP": 1,
+                "Time Series": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Spark": 1,
+                "AWS": 1,
+                "Docker": 1,
+                "Airflow": 1,
+                "TensorFlow": 1,
+                "PyTorch": 1,
+                "Sentiment Analysis": 1,
+                "Customer Journey Analytics": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "senior",
+            "signals": ["5+ years", "senior", "lead", "staff"]
+          },
+          "domain": {
+            "signals": [
+              "e-commerce",
+              "consumer",
+              "retail",
+              "SaaS",
+              "B2C",
+              "customer experience",
+              "operations"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "entry-level",
+              "PhD required",
+              "research scientist",
+              "postdoc",
+              "intern"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "data scientist",
+          "senior data scientist",
+          "applied scientist",
+          "machine learning scientist",
+          "analytics scientist",
+          "quantitative analyst",
+          "research scientist applied"
+        ],
+        "example_promising_titles": [
+          "Senior Data Scientist",
+          "Staff Data Scientist",
+          "Lead Data Scientist",
+          "Senior Applied Scientist",
+          "Principal Data Scientist",
+          "Senior Machine Learning Scientist",
+          "Data Science Manager",
+          "Senior Analytics Scientist"
+        ],
+        "example_unpromising_titles": [
+          "Senior Data Engineer",
+          "Senior Analytics Engineer",
+          "Senior Product Manager",
+          "Senior Business Intelligence Analyst",
+          "Machine Learning Engineer",
+          "Research Scientist",
+          "Customer Success Manager",
+          "Operations Manager"
+        ],
+        "description": "Senior Data Scientist role for an operations-minded professional pivoting from CX leadership into hands-on quantitative analysis. This user has deep domain expertise in customer experience, process optimization, and predictive analytics implementation, but lacks demonstrable technical DS chops (Python, statistical modeling, ML engineering). Target roles should value operational context and stakeholder translation over pure modeling depth\u2014think embedded DS in CX/operations/product orgs at consumer companies (e-commerce, DTC, retail SaaS) where understanding customer journeys and business process matters as much as code. The user's Looker, sentiment analysis, and KPI dashboard background provides a foothold, but this is a significant career pivot requiring roles that mentor or accept non-traditional DS backgrounds.",
+        "seniority_hint": "senior",
+        "domain_hints": [
+          "e-commerce",
+          "DTC",
+          "retail",
+          "consumer SaaS",
+          "CX platforms",
+          "operations tech"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Python\": 3,\n          \"SQL\": 3,\n          \"Machine Learning\": 3,\n          \"Statistical Ana",
+      "latency_ms": 15097,
+      "cost_usd": 0.022452,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 955,
+        "total_tokens": 3664
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Senior Data Scientist",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Sentiment Analysis": 3,
+                "Predictive Analytics": 3,
+                "Voice of Customer": 3,
+                "KPI Dashboards": 3,
+                "Data-Driven Decision Making": 3,
+                "Looker": 2,
+                "Qualtrics": 2,
+                "Medallia": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Customer Journey Mapping": 2,
+                "NPS": 2,
+                "CSAT": 2,
+                "Customer Effort Score": 2,
+                "AI Chatbots": 2,
+                "Process Automation": 2,
+                "Salesforce": 2,
+                "Zendesk": 2,
+                "Keatext": 2,
+                "A/B Testing": 1,
+                "SQL": 1,
+                "Python": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Machine Learning": 1,
+                "Natural Language Processing": 1,
+                "Agile": 1,
+                "Jira": 1,
+                "Omnichannel": 1,
+                "BPO": 1,
+                "E-commerce": 1,
+                "CX Analytics": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "senior",
+            "signals": [
+              "senior",
+              "lead",
+              "5+ years",
+              "cross-functional",
+              "strategic",
+              "principal"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "customer experience",
+              "CX",
+              "e-commerce",
+              "DTC",
+              "SaaS",
+              "retail",
+              "B2B",
+              "B2C",
+              "consumer goods"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "associate data scientist",
+              "data analyst intern",
+              "research intern"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "data scientist",
+          "customer analytics",
+          "cx data scientist",
+          "customer experience analyst",
+          "applied data scientist",
+          "behavioral data scientist",
+          "insights analyst",
+          "customer insights scientist",
+          "voice of customer analyst",
+          "analytics scientist",
+          "people analytics scientist",
+          "product data scientist",
+          "operations data scientist"
+        ],
+        "example_promising_titles": [
+          "Senior Data Scientist, Customer Experience",
+          "Senior Data Scientist, CX Analytics",
+          "Senior Applied Data Scientist",
+          "Senior Customer Insights Scientist",
+          "Staff Data Scientist",
+          "Principal Data Scientist, Operations",
+          "Senior Behavioral Data Scientist",
+          "Senior Data Scientist, Voice of Customer",
+          "Senior Analytics Scientist"
+        ],
+        "example_unpromising_titles": [
+          "Senior Data Engineer",
+          "Senior Machine Learning Engineer",
+          "Senior Business Intelligence Engineer",
+          "Director of Customer Experience",
+          "Senior Product Manager, Data",
+          "Senior CX Operations Manager",
+          "Customer Success Manager",
+          "Senior Marketing Analyst",
+          "Head of Customer Support",
+          "Senior Analytics Engineer"
+        ],
+        "description": "CX-domain data scientist role applying analytics, predictive modeling, and VOC methodologies to improve customer outcomes and operational efficiency. This user brings deep first-hand domain expertise \u2014 having owned the KPIs, dashboards, sentiment pipelines, and AI tooling they would now model \u2014 making them credible at the intersection of CX strategy and data science. Best fits companies with mature CX data stacks (Qualtrics, Medallia, Keatext, Looker) where a senior scientist can translate operational context into statistical insight. Ideal employers are DTC e-commerce, subscription commerce, or SaaS companies that treat CX as a growth lever, not a cost center.",
+        "seniority_hint": "senior",
+        "domain_hints": [
+          "DTC e-commerce",
+          "subscription commerce",
+          "SaaS",
+          "consumer goods",
+          "B2B SaaS",
+          "retail tech"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 669,
+        "domain_hints": [
+          "DTC e-commerce",
+          "subscription commerce",
+          "SaaS",
+          "consumer goods",
+          "B2B SaaS",
+          "retail tech"
+        ],
+        "search_keywords": [
+          "data scientist",
+          "customer analytics",
+          "cx data scientist",
+          "customer experience analyst",
+          "applied data scientist",
+          "behavioral data scientist",
+          "insights analyst",
+          "customer insights scientist",
+          "voice of customer analyst",
+          "analytics scientist",
+          "people analytics scientist",
+          "product data scientist",
+          "operations data scientist"
+        ],
+        "seniority_hint": "senior"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Sentiment Analysis\": 3,\n          \"Predictive Analytics\": 3,\n          \"Voice of Customer\":",
+      "latency_ms": 19608,
+      "cost_usd": 0.02406,
+      "usage": {
+        "prompt_tokens": 2710,
+        "completion_tokens": 1062,
+        "total_tokens": 3772
+      },
+      "error": null
+    },
+    {
+      "label": "Head of Content",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "content strategy": 3,
+                "editorial leadership": 3,
+                "content operations": 3,
+                "SEO": 2,
+                "content management": 3,
+                "brand voice": 2,
+                "stakeholder management": 2,
+                "cross-functional collaboration": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "process optimization": 2,
+                "data-driven decision making": 2,
+                "project management": 2,
+                "change management": 2,
+                "KPI tracking": 1,
+                "team leadership": 2,
+                "content marketing": 1,
+                "documentation": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "CMS platforms": 1,
+                "AI content tools": 1,
+                "customer research": 1,
+                "voice of customer": 1,
+                "agile": 1,
+                "B2B": 1,
+                "B2C": 1,
+                "localization": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "head of",
+              "director",
+              "vp",
+              "10+ years",
+              "executive",
+              "strategic"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "B2B SaaS",
+              "B2C",
+              "e-commerce",
+              "technology",
+              "DTC",
+              "beauty",
+              "consumer products"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "associate",
+              "coordinator",
+              "assistant",
+              "social media manager",
+              "copywriter",
+              "technical writer",
+              "video producer",
+              "graphic designer"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "head of content",
+          "director of content",
+          "content director",
+          "vp content",
+          "chief content officer",
+          "editorial director",
+          "content strategy director",
+          "content operations director",
+          "content lead",
+          "content marketing director"
+        ],
+        "example_promising_titles": [
+          "Head of Content",
+          "Director of Content",
+          "VP of Content",
+          "Director of Content Strategy",
+          "Head of Editorial",
+          "VP of Content Marketing",
+          "Director of Content Operations",
+          "Chief Content Officer"
+        ],
+        "example_unpromising_titles": [
+          "Director of Customer Experience",
+          "Head of Customer Success",
+          "VP of Customer Support",
+          "Director of Operations",
+          "Head of Product Marketing",
+          "VP of Marketing",
+          "Content Marketing Manager",
+          "Senior Content Strategist",
+          "Creative Director",
+          "Brand Manager"
+        ],
+        "description": "Executive content leadership pivoting from CX operations into strategic editorial and content management. This user brings process transformation expertise, cross-functional stakeholder orchestration, and data-driven optimization \u2014 skills that translate directly into scaling content operations, establishing governance frameworks, and driving brand voice consistency across channels. Target companies value operational rigor in content teams (B2B SaaS, DTC brands with mature content functions, media/publishing platforms) where content delivery is a revenue driver, not just marketing collateral.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "B2B SaaS",
+          "DTC e-commerce",
+          "consumer brands",
+          "media & publishing",
+          "technology platforms",
+          "beauty & wellness"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 598,
+        "domain_hints": [
+          "B2B SaaS",
+          "DTC e-commerce",
+          "consumer brands",
+          "media & publishing",
+          "technology platforms",
+          "beauty & wellness"
+        ],
+        "search_keywords": [
+          "head of content",
+          "director of content",
+          "content director",
+          "vp content",
+          "chief content officer",
+          "editorial director",
+          "content strategy director",
+          "content operations director",
+          "content lead",
+          "content marketing director"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"content strategy\": 3,\n          \"editorial leadership\": 3,\n          \"content operations\": ",
+      "latency_ms": 13277,
+      "cost_usd": 0.022674,
+      "usage": {
+        "prompt_tokens": 2708,
+        "completion_tokens": 970,
+        "total_tokens": 3678
+      },
+      "error": null
+    },
+    {
+      "label": "Head of Content",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Content Strategy": 3,
+                "Editorial Planning": 3,
+                "Voice of Customer": 3,
+                "Customer Journey Mapping": 3,
+                "Cross-Functional Collaboration": 3,
+                "Go-to-Market Strategy": 3,
+                "Knowledge Base Management": 3,
+                "Self-Service Content": 3
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Community Management": 2,
+                "Omnichannel Content": 2,
+                "Zendesk": 2,
+                "Salesforce": 2,
+                "AI Chatbots": 2,
+                "KPI Dashboards": 2,
+                "Sentiment Analysis": 2,
+                "Change Management": 2,
+                "Process Improvement": 2,
+                "Agile Project Management": 2,
+                "TikTok": 2,
+                "Social Media": 2,
+                "Quality Assurance": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Keatext": 1,
+                "Qualtrics": 1,
+                "Medallia": 1,
+                "Looker": 1,
+                "Predictive Analytics": 1,
+                "BPO Management": 1,
+                "NPS": 1,
+                "CSAT": 1,
+                "Yotpo": 1,
+                "Dash Social": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "head of",
+              "director",
+              "lead",
+              "own the roadmap",
+              "manage a team",
+              "people manager",
+              "7+ years",
+              "10+ years"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "DTC",
+              "e-commerce",
+              "beauty",
+              "consumer brands",
+              "B2C",
+              "B2B",
+              "SaaS",
+              "healthtech",
+              "retail"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "coordinator",
+              "associate",
+              "staff writer",
+              "copywriter",
+              "content writer",
+              "SEO specialist"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "head of content",
+          "content director",
+          "director of content",
+          "director of content strategy",
+          "head of content strategy",
+          "content and communications director",
+          "content experience director",
+          "head of editorial",
+          "director of editorial",
+          "content operations director",
+          "head of cx content",
+          "director of customer content",
+          "content and knowledge director",
+          "head of content and community",
+          "director of content and education"
+        ],
+        "example_promising_titles": [
+          "Head of Content",
+          "Director of Content Strategy",
+          "Head of Content Strategy",
+          "Director of Content and Communications",
+          "Director of Editorial and Content",
+          "Head of Content Experience",
+          "Director of Content Operations",
+          "Head of Content and Community",
+          "Director of Customer Education and Content",
+          "VP of Content"
+        ],
+        "example_unpromising_titles": [
+          "Senior Copywriter",
+          "Senior Content Writer",
+          "SEO Manager",
+          "Senior Social Media Manager",
+          "Director of Customer Success",
+          "Director of Customer Experience",
+          "Brand Manager",
+          "Product Marketing Manager",
+          "Director of Marketing Operations",
+          "Head of Communications"
+        ],
+        "description": "Leadership role owning the content strategy, editorial calendar, and knowledge infrastructure for a consumer-facing or B2B brand. For this user, the fit lies in translating deep CX and VOC expertise into structured content programs \u2014 help center architecture, customer education, social playbooks, and self-service tooling \u2014 across DTC, e-commerce, or SaaS environments. The work is part strategic (roadmap, tone, cross-functional alignment with Product, Marketing, and CX) and part operational (content QA, team management, tooling like Zendesk, Salesforce, or CMS platforms). Best-fit companies are growth-stage or scaling brands that treat content as a CX lever, not just a marketing channel.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "beauty and wellness",
+          "consumer brands",
+          "SaaS",
+          "B2B2C",
+          "retail tech"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 695,
+        "domain_hints": [
+          "DTC e-commerce",
+          "beauty and wellness",
+          "consumer brands",
+          "SaaS",
+          "B2B2C",
+          "retail tech"
+        ],
+        "search_keywords": [
+          "head of content",
+          "content director",
+          "director of content",
+          "director of content strategy",
+          "head of content strategy",
+          "content and communications director",
+          "content experience director",
+          "head of editorial",
+          "director of editorial",
+          "content operations director",
+          "head of cx content",
+          "director of customer content",
+          "content and knowledge director",
+          "head of content and community",
+          "director of content and education"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Content Strategy\": 3,\n          \"Editorial Planning\": 3,\n          \"Voice of Customer\": 3,\n",
+      "latency_ms": 18419,
+      "cost_usd": 0.025302,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 1145,
+        "total_tokens": 3854
+      },
+      "error": null
+    },
+    {
+      "label": "Plant Operations Manager",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Process Automation": 3,
+                "Quality Assurance": 3,
+                "Cross-Functional Collaboration": 3,
+                "KPI Tracking": 3,
+                "Continuous Improvement": 3,
+                "Operational Excellence": 3,
+                "Lean Manufacturing": 2,
+                "Six Sigma": 2,
+                "Workforce Management": 3
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Change Management": 2,
+                "ERP Systems": 2,
+                "Oracle": 2,
+                "Data-Driven Decision Making": 2,
+                "Process Reengineering": 2,
+                "Project Management": 2,
+                "Compliance": 2,
+                "Safety Management": 2,
+                "Budget Management": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Salesforce": 1,
+                "NetSuite": 1,
+                "3PL Integration": 1,
+                "Supply Chain": 1,
+                "Inventory Management": 1,
+                "Predictive Analytics": 1,
+                "Agile": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "director",
+              "10+ years",
+              "multi-site",
+              "P&L",
+              "strategic"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "manufacturing",
+              "production",
+              "industrial",
+              "chemical",
+              "food processing",
+              "pharma",
+              "consumer goods"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "customer service",
+              "customer support",
+              "customer experience",
+              "member services",
+              "client services",
+              "help desk",
+              "call center",
+              "contact center",
+              "support operations",
+              "CX",
+              "CS",
+              "junior",
+              "coordinator",
+              "specialist",
+              "associate"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "plant operations manager",
+          "plant manager",
+          "operations manager",
+          "production manager",
+          "manufacturing manager",
+          "facility manager",
+          "operations director",
+          "plant director",
+          "site manager",
+          "production operations manager"
+        ],
+        "example_promising_titles": [
+          "Plant Operations Manager",
+          "Plant Manager",
+          "Director of Plant Operations",
+          "Operations Manager - Manufacturing",
+          "Production Operations Manager",
+          "Manufacturing Operations Manager",
+          "Site Operations Manager",
+          "Facility Operations Manager",
+          "Director of Manufacturing Operations",
+          "Operations Director - Production"
+        ],
+        "example_unpromising_titles": [
+          "Director of Customer Experience",
+          "Head of Customer Operations",
+          "Operations Manager - Customer Support",
+          "Director of Client Services",
+          "VP of Customer Success",
+          "Customer Service Operations Manager",
+          "Head of Support Operations",
+          "Contact Center Operations Manager",
+          "E-commerce Operations Manager",
+          "Director of Member Services"
+        ],
+        "description": "This user built operational excellence in fast-paced CX environments through process automation, cross-functional coordination, and data-driven optimization. The Plant Operations Manager pivot translates that foundation into physical production: managing floor operations, coordinating production teams, optimizing manufacturing workflows, ensuring quality and safety compliance, and driving continuous improvement initiatives. Target environments: consumer goods manufacturing, pharma, food processing, or industrial production facilities where operational rigor and scalability matter. The user's Oracle/ERP fluency, 3PL coordination, and systematic problem-solving transfer directly; they'll need to credential domain-specific manufacturing knowledge (Lean, Six Sigma, safety protocols) and demonstrate comfort with physical plant dynamics.",
+        "seniority_hint": "manager",
+        "domain_hints": [
+          "manufacturing",
+          "consumer goods production",
+          "pharma manufacturing",
+          "food processing",
+          "chemical production",
+          "industrial operations"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Process Automation\": 3,\n          \"Quality Assurance\": 3,\n          \"Cross-Functional Colla",
+      "latency_ms": 14692,
+      "cost_usd": 0.023034,
+      "usage": {
+        "prompt_tokens": 2708,
+        "completion_tokens": 994,
+        "total_tokens": 3702
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Plant Operations Manager",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Operations Management": 3,
+                "Process Improvement": 3,
+                "Cross-Functional Collaboration": 3,
+                "KPI Tracking": 3,
+                "Workforce Management": 3,
+                "Change Management": 3,
+                "Order-to-Cash Workflows": 3,
+                "3PL Integration": 3,
+                "Quality Assurance": 3,
+                "ERP": 2,
+                "Oracle": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "BPO Management": 2,
+                "Process Automation": 2,
+                "SLA Management": 2,
+                "Vendor Management": 2,
+                "Data-Driven Decision Making": 2,
+                "Agile Project Management": 2,
+                "NetSuite": 2,
+                "Predictive Analytics": 2,
+                "Go-to-Market Strategy": 1,
+                "Inventory Management": 2,
+                "Supply Chain": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Lean Operations": 1,
+                "Continuous Improvement": 1,
+                "Fulfillment Operations": 1,
+                "Backlog Management": 1,
+                "Escalation Management": 1,
+                "Team Development": 1,
+                "Looker": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "manager",
+              "director",
+              "head of",
+              "lead",
+              "oversee",
+              "P&L",
+              "budget ownership",
+              "site leader",
+              "operations lead",
+              "department head"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "consumer goods",
+              "DTC",
+              "wholesale",
+              "manufacturing",
+              "distribution",
+              "fulfillment",
+              "health and beauty",
+              "CPG",
+              "e-commerce operations",
+              "logistics"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "intern",
+              "entry-level",
+              "junior",
+              "associate",
+              "coordinator",
+              "part-time",
+              "contract only",
+              "software engineer",
+              "nurse",
+              "medical technician"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "plant operations manager",
+          "operations manager",
+          "plant manager",
+          "operations director",
+          "site operations manager",
+          "facility operations manager",
+          "distribution center manager",
+          "fulfillment operations manager",
+          "supply chain operations manager",
+          "operations leader",
+          "manufacturing operations manager",
+          "logistics operations manager",
+          "general manager operations",
+          "business operations manager"
+        ],
+        "example_promising_titles": [
+          "Plant Operations Manager",
+          "Director of Operations",
+          "Senior Operations Manager",
+          "Site Operations Manager",
+          "Head of Operations",
+          "Fulfillment Operations Manager",
+          "Distribution Center Operations Manager",
+          "Supply Chain Operations Manager",
+          "Senior Plant Manager",
+          "General Manager, Operations"
+        ],
+        "example_unpromising_titles": [
+          "Customer Success Manager",
+          "Director of Customer Experience",
+          "VP of Customer Support",
+          "Sales Operations Manager",
+          "Marketing Operations Manager",
+          "HR Operations Manager",
+          "IT Operations Manager",
+          "Revenue Operations Manager",
+          "Retail Store Manager",
+          "Account Operations Manager"
+        ],
+        "description": "Operations leadership role overseeing plant, distribution, or fulfillment site performance \u2014 owning throughput, quality, workforce coordination, and vendor/3PL relationships. This user brings hands-on experience eliminating manual order closures in Oracle, compressing PO closure timelines from weeks to days, and integrating 3PL workflows with ERP systems to hit revenue targets. The flavor of work is execution-heavy and cross-functional: aligning warehouse, logistics, sales, and finance teams around operational goals. Best-fit companies are mid-market to enterprise CPG, health & beauty, DTC with wholesale distribution arms, or omnichannel retailers with complex fulfillment stacks.",
+        "seniority_hint": "manager",
+        "domain_hints": [
+          "CPG",
+          "DTC e-commerce",
+          "health and beauty",
+          "wholesale distribution",
+          "fulfillment and logistics",
+          "consumer goods manufacturing"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 688,
+        "domain_hints": [
+          "CPG",
+          "DTC e-commerce",
+          "health and beauty",
+          "wholesale distribution",
+          "fulfillment and logistics",
+          "consumer goods manufacturing"
+        ],
+        "search_keywords": [
+          "plant operations manager",
+          "operations manager",
+          "plant manager",
+          "operations director",
+          "site operations manager",
+          "facility operations manager",
+          "distribution center manager",
+          "fulfillment operations manager",
+          "supply chain operations manager",
+          "operations leader",
+          "manufacturing operations manager",
+          "logistics operations manager",
+          "general manager operations",
+          "business operations manager"
+        ],
+        "seniority_hint": "manager"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Operations Management\": 3,\n          \"Process Improvement\": 3,\n          \"Cross-Functional ",
+      "latency_ms": 18124,
+      "cost_usd": 0.024582,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 1097,
+        "total_tokens": 3806
+      },
+      "error": null
+    },
+    {
+      "label": "Engineering Manager, Platform",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Process Automation": 3,
+                "Cross-Functional Collaboration": 3,
+                "Agile": 2,
+                "System Integration": 3,
+                "API Integration": 2,
+                "Workflow Orchestration": 3,
+                "Change Management": 2,
+                "Infrastructure": 2,
+                "CI/CD": 2,
+                "Service Architecture": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Salesforce": 2,
+                "NetSuite": 2,
+                "Oracle": 2,
+                "Zendesk": 1,
+                "Data Pipelines": 2,
+                "Monitoring": 2,
+                "Analytics": 2,
+                "Project Management": 2,
+                "DevOps": 2,
+                "Cloud Infrastructure": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Kubernetes": 1,
+                "AWS": 1,
+                "Terraform": 1,
+                "Docker": 1,
+                "Microservices": 1,
+                "PostgreSQL": 1,
+                "Python": 1,
+                "Incident Management": 1,
+                "SLI/SLO": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "manager",
+            "signals": [
+              "engineering manager",
+              "manager",
+              "lead",
+              "director of engineering",
+              "head of"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "platform",
+              "infrastructure",
+              "developer tools",
+              "internal tools",
+              "SaaS",
+              "B2B",
+              "enterprise"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "customer success",
+              "customer support",
+              "account manager",
+              "sales engineer",
+              "individual contributor",
+              "IC",
+              "staff engineer",
+              "senior engineer"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "engineering manager",
+          "manager platform",
+          "manager infrastructure",
+          "manager devops",
+          "manager developer experience",
+          "manager internal tools",
+          "manager systems",
+          "technical manager",
+          "platform lead",
+          "infrastructure lead"
+        ],
+        "example_promising_titles": [
+          "Engineering Manager, Platform",
+          "Engineering Manager, Infrastructure",
+          "Engineering Manager, Developer Experience",
+          "Engineering Manager, Internal Tools",
+          "Engineering Manager, Systems",
+          "Manager, Platform Engineering",
+          "Manager, DevOps",
+          "Director of Platform Engineering",
+          "Head of Infrastructure",
+          "Engineering Manager, Core Services"
+        ],
+        "example_unpromising_titles": [
+          "Customer Success Manager",
+          "Technical Account Manager",
+          "Solutions Engineer",
+          "Staff Platform Engineer",
+          "Senior Software Engineer",
+          "Product Manager, Platform",
+          "Director of Customer Experience",
+          "Head of Support Operations",
+          "Engineering Manager, Product",
+          "Engineering Manager, Machine Learning"
+        ],
+        "description": "Engineering Manager for Platform teams: leading engineers who build internal tooling, developer infrastructure, CI/CD pipelines, and system integrations that enable other teams to ship faster. This candidate brings deep operational experience automating complex workflows (Oracle/NetSuite/Salesforce integrations, 3PL systems, order-to-cash flows), driving cross-functional technical projects, and managing change at scale. The transition leverages their track record in process reengineering, system integration, and leading technical teams through transformation \u2014 now applied to platform systems serving engineers instead of customers. Target companies: SaaS, developer tools, infrastructure providers, B2B platforms.",
+        "seniority_hint": "manager",
+        "domain_hints": [
+          "SaaS",
+          "developer tools",
+          "infrastructure",
+          "B2B",
+          "internal tools",
+          "platform engineering"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 720,
+        "domain_hints": [
+          "SaaS",
+          "developer tools",
+          "infrastructure",
+          "B2B",
+          "internal tools",
+          "platform engineering"
+        ],
+        "search_keywords": [
+          "engineering manager",
+          "manager platform",
+          "manager infrastructure",
+          "manager devops",
+          "manager developer experience",
+          "manager internal tools",
+          "manager systems",
+          "technical manager",
+          "platform lead",
+          "infrastructure lead"
+        ],
+        "seniority_hint": "manager"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Process Automation\": 3,\n          \"Cross-Functional Collaboration\": 3,\n          \"Agile\": 2",
+      "latency_ms": 14194,
+      "cost_usd": 0.022962,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 989,
+        "total_tokens": 3698
+      },
+      "error": null
+    },
+    {
+      "label": "Engineering Manager, Platform",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce Service Cloud": 3,
+                "Process Automation": 3,
+                "AI Chatbots": 3,
+                "Workforce Management": 3,
+                "BPO Management": 3,
+                "Omnichannel Support": 3,
+                "KPI Dashboards": 2,
+                "Agile Project Management": 2,
+                "Change Management": 3
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Looker": 2,
+                "Jira": 2,
+                "Predictive Analytics": 2,
+                "Voice of Customer": 2,
+                "Quality Assurance": 2,
+                "Vendor Management": 2,
+                "Cross-Functional Collaboration": 2,
+                "NetSuite": 1,
+                "Salesforce": 2,
+                "SLA Management": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Customer Journey Mapping": 1,
+                "Sentiment Analysis": 1,
+                "IVR": 1,
+                "NPS": 1,
+                "CSAT": 1,
+                "Order-to-Cash Workflows": 1,
+                "Go-to-Market Strategy": 1,
+                "Zapier": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "senior",
+            "signals": [
+              "engineering manager",
+              "head of",
+              "director",
+              "team lead",
+              "manage engineers",
+              "people manager",
+              "manage a team",
+              "lead a team",
+              "hiring",
+              "performance reviews",
+              "roadmap ownership"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "customer experience",
+              "CX platform",
+              "support platform",
+              "contact center",
+              "service operations",
+              "support tooling",
+              "internal platforms",
+              "e-commerce",
+              "SaaS",
+              "DTC"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "individual contributor",
+              "associate",
+              "staff engineer",
+              "no direct reports",
+              "PhD required",
+              "machine learning",
+              "deep learning",
+              "civil engineering",
+              "hardware",
+              "embedded systems"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "engineering manager",
+          "platform manager",
+          "manager of platform engineering",
+          "cx platform manager",
+          "support platform manager",
+          "customer experience manager",
+          "cx operations manager",
+          "support operations manager",
+          "service operations manager",
+          "platform operations manager",
+          "head of support operations",
+          "head of cx",
+          "head of customer operations",
+          "director of customer experience",
+          "director of support"
+        ],
+        "example_promising_titles": [
+          "Engineering Manager, CX Platform",
+          "Engineering Manager, Support Platform",
+          "Engineering Manager, Customer Experience",
+          "Senior Manager, Support Operations",
+          "Director of Support Operations",
+          "Director of Customer Experience",
+          "Head of CX Platform",
+          "Head of Support Engineering",
+          "Platform Operations Manager",
+          "Senior Manager, CX Technology"
+        ],
+        "example_unpromising_titles": [
+          "Senior Product Manager, Platform",
+          "Senior Software Engineer, Platform",
+          "Principal Engineer, Infrastructure",
+          "Staff Backend Engineer",
+          "Technical Program Manager, Platform",
+          "Product Operations Manager",
+          "Sales Operations Manager",
+          "Senior Data Engineer",
+          "Solutions Engineer",
+          "Implementation Manager"
+        ],
+        "description": "Engineering Manager, Platform for a CX-forward or operationally complex organization \u2014 typically SaaS, DTC e-commerce, or marketplace \u2014 where the role owns the support tooling stack, CX platform vendors (Zendesk, Salesforce Service Cloud, AI chatbots), and the team or vendor relationships that keep them running. This user brings 10+ years leading CX orgs at scale, a track record of deploying AI-driven automation and reengineering workflows that produce measurable outcomes (73% TTR reduction, 86% backlog cuts, $300K/mo revenue recovery), and hands-on fluency with the tools this kind of manager is responsible for. The role is operations-heavy with a strong craft lens: not a pure people-manager track, but one that rewards knowing the platform deeply enough to drive architectural and vendor decisions alongside technical partners.",
+        "seniority_hint": "manager",
+        "domain_hints": [
+          "DTC e-commerce",
+          "SaaS",
+          "CX / support tooling",
+          "marketplace",
+          "healthtech",
+          "consumer brands"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"Process Automation\": 3,\n  ",
+      "latency_ms": 18884,
+      "cost_usd": 0.025815,
+      "usage": {
+        "prompt_tokens": 2710,
+        "completion_tokens": 1179,
+        "total_tokens": 3889
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Principal Product Designer",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Customer Journey Mapping": 3,
+                "User Research": 3,
+                "Service Design": 3,
+                "Design Systems": 3,
+                "Interaction Design": 3,
+                "Information Architecture": 3,
+                "Prototyping": 3,
+                "Usability Testing": 3,
+                "Design Strategy": 3,
+                "Cross-Functional Collaboration": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Figma": 2,
+                "Voice of Customer": 2,
+                "Process Reengineering": 2,
+                "Agile": 2,
+                "Stakeholder Management": 2,
+                "Design Leadership": 2,
+                "Design Thinking": 2,
+                "Accessibility": 2,
+                "Analytics": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "CRM": 1,
+                "Zendesk": 1,
+                "Salesforce": 1,
+                "AI Integration": 1,
+                "Change Management": 1,
+                "KPI Dashboards": 1,
+                "Omnichannel": 1,
+                "Data-Driven Design": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "principal",
+            "signals": [
+              "10+ years",
+              "principal",
+              "staff",
+              "director",
+              "lead designer",
+              "design leadership",
+              "strategic",
+              "vision"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "SaaS",
+              "B2B",
+              "B2C",
+              "e-commerce",
+              "CX platforms",
+              "enterprise software",
+              "customer service tools",
+              "operations software"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "associate",
+              "entry-level",
+              "intern",
+              "graphic design",
+              "brand design",
+              "marketing design",
+              "motion design",
+              "animator",
+              "illustrator",
+              "visual designer only"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "product designer",
+          "principal product designer",
+          "principal designer",
+          "staff product designer",
+          "staff designer",
+          "senior product designer",
+          "lead product designer",
+          "design lead",
+          "ux designer",
+          "service designer",
+          "design strategist",
+          "experience designer",
+          "product design lead"
+        ],
+        "example_promising_titles": [
+          "Principal Product Designer",
+          "Staff Product Designer",
+          "Principal UX Designer",
+          "Lead Product Designer",
+          "Staff Designer",
+          "Senior Staff Product Designer",
+          "Principal Service Designer",
+          "Design Lead",
+          "Principal Experience Designer",
+          "Staff UX Designer"
+        ],
+        "example_unpromising_titles": [
+          "Principal Product Manager",
+          "Director of Customer Success",
+          "Senior Brand Designer",
+          "Principal Research Scientist",
+          "Lead Visual Designer",
+          "Director of Operations",
+          "Staff Engineering Manager",
+          "Principal Marketing Manager"
+        ],
+        "description": "Principal Product Designer driving strategic design for complex enterprise and consumer-facing products, especially in CX, operations, and service tooling spaces. This user brings deep operational transformation experience \u2014 journey mapping, process redesign, stakeholder orchestration across B2B/B2C/B2B2C contexts \u2014 that translates naturally to principal-level product design: synthesizing user needs at scale, defining information architecture for multi-sided platforms, and embedding design systems into cross-functional delivery. Ideal fit: companies building tools for support teams, workflow automation, AI-assisted experiences, or omnichannel customer experiences where product design intersects operations strategy. The role emphasizes end-to-end ownership \u2014 from discovery and service blueprinting through shipped interactions and post-launch iteration \u2014 and the ability to influence product vision while mentoring craft across a design org.",
+        "seniority_hint": "principal",
+        "domain_hints": [
+          "SaaS",
+          "CX platforms",
+          "enterprise software",
+          "e-commerce tooling",
+          "workflow automation",
+          "AI-powered products"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Customer Journey Mapping\": 3,\n          \"User Research\": 3,\n          \"Service Design\": 3,\n",
+      "latency_ms": 16058,
+      "cost_usd": 0.023934,
+      "usage": {
+        "prompt_tokens": 2708,
+        "completion_tokens": 1054,
+        "total_tokens": 3762
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Principal Product Designer",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Customer Journey Mapping": 3,
+                "Voice of Customer": 3,
+                "Service Design": 3,
+                "Omnichannel Experience Design": 3,
+                "AI-Driven Product Design": 2,
+                "Cross-Functional Collaboration": 2,
+                "Agile Project Management": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Zendesk": 2,
+                "Salesforce Service Cloud": 2,
+                "Process Automation": 2,
+                "KPI Dashboards": 2,
+                "Sentiment Analysis": 2,
+                "Predictive Analytics": 2,
+                "Change Management": 2,
+                "Go-to-Market Strategy": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Qualtrics": 1,
+                "Medallia": 1,
+                "Looker": 1,
+                "Shopify": 1,
+                "BPO Management": 1,
+                "Quality Assurance": 1,
+                "NPS": 1,
+                "CSAT": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "principal",
+            "signals": [
+              "principal",
+              "staff",
+              "lead designer",
+              "director of design",
+              "design director",
+              "10+ years",
+              "strategic",
+              "org-wide",
+              "cross-functional leadership",
+              "systems thinking"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "DTC",
+              "e-commerce",
+              "consumer products",
+              "SaaS",
+              "B2B2C",
+              "healthtech",
+              "beauty",
+              "retail",
+              "CX platform"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "associate designer",
+              "UI designer",
+              "visual designer",
+              "graphic designer",
+              "motion designer",
+              "brand designer",
+              "marketing designer"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "product designer",
+          "ux designer",
+          "experience designer",
+          "cx designer",
+          "service designer",
+          "design strategist",
+          "ux researcher",
+          "product design lead",
+          "experience design lead",
+          "design lead",
+          "customer experience designer",
+          "design strategist"
+        ],
+        "example_promising_titles": [
+          "Principal Product Designer",
+          "Staff Product Designer",
+          "Principal UX Designer",
+          "Director of Product Design",
+          "Principal Experience Designer",
+          "Lead Service Designer",
+          "Principal CX Designer",
+          "Staff UX Researcher and Designer",
+          "Principal Design Strategist"
+        ],
+        "example_unpromising_titles": [
+          "Senior Visual Designer",
+          "Senior Brand Designer",
+          "Product Manager, CX Platform",
+          "Director of Customer Success",
+          "Senior UX Researcher",
+          "Senior Content Designer",
+          "Design Program Manager",
+          "Director of Customer Experience Operations",
+          "Senior Marketing Designer",
+          "Head of Customer Support"
+        ],
+        "description": "Principal-level product designer focused on CX systems, service design, and AI-augmented customer journeys \u2014 not pixel-level UI craft, but the strategic, org-spanning design of how customers experience a product end-to-end. This user brings deep operational CX leadership (DTC beauty, B2B medical, SaaS consulting) and a track record of translating VOC, journey mapping, and process reengineering into measurable outcomes. Best-fit companies are DTC or B2B2C product companies, CX-adjacent SaaS platforms, or consulting-forward orgs where design intersects with operations and AI tooling. The role should involve setting design direction across squads, embedding in product and engineering, and driving system-level thinking \u2014 not execution of individual screens.",
+        "seniority_hint": "staff",
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B2C SaaS",
+          "consumer health and beauty",
+          "CX platform",
+          "retail tech",
+          "AI-powered enterprise software"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 763,
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B2C SaaS",
+          "consumer health and beauty",
+          "CX platform",
+          "retail tech",
+          "AI-powered enterprise software"
+        ],
+        "search_keywords": [
+          "product designer",
+          "ux designer",
+          "experience designer",
+          "cx designer",
+          "service designer",
+          "design strategist",
+          "ux researcher",
+          "product design lead",
+          "experience design lead",
+          "design lead",
+          "customer experience designer",
+          "design strategist"
+        ],
+        "seniority_hint": "staff"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Customer Journey Mapping\": 3,\n          \"Voice of Customer\": 3,\n          \"Service Design\":",
+      "latency_ms": 20041,
+      "cost_usd": 0.024027,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 1060,
+        "total_tokens": 3769
+      },
+      "error": null
+    },
+    {
+      "label": "VP of Customer Success",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce": 3,
+                "NetSuite": 3,
+                "customer success": 3,
+                "customer experience": 3,
+                "cross-functional collaboration": 3,
+                "process automation": 3,
+                "KPI tracking": 2,
+                "change management": 2,
+                "omnichannel support": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "AI chatbots": 2,
+                "customer journey mapping": 2,
+                "voice of customer": 2,
+                "sentiment analysis": 2,
+                "quality assurance": 2,
+                "Agile": 2,
+                "NPS": 2,
+                "CSAT": 2,
+                "workforce management": 2,
+                "BPO management": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Oracle": 1,
+                "Shopify": 1,
+                "predictive analytics": 1,
+                "Looker": 1,
+                "Jira": 1,
+                "Qualtrics": 1,
+                "Medallia": 1,
+                "3PL integration": 1,
+                "order-to-cash": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "vp",
+            "signals": [
+              "VP",
+              "Vice President",
+              "head of",
+              "director",
+              "15+ years",
+              "executive",
+              "C-suite",
+              "strategic",
+              "P&L",
+              "multi-million"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "B2B SaaS",
+              "B2C e-commerce",
+              "DTC",
+              "retail",
+              "beauty",
+              "consumer goods",
+              "subscription",
+              "marketplace"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "associate",
+              "coordinator",
+              "specialist",
+              "analyst",
+              "entry-level",
+              "intern"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "vp customer success",
+          "vice president customer success",
+          "vp customer experience",
+          "vice president customer experience",
+          "head of customer success",
+          "head of customer experience",
+          "chief customer officer",
+          "vp client services",
+          "vp support",
+          "vp cx",
+          "vp cs",
+          "director customer success",
+          "svp customer success"
+        ],
+        "example_promising_titles": [
+          "VP of Customer Success",
+          "Vice President, Customer Experience",
+          "VP Customer Success & Support",
+          "Head of Customer Success",
+          "Chief Customer Officer",
+          "SVP Customer Success",
+          "VP of Client Services",
+          "Vice President of Customer Operations",
+          "VP, Customer Experience & Success",
+          "Director of Customer Success"
+        ],
+        "example_unpromising_titles": [
+          "VP of Product Management",
+          "VP of Sales",
+          "Chief Revenue Officer",
+          "VP of Marketing",
+          "VP of Engineering",
+          "Chief Operating Officer",
+          "VP of People Operations",
+          "VP of Business Development"
+        ],
+        "description": "VP-level Customer Success leader for B2B SaaS, DTC e-commerce, or B2B2C companies scaling omnichannel support operations. The user has transformed CX at hypergrowth consumer brands (Thrive Causemetics) and led cross-client consulting engagements (CX Collective), specializing in AI-powered automation, process reengineering, and operational metrics that directly impact revenue retention and margin. They've built support infrastructures from scratch for new channels (TikTok Shop), reduced resolution times by 70%+, and managed P&L-adjacent decisions around BPO partnerships and tooling investments. Ideal roles involve strategic ownership of the post-sale customer lifecycle, executive stakeholder management, and leading teams of 20-100+ across support, onboarding, renewals, and community.",
+        "seniority_hint": "vp",
+        "domain_hints": [
+          "B2B SaaS",
+          "DTC e-commerce",
+          "consumer goods",
+          "marketplace platforms",
+          "subscription services"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 793,
+        "domain_hints": [
+          "B2B SaaS",
+          "DTC e-commerce",
+          "consumer goods",
+          "marketplace platforms",
+          "subscription services"
+        ],
+        "search_keywords": [
+          "vp customer success",
+          "vice president customer success",
+          "vp customer experience",
+          "vice president customer experience",
+          "head of customer success",
+          "head of customer experience",
+          "chief customer officer",
+          "vp client services",
+          "vp support",
+          "vp cx",
+          "vp cs",
+          "director customer success",
+          "svp customer success"
+        ],
+        "seniority_hint": "vp"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce\": 3,\n          \"NetSuite\": 3,\n          \"customer succes",
+      "latency_ms": 16370,
+      "cost_usd": 0.025662,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 1169,
+        "total_tokens": 3878
+      },
+      "error": null
+    },
+    {
+      "label": "VP of Customer Success",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce Service Cloud": 3,
+                "Customer Journey Mapping": 3,
+                "Voice of Customer": 3,
+                "Omnichannel Support": 3,
+                "KPI Dashboards": 3,
+                "BPO Management": 3,
+                "NPS": 3,
+                "CSAT": 3,
+                "Change Management": 3,
+                "Process Automation": 3,
+                "AI Chatbots": 3,
+                "Quality Assurance": 2,
+                "Workforce Management": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Salesforce": 2,
+                "NetSuite": 2,
+                "Predictive Analytics": 2,
+                "Sentiment Analysis": 2,
+                "Agile Project Management": 2,
+                "Cross-Functional Collaboration": 2,
+                "Customer Effort Score": 2,
+                "Go-to-Market Strategy": 2,
+                "Data-Driven Decision Making": 2,
+                "Shopify": 1,
+                "Oracle": 1,
+                "Looker": 2,
+                "Qualtrics": 2,
+                "Medallia": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Community Management": 1,
+                "IVR": 1,
+                "3PL Integration": 1,
+                "Order-to-Cash Workflows": 1,
+                "Gorgias": 1,
+                "Playvox": 1,
+                "Assembled": 1,
+                "Loop Returns": 1,
+                "Keatext": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "VP",
+              "vice president",
+              "head of",
+              "director",
+              "executive",
+              "P&L",
+              "C-suite",
+              "board",
+              "strategic",
+              "org-wide",
+              "enterprise-wide",
+              "leadership team"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "B2B",
+              "B2C",
+              "B2B2C",
+              "DTC",
+              "e-commerce",
+              "SaaS",
+              "healthtech",
+              "beauty",
+              "consumer goods",
+              "retail",
+              "subscription",
+              "medtech"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "associate",
+              "coordinator",
+              "specialist",
+              "individual contributor",
+              "agent",
+              "representative",
+              "analyst"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "vp of customer success",
+          "vice president of customer success",
+          "vp customer success",
+          "vp of customer experience",
+          "vice president customer experience",
+          "vp cx",
+          "vp of client success",
+          "vp customer experience",
+          "vp of support",
+          "head of customer success",
+          "head of customer experience",
+          "head of client services",
+          "director of customer success",
+          "director of customer experience",
+          "director of client success"
+        ],
+        "example_promising_titles": [
+          "VP of Customer Success",
+          "VP of Customer Experience",
+          "Vice President of Client Success",
+          "VP of Support Operations",
+          "Head of Customer Experience",
+          "Senior Director of Customer Success",
+          "VP of Customer Operations",
+          "Vice President of Customer Experience"
+        ],
+        "example_unpromising_titles": [
+          "VP of Sales",
+          "VP of Marketing",
+          "VP of Product Management",
+          "Director of Customer Acquisition",
+          "VP of Revenue Operations",
+          "Customer Success Manager",
+          "VP of Community",
+          "Director of User Research",
+          "VP of People Operations",
+          "Senior Account Executive"
+        ],
+        "description": "Senior CX executive with a track record of transforming customer operations at scale across DTC, B2B, and B2B2C companies \u2014 from high-growth e-commerce brands (Thrive Causemetics, Winc.) to medical device and consulting contexts. The target VP of Customer Success role is a strategic leadership seat: owning retention, expansion, and service delivery at an org-wide level, typically with multiple team leads reporting in and direct influence over CX tech stack, vendor relationships, and cross-functional roadmaps. Strongest fit in operationally complex environments where AI-powered tooling, BPO oversight, omnichannel redesign, and hard revenue metrics (churn, recovery, SLA performance) define success. Ideal company types: DTC or digitally native brands scaling post-Series B, SaaS platforms with a CS-led growth motion, or omnichannel retailers investing in CX as a retention lever.",
+        "seniority_hint": "vp",
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B SaaS",
+          "consumer goods",
+          "beauty and wellness",
+          "subscription commerce",
+          "medtech"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"Customer Journey Mapping\":",
+      "latency_ms": 19841,
+      "cost_usd": 0.027375,
+      "usage": {
+        "prompt_tokens": 2710,
+        "completion_tokens": 1283,
+        "total_tokens": 3993
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Senior DevOps Engineer",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Kubernetes": 3,
+                "Docker": 3,
+                "Terraform": 3,
+                "AWS": 3,
+                "CI/CD": 3,
+                "Linux": 3,
+                "Python": 2,
+                "Ansible": 2,
+                "Jenkins": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Monitoring": 2,
+                "Prometheus": 2,
+                "Grafana": 2,
+                "GitOps": 2,
+                "Infrastructure as Code": 2,
+                "Bash": 1,
+                "CloudFormation": 1,
+                "EKS": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "ArgoCD": 1,
+                "Helm": 1,
+                "PostgreSQL": 1,
+                "Redis": 1,
+                "Datadog": 1,
+                "Azure": 1,
+                "GCP": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "senior",
+            "signals": ["5+ years", "senior", "lead", "architect"]
+          },
+          "domain": {
+            "signals": [
+              "SaaS",
+              "e-commerce",
+              "cloud infrastructure",
+              "platform engineering"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "entry-level",
+              "intern",
+              "customer success",
+              "customer support",
+              "customer service",
+              "account manager",
+              "sales",
+              "marketing",
+              "designer",
+              "product manager"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "devops engineer",
+          "site reliability engineer",
+          "sre",
+          "platform engineer",
+          "infrastructure engineer",
+          "cloud engineer",
+          "systems engineer",
+          "release engineer",
+          "build engineer",
+          "deployment engineer"
+        ],
+        "example_promising_titles": [
+          "Senior DevOps Engineer",
+          "Senior Site Reliability Engineer",
+          "Staff Platform Engineer",
+          "Senior Infrastructure Engineer",
+          "Senior Cloud Engineer",
+          "Lead DevOps Engineer",
+          "Principal SRE",
+          "Staff Infrastructure Engineer"
+        ],
+        "example_unpromising_titles": [
+          "Senior Customer Success Manager",
+          "Director of Customer Experience",
+          "Senior Product Manager",
+          "Head of Support Operations",
+          "Director of Technical Support",
+          "Senior Business Systems Analyst",
+          "Senior Data Engineer",
+          "Senior Security Engineer"
+        ],
+        "description": "This is a career pivot from customer operations leadership into hands-on infrastructure engineering. The user brings deep experience with process automation, systems integration (Oracle, NetSuite, Salesforce), and cross-functional coordination at scale \u2014 but lacks the core technical foundation (Linux, Kubernetes, IaC, CI/CD pipelines) that Senior DevOps roles require. This target represents an aspiration requiring significant upskilling in cloud-native tooling, scripting, and production system operations. The user would need to demonstrate proficiency with container orchestration, infrastructure-as-code frameworks, and on-call reliability work to be competitive at this level. Companies hiring for this role expect candidates who have built, deployed, and maintained production infrastructure \u2014 not orchestrated support tooling integrations.",
+        "seniority_hint": "senior",
+        "domain_hints": [
+          "SaaS",
+          "e-commerce platforms",
+          "cloud infrastructure",
+          "developer tools",
+          "fintech"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Kubernetes\": 3,\n          \"Docker\": 3,\n          \"Terraform\": 3,\n          \"AWS\": 3,\n      ",
+      "latency_ms": 13851,
+      "cost_usd": 0.02238,
+      "usage": {
+        "prompt_tokens": 2710,
+        "completion_tokens": 950,
+        "total_tokens": 3660
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Senior DevOps Engineer",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Zendesk": 3,
+                "Salesforce Service Cloud": 3,
+                "Process Automation": 3,
+                "KPI Dashboards": 2,
+                "Agile Project Management": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Salesforce": 2,
+                "NetSuite": 2,
+                "Oracle": 2,
+                "Jira": 2,
+                "Looker": 2,
+                "Zapier": 1,
+                "BPO Management": 1,
+                "Workforce Management": 1,
+                "Omnichannel Support": 1,
+                "Change Management": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "AI Chatbots": 1,
+                "Predictive Analytics": 1,
+                "Voice of Customer": 1,
+                "Quality Assurance": 1,
+                "IVR": 1,
+                "3PL Integration": 1,
+                "Order-to-Cash Workflows": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "senior",
+            "signals": [
+              "senior",
+              "lead",
+              "director",
+              "head of",
+              "5+ years",
+              "manager",
+              "strategy"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "customer experience",
+              "CX",
+              "support operations",
+              "contact center",
+              "B2B",
+              "B2C",
+              "DTC",
+              "e-commerce",
+              "SaaS"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "associate",
+              "coordinator",
+              "tier 1",
+              "DevOps",
+              "infrastructure",
+              "Kubernetes",
+              "Terraform",
+              "CI/CD",
+              "cloud engineer",
+              "platform engineer",
+              "site reliability",
+              "SRE"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "customer experience manager",
+          "cx manager",
+          "customer success manager",
+          "customer support manager",
+          "customer operations manager",
+          "director of customer experience",
+          "head of customer experience",
+          "head of customer success",
+          "director of customer success",
+          "director of support",
+          "head of support",
+          "customer service director",
+          "support operations manager",
+          "cx operations manager",
+          "client services director"
+        ],
+        "example_promising_titles": [
+          "Senior Manager, Customer Experience",
+          "Director of Customer Experience",
+          "Head of Customer Success",
+          "Director of Support Operations",
+          "Senior Director of CX",
+          "VP of Customer Experience",
+          "Head of Customer Support",
+          "Director of Customer Operations",
+          "Senior Director, Client Services",
+          "VP of Customer Success"
+        ],
+        "example_unpromising_titles": [
+          "Senior DevOps Engineer",
+          "Senior Product Manager",
+          "Senior Sales Operations Manager",
+          "Senior Marketing Operations Manager",
+          "Senior Account Executive",
+          "Senior Business Analyst",
+          "Senior Data Analyst",
+          "Senior HR Business Partner",
+          "Senior Revenue Operations Manager",
+          "Senior Implementation Manager"
+        ],
+        "description": "Senior CX and Support Operations leader with a decade-long track record of transforming customer-facing functions at DTC, B2B, and omnichannel companies. This role means owning the full support org \u2014 tooling (Zendesk, Salesforce Service Cloud, NetSuite), AI/automation strategy, BPO and workforce management, and the metrics (CSAT, NPS, TTR, SLA) that translate operational health into revenue impact. Best fit at growth-stage or scaling consumer brands, SaaS companies, and health/beauty DTC operators where CX is a product differentiator, not a cost center. The work is transformation-heavy: inheriting broken processes, deploying AI chatbots and IVR, redesigning escalation matrices, and aligning support ops to commercial outcomes like backlog reduction, claims cost control, and revenue recovery.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "health and beauty",
+          "SaaS",
+          "B2B software",
+          "consumer brands",
+          "omnichannel retail"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Zendesk\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"Process Automation\": 3,\n  ",
+      "latency_ms": 18666,
+      "cost_usd": 0.024663,
+      "usage": {
+        "prompt_tokens": 2711,
+        "completion_tokens": 1102,
+        "total_tokens": 3813
+      },
+      "error": "schema_validation: ValidationError"
+    },
+    {
+      "label": "Director of Marketing Operations",
+      "model": "sonnet-4.6",
+      "model_slug": "anthropic/claude-sonnet-4.6",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Salesforce": 3,
+                "Salesforce Service Cloud": 3,
+                "Zendesk": 3,
+                "KPI Dashboards": 3,
+                "Process Automation": 3,
+                "Customer Journey Mapping": 3,
+                "Change Management": 3,
+                "Voice of Customer": 2,
+                "Omnichannel": 2,
+                "Marketing Operations": 3
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "Agile Project Management": 2,
+                "Predictive Analytics": 2,
+                "Data-Driven Decision Making": 2,
+                "Go-to-Market Strategy": 2,
+                "Cross-Functional Collaboration": 2,
+                "Looker": 2,
+                "NetSuite": 2,
+                "Sentiment Analysis": 1,
+                "BPO Management": 1,
+                "NPS": 2,
+                "CSAT": 2
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "Marketo": 1,
+                "HubSpot": 1,
+                "AI Chatbots": 1,
+                "Jira": 1,
+                "Zapier": 1,
+                "Qualtrics": 1,
+                "Medallia": 1,
+                "Asana": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": [
+              "director",
+              "head of",
+              "senior director",
+              "VP",
+              "lead",
+              "manage team",
+              "cross-functional leadership",
+              "org-wide",
+              "strategy"
+            ]
+          },
+          "domain": {
+            "signals": [
+              "DTC",
+              "e-commerce",
+              "B2B",
+              "B2B2C",
+              "beauty",
+              "consumer goods",
+              "SaaS",
+              "health and wellness",
+              "retail"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "intern",
+              "entry-level",
+              "coordinator",
+              "specialist",
+              "associate",
+              "assistant",
+              "individual contributor"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "director of marketing operations",
+          "marketing operations director",
+          "marketing operations manager",
+          "head of marketing operations",
+          "revenue operations director",
+          "revenue operations manager",
+          "head of revenue operations",
+          "marketing technology director",
+          "marketing systems director",
+          "demand operations director",
+          "go-to-market operations director",
+          "growth operations director",
+          "marketing enablement director"
+        ],
+        "example_promising_titles": [
+          "Director of Marketing Operations",
+          "Senior Director of Marketing Operations",
+          "Head of Marketing Operations",
+          "Director of Revenue Operations",
+          "Director of Go-to-Market Operations",
+          "VP of Marketing Operations",
+          "Director of Marketing Technology",
+          "Director of Demand Generation Operations",
+          "Head of Revenue Operations",
+          "Director of Growth Operations"
+        ],
+        "example_unpromising_titles": [
+          "Director of Customer Experience",
+          "Director of Customer Success",
+          "VP of Customer Support",
+          "Director of Sales Operations",
+          "Director of Product Marketing",
+          "Marketing Manager",
+          "Director of Digital Marketing",
+          "Director of Brand Marketing",
+          "Director of Content Marketing",
+          "Customer Success Manager"
+        ],
+        "description": "Director of Marketing Operations targeting process-heavy, systems-centric leadership roles where operational rigor, cross-functional alignment, and data infrastructure drive marketing performance. This user brings deep expertise in workflow automation, KPI frameworks, and tool stack optimization \u2014 applied historically in CX and support contexts but highly transferable to marketing ops: campaign operations, lead lifecycle management, attribution, and MarTech governance. Best-fit companies are DTC e-commerce, B2B SaaS, or omnichannel consumer brands that treat ops as a strategic lever, not a back-office function. The ideal role involves owning marketing systems (CRM, MAP, analytics), designing scalable processes, and partnering closely with demand gen, sales, and finance.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B SaaS",
+          "consumer goods",
+          "health and beauty",
+          "omnichannel retail",
+          "B2B2C"
+        ]
+      },
+      "derived_summary": {
+        "description_len": 780,
+        "domain_hints": [
+          "DTC e-commerce",
+          "B2B SaaS",
+          "consumer goods",
+          "health and beauty",
+          "omnichannel retail",
+          "B2B2C"
+        ],
+        "search_keywords": [
+          "director of marketing operations",
+          "marketing operations director",
+          "marketing operations manager",
+          "head of marketing operations",
+          "revenue operations director",
+          "revenue operations manager",
+          "head of revenue operations",
+          "marketing technology director",
+          "marketing systems director",
+          "demand operations director",
+          "go-to-market operations director",
+          "growth operations director",
+          "marketing enablement director"
+        ],
+        "seniority_hint": "director"
+      },
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Salesforce\": 3,\n          \"Salesforce Service Cloud\": 3,\n          \"Zendesk\": 3,\n          ",
+      "latency_ms": 18169,
+      "cost_usd": 0.02493,
+      "usage": {
+        "prompt_tokens": 2710,
+        "completion_tokens": 1120,
+        "total_tokens": 3830
+      },
+      "error": null
+    },
+    {
+      "label": "Director of Marketing Operations",
+      "model": "sonnet-4.5",
+      "model_slug": "anthropic/claude-sonnet-4.5",
+      "parsed_ok": true,
+      "schema_ok": false,
+      "derived": {
+        "scoring_profile": {
+          "categories": {
+            "core_skills": {
+              "keywords": {
+                "Marketing Operations": 3,
+                "Marketing Automation": 3,
+                "Salesforce": 3,
+                "Process Optimization": 3,
+                "Cross-Functional Collaboration": 3,
+                "Data Analytics": 3,
+                "Campaign Management": 2,
+                "Lead Management": 2,
+                "Attribution Modeling": 2
+              },
+              "weight": 2.0
+            },
+            "secondary_skills": {
+              "keywords": {
+                "CRM": 2,
+                "Marketing Stack": 2,
+                "Agile Project Management": 2,
+                "Change Management": 2,
+                "KPI Dashboards": 2,
+                "Predictive Analytics": 2,
+                "Process Automation": 2,
+                "Workflow Design": 1,
+                "Stakeholder Management": 1
+              },
+              "weight": 1.0
+            },
+            "nice_to_have": {
+              "keywords": {
+                "NetSuite": 1,
+                "Looker": 1,
+                "Zapier": 1,
+                "API Integration": 1,
+                "ABM": 1,
+                "Revenue Operations": 1,
+                "Martech Stack": 1,
+                "Salesforce Marketing Cloud": 1,
+                "HubSpot": 1
+              },
+              "weight": 0.5
+            }
+          },
+          "seniority": {
+            "level": "director",
+            "signals": ["director", "head of", "10+ years", "lead", "executive"]
+          },
+          "domain": {
+            "signals": [
+              "B2B",
+              "B2C",
+              "SaaS",
+              "DTC",
+              "e-commerce",
+              "consumer products"
+            ],
+            "weight": 0.5
+          },
+          "negative": {
+            "keywords": [
+              "junior",
+              "associate",
+              "coordinator",
+              "specialist",
+              "customer service",
+              "customer support",
+              "customer success manager",
+              "product marketing manager",
+              "brand marketing",
+              "content marketing",
+              "social media manager"
+            ],
+            "weight": -10
+          }
+        },
+        "search_keywords": [
+          "director of marketing operations",
+          "head of marketing operations",
+          "marketing operations director",
+          "marketing ops director",
+          "vp marketing operations",
+          "director revenue operations",
+          "revenue operations director",
+          "marketing technology director",
+          "martech director",
+          "director demand generation operations",
+          "director growth operations"
+        ],
+        "example_promising_titles": [
+          "Director of Marketing Operations",
+          "Head of Marketing Operations",
+          "VP Marketing Operations",
+          "Director of Revenue Operations",
+          "Senior Director Marketing Operations",
+          "Head of Revenue Operations",
+          "Director of Demand Generation Operations",
+          "VP Revenue Operations",
+          "Director of Marketing Technology",
+          "Head of Marketing Systems"
+        ],
+        "example_unpromising_titles": [
+          "Director of Product Marketing",
+          "Director of Brand Marketing",
+          "Director of Content Marketing",
+          "VP Customer Success",
+          "Director of Sales Operations",
+          "Director of Customer Experience",
+          "VP of Marketing",
+          "Chief Marketing Officer",
+          "Director of Demand Generation",
+          "Director of Growth Marketing"
+        ],
+        "description": "Marketing Operations director transforming go-to-market execution through scalable systems, automation, and data infrastructure. This user brings deep operational rigor from CX/support transformation work \u2014 building cross-functional processes, integrating fragmented tech stacks (Salesforce, NetSuite, Oracle), and deploying AI-driven workflow automation to compress cycle times and surface actionable metrics. The target role sits at the intersection of marketing strategy and execution infrastructure: owning lead routing, campaign ops, attribution models, martech stack optimization, and the data pipelines that power demand gen, ABM, and revenue forecasting. Ideal companies are B2B or hybrid B2B2C orgs scaling rapidly (Series B+ startups, growth-stage SaaS, PE-backed consumer brands) where marketing ops is a strategic lever, not just campaign execution support.",
+        "seniority_hint": "director",
+        "domain_hints": [
+          "B2B SaaS",
+          "DTC e-commerce",
+          "consumer products",
+          "fintech",
+          "healthtech",
+          "enterprise software"
+        ]
+      },
+      "derived_summary": null,
+      "raw_content_preview": "```json\n{\n  \"scoring_profile\": {\n    \"categories\": {\n      \"core_skills\": {\n        \"keywords\": {\n          \"Marketing Operations\": 3,\n          \"Marketing Automation\": 3,\n          \"Salesforce\": 3,\n ",
+      "latency_ms": 16995,
+      "cost_usd": 0.025107,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 1132,
+        "total_tokens": 3841
+      },
+      "error": "schema_validation: ValidationError"
+    }
+  ]
+}
