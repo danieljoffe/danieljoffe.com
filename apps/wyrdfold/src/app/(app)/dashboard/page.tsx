@@ -1,10 +1,17 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import * as Sentry from '@sentry/nextjs';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import DashboardPage, { type DashboardInitial } from '../DashboardPage';
 import type { JobPosting } from '../jobs/types';
 import { hasProse, type ProseResponse } from '../profile/types';
 import type { UserTargetWithTarget } from '../targets/types';
+
+interface OnboardingStatus {
+  completed_at: string | null;
+  path: 'A' | 'B' | 'C' | null;
+  current_step: string | null;
+}
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -30,19 +37,13 @@ const PIPELINE_STATUSES = [
 ] as const;
 
 export default async function WyrdfoldDashboard() {
-  // Fast path: brand-new users land on /dashboard by default (auth
-  // callback's DEFAULT_NEXT). Check whether they have any prose yet —
-  // if not, they haven't started onboarding and the dashboard's empty
-  // state would just be a CTA pointing back at /onboarding. Send them
-  // straight there instead of forcing the empty-CTA detour.
-  //
-  // Note: we check prose-only (not targets). A returning user who has
-  // a profile but happens to have no active targets right now should
-  // see the dashboard's manage-targets CTA, not get sent back to the
-  // onboarding wizard.
-  const earlyProseRes =
-    await fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose');
-  if (earlyProseRes == null || !hasProse(earlyProseRes)) {
+  // Primary gate: explicit onboarding_completed_at flag on user_profiles.
+  // A NULL flag = user hasn't finished the wizard → redirect to it.
+  // See plan-wyrdfold-onboarding-completion-tracking.md.
+  const onboardingStatus = await fetchJsonFromWyrdfoldAPI<OnboardingStatus>(
+    '/profile/onboarding'
+  );
+  if (onboardingStatus?.completed_at == null) {
     redirect('/onboarding');
   }
 
@@ -75,6 +76,19 @@ export default async function WyrdfoldDashboard() {
     ),
   ]);
 
+  // Belt-and-suspenders: flag is set but the data isn't there. Could
+  // happen if a support action cleared prose without clearing the
+  // flag, or a bug in the wizard set the flag prematurely. Surface
+  // to Sentry so we notice, and route the user back to /onboarding
+  // rather than render a broken empty dashboard.
+  const proseAuthored = proseRes != null && hasProse(proseRes);
+  if (!proseAuthored) {
+    Sentry.captureMessage('dashboard:onboarding_flag_set_but_no_prose', {
+      level: 'warning',
+    });
+    redirect('/onboarding');
+  }
+
   const counts: Record<string, number> = {};
   countResponses.forEach((res, i) => {
     const status = PIPELINE_STATUSES[i];
@@ -84,7 +98,7 @@ export default async function WyrdfoldDashboard() {
   const initial: DashboardInitial = {
     topMatches: topRes?.postings ?? [],
     counts,
-    hasProfile: proseRes != null && hasProse(proseRes),
+    hasProfile: proseAuthored,
     hasActiveTargets:
       targetsRes?.targets?.some(t => t.user_target.is_active) ?? false,
   };
