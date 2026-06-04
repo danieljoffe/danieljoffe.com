@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import logging
+import re
 from datetime import UTC, datetime
 from typing import Any, cast
 from urllib.parse import urlparse
@@ -160,6 +161,13 @@ def _fetch_jobs_chunked(
     """Fetch ``jobs`` rows for many IDs in chunks, applying the
     status/company/title filters per request. Caller is responsible for
     re-sorting by score after the merge (chunk order is not preserved).
+
+    **Archived exclusion:** when ``status`` is not explicitly supplied
+    (i.e. the user is browsing the default mixed view), rows with
+    ``status='archived'`` are filtered out. URL-health-check archived
+    jobs would otherwise float to the top of the score-sorted list
+    even though the user can no longer apply to them. Users who want
+    to see archived rows can pass ``status='archived'`` explicitly.
     """
     if not page_ids:
         return []
@@ -169,6 +177,8 @@ def _fetch_jobs_chunked(
         q = supabase.table("jobs").select(_JP_SELECT_COLS).in_("id", chunk)
         if status:
             q = q.eq("status", status)
+        else:
+            q = q.neq("status", "archived")
         if company:
             q = q.eq("company_name", company)
         q = _apply_title_search(q, search)
@@ -636,6 +646,36 @@ def _parse_location_list(raw: str | None) -> list[str]:
     return [t.strip().lower() for t in raw.split(",") if t.strip()]
 
 
+# Curated synonyms for short, ambiguous location-filter tokens.
+# The previous naive ``term in loc`` matched "us" against "A-us-tin"
+# (Austin), "u-s-er" patterns, etc. — any 2-letter code collides with
+# fragments of longer words. For these short codes we match at word
+# boundaries and expand to common synonyms. Longer terms (≥4 chars)
+# fall through to substring matching, which is forgiving for partial
+# matches like "California" in "Northern California".
+_LOCATION_SYNONYMS: dict[str, frozenset[str]] = {
+    "us": frozenset({"us", "usa", "u.s.", "u.s.a.", "united states"}),
+    "uk": frozenset({"uk", "u.k.", "united kingdom"}),
+    "eu": frozenset({"eu", "europe", "european union"}),
+    # "ca" intentionally NOT here — collides with California (US state).
+    # Users wanting Canada should search "canada" explicitly.
+}
+
+
+def _term_matches_location(term: str, location_lower: str) -> bool:
+    """True when ``term`` matches ``location_lower`` either via curated
+    synonym word-boundary check (short codes) or substring (longer
+    terms)."""
+    candidates = _LOCATION_SYNONYMS.get(term, {term})
+    for candidate in candidates:
+        if len(candidate) <= 3:
+            if re.search(rf"\b{re.escape(candidate)}\b", location_lower):
+                return True
+        elif candidate in location_lower:
+            return True
+    return False
+
+
 def _location_passes(
     location: str | None,
     *,
@@ -647,11 +687,26 @@ def _location_passes(
     is OR (any match excludes). Missing location is OK for ``only_terms``
     (we can't prove it doesn't match) but excluded only when a term explicitly
     targets ``""`` — the typical case keeps it visible.
+
+    Matching: word-boundary check for 2-3 char tokens + synonyms (so
+    "us" doesn't match "Austin"); substring for longer terms. See
+    ``_term_matches_location``.
+
+    Note: when ``only_terms`` is set and the location is None/empty,
+    this returns False — we can't confirm a match. This matches the
+    pre-fix behaviour. If users start complaining about jobs being
+    hidden when Greenhouse omits location, flip this to "include
+    unknown" with a Sentry log so we know the population at risk.
     """
     loc = (location or "").lower()
-    if only_terms and not any(term in loc for term in only_terms):
+    if only_terms and not any(
+        _term_matches_location(term, loc) for term in only_terms
+    ):
         return False
-    return not (exclude_terms and any(term in loc for term in exclude_terms))
+    return not (
+        exclude_terms
+        and any(_term_matches_location(term, loc) for term in exclude_terms)
+    )
 
 
 def _apply_location_filter(
@@ -835,6 +890,10 @@ def list_jobs(
         query = query.gte("score", min_score)
     if status:
         query = query.eq("status", status)
+    else:
+        # Default: hide archived. Operators wanting an archive audit
+        # can pass status='archived' explicitly.
+        query = query.neq("status", "archived")
     if company:
         query = query.eq("company_name", company)
     query = _apply_title_search(query, search)

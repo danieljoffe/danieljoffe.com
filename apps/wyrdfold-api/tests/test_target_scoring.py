@@ -399,7 +399,7 @@ def test_list_jobs_without_target_returns_global_view(
     def _fluent_mock(data: list[dict]) -> MagicMock:
         m = MagicMock()
         m.execute.return_value = MagicMock(data=data, count=len(data))
-        for method in ("select", "eq", "gte", "in_", "ilike", "order", "range"):
+        for method in ("select", "eq", "neq", "gte", "in_", "ilike", "order", "range"):
             getattr(m, method).return_value = m
         return m
 
@@ -449,7 +449,7 @@ def test_list_jobs_with_target_overlays_target_score(
         """Mock that chains any query method and returns data on .execute()."""
         m = MagicMock()
         m.execute.return_value = MagicMock(data=data, count=len(data))
-        for method in ("select", "eq", "gte", "in_", "ilike", "order", "range"):
+        for method in ("select", "eq", "neq", "gte", "in_", "ilike", "order", "range"):
             getattr(m, method).return_value = m
         return m
 

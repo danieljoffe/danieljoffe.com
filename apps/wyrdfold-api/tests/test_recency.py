@@ -185,6 +185,9 @@ class _ListChain:
     def eq(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
+    def neq(self, *_a: Any, **_kw: Any) -> _ListChain:
+        return self
+
     def in_(self, *_a: Any, **_kw: Any) -> _ListChain:
         return self
 
