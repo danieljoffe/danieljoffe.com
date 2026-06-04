@@ -91,6 +91,18 @@ class Settings(BaseSettings):
     # ``phase1_triage_enabled`` to surface any work.
     phase2_enabled: bool = False
 
+    # Logistics extraction (plan-wyrdfold-logistics-chips.md). When True
+    # the Phase 2 grader's system prompt includes a section asking the
+    # model to emit a `logistics` JSON object (remote_status, salary
+    # min/max/currency/unit, location_city/country) alongside the axis
+    # scores. The result is persisted to ``scores.logistics_filters``
+    # (migration #20260603100000) and consumed by the /jobs logistics
+    # chips. When False the prompt is unchanged and the column stays
+    # NULL — this is the additive shadow that pre-flip rollout uses.
+    # Per ``feedback-prompt-change-shadow-run``: ship behind this flag,
+    # compare axis-score distributions before flipping in production.
+    logistics_extraction_enabled: bool = False
+
     # Email/SMS notifications — Next.js app URL and shared secret for job alerts.
     next_app_url: str = ""
     job_alert_secret: str = Field(default="", repr=False)
