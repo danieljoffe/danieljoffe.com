@@ -34,6 +34,9 @@ class _Chain:
     def eq(self, *_a: Any, **_kw: Any) -> "_Chain":
         return self
 
+    def neq(self, *_a: Any, **_kw: Any) -> "_Chain":
+        return self
+
     def in_(self, *_a: Any, **_kw: Any) -> "_Chain":
         return self
 
