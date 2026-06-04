@@ -31,12 +31,15 @@ export default function OnboardingResetCard() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleRedo = useCallback(async () => {
-    if (
-      !window.confirm(
-        'Redo onboarding? Your profile data, targets, and saved jobs ' +
-          'are preserved — only the wizard restarts.'
-      )
-    ) {
+    // Native confirm is intentional here — the action is reversible
+    // (the user can just finish the wizard again) and we don't want
+    // the modal weight for this rare path.
+    const confirmed = window.confirm(
+      // eslint-disable-line no-alert
+      'Redo onboarding? Your profile data, targets, and saved jobs ' +
+        'are preserved — only the wizard restarts.'
+    );
+    if (!confirmed) {
       return;
     }
 
@@ -53,8 +56,7 @@ export default function OnboardingResetCard() {
       setSubmitting(false);
       toast({
         variant: 'error',
-        title:
-          err instanceof Error ? err.message : 'Could not redo onboarding',
+        title: err instanceof Error ? err.message : 'Could not redo onboarding',
       });
     }
   }, [router, toast]);
@@ -64,8 +66,8 @@ export default function OnboardingResetCard() {
       <CardHeader>
         <CardTitle>Redo onboarding</CardTitle>
         <Text variant='meta' className='text-text-secondary'>
-          Restart the welcome wizard. Your profile, targets, and saved jobs
-          are preserved.
+          Restart the welcome wizard. Your profile, targets, and saved jobs are
+          preserved.
         </Text>
       </CardHeader>
       <CardContent>
