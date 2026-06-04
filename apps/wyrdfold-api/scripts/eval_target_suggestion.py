@@ -58,21 +58,21 @@ from typing import Any, cast
 # Make scripts._openrouter importable.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.models.experience import OptimizedPayload  # noqa: E402
-from app.models.targets import JobTarget  # noqa: E402
-from app.services.targets.lateral_discovery import (  # noqa: E402
+from app.models.experience import OptimizedPayload
+from app.models.targets import JobTarget
+from app.services.targets.lateral_discovery import (
     _SYSTEM_PROMPT as _LATERAL_SYSTEM,
 )
-from app.services.targets.lateral_discovery import (  # noqa: E402
+from app.services.targets.lateral_discovery import (
     _build_user_message as _build_lateral_user_message,
 )
-from app.services.targets.suggest import (  # noqa: E402
+from app.services.targets.suggest import (
     SYSTEM_PROMPT as _SUGGEST_SYSTEM,
 )
-from app.services.targets.suggest import (  # noqa: E402
+from app.services.targets.suggest import (
     _build_user_message as _build_suggest_user_message,
 )
-from scripts._openrouter import MODELS, call_model, get_api_key  # noqa: E402
+from scripts._openrouter import MODELS, call_model, get_api_key
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("eval_target_suggestion")
