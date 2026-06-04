@@ -262,3 +262,48 @@ def test_complete_is_idempotent_on_already_completed_users(client_factory):
     payload = sb.table.return_value.update.call_args.args[0]
     assert payload["onboarding_current_step"] == "completion"
     assert "onboarding_completed_at" not in payload  # not overwritten
+
+
+# ---- POST /profile/onboarding/reset ----------------------------------
+
+
+def test_reset_clears_completion_and_step(client_factory):
+    """The 'Redo onboarding' Settings button clears the completion
+    flag and the current step. Path is intentionally preserved as a
+    breadcrumb for product analytics ('which paths get re-done most
+    often')."""
+    sb = MagicMock()
+    _select_returns(
+        sb,
+        {
+            "onboarding_completed_at": datetime(2026, 6, 1, tzinfo=UTC).isoformat(),
+            "onboarding_path": "A",
+            "onboarding_current_step": "completion",
+        },
+    )
+    client = client_factory(sb)
+    r = client.post("/profile/onboarding/reset")
+
+    assert r.status_code == 200
+    payload = sb.table.return_value.update.call_args.args[0]
+    assert payload["onboarding_completed_at"] is None
+    assert payload["onboarding_current_step"] is None
+    # Path is NOT in the update payload — we deliberately leave it.
+    assert "onboarding_path" not in payload
+
+
+def test_reset_is_idempotent_on_already_cleared_users(client_factory):
+    """Calling reset on a brand-new user (or a previously-reset one)
+    doesn't error; the update is a no-op-equivalent (same NULLs)."""
+    sb = MagicMock()
+    _select_returns(
+        sb,
+        {
+            "onboarding_completed_at": None,
+            "onboarding_path": None,
+            "onboarding_current_step": None,
+        },
+    )
+    client = client_factory(sb)
+    r = client.post("/profile/onboarding/reset")
+    assert r.status_code == 200
