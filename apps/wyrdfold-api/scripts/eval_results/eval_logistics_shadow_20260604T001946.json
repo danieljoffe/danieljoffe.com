@@ -1,0 +1,4113 @@
+{
+  "captured_at_unix": 1780557777,
+  "report": {
+    "paired_cases": 89,
+    "unpaired_cases": 0,
+    "spearman_overall": 0.9709,
+    "spearman_per_axis": {
+      "title_fit": 0.9749,
+      "skills_fit": 0.9778,
+      "seniority_fit": 0.9616,
+      "domain_fit": 0.9533
+    },
+    "cost_logistics_off_usd": 1.01209,
+    "cost_logistics_on_usd": 1.23651,
+    "total_cost_usd": 2.24861
+  },
+  "results": [
+    {
+      "job_posting_id": "8f99a3a2-bd3e-4c17-879f-23f5f164c1f2",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 78,
+      "axes": {
+        "title_fit": 88,
+        "skills_fit": 85,
+        "seniority_fit": 80,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 78,\n  \"axes\": {\n    \"title_fit\": 88,\n    \"skills_fit\": 85,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Staff / Senior Staff Product Engineer, Frontend' ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7595,
+      "cost_usd": 0.01137,
+      "usage": {
+        "prompt_tokens": 2105,
+        "completion_tokens": 337,
+        "total_tokens": 2442
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "eb15775a-97e6-4af0-8480-8764b2b67908",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 78,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 82,
+        "seniority_fit": 75,
+        "domain_fit": 68
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 78,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 82,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 68\n  },\n  \"reasoning\": \"Skills: the JD asks for ownership of 'design syst",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7587,
+      "cost_usd": 0.011121,
+      "usage": {
+        "prompt_tokens": 2202,
+        "completion_tokens": 301,
+        "total_tokens": 2503
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "99e79890-3188-4c45-a300-96f7a9e4f2a9",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 78,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 85,
+        "seniority_fit": 75,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 78,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 85,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Skills: the JD asks for work on 'tokens and typog",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7866,
+      "cost_usd": 0.013413,
+      "usage": {
+        "prompt_tokens": 2636,
+        "completion_tokens": 367,
+        "total_tokens": 3003
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "99e79890-3188-4c45-a300-96f7a9e4f2a9",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 78,
+      "axes": {
+        "title_fit": 70,
+        "skills_fit": 85,
+        "seniority_fit": 75,
+        "domain_fit": 72
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 78,\n  \"axes\": {\n    \"title_fit\": 70,\n    \"skills_fit\": 85,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 72\n  },\n  \"reasoning\": \"Skills: The JD asks for expertise in 'tokens, typ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8348,
+      "cost_usd": 0.011241,
+      "usage": {
+        "prompt_tokens": 2197,
+        "completion_tokens": 310,
+        "total_tokens": 2507
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "8f99a3a2-bd3e-4c17-879f-23f5f164c1f2",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 78,
+      "axes": {
+        "title_fit": 85,
+        "skills_fit": 82,
+        "seniority_fit": 75,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 78,\n  \"axes\": {\n    \"title_fit\": 85,\n    \"skills_fit\": 82,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Staff / Senior Staff Product Engineer, Fr",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8372,
+      "cost_usd": 0.013587,
+      "usage": {
+        "prompt_tokens": 2544,
+        "completion_tokens": 397,
+        "total_tokens": 2941
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "eb15775a-97e6-4af0-8480-8764b2b67908",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 78,
+      "axes": {
+        "title_fit": 70,
+        "skills_fit": 85,
+        "seniority_fit": 75,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 78,\n  \"axes\": {\n    \"title_fit\": 70,\n    \"skills_fit\": 85,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Skills: the JD asks for design systems, reusable ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8602,
+      "cost_usd": 0.013218,
+      "usage": {
+        "prompt_tokens": 2641,
+        "completion_tokens": 353,
+        "total_tokens": 2994
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "80428c73-eb2a-4ed7-8ed1-923ec518aafe",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 82,
+        "seniority_fit": 65,
+        "domain_fit": 68
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 82,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 68\n  },\n  \"reasoning\": \"Skills: The JD asks to 'lead design system and UI",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9538,
+      "cost_usd": 0.013938,
+      "usage": {
+        "prompt_tokens": 2581,
+        "completion_tokens": 413,
+        "total_tokens": 2994
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "80428c73-eb2a-4ed7-8ed1-923ec518aafe",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 82,
+        "seniority_fit": 65,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 82,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Skills: the JD asks to 'design, build, and mainta",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 11093,
+      "cost_usd": 0.011016,
+      "usage": {
+        "prompt_tokens": 2142,
+        "completion_tokens": 306,
+        "total_tokens": 2448
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1409b3c8-136d-4456-bcf1-ae2a7b997994",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 88,
+        "seniority_fit": 65,
+        "domain_fit": 72
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 88,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 72\n  },\n  \"reasoning\": \"Skills: the JD asks for 'TypeScript, Next.js/Remix, React",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7961,
+      "cost_usd": 0.01284,
+      "usage": {
+        "prompt_tokens": 2555,
+        "completion_tokens": 345,
+        "total_tokens": 2900
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "16dbad69-f4ed-471e-b01a-448d73e74506",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 72,
+        "seniority_fit": 55,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Skills: The JD asks for 'scalable, reusable UI co",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7287,
+      "cost_usd": 0.010785,
+      "usage": {
+        "prompt_tokens": 2115,
+        "completion_tokens": 296,
+        "total_tokens": 2411
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f22d0ef0-83ec-4aa0-8481-84c6589db943",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 75,
+        "seniority_fit": 80,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 75,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Staff Software Engineer, Web' maps closel",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8693,
+      "cost_usd": 0.013476,
+      "usage": {
+        "prompt_tokens": 2652,
+        "completion_tokens": 368,
+        "total_tokens": 3020
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1409b3c8-136d-4456-bcf1-ae2a7b997994",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 88,
+        "seniority_fit": 60,
+        "domain_fit": 75
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 88,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 75\n  },\n  \"reasoning\": \"Skills: the JD asks for 'TypeScript, Next.js/Remix, React",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9464,
+      "cost_usd": 0.011193,
+      "usage": {
+        "prompt_tokens": 2116,
+        "completion_tokens": 323,
+        "total_tokens": 2439
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f22d0ef0-83ec-4aa0-8481-84c6589db943",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 70,
+        "seniority_fit": 80,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 70,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Staff Software Engineer, Web' maps closel",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9356,
+      "cost_usd": 0.011964,
+      "usage": {
+        "prompt_tokens": 2213,
+        "completion_tokens": 355,
+        "total_tokens": 2568
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "16dbad69-f4ed-471e-b01a-448d73e74506",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 70,
+        "skills_fit": 78,
+        "seniority_fit": 60,
+        "domain_fit": 72
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 70,\n    \"skills_fit\": 78,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 72\n  },\n  \"reasoning\": \"Skills: the JD asks for 'scalable, reusable UI co",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9004,
+      "cost_usd": 0.013707,
+      "usage": {
+        "prompt_tokens": 2554,
+        "completion_tokens": 403,
+        "total_tokens": 2957
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "67f41fcc-8464-43fe-9d15-ee839b3a1910",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 75,
+        "seniority_fit": 78,
+        "domain_fit": 62
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 75,\n    \"seniority_fit\": 78,\n    \"domain_fit\": 62\n  },\n  \"reasoning\": \"Title: 'Staff Fullstack Software Engineer' maps closely t",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9260,
+      "cost_usd": 0.01194,
+      "usage": {
+        "prompt_tokens": 2115,
+        "completion_tokens": 373,
+        "total_tokens": 2488
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "67f41fcc-8464-43fe-9d15-ee839b3a1910",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 78,
+        "skills_fit": 75,
+        "seniority_fit": 80,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 78,\n    \"skills_fit\": 75,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Staff Fullstack Software Engineer' maps reasonabl",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8752,
+      "cost_usd": 0.013677,
+      "usage": {
+        "prompt_tokens": 2554,
+        "completion_tokens": 401,
+        "total_tokens": 2955
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "480f7ee8-9f8b-4bbd-9832-895b3f5cfa91",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 0,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 0,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is titled 'UK Internship Program' \u2014 an intern r",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6166,
+      "cost_usd": 0.010332,
+      "usage": {
+        "prompt_tokens": 2134,
+        "completion_tokens": 262,
+        "total_tokens": 2396
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1e6c85fe-4482-43d7-b790-b73eac0a3f28",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 78,
+        "skills_fit": 65,
+        "seniority_fit": 80,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 78,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Staff Engineer, Guest Displays & Platform",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8417,
+      "cost_usd": 0.012147,
+      "usage": {
+        "prompt_tokens": 2174,
+        "completion_tokens": 375,
+        "total_tokens": 2549
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "0be8c90f-ff35-453a-a204-350994e7c3e0",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 82,
+        "seniority_fit": 70,
+        "domain_fit": 78
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 82,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 78\n  },\n  \"reasoning\": \"Skills: the JD focuses on public website engineer",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7631,
+      "cost_usd": 0.011013,
+      "usage": {
+        "prompt_tokens": 2206,
+        "completion_tokens": 293,
+        "total_tokens": 2499
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "0be8c90f-ff35-453a-a204-350994e7c3e0",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 80,
+        "seniority_fit": 65,
+        "domain_fit": 75
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 80,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 75\n  },\n  \"reasoning\": \"Skills: the JD emphasizes building a public marke",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7780,
+      "cost_usd": 0.013365,
+      "usage": {
+        "prompt_tokens": 2645,
+        "completion_tokens": 362,
+        "total_tokens": 3007
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "480f7ee8-9f8b-4bbd-9832-895b3f5cfa91",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 0,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 0,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is 'UK Internship Program' targeting Master's/P",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8179,
+      "cost_usd": 0.013194,
+      "usage": {
+        "prompt_tokens": 2573,
+        "completion_tokens": 365,
+        "total_tokens": 2938
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1e6c85fe-4482-43d7-b790-b73eac0a3f28",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 65,
+        "seniority_fit": 80,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Seniority: the JD asks for a 'Staff Engineer' lea",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10193,
+      "cost_usd": 0.014364,
+      "usage": {
+        "prompt_tokens": 2613,
+        "completion_tokens": 435,
+        "total_tokens": 3048
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "3afac632-95df-4fcd-8ab0-188a9d9b1f22",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 3,
+        "seniority_fit": 10,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 3,\n    \"seniority_fit\": 10,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'RTL & Co-design Engineer (junior)' \u2014 a hard",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7865,
+      "cost_usd": 0.010095,
+      "usage": {
+        "prompt_tokens": 2105,
+        "completion_tokens": 252,
+        "total_tokens": 2357
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "3afac632-95df-4fcd-8ab0-188a9d9b1f22",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 3,
+        "seniority_fit": 10,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 3,\n    \"seniority_fit\": 10,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'RTL & Co-design Engineer (junior)' \u2014 a hard",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7515,
+      "cost_usd": 0.012582,
+      "usage": {
+        "prompt_tokens": 2544,
+        "completion_tokens": 330,
+        "total_tokens": 2874
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "adcdc91f-5f37-4bb8-9297-31eadb1a2fe4",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 0
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 0\n  },\n  \"reasoning\": \"Title: the JD is 'Project Manager' in civil/infrastructure en",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 5669,
+      "cost_usd": 0.009405,
+      "usage": {
+        "prompt_tokens": 2070,
+        "completion_tokens": 213,
+        "total_tokens": 2283
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "adcdc91f-5f37-4bb8-9297-31eadb1a2fe4",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 3,
+        "seniority_fit": 20,
+        "domain_fit": 2
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 3,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 2\n  },\n  \"reasoning\": \"Title: the JD is for 'Project Manager' at a civil/infrastruct",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6326,
+      "cost_usd": 0.012042,
+      "usage": {
+        "prompt_tokens": 2509,
+        "completion_tokens": 301,
+        "total_tokens": 2810
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "445a429d-e94c-4a28-a4ec-7040bd563988",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Tech Lead, Deployment & Operations \u2014 Custom",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 5877,
+      "cost_usd": 0.009561,
+      "usage": {
+        "prompt_tokens": 2082,
+        "completion_tokens": 221,
+        "total_tokens": 2303
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "445a429d-e94c-4a28-a4ec-7040bd563988",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Tech Lead, Deployment & Operations \u2014 Custom",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8252,
+      "cost_usd": 0.012648,
+      "usage": {
+        "prompt_tokens": 2521,
+        "completion_tokens": 339,
+        "total_tokens": 2860
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "51365b32-487d-434d-9009-d6e3c086ad2e",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 15,
+        "seniority_fit": 2,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 15,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: the JD is 'Software QA Engineering - Intern', which i",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7300,
+      "cost_usd": 0.011115,
+      "usage": {
+        "prompt_tokens": 2235,
+        "completion_tokens": 294,
+        "total_tokens": 2529
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "51365b32-487d-434d-9009-d6e3c086ad2e",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 12,
+        "seniority_fit": 2,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 12,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: the JD is 'Software QA Engineering - Intern',",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7635,
+      "cost_usd": 0.012957,
+      "usage": {
+        "prompt_tokens": 2674,
+        "completion_tokens": 329,
+        "total_tokens": 3003
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "7411f77b-4353-4816-92e1-15dcec47817c",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 10,
+        "skills_fit": 5,
+        "seniority_fit": 40,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 10,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD is 'Staff Engineer, Datacenter Server",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6847,
+      "cost_usd": 0.010566,
+      "usage": {
+        "prompt_tokens": 2237,
+        "completion_tokens": 257,
+        "total_tokens": 2494
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "7411f77b-4353-4816-92e1-15dcec47817c",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 5,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 40,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 5,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD is 'Staff Engineer, Datacenter Server ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6682,
+      "cost_usd": 0.012993,
+      "usage": {
+        "prompt_tokens": 2676,
+        "completion_tokens": 331,
+        "total_tokens": 3007
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "4cc8e432-dc31-4b54-9708-8397a9a0e7cb",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD title is 'Engineering Manager, Cloud I",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6990,
+      "cost_usd": 0.010215,
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 248,
+        "total_tokens": 2413
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "4cc8e432-dc31-4b54-9708-8397a9a0e7cb",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 15,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 15,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: the JD is for 'Engineering Manager, Cloud Infrastruct",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6592,
+      "cost_usd": 0.012462,
+      "usage": {
+        "prompt_tokens": 2604,
+        "completion_tokens": 310,
+        "total_tokens": 2914
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d90522d7-e88d-4727-96f0-273bbb894ca1",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 15,
+        "seniority_fit": 2,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 15,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: The JD is for a '[SO] Intern Software Engineer' \u2014 an ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8028,
+      "cost_usd": 0.010626,
+      "usage": {
+        "prompt_tokens": 2137,
+        "completion_tokens": 281,
+        "total_tokens": 2418
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "161a08cc-8237-43e1-8eba-df1784660de6",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 0,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 0,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD is for 'Intern, Agent Development (Fall 2026)' ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6210,
+      "cost_usd": 0.00996,
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 231,
+        "total_tokens": 2396
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "7d041906-4c88-4d73-a697-5ec7a983591d",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 2,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD is 'Software Engineer Intern (Security) - Fall ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6801,
+      "cost_usd": 0.010218,
+      "usage": {
+        "prompt_tokens": 2151,
+        "completion_tokens": 251,
+        "total_tokens": 2402
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "161a08cc-8237-43e1-8eba-df1784660de6",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 10,
+        "seniority_fit": 2,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is titled 'Intern, Agent Development (Fall 202",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7436,
+      "cost_usd": 0.012747,
+      "usage": {
+        "prompt_tokens": 2604,
+        "completion_tokens": 329,
+        "total_tokens": 2933
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "7d041906-4c88-4d73-a697-5ec7a983591d",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 10,
+        "seniority_fit": 2,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is 'Software Engineer Intern (Security",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6977,
+      "cost_usd": 0.01269,
+      "usage": {
+        "prompt_tokens": 2590,
+        "completion_tokens": 328,
+        "total_tokens": 2918
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d90522d7-e88d-4727-96f0-273bbb894ca1",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 10,
+        "seniority_fit": 2,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: The JD is for an 'Intern Software Engineer' \u2014",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9276,
+      "cost_usd": 0.013308,
+      "usage": {
+        "prompt_tokens": 2576,
+        "completion_tokens": 372,
+        "total_tokens": 2948
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "800ae0bd-0fa0-45b7-ab8d-2a9e8a0e47ac",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 72,
+        "seniority_fit": 70,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Skills: The JD explicitly asks for 'React and Rea",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7101,
+      "cost_usd": 0.011226,
+      "usage": {
+        "prompt_tokens": 2232,
+        "completion_tokens": 302,
+        "total_tokens": 2534
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "c4cc7bc0-9e2d-471d-a882-f383ac6ece54",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 65,
+        "skills_fit": 55,
+        "seniority_fit": 60,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 65,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: 'Full Stack Engineer' is adjacent to the t",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8882,
+      "cost_usd": 0.013842,
+      "usage": {
+        "prompt_tokens": 2709,
+        "completion_tokens": 381,
+        "total_tokens": 3090
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "c4cc7bc0-9e2d-471d-a882-f383ac6ece54",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 48,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 45,
+        "seniority_fit": 55,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 48,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Title: 'Full Stack Engineer' is adjacent to the t",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 11237,
+      "cost_usd": 0.01137,
+      "usage": {
+        "prompt_tokens": 2270,
+        "completion_tokens": 304,
+        "total_tokens": 2574
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "800ae0bd-0fa0-45b7-ab8d-2a9e8a0e47ac",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 72,
+        "seniority_fit": 70,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Skills: The JD asks for 'React and React Native S",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8625,
+      "cost_usd": 0.013698,
+      "usage": {
+        "prompt_tokens": 2671,
+        "completion_tokens": 379,
+        "total_tokens": 3050
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "ba327de9-d1ab-421b-a21e-3f0508e4f05a",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 60,
+        "seniority_fit": 75,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Seniority: the JD targets 'Senior Software Engineer' whic",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7755,
+      "cost_usd": 0.011154,
+      "usage": {
+        "prompt_tokens": 2118,
+        "completion_tokens": 320,
+        "total_tokens": 2438
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "90962992-bd0b-4e52-9b78-1830ac079b20",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 50,
+        "seniority_fit": 70,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 50,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Seniority: the JD targets 'Senior Software Engine",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8544,
+      "cost_usd": 0.011784,
+      "usage": {
+        "prompt_tokens": 2168,
+        "completion_tokens": 352,
+        "total_tokens": 2520
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "ba327de9-d1ab-421b-a21e-3f0508e4f05a",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 55,
+        "seniority_fit": 65,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Title: 'Senior Software Engineer, Enterprise Product' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9207,
+      "cost_usd": 0.013671,
+      "usage": {
+        "prompt_tokens": 2557,
+        "completion_tokens": 400,
+        "total_tokens": 2957
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "90962992-bd0b-4e52-9b78-1830ac079b20",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Seniority: the JD titles 'Senior Software Enginee",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8252,
+      "cost_usd": 0.013341,
+      "usage": {
+        "prompt_tokens": 2607,
+        "completion_tokens": 368,
+        "total_tokens": 2975
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "a911ece7-26ee-4024-814e-a4bd9473feef",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 58,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 72,
+        "seniority_fit": 65,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 58,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Skills: the JD asks for 'React, Node.js, AWS' whi",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7776,
+      "cost_usd": 0.011103,
+      "usage": {
+        "prompt_tokens": 2171,
+        "completion_tokens": 306,
+        "total_tokens": 2477
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f4b1fdbc-9e68-4cd5-88a8-013f9ed07cd9",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 30,
+        "seniority_fit": 55,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: 'Software Engineer, Agent Builder' targets AI agen",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7156,
+      "cost_usd": 0.010845,
+      "usage": {
+        "prompt_tokens": 2175,
+        "completion_tokens": 288,
+        "total_tokens": 2463
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "a911ece7-26ee-4024-814e-a4bd9473feef",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 78,
+        "seniority_fit": 65,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 78,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Skills: the JD asks for 'React, Node.js, AWS' whi",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9180,
+      "cost_usd": 0.01377,
+      "usage": {
+        "prompt_tokens": 2610,
+        "completion_tokens": 396,
+        "total_tokens": 3006
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "fadb4cb5-04b1-40ac-a1ce-b931f94dc655",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 45,
+        "seniority_fit": 50,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 50,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Title: the JD is 'Lead Engineer, Internal Engineering' \u2014 ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7816,
+      "cost_usd": 0.01098,
+      "usage": {
+        "prompt_tokens": 2185,
+        "completion_tokens": 295,
+        "total_tokens": 2480
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f4b1fdbc-9e68-4cd5-88a8-013f9ed07cd9",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 35,
+        "seniority_fit": 55,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: the JD title is 'Software Engineer, Agent ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8790,
+      "cost_usd": 0.013752,
+      "usage": {
+        "prompt_tokens": 2614,
+        "completion_tokens": 394,
+        "total_tokens": 3008
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "fadb4cb5-04b1-40ac-a1ce-b931f94dc655",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 45,
+        "seniority_fit": 40,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: the JD asks for a 'Lead Engineer, Internal",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8190,
+      "cost_usd": 0.013347,
+      "usage": {
+        "prompt_tokens": 2624,
+        "completion_tokens": 365,
+        "total_tokens": 2989
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "b5de165d-10c4-448d-a0ea-e3db2c323577",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 35,
+        "seniority_fit": 40,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: the JD asks for 'Sr. Staff Fullstack Engin",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7979,
+      "cost_usd": 0.011397,
+      "usage": {
+        "prompt_tokens": 2149,
+        "completion_tokens": 330,
+        "total_tokens": 2479
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "b5de165d-10c4-448d-a0ea-e3db2c323577",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 40,
+        "seniority_fit": 40,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 40,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: the JD title is 'Sr. Staff Fullstack Engin",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9088,
+      "cost_usd": 0.014574,
+      "usage": {
+        "prompt_tokens": 2588,
+        "completion_tokens": 454,
+        "total_tokens": 3042
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "0bb3fdc3-c146-41cb-8aec-9e5e7a861e3f",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 65,
+        "skills_fit": 60,
+        "seniority_fit": 75,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 65,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Seniority: the JD asks for a 'technical leader' s",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8808,
+      "cost_usd": 0.011433,
+      "usage": {
+        "prompt_tokens": 2121,
+        "completion_tokens": 338,
+        "total_tokens": 2459
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "b3998644-9830-4c70-87f8-0dcb9efaf4e3",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 35,
+        "skills_fit": 65,
+        "seniority_fit": 65,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 35,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Skills: The JD asks for 'BPO partner' oversight, ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6981,
+      "cost_usd": 0.011889,
+      "usage": {
+        "prompt_tokens": 2538,
+        "completion_tokens": 285,
+        "total_tokens": 2823
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "0bb3fdc3-c146-41cb-8aec-9e5e7a861e3f",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 65,
+        "seniority_fit": 75,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Seniority: the JD asks for a 'technical leader for a full",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9328,
+      "cost_usd": 0.014385,
+      "usage": {
+        "prompt_tokens": 2560,
+        "completion_tokens": 447,
+        "total_tokens": 3007
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "bd2ec043-8655-45a7-94e1-a56bd9a519ca",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 45,
+        "seniority_fit": 75,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Title: 'Staff Software Engineer' matches seniorit",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8815,
+      "cost_usd": 0.011823,
+      "usage": {
+        "prompt_tokens": 2146,
+        "completion_tokens": 359,
+        "total_tokens": 2505
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "bd2ec043-8655-45a7-94e1-a56bd9a519ca",
+      "target_id": "aa27307e-a4bc-4537-8764-f80c4058ec51",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 65,
+        "seniority_fit": 75,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Seniority: the JD targets 'Staff Software Engineer' which",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9014,
+      "cost_usd": 0.014235,
+      "usage": {
+        "prompt_tokens": 2585,
+        "completion_tokens": 432,
+        "total_tokens": 3017
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "b3998644-9830-4c70-87f8-0dcb9efaf4e3",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 40,
+        "skills_fit": 65,
+        "seniority_fit": 70,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 40,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Support Partner Manager' is a vendor/BPO ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8811,
+      "cost_usd": 0.015186,
+      "usage": {
+        "prompt_tokens": 2977,
+        "completion_tokens": 417,
+        "total_tokens": 3394
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "99207bcd-13a9-494b-b0fa-593f6d6a8f26",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 70,
+        "skills_fit": 60,
+        "seniority_fit": 72,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 70,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 72,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Senior Director, Transformation & Busines",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10401,
+      "cost_usd": 0.013623,
+      "usage": {
+        "prompt_tokens": 2551,
+        "completion_tokens": 398,
+        "total_tokens": 2949
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "99207bcd-13a9-494b-b0fa-593f6d6a8f26",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 60,
+        "seniority_fit": 75,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Senior Director, Transformation & Busines",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 11459,
+      "cost_usd": 0.016185,
+      "usage": {
+        "prompt_tokens": 2990,
+        "completion_tokens": 481,
+        "total_tokens": 3471
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "dd7328ae-6ddb-48d1-a6d9-e7c37172c6f2",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 82,
+        "skills_fit": 75,
+        "seniority_fit": 85,
+        "domain_fit": 52
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 82,\n    \"skills_fit\": 75,\n    \"seniority_fit\": 85,\n    \"domain_fit\": 52\n  },\n  \"reasoning\": \"Title: 'Director, Customer Support Systems' maps ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8947,
+      "cost_usd": 0.015093,
+      "usage": {
+        "prompt_tokens": 3016,
+        "completion_tokens": 403,
+        "total_tokens": 3419
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "dd7328ae-6ddb-48d1-a6d9-e7c37172c6f2",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 75,
+        "seniority_fit": 85,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 75,\n    \"seniority_fit\": 85,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Director, Customer Support Systems' maps ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10492,
+      "cost_usd": 0.013341,
+      "usage": {
+        "prompt_tokens": 2577,
+        "completion_tokens": 374,
+        "total_tokens": 2951
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "b06c2864-9ecd-4e67-8b93-208ce8e0e384",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 65,
+        "skills_fit": 45,
+        "seniority_fit": 72,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 65,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 72,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Seniority: the JD asks for a 'Sr. Director' build",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9042,
+      "cost_usd": 0.013089,
+      "usage": {
+        "prompt_tokens": 2548,
+        "completion_tokens": 363,
+        "total_tokens": 2911
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6a62c308-846e-443a-a350-18449962ea8a",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 65,
+        "seniority_fit": 70,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Seniority: the role is a director-level strategy ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8307,
+      "cost_usd": 0.012261,
+      "usage": {
+        "prompt_tokens": 2507,
+        "completion_tokens": 316,
+        "total_tokens": 2823
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6a62c308-846e-443a-a350-18449962ea8a",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 75,
+        "seniority_fit": 80,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 75,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Seniority: the JD targets a director-level operat",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7582,
+      "cost_usd": 0.014193,
+      "usage": {
+        "prompt_tokens": 2946,
+        "completion_tokens": 357,
+        "total_tokens": 3303
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "b06c2864-9ecd-4e67-8b93-208ce8e0e384",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 55,
+        "seniority_fit": 78,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 78,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: 'Sr. Director, Services and Support Operat",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 11452,
+      "cost_usd": 0.015906,
+      "usage": {
+        "prompt_tokens": 2987,
+        "completion_tokens": 463,
+        "total_tokens": 3450
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "aa2703a2-e769-44ab-97a9-d33a81377390",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 58,
+        "seniority_fit": 75,
+        "domain_fit": 42
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 58,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 42\n  },\n  \"reasoning\": \"Title: 'Head of Client Experience' is adjacent to",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8791,
+      "cost_usd": 0.01287,
+      "usage": {
+        "prompt_tokens": 2635,
+        "completion_tokens": 331,
+        "total_tokens": 2966
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "576d0fa7-445f-4934-ae22-f88585e88fb6",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 65,
+        "seniority_fit": 75,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Seniority: the JD's 'Service Delivery Head' maps ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7990,
+      "cost_usd": 0.012369,
+      "usage": {
+        "prompt_tokens": 2518,
+        "completion_tokens": 321,
+        "total_tokens": 2839
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "576d0fa7-445f-4934-ae22-f88585e88fb6",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 65,
+        "seniority_fit": 75,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Seniority: the JD targets a head/director-level l",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7797,
+      "cost_usd": 0.014406,
+      "usage": {
+        "prompt_tokens": 2957,
+        "completion_tokens": 369,
+        "total_tokens": 3326
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "5a989482-bc0b-43f4-a921-ebe7693dd452",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 65,
+        "seniority_fit": 75,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Seniority: 'Head of Post Sales Technology' is a d",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9302,
+      "cost_usd": 0.013488,
+      "usage": {
+        "prompt_tokens": 2601,
+        "completion_tokens": 379,
+        "total_tokens": 2980
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "aa2703a2-e769-44ab-97a9-d33a81377390",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 78,
+        "skills_fit": 70,
+        "seniority_fit": 80,
+        "domain_fit": 58
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 78,\n    \"skills_fit\": 70,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 58\n  },\n  \"reasoning\": \"Title: 'Head of Client Experience' maps reasonabl",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 11984,
+      "cost_usd": 0.015642,
+      "usage": {
+        "prompt_tokens": 3074,
+        "completion_tokens": 428,
+        "total_tokens": 3502
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "5a989482-bc0b-43f4-a921-ebe7693dd452",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 65,
+        "skills_fit": 58,
+        "seniority_fit": 80,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 65,\n    \"skills_fit\": 58,\n    \"seniority_fit\": 80,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Seniority: the JD targets a director/head-level l",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10534,
+      "cost_usd": 0.015105,
+      "usage": {
+        "prompt_tokens": 3040,
+        "completion_tokens": 399,
+        "total_tokens": 3439
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "77a68740-9472-4203-b648-1f751d2cce98",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 50,
+        "skills_fit": 72,
+        "seniority_fit": 60,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 50,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Skills: The JD asks for 'AI-powered signal analys",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9150,
+      "cost_usd": 0.011592,
+      "usage": {
+        "prompt_tokens": 2589,
+        "completion_tokens": 255,
+        "total_tokens": 2844
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "77a68740-9472-4203-b648-1f751d2cce98",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 72,
+        "seniority_fit": 60,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Skills: The JD asks for 'AI-powered signal analys",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9347,
+      "cost_usd": 0.015384,
+      "usage": {
+        "prompt_tokens": 3028,
+        "completion_tokens": 420,
+        "total_tokens": 3448
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "e3a7b09e-e43d-4d5e-b806-f42d7b6c7692",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: 'Senior Director, Customer & Partner Opera",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9578,
+      "cost_usd": 0.013773,
+      "usage": {
+        "prompt_tokens": 2586,
+        "completion_tokens": 401,
+        "total_tokens": 2987
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6f88caaf-a056-49bc-ad24-3bd6b559b34e",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 15,
+        "seniority_fit": 5,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 15,\n    \"seniority_fit\": 5,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Seniority: the JD is a frontline 'Customer Experience Specia",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6731,
+      "cost_usd": 0.011979,
+      "usage": {
+        "prompt_tokens": 2633,
+        "completion_tokens": 272,
+        "total_tokens": 2905
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "17e5ca5d-62ef-4791-90d2-2124a086d4e4",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 10,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 10,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: The JD is 'Staff Software Engineer' \u2014 a techn",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6011,
+      "cost_usd": 0.011292,
+      "usage": {
+        "prompt_tokens": 2539,
+        "completion_tokens": 245,
+        "total_tokens": 2784
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "92efc1f2-4bcc-49cc-9010-f7881aaedb0f",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 10,
+        "seniority_fit": 15,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 15,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: 'Quote Operations Associate (Deal Desk Analy",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6254,
+      "cost_usd": 0.011721,
+      "usage": {
+        "prompt_tokens": 2582,
+        "completion_tokens": 265,
+        "total_tokens": 2847
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6f88caaf-a056-49bc-ad24-3bd6b559b34e",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 20,
+        "seniority_fit": 5,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 20,\n    \"seniority_fit\": 5,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Seniority: the JD title is 'Customer Experience Spec",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8214,
+      "cost_usd": 0.014676,
+      "usage": {
+        "prompt_tokens": 3072,
+        "completion_tokens": 364,
+        "total_tokens": 3436
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "e3a7b09e-e43d-4d5e-b806-f42d7b6c7692",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 58,
+        "seniority_fit": 70,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 58,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: 'Senior Director, Customer & Partner Opera",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9479,
+      "cost_usd": 0.0156,
+      "usage": {
+        "prompt_tokens": 3025,
+        "completion_tokens": 435,
+        "total_tokens": 3460
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "92efc1f2-4bcc-49cc-9010-f7881aaedb0f",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 10,
+        "seniority_fit": 15,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 15,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: 'Quote Operations Associate (Deal Desk Analy",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8391,
+      "cost_usd": 0.014733,
+      "usage": {
+        "prompt_tokens": 3021,
+        "completion_tokens": 378,
+        "total_tokens": 3399
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "17e5ca5d-62ef-4791-90d2-2124a086d4e4",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is 'Staff Software Engineer' \u2014 a hands",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7839,
+      "cost_usd": 0.013914,
+      "usage": {
+        "prompt_tokens": 2978,
+        "completion_tokens": 332,
+        "total_tokens": 3310
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "0d7f2972-163b-4eb0-be7a-d63620c04090",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 3,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 3,\n  \"title_fit\": 0,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD title is 'Senior Counsel, Pr",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6587,
+      "cost_usd": 0.011424,
+      "usage": {
+        "prompt_tokens": 2518,
+        "completion_tokens": 258,
+        "total_tokens": 2776
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "0d7f2972-163b-4eb0-be7a-d63620c04090",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD title is 'Senior Counsel, Product (Har",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7779,
+      "cost_usd": 0.013956,
+      "usage": {
+        "prompt_tokens": 2957,
+        "completion_tokens": 339,
+        "total_tokens": 3296
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6eb4edd7-465a-4304-835f-2bee37da6895",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 15,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 15,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: The JD is 'Senior Sales Engineer' \u2014 a presales technic",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7048,
+      "cost_usd": 0.012264,
+      "usage": {
+        "prompt_tokens": 2728,
+        "completion_tokens": 272,
+        "total_tokens": 3000
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6eb4edd7-465a-4304-835f-2bee37da6895",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: The JD is for 'Senior Sales Engineer' \u2014 a pre-",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7734,
+      "cost_usd": 0.014841,
+      "usage": {
+        "prompt_tokens": 3167,
+        "completion_tokens": 356,
+        "total_tokens": 3523
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "3ade8f2a-9953-4244-a736-5cea504e7cfd",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 3,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 3,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Self Storage Manager' \u2014 a frontline property",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7326,
+      "cost_usd": 0.011799,
+      "usage": {
+        "prompt_tokens": 2528,
+        "completion_tokens": 281,
+        "total_tokens": 2809
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "3ade8f2a-9953-4244-a736-5cea504e7cfd",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 2,
+        "domain_fit": 8
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 8\n  },\n  \"reasoning\": \"Title: the JD is 'Self Storage Manager' \u2014 a frontline property",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7384,
+      "cost_usd": 0.013986,
+      "usage": {
+        "prompt_tokens": 2967,
+        "completion_tokens": 339,
+        "total_tokens": 3306
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "db093078-d797-4e7a-9236-6905a511f923",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 5,
+        "domain_fit": 8
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 5,\n    \"domain_fit\": 8\n  },\n  \"reasoning\": \"Title: The JD title is 'Talent Coordinator - FTC' \u2014 a recruiti",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6162,
+      "cost_usd": 0.01128,
+      "usage": {
+        "prompt_tokens": 2595,
+        "completion_tokens": 233,
+        "total_tokens": 2828
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "23e041dc-5b52-4e85-82d9-f2f0848a97f1",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: 'Senior Client Partner, Large Customer Sales' is a sa",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 5979,
+      "cost_usd": 0.011589,
+      "usage": {
+        "prompt_tokens": 2643,
+        "completion_tokens": 244,
+        "total_tokens": 2887
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "db093078-d797-4e7a-9236-6905a511f923",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 10,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 10,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD is for 'Talent Coordinator - FTC' (a f",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7885,
+      "cost_usd": 0.014352,
+      "usage": {
+        "prompt_tokens": 3034,
+        "completion_tokens": 350,
+        "total_tokens": 3384
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "23e041dc-5b52-4e85-82d9-f2f0848a97f1",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: 'Senior Client Partner, Large Customer Sales' ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7209,
+      "cost_usd": 0.013911,
+      "usage": {
+        "prompt_tokens": 3082,
+        "completion_tokens": 311,
+        "total_tokens": 3393
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "53d6ad13-be46-4847-9044-fd45c41632af",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: 'Delivery Solutions Architect - Public Sector' is a te",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6645,
+      "cost_usd": 0.01143,
+      "usage": {
+        "prompt_tokens": 2565,
+        "completion_tokens": 249,
+        "total_tokens": 2814
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1bff4b9d-26ba-47ee-bf7c-90486a12e025",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 10,
+        "seniority_fit": 2,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is titled 'Account Operation Associate",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7240,
+      "cost_usd": 0.014124,
+      "usage": {
+        "prompt_tokens": 2973,
+        "completion_tokens": 347,
+        "total_tokens": 3320
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "53d6ad13-be46-4847-9044-fd45c41632af",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: 'Delivery Solutions Architect - Public Sector'",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7375,
+      "cost_usd": 0.013887,
+      "usage": {
+        "prompt_tokens": 3004,
+        "completion_tokens": 325,
+        "total_tokens": 3329
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1bff4b9d-26ba-47ee-bf7c-90486a12e025",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 10,
+        "seniority_fit": 2,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is titled 'Account Operation Associate - Inter",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8989,
+      "cost_usd": 0.011787,
+      "usage": {
+        "prompt_tokens": 2534,
+        "completion_tokens": 279,
+        "total_tokens": 2813
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "5fd2c785-dfcf-4dd9-a004-ab412ad85946",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 60,
+        "seniority_fit": 75,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Seniority: the JD is a Director/Head-level role leading a",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8786,
+      "cost_usd": 0.012393,
+      "usage": {
+        "prompt_tokens": 2511,
+        "completion_tokens": 324,
+        "total_tokens": 2835
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "eac6ab50-5b7f-4f1e-a937-a87a76674408",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 45,
+        "seniority_fit": 40,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: 'Process & Tools Scalability Specialist' i",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9468,
+      "cost_usd": 0.012903,
+      "usage": {
+        "prompt_tokens": 2606,
+        "completion_tokens": 339,
+        "total_tokens": 2945
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "5fd2c785-dfcf-4dd9-a004-ab412ad85946",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 35,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 35,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Title: The JD title is 'Head of Workforce Planning' \u2014 a s",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 11054,
+      "cost_usd": 0.015495,
+      "usage": {
+        "prompt_tokens": 2950,
+        "completion_tokens": 443,
+        "total_tokens": 3393
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "05d36f0d-2464-45dd-a0c0-0e0f4aae8e75",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 30,
+        "seniority_fit": 45,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 45,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: The JD asks for a 'Technical Operations Ma",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6660,
+      "cost_usd": 0.011694,
+      "usage": {
+        "prompt_tokens": 2623,
+        "completion_tokens": 255,
+        "total_tokens": 2878
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "abac3ea5-f215-4b16-96fc-1ea765b24faf",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 45,
+        "seniority_fit": 65,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Seniority: the JD's 'Senior Manager' is one rung ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7905,
+      "cost_usd": 0.012387,
+      "usage": {
+        "prompt_tokens": 2574,
+        "completion_tokens": 311,
+        "total_tokens": 2885
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "05d36f0d-2464-45dd-a0c0-0e0f4aae8e75",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 35,
+        "seniority_fit": 55,
+        "domain_fit": 30
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 30\n  },\n  \"reasoning\": \"Seniority: the JD's 'Technical Operations Manager",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6791,
+      "cost_usd": 0.014121,
+      "usage": {
+        "prompt_tokens": 3062,
+        "completion_tokens": 329,
+        "total_tokens": 3391
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "eac6ab50-5b7f-4f1e-a937-a87a76674408",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 52,
+        "seniority_fit": 45,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 52,\n    \"seniority_fit\": 45,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Skills: the JD asks for someone to 'implement wor",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10456,
+      "cost_usd": 0.014865,
+      "usage": {
+        "prompt_tokens": 3045,
+        "completion_tokens": 382,
+        "total_tokens": 3427
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "abac3ea5-f215-4b16-96fc-1ea765b24faf",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 45,
+        "seniority_fit": 65,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Seniority: the JD's 'Sr. Manager' is one rung bel",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9292,
+      "cost_usd": 0.014964,
+      "usage": {
+        "prompt_tokens": 3013,
+        "completion_tokens": 395,
+        "total_tokens": 3408
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "815295b9-d9a5-41e8-95e9-b28be84870df",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 60,
+        "seniority_fit": 55,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Skills: the JD asks for 'operational infrastructu",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7652,
+      "cost_usd": 0.012126,
+      "usage": {
+        "prompt_tokens": 2542,
+        "completion_tokens": 300,
+        "total_tokens": 2842
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "815295b9-d9a5-41e8-95e9-b28be84870df",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 60,
+        "seniority_fit": 55,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: the JD is 'Revenue Operations Manager' und",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9171,
+      "cost_usd": 0.015093,
+      "usage": {
+        "prompt_tokens": 2981,
+        "completion_tokens": 410,
+        "total_tokens": 3391
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "bfc2c9cc-03d5-4100-8a19-49e42599374d",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 35,
+        "skills_fit": 55,
+        "seniority_fit": 30,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 35,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Seniority: the JD titles this role 'Manager, Cust",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8884,
+      "cost_usd": 0.012645,
+      "usage": {
+        "prompt_tokens": 2550,
+        "completion_tokens": 333,
+        "total_tokens": 2883
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "27a9d035-d99a-4888-959a-c4e190fd1cef",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 20,
+        "skills_fit": 35,
+        "seniority_fit": 45,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 20,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 45,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Title: The JD is 'Product Lead, Support Experienc",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7357,
+      "cost_usd": 0.012378,
+      "usage": {
+        "prompt_tokens": 2571,
+        "completion_tokens": 311,
+        "total_tokens": 2882
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "fce77fc9-81ee-4886-bb02-18dd834b5f7e",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 20,
+        "skills_fit": 30,
+        "seniority_fit": 50,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 20,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 50,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: The JD is 'Support Manager II, People Systems' \u2014 a",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9002,
+      "cost_usd": 0.011868,
+      "usage": {
+        "prompt_tokens": 2521,
+        "completion_tokens": 287,
+        "total_tokens": 2808
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "bfc2c9cc-03d5-4100-8a19-49e42599374d",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 35,
+        "skills_fit": 55,
+        "seniority_fit": 40,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 35,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Seniority: the JD is titled 'Manager, Customer Su",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9637,
+      "cost_usd": 0.015027,
+      "usage": {
+        "prompt_tokens": 2989,
+        "completion_tokens": 404,
+        "total_tokens": 3393
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "fce77fc9-81ee-4886-bb02-18dd834b5f7e",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 35,
+        "seniority_fit": 50,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 50,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Seniority: the JD's 'Support Manager II' is one r",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9826,
+      "cost_usd": 0.01407,
+      "usage": {
+        "prompt_tokens": 2960,
+        "completion_tokens": 346,
+        "total_tokens": 3306
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "11348087-5881-46e4-b99e-eed7e8980931",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": false,
+      "fit_score": 22,
+      "axes": {
+        "title_fit": 15,
+        "skills_fit": 30,
+        "seniority_fit": 40,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 22,\n  \"axes\": {\n    \"title_fit\": 15,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: The JD is 'Senior Customer Success Manager' \u2014 a ve",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8930,
+      "cost_usd": 0.012096,
+      "usage": {
+        "prompt_tokens": 2572,
+        "completion_tokens": 292,
+        "total_tokens": 2864
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "27a9d035-d99a-4888-959a-c4e190fd1cef",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 20,
+        "skills_fit": 35,
+        "seniority_fit": 50,
+        "domain_fit": 40
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 20,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 50,\n    \"domain_fit\": 40\n  },\n  \"reasoning\": \"Title: the JD is 'Product Lead, Support Experienc",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9801,
+      "cost_usd": 0.014625,
+      "usage": {
+        "prompt_tokens": 3010,
+        "completion_tokens": 373,
+        "total_tokens": 3383
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "71833069-318e-41a2-9518-8f796e05c35c",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 85,
+        "skills_fit": 60,
+        "seniority_fit": 55,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 85,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, Front End' matches t",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8336,
+      "cost_usd": 0.010542,
+      "usage": {
+        "prompt_tokens": 2194,
+        "completion_tokens": 264,
+        "total_tokens": 2458
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "3f5e0600-1645-4913-828b-90cd7752e4d6",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Manager, Software Development Engineering' is a p",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7126,
+      "cost_usd": 0.011205,
+      "usage": {
+        "prompt_tokens": 2135,
+        "completion_tokens": 320,
+        "total_tokens": 2455
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "11348087-5881-46e4-b99e-eed7e8980931",
+      "target_id": "4195d651-2009-4c43-bc6b-beec4d3fca0b",
+      "extract_logistics": true,
+      "fit_score": 22,
+      "axes": {
+        "title_fit": 15,
+        "skills_fit": 30,
+        "seniority_fit": 40,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 22,\n  \"axes\": {\n    \"title_fit\": 15,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: the JD is 'Senior Customer Success Manager",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9926,
+      "cost_usd": 0.015003,
+      "usage": {
+        "prompt_tokens": 3011,
+        "completion_tokens": 398,
+        "total_tokens": 3409
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "3f5e0600-1645-4913-828b-90cd7752e4d6",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Manager, Software Development Engineering",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7919,
+      "cost_usd": 0.013572,
+      "usage": {
+        "prompt_tokens": 2574,
+        "completion_tokens": 390,
+        "total_tokens": 2964
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "71833069-318e-41a2-9518-8f796e05c35c",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 90,
+        "skills_fit": 65,
+        "seniority_fit": 70,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 90,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, Front End' maps dire",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9582,
+      "cost_usd": 0.013884,
+      "usage": {
+        "prompt_tokens": 2633,
+        "completion_tokens": 399,
+        "total_tokens": 3032
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "e6ab3cde-55ba-4da6-ae17-031bbeba8615",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 60,
+        "seniority_fit": 70,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, Operator Tooling' is",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8205,
+      "cost_usd": 0.011073,
+      "usage": {
+        "prompt_tokens": 2181,
+        "completion_tokens": 302,
+        "total_tokens": 2483
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d57b67b4-246f-4a12-ac15-b287e4b29b5b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 65,
+        "seniority_fit": 70,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, UI Tooling' maps rea",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8290,
+      "cost_usd": 0.011865,
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 358,
+        "total_tokens": 2523
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "e6ab3cde-55ba-4da6-ae17-031bbeba8615",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 82,
+        "skills_fit": 65,
+        "seniority_fit": 78,
+        "domain_fit": 68
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 82,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 78,\n    \"domain_fit\": 68\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, Operator Tooling' maps to th",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9981,
+      "cost_usd": 0.014565,
+      "usage": {
+        "prompt_tokens": 2620,
+        "completion_tokens": 447,
+        "total_tokens": 3067
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d57b67b4-246f-4a12-ac15-b287e4b29b5b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 60,
+        "seniority_fit": 65,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, UI Tooling' maps dir",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9739,
+      "cost_usd": 0.014322,
+      "usage": {
+        "prompt_tokens": 2604,
+        "completion_tokens": 434,
+        "total_tokens": 3038
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "c9d04ec2-2606-4305-b7e8-39e2774fc230",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 70,
+        "seniority_fit": 55,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 70,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: 'Engineering Manager - UI Platform' maps t",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8884,
+      "cost_usd": 0.011799,
+      "usage": {
+        "prompt_tokens": 2133,
+        "completion_tokens": 360,
+        "total_tokens": 2493
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "4241a3e8-c975-46fb-a550-d530e4d8d0d7",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 55,
+        "seniority_fit": 65,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, GTM Engineering' ali",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10016,
+      "cost_usd": 0.011496,
+      "usage": {
+        "prompt_tokens": 2147,
+        "completion_tokens": 337,
+        "total_tokens": 2484
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "ccfda9bd-cd7f-4d32-bd6c-6fc36d1e1e34",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 75,
+        "skills_fit": 60,
+        "seniority_fit": 70,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 75,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, GTM Engineering' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8816,
+      "cost_usd": 0.011886,
+      "usage": {
+        "prompt_tokens": 2147,
+        "completion_tokens": 363,
+        "total_tokens": 2510
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "c9d04ec2-2606-4305-b7e8-39e2774fc230",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 72,
+      "axes": {
+        "title_fit": 85,
+        "skills_fit": 78,
+        "seniority_fit": 70,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 72,\n  \"axes\": {\n    \"title_fit\": 85,\n    \"skills_fit\": 78,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Engineering Manager - UI Platform' maps directly ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9033,
+      "cost_usd": 0.014046,
+      "usage": {
+        "prompt_tokens": 2572,
+        "completion_tokens": 422,
+        "total_tokens": 2994
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "4241a3e8-c975-46fb-a550-d530e4d8d0d7",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, GTM Engineering' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10329,
+      "cost_usd": 0.014793,
+      "usage": {
+        "prompt_tokens": 2586,
+        "completion_tokens": 469,
+        "total_tokens": 3055
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "ccfda9bd-cd7f-4d32-bd6c-6fc36d1e1e34",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 75,
+        "skills_fit": 60,
+        "seniority_fit": 70,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 75,\n    \"skills_fit\": 60,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, GTM Engineering' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9970,
+      "cost_usd": 0.014433,
+      "usage": {
+        "prompt_tokens": 2586,
+        "completion_tokens": 445,
+        "total_tokens": 3031
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "98fea48a-cdc5-4625-9ad8-9eb814f03b80",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 70,
+        "seniority_fit": 60,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 70,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, UI Platform' maps to",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9892,
+      "cost_usd": 0.011943,
+      "usage": {
+        "prompt_tokens": 2146,
+        "completion_tokens": 367,
+        "total_tokens": 2513
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "bfdc8a63-7b7a-4236-be66-387be6946123",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 8,
+        "seniority_fit": 2,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 8,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is titled 'DevOps Intern' \u2014 an entry-level DevO",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6045,
+      "cost_usd": 0.010257,
+      "usage": {
+        "prompt_tokens": 2114,
+        "completion_tokens": 261,
+        "total_tokens": 2375
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "49acd092-b4cb-4fa7-829f-927b7591e367",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Engineering Manager' matches the target role dire",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8618,
+      "cost_usd": 0.013281,
+      "usage": {
+        "prompt_tokens": 2572,
+        "completion_tokens": 371,
+        "total_tokens": 2943
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6a9c9b47-c974-41d2-96e2-dd660557b04b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 55,
+        "seniority_fit": 75,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 75,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, GTM Engineering' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9742,
+      "cost_usd": 0.01173,
+      "usage": {
+        "prompt_tokens": 2150,
+        "completion_tokens": 352,
+        "total_tokens": 2502
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "98fea48a-cdc5-4625-9ad8-9eb814f03b80",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 75,
+        "skills_fit": 70,
+        "seniority_fit": 60,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 75,\n    \"skills_fit\": 70,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, UI Platform' maps re",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10597,
+      "cost_usd": 0.014865,
+      "usage": {
+        "prompt_tokens": 2585,
+        "completion_tokens": 474,
+        "total_tokens": 3059
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "6a9c9b47-c974-41d2-96e2-dd660557b04b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 80,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 80,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, GTM Engineering' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10359,
+      "cost_usd": 0.014682,
+      "usage": {
+        "prompt_tokens": 2589,
+        "completion_tokens": 461,
+        "total_tokens": 3050
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "49acd092-b4cb-4fa7-829f-927b7591e367",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 75,
+        "skills_fit": 55,
+        "seniority_fit": 65,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 75,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: The JD is 'Engineering Manager' at Canva's Pexels ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9797,
+      "cost_usd": 0.012099,
+      "usage": {
+        "prompt_tokens": 2133,
+        "completion_tokens": 380,
+        "total_tokens": 2513
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d5c11dc1-8b20-4812-8c66-1e533cc90831",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 2,
+        "seniority_fit": 20,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 2,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: The JD is for a 'Team Leader' in physical 'Site Opera",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6567,
+      "cost_usd": 0.009294,
+      "usage": {
+        "prompt_tokens": 2098,
+        "completion_tokens": 200,
+        "total_tokens": 2298
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "bfdc8a63-7b7a-4236-be66-387be6946123",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 10,
+        "seniority_fit": 0,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 0,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is titled 'DevOps Intern' \u2014 an internship in a",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8031,
+      "cost_usd": 0.012864,
+      "usage": {
+        "prompt_tokens": 2553,
+        "completion_tokens": 347,
+        "total_tokens": 2900
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d5c11dc1-8b20-4812-8c66-1e533cc90831",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 2,
+        "seniority_fit": 20,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 2,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: the JD is 'Team Leader' for Deliveroo's physical deli",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7426,
+      "cost_usd": 0.012321,
+      "usage": {
+        "prompt_tokens": 2537,
+        "completion_tokens": 314,
+        "total_tokens": 2851
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d90522d7-e88d-4727-96f0-273bbb894ca1",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 10,
+        "seniority_fit": 0,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 0,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: the JD is titled 'Intern Software Engineer' \u2014 an entr",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6258,
+      "cost_usd": 0.010035,
+      "usage": {
+        "prompt_tokens": 2110,
+        "completion_tokens": 247,
+        "total_tokens": 2357
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "baab274d-2535-4a1e-886d-14991f5ed59c",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 10,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 10,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is 'Executive Assistant, Engineering' \u2014 an adm",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6560,
+      "cost_usd": 0.009681,
+      "usage": {
+        "prompt_tokens": 2132,
+        "completion_tokens": 219,
+        "total_tokens": 2351
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "baab274d-2535-4a1e-886d-14991f5ed59c",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 2,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 5,
+        "seniority_fit": 10,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 2,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 10,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: 'Executive Assistant, Engineering' is an administrati",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6224,
+      "cost_usd": 0.011868,
+      "usage": {
+        "prompt_tokens": 2571,
+        "completion_tokens": 277,
+        "total_tokens": 2848
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "9acc2a14-65e5-4cc6-8abb-c5f503d50dcb",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Tech Lead, ML Engineer - AV Product Enginee",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6286,
+      "cost_usd": 0.010209,
+      "usage": {
+        "prompt_tokens": 2178,
+        "completion_tokens": 245,
+        "total_tokens": 2423
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d90522d7-e88d-4727-96f0-273bbb894ca1",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 15,
+        "seniority_fit": 2,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 15,\n    \"seniority_fit\": 2,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: the JD is titled 'Intern Software Engineer' \u2014",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7617,
+      "cost_usd": 0.013047,
+      "usage": {
+        "prompt_tokens": 2549,
+        "completion_tokens": 360,
+        "total_tokens": 2909
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "9473fda9-46e6-4a93-ad18-7b83e24c3b4d",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is 'Machine Learning Systems Engineer, Researc",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 5974,
+      "cost_usd": 0.010107,
+      "usage": {
+        "prompt_tokens": 2124,
+        "completion_tokens": 249,
+        "total_tokens": 2373
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "9acc2a14-65e5-4cc6-8abb-c5f503d50dcb",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Tech Lead, ML Engineer - AV Product",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6588,
+      "cost_usd": 0.012981,
+      "usage": {
+        "prompt_tokens": 2617,
+        "completion_tokens": 342,
+        "total_tokens": 2959
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "9473fda9-46e6-4a93-ad18-7b83e24c3b4d",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 5,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 8,
+        "seniority_fit": 30,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 5,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 8,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: The JD is 'Machine Learning Systems Engineer, Researc",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6881,
+      "cost_usd": 0.012549,
+      "usage": {
+        "prompt_tokens": 2563,
+        "completion_tokens": 324,
+        "total_tokens": 2887
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d6b33e24-b48b-49bd-8e47-0425e1b93b2b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 5,
+      "axes": {
+        "title_fit": 0,
+        "skills_fit": 8,
+        "seniority_fit": 40,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 5,\n  \"axes\": {\n    \"title_fit\": 0,\n    \"skills_fit\": 8,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is 'Machine Learning Systems Engineer, RL Engi",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6464,
+      "cost_usd": 0.009873,
+      "usage": {
+        "prompt_tokens": 2146,
+        "completion_tokens": 229,
+        "total_tokens": 2375
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "d6b33e24-b48b-49bd-8e47-0425e1b93b2b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 10,
+        "seniority_fit": 40,
+        "domain_fit": 10
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 10\n  },\n  \"reasoning\": \"Title: The JD is 'Machine Learning Systems Engineer, RL Eng",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6212,
+      "cost_usd": 0.012165,
+      "usage": {
+        "prompt_tokens": 2585,
+        "completion_tokens": 294,
+        "total_tokens": 2879
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "05671795-f127-4599-860a-b0a752eb4d16",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 10,
+        "seniority_fit": 40,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Software Engineer, ML Systems & Training A",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6128,
+      "cost_usd": 0.010155,
+      "usage": {
+        "prompt_tokens": 2080,
+        "completion_tokens": 261,
+        "total_tokens": 2341
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "05671795-f127-4599-860a-b0a752eb4d16",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 10,
+        "seniority_fit": 40,
+        "domain_fit": 5
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 40,\n    \"domain_fit\": 5\n  },\n  \"reasoning\": \"Title: the JD is 'Software Engineer, ML Systems & Training A",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6502,
+      "cost_usd": 0.012447,
+      "usage": {
+        "prompt_tokens": 2519,
+        "completion_tokens": 326,
+        "total_tokens": 2845
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "aaf6c678-b410-4696-b440-ad0d0fdc5e54",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 2,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 2,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: 'Growth Marketing Team Lead' is a Marketing f",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6661,
+      "cost_usd": 0.012474,
+      "usage": {
+        "prompt_tokens": 2688,
+        "completion_tokens": 294,
+        "total_tokens": 2982
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "aaf6c678-b410-4696-b440-ad0d0fdc5e54",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 4,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 20,
+        "domain_fit": 15
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 4,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 20,\n    \"domain_fit\": 15\n  },\n  \"reasoning\": \"Title: 'Growth Marketing Team Lead' is a Marketing/Growth fu",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6941,
+      "cost_usd": 0.010452,
+      "usage": {
+        "prompt_tokens": 2249,
+        "completion_tokens": 247,
+        "total_tokens": 2496
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "2c669178-f420-4fd8-80e8-189e0278bd6b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 5,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 5,
+        "seniority_fit": 30,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 5,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 5,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: 'Lead Workday Engineer (People Tech & AI)' is an HR s",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 6458,
+      "cost_usd": 0.009975,
+      "usage": {
+        "prompt_tokens": 2150,
+        "completion_tokens": 235,
+        "total_tokens": 2385
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "2c669178-f420-4fd8-80e8-189e0278bd6b",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 8,
+      "axes": {
+        "title_fit": 5,
+        "skills_fit": 10,
+        "seniority_fit": 30,
+        "domain_fit": 20
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 8,\n  \"axes\": {\n    \"title_fit\": 5,\n    \"skills_fit\": 10,\n    \"seniority_fit\": 30,\n    \"domain_fit\": 20\n  },\n  \"reasoning\": \"Title: 'Lead Workday Engineer (People Tech & AI)' i",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7589,
+      "cost_usd": 0.012582,
+      "usage": {
+        "prompt_tokens": 2589,
+        "completion_tokens": 321,
+        "total_tokens": 2910
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "4e9513a6-008b-4c0c-bd1b-d0a80e6fd153",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 55,
+        "seniority_fit": 65,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Tech Lead Manager' is adjacent to the 'Fr",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9384,
+      "cost_usd": 0.011922,
+      "usage": {
+        "prompt_tokens": 2199,
+        "completion_tokens": 355,
+        "total_tokens": 2554
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "5fe2633b-b972-40a6-ba7f-60cef583aa59",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 30,
+        "seniority_fit": 60,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: the JD is 'Manager I, Engineering - Subscriptions'",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9109,
+      "cost_usd": 0.011643,
+      "usage": {
+        "prompt_tokens": 2141,
+        "completion_tokens": 348,
+        "total_tokens": 2489
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1409b3c8-136d-4456-bcf1-ae2a7b997994",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 72,
+        "seniority_fit": 55,
+        "domain_fit": 50
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 50\n  },\n  \"reasoning\": \"Title: the JD is 'Frontend Engineer, Dotcom (Marketing)' ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8544,
+      "cost_usd": 0.011127,
+      "usage": {
+        "prompt_tokens": 2089,
+        "completion_tokens": 324,
+        "total_tokens": 2413
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "225b2c86-9a3b-43e1-8ab3-9005cedd0ca8",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 62,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 45,
+        "seniority_fit": 70,
+        "domain_fit": 65
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 62,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 65\n  },\n  \"reasoning\": \"Title: 'Engineering Manager, Onboarding' is a peo",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8313,
+      "cost_usd": 0.011667,
+      "usage": {
+        "prompt_tokens": 2134,
+        "completion_tokens": 351,
+        "total_tokens": 2485
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "4e9513a6-008b-4c0c-bd1b-d0a80e6fd153",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 55,
+        "seniority_fit": 70,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: 'Tech Lead Manager' partially matches the ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10468,
+      "cost_usd": 0.014604,
+      "usage": {
+        "prompt_tokens": 2638,
+        "completion_tokens": 446,
+        "total_tokens": 3084
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "1409b3c8-136d-4456-bcf1-ae2a7b997994",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 72,
+        "seniority_fit": 55,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 72,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: the JD is 'Frontend Engineer, Dotcom (Marketing)' ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9590,
+      "cost_usd": 0.013644,
+      "usage": {
+        "prompt_tokens": 2528,
+        "completion_tokens": 404,
+        "total_tokens": 2932
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "225b2c86-9a3b-43e1-8ab3-9005cedd0ca8",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 35,
+        "seniority_fit": 65,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 35,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: the JD is 'Engineering Manager, Onboarding",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9086,
+      "cost_usd": 0.013884,
+      "usage": {
+        "prompt_tokens": 2573,
+        "completion_tokens": 411,
+        "total_tokens": 2984
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "33ce98e1-c391-4edb-b28e-d120411df9b6",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 42,
+      "axes": {
+        "title_fit": 60,
+        "skills_fit": 30,
+        "seniority_fit": 65,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 42,\n  \"axes\": {\n    \"title_fit\": 60,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: the JD is 'Engineering Manager, Marketing ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8249,
+      "cost_usd": 0.01014,
+      "usage": {
+        "prompt_tokens": 2140,
+        "completion_tokens": 248,
+        "total_tokens": 2388
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "e6a6f51a-ff24-4391-9d03-2e95fe08a366",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 45,
+        "seniority_fit": 55,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: The target is 'Frontend Engineering Manage",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7949,
+      "cost_usd": 0.010464,
+      "usage": {
+        "prompt_tokens": 2118,
+        "completion_tokens": 274,
+        "total_tokens": 2392
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "10c5ddb0-3b54-4071-b0fa-7b14ca1522df",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 20,
+        "skills_fit": 55,
+        "seniority_fit": 45,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 20,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 45,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: The user targets 'Frontend Engineering Man",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8246,
+      "cost_usd": 0.010905,
+      "usage": {
+        "prompt_tokens": 2145,
+        "completion_tokens": 298,
+        "total_tokens": 2443
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "33ce98e1-c391-4edb-b28e-d120411df9b6",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 45,
+        "skills_fit": 30,
+        "seniority_fit": 60,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 45,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: The JD is 'Engineering Manager, Marketing ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9542,
+      "cost_usd": 0.014052,
+      "usage": {
+        "prompt_tokens": 2579,
+        "completion_tokens": 421,
+        "total_tokens": 3000
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "e6a6f51a-ff24-4391-9d03-2e95fe08a366",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 55,
+        "seniority_fit": 60,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 55,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: The target is 'Frontend Engineering Manage",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8687,
+      "cost_usd": 0.013341,
+      "usage": {
+        "prompt_tokens": 2557,
+        "completion_tokens": 378,
+        "total_tokens": 2935
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "10c5ddb0-3b54-4071-b0fa-7b14ca1522df",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 25,
+        "skills_fit": 65,
+        "seniority_fit": 55,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 25,\n    \"skills_fit\": 65,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: The JD is 'Full Stack Engineer' \u2014 an IC co",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10537,
+      "cost_usd": 0.013182,
+      "usage": {
+        "prompt_tokens": 2584,
+        "completion_tokens": 362,
+        "total_tokens": 2946
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "5fe2633b-b972-40a6-ba7f-60cef583aa59",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 30,
+        "seniority_fit": 60,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: the JD is 'Manager I, Engineering' which i",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 21603,
+      "cost_usd": 0.01404,
+      "usage": {
+        "prompt_tokens": 2580,
+        "completion_tokens": 420,
+        "total_tokens": 3000
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f99909c8-71e2-4f28-9f63-4ad9a32903ff",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 28,
+      "axes": {
+        "title_fit": 20,
+        "skills_fit": 40,
+        "seniority_fit": 50,
+        "domain_fit": 45
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 28,\n  \"axes\": {\n    \"title_fit\": 20,\n    \"skills_fit\": 40,\n    \"seniority_fit\": 50,\n    \"domain_fit\": 45\n  },\n  \"reasoning\": \"Title: The user targets 'Frontend Engineering Manager' (p",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 7689,
+      "cost_usd": 0.010686,
+      "usage": {
+        "prompt_tokens": 2152,
+        "completion_tokens": 282,
+        "total_tokens": 2434
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f6cc5d85-36a1-4441-9ae2-b730031a17ee",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 40,
+        "seniority_fit": 70,
+        "domain_fit": 55
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 40,\n    \"seniority_fit\": 70,\n    \"domain_fit\": 55\n  },\n  \"reasoning\": \"Title: 'Senior Engineering Manager, Software' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 8241,
+      "cost_usd": 0.011562,
+      "usage": {
+        "prompt_tokens": 2209,
+        "completion_tokens": 329,
+        "total_tokens": 2538
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f99909c8-71e2-4f28-9f63-4ad9a32903ff",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 32,
+      "axes": {
+        "title_fit": 30,
+        "skills_fit": 45,
+        "seniority_fit": 55,
+        "domain_fit": 35
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 32,\n  \"axes\": {\n    \"title_fit\": 30,\n    \"skills_fit\": 45,\n    \"seniority_fit\": 55,\n    \"domain_fit\": 35\n  },\n  \"reasoning\": \"Title: The JD is 'Staff Software Engineer' \u2014 an I",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9832,
+      "cost_usd": 0.013458,
+      "usage": {
+        "prompt_tokens": 2591,
+        "completion_tokens": 379,
+        "total_tokens": 2970
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "2a75f93a-e6cd-45e5-a876-a0b6d0041d82",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": false,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 25,
+        "seniority_fit": 65,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 25,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: The JD is 'Engineering Manager - Product & Platfor",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9162,
+      "cost_usd": 0.011955,
+      "usage": {
+        "prompt_tokens": 2205,
+        "completion_tokens": 356,
+        "total_tokens": 2561
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "2a75f93a-e6cd-45e5-a876-a0b6d0041d82",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 38,
+      "axes": {
+        "title_fit": 55,
+        "skills_fit": 30,
+        "seniority_fit": 60,
+        "domain_fit": 25
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 38,\n  \"axes\": {\n    \"title_fit\": 55,\n    \"skills_fit\": 30,\n    \"seniority_fit\": 60,\n    \"domain_fit\": 25\n  },\n  \"reasoning\": \"Title: the JD is 'Engineering Manager - Product &",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 9523,
+      "cost_usd": 0.013752,
+      "usage": {
+        "prompt_tokens": 2644,
+        "completion_tokens": 388,
+        "total_tokens": 3032
+      },
+      "error": null
+    },
+    {
+      "job_posting_id": "f6cc5d85-36a1-4441-9ae2-b730031a17ee",
+      "target_id": "cf684e83-687b-421b-a0bf-4f7a7880becf",
+      "extract_logistics": true,
+      "fit_score": 52,
+      "axes": {
+        "title_fit": 72,
+        "skills_fit": 40,
+        "seniority_fit": 65,
+        "domain_fit": 60
+      },
+      "raw_content_preview": "```json\n{\n  \"fit_score\": 52,\n  \"axes\": {\n    \"title_fit\": 72,\n    \"skills_fit\": 40,\n    \"seniority_fit\": 65,\n    \"domain_fit\": 60\n  },\n  \"reasoning\": \"Title: 'Senior Engineering Manager, Software' is ",
+      "parsed_ok": true,
+      "schema_ok": true,
+      "latency_ms": 10933,
+      "cost_usd": 0.014649,
+      "usage": {
+        "prompt_tokens": 2648,
+        "completion_tokens": 447,
+        "total_tokens": 3095
+      },
+      "error": null
+    }
+  ]
+}
