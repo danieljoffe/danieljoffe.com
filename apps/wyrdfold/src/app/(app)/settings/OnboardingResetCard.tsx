@@ -34,12 +34,11 @@ export default function OnboardingResetCard() {
     // Native confirm is intentional here — the action is reversible
     // (the user can just finish the wizard again) and we don't want
     // the modal weight for this rare path.
-    const confirmed = window.confirm(
-      // eslint-disable-line no-alert
+    const message =
       'Redo onboarding? Your profile data, targets, and saved jobs ' +
-        'are preserved — only the wizard restarts.'
-    );
-    if (!confirmed) {
+      'are preserved — only the wizard restarts.';
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(message)) {
       return;
     }
 
