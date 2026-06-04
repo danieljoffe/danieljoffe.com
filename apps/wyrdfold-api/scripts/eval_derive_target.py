@@ -53,13 +53,13 @@ from typing import Any, cast
 # Make scripts._openrouter importable.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.models.experience import OptimizedPayload  # noqa: E402
-from app.services.targets.derive_profile_from_label import (  # noqa: E402
+from app.models.experience import OptimizedPayload
+from app.services.targets.derive_profile_from_label import (
     SYSTEM_PROMPT,
     DerivedTarget,
     _build_user_message,
 )
-from scripts._openrouter import MODELS, call_model, get_api_key  # noqa: E402
+from scripts._openrouter import MODELS, call_model, get_api_key
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("eval_derive_target")
@@ -157,7 +157,7 @@ async def _derive_one(
         try:
             derived = DerivedTarget.model_validate(result.parsed)
             schema_ok = True
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             result.error = (
                 f"{result.error or ''} schema_validation: {type(exc).__name__}"
             ).strip()

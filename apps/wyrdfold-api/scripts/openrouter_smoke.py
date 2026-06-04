@@ -21,7 +21,7 @@ from pathlib import Path
 # Make ``scripts._openrouter`` importable when running from the package root.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts._openrouter import MODELS, call_model, get_api_key  # noqa: E402
+from scripts._openrouter import MODELS, call_model, get_api_key
 
 _TINY_SYSTEM = """\
 You are a JSON-only responder. Reply with a single JSON object.

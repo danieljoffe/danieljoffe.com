@@ -131,7 +131,7 @@ def analyze(path: Path) -> None:
     # Per-band mean scores per model
     bands = ["top", "middle", "bottom"]
     print("\n## Mean fit_score by band (sanity: top>middle>bottom expected)\n")
-    print(f"| Model | " + " | ".join(bands) + " |")
+    print("| Model | " + " | ".join(bands) + " |")
     print("| --- |" + " --- |" * len(bands))
     for model in models:
         row = f"| {model} |"
