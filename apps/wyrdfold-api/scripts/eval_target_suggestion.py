@@ -92,7 +92,6 @@ _CANDIDATE_MODELS: dict[str, str] = {
 
 _JUDGE_MODEL_SLUG = "anthropic/claude-opus-4.7"
 
-# Each suggestion output is small — 5-8 suggestions × ~150 tokens each.
 _GEN_MAX_TOKENS = 2048
 _JUDGE_MAX_TOKENS = 2048
 
@@ -104,12 +103,7 @@ def _load_fixture() -> dict[str, Any]:
 
 
 def _rehydrate_users(fixture: dict[str, Any]) -> list[dict[str, Any]]:
-    """One user record per fixture target, deduplicated by payload hash.
-
-    The fixture's three targets may share the same payload (single
-    canonical user). We dedupe to avoid running the same prompt twice
-    when nothing about it changes between targets.
-    """
+    """One user record per fixture target, deduplicated by payload hash."""
     seen: set[str] = set()
     users: list[dict[str, Any]] = []
     for tid, meta in fixture["targets"].items():
@@ -134,13 +128,6 @@ def _rehydrate_users(fixture: dict[str, Any]) -> list[dict[str, Any]]:
 def _extract_suggestions(
     parsed: dict[str, Any] | None, mode: str
 ) -> list[dict[str, Any]]:
-    """Pull the suggestion list out of a model response.
-
-    Both suggest_targets and suggest_lateral_targets wrap their output
-    under a top-level "suggestions" key. Different models may emit
-    slightly different field names per suggestion — we don't normalize
-    here, just lift the list and pass through to the judge as-is.
-    """
     if not isinstance(parsed, dict):
         return []
     arr = parsed.get("suggestions")
@@ -160,7 +147,7 @@ async def _generate_one(
     if mode == "onboarding":
         system_prompt = _SUGGEST_SYSTEM
         user_message = _build_suggest_user_message(user["payload"])
-    else:  # lateral
+    else:
         system_prompt = _LATERAL_SYSTEM
         user_message = _build_lateral_user_message(
             user["payload"], current_targets=[user["current_target"]]
@@ -277,7 +264,6 @@ def _label_overlap_matrix(
     mode: str,
     models: dict[str, str],
 ) -> dict[str, dict[str, float]]:
-    """For each pair of models, Jaccard on lowercased suggestion labels."""
     by_model_labels: dict[str, set[str]] = {}
     for r in gen_results:
         if r["user_id"] != user_id or r["mode"] != mode:
@@ -308,8 +294,6 @@ def _anonymize_outputs(
     *,
     salt: str,
 ) -> dict[tuple[str, str], dict[str, dict[str, Any]]]:
-    """Per (user, mode), shuffle the per-model outputs into A..E bins so
-    Daniel can read them blind."""
     by_key: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for r in gen_results:
         by_key.setdefault((r["user_id"], r["mode"]), []).append(r)
