@@ -62,6 +62,7 @@ ignore = [
   "S311",     # random for stratified sampling in evals — not crypto
   "S110",     # try/except/pass is the standard "preserve partial data on any error" pattern in eval scripts
   "B007",     # unused-loop-var (for k, _ in items()) — common when iterating dict-likes for keys
+  "B023",     # loop-var binding in inner functions — eval scripts call them immediately
   "RUF003",   # × in comments is the standard "by" shorthand (e.g. "89 cases × 5 models")
   "E501",     # long lines in markdown report builders are fine; scripts emit their own formatting
 ]
