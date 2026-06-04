@@ -41,10 +41,10 @@ from typing import Any, cast
 # Make scripts._openrouter importable.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.models.experience import OptimizedPayload  # noqa: E402
-from app.models.targets import JobTarget  # noqa: E402
-from app.services.fit.job_fit import _SYSTEM_PROMPT, _build_user_message  # noqa: E402
-from scripts._openrouter import MODELS, call_model, get_api_key  # noqa: E402
+from app.models.experience import OptimizedPayload
+from app.models.targets import JobTarget
+from app.services.fit.job_fit import _SYSTEM_PROMPT, _build_user_message
+from scripts._openrouter import MODELS, call_model, get_api_key
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("multi_model_judge")
@@ -135,7 +135,7 @@ async def _grade_one_model(
                     for k, v in ax.items()
                     if isinstance(v, int | float)
                 }
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
 
     return {
