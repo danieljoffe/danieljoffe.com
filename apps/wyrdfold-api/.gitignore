@@ -12,5 +12,6 @@ dist/
 # Committing these would leak job titles + per-target sample sets.
 scripts/.audit-logs/
 
-# Eval result snapshots.
+# Eval result snapshots — raw output of one-off scripts/ benchmarks.
+# Committing these would leak job titles + per-target sample sets.
 scripts/eval_results/
