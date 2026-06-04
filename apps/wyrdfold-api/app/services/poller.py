@@ -290,6 +290,83 @@ def _is_us_location(location: str | None) -> bool:
     return not any(hint in loc for hint in _NON_US_HINTS)
 
 
+def _content_dedupe_key(
+    company: str | None, title: str | None
+) -> tuple[str, str]:
+    """Stable lowercase + collapsed-whitespace key for the
+    (company, title) dedupe pass. Whitespace differences ("Director"
+    vs "Director " vs "Director\\n") are normalized; punctuation and
+    casing differences are normalized; everything else is left as-is
+    on purpose (e.g. "Director, Customer Ops" vs "Director Customer
+    Ops" should still be considered distinct because the comma
+    might actually delimit a different role)."""
+    co = " ".join((company or "").lower().split())
+    ti = " ".join((title or "").lower().split())
+    return (co, ti)
+
+
+def _dedupe_by_content(
+    rows: list[dict[str, Any]],
+    *,
+    existing: list[dict[str, Any]],
+    source: str,
+) -> list[dict[str, Any]]:
+    """Drop rows whose (company, title) collides with another row in
+    the batch OR with an existing in-DB row whose external_id differs.
+
+    Greenhouse posts the same role under each office's location as a
+    separate listing with a distinct external_id. The upsert's
+    on_conflict key only matches by external_id so the duplicates
+    sneak through. This helper closes that hole.
+
+    Within-batch dedupe keeps the first row seen (input order is the
+    poll cycle's discovery order, so this is reasonably stable). The
+    cross-batch dedupe leaves the existing-in-DB row alone — only
+    new incoming candidates with a different external_id are
+    dropped. An upsert of the SAME external_id (the legitimate
+    update path) is unaffected.
+    """
+    existing_by_key: dict[tuple[str, str], str] = {}
+    for row in existing:
+        key = _content_dedupe_key(
+            row.get("company_name"), row.get("title")
+        )
+        # First-seen wins on the DB side too (existing rows may already
+        # contain duplicates from before this dedupe existed — pin to
+        # one of them as the canonical entry).
+        existing_by_key.setdefault(key, row.get("external_id", ""))
+
+    seen_in_batch: set[tuple[str, str]] = set()
+    deduped: list[dict[str, Any]] = []
+    skipped_within = 0
+    skipped_cross = 0
+    for row in rows:
+        key = _content_dedupe_key(row.get("company_name"), row.get("title"))
+
+        if key in seen_in_batch:
+            skipped_within += 1
+            continue
+
+        existing_ext = existing_by_key.get(key)
+        if existing_ext and existing_ext != row.get("external_id"):
+            skipped_cross += 1
+            continue
+
+        seen_in_batch.add(key)
+        deduped.append(row)
+
+    if skipped_within or skipped_cross:
+        logger.info(
+            "dedupe %s: %d within-batch, %d cross-batch (kept %d of %d)",
+            source,
+            skipped_within,
+            skipped_cross,
+            len(deduped),
+            len(rows),
+        )
+    return deduped
+
+
 async def _validate_one_row(row: dict[str, Any]) -> dict[str, Any]:
     """Validate the absolute_url of a single job row."""
     url = row.get("absolute_url")
@@ -649,33 +726,49 @@ async def _poll_one_source(
         if settings.validate_poll_urls and rows_to_upsert:
             rows_to_upsert = await _validate_rows(rows_to_upsert)
 
-        # Upsert new/updated jobs AND fetch existing rows in parallel.
+        # Fetch existing rows BEFORE the upsert so we can dedupe
+        # against in-DB jobs with the same (company, title) but a
+        # different external_id. This catches the case Greenhouse
+        # surfaces the same role under multiple location offices as
+        # separate listings (e.g. Smartsheet's "Professional Services
+        # Business Development Director" at "-REMOTE, USA-" + "Bellevue,
+        # WA, USA"). Within-batch dedupe handles the case where both
+        # arrive in the same poll cycle; cross-batch dedupe (the
+        # existing_by_content lookup below) handles the case where the
+        # duplicate appears across multiple cycles.
         existing_query = (
             supabase.table("jobs")
-            .select("id, external_id")
+            .select("id, external_id, title, company_name")
             .eq("source_id", source_id)
             .not_.in_("status", ["saved", "applied", "archived"])
         )
 
         new_rows: list[dict[str, Any]] = []
         if rows_to_upsert:
+            existing_resp = await asyncio.to_thread(
+                execute_with_retry_sync,
+                existing_query.execute,
+                label=f"poll existing {company_name}",
+            )
+
+            # Dedupe rows_to_upsert by (company, title). Both within
+            # the current batch and against existing rows that have a
+            # different external_id.
+            rows_to_upsert = _dedupe_by_content(
+                rows_to_upsert,
+                existing=cast(
+                    list[dict[str, Any]], existing_resp.data or []
+                ),
+                source=company_name,
+            )
+
             upsert_query = supabase.table("jobs").upsert(
                 rows_to_upsert, on_conflict="source_id,external_id"
             )
-            # Both calls are idempotent — the upsert keys on the unique
-            # constraint, the SELECT is read-only — so retrying on a
-            # Supabase HTTP/2 stream drop won't double-write or skew counts.
-            upsert_resp, existing_resp = await asyncio.gather(
-                asyncio.to_thread(
-                    execute_with_retry_sync,
-                    upsert_query.execute,
-                    label=f"poll upsert {company_name}",
-                ),
-                asyncio.to_thread(
-                    execute_with_retry_sync,
-                    existing_query.execute,
-                    label=f"poll existing {company_name}",
-                ),
+            upsert_resp = await asyncio.to_thread(
+                execute_with_retry_sync,
+                upsert_query.execute,
+                label=f"poll upsert {company_name}",
             )
             for raw_row in upsert_resp.data or []:
                 data = cast(dict[str, Any], raw_row)
