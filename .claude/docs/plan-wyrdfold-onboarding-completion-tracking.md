@@ -70,6 +70,7 @@ where onboarding_completed_at is null
 - The existing `GET /user-profile` already returns the row; the new columns flow through automatically once added to the Pydantic model.
 
 Step values are a closed enum, validated server-side:
+
 ```python
 OnboardingStep = Literal[
     "path_chooser",      # PathChooser.tsx
@@ -99,12 +100,12 @@ if (profile?.onboarding_completed_at == null) {
 
 // Belt-and-suspenders: if completed_at is set but prose is missing,
 // something has drifted. Log + redirect anyway.
-const proseRes = await fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose');
+const proseRes =
+  await fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose');
 if (proseRes == null || !hasProse(proseRes)) {
-  Sentry.captureMessage(
-    'dashboard:onboarding_flag_set_but_no_prose',
-    { extra: { user_id: profile.user_id } },
-  );
+  Sentry.captureMessage('dashboard:onboarding_flag_set_but_no_prose', {
+    extra: { user_id: profile.user_id },
+  });
   redirect('/onboarding');
 }
 ```
@@ -123,15 +124,15 @@ Optional, low-priority: a button in `/settings` that calls a new endpoint to cle
 
 ## Edge cases handled
 
-| Scenario | Behaviour |
-|---|---|
-| Brand new user, never visited /onboarding | `onboarding_completed_at` NULL → dashboard redirects → wizard starts at step 1 |
-| User starts wizard, refreshes mid-flow | Wizard reads `onboarding_current_step` on mount → resumes there |
-| User finishes wizard | Final-step button sets `onboarding_completed_at` → next dashboard visit renders normally |
-| Existing user (pre-migration) with prose | Backfill sets `onboarding_completed_at = updated_at` → dashboard renders normally |
-| Flag set but prose missing (data drift / bug) | Belt-and-suspenders check kicks in → Sentry warning + redirect to /onboarding |
-| User has flag set but their prose was DELETED via support action | Same as above — redirect to /onboarding, which is the right place to recover |
-| User in wizard step N, we add a new step | Wizard validates the step value against the closed enum; unknown values fall through to step 1 (safe default with a Sentry warning) |
+| Scenario                                                         | Behaviour                                                                                                                           |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Brand new user, never visited /onboarding                        | `onboarding_completed_at` NULL → dashboard redirects → wizard starts at step 1                                                      |
+| User starts wizard, refreshes mid-flow                           | Wizard reads `onboarding_current_step` on mount → resumes there                                                                     |
+| User finishes wizard                                             | Final-step button sets `onboarding_completed_at` → next dashboard visit renders normally                                            |
+| Existing user (pre-migration) with prose                         | Backfill sets `onboarding_completed_at = updated_at` → dashboard renders normally                                                   |
+| Flag set but prose missing (data drift / bug)                    | Belt-and-suspenders check kicks in → Sentry warning + redirect to /onboarding                                                       |
+| User has flag set but their prose was DELETED via support action | Same as above — redirect to /onboarding, which is the right place to recover                                                        |
+| User in wizard step N, we add a new step                         | Wizard validates the step value against the closed enum; unknown values fall through to step 1 (safe default with a Sentry warning) |
 
 ## Testing
 
@@ -161,6 +162,7 @@ Single PR, fits in one review. Files touched:
 - 4-6 unit tests
 
 If review wants it smaller, split into:
+
 - PR 1: schema + API (backend-only, harmless when FE doesn't consume)
 - PR 2: dashboard gate switch + wizard resume (FE-only, depends on PR 1)
 
