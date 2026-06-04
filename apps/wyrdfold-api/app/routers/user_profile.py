@@ -419,3 +419,47 @@ async def complete_onboarding(
         supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
     )
     return _read_onboarding(fresh)
+
+
+@router.post("/onboarding/reset")
+async def reset_onboarding(
+    user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
+    supabase: Client = Depends(get_supabase),
+) -> OnboardingStatus:
+    """Clear the user's onboarding completion + step state so the wizard
+    treats them as fresh.
+
+    Used by the Settings page "Redo onboarding" button. Idempotent:
+    calling on an already-cleared row is a no-op.
+
+    **Does NOT delete** the user's prose, targets, or any other
+    profile data — that's a separate "reset my account" action the
+    user would need to take explicitly. The redo-onboarding flow
+    preserves the user's work and only resets the wizard's view of
+    completion + current step.
+
+    Preserves ``onboarding_path`` so we keep the breadcrumb of which
+    path they last picked — useful for product analytics later
+    ("which paths get re-done most often").
+    """
+    await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+
+    await asyncio.to_thread(
+        lambda: supabase.table("user_profiles")
+        .update(
+            {
+                "onboarding_completed_at": None,
+                "onboarding_current_step": None,
+            }
+        )
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    fresh = await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+    return _read_onboarding(fresh)

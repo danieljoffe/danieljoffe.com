@@ -16,6 +16,7 @@ import { Switch } from '@danieljoffe.com/shared-ui/Switch';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
+import OnboardingResetCard from './OnboardingResetCard';
 import { ResumeStylePreview } from './ResumeStylePreview';
 import {
   ACCENT_OPTIONS,
@@ -624,6 +625,8 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <OnboardingResetCard />
     </div>
   );
 }
