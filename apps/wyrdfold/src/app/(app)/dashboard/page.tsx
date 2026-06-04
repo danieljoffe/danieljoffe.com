@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import DashboardPage, { type DashboardInitial } from '../DashboardPage';
 import type { JobPosting } from '../jobs/types';
@@ -29,6 +30,22 @@ const PIPELINE_STATUSES = [
 ] as const;
 
 export default async function WyrdfoldDashboard() {
+  // Fast path: brand-new users land on /dashboard by default (auth
+  // callback's DEFAULT_NEXT). Check whether they have any prose yet —
+  // if not, they haven't started onboarding and the dashboard's empty
+  // state would just be a CTA pointing back at /onboarding. Send them
+  // straight there instead of forcing the empty-CTA detour.
+  //
+  // Note: we check prose-only (not targets). A returning user who has
+  // a profile but happens to have no active targets right now should
+  // see the dashboard's manage-targets CTA, not get sent back to the
+  // onboarding wizard.
+  const earlyProseRes =
+    await fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose');
+  if (earlyProseRes == null || !hasProse(earlyProseRes)) {
+    redirect('/onboarding');
+  }
+
   // ``hasProfile`` checks whether the user has authored prose at all —
   // the underlying signal that "they've started onboarding." The
   // upstream ``/experience/prose`` endpoint returns ``{prose: null}``
