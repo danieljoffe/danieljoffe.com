@@ -128,7 +128,7 @@ async def call_model(
     user: str,
     api_key: str | None = None,
     max_tokens: int = 1024,
-    timeout: float = 120.0,
+    request_timeout_seconds: float = 120.0,
     response_format_json: bool = True,
 ) -> CallResult:
     """Single OpenRouter /chat/completions call.
@@ -152,7 +152,7 @@ async def call_model(
 
     start = time.perf_counter()
     try:
-        async with httpx.AsyncClient(timeout=timeout) as http:
+        async with httpx.AsyncClient(timeout=request_timeout_seconds) as http:
             resp = await http.post(
                 f"{_OR_BASE}/chat/completions",
                 json=body,
@@ -176,7 +176,7 @@ async def call_model(
                 error=f"HTTP {resp.status_code}: {resp.text[:300]}",
             )
         payload = resp.json()
-    except Exception as exc:  # noqa: BLE001 - eval script, surface anything
+    except Exception as exc:
         latency_ms = int((time.perf_counter() - start) * 1000)
         return CallResult(
             model_slug=model_slug,

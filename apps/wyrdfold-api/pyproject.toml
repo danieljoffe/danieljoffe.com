@@ -56,7 +56,15 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "E501", "RUF059", "F841", "SIM117", "E402", "B017"]
-"scripts/**/*.py" = ["T201"]  # CLI scripts use print() for user output
+"scripts/**/*.py" = [
+  "T201",     # CLI scripts use print() for user output
+  "ASYNC240", # sync pathlib in async eval scripts is fine
+  "S311",     # random for stratified sampling — not crypto
+  "S110",     # try/except/pass preserves partial data on any error
+  "B007",     # unused-loop-var common when iterating dict-likes
+  "RUF003",   # × in comments is shorthand for "by"
+  "E501",     # long lines in markdown report builders are fine
+]
 
 [tool.mypy]
 python_version = "3.11"

@@ -169,7 +169,7 @@ def build_eval_set(
 ) -> dict[str, Any]:
     """Pull a balanced eval set across all active targets. Returns the
     fixture dict ready to serialise."""
-    rng = random.Random(seed)  # noqa: S311 — research sampling
+    rng = random.Random(seed)
     targets = get_active_targets(sb)
     cases: list[dict[str, Any]] = []
     target_payloads: dict[str, Any] = {}
@@ -520,7 +520,7 @@ async def main_async(args: argparse.Namespace) -> None:
     if args.prompt_file:
         # One-shot read at startup — script reads this once, not in any
         # tight async loop, so the pathlib call is harmless here.
-        system_prompt = Path(args.prompt_file).read_text()  # noqa: ASYNC240
+        system_prompt = Path(args.prompt_file).read_text()
         prompt_label = Path(args.prompt_file).name
     else:
         system_prompt = BASELINE_SYSTEM_PROMPT
@@ -592,7 +592,7 @@ async def main_async(args: argparse.Namespace) -> None:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         # One-shot write after all LLM calls have finished — pathlib here
         # is fine, the async hot path is already done.
-        out_path.write_text(  # noqa: ASYNC240
+        out_path.write_text(
             json.dumps(payload, indent=2, sort_keys=True)
         )
         logger.info("Per-row results saved to %s", out_path)

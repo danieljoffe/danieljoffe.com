@@ -50,13 +50,13 @@ from typing import Any, cast
 # Make scripts._openrouter importable.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.models.experience import OptimizedPayload  # noqa: E402
-from app.models.tailor import ContactInfo  # noqa: E402
-from app.services.tailor.prompts import COVER_LETTER_SYSTEM  # noqa: E402
-from app.services.tailor.tailor import (  # noqa: E402
+from app.models.experience import OptimizedPayload
+from app.models.tailor import ContactInfo
+from app.services.tailor.prompts import COVER_LETTER_SYSTEM
+from app.services.tailor.tailor import (
     build_cover_letter_user_message,
 )
-from scripts._openrouter import MODELS, call_model, get_api_key  # noqa: E402
+from scripts._openrouter import MODELS, call_model, get_api_key
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("eval_cover_letter")
