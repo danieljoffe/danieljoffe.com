@@ -13,6 +13,19 @@ echo "$FILE_PATH" | grep -qE '\.(spec|test)\.(tsx?|jsx?)$' || exit 0
 
 SPEC_FILE=$(basename "$FILE_PATH")
 
+# Worktree-aware cwd. When Claude edits a file inside a git worktree
+# (e.g. /tmp/wt-*/...), this hook runs from $CLAUDE_PROJECT_DIR — the
+# main checkout — and pnpm nx looks for the spec in the wrong tree.
+# `git -C <file-dir> rev-parse --show-toplevel` returns the root of
+# whichever worktree contains the file; cd there before running tests.
+# Falls back to current cwd if the file isn't inside a git repo (rare
+# for spec files, but defensive).
+FILE_DIR=$(dirname "$FILE_PATH")
+WORKTREE_ROOT=$(git -C "$FILE_DIR" rev-parse --show-toplevel 2>/dev/null)
+if [ -n "$WORKTREE_ROOT" ] && [ -d "$WORKTREE_ROOT" ]; then
+  cd "$WORKTREE_ROOT" || exit 0
+fi
+
 # Determine project and test args from file path
 case "$FILE_PATH" in
   */apps/*-e2e/*)
