@@ -169,7 +169,15 @@ async def tailor_resume(
         schema=TailoredResume,
         purpose=purpose,
         cache_system=True,
-        max_tokens=8192,
+        # Cut from 8192 to 4096: typical tailored resumes are 1500-3500
+        # output tokens; the 8192 cap was a worst-case ceiling that we
+        # never hit. At Sonnet output $15/Mtok, full-fill would have been
+        # $0.123/call just for output. 4096 keeps real headroom for the
+        # rare long-spec resume while halving the worst-case spend. See
+        # plan-wyrdfold-openrouter-investigation.md Recommendation C.
+        # Reassess by querying llm_costs output_tokens p95 after ~2
+        # weeks of production data.
+        max_tokens=4096,
     )
 
     cleaned, warnings = validate_trace_refs(parsed, optimized)
