@@ -45,12 +45,28 @@ class AnthropicLLMClient:
         api_key: str | None = None,
         timeout: float = 600.0,
         max_retries: int = 2,
+        base_url: str | None = None,
     ) -> None:
-        self._client = AsyncAnthropic(
-            api_key=api_key,
-            timeout=timeout,
-            max_retries=max_retries,
-        )
+        # ``base_url`` is an extension point for backends that speak the
+        # Anthropic API shape but live behind a different host — e.g.
+        # OpenRouter (see openrouter_client.py). Default None keeps the
+        # SDK at its built-in https://api.anthropic.com endpoint.
+        kwargs: dict[str, Any] = {
+            "api_key": api_key,
+            "timeout": timeout,
+            "max_retries": max_retries,
+        }
+        if base_url is not None:
+            kwargs["base_url"] = base_url
+        self._client = AsyncAnthropic(**kwargs)
+
+    def _resolve_model(self, model: ModelId) -> str:
+        """Translate an internal ModelId to the string the underlying
+        API expects. Override in subclasses that need to remap (e.g.
+        OpenRouter prepends a provider namespace + uses dotted versions).
+        Default: pass through unchanged.
+        """
+        return model
 
     async def complete(
         self,
@@ -87,7 +103,7 @@ class AnthropicLLMClient:
 
         start = time.perf_counter()
         response = await self._client.messages.create(
-            model=model,
+            model=cast(Any, self._resolve_model(model)),
             max_tokens=max_tokens,
             system=system_param,
             messages=cast(Any, api_messages),
@@ -167,7 +183,7 @@ class AnthropicLLMClient:
 
         start = time.perf_counter()
         response = await self._client.messages.create(
-            model=model,
+            model=cast(Any, self._resolve_model(model)),
             max_tokens=max_tokens,
             system=system_param,
             messages=cast(Any, api_messages),
@@ -247,7 +263,7 @@ class AnthropicLLMClient:
 
         start = time.perf_counter()
         async with self._client.messages.stream(
-            model=model,
+            model=cast(Any, self._resolve_model(model)),
             max_tokens=max_tokens,
             system=system_param,
             messages=cast(Any, api_messages),
