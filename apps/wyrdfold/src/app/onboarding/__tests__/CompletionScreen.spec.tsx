@@ -1,30 +1,26 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import CompletionScreen from '../CompletionScreen';
 
 expect.extend(toHaveNoViolations);
 
-// CompletionScreen renders Button as=link → next/link. Mock to a real <a>.
-jest.mock('next/link', () => {
-  return function MockLink(
-    props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }
-  ) {
-    const { href, children, ...rest } = props;
-    return (
-      <a href={href} {...rest}>
-        {children}
-      </a>
-    );
-  };
-});
+const mockPush = jest.fn();
 
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ prefetch: jest.fn(), push: jest.fn() }),
+  useRouter: () => ({ prefetch: jest.fn(), push: mockPush }),
 }));
 
 describe('CompletionScreen', () => {
+  beforeEach(() => {
+    mockPush.mockClear();
+    global.fetch = jest.fn(() =>
+      Promise.resolve({ ok: true, json: async () => ({}) })
+    ) as jest.Mock;
+  });
+
   it("renders the 'all set' heading", () => {
     render(<CompletionScreen />);
     expect(
@@ -39,11 +35,36 @@ describe('CompletionScreen', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders a "Go to Targets" link pointing to /targets', () => {
+  it('renders the "Go to Targets" continue button', () => {
     render(<CompletionScreen />);
-    const link = screen.getByRole('link', { name: /go to targets/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/targets');
+    expect(
+      screen.getByRole('button', { name: /go to targets/i })
+    ).toBeInTheDocument();
+  });
+
+  it('marks onboarding complete on click, then navigates to /targets', async () => {
+    const user = userEvent.setup();
+    render(<CompletionScreen />);
+
+    await user.click(screen.getByRole('button', { name: /go to targets/i }));
+
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/targets'));
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/profile/onboarding/complete',
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  it('still navigates to /targets when the complete call fails (network)', async () => {
+    // Sentry catches the failure; the user shouldn't feel stuck on
+    // the final screen because of a transient blip.
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('boom'));
+    const user = userEvent.setup();
+    render(<CompletionScreen />);
+
+    await user.click(screen.getByRole('button', { name: /go to targets/i }));
+
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/targets'));
   });
 
   it('has no accessibility violations', async () => {

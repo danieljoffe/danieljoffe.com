@@ -6,6 +6,7 @@ preventing cross-tenant reads/writes.
 """
 
 import asyncio
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,6 +24,8 @@ from app.models.user_profile import (
     IdentityFieldsUpdate,
     NotificationPreferences,
     NotificationPreferencesUpdate,
+    OnboardingStatus,
+    OnboardingStepUpdate,
     ResumeStyleSettings,
     ResumeStyleSettingsUpdate,
 )
@@ -64,6 +67,10 @@ _PREFS_COLUMNS = (
 _IDENTITY_COLUMNS = "name, email, phone_number, location, linkedin_url, website_url"
 
 _RESUME_STYLE_COLUMNS = "resume_style_settings"
+
+_ONBOARDING_COLUMNS = (
+    "onboarding_completed_at, onboarding_path, onboarding_current_step"
+)
 
 
 async def _get_or_create_profile(
@@ -277,3 +284,138 @@ async def update_resume_style(
         .execute()
     )
     return merged
+
+
+# ---------------------------------------------------------------------------
+# Onboarding progress (plan-wyrdfold-onboarding-completion-tracking.md)
+# ---------------------------------------------------------------------------
+
+
+_KNOWN_STEPS = {
+    "path-chooser",
+    "identity",
+    "upload-resume",
+    "add-job",
+    "pick-targets",
+    "conversation",
+    "completion",
+}
+_KNOWN_PATHS = {"A", "B", "C"}
+
+
+def _read_onboarding(row: dict[str, Any]) -> OnboardingStatus:
+    """Parse the three onboarding columns into a typed status object.
+
+    Unknown ``path`` or ``current_step`` values (e.g. an old wizard
+    version that wrote a step we no longer support) fall back to None
+    rather than 500ing the dashboard — the wizard will treat None as
+    "start from the beginning." This is graceful degradation; the
+    safer-than-crash behaviour matters because this endpoint sits
+    on the dashboard's critical path.
+    """
+    step = row.get("onboarding_current_step")
+    path = row.get("onboarding_path")
+    return OnboardingStatus.model_validate(
+        {
+            "completed_at": row.get("onboarding_completed_at"),
+            "path": path if path in _KNOWN_PATHS else None,
+            "current_step": step if step in _KNOWN_STEPS else None,
+        }
+    )
+
+
+@router.get("/onboarding")
+async def get_onboarding_status(
+    user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
+    supabase: Client = Depends(get_supabase),
+) -> OnboardingStatus:
+    """Return the user's onboarding progress.
+
+    Used by the dashboard server component to decide whether to redirect
+    to /onboarding. Cheap query — only the three onboarding columns
+    flow back.
+    """
+    row = await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+    return _read_onboarding(row)
+
+
+@router.patch("/onboarding/step")
+async def update_onboarding_step(
+    body: OnboardingStepUpdate,
+    user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
+    supabase: Client = Depends(get_supabase),
+) -> OnboardingStatus:
+    """Update the user's current onboarding step (and optionally path).
+
+    Wizard calls this on every step transition. Both fields are
+    optional — passing only ``current_step`` is the common case;
+    ``path`` is set once when the user picks a path on PathChooser.
+    Idempotent: re-PATCHing the same step is a no-op.
+    """
+    await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+
+    updates: dict[str, Any] = {}
+    if body.path is not None:
+        updates["onboarding_path"] = body.path
+    if body.current_step is not None:
+        updates["onboarding_current_step"] = body.current_step
+    if updates:
+        await asyncio.to_thread(
+            lambda: supabase.table("user_profiles")
+            .update(updates)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+    row = await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+    return _read_onboarding(row)
+
+
+@router.post("/onboarding/complete")
+async def complete_onboarding(
+    user_id: str = Depends(get_current_user_id),
+    user_email: str | None = Depends(get_current_user_email),
+    supabase: Client = Depends(get_supabase),
+) -> OnboardingStatus:
+    """Mark the user's onboarding as complete.
+
+    Idempotent: the wizard's "Continue to dashboard" button calls this
+    on the final step; calling again later (e.g. user navigates back
+    and re-finishes) doesn't overwrite the original completion
+    timestamp — the earlier value is the source of truth for "when
+    did this user actually onboard."
+
+    Also sets current_step to "completion" so a subsequent
+    /onboarding read sees a consistent state.
+    """
+    row = await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+
+    updates: dict[str, Any] = {"onboarding_current_step": "completion"}
+    if row.get("onboarding_completed_at") is None:
+        # Client-side timestamp is fine here — clock skew between the
+        # API container and the DB is sub-second and we don't render
+        # this value to the user. The PostgREST sync path doesn't have
+        # a clean way to pass a `now()` literal anyway.
+        updates["onboarding_completed_at"] = datetime.now(UTC).isoformat()
+
+    await asyncio.to_thread(
+        lambda: supabase.table("user_profiles")
+        .update(updates)
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    fresh = await _get_or_create_profile(
+        supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
+    )
+    return _read_onboarding(fresh)
