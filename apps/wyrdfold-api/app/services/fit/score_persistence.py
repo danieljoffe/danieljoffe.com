@@ -21,9 +21,11 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
+from typing import Any
 
 from supabase import Client
 
+from app.config import settings
 from app.models.experience import OptimizedPayload
 from app.models.targets import JobTarget
 from app.services.fit.job_fit import JOB_FIT_PURPOSE, JobFitResult, derive_job_fit
@@ -67,6 +69,7 @@ async def score_with_phase2_and_persist(
             target=target,
             job_title=title,
             jd_text=jd_text,
+            extract_logistics=settings.logistics_extraction_enabled,
         )
     except Exception:
         logger.exception(
@@ -97,29 +100,34 @@ async def score_with_phase2_and_persist(
         )
 
     try:
-        supabase.table("scores").update(
-            {
-                "score": fit.fit_score,
-                "axis_scores": fit.axes.model_dump(),
-                "fit_reasoning": fit.reasoning,
-                "scoring_status": "complete",
-                # Stamp the version this grade was computed at so the
-                # re-grade contract holds: a row that's ``complete`` at
-                # ``scored_profile_version >= target.profile_version`` is
-                # skipped on the next poll / backfill. A profile bump (via
-                # bulk_score_for_target) resets status to ``stage2``, which
-                # re-admits the row for grading.
-                "scored_profile_version": target.profile_version,
-                # Keep the recency invariant (recency_score == score when
-                # decay is off). When decay is on the poller's
-                # refresh_recency_scores pass overwrites this with the
-                # age-decayed value later in the same cycle.
-                "recency_score": fit.fit_score,
-                "updated_at": datetime.now(UTC).isoformat(),
-            }
-        ).eq("job_posting_id", job_posting_id).eq(
-            "target_id", target.id
-        ).execute()
+        update_payload: dict[str, Any] = {
+            "score": fit.fit_score,
+            "axis_scores": fit.axes.model_dump(),
+            "fit_reasoning": fit.reasoning,
+            "scoring_status": "complete",
+            # Stamp the version this grade was computed at so the
+            # re-grade contract holds: a row that's ``complete`` at
+            # ``scored_profile_version >= target.profile_version`` is
+            # skipped on the next poll / backfill. A profile bump (via
+            # bulk_score_for_target) resets status to ``stage2``, which
+            # re-admits the row for grading.
+            "scored_profile_version": target.profile_version,
+            # Keep the recency invariant (recency_score == score when
+            # decay is off). When decay is on the poller's
+            # refresh_recency_scores pass overwrites this with the
+            # age-decayed value later in the same cycle.
+            "recency_score": fit.fit_score,
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        # Only write logistics when the grader emitted it (flag was on
+        # for this call). Skipping the key entirely when None preserves
+        # any prior value if the flag was flipped off after a grade —
+        # rather than blowing away historical logistics data.
+        if fit.logistics is not None:
+            update_payload["logistics_filters"] = fit.logistics.model_dump()
+        supabase.table("scores").update(update_payload).eq(
+            "job_posting_id", job_posting_id
+        ).eq("target_id", target.id).execute()
     except Exception:
         logger.exception(
             "Phase 2 persist failed for job %s / target %s",

@@ -30,6 +30,7 @@ from pydantic import BaseModel, Field
 
 from app.models.experience import OptimizedPayload
 from app.models.llm import LLMResult, Message, ModelId
+from app.models.logistics import LogisticsFilters
 from app.models.targets import JobTarget
 from app.services.llm.client import LLMClient, complete_json
 from app.services.targets.suggest import _build_user_message as _profile_summary
@@ -69,11 +70,18 @@ class JobFitResult(BaseModel):
     stronger model + full JD context, expected within ±20 points of
     Phase 2 — that's the "variance you can trust" the user sees when
     they click in for the deep analysis.
+
+    ``logistics`` is populated only when the LOGISTICS_EXTRACTION_ENABLED
+    feature flag is on AND the prompt asked for it. Older grading runs
+    (and runs with the flag off) leave it None. The field is wholly
+    informational — see ``app/models/logistics.py`` and
+    ``plan-wyrdfold-logistics-chips.md``.
     """
 
     fit_score: int = Field(ge=0, le=100)
     axes: AxisScores
     reasoning: str = Field(max_length=1500)
+    logistics: LogisticsFilters | None = None
 
 
 _SYSTEM_PROMPT = """\
@@ -148,6 +156,53 @@ which is absent from your e-commerce/healthtech profile."
 }
 
 Return ONLY the JSON object. No prose, no markdown, no code fences."""
+
+
+# Optional addendum appended to the system prompt when
+# ``settings.logistics_extraction_enabled`` is True. Kept as a separate
+# string so the base prompt is unchanged in the off case — exact-byte
+# parity matters for the shadow comparison + Anthropic prompt cache.
+# See plan-wyrdfold-logistics-chips.md for the contract.
+_LOGISTICS_PROMPT_ADDENDUM = """\
+
+Additionally, extract a ``logistics`` object capturing structured \
+facts from the JD that power the /jobs filter UI. This is purely \
+informational — it does NOT affect the fit_score or axis scores.
+
+For ``logistics.remote_status``:
+- "remote" if the JD allows full-remote work with no in-office requirement.
+- "hybrid" if any in-office days are required.
+- "onsite" if no remote work is permitted.
+- "unspecified" if the JD is silent or ambiguous. Lean unspecified \
+over guessing — false-positive filter chips are worse than missing ones.
+
+For ``logistics.salary_min`` / ``salary_max``: extract numeric values \
+only when explicitly disclosed ("$150,000 - $180,000"). Normalize "150K" \
+to 150000. ``salary_currency`` is the ISO 4217 code ("USD", "EUR", "GBP"). \
+``salary_unit`` is "year" for annual figures, "hour" for hourly. Null \
+all four fields if no salary band is disclosed.
+
+For ``logistics.location_city`` / ``location_country``: extract the \
+primary office anchor when named ("San Francisco" / "US"). Null both \
+when the role is remote-only with no anchor location named.
+
+Return JSON matching this extended schema:
+
+{
+  "fit_score": 82,
+  "axes": { "title_fit": 95, "skills_fit": 80, "seniority_fit": 85, \
+"domain_fit": 70 },
+  "reasoning": "...",
+  "logistics": {
+    "remote_status": "hybrid",
+    "salary_min": 150000,
+    "salary_max": 180000,
+    "salary_currency": "USD",
+    "salary_unit": "year",
+    "location_city": "San Francisco",
+    "location_country": "US"
+  }
+}"""
 
 
 def _build_user_message(
@@ -225,6 +280,7 @@ async def derive_job_fit(
     jd_text: str,
     model: ModelId = JOB_FIT_MODEL,
     purpose: str = JOB_FIT_PURPOSE,
+    extract_logistics: bool = False,
 ) -> tuple[JobFitResult, LLMResult]:
     """Grade a single (user, target, job) tuple.
 
@@ -236,15 +292,27 @@ async def derive_job_fit(
     Caller is responsible for batching / rate-limiting; this is one
     call per (job, target). The progressive batching policy (first 20
     eagerly, rest in 50-chunk background batches) lives in the poller.
+
+    ``extract_logistics`` toggles the additive logistics prompt addendum.
+    When False the system prompt is byte-identical to the pre-logistics
+    version (matters for Anthropic prompt cache hits + shadow parity).
+    Callers should pass ``settings.logistics_extraction_enabled`` so
+    the global flag controls the behaviour.
     """
     user_message = _build_user_message(
         payload=payload, target=target, job_title=job_title, jd_text=jd_text
     )
 
+    system_prompt = (
+        _SYSTEM_PROMPT + _LOGISTICS_PROMPT_ADDENDUM
+        if extract_logistics
+        else _SYSTEM_PROMPT
+    )
+
     return await complete_json(
         llm,
         model=model,
-        system=_SYSTEM_PROMPT,
+        system=system_prompt,
         messages=[Message(role="user", content=user_message)],
         schema=JobFitResult,
         purpose=purpose,
@@ -254,6 +322,9 @@ async def derive_job_fit(
         # mid-JSON on softer / vaguer CX-style JDs where the model tried
         # harder to find quotable evidence. See plan-wyrdfold-relevance-
         # findings.md "Experiment 3" for the diagnostic chain.
-        max_tokens=1024,
+        # Bumped to 1280 when logistics extraction is on: the additional
+        # JSON section adds ~80-120 output tokens, headroom keeps us
+        # clear of truncation.
+        max_tokens=1280 if extract_logistics else 1024,
         cache_system=True,
     )
