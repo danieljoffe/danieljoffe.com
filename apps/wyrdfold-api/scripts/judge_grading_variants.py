@@ -285,7 +285,7 @@ async def main_async(args: argparse.Namespace) -> None:
             f"LLM_PROVIDER must be 'anthropic' (currently {settings.llm_provider!r})."
         )
 
-    rng = random.Random(args.seed)  # noqa: S311 — research sampling
+    rng = random.Random(args.seed)
     llm = get_llm()
 
     # Per-variant accumulators

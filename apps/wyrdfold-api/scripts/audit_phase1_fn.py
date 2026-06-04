@@ -171,7 +171,7 @@ async def main_async(*, sample_per_target: int, dry_run: bool, seed: int) -> int
         )
 
     # Sampling RNG — not cryptographic; reproducible seed is the goal.
-    rng = random.Random(seed)  # noqa: S311 — research sampling, not crypto
+    rng = random.Random(seed)
     llm = get_llm()
     results: list[dict[str, Any]] = []
     for target in targets:
