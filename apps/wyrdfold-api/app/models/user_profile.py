@@ -1,6 +1,7 @@
 """Pydantic models for user profile — notification + identity fields."""
 
 import re
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
@@ -138,3 +139,53 @@ class ResumeStyleSettingsUpdate(BaseModel):
 
     preset: ResumeStylePreset | None = None
     accent: ResumeStyleAccent | None = None
+
+
+# ---------------------------------------------------------------------------
+# Onboarding completion + step tracking
+# ---------------------------------------------------------------------------
+
+# Mirrors the Step union in apps/wyrdfold/src/app/onboarding/OnboardingWizard.tsx.
+# Step names are hyphenated by FE convention (CSS-class friendly) — keep
+# parity rather than enforcing snake_case at the schema boundary.
+OnboardingStep = Literal[
+    "path-chooser",
+    "identity",
+    "upload-resume",
+    "add-job",
+    "pick-targets",
+    "conversation",
+    "completion",
+]
+
+# Three onboarding paths (see STEPS_BY_PATH in OnboardingWizard.tsx).
+# A = full setup (resume + JD + targets); B = resume + targets;
+# C = conversation + targets.
+OnboardingPath = Literal["A", "B", "C"]
+
+
+class OnboardingStatus(BaseModel):
+    """Read model for the user's onboarding progress.
+
+    A user is considered "onboarded" when ``completed_at`` is non-null.
+    Until then, the dashboard redirects them to the wizard. The wizard
+    consumes ``current_step`` + ``path`` to resume mid-flow (Stage 2
+    of plan-wyrdfold-onboarding-completion-tracking.md; for now the
+    fields are populated but not yet read by the wizard).
+    """
+
+    completed_at: datetime | None = None
+    path: OnboardingPath | None = None
+    current_step: OnboardingStep | None = None
+
+
+class OnboardingStepUpdate(BaseModel):
+    """Write model for PATCH /profile/onboarding/step.
+
+    Both fields are optional — most transitions only update ``current_step``,
+    but ``path`` is set once on the PathChooser → Identity transition.
+    Server treats unset fields as "leave the column alone."
+    """
+
+    path: OnboardingPath | None = None
+    current_step: OnboardingStep | None = None
