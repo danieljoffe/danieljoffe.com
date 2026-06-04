@@ -141,6 +141,8 @@ create unique index target_derivations_label_seniority_version_unique
 
 Cache hit avoids a ~$0.012 Sonnet call. With ~8 lateral suggestions per user and ~3 users picking per week initially, even modest reuse pays for the table size.
 
+**Hard requirement (from `feedback-llm-cache-prompt-version`):** The `prompt_version` column is non-negotiable. Mismatched versions count as cache misses. When meaningfully editing the prompt in `derive_profile_from_label.py`, bump the `PROMPT_VERSION` constant in the service module. Cosmetic edits (typos, whitespace) don't require a bump — judgment call on "could this change outputs?"
+
 ### 3. Reconciled suggestion prompt
 
 Today's split:
@@ -175,6 +177,22 @@ One system prompt with a `## Mode: {mode}` block, three short paragraphs explain
 
 **Why not three separate prompts that share a profile-summary builder?** Tried mentally: the three prompts have ~90% identical guidance ("anchor in evidence", "span industries", "include a stretch") and ~10% mode-specific framing. A `Mode` toggle near the top of the system prompt is the cheapest place to vary the framing without duplicating the rules.
 
+#### Shadow-run rollout (required, from `feedback-prompt-change-shadow-run`)
+
+PR C ships the reconciled prompt **behind a flag**. Default off in production. The reconciliation is a meaningful prompt change (merging two prompts), so a single-PR cut-over is not acceptable.
+
+**Rollout plan baked into PR C:**
+
+1. Add env var `USE_RECONCILED_SUGGESTION_PROMPT` (defaults to `false`).
+2. Wire the shadow path to call **both** prompts in parallel: the legacy one populates the response, the new reconciled one logs to a `suggestion_prompt_comparison` table (or to `cost_logs` with a `shadow=true` marker) for offline analysis.
+3. Run the eval harness comparing old vs new outputs on a fixed set of ≥30 user profiles. Each mode (`onboarding`, `lateral`, `explore`) must be evaluated separately.
+4. **Parity threshold to flip:** Spearman ρ ≥ 0.9 on suggestion-confidence rankings AND top-K (K=5) overlap ≥ 0.8 across modes. If either misses, iterate on the reconciled prompt before flipping — don't lower the bar.
+5. Run shadow for ≥1 week of real production traffic before considering the flip. PR description documents the date of flip-eligibility.
+6. After the flip, leave the legacy code path in for one additional production cycle (rollback margin).
+7. PR D in the queue (CRUD endpoints) uses the reconciled function directly; that's fine because by the time PR D ships, the flag is already on. Sequencing in §10 reflects this dependency.
+
+Acceptance criteria for PR C explicitly include: feature flag exists and defaults off, shadow comparison table exists with at least one week's data before the flip-eligibility date is set, eval-harness output is committed to the PR description.
+
 ### 4. Confidence floor API
 
 Add `?min_confidence=N` (0-100) to the suggestion endpoints. Server-side default: 40. Reasoning: scores 0-39 are aspirational stretches the LLM is told to leave out; 40-69 are real stretches the user might want to see; 70+ are confident matches. A 40 floor matches today's prompt guidance.
@@ -198,6 +216,24 @@ Change:
 - Cards flip "Activate" → "Activating…" → "Active" without blocking the rest of the UI.
 
 Multi-pick = `POST /target-suggestions/activate-batch` with an array of suggestion IDs. Backend fires the activation tasks concurrently (asyncio.gather). User watches all cards flip in parallel.
+
+#### Observability checklist (required, from `feedback-background-task-observability`)
+
+This is a user-visible async task. The three observability requirements are non-negotiable in PR F:
+
+1. **Timeout on the polling endpoint.** `GET /target-suggestions/{id}` returns `status: "timeout"` if the row stays in `activating` for more than 60 seconds without resolving. The FE treats `timeout` exactly like `error` — surfacing a retry button rather than spinning forever.
+2. **Persisted error column.** `target_suggestions.activation_error text` and `activation_errored_at timestamptz` are added in the migration. The background worker writes to these on any failure (cache miss + derive raised, target upsert collision, etc.). The polling endpoint surfaces both fields so the FE can render a meaningful message — not just "something went wrong".
+3. **FE retry path.** Every card in an `error` or `timeout` state renders a Retry button. Retry re-calls the existing `POST /target-suggestions/{id}/activate` — there is no separate "retry" endpoint. The worker idempotently clears `activation_error` + `activation_errored_at` when it starts a fresh attempt.
+
+PR F acceptance criteria must explicitly include "what does the UI look like when the background job fails?" — verified manually before merge.
+
+PR migration for F adds:
+
+```sql
+alter table public.target_suggestions
+  add column if not exists activation_error text,
+  add column if not exists activation_errored_at timestamptz;
+```
 
 ### 6. Cap-collision swap UX
 
@@ -249,12 +285,17 @@ When activation would exceed `MAX_ACTIVE_TARGETS_PER_USER` (currently 5):
 
 Estimated total: ~3-4 days of focused work for backend (A-G), ~2-3 days for frontend (H-J).
 
-## Risks & open questions
+## Risks & remaining open questions
 
-- **Reconciled prompt regression.** Merging two prompts risks degrading onboarding-time suggestions (where users have no current targets and the model has less context). Mitigation: PR C ships behind a feature flag, runs both prompts in shadow for a week, and only switches on parity check.
-- **Cache invalidation.** A user picks the cached "Director of CX Ops" slim shape from 4 months ago; meanwhile the slim-target prompt has improved twice. Mitigation: `prompt_version` in the cache row, bumped any time the prompt changes meaningfully. Mismatched versions = cache miss (and an opportunity to re-derive for one user; result populates a fresh cache row).
-- **Background activation observability.** If the background job fails after enqueueing, the card stays "Activating…" forever. Mitigation: timeout the polling endpoint at 60s and surface an error toast + a retry button; record failures in `target_suggestions.activation_error` for audit.
-- **Supabase realtime vs polling.** Polling is simpler and works fine for the activation use case (small N, short windows). Realtime would feel snappier but adds complexity. Default to polling; revisit if users complain.
+The three risks identified during planning have been **baked into the implementation sections** above as required acceptance criteria — they are no longer "remember to do this" reminders, they are requirements of the PRs that own them:
+
+- **Reconciled prompt regression** → see §3 "Shadow-run rollout (required)". PR C must ship behind a flag with parity threshold + ≥1 week of shadow data before flipping. Sourced from durable feedback `feedback-prompt-change-shadow-run`.
+- **Cache invalidation** → see §2 "Hard requirement". The `prompt_version` column is non-negotiable; mismatched versions = cache miss. Sourced from `feedback-llm-cache-prompt-version`.
+- **Background activation observability** → see §5 "Observability checklist (required)". PR F must ship with timeout, persisted error column, and FE retry path. Sourced from `feedback-background-task-observability`.
+
+Only one judgment call remains:
+
+- **Supabase realtime vs polling for activation status.** Polling is simpler and works fine for this use case (small N, short windows). Realtime would feel snappier but adds Supabase client wiring + state-management complexity. Default to polling in PR F; revisit only if users complain about staleness. Not a hard mitigation — explicit choice.
 
 ## Out of scope (intentionally)
 
