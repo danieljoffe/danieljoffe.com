@@ -691,15 +691,26 @@ async def _poll_one_source(
         # has resolved DB ids. Kept out of the upsert payload because
         # the jobs table doesn't have a column for it.
         phase1_idx_by_external_id: dict[str, int] = {}
+        # Pre-DB drop counters for #845 funnel diagnostics. Order
+        # matches the gate order below — first miss wins, mutually
+        # exclusive. Emitted as a single `poll_funnel` log line at end
+        # of cycle so an operator can grep one source's funnel without
+        # a DB pass.
+        dropped_phase1 = 0
+        dropped_title_prematch = 0
+        dropped_non_us = 0
         for idx, job in enumerate(jobs):
             # Phase 1 IDs are 1-based; the per-target verdict-check
             # below uses the same idx + 1 convention.
             if not _any_target_admits(idx + 1):
+                dropped_phase1 += 1
                 continue
             # Filter by target relevance instead of static keyword list
             if active_targets and not _title_matches_any_target(job.title, active_targets):
+                dropped_title_prematch += 1
                 continue
             if not _is_us_location(job.location_name):
+                dropped_non_us += 1
                 continue
 
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
@@ -1043,6 +1054,31 @@ async def _poll_one_source(
                 logger.exception(
                     "SMS alert dispatch raised for %s", company_name
                 )
+
+        # Funnel diagnostics for #845. One structured line per source per
+        # cycle so an operator can `grep poll_funnel | grep <Company>` in
+        # Railway and read where jobs are dropping pre-DB. The counts
+        # are mutually exclusive — first gate to fire wins per job.
+        per_target_phase1_no = {
+            tid: sum(1 for v in verdicts.values() if not v.promising)
+            for tid, verdicts in phase1_verdicts.items()
+        }
+        logger.info(
+            "poll_funnel source=%s fetched=%d dropped_phase1=%d "
+            "dropped_title_prematch=%d dropped_non_us=%d candidates=%d "
+            "upserted_new=%d upserted_updated=%d archived=%d "
+            "phase1_no_by_target=%s",
+            company_name,
+            len(jobs),
+            dropped_phase1,
+            dropped_title_prematch,
+            dropped_non_us,
+            len(rows_to_upsert),
+            summary["new"],
+            summary["updated"],
+            summary["archived"],
+            per_target_phase1_no or "{}",
+        )
 
     except Exception:
         logger.exception("Poll failed for %s", company_name)

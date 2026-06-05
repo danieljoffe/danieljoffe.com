@@ -43,9 +43,7 @@ describe('OnboardingResetCard', () => {
     const user = userEvent.setup();
     render(<OnboardingResetCard />);
 
-    await user.click(
-      screen.getByRole('button', { name: /Redo onboarding/i })
-    );
+    await user.click(screen.getByRole('button', { name: /Redo onboarding/i }));
 
     expect(window.confirm).toHaveBeenCalled();
     await waitFor(() =>
@@ -63,9 +61,7 @@ describe('OnboardingResetCard', () => {
     const user = userEvent.setup();
     render(<OnboardingResetCard />);
 
-    await user.click(
-      screen.getByRole('button', { name: /Redo onboarding/i })
-    );
+    await user.click(screen.getByRole('button', { name: /Redo onboarding/i }));
 
     expect(global.fetch).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
@@ -79,9 +75,7 @@ describe('OnboardingResetCard', () => {
     const user = userEvent.setup();
     render(<OnboardingResetCard />);
 
-    await user.click(
-      screen.getByRole('button', { name: /Redo onboarding/i })
-    );
+    await user.click(screen.getByRole('button', { name: /Redo onboarding/i }));
 
     await waitFor(() =>
       expect(mockToast).toHaveBeenCalledWith(

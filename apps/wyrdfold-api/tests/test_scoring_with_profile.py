@@ -86,6 +86,57 @@ def test_excluded_for_negative_keyword():
     assert result.score == 0
 
 
+def test_title_negative_still_excludes():
+    """A negative keyword in the TITLE remains a hard exclude (#845)."""
+    result = score_job_with_profile(
+        "Customer Service Agent",
+        "<p>Handle customer tickets. React a plus.</p>",
+        _profile(
+            core={"React": 3},
+            seniority_level=None,
+            negative_keywords=["agent"],
+        ),
+    )
+    assert result.excluded is True
+    assert result.score == 0
+
+
+def test_body_negative_penalizes_but_does_not_exclude():
+    """A negative keyword in the JD *body* is a soft score penalty, not a
+    hard exclude (#845).
+
+    For a leadership target the negatives (agent, specialist, analyst…)
+    describe the team the role manages, so they appear in the body of
+    genuine senior JDs. Excluding on a body mention buried the exact
+    roles the user wanted; we demote it to a score deduction instead.
+    """
+    title = "Director of Customer Experience"
+    body = (
+        "<p>Customer experience leadership. React React React. "
+        "You will mentor each support agent on the team.</p>"
+    )
+    # Filler keywords (absent from the body) raise the score ceiling so
+    # the matched-React score lands mid-range and the -10 penalty is
+    # visible rather than clamped at 100.
+    core = {"React": 3, "Kubernetes": 3, "GraphQL": 3, "Terraform": 3}
+    base = score_job_with_profile(
+        title, body, _profile(core=core, seniority_level=None)
+    )
+    penalized = score_job_with_profile(
+        title,
+        body,
+        _profile(core=core, seniority_level=None, negative_keywords=["agent"]),
+    )
+    # The body negative ("agent") must NOT exclude the posting...
+    assert penalized.excluded is False
+    # ...but it must apply the score penalty...
+    assert penalized.breakdown.negative == -10.0
+    assert base.breakdown.negative == 0.0
+    # ...which lowers the score versus the no-negative baseline.
+    assert penalized.score < base.score
+    assert penalized.score > 0
+
+
 def test_per_keyword_weights_respected():
     profile = _profile(
         core={"React": 3, "jQuery": 1},

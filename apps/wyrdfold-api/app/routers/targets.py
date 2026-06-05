@@ -25,6 +25,7 @@ from app.dependencies import (
     verify_api_key_or_jwt,
 )
 from app.http_client import ResponseTooLargeError, get_with_size_cap
+from app.models.diagnostics import TargetFunnelResponse
 from app.models.schemas import PollResult
 from app.models.targets import (
     AxisWeights,
@@ -45,6 +46,7 @@ from app.models.targets import (
     UserTarget,
     UserTargetWithTarget,
 )
+from app.services.diagnostics.funnel import compute_target_funnel
 from app.services.experience import optimized
 from app.services.extract import (
     ExtractionResult,
@@ -854,6 +856,27 @@ async def get_target_status(
         activation_status=target.activation_status,
         jobs_count=jobs_count,
     )
+
+
+@router.get(
+    "/{target_id}/funnel",
+    response_model=TargetFunnelResponse,
+    dependencies=[Depends(verify_api_key)],
+)
+async def get_target_funnel(
+    target_id: str,
+    supabase: Client = Depends(get_supabase),
+) -> TargetFunnelResponse:
+    """Diagnostic funnel report for one target (#845).
+
+    API-key-only — the response includes per-user list floors and the
+    target's scoring profile, which is operator-facing data, not user
+    surface. Read-only.
+    """
+    try:
+        return compute_target_funnel(supabase, target_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.delete("/{target_id}", response_model=DeleteResponse)
