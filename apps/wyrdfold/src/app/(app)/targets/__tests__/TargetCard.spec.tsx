@@ -140,4 +140,64 @@ describe('TargetCard', () => {
     );
     expect(screen.getByText('Inactive')).toBeInTheDocument();
   });
+
+  it('shows a building indicator and dashes counts while deriving', () => {
+    render(
+      <TargetCard
+        target={makeTarget({ activation_status: 'deriving' })}
+        fitScore={null}
+        fitScoreReasoning={null}
+        isActive={false}
+        onActivate={noop}
+        onDeactivate={noop}
+        onDelete={noop}
+        onViewJobs={noop}
+      />
+    );
+    expect(screen.getByText(/building/i)).toBeInTheDocument();
+    // Category/keyword counts are placeholders until derivation completes.
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText('Inactive')).toBeNull();
+  });
+
+  it('disables Activate in the dropdown while deriving', async () => {
+    const user = userEvent.setup();
+    const onActivate = jest.fn();
+    const { container } = render(
+      <TargetCard
+        target={makeTarget({ activation_status: 'deriving', is_active: false })}
+        fitScore={null}
+        fitScoreReasoning={null}
+        isActive={false}
+        onActivate={onActivate}
+        onDeactivate={noop}
+        onDelete={noop}
+        onViewJobs={noop}
+      />
+    );
+    const trigger = container.querySelector(
+      '[aria-haspopup="menu"]'
+    ) as HTMLElement;
+    await user.click(trigger);
+    const activate = screen.getByRole('menuitem', { name: /activate/i });
+    expect(activate).toHaveAttribute('aria-disabled', 'true');
+    await user.click(activate);
+    expect(onActivate).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a failure state when derivation errored', () => {
+    render(
+      <TargetCard
+        target={makeTarget({ activation_status: 'error' })}
+        fitScore={null}
+        fitScoreReasoning={null}
+        isActive={false}
+        onActivate={noop}
+        onDeactivate={noop}
+        onDelete={noop}
+        onViewJobs={noop}
+      />
+    );
+    expect(screen.getByText(/derivation failed/i)).toBeInTheDocument();
+  });
 });

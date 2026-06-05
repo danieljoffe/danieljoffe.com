@@ -251,16 +251,19 @@ async def create_target(
 )
 async def create_target_from_manual(
     body: TargetFromManual,
+    background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     user_id: str = Depends(get_current_user_id),
 ) -> CreateOrLinkResult:
     """Create-or-link a target from user-typed title + description.
 
-    LLM normalizes the input into a canonical ``TargetSuggestion``, matches
-    against existing targets, and either links the user to the match or
-    creates a new target (with a profile derived from label + experience)
-    and links the user. The user always ends up with a ``user_targets`` row.
+    LLM normalizes the input into a canonical ``TargetSuggestion`` and
+    matches against existing targets — the only inline LLM call. The user
+    is linked immediately and an optimistic ``CreateOrLinkResult`` returns
+    right away; the scoring-profile derivation + fit score run in a
+    BackgroundTask (new targets start in ``deriving`` status). The user
+    always ends up with a ``user_targets`` row.
     """
     doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
@@ -276,6 +279,7 @@ async def create_target_from_manual(
     return await from_input.from_manual(
         supabase,
         llm,
+        background_tasks,
         user_id=user_id,
         label=body.label,
         description=body.description,
@@ -291,17 +295,19 @@ async def create_target_from_manual(
 )
 async def create_target_from_url(
     body: TargetFromUrl,
+    background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     user_id: str = Depends(get_current_user_id),
 ) -> CreateOrLinkResult:
     """Create-or-link a target from a JD URL.
 
-    Validates and fetches the URL, extracts title + JD text, derives a
-    scoring profile via LLM, then matches against existing targets. On
-    match the JD is appended as a reference and the composite profile is
-    re-merged (corpus building); on no match a new target is created. The
-    user is always linked.
+    Validates and fetches the URL, extracts title + JD text, then matches
+    against existing targets by label (no LLM call inline). The user is
+    linked immediately and an optimistic result returns; profile
+    derivation, reference-JD corpus building, profile re-merge, and fit
+    score all run in a BackgroundTask (new targets start in ``deriving``
+    status). The user is always linked.
     """
     doc = optimized.get_latest(supabase, user_id=user_id)
     if doc is None:
@@ -324,6 +330,7 @@ async def create_target_from_url(
     return await from_input.from_url(
         supabase,
         llm,
+        background_tasks,
         user_id=user_id,
         final_url=final_url,
         extracted_title=extracted_title,

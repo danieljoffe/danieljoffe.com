@@ -6,6 +6,7 @@ import { Badge } from '@danieljoffe.com/shared-ui/Badge';
 import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
 import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
+import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
 import { cn } from '@/lib/cn';
 import type { JobTarget } from './types';
 
@@ -63,6 +64,12 @@ export default function TargetCard({
   const detailHref = `/targets/${target.id}`;
   const categoryCount = Object.keys(target.scoring_profile.categories).length;
   const keywordCount = countKeywords(target);
+  // The scoring profile + fit score are derived in a backend BackgroundTask
+  // after creation, so a freshly-added target shows up here before its
+  // profile exists. ``deriving`` drives the pending UI; ``failed`` surfaces
+  // a derivation error so the card isn't stuck spinning forever.
+  const deriving = target.activation_status === 'deriving';
+  const failed = target.activation_status === 'error';
 
   function handleNavigate() {
     router.push(detailHref);
@@ -73,13 +80,17 @@ export default function TargetCard({
       label: 'View jobs',
       icon: <Briefcase className='size-4' aria-hidden />,
       onClick: () => onViewJobs(target.id),
-      disabled: !isActive,
+      // No jobs to view until the target is active *and* its profile exists.
+      disabled: !isActive || deriving,
     },
     {
       label: isActive ? 'Deactivate' : 'Activate',
       icon: <Power className='size-4' aria-hidden />,
       onClick: () =>
         isActive ? onDeactivate(target.id) : onActivate(target.id),
+      // Activating runs the poll pipeline against the scoring profile — wait
+      // for derivation to finish before it can be activated.
+      disabled: deriving && !isActive,
     },
     { label: '', divider: true },
     {
@@ -142,9 +153,13 @@ export default function TargetCard({
 
         <dl className='grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs'>
           <dt className='text-text-tertiary'>Categories</dt>
-          <dd className='text-right text-text-secondary'>{categoryCount}</dd>
+          <dd className='text-right text-text-secondary'>
+            {deriving ? '—' : categoryCount}
+          </dd>
           <dt className='text-text-tertiary'>Keywords</dt>
-          <dd className='text-right text-text-secondary'>{keywordCount}</dd>
+          <dd className='text-right text-text-secondary'>
+            {deriving ? '—' : keywordCount}
+          </dd>
           <dt className='text-text-tertiary'>Updated</dt>
           <dd className='text-right text-text-secondary'>
             {new Date(target.updated_at).toLocaleDateString()}
@@ -153,17 +168,32 @@ export default function TargetCard({
 
         <hr className='-mx-4 border-border' />
 
-        <div className='flex justify-end'>
-          <span className='inline-flex items-center gap-1.5 text-xs text-text-secondary'>
-            <span
-              className={cn(
-                'inline-block size-2 rounded-full',
-                isActive ? 'bg-success' : 'bg-text-tertiary'
-              )}
-              aria-hidden
-            />
-            {isActive ? 'Active' : 'Inactive'}
-          </span>
+        <div className='flex justify-end' aria-live='polite'>
+          {deriving ? (
+            <span className='inline-flex items-center gap-1.5 text-xs text-text-secondary'>
+              <Spinner size='sm' aria-label='Building scoring profile' />
+              Building…
+            </span>
+          ) : failed ? (
+            <span className='inline-flex items-center gap-1.5 text-xs text-error'>
+              <span
+                className='inline-block size-2 rounded-full bg-error'
+                aria-hidden
+              />
+              Derivation failed
+            </span>
+          ) : (
+            <span className='inline-flex items-center gap-1.5 text-xs text-text-secondary'>
+              <span
+                className={cn(
+                  'inline-block size-2 rounded-full',
+                  isActive ? 'bg-success' : 'bg-text-tertiary'
+                )}
+                aria-hidden
+              />
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
