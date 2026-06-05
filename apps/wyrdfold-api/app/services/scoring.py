@@ -391,6 +391,9 @@ def score_job_with_profile(
 
     Negatives only count in requirements sections and the title — a
     negative keyword in "About Us" or "Benefits" is not a disqualifier.
+    A negative in the title is a hard exclude; a negative in the body is
+    a soft score penalty only (#845) — body mentions describe the team a
+    senior role manages, not the role's own tier.
 
     Title gets a 2x boost applied as a high-weight section.
 
@@ -474,22 +477,33 @@ def score_job_with_profile(
         breakdown.role_titles += role_title_points
         all_matched.extend(role_title_matches)
 
-    # ---- Negative keywords (only in title + requirements sections) ----
+    # ---- Negative keywords ----
+    # Title matches are a hard exclude — a negative token in the job
+    # title (e.g. "Customer Service Representative") is a strong signal
+    # the role is the wrong tier and should never surface.
+    #
+    # Body matches (requirements/default sections) are only a *soft* score
+    # penalty, NOT a hard exclude (#845). For a leadership target the
+    # negatives (agent, representative, specialist, analyst, coordinator…)
+    # are precisely the titles of the team the role manages, so they
+    # appear in the body of nearly every genuine senior JD. Hard-excluding
+    # on a body mention buried the exact roles the user wanted — and
+    # overrode both the Phase-1 ``promising`` verdict and the Phase-2 fit
+    # score. Demoting to a penalty lets the score sort them naturally.
     negative_sections = {"requirements", "default"}
     for keyword in _effective_negative_keywords(profile):
-        # Check title
+        # Check title (hard exclude)
         if _keyword_or_alias_in_text(keyword, title_lower):
             breakdown.negative += profile.negative.weight
             excluded = True
             continue
 
-        # Check requirements-type sections only
+        # Check requirements-type sections only (soft penalty, no exclude)
         for section in parsed.sections:
             if section.name in negative_sections and _keyword_or_alias_in_text(
                 keyword, section.text_lower
             ):
                 breakdown.negative += profile.negative.weight
-                excluded = True
                 break
 
     # ---- Seniority-tier penalty ----
