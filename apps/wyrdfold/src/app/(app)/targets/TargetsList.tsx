@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Sparkles } from 'lucide-react';
 import { Badge } from '@danieljoffe.com/shared-ui/Badge';
@@ -32,6 +32,25 @@ interface PendingTarget {
 
 interface TargetsListProps {
   initialTargets: UserTargetWithTarget[];
+}
+
+/** Poll cadence + cap for the deriving-target refresh loop. */
+const DERIVE_POLL_INTERVAL_MS = 2500;
+const DERIVE_POLL_MAX_ATTEMPTS = 40; // ~100s ceiling; derivation is 5-9s
+
+/**
+ * A just-created target's scoring profile and fit score are derived in a
+ * backend BackgroundTask, so the optimistic response lands before they
+ * exist. "Still deriving" = the profile is being built (`deriving` status)
+ * or the per-user fit score hasn't been written yet. `error` is terminal —
+ * the card surfaces the failure rather than polling forever.
+ */
+function isDeriving(entry: UserTargetWithTarget): boolean {
+  if (entry.target.activation_status === 'error') return false;
+  return (
+    entry.target.activation_status === 'deriving' ||
+    entry.user_target.fit_score === null
+  );
 }
 
 export default function TargetsList({ initialTargets }: TargetsListProps) {
@@ -128,6 +147,80 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
 
   const [pendingTargets, setPendingTargets] = useState<PendingTarget[]>([]);
 
+  // Target ids whose profile/fit score is still being derived in the
+  // background. Seeded from create/link responses below, and from any
+  // target the server reports as `deriving` (so a reload mid-derivation
+  // resumes polling). The effect below polls each until it settles.
+  const [derivingIds, setDerivingIds] = useState<Set<string>>(() => new Set());
+
+  const pollKey = useMemo(() => {
+    const ids = new Set(derivingIds);
+    for (const t of targets) {
+      if (t.target.activation_status === 'deriving') ids.add(t.target.id);
+    }
+    return [...ids].sort().join(',');
+  }, [derivingIds, targets]);
+
+  useEffect(() => {
+    if (!pollKey) return;
+    const ids = pollKey.split(',');
+    let cancelled = false;
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const settle = (id: string) =>
+      setDerivingIds(prev => {
+        if (!prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+
+    const tick = async () => {
+      attempts += 1;
+      const results = await Promise.all(
+        ids.map(async id => {
+          try {
+            const res = await fetch(`/api/targets/${id}/user-target`);
+            if (!res.ok) return null;
+            return (await res.json()) as UserTargetWithTarget;
+          } catch {
+            // Transient network error — try again on the next tick.
+            return null;
+          }
+        })
+      );
+      if (cancelled) return;
+
+      const byId = new Map(
+        results
+          .filter((e): e is UserTargetWithTarget => e !== null)
+          .map(e => [e.target.id, e])
+      );
+      // Reflect the latest server state on each card (profile counts,
+      // fit-score badge, status indicator).
+      setTargets(prev => prev.map(t => byId.get(t.target.id) ?? t));
+      for (const [id, entry] of byId) {
+        if (!isDeriving(entry)) settle(id);
+      }
+
+      if (attempts >= DERIVE_POLL_MAX_ATTEMPTS) {
+        ids.forEach(settle);
+        // Backstop: pull authoritative state in case a poll was missed.
+        router.refresh();
+        return;
+      }
+      // Schedule the next poll only after this one resolves (no overlap).
+      timer = setTimeout(() => void tick(), DERIVE_POLL_INTERVAL_MS);
+    };
+
+    timer = setTimeout(() => void tick(), DERIVE_POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [pollKey, router]);
+
   const runCreate = useCallback(
     async (
       endpoint: '/api/targets/from-manual' | '/api/targets/from-url',
@@ -166,10 +259,18 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         // Use the response directly so the new card shows even if /mine
         // is slow or fails. Replace any existing entry with the same
         // target id (covers the was_matched=true relink path).
+        const entry = {
+          user_target: result.user_target,
+          target: result.target,
+        };
         setTargets(prev => [
-          { user_target: result.user_target, target: result.target },
+          entry,
           ...prev.filter(t => t.target.id !== result.target.id),
         ]);
+        // Profile + fit score derive in the background — poll until ready.
+        if (isDeriving(entry)) {
+          setDerivingIds(prev => new Set(prev).add(entry.target.id));
+        }
       } catch (e) {
         toast({
           variant: 'error',
@@ -267,6 +368,9 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
           entry,
           ...prev.filter(t => t.target.id !== entry.target.id),
         ]);
+        if (isDeriving(entry)) {
+          setDerivingIds(prev => new Set(prev).add(entry.target.id));
+        }
       } catch (e) {
         toast({
           variant: 'error',
