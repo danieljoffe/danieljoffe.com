@@ -1,7 +1,7 @@
 """OpenRouter-backed LLMClient.
 
 PR A of plan-wyrdfold-openrouter-migration.md. The OpenRouter API at
-https://openrouter.ai/api/v1 exposes a fully Anthropic-compatible
+https://openrouter.ai/api/v1/messages exposes a fully Anthropic-compatible
 /messages endpoint — including prompt caching (cache_control:
 ephemeral), tool-use forced calls, and streaming — using the same
 shape the Anthropic SDK speaks natively.
@@ -31,7 +31,11 @@ from __future__ import annotations
 from app.models.llm import ModelId
 from app.services.llm.anthropic_client import AnthropicLLMClient
 
-_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+# Anthropic SDK appends "/v1/messages" to base_url internally. Omit the
+# /v1 here or we'd hit /api/v1/v1/messages (404). OpenRouter's docs show
+# the full path with /v1 because they're documenting the raw HTTP path,
+# not the SDK's base_url field.
+_OPENROUTER_BASE_URL = "https://openrouter.ai/api"
 
 # Map our internal ModelId to OpenRouter's namespaced slugs. OR uses
 # dotted version numbers (4.6 not 4-6); the upstream API call passes

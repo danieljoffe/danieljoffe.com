@@ -47,6 +47,18 @@ def test_constructor_points_sdk_at_openrouter_base_url() -> None:
     assert _OPENROUTER_BASE_URL in base
 
 
+def test_base_url_does_not_include_v1_segment() -> None:
+    """The Anthropic SDK appends '/v1/messages' to base_url internally.
+    Reason: setting base_url='https://openrouter.ai/api/v1' produced
+    requests to '/api/v1/v1/messages' (404) in production. The base
+    must stop at '/api' so the SDK's append yields '/api/v1/messages'.
+    """
+    assert not _OPENROUTER_BASE_URL.rstrip("/").endswith("/v1"), (
+        "OpenRouter base_url must NOT include '/v1' — the Anthropic SDK "
+        "appends '/v1/messages' itself. Double-/v1 causes a silent 404."
+    )
+
+
 def test_anthropic_client_default_base_url_is_unaffected() -> None:
     """Regression: the new base_url constructor knob has a None default
     so non-OR callers still hit the Anthropic endpoint."""
