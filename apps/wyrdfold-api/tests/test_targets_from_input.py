@@ -17,6 +17,7 @@ orchestration — the underlying pieces have their own dedicated tests.
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import MagicMock
@@ -387,6 +388,40 @@ async def test_derive_manual_target_bg_marks_error_on_failure(
     assert stub_crud.by_name("link") == []
 
 
+@pytest.mark.asyncio
+async def test_derive_manual_target_bg_marks_error_on_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+    stub_llm_helpers: _Recorder,
+    stub_crud: _Recorder,
+) -> None:
+    """A derive that exceeds the timeout is cancelled and flips to 'error'."""
+    supabase = MagicMock()
+    # Shrink the ceiling so the test doesn't actually wait.
+    monkeypatch.setattr(from_input, "DERIVATION_TIMEOUT_S", 0.05)
+
+    async def hang(llm, *, label, payload):  # type: ignore[no-untyped-def]
+        await asyncio.sleep(1)
+        raise AssertionError("should have timed out")
+
+    monkeypatch.setattr(from_input, "derive_profile_from_label", hang)
+
+    await from_input.derive_manual_target_bg(
+        supabase,
+        MagicMock(),
+        user_id="user-1",
+        target_id="new",
+        label="Senior Frontend Engineer",
+        payload=OptimizedPayload(),
+    )
+
+    update_bodies = [c["body"] for c in stub_crud.by_name("update")]
+    assert any(b.activation_status == "error" for b in update_bodies)
+    # Timed out before any profile update / fit score landed.
+    assert all(b.activation_status != "idle" for b in update_bodies)
+    assert "fit_score" not in stub_llm_helpers.names()
+    assert stub_crud.by_name("link") == []
+
+
 # ---- from_url: inline path --------------------------------------------------
 
 
@@ -624,4 +659,37 @@ async def test_derive_url_target_bg_marks_error_on_failure(
 
     update_bodies = [c["body"] for c in stub_crud.by_name("update")]
     assert any(b.activation_status == "error" for b in update_bodies)
+    assert stub_crud.by_name("link") == []
+
+
+@pytest.mark.asyncio
+async def test_derive_url_target_bg_marks_error_on_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+    stub_llm_helpers: _Recorder,
+    stub_crud: _Recorder,
+) -> None:
+    """A JD derive that exceeds the timeout flips the target to 'error'."""
+    supabase = MagicMock()
+    monkeypatch.setattr(from_input, "DERIVATION_TIMEOUT_S", 0.05)
+
+    async def hang(llm, *, jd_text):  # type: ignore[no-untyped-def]
+        await asyncio.sleep(1)
+        raise AssertionError("should have timed out")
+
+    monkeypatch.setattr(from_input, "derive_profile_from_jd", hang)
+
+    await from_input.derive_url_target_bg(
+        supabase,
+        MagicMock(),
+        user_id="user-1",
+        target_id="new",
+        jd_text="x" * 200,
+        final_url="https://example.com/jobs/abc",
+        payload=OptimizedPayload(),
+        is_new=True,
+    )
+
+    update_bodies = [c["body"] for c in stub_crud.by_name("update")]
+    assert any(b.activation_status == "error" for b in update_bodies)
+    assert all(b.activation_status != "idle" for b in update_bodies)
     assert stub_crud.by_name("link") == []
