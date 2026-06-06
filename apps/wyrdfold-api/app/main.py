@@ -28,6 +28,7 @@ from app.routers import (
 )
 from app.scheduler import start_scheduler_if_enabled
 from app.services.llm.cost_log_buffer import buffer as cost_log_buffer
+from app.services.llm.errors import LLMServiceError
 from app.supabase_pool import close_supabase, get_supabase_pool, init_supabase
 
 _log = logging.getLogger("app")
@@ -157,6 +158,43 @@ async def _log_slow_requests(
             duration_ms,
         )
     return response
+
+
+@app.exception_handler(LLMServiceError)
+async def _llm_service_error_handler(
+    request: Request, exc: LLMServiceError
+) -> JSONResponse:
+    """Translate typed LLM provider failures into a user-safe JSON
+    response. Sentry breadcrumb keeps the upstream status + provider
+    reason searchable without exposing them to end users.
+
+    See ``app/services/llm/errors.py`` for the categorization. All
+    cases default to HTTP 503 with a friendly ``detail`` string the
+    FE can render via ``extractApiError`` verbatim — no vendor
+    messages (e.g. OpenRouter's ``"Insufficient credits..."``) ever
+    reach the user.
+    """
+    _log.warning(
+        "llm_service_error path=%s reason=%s upstream_status=%s",
+        request.url.path,
+        exc.reason,
+        exc.upstream_status,
+    )
+    # ``capture_exception`` is a no-op when Sentry isn't initialized,
+    # so the import is cheap and safe in tests.
+    try:
+        import sentry_sdk
+
+        sentry_sdk.set_tag("llm.reason", exc.reason)
+        if exc.upstream_status is not None:
+            sentry_sdk.set_tag("llm.upstream_status", str(exc.upstream_status))
+        sentry_sdk.capture_exception(exc)
+    except ImportError:  # pragma: no cover
+        pass
+    return JSONResponse(
+        status_code=exc.http_status,
+        content={"detail": exc.user_message, "code": exc.reason},
+    )
 
 
 @app.exception_handler(Exception)
