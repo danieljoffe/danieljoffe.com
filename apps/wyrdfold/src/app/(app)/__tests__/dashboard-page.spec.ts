@@ -63,10 +63,13 @@ describe('WyrdfoldDashboard route', () => {
     expect(mockRedirect).toHaveBeenCalledWith('/onboarding');
   });
 
-  it('belt-and-suspenders: redirects + Sentry warning when flag is set but prose is missing', async () => {
-    // Data drift: someone (support? bug?) set the flag without prose
-    // existing. Surface to Sentry so we notice; bounce the user back
-    // to onboarding to recover.
+  it('renders the empty-state dashboard + emits Sentry warning when flag is set but prose is missing', async () => {
+    // Data drift OR legitimate Path A/B user who skipped the resume
+    // step (e.g. upload failed mid-flow). Surface to Sentry so we
+    // notice; render the dashboard's existing empty state ("Set up
+    // profile" CTA) rather than bouncing back to /onboarding — the
+    // wizard restarts at path-chooser, so bouncing creates a redirect
+    // loop for any user without prose.
     mockFetch
       .mockResolvedValueOnce({
         completed_at: '2026-06-01T00:00:00Z',
@@ -78,13 +81,14 @@ describe('WyrdfoldDashboard route', () => {
       .mockResolvedValueOnce({ prose: null }) // ← prose missing
       .mockResolvedValue({ targets: [], postings: [], total: 0 });
 
-    await expect(WyrdfoldDashboard()).rejects.toThrow('REDIRECT:/onboarding');
+    const result = await WyrdfoldDashboard();
 
     expect(mockSentryCapture).toHaveBeenCalledWith(
       'dashboard:onboarding_flag_set_but_no_prose',
       expect.objectContaining({ level: 'warning' })
     );
-    expect(mockRedirect).toHaveBeenCalledWith('/onboarding');
+    expect(mockRedirect).not.toHaveBeenCalled();
+    expect(result).toBeDefined();
   });
 
   it('renders the dashboard when the flag is set and prose exists', async () => {

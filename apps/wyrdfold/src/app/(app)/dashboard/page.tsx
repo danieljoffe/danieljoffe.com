@@ -76,17 +76,21 @@ export default async function WyrdfoldDashboard() {
     ),
   ]);
 
-  // Belt-and-suspenders: flag is set but the data isn't there. Could
-  // happen if a support action cleared prose without clearing the
-  // flag, or a bug in the wizard set the flag prematurely. Surface
-  // to Sentry so we notice, and route the user back to /onboarding
-  // rather than render a broken empty dashboard.
+  // Flag is set but prose isn't there. Causes: a Path A/B user who
+  // skipped the resume step (or whose upload failed mid-flow — see
+  // the OpenRouter 402 incident), or data drift from a support action.
+  // We still surface to Sentry so we notice the latter, but we no
+  // longer bounce back to /onboarding: the OnboardingWizard always
+  // restarts at ``path-chooser``, which means any user who lands here
+  // legitimately (resume skipped) gets trapped in a redirect loop.
+  // DashboardPage's ``!hasProfile`` branch already renders a graceful
+  // empty state with a "Set up profile" CTA, which is what the user
+  // actually needs.
   const proseAuthored = proseRes != null && hasProse(proseRes);
   if (!proseAuthored) {
     Sentry.captureMessage('dashboard:onboarding_flag_set_but_no_prose', {
       level: 'warning',
     });
-    redirect('/onboarding');
   }
 
   const counts: Record<string, number> = {};
