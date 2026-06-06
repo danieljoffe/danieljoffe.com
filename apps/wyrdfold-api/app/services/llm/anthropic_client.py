@@ -22,7 +22,7 @@ import time
 from collections.abc import AsyncIterator
 from typing import Any, cast
 
-from anthropic import AsyncAnthropic
+from anthropic import APIConnectionError, APIStatusError, APITimeoutError, AsyncAnthropic
 
 from app.models.llm import (
     LLMResult,
@@ -32,6 +32,10 @@ from app.models.llm import (
     LLMUsage,
     Message,
     ModelId,
+)
+from app.services.llm.errors import (
+    LLMUpstreamUnavailableError,
+    translate_api_status_error,
 )
 from app.services.llm.pricing import calculate_cost
 
@@ -68,6 +72,19 @@ class AnthropicLLMClient:
         """
         return model
 
+    @staticmethod
+    def _translate_or_reraise(exc: APIStatusError) -> None:
+        """Convert an SDK status error into a typed LLM service error
+        when the status maps to one of our user-facing transient
+        categories (402/429/5xx/auth). Otherwise re-raise so the
+        unhandled-exception handler logs it as a 500 — those status
+        codes indicate a bug in our request, not a transient outage.
+        """
+        translated = translate_api_status_error(exc)
+        if translated is None:
+            raise exc
+        raise translated from exc
+
     async def complete(
         self,
         *,
@@ -102,12 +119,18 @@ class AnthropicLLMClient:
         ]
 
         start = time.perf_counter()
-        response = await self._client.messages.create(
-            model=cast(Any, self._resolve_model(model)),
-            max_tokens=max_tokens,
-            system=system_param,
-            messages=cast(Any, api_messages),
-        )
+        try:
+            response = await self._client.messages.create(
+                model=cast(Any, self._resolve_model(model)),
+                max_tokens=max_tokens,
+                system=system_param,
+                messages=cast(Any, api_messages),
+            )
+        except APIStatusError as exc:
+            self._translate_or_reraise(exc)
+            raise  # pragma: no cover - _translate_or_reraise always raises
+        except (APIConnectionError, APITimeoutError) as exc:
+            raise LLMUpstreamUnavailableError() from exc
         latency_ms = int((time.perf_counter() - start) * 1000)
 
         # Join every text block. Thinking / tool-use blocks are not expected
@@ -182,14 +205,20 @@ class AnthropicLLMClient:
         tool_choice: dict[str, Any] = {"type": "tool", "name": tool_name}
 
         start = time.perf_counter()
-        response = await self._client.messages.create(
-            model=cast(Any, self._resolve_model(model)),
-            max_tokens=max_tokens,
-            system=system_param,
-            messages=cast(Any, api_messages),
-            tools=cast(Any, [tool]),
-            tool_choice=cast(Any, tool_choice),
-        )
+        try:
+            response = await self._client.messages.create(
+                model=cast(Any, self._resolve_model(model)),
+                max_tokens=max_tokens,
+                system=system_param,
+                messages=cast(Any, api_messages),
+                tools=cast(Any, [tool]),
+                tool_choice=cast(Any, tool_choice),
+            )
+        except APIStatusError as exc:
+            self._translate_or_reraise(exc)
+            raise  # pragma: no cover - _translate_or_reraise always raises
+        except (APIConnectionError, APITimeoutError) as exc:
+            raise LLMUpstreamUnavailableError() from exc
         latency_ms = int((time.perf_counter() - start) * 1000)
 
         # Find the tool_use block. The forced tool_choice guarantees one
@@ -262,17 +291,27 @@ class AnthropicLLMClient:
         ]
 
         start = time.perf_counter()
-        async with self._client.messages.stream(
-            model=cast(Any, self._resolve_model(model)),
-            max_tokens=max_tokens,
-            system=system_param,
-            messages=cast(Any, api_messages),
-        ) as stream:
-            async for text in stream.text_stream:
-                if text:
-                    yield LLMStreamDelta(text=text)
+        # SDK raises APIStatusError on the initial HTTP handshake (which
+        # surfaces from ``async with .stream(...)``) and may raise mid-
+        # stream on chunked-transfer errors. Wrap the whole region so
+        # either path translates uniformly.
+        try:
+            async with self._client.messages.stream(
+                model=cast(Any, self._resolve_model(model)),
+                max_tokens=max_tokens,
+                system=system_param,
+                messages=cast(Any, api_messages),
+            ) as stream:
+                async for text in stream.text_stream:
+                    if text:
+                        yield LLMStreamDelta(text=text)
 
-            final_message = await stream.get_final_message()
+                final_message = await stream.get_final_message()
+        except APIStatusError as exc:
+            self._translate_or_reraise(exc)
+            raise  # pragma: no cover - _translate_or_reraise always raises
+        except (APIConnectionError, APITimeoutError) as exc:
+            raise LLMUpstreamUnavailableError() from exc
 
         latency_ms = int((time.perf_counter() - start) * 1000)
 
