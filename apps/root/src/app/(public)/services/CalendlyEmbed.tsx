@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 import Button from '@/components/Button';
 import { analytics } from '@/lib/analytics';
 import { CALENDLY_URL } from '@/utils/constants';

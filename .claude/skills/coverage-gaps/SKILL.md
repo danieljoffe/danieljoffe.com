@@ -216,6 +216,6 @@ Output findings grouped by category:
 - Quality audit is read-only — report issues, never auto-fix existing tests.
 - Only scan `.tsx` component files and `.ts` hook files for coverage — skip utilities, types, constants.
 - Skip files that are purely type definitions or re-exports.
-- For shared-ui stories: follow the `@danieljoffe.com/shared-ui` Storybook structure.
+- For shared-ui stories: follow the `@danieljoffe/shared-ui` Storybook structure.
 - For shared-ui specs: import from `'./ComponentName'`, use `@testing-library/react`.
 - Report mode (no `--fix`) is read-only — do not create or modify any files.

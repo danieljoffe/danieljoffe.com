@@ -8,10 +8,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { StatsCard } from '@danieljoffe.com/shared-ui/StatsCard';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+} from '@danieljoffe/shared-ui/Card';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { StatsCard } from '@danieljoffe/shared-ui/StatsCard';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { useInsights, type InsightsInitial } from '@/hooks/useInsights';
 import { cn } from '@/lib/cn';

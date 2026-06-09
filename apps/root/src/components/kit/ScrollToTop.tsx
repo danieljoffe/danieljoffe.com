@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
+import { Kbd } from '@danieljoffe/shared-ui/Kbd';
 import { cn } from '@/lib/cn';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 

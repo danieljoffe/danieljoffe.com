@@ -13,10 +13,10 @@ import {
   Star,
   Target,
 } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import type { JobPosting } from './jobs/types';
 

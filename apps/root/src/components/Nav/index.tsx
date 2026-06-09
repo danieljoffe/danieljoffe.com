@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 import MobileNav from './MobileNav';
 
 const subscribe = () => () => {};

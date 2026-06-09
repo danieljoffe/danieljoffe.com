@@ -1,7 +1,7 @@
 import { Check, ArrowUpRight } from 'lucide-react';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Divider } from '@danieljoffe.com/shared-ui/Divider';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Divider } from '@danieljoffe/shared-ui/Divider';
 import {
   MetricsDashboard,
   type Metric,

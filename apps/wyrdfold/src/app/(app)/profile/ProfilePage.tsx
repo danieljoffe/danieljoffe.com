@@ -2,19 +2,19 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileText, Layers, RefreshCw, Sparkles, Upload } from 'lucide-react';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Alert } from '@danieljoffe/shared-ui/Alert';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+} from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { ProgressBar } from '@danieljoffe/shared-ui/ProgressBar';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { consumeSse } from '@/lib/consumeSse';
 import { extractApiError } from '@/lib/extractApiError';

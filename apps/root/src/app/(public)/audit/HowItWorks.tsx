@@ -1,5 +1,5 @@
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Section } from '@danieljoffe/shared-ui/Section';
 import { Step } from '@/components/kit';
 
 const steps = [

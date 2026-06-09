@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 
 const Form = dynamic(() => import('./Contact/Form'), {
   ssr: false,

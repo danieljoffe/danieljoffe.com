@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { friendlyErrorMessage } from './friendlyErrorMessage';
 

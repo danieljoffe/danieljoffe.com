@@ -1,7 +1,7 @@
 'use client';
 
-import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Badge, type BadgeVariant } from '@danieljoffe/shared-ui/Badge';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 import { Pagination } from '@/components/kit';
 import { formatDate } from '@/lib/dateFormatting';
 import { useAdminTableFetch } from '@/hooks/useAdminTableFetch';

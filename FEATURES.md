@@ -86,7 +86,7 @@
 
 ## UI & Components
 
-### Shared UI Library (`@danieljoffe.com/shared-ui`)
+### Shared UI Library (`@danieljoffe/shared-ui`)
 
 40+ components: Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Container, Divider, Dropdown, Grid/GridItem, Input, Loading, Modal, PageContainer, Pagination, ProgressBar, Section, Select, Sidebar, Skeleton, Spacer, Spinner, Stack, StatsCard, Switch, Table, Tabs, Textarea, ThemeProvider, ThemeToggle, Toast, Tooltip
 

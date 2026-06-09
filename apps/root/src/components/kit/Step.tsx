@@ -1,5 +1,5 @@
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { cn } from '@/lib/cn';
 
 interface StepProps {

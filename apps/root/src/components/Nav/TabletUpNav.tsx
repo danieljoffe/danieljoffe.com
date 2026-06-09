@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, User, BookOpen } from 'lucide-react';
 import Image from 'next/image';
-import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
+import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import {

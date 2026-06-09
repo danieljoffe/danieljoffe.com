@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal } from '@danieljoffe.com/shared-ui/Modal';
+import { Modal } from '@danieljoffe/shared-ui/Modal';
 import ConversationChat from './ConversationChat';
 
 interface ConversationChatModalProps {

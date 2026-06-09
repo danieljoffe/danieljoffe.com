@@ -47,7 +47,7 @@ pnpm affected                      # Run lint, test, build, typecheck, e2e on af
 
 ```bash
 pnpm nx storybook root             # Start Storybook for root app
-pnpm nx storybook @danieljoffe.com/shared-ui  # Start Storybook for UI library
+pnpm nx storybook @danieljoffe/shared-ui  # Start Storybook for UI library
 pnpm chromatic:ui                  # Push shared-ui Storybook to Chromatic
 ```
 

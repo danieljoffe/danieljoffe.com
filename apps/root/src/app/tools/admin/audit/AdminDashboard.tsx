@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import dynamic from 'next/dynamic';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import StatsRow from './StatsRow';
 import ScansTable from './ScansTable';
 import LeadsTable from './LeadsTable';

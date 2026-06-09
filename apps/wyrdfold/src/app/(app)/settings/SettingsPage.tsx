@@ -6,14 +6,14 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
-import { Select } from '@danieljoffe.com/shared-ui/Select';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Switch } from '@danieljoffe.com/shared-ui/Switch';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+} from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Input } from '@danieljoffe/shared-ui/Input';
+import { Select } from '@danieljoffe/shared-ui/Select';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Switch } from '@danieljoffe/shared-ui/Switch';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 import OnboardingResetCard from './OnboardingResetCard';

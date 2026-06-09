@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { Moon, Sun, Monitor } from 'lucide-react';
-import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
+import { Kbd } from '@danieljoffe/shared-ui/Kbd';
 import { useTheme } from '@/state/Theme/ThemeProvider';
 import { analytics } from '@/lib/analytics';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';

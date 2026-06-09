@@ -34,7 +34,7 @@ additions. The result was a layered mess:
 Every wrapper created a maintenance burden: parallel variant sets to keep in sync,
 duplicated type definitions, and confusion about where to import from. Consumers
 had to know which layer owned which variant. Pages mixed `@/components/kit` and
-`@danieljoffe.com/shared-ui` imports inconsistently.
+`@danieljoffe/shared-ui` imports inconsistently.
 
 ## The Principles
 
@@ -99,8 +99,8 @@ const variantStyles: Record<TextVariant, string> = {
 With the wrappers gone, every consumer imports directly from shared-ui:
 
 ```tsx
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 ```
 
 No kit layer. No delegation. No variant sets to keep in sync.

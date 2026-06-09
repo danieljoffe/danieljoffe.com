@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { AtSign, Download, Github, Linkedin, ChevronRight } from 'lucide-react';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,

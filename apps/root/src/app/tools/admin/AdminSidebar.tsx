@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { Gauge, LogOut } from 'lucide-react';
-import { Sidebar, type SidebarItem } from '@danieljoffe.com/shared-ui/Sidebar';
+import { Sidebar, type SidebarItem } from '@danieljoffe/shared-ui/Sidebar';
 import Button from '@/components/Button';
 
 const NAV_ITEMS: (SidebarItem & { href: string })[] = [

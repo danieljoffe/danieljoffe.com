@@ -28,7 +28,7 @@ Compare these two versions of the same imports:
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
 import { useState } from 'react';
-import { Badge } from '@danieljoffe.com/shared-ui';
+import { Badge } from '@danieljoffe/shared-ui';
 import type { Metadata } from 'next';
 ```
 
@@ -36,7 +36,7 @@ import type { Metadata } from 'next';
 // After: layered from external → internal → local
 import type { Metadata } from 'next';
 import { useState } from 'react';
-import { Badge } from '@danieljoffe.com/shared-ui';
+import { Badge } from '@danieljoffe/shared-ui';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
 ```

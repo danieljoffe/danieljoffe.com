@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
+import { Section } from '@danieljoffe/shared-ui/Section';
 import { getAllTags, getTagCounts, tagToSlug } from '@/lib/tags';
 import Button from '@/components/Button';
 

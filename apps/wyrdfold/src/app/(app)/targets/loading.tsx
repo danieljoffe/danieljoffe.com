@@ -1,7 +1,7 @@
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 
 export default function FittedTargetsLoading() {
   return (

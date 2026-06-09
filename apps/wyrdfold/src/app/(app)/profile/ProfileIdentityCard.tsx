@@ -6,10 +6,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+} from '@danieljoffe/shared-ui/Card';
+import { Input } from '@danieljoffe/shared-ui/Input';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
 

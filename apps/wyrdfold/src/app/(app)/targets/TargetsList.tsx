@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Sparkles } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';

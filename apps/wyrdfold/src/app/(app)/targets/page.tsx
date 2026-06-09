@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 import Button from '@/components/Button';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import { hasProse, type ProseResponse } from '../profile/types';

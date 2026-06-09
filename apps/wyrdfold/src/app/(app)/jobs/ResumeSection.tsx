@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';

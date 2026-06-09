@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { useModal } from '@/state/Modal/ModalProvider';
 import Button from '@/components/Button';
 import { useFocusTrap } from '@/hooks/useFocusTrap';

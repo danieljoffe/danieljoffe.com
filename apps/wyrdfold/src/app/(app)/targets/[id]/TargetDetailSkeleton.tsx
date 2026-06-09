@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@danieljoffe.com/shared-ui/Card';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Card, CardContent, CardHeader } from '@danieljoffe/shared-ui/Card';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 
 function SectionCardSkeleton({ rows = 1 }: { rows?: number }) {
   return (

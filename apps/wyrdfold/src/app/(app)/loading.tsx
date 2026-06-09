@@ -1,4 +1,4 @@
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 
 export default function AppLoading() {
   return (

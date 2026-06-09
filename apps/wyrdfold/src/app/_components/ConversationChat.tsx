@@ -2,12 +2,12 @@
 
 import { useState, useCallback, useEffect, useRef, useId } from 'react';
 import { Send } from 'lucide-react';
-import { Card } from '@danieljoffe.com/shared-ui/Card';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
-import { Textarea } from '@danieljoffe.com/shared-ui/Textarea';
+import { Card } from '@danieljoffe/shared-ui/Card';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Alert } from '@danieljoffe/shared-ui/Alert';
+import { Textarea } from '@danieljoffe/shared-ui/Textarea';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 

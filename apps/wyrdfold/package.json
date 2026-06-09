@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@danieljoffe.com/shared-ui": "workspace:*",
+    "@danieljoffe/shared-ui": "workspace:*",
     "@supabase/ssr": "^0.10.2",
     "@tiptap/core": "^3.24.0",
     "@tiptap/extension-link": "^3.24.0",

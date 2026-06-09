@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown } from 'lucide-react';
-import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
-import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
+import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
+import { Input } from '@danieljoffe/shared-ui/Input';
 import { cn } from '@/lib/cn';
 import JobsActiveFilterChips from './JobsActiveFilterChips';
 import JobsLocationFilter from './JobsLocationFilter';

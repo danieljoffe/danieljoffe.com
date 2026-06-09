@@ -110,7 +110,7 @@ useEffect(() => {
 
 ### Phase 2: Extract to shared-ui (March 18)
 
-ThemeProvider and ToastProvider moved into `@danieljoffe.com/shared-ui` — the monorepo's framework-agnostic component library. This meant any app in the monorepo could use consistent theming and toast notifications without reinventing them.
+ThemeProvider and ToastProvider moved into `@danieljoffe/shared-ui` — the monorepo's framework-agnostic component library. This meant any app in the monorepo could use consistent theming and toast notifications without reinventing them.
 
 ModalProvider stayed in the app — it depends on Next.js dynamic imports and app-specific routing, making it a poor candidate for a shared library.
 
@@ -175,4 +175,4 @@ Adding or removing a provider is now a one-line change to an array — no JSX ne
 
 ## Technologies Used
 
-React Context API, TypeScript, matchMedia API, Next.js App Router, Nx Monorepo, @danieljoffe.com/shared-ui
+React Context API, TypeScript, matchMedia API, Next.js App Router, Nx Monorepo, @danieljoffe/shared-ui

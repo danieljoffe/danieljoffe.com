@@ -39,7 +39,7 @@ runs:
 
     - name: Build Storybook
       shell: bash
-      run: pnpm nx build-storybook @danieljoffe.com/shared-ui
+      run: pnpm nx build-storybook @danieljoffe/shared-ui
 
     - name: Install Vercel CLI
       shell: bash

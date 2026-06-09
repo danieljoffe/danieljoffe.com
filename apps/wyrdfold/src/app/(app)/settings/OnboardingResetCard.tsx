@@ -8,8 +8,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@danieljoffe.com/shared-ui/Card';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+} from '@danieljoffe/shared-ui/Card';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 

@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
 import { Check, ChevronDown, Layers, Users, HelpCircle } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
-import { StructuredData } from '@danieljoffe.com/shared-ui/StructuredData';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
+import { StructuredData } from '@danieljoffe/shared-ui/StructuredData';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
-import { Table } from '@danieljoffe.com/shared-ui/Table';
+} from '@danieljoffe/shared-ui/styles/formStyles';
+import { Table } from '@danieljoffe/shared-ui/Table';
 import { Step } from '@/components/kit';
 import { servicesPageStructuredData } from '@/data/structuredData/services';
 import {

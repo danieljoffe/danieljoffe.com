@@ -7,10 +7,10 @@ import {
   Target,
   type LucideIcon,
 } from 'lucide-react';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Alert } from '@danieljoffe/shared-ui/Alert';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 
 const HERO_SUBTITLE =

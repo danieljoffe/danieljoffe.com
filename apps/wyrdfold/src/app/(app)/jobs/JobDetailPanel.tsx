@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ChevronDown, Maximize2, MoreVertical } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
-import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { extractApiError } from '@/lib/extractApiError';

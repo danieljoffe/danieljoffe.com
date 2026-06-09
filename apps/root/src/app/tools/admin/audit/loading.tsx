@@ -1,5 +1,5 @@
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 
 export default function Loading() {
   return (

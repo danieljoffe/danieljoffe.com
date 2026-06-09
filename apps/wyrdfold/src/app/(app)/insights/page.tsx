@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import type { InsightsInitial } from '@/hooks/useInsights';

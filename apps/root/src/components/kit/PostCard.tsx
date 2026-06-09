@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { ArrowUpRight, Clock } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { CoverImage } from './CoverImage';

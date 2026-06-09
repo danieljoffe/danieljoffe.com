@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Modal } from '@danieljoffe.com/shared-ui/Modal';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
-import { Textarea } from '@danieljoffe.com/shared-ui/Textarea';
-import { Tabs, type Tab } from '@danieljoffe.com/shared-ui/Tabs';
+import { Modal } from '@danieljoffe/shared-ui/Modal';
+import { Input } from '@danieljoffe/shared-ui/Input';
+import { Textarea } from '@danieljoffe/shared-ui/Textarea';
+import { Tabs, type Tab } from '@danieljoffe/shared-ui/Tabs';
 import Button from '@/components/Button';
 
 export interface ManualSubmission {

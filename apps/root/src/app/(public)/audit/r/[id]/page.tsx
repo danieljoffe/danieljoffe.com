@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import {
   isValidUuid,
   GRADE_MAP,
