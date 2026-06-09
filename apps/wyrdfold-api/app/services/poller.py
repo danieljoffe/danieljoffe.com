@@ -393,18 +393,49 @@ async def _validate_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return list(await asyncio.gather(*(_validate_one_row(r) for r in rows)))
 
 
+async def _batch_fetch_job_scores(
+    supabase: Client, job_ids: list[str]
+) -> dict[str, int]:
+    """Return ``{job_id: score}`` for the given ids in a single round-trip.
+
+    Callers in the poller fan out Stage 3 over N rows; without this batch
+    helper each call did its own ``.eq("id", jid).single()`` lookup — N
+    sequential queries to read scores that Stage 2 just wrote. One
+    ``.in_()`` lookup replaces all of them.
+    """
+    if not job_ids:
+        return {}
+    resp = await asyncio.to_thread(
+        supabase.table("jobs").select("id, score").in_("id", job_ids).execute
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return {
+        cast(str, r["id"]): int(r.get("score") or 0)
+        for r in rows
+        if r.get("id") is not None
+    }
+
+
 async def _run_llm_scoring_for_row(
     supabase: Client,
     row_data: dict[str, Any],
     optimized_doc: OptimizedDoc,
     llm: LLMClient,
     target: JobTarget,
+    *,
+    current_score: int | None = None,
 ) -> None:
     """Stage 3: Run LLM analysis and mark target scores as complete.
 
-    Fetches the current global score (set by stage 2) for the threshold
-    check. Blends keyword and LLM scores, updates global score, and
-    marks all target scores for this job as 'complete'.
+    The caller may pass ``current_score`` to skip the per-job score
+    lookup — strongly preferred when invoking in a fan-out loop, since
+    Stage 2 already wrote the score and pre-fetching the batch via
+    ``_batch_fetch_job_scores`` collapses N round-trips into 1. When
+    omitted, falls back to a per-row ``.eq().single()`` lookup for
+    callers that don't have a batch context.
+
+    Blends keyword and LLM scores, updates global score, and marks all
+    target scores for this job as 'complete'.
 
     Cache key is (job_posting_id, target.id, optimized_doc.id) — the
     same row is reused by the user-facing analysis flow when viewing
@@ -416,26 +447,27 @@ async def _run_llm_scoring_for_row(
     if not job_id:
         return
 
-    # Fetch the current global score (average of target stage-2 scores)
-    try:
-        score_resp = await asyncio.to_thread(
-            supabase.table("jobs")
-            .select("score")
-            .eq("id", job_id)
-            .single()
-            .execute
-        )
-        current_score = int(cast(dict[str, Any], score_resp.data).get("score", 0))
-    except Exception:
-        # Score row missing or unparseable — treat as 0 so the LLM-threshold
-        # gate applies as if this is a fresh job. Logged so silent zeroing is
-        # observable when investigating low-confidence matches.
-        logger.warning(
-            "Could not read current score for job %s — defaulting to 0",
-            job_id,
-            exc_info=True,
-        )
-        current_score = 0
+    if current_score is None:
+        # Single-row fallback for callers without a pre-fetched batch.
+        try:
+            score_resp = await asyncio.to_thread(
+                supabase.table("jobs")
+                .select("score")
+                .eq("id", job_id)
+                .single()
+                .execute
+            )
+            current_score = int(cast(dict[str, Any], score_resp.data).get("score", 0))
+        except Exception:
+            # Score row missing or unparseable — treat as 0 so the LLM-threshold
+            # gate applies as if this is a fresh job. Logged so silent zeroing is
+            # observable when investigating low-confidence matches.
+            logger.warning(
+                "Could not read current score for job %s — defaulting to 0",
+                job_id,
+                exc_info=True,
+            )
+            current_score = 0
 
     if current_score < LLM_SCORE_THRESHOLD:
         # Below threshold — skip LLM but still mark as complete
@@ -953,6 +985,16 @@ async def _poll_one_source(
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
 
+                # Pre-fetch scores once: Stage 2 just wrote them, and
+                # _run_llm_scoring_for_row would otherwise issue one
+                # .eq().single() per row in the fan-out below.
+                stage3_ids = [
+                    cast(str, cast(dict[str, Any], r).get("id"))
+                    for r in upsert_resp.data or []
+                    if cast(dict[str, Any], r).get("id")
+                ]
+                score_map = await _batch_fetch_job_scores(supabase, stage3_ids)
+
                 async def _llm_one(
                     row_data: dict[str, Any],
                     target: JobTarget,
@@ -960,7 +1002,14 @@ async def _poll_one_source(
                 ) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
-                            supabase, row_data, doc, llm, target
+                            supabase,
+                            row_data,
+                            doc,
+                            llm,
+                            target,
+                            current_score=score_map.get(
+                                cast(str, row_data.get("id", "")), 0
+                            ),
                         )
 
                 await asyncio.gather(
@@ -1399,13 +1448,28 @@ async def _poll_one_source_for_target(
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
 
+                # Pre-fetch scores once (Stage 2 just wrote them).
+                stage3_ids_t = [
+                    cast(str, cast(dict[str, Any], r).get("id"))
+                    for r in upsert_resp.data or []
+                    if cast(dict[str, Any], r).get("id")
+                ]
+                score_map_t = await _batch_fetch_job_scores(supabase, stage3_ids_t)
+
                 async def _llm_one_t(
                     row_data: dict[str, Any],
                     doc: OptimizedDoc,
                 ) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
-                            supabase, row_data, doc, llm, target
+                            supabase,
+                            row_data,
+                            doc,
+                            llm,
+                            target,
+                            current_score=score_map_t.get(
+                                cast(str, row_data.get("id", "")), 0
+                            ),
                         )
 
                 await asyncio.gather(
