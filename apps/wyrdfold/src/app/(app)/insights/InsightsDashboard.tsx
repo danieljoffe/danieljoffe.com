@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Download } from 'lucide-react';
 import {
@@ -164,6 +164,30 @@ export default function InsightsDashboard({
   const showSkillFreqSkeleton = loading.skillsCost && !skillsCost;
   const showCostSkeleton = loading.skillsCost && !skillsCost;
 
+  // Stable per-chart array references so an unrelated slice resolution
+  // (e.g. skillsCost) doesn't fabricate fresh `?? []` fallbacks for the
+  // pipeline/targets charts and trigger a Recharts re-render of charts
+  // whose data hasn't changed (#851 P2).
+  const velocityData = useMemo(() => pipeline?.velocity ?? [], [pipeline]);
+  const funnelData = useMemo(() => pipeline?.funnel ?? [], [pipeline]);
+  const scoreDistributionData = useMemo(
+    () => targets?.score_distribution ?? [],
+    [targets]
+  );
+  const targetComparisonData = useMemo(() => targets?.targets ?? [], [targets]);
+  const topSkillsData = useMemo(
+    () => skillsCost?.top_skills ?? [],
+    [skillsCost]
+  );
+  const topMissingData = useMemo(
+    () => skillsCost?.top_missing ?? [],
+    [skillsCost]
+  );
+  const costOverTimeData = useMemo(
+    () => skillsCost?.cost_over_time ?? [],
+    [skillsCost]
+  );
+
   const handleDownload = useCallback(() => {
     downloadInsightsCsv({ period, pipeline, targets, skillsCost });
   }, [period, pipeline, targets, skillsCost]);
@@ -295,7 +319,7 @@ export default function InsightsDashboard({
           {showVelocitySkeleton ? (
             <ChartSkeleton />
           ) : (
-            <VelocityChart data={pipeline?.velocity ?? []} />
+            <VelocityChart data={velocityData} />
           )}
         </CardContent>
       </Card>
@@ -310,7 +334,7 @@ export default function InsightsDashboard({
             {showFunnelSkeleton ? (
               <ChartSkeleton />
             ) : (
-              <FunnelChart data={pipeline?.funnel ?? []} />
+              <FunnelChart data={funnelData} />
             )}
           </CardContent>
         </Card>
@@ -324,7 +348,7 @@ export default function InsightsDashboard({
               <ChartSkeleton />
             ) : (
               <ScoreDistributionChart
-                data={targets?.score_distribution ?? []}
+                data={scoreDistributionData}
                 unscoredCount={targets?.unscored_count ?? 0}
               />
             )}
@@ -347,7 +371,7 @@ export default function InsightsDashboard({
             {showTargetCmpSkeleton ? (
               <ChartSkeleton />
             ) : (
-              <TargetComparisonChart data={targets?.targets ?? []} />
+              <TargetComparisonChart data={targetComparisonData} />
             )}
           </CardContent>
         </Card>
@@ -365,7 +389,7 @@ export default function InsightsDashboard({
             {showSkillFreqSkeleton ? (
               <ChartSkeleton />
             ) : (
-              <SkillFrequencyChart data={skillsCost?.top_skills ?? []} />
+              <SkillFrequencyChart data={topSkillsData} />
             )}
           </CardContent>
         </Card>
@@ -385,7 +409,7 @@ export default function InsightsDashboard({
           {showSkillFreqSkeleton ? (
             <Skeleton variant='rectangular' height={180} />
           ) : (
-            <TopSkillGaps data={skillsCost?.top_missing ?? []} />
+            <TopSkillGaps data={topMissingData} />
           )}
         </CardContent>
       </Card>
@@ -408,7 +432,7 @@ export default function InsightsDashboard({
           {showCostSkeleton ? (
             <ChartSkeleton />
           ) : (
-            <CostChart data={skillsCost?.cost_over_time ?? []} />
+            <CostChart data={costOverTimeData} />
           )}
         </CardContent>
       </Card>
