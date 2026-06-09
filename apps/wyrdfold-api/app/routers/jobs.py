@@ -53,6 +53,7 @@ from app.services.target_scoring import (
 from app.services.targets.crud import get as get_target
 from app.services.targets.crud import get_active as get_active_target
 from app.services.targets.crud import (
+    get_active_for_user,
     get_user_target,
     get_user_target_ids,
     list_user_targets,
@@ -956,6 +957,7 @@ async def add_manual_job(
     request: Request,
     body: ManualJobRequest,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> ManualJobResponse:
     """Add a job posting by URL. Extracts metadata via cascade."""
     warnings: list[str] = []
@@ -1099,12 +1101,21 @@ async def add_manual_job(
         data = cast(dict[str, Any], resp_db.data[0])
         posting_id = data.get("id")
 
-    # Score against all active targets (stages 1+2 inline for manual entry).
+    # Score against the caller's active targets (stages 1+2 inline for manual
+    # entry). Scoping to the JWT caller's targets is a privacy boundary: the
+    # previous global fan-out wrote scores for every user's active target,
+    # surfacing one user's pasted URL in every other user's /jobs list via
+    # the scores→user_targets join. Operator/api-key callers (user_id is None)
+    # retain the global fan-out for back-compat with cron + admin tooling.
     # Each per-target scoring call is independent and IO-bound (the Supabase
     # SDK is sync, so we hand each one to the threadpool and gather). For 10
     # active targets this turns ~10 sequential round-trips into ~1 wall-time.
     if posting_id and title:
-        active_targets = get_active_target(supabase)
+        active_targets = (
+            get_active_for_user(supabase, user_id)
+            if user_id is not None
+            else get_active_target(supabase)
+        )
         parsed = parse_jd(description_html)
         results = await asyncio.gather(
             *[
