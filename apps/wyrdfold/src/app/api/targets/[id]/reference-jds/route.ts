@@ -1,6 +1,10 @@
 import type { NextRequest } from 'next/server';
 
-import { LLM_TIMEOUT_MS, proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import {
+  LLM_TIMEOUT_MS,
+  proxyToWyrdfoldAPI,
+  readJsonBody,
+} from '@/lib/api/proxy';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -11,10 +15,11 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const { id } = await params;
-  const body = await request.json();
+  const parsed = await readJsonBody(request);
+  if (!parsed.ok) return parsed.response;
   return proxyToWyrdfoldAPI(`/targets/${id}/reference-jds`, {
     method: 'POST',
-    body,
+    body: parsed.body,
     timeoutMs: LLM_TIMEOUT_MS,
   });
 }

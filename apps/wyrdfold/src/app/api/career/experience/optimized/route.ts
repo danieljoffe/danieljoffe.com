@@ -1,15 +1,16 @@
 import type { NextRequest } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 export async function GET() {
   return proxyToWyrdfoldAPI('/experience/optimized');
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const parsed = await readJsonBody(request);
+  if (!parsed.ok) return parsed.response;
   return proxyToWyrdfoldAPI('/experience/optimized', {
     method: 'POST',
-    body,
+    body: parsed.body,
   });
 }

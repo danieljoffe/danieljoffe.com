@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -11,8 +11,12 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { id } = await params;
-  const body = await request.json();
-  return proxyToWyrdfoldAPI(`/targets/${id}`, { method: 'PATCH', body });
+  const parsed = await readJsonBody(request);
+  if (!parsed.ok) return parsed.response;
+  return proxyToWyrdfoldAPI(`/targets/${id}`, {
+    method: 'PATCH',
+    body: parsed.body,
+  });
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {

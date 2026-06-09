@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 // Resume docx style preset (preset + accent). No capability gating — unlike
 // notifications, this never depends on operator-configured credentials.
@@ -10,9 +10,10 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = (await request.json()) as Record<string, unknown>;
+  const parsed = await readJsonBody<Record<string, unknown>>(request);
+  if (!parsed.ok) return parsed.response;
   return proxyToWyrdfoldAPI('/profile/resume-style', {
     method: 'PATCH',
-    body,
+    body: parsed.body,
   });
 }

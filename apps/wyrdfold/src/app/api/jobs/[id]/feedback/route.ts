@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -8,10 +8,11 @@ interface RouteContext {
 
 export async function POST(request: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params;
-  const body = await request.json().catch(() => null);
+  const parsed = await readJsonBody(request);
+  if (!parsed.ok) return parsed.response;
   return proxyToWyrdfoldAPI(`/jobs/${id}/feedback`, {
     method: 'POST',
-    body,
+    body: parsed.body,
   });
 }
 

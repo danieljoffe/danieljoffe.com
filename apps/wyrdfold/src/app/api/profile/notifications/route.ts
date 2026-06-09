@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 // Email alerts are sent by the Next.js layer via Resend; the FastAPI
 // only knows it can call back into us. AND its `email_available` flag
@@ -21,8 +21,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = (await request.json()) as Record<string, unknown>;
-  if (body['job_notifications_enabled'] === true && !hasResendKey()) {
+  const parsed = await readJsonBody<Record<string, unknown>>(request);
+  if (!parsed.ok) return parsed.response;
+  if (parsed.body['job_notifications_enabled'] === true && !hasResendKey()) {
     return NextResponse.json(
       {
         detail:
@@ -33,6 +34,6 @@ export async function PATCH(request: NextRequest) {
   }
   return proxyToWyrdfoldAPI('/profile/notifications', {
     method: 'PATCH',
-    body,
+    body: parsed.body,
   });
 }
