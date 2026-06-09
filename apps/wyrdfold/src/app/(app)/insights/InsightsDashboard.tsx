@@ -13,7 +13,7 @@ import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
 import { StatsCard } from '@danieljoffe.com/shared-ui/StatsCard';
 import { Text } from '@danieljoffe.com/shared-ui/Text';
 import Button from '@/components/Button';
-import { useInsights } from '@/hooks/useInsights';
+import { useInsights, type InsightsInitial } from '@/hooks/useInsights';
 import { cn } from '@/lib/cn';
 import { downloadInsightsCsv } from './exportCsv';
 import type { Period } from './types';
@@ -145,9 +145,16 @@ function absDelta(
 
 const PRIOR_LABEL = 'vs prior period';
 
-export default function InsightsDashboard() {
-  const [period, setPeriod] = useState<Period>('30d');
-  const { pipeline, targets, skillsCost, loading, error } = useInsights(period);
+export default function InsightsDashboard({
+  initial,
+}: {
+  initial?: InsightsInitial;
+} = {}) {
+  const [period, setPeriod] = useState<Period>(initial?.period ?? '30d');
+  const { pipeline, targets, skillsCost, loading, error } = useInsights(
+    period,
+    initial
+  );
 
   const showKpiSkeleton = loading.pipeline && !pipeline;
   const showVelocitySkeleton = loading.pipeline && !pipeline;
