@@ -363,3 +363,11 @@ pnpm nx build @danieljoffe.com/shared-ui
 ## Contributing
 
 This library lives in the [danieljoffe.com monorepo](https://github.com/danieljoffe/danieljoffe.com) at `libs/shared/ui/`. See the root `CLAUDE.md` for conventions around the Rule of Three, component patterns, and the shared-ui boundary.
+
+## License
+
+[FSL-1.1-MIT](./LICENSE.md) — Functional Source License 1.1 with MIT Future License.
+
+The Functional Source License grants permission to use, copy, modify, and redistribute the software for any purpose except a Competing Use (a commercial product or service that substitutes for this library or anything we offer using it). Two years after each release, that release automatically re-licenses under the MIT License. Read the [LICENSE](./LICENSE.md) for the full terms.
+
+Practical translation: you can use, fork, and self-host this library freely for personal, internal, educational, or non-competing-commercial work. If you'd like to use it inside a competing commercial offering, [open an issue](https://github.com/danieljoffe/danieljoffe.com/issues) — there's almost certainly a path that works for both of us.
