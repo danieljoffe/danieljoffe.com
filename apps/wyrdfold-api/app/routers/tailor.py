@@ -15,6 +15,7 @@ GET   /tailor/resumes/{id}/download     — serves the `.docx` bytes.
 All 422 responses carry the LintFailureResponse shape.
 """
 
+import asyncio
 import io
 import logging
 import re
@@ -623,7 +624,7 @@ async def download_tailored_resume(
             )
 
         try:
-            data = md_to_docx(row.payload_md, style)
+            data = await asyncio.to_thread(md_to_docx, row.payload_md, style)
         except PandocNotInstalledError as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
         except PandocRenderError as exc:
