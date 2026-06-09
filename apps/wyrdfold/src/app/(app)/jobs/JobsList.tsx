@@ -217,7 +217,7 @@ export default function JobsList({
   // target's count.
   const [jobsCount, setJobsCount] = useState<number | null>(null);
   const activatingRef = useRef<Set<string>>(new Set());
-  const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const pollRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const { toast } = useToast();
 
   const targets = initialTargets;
@@ -340,10 +340,10 @@ export default function JobsList({
     [persistence, setUrlState]
   );
 
-  // Cleanup polling on unmount
+  // Cleanup polling on unmount (chained setTimeout — see handleBatchGenerate).
   useEffect(() => {
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (pollRef.current) clearTimeout(pollRef.current);
     };
   }, []);
 
@@ -404,12 +404,23 @@ export default function JobsList({
       };
       setBatchProgress({ completed: 0, total });
 
-      // Poll for completion — clear any stale interval first
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = setInterval(async () => {
+      // Poll for completion. Chained setTimeout (no overlap): each fetch
+      // schedules the next only after it resolves, so a slow upstream
+      // can't fan out parallel in-flight requests that race state
+      // updates (#851 P5). Same pattern as TargetsList.tsx:213-217.
+      // ``pollRef`` now holds a setTimeout handle.
+      if (pollRef.current) clearTimeout(pollRef.current);
+
+      const pollOnce = async () => {
         try {
           const pollRes = await fetch(`/api/jobs/tailor/batch/${batch_id}`);
-          if (!pollRes.ok) return;
+          if (!pollRes.ok) {
+            pollRef.current = setTimeout(
+              () => void pollOnce(),
+              BATCH_POLL_INTERVAL
+            );
+            return;
+          }
 
           const batch = (await pollRes.json()) as {
             status: string;
@@ -425,7 +436,6 @@ export default function JobsList({
           });
 
           if (batch.status === 'completed' || batch.status === 'failed') {
-            clearInterval(pollRef.current);
             pollRef.current = undefined;
             setGenerating(false);
             setBatchProgress(undefined);
@@ -443,11 +453,24 @@ export default function JobsList({
                 title: `${batch.completed} resumes generated`,
               });
             }
+            return;
           }
+
+          pollRef.current = setTimeout(
+            () => void pollOnce(),
+            BATCH_POLL_INTERVAL
+          );
         } catch {
-          // polling error — keep trying
+          // Polling error — keep trying, but only after the previous
+          // attempt fully unwound (no overlap).
+          pollRef.current = setTimeout(
+            () => void pollOnce(),
+            BATCH_POLL_INTERVAL
+          );
         }
-      }, BATCH_POLL_INTERVAL);
+      };
+
+      pollRef.current = setTimeout(() => void pollOnce(), BATCH_POLL_INTERVAL);
     } catch {
       toast({ variant: 'error', title: 'Network error starting batch' });
       setGenerating(false);
