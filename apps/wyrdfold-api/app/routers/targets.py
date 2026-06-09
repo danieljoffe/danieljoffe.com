@@ -10,7 +10,7 @@ import logging
 from typing import Any, cast
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from postgrest.types import CountMethod
 from supabase import Client
 
@@ -46,6 +46,7 @@ from app.models.targets import (
     UserTarget,
     UserTargetWithTarget,
 )
+from app.rate_limit import limiter
 from app.services.diagnostics.funnel import compute_target_funnel
 from app.services.experience import optimized
 from app.services.extract import (
@@ -568,7 +569,9 @@ async def activate_target(
     "/{target_id}/discover-sources",
     response_model=DiscoveryRunStats,
 )
+@limiter.limit("2/minute;20/day")
 async def discover_sources_for_target_endpoint(
+    request: Request,
     target_id: str,
     supabase: Client = Depends(get_supabase),
     user_id: str = Depends(get_current_user_id),
@@ -779,7 +782,9 @@ async def link_target(
     response_model=JobTarget,
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("10/minute")
 async def derive_target_profile(
+    request: Request,
     target_id: str,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -1127,7 +1132,9 @@ async def _fetch_jd_from_url(url: str) -> tuple[str | None, str]:
     status_code=201,
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("10/minute")
 async def add_reference_jd(
+    request: Request,
     target_id: str,
     body: ReferenceJDAdd,
     supabase: Client = Depends(get_supabase),

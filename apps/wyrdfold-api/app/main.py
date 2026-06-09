@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -13,6 +15,7 @@ from starlette.types import Receive, Scope, Send
 from app.config import Settings, settings
 from app.http_client import close_http_client
 from app.observability import init_sentry
+from app.rate_limit import limiter
 from app.routers import (
     analysis,
     experience,
@@ -98,6 +101,34 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Rate limiting (slowapi). State attachment is required for the middleware
+# and decorator to find the shared limiter; the exception handler converts
+# RateLimitExceeded into a clean JSON 429 instead of slowapi's default
+# plain-text response. See ``app/rate_limit.py`` for key strategy.
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+async def _rate_limit_exceeded_handler(
+    request: Request, exc: RateLimitExceeded
+) -> JSONResponse:
+    _log.info(
+        "rate_limit_exceeded path=%s detail=%s",
+        request.url.path,
+        exc.detail,
+    )
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": "Rate limit exceeded. Slow down and try again shortly.",
+            "limit": str(exc.detail),
+        },
+        headers={"Retry-After": "60"},
+    )
+
+
+app.add_middleware(SlowAPIMiddleware)
 
 
 class _HealthBypassTrustedHost(TrustedHostMiddleware):
