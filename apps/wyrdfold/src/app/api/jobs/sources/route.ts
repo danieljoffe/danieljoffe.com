@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 type SourceAction =
   | { action: 'add'; board_token: string; company_name: string }
@@ -12,7 +12,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as SourceAction;
-  const path = body.action === 'seed' ? '/sources/seed' : '/sources';
-  return proxyToWyrdfoldAPI(path, { method: 'POST', body });
+  const parsed = await readJsonBody<SourceAction>(request);
+  if (!parsed.ok) return parsed.response;
+  const path = parsed.body.action === 'seed' ? '/sources/seed' : '/sources';
+  return proxyToWyrdfoldAPI(path, { method: 'POST', body: parsed.body });
 }

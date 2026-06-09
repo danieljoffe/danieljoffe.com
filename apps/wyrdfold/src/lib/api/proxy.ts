@@ -104,6 +104,35 @@ function unauthorized(): NextResponse {
   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 }
 
+/**
+ * Parse a Route Handler's JSON body, returning a discriminated result.
+ *
+ * Calling `await request.json()` raw on a malformed or empty body throws
+ * a `SyntaxError`, which Next.js converts into an unhandled 500 — with a
+ * potential stack leak in dev. ~20+ write routes in this app used the
+ * raw pattern (#851 S2). Wrapping returns a clean 400 instead.
+ *
+ * Usage:
+ *   const parsed = await readJsonBody<MyBody>(request);
+ *   if (!parsed.ok) return parsed.response;
+ *   const body = parsed.body;
+ */
+export async function readJsonBody<T = unknown>(
+  request: Request
+): Promise<{ ok: true; body: T } | { ok: false; response: NextResponse }> {
+  try {
+    return { ok: true, body: (await request.json()) as T };
+  } catch {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: 'Invalid JSON body' },
+        { status: 400 }
+      ),
+    };
+  }
+}
+
 function unavailable(err: unknown): NextResponse {
   const detail =
     process.env.NODE_ENV !== 'production' && err instanceof Error

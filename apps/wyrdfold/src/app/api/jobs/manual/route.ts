@@ -1,8 +1,12 @@
 import type { NextRequest } from 'next/server';
 
-import { proxyToWyrdfoldAPI } from '@/lib/api/proxy';
+import { proxyToWyrdfoldAPI, readJsonBody } from '@/lib/api/proxy';
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  return proxyToWyrdfoldAPI('/jobs/manual', { method: 'POST', body });
+  const parsed = await readJsonBody(request);
+  if (!parsed.ok) return parsed.response;
+  return proxyToWyrdfoldAPI('/jobs/manual', {
+    method: 'POST',
+    body: parsed.body,
+  });
 }
