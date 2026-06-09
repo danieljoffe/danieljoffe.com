@@ -967,7 +967,7 @@ async def create_target_from_posting(
     if len(jd_text) >= 50:
         try:
             derived, result = await derive_profile_from_jd(
-                llm, jd_text=jd_text
+                llm, jd_text=jd_text, supabase=supabase
             )
             cost_log.record(
                 supabase,
@@ -1172,9 +1172,9 @@ async def add_reference_jd(
             )
         _, body.jd_text = await _fetch_jd_from_url(body.jd_url)
 
-    # Derive profile from JD via LLM
+    # Derive profile from JD via LLM (cached by content hash + prompt version)
     derived, result = await derive_profile_from_jd(
-        llm, jd_text=body.jd_text
+        llm, jd_text=body.jd_text, supabase=supabase
     )
     cost_log.record(
         supabase,

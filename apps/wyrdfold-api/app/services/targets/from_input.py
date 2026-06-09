@@ -197,7 +197,9 @@ async def derive_url_target_bg(
     """
     try:
         async with asyncio.timeout(DERIVATION_TIMEOUT_S):
-            derived, derive_result = await derive_profile_from_jd(llm, jd_text=jd_text)
+            derived, derive_result = await derive_profile_from_jd(
+                llm, jd_text=jd_text, supabase=supabase
+            )
             cost_log.record(
                 supabase,
                 user_id=user_id,
