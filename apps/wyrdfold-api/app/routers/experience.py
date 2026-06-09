@@ -11,7 +11,7 @@ import json
 from collections.abc import AsyncIterator
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
 from supabase import Client
@@ -45,6 +45,7 @@ from app.models.experience import (
     TurnAppend,
 )
 from app.models.llm import Message
+from app.rate_limit import limiter
 from app.services.conversation import orchestrator
 from app.services.embeddings.client import EmbeddingsClient
 from app.services.experience import (
@@ -331,7 +332,9 @@ async def create_optimized(
 
 
 @router.post("/derive", dependencies=[Depends(enforce_llm_budget)])
+@limiter.limit("10/minute")
 async def derive_optimized(
+    request: Request,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     embeddings: EmbeddingsClient = Depends(get_embeddings_client),
@@ -409,7 +412,9 @@ def _sse_event(event: str, data: dict[str, Any]) -> bytes:
 
 
 @router.post("/derive/stream", dependencies=[Depends(enforce_llm_budget)])
+@limiter.limit("10/minute")
 async def derive_optimized_stream(
+    request: Request,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     embeddings: EmbeddingsClient = Depends(get_embeddings_client),

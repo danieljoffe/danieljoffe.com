@@ -157,7 +157,10 @@ class TestDeriveEndpoint:
 
         llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_payload_json()})
         result = await exp_router.derive_optimized(
-            supabase=MagicMock(), llm=llm, embeddings=MagicMock()
+            request=MagicMock(),
+            supabase=MagicMock(),
+            llm=llm,
+            embeddings=MagicMock(),
         )
 
         assert result is cached
@@ -220,7 +223,10 @@ class TestDeriveEndpoint:
 
         llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_payload_json()})
         result = await exp_router.derive_optimized(
-            supabase=MagicMock(), llm=llm, embeddings=MagicMock()
+            request=MagicMock(),
+            supabase=MagicMock(),
+            llm=llm,
+            embeddings=MagicMock(),
         )
 
         assert result is new_doc
@@ -271,6 +277,7 @@ class TestDeriveStreamEndpoint:
 
         with pytest.raises(HTTPException) as exc_info:
             await exp_router.derive_optimized_stream(
+                request=MagicMock(),
                 supabase=MagicMock(),
                 llm=MockLLMClient(),
                 embeddings=MagicMock(),
@@ -311,7 +318,10 @@ class TestDeriveStreamEndpoint:
 
         llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_payload_json()})
         response = await exp_router.derive_optimized_stream(
-            supabase=MagicMock(), llm=llm, embeddings=MagicMock()
+            request=MagicMock(),
+            supabase=MagicMock(),
+            llm=llm,
+            embeddings=MagicMock(),
         )
 
         events = _parse_sse(await _drain(response))
@@ -368,7 +378,10 @@ class TestDeriveStreamEndpoint:
 
         llm = MockLLMClient(scripted={DEFAULT_PURPOSE: _sample_payload_json()})
         response = await exp_router.derive_optimized_stream(
-            supabase=MagicMock(), llm=llm, embeddings=MagicMock()
+            request=MagicMock(),
+            supabase=MagicMock(),
+            llm=llm,
+            embeddings=MagicMock(),
         )
 
         events = _parse_sse(await _drain(response))

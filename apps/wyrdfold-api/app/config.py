@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     score_normalizer: int = 30
     allowed_hosts: str = ""
 
+    # HTTP rate limiting (slowapi). In-memory backend — sufficient while the
+    # API runs as a single Railway replica. Switch to Redis when scaling to
+    # multiple replicas, otherwise limits become per-instance and bypassable.
+    # Tests disable via RATE_LIMIT_ENABLED=false in conftest.
+    rate_limit_enabled: bool = True
+
     # Sentry — leave DSN empty to disable (local dev, tests).
     sentry_dsn: str = Field(default="", repr=False)
     sentry_environment: str = "development"

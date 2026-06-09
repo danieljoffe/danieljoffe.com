@@ -22,7 +22,7 @@ import re
 import zipfile
 from typing import Any, cast
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import ValidationError
 from supabase import Client
@@ -47,6 +47,7 @@ from app.models.tailor import (
     TailorResponse,
 )
 from app.models.user_profile import ResumeStyleSettings
+from app.rate_limit import limiter
 from app.services.ats_lint import lint_markdown
 from app.services.batch import create_batch, get_batch, process_batch
 from app.services.docx.pandoc_render import (
@@ -87,7 +88,9 @@ router = APIRouter(
     responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("30/minute")
 async def create_tailored_resume(
+    request: Request,
     body: TailorRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -206,7 +209,9 @@ async def create_tailored_resume(
     responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("30/minute")
 async def create_tailored_cover_letter(
+    request: Request,
     body: CoverLetterRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
@@ -675,7 +680,9 @@ async def download_tailored_resume(
 
 
 @router.post("/batch", dependencies=[Depends(enforce_llm_budget)])
+@limiter.limit("5/minute")
 async def create_batch_resumes(
+    request: Request,
     body: BatchRequest,
     background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),

@@ -286,6 +286,7 @@ class TestSingleResumeStatusBump:
                 # force_fresh skips the reuse short-circuit so we hit the full
                 # generation branch deterministically.
                 await tailor_router.create_tailored_resume(
+                    request=MagicMock(),
                     body=TailorRequest(
                         job_description="Build things.",
                         contact=_CONTACT,
@@ -342,6 +343,7 @@ class TestSingleResumeStatusBump:
                 return_value=MagicMock(ok=True),
             ):
                 await tailor_router.create_tailored_resume(
+                    request=MagicMock(),
                     body=TailorRequest(
                         job_description="Build things.",
                         contact=_CONTACT,

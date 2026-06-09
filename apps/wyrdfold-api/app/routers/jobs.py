@@ -7,7 +7,7 @@ from typing import Any, cast
 from urllib.parse import urlparse
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from postgrest.types import CountMethod
 from supabase import Client
 
@@ -31,6 +31,7 @@ from app.models.schemas import (
     UrlValidateResponse,
 )
 from app.models.targets import AxisWeights
+from app.rate_limit import limiter
 from app.services.extract import (
     MANUAL_SOURCE_ID,
     ExtractionResult,
@@ -935,7 +936,11 @@ def list_jobs(
 
 
 @router.post("/validate-url")
-async def validate_url(body: UrlValidateRequest) -> UrlValidateResponse:
+@limiter.limit("20/minute")
+async def validate_url(
+    request: Request,
+    body: UrlValidateRequest,
+) -> UrlValidateResponse:
     result = await validate_job_url(body.url)
     return UrlValidateResponse(
         is_valid=result.is_valid,
@@ -946,7 +951,9 @@ async def validate_url(body: UrlValidateRequest) -> UrlValidateResponse:
 
 
 @router.post("/manual")
+@limiter.limit("10/minute")
 async def add_manual_job(
+    request: Request,
     body: ManualJobRequest,
     supabase: Client = Depends(get_supabase),
 ) -> ManualJobResponse:

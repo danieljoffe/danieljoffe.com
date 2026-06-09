@@ -439,6 +439,7 @@ class TestBatchEndpoint:
         ):
             with pytest.raises(HTTPException) as exc_info:
                 await tailor_router.create_batch_resumes(
+                    request=MagicMock(),
                     body=BatchRequest(
                         job_posting_ids=["job-1"],
                         contact=_CONTACT,
@@ -466,6 +467,7 @@ class TestBatchEndpoint:
         ):
             with pytest.raises(HTTPException) as exc_info:
                 await tailor_router.create_batch_resumes(
+                    request=MagicMock(),
                     body=BatchRequest(
                         job_posting_ids=["nonexistent"],
                         contact=_CONTACT,
@@ -517,6 +519,7 @@ class TestBatchEndpoint:
         )
 
         result = await tailor_router.create_batch_resumes(
+            request=MagicMock(),
             body=BatchRequest(
                 job_posting_ids=["job-1"],
                 contact=_CONTACT,
