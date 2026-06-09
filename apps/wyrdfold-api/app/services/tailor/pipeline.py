@@ -13,6 +13,7 @@ result into an HTTP response.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 
 from supabase import Client
@@ -132,7 +133,9 @@ async def run_tailor_pipeline(
             warnings=trace_warnings,
             llm_result=llm_result,
         )
-    docx_bytes = md_to_docx(payload_md)
+    # pandoc is a sync subprocess; offload to a worker thread so the event
+    # loop keeps serving other requests during the ~hundreds-of-ms render.
+    docx_bytes = await asyncio.to_thread(md_to_docx, payload_md)
     lint = lint_docx(docx_bytes)
     if not lint.ok:
         return PipelineLintFailure(
@@ -266,7 +269,7 @@ async def run_cover_letter_pipeline(
             warnings=trace_warnings,
             llm_result=llm_result,
         )
-    docx_bytes = md_to_docx(payload_md)
+    docx_bytes = await asyncio.to_thread(md_to_docx, payload_md)
     lint = lint_docx(docx_bytes, document_type="cover_letter")
     if not lint.ok:
         return CoverLetterPipelineLintFailure(
