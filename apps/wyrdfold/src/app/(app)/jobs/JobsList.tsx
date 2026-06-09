@@ -24,6 +24,16 @@ export interface TargetTab {
 
 const BATCH_POLL_INTERVAL = 3000;
 
+/**
+ * Cap for the target-activation status poll. 3s × 60 = ~180s — generous
+ * enough for slow LLM-bound derivations to finish, tight enough that a
+ * target genuinely stuck in `deriving` doesn't tick 20×/min forever
+ * (#851 P4). On cap reached we clear the timer and rely on the next
+ * tab switch or router.refresh() to pick up the eventually-settled
+ * state.
+ */
+const STATUS_POLL_MAX_ATTEMPTS = 60;
+
 interface JobsListProps {
   targetId: string | undefined;
   initialStatus?: string;
@@ -217,6 +227,7 @@ export default function JobsList({
     if (!activeTargetId) return;
 
     let cancelled = false;
+    let attempts = 0;
     const statusPollRef: {
       current: ReturnType<typeof setInterval> | undefined;
     } = { current: undefined };
@@ -240,6 +251,14 @@ export default function JobsList({
     }
 
     async function checkStatus() {
+      // Bail before issuing the network request when we've exhausted
+      // the budget. Without this a target genuinely stuck in `deriving`
+      // would tick 20×/min indefinitely while the tab was open (#851 P4).
+      attempts += 1;
+      if (attempts > STATUS_POLL_MAX_ATTEMPTS) {
+        clearStatusPoll();
+        return;
+      }
       try {
         const res = await fetch(`/api/targets/${activeTargetId}/status`);
         if (!res.ok || cancelled) return;
