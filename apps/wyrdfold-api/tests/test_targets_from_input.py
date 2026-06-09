@@ -154,7 +154,7 @@ def stub_llm_helpers(monkeypatch: pytest.MonkeyPatch, recorder: _Recorder) -> _R
             _llm_result(),
         )
 
-    async def fake_derive_jd(llm, *, jd_text):  # type: ignore[no-untyped-def]
+    async def fake_derive_jd(llm, *, jd_text, **_kwargs):  # type: ignore[no-untyped-def]
         recorder.record("derive_from_jd", jd_len=len(jd_text))
         return (
             DerivedTarget(
