@@ -22,8 +22,10 @@ import type {
   MatchedSuggestion,
   MatchedSuggestions,
   UserTarget,
+  UserTargetWithSummary,
   UserTargetWithTarget,
 } from './types';
+import { toSummary } from './types';
 
 interface PendingTarget {
   id: string;
@@ -31,7 +33,7 @@ interface PendingTarget {
 }
 
 interface TargetsListProps {
-  initialTargets: UserTargetWithTarget[];
+  initialTargets: UserTargetWithSummary[];
 }
 
 /** Poll cadence + cap for the deriving-target refresh loop. */
@@ -45,7 +47,7 @@ const DERIVE_POLL_MAX_ATTEMPTS = 40; // ~100s ceiling; derivation is 5-9s
  * or the per-user fit score hasn't been written yet. `error` is terminal —
  * the card surfaces the failure rather than polling forever.
  */
-function isDeriving(entry: UserTargetWithTarget): boolean {
+function isDeriving(entry: UserTargetWithSummary): boolean {
   if (entry.target.activation_status === 'error') return false;
   return (
     entry.target.activation_status === 'deriving' ||
@@ -55,7 +57,7 @@ function isDeriving(entry: UserTargetWithTarget): boolean {
 
 export default function TargetsList({ initialTargets }: TargetsListProps) {
   const [targets, setTargets] =
-    useState<UserTargetWithTarget[]>(initialTargets);
+    useState<UserTargetWithSummary[]>(initialTargets);
   const [modalOpen, setModalOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -192,10 +194,15 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
       );
       if (cancelled) return;
 
-      const byId = new Map(
+      // GET /user-target returns the full target; project to a summary so
+      // list state stays one shape (#863).
+      const byId = new Map<string, UserTargetWithSummary>(
         results
           .filter((e): e is UserTargetWithTarget => e !== null)
-          .map(e => [e.target.id, e])
+          .map(e => [
+            e.target.id,
+            { user_target: e.user_target, target: toSummary(e.target) },
+          ])
       );
       // Reflect the latest server state on each card (profile counts,
       // fit-score badge, status indicator).
@@ -258,10 +265,11 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
         });
         // Use the response directly so the new card shows even if /mine
         // is slow or fails. Replace any existing entry with the same
-        // target id (covers the was_matched=true relink path).
-        const entry = {
+        // target id (covers the was_matched=true relink path). The create
+        // endpoint returns a full target; project to the list summary (#863).
+        const entry: UserTargetWithSummary = {
           user_target: result.user_target,
-          target: result.target,
+          target: toSummary(result.target),
         };
         setTargets(prev => [
           entry,
@@ -334,7 +342,8 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
       const label = match.suggestion.label;
       setAddingSuggestion(label);
       try {
-        let entry: UserTargetWithTarget;
+        // Both branches resolve a full target; project to the list summary (#863).
+        let entry: UserTargetWithSummary;
         if (match.is_new) {
           const res = await fetch('/api/targets/from-manual', {
             method: 'POST',
@@ -348,7 +357,10 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
             throw new Error(await extractApiError(res, 'Failed to add target'));
           }
           const result = (await res.json()) as CreateOrLinkResult;
-          entry = { user_target: result.user_target, target: result.target };
+          entry = {
+            user_target: result.user_target,
+            target: toSummary(result.target),
+          };
         } else {
           const matchedTarget = match.matched_target!;
           const linkRes = await fetch(`/api/targets/${matchedTarget.id}/link`, {
@@ -356,7 +368,7 @@ export default function TargetsList({ initialTargets }: TargetsListProps) {
           });
           if (!linkRes.ok) throw new Error('Link failed');
           const userTarget = (await linkRes.json()) as UserTarget;
-          entry = { user_target: userTarget, target: matchedTarget };
+          entry = { user_target: userTarget, target: toSummary(matchedTarget) };
         }
 
         toast({

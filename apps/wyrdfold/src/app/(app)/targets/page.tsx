@@ -9,7 +9,7 @@ import Button from '@/components/Button';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import { hasProse, type ProseResponse } from '../profile/types';
 import TargetsList from './TargetsList';
-import type { UserTargetWithTarget } from './types';
+import type { UserTargetWithSummary } from './types';
 
 export const metadata: Metadata = {
   title: 'Targets',
@@ -39,7 +39,7 @@ async function TargetsLoader() {
   // can short-circuit to the onboarding CTA when no prose doc exists,
   // sparing the user a dead-end submit that just toasts an error.
   const [targetsRes, proseRes] = await Promise.all([
-    fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithTarget[] }>(
+    fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithSummary[] }>(
       '/targets/mine'
     ),
     fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose'),

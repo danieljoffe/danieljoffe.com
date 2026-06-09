@@ -5,7 +5,7 @@ import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
 import DashboardPage, { type DashboardInitial } from '../DashboardPage';
 import type { JobPosting } from '../jobs/types';
 import { hasProse, type ProseResponse } from '../profile/types';
-import type { UserTargetWithTarget } from '../targets/types';
+import type { UserTargetWithSummary } from '../targets/types';
 
 interface OnboardingStatus {
   completed_at: string | null;
@@ -66,7 +66,7 @@ export default async function WyrdfoldDashboard() {
       }),
     }),
     fetchJsonFromWyrdfoldAPI<ProseResponse>('/experience/prose'),
-    fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithTarget[] }>(
+    fetchJsonFromWyrdfoldAPI<{ targets: UserTargetWithSummary[] }>(
       '/targets/mine'
     ),
     ...PIPELINE_STATUSES.map(status =>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { fetchJsonFromWyrdfoldAPI } from '@/lib/api/proxy';
-import type { UserTargetWithTarget } from '../targets/types';
+import type { UserTargetWithSummary } from '../targets/types';
 import JobsList, { type TargetTab } from './JobsList';
 import { JOB_STATUSES, type JobStatus } from './types';
 
@@ -34,7 +34,7 @@ export default async function FittedJobsPage({
       : '';
 
   const targetsRes = await fetchJsonFromWyrdfoldAPI<{
-    targets: UserTargetWithTarget[];
+    targets: UserTargetWithSummary[];
   }>('/targets/mine');
   const initialTargets: TargetTab[] = (targetsRes?.targets ?? [])
     .filter(t => t.user_target.is_active)

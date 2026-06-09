@@ -8,10 +8,10 @@ import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
 import type { DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
 import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 import { cn } from '@/lib/cn';
-import type { JobTarget } from './types';
+import type { JobTargetSummary } from './types';
 
 interface TargetCardProps {
-  target: JobTarget;
+  target: JobTargetSummary;
   /**
    * THIS user's active flag for the target — read from
    * ``user_targets.is_active``. ``isActive`` is the shared
@@ -32,13 +32,6 @@ interface TargetCardProps {
   onDeactivate: (id: string) => void;
   onDelete: (id: string) => void;
   onViewJobs: (id: string) => void;
-}
-
-function countKeywords(target: JobTarget): number {
-  return Object.values(target.scoring_profile.categories).reduce(
-    (sum, cat) => sum + Object.keys(cat.keywords).length,
-    0
-  );
 }
 
 function fitScoreVariant(
@@ -62,8 +55,8 @@ export default function TargetCard({
 }: TargetCardProps) {
   const router = useRouter();
   const detailHref = `/targets/${target.id}`;
-  const categoryCount = Object.keys(target.scoring_profile.categories).length;
-  const keywordCount = countKeywords(target);
+  const categoryCount = target.category_count;
+  const keywordCount = target.keyword_count;
   // The scoring profile + fit score are derived in a backend BackgroundTask
   // after creation, so a freshly-added target shows up here before its
   // profile exists. ``deriving`` drives the pending UI; ``failed`` surfaces

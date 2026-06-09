@@ -92,6 +92,57 @@ export interface UserTargetWithTarget {
   target: JobTarget;
 }
 
+/**
+ * List-view projection of {@link JobTarget} (#863). The API omits the heavy
+ * `scoring_profile` JSONB on list endpoints and instead sends the two counts
+ * the list UI renders. Fetch the full target via `GET /targets/{id}` when the
+ * detail view needs the profile itself.
+ */
+export interface JobTargetSummary {
+  id: string;
+  label: string;
+  description: string | null;
+  normalized_label: string | null;
+  activation_status: string;
+  profile_version: number;
+  is_active: boolean;
+  seniority_hint: string | null;
+  keyword_count: number;
+  category_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserTargetWithSummary {
+  user_target: UserTarget;
+  target: JobTargetSummary;
+}
+
+/** Project a full {@link JobTarget} down to its list summary, deriving the
+ * counts locally — used at the create/suggestion/poll boundaries where the
+ * API still returns a full target but list state holds summaries. */
+export function toSummary(target: JobTarget): JobTargetSummary {
+  const categories = target.scoring_profile?.categories ?? {};
+  const keywordCount = Object.values(categories).reduce(
+    (sum, cat) => sum + Object.keys(cat?.keywords ?? {}).length,
+    0
+  );
+  return {
+    id: target.id,
+    label: target.label,
+    description: target.description,
+    normalized_label: target.normalized_label,
+    activation_status: target.activation_status,
+    profile_version: target.profile_version,
+    is_active: target.is_active,
+    seniority_hint: null,
+    keyword_count: keywordCount,
+    category_count: Object.keys(categories).length,
+    created_at: target.created_at,
+    updated_at: target.updated_at,
+  };
+}
+
 export interface CreateOrLinkResult {
   user_target: UserTarget;
   target: JobTarget;

@@ -4,8 +4,10 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import TargetsList from '../TargetsList';
 import {
   emptyScoringProfile,
+  toSummary,
   type JobTarget,
   type UserTarget,
+  type UserTargetWithSummary,
   type UserTargetWithTarget,
 } from '../types';
 
@@ -69,6 +71,15 @@ function makeEntry(
   return { user_target: userTarget, target };
 }
 
+/** List state holds summaries (#863) — the server `/targets/mine` feed and
+ * the create/poll boundaries all project full targets down via `toSummary`. */
+function makeSummaryEntry(
+  ...args: Parameters<typeof makeEntry>
+): UserTargetWithSummary {
+  const entry = makeEntry(...args);
+  return { user_target: entry.user_target, target: toSummary(entry.target) };
+}
+
 describe('TargetsList', () => {
   it('renders an empty-state CTA cluster when there are no targets', () => {
     render(<TargetsList initialTargets={[]} />);
@@ -85,8 +96,8 @@ describe('TargetsList', () => {
     render(
       <TargetsList
         initialTargets={[
-          makeEntry('t-1', 'Senior Frontend Engineer'),
-          makeEntry('t-2', 'Full Stack Engineer'),
+          makeSummaryEntry('t-1', 'Senior Frontend Engineer'),
+          makeSummaryEntry('t-2', 'Full Stack Engineer'),
         ]}
       />
     );
@@ -122,7 +133,10 @@ describe('TargetsList', () => {
         activation_status: 'ready',
         fit_score: 88,
         categories: {
-          frontend: { keywords: { react: 3 }, weight: 1 },
+          frontend: {
+            keywords: { react: 3, typescript: 2, vue: 1, svelte: 1 },
+            weight: 1,
+          },
         },
       });
       const fetchMock = mockFetchResolving(derived);
@@ -130,7 +144,7 @@ describe('TargetsList', () => {
       render(
         <TargetsList
           initialTargets={[
-            makeEntry('t-1', 'Senior Frontend Engineer', {
+            makeSummaryEntry('t-1', 'Senior Frontend Engineer', {
               activation_status: 'deriving',
               fit_score: null,
             }),
@@ -151,6 +165,8 @@ describe('TargetsList', () => {
         expect(screen.queryByText(/building/i)).toBeNull();
       });
       expect(screen.getByText('88')).toBeInTheDocument();
+      // Counts derived from the full /user-target response via toSummary.
+      expect(screen.getByText('4')).toBeInTheDocument(); // keyword count
     });
 
     it('stops polling once the target settles', async () => {
@@ -165,7 +181,7 @@ describe('TargetsList', () => {
       render(
         <TargetsList
           initialTargets={[
-            makeEntry('t-1', 'Senior Frontend Engineer', {
+            makeSummaryEntry('t-1', 'Senior Frontend Engineer', {
               activation_status: 'deriving',
             }),
           ]}

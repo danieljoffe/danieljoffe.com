@@ -183,6 +183,51 @@ class MyTargetsListResponse(BaseModel):
     targets: list[UserTargetWithTarget]
 
 
+# ---- List-DTO (summary) shapes (#863) --------------------------------------
+# Light projections for the targets list views. They omit the heavy JSONB
+# fields (scoring_profile, search_keywords, example_*_titles, domain_hints)
+# and instead surface the two counts the list UI needs. The full target is
+# still served by GET /targets/{id} for the detail view.
+
+
+class JobTargetSummary(BaseModel):
+    """List-view projection of JobTarget. ``keyword_count`` and
+    ``category_count`` are derived server-side from ``scoring_profile`` so
+    the list UI never receives the JSONB itself."""
+
+    id: str
+    label: str
+    description: str | None = None
+    normalized_label: str | None = None
+    activation_status: str = "idle"
+    profile_version: int = 1
+    is_active: bool
+    seniority_hint: SeniorityHint | None = None
+    keyword_count: int = 0
+    category_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserTargetWithSummary(BaseModel):
+    """A user's link to a target, paired with the summary projection."""
+
+    user_target: UserTarget
+    target: JobTargetSummary
+
+
+class TargetsSummaryListResponse(BaseModel):
+    """Response shape for the shared-targets list (summary projection)."""
+
+    targets: list[JobTargetSummary]
+
+
+class MyTargetsSummaryListResponse(BaseModel):
+    """Response shape for the per-user targets list (summary projection)."""
+
+    targets: list[UserTargetWithSummary]
+
+
 class TargetStatusResponse(BaseModel):
     """Activation status snapshot for a target — used by the activation pipeline."""
 

@@ -46,14 +46,6 @@ def get_latest(supabase: Client, user_id: str | None) -> OptimizedDoc | None:
     return doc
 
 
-def list_versions(supabase: Client, user_id: str | None, limit: int = 50) -> list[OptimizedDoc]:
-    query = supabase.table(TABLE).select("*").order("version", desc=True).limit(limit)
-    query = query.is_("user_id", "null") if user_id is None else query.eq("user_id", user_id)
-    resp = query.execute()
-    rows = cast(list[dict[str, Any]], resp.data or [])
-    return [OptimizedDoc.model_validate(r) for r in rows]
-
-
 def create_version(
     supabase: Client,
     user_id: str | None,
