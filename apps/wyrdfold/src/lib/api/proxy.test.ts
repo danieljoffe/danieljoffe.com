@@ -5,11 +5,23 @@
 process.env['WYRDFOLD_API_URL'] = 'http://wyrdfold-api.test';
 
 const mockGetSession = jest.fn();
+const mockGetUser = jest.fn();
 
 jest.mock('@/lib/supabase/auth-server', () => ({
   createAuthServerClient: () =>
-    Promise.resolve({ auth: { getSession: mockGetSession } }),
+    Promise.resolve({
+      auth: { getSession: mockGetSession, getUser: mockGetUser },
+    }),
 }));
+
+// React.cache() de-dupes per-request, but Jest tests share a single
+// "request" so the cache survives across cases unless we reset it. The
+// proxy module's binding is captured at import time; the easiest reset
+// is to re-require the module per test below.
+jest.mock('react', () => {
+  const actual = jest.requireActual('react');
+  return { ...actual, cache: <T>(fn: T): T => fn };
+});
 
 import {
   fetchJsonFromWyrdfoldAPI,
@@ -26,6 +38,10 @@ afterAll(() => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockGetUser.mockResolvedValue({
+    data: { user: { id: 'user-1' } },
+    error: null,
+  });
   mockGetSession.mockResolvedValue({
     data: { session: { access_token: 'jwt-token' } },
   });
@@ -38,8 +54,11 @@ function mockFetch(response: Response): jest.Mock {
 }
 
 describe('proxyToWyrdfoldAPI', () => {
-  it('returns 401 when no Supabase session', async () => {
-    mockGetSession.mockResolvedValueOnce({ data: { session: null } });
+  it('returns 401 when getUser cannot verify the JWT', async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: 'invalid token' },
+    });
     const fetchMock = mockFetch(new Response('{}'));
 
     const res = await proxyToWyrdfoldAPI('/experience/optimized');
@@ -49,8 +68,8 @@ describe('proxyToWyrdfoldAPI', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('returns 401 when getSession throws', async () => {
-    mockGetSession.mockRejectedValueOnce(new Error('cookie error'));
+  it('returns 401 when getUser throws', async () => {
+    mockGetUser.mockRejectedValueOnce(new Error('cookie error'));
     const fetchMock = mockFetch(new Response('{}'));
 
     const res = await proxyToWyrdfoldAPI('/experience/optimized');

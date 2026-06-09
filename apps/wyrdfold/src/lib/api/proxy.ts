@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { NextResponse } from 'next/server';
 
 import { createAuthServerClient } from '@/lib/supabase/auth-server';
@@ -13,13 +15,30 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 export const LLM_TIMEOUT_MS = 120_000;
 
 /**
- * Resolve the current Supabase session's access token. Returns null when
- * the request has no session — callers should treat that as 401 and skip
- * the upstream round-trip.
+ * Resolve the current Supabase session's access token, verifying the JWT
+ * signature against Supabase Auth first. Returns null when there is no
+ * session OR when the JWT fails verification — callers should treat
+ * either as 401 and skip the upstream round-trip.
+ *
+ * Why verify here when middleware already does it: middleware refreshes
+ * the cookie on `/api/*`, but the proxy used to read the cookie via
+ * `getSession()` which only decodes the JWT locally without checking
+ * the signature against the auth server. The wyrdfold-api re-validates
+ * the JWT on every request via JWKS, so the prior behavior wasn't
+ * exploitable — but the BFF itself was trusting an unverified token
+ * (#851 S1). Standard practice for server-side Supabase code is
+ * `getUser()` first; cheap because `cache()` dedupes within a request
+ * so multiple proxy helpers in the same handler share one verification.
  */
-export async function getAccessToken(): Promise<string | null> {
+export const getAccessToken = cache(async (): Promise<string | null> => {
   try {
     const supabase = await createAuthServerClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    // Now safe to read the (verified) session for its access_token.
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -27,7 +46,7 @@ export async function getAccessToken(): Promise<string | null> {
   } catch {
     return null;
   }
-}
+});
 
 /**
  * Server-side JSON GET to wyrdfold-api for use in Server Components.
