@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 ConversationType = Literal["onboarding", "update"]
 TurnRole = Literal["user", "assistant", "system"]
@@ -153,8 +153,22 @@ class ProseDocCreate(BaseModel):
 class OptimizedDocUpsert(BaseModel):
     prose_doc_id: str | None = None
     payload: OptimizedPayload
-    markdown_view: str | None = None
+    markdown_view: str | None = Field(default=None, max_length=500_000)
     source: OptimizedDocSource = "llm"
+
+    # Hard ceiling on the serialized payload — generous (a realistic profile
+    # is 10–50 KB JSON) but bounded so an attacker can't push megabytes of
+    # nested arrays through the unprotected nested-string surface.
+    _MAX_PAYLOAD_BYTES = 500_000
+
+    @model_validator(mode="after")
+    def _bound_payload_size(self) -> "OptimizedDocUpsert":
+        size = len(self.payload.model_dump_json().encode("utf-8"))
+        if size > self._MAX_PAYLOAD_BYTES:
+            raise ValueError(
+                f"payload too large: {size} bytes (max {self._MAX_PAYLOAD_BYTES})"
+            )
+        return self
 
 
 class PreferencesUpsert(BaseModel):
