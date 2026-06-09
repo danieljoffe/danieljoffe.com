@@ -1,5 +1,5 @@
 {
-  "name": "@danieljoffe.com/shared-ui",
+  "name": "@danieljoffe/shared-ui",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/shared/ui/src",
   "projectType": "library",

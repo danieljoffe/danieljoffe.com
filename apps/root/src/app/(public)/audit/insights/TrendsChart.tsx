@@ -9,9 +9,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import type { TrendsData } from './types';
 
 interface TrendsChartProps {

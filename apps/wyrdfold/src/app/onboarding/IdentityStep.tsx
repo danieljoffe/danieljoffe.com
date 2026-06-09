@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
-import { Card } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Alert } from '@danieljoffe/shared-ui/Alert';
+import { Card } from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Input } from '@danieljoffe/shared-ui/Input';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 

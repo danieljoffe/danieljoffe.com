@@ -1,9 +1,9 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Pagination } from '@danieljoffe/shared-ui/Pagination';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 import { cn } from '@/lib/cn';
 import JobDetailPanel from './JobDetailPanel';
 import JobsEmptyState from './JobsEmptyState';

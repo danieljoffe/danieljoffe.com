@@ -1,5 +1,5 @@
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 
 export default function JobDetailLoading() {
   return (

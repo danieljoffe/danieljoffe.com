@@ -24,9 +24,9 @@ Run via `ctx_batch_execute` (one call):
 
 ```
 [
-  { "label": "lint",      "command": "pnpm nx lint @danieljoffe.com/shared-ui" },
-  { "label": "typecheck", "command": "pnpm nx typecheck @danieljoffe.com/shared-ui" },
-  { "label": "test",      "command": "pnpm nx test @danieljoffe.com/shared-ui" }
+  { "label": "lint",      "command": "pnpm nx lint @danieljoffe/shared-ui" },
+  { "label": "typecheck", "command": "pnpm nx typecheck @danieljoffe/shared-ui" },
+  { "label": "test",      "command": "pnpm nx test @danieljoffe/shared-ui" }
 ]
 ```
 
@@ -38,8 +38,8 @@ Run via `ctx_batch_execute`:
 
 ```
 [
-  { "label": "build-storybook", "command": "pnpm nx build-storybook @danieljoffe.com/shared-ui" },
-  { "label": "test-storybook",  "command": "pnpm nx test-storybook @danieljoffe.com/shared-ui" }
+  { "label": "build-storybook", "command": "pnpm nx build-storybook @danieljoffe/shared-ui" },
+  { "label": "test-storybook",  "command": "pnpm nx test-storybook @danieljoffe/shared-ui" }
 ]
 ```
 

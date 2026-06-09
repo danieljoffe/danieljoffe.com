@@ -34,7 +34,7 @@ case "$FILE_PATH" in
     exit 0
     ;;
   */libs/shared/ui/*)
-    PROJECT="@danieljoffe.com/shared-ui"
+    PROJECT="@danieljoffe/shared-ui"
     TEST_ARGS="-- $SPEC_FILE"
     ;;
   */apps/root/*)

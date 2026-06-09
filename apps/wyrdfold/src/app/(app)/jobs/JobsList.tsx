@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';

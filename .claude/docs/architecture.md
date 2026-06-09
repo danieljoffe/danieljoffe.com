@@ -8,7 +8,7 @@
 - **apps/wyrdfold-e2e**: Playwright E2E tests for `apps/wyrdfold`
 - **apps/audit-api**: FastAPI service for Lighthouse/axe audits
 - **apps/wyrdfold-api**: FastAPI service backing the WyrdFold product
-- **libs/shared/ui**: Shared React component library (@danieljoffe.com/shared-ui)
+- **libs/shared/ui**: Shared React component library (@danieljoffe/shared-ui)
 - **libs/shared/audit**: Shared audit types and utilities
 
 ## Key Technologies

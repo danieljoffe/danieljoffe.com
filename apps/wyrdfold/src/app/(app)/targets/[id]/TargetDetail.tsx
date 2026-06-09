@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Pencil } from 'lucide-react';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';

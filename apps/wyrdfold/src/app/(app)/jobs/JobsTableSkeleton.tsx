@@ -1,4 +1,4 @@
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 
 // Used by three call sites — the route-level loading.tsx, the JobsListView
 // dynamic-import fallback for JobsListTable, and JobsListTable's own

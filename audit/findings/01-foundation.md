@@ -7,7 +7,7 @@
 
 ## Summary
 
-10 findings total: 0 P0, 4 P1, 4 P2, 2 P3. No deploy-blocking issues. Top concern is a broken `pnpm test:python` script that targets a non-existent `mypy` Nx target on `wyrdfold-api` (and `audit-api`) — the actual target name is `typecheck`, so the Python CI gate currently no-ops or errors. Storybook builds for both affected projects (`@danieljoffe.com/shared-ui` and `@danieljoffe.com/root`) pass cleanly.
+10 findings total: 0 P0, 4 P1, 4 P2, 2 P3. No deploy-blocking issues. Top concern is a broken `pnpm test:python` script that targets a non-existent `mypy` Nx target on `wyrdfold-api` (and `audit-api`) — the actual target name is `typecheck`, so the Python CI gate currently no-ops or errors. Storybook builds for both affected projects (`@danieljoffe/shared-ui` and `@danieljoffe.com/root`) pass cleanly.
 
 ## Resolution status
 
@@ -46,11 +46,11 @@ All findings except 1.9 were resolved on this branch. **1.9 is a false positive*
 ```
 NX   Successfully ran target build-storybook for 2 projects
 
-@danieljoffe.com/shared-ui   → libs/shared/ui/storybook-static (built clean)
+@danieljoffe/shared-ui   → libs/shared/ui/storybook-static (built clean)
 @danieljoffe.com/root        → built clean
 ```
 
-Affected projects vs `origin/develop` with a `build-storybook` target: both projects in the workspace that own Storybook (`@danieljoffe.com/shared-ui`, `@danieljoffe.com/root`) are affected, both built successfully. Vite emits a non-blocking chunk-size warning for `iframe.js` (1.1 MB) and `blocks.js` (815 kB) inside Storybook's own bundle — this is internal Storybook chunking, not story code. No deprecated APIs, missing addons, or broken stories detected. No `apps/wyrdfold` Storybook exists (intentional — the WyrdFold app does not own a Storybook target).
+Affected projects vs `origin/develop` with a `build-storybook` target: both projects in the workspace that own Storybook (`@danieljoffe/shared-ui`, `@danieljoffe.com/root`) are affected, both built successfully. Vite emits a non-blocking chunk-size warning for `iframe.js` (1.1 MB) and `blocks.js` (815 kB) inside Storybook's own bundle — this is internal Storybook chunking, not story code. No deprecated APIs, missing addons, or broken stories detected. No `apps/wyrdfold` Storybook exists (intentional — the WyrdFold app does not own a Storybook target).
 
 ## Out-of-scope notes
 

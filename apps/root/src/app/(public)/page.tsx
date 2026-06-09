@@ -8,13 +8,13 @@ import {
   Zap,
   Layers,
 } from 'lucide-react';
-import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
-// import { GridBg } from '@danieljoffe.com/shared-ui/GridBg';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { CTACard } from '@danieljoffe/shared-ui/CTACard';
+// import { GridBg } from '@danieljoffe/shared-ui/GridBg';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
 import { getContentByType } from '@/data/contentRegistry';

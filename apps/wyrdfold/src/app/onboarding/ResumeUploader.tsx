@@ -2,11 +2,11 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
-import { Card } from '@danieljoffe.com/shared-ui/Card';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
+import { Card } from '@danieljoffe/shared-ui/Card';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Alert } from '@danieljoffe/shared-ui/Alert';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { extractApiError } from '@/lib/extractApiError';

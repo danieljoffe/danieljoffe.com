@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
 import { servicesFAQs } from '@/data/services';
 

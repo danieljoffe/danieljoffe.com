@@ -1,4 +1,4 @@
-# @danieljoffe.com/shared-ui
+# @danieljoffe/shared-ui
 
 A React component library built with Tailwind CSS 4. Provides 40+ accessible, theme-aware UI primitives designed for the danieljoffe.com ecosystem.
 
@@ -7,7 +7,7 @@ A React component library built with Tailwind CSS 4. Provides 40+ accessible, th
 ## Installation
 
 ```bash
-npm install @danieljoffe.com/shared-ui
+npm install @danieljoffe/shared-ui
 ```
 
 ### Peer dependencies
@@ -33,9 +33,9 @@ npm install react react-dom tailwindcss lucide-react
 ## Quick start
 
 ```tsx
-import { Button } from '@danieljoffe.com/shared-ui';
+import { Button } from '@danieljoffe/shared-ui';
 // Or use deep imports for tree-shaking:
-import { Button } from '@danieljoffe.com/shared-ui/Button';
+import { Button } from '@danieljoffe/shared-ui/Button';
 
 export default function App() {
   return (
@@ -52,7 +52,7 @@ Import the theme CSS to get design tokens (colors, spacing, typography, shadows,
 
 ```css
 /* In your global CSS or Tailwind entry point */
-@import '@danieljoffe.com/shared-ui/styles/theme.css';
+@import '@danieljoffe/shared-ui/styles/theme.css';
 ```
 
 The theme file is **self-contained** with no external imports. It uses Tailwind CSS 4's `@theme` directive so every token is available as both a CSS custom property and a Tailwind utility class (e.g., `bg-brand-500`, `text-text-secondary`, `shadow-md`).
@@ -64,7 +64,7 @@ The theme file is **self-contained** with no external imports. It uses Tailwind 
 ```css
 /* app/globals.css */
 @import 'tailwindcss';
-@import '@danieljoffe.com/shared-ui/styles/theme.css';
+@import '@danieljoffe/shared-ui/styles/theme.css';
 ```
 
 That single import gives you every token below. No `tailwind.config` changes are needed in Tailwind CSS 4 -- the `@theme` directive registers tokens automatically.
@@ -79,7 +79,7 @@ That single import gives you every token below. No `tailwind.config` changes are
 To override tokens selectively:
 
 ```css
-@import '@danieljoffe.com/shared-ui/styles/theme.css';
+@import '@danieljoffe/shared-ui/styles/theme.css';
 
 @theme {
   --color-brand-500: oklch(0.6 0.2 280); /* shift brand toward purple */
@@ -313,7 +313,7 @@ Each includes a `default.scss` (light) and `dark.scss` file.
 All components export their prop types (e.g., `ButtonProps`, `AlertProps`). The library is built with `exactOptionalPropertyTypes` compatibility.
 
 ```tsx
-import type { ButtonProps, ButtonVariant } from '@danieljoffe.com/shared-ui';
+import type { ButtonProps, ButtonVariant } from '@danieljoffe/shared-ui';
 ```
 
 ## Tree-shaking
@@ -322,10 +322,10 @@ Use deep imports for optimal bundle size:
 
 ```tsx
 // Only bundles Button code:
-import { Button } from '@danieljoffe.com/shared-ui/Button';
+import { Button } from '@danieljoffe/shared-ui/Button';
 
 // Bundles everything (barrel import):
-import { Button } from '@danieljoffe.com/shared-ui';
+import { Button } from '@danieljoffe/shared-ui';
 ```
 
 ## React 19 ref pattern
@@ -334,7 +334,7 @@ Components accept `ref` as a regular prop — `forwardRef` is not used. This is 
 
 ```tsx
 import { useRef } from 'react';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
+import { Input } from '@danieljoffe/shared-ui/Input';
 
 function MyForm() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -351,13 +351,13 @@ function MyForm() {
 
 ```bash
 # Run unit tests
-pnpm nx test @danieljoffe.com/shared-ui
+pnpm nx test @danieljoffe/shared-ui
 
 # Start Storybook
-pnpm nx storybook @danieljoffe.com/shared-ui
+pnpm nx storybook @danieljoffe/shared-ui
 
 # Build library
-pnpm nx build @danieljoffe.com/shared-ui
+pnpm nx build @danieljoffe/shared-ui
 ```
 
 ## Contributing

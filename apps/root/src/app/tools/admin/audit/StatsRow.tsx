@@ -1,4 +1,4 @@
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 
 interface Stat {
   label: string;

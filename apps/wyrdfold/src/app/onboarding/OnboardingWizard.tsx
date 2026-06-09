@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProgressBar } from '@danieljoffe.com/shared-ui/ProgressBar';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { ProgressBar } from '@danieljoffe/shared-ui/ProgressBar';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
 import WyrdfoldLogo from '@/components/WyrdfoldLogo';
 import ConversationChat from '../_components/ConversationChat';
 import PathChooser from './PathChooser';

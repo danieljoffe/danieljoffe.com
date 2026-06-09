@@ -161,7 +161,7 @@ pnpm nx e2e root-e2e
 pnpm nx storybook root
 
 # Start Storybook (shared UI library)
-pnpm nx storybook @danieljoffe.com/shared-ui
+pnpm nx storybook @danieljoffe/shared-ui
 
 # Generate project graph
 pnpm nx graph
@@ -183,7 +183,7 @@ The project includes comprehensive testing setup:
 pnpm nx test root
 
 # Run shared UI library tests
-pnpm nx test @danieljoffe.com/shared-ui
+pnpm nx test @danieljoffe/shared-ui
 
 # Run E2E tests
 pnpm nx e2e root-e2e

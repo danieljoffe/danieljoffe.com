@@ -12,7 +12,7 @@ Review changed files for Nx monorepo structure, module boundary, and configurati
 
 - **Module boundaries**: Imports respect `@nx/enforce-module-boundaries` rules
   - `shared-ui` must not import from Next.js (`next/link`, `next/image`, `useRouter`, etc.)
-  - App code should import shared-ui via `@danieljoffe.com/shared-ui`, not relative paths into `libs/`
+  - App code should import shared-ui via `@danieljoffe/shared-ui`, not relative paths into `libs/`
   - No circular dependencies between projects
 - **Project configuration**: `project.json` files have correct tags and targets
 - **TypeScript config**: `tsconfig.json` files have proper `references` for project dependencies

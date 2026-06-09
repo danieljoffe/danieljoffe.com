@@ -1,5 +1,5 @@
 {
-  "name": "@danieljoffe.com/shared-ui",
+  "name": "@danieljoffe/shared-ui",
   "version": "0.0.1",
   "description": "React component library and design system shared across danieljoffe.com and WyrdFold — Tailwind CSS 4, React 19, server-component-friendly.",
   "type": "module",

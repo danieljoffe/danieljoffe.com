@@ -1,7 +1,7 @@
 'use client';
 
-import { Pagination } from '@danieljoffe.com/shared-ui/Pagination';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Pagination } from '@danieljoffe/shared-ui/Pagination';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 import { useToast } from '@/state/Toast/ToastProvider';
 import JobCard from './JobCard';
 import JobsEmptyState from './JobsEmptyState';

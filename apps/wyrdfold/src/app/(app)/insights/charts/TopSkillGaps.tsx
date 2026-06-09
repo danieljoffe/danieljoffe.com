@@ -1,6 +1,6 @@
 'use client';
 
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import type { MissingSkill } from '../types';
 
 interface TopSkillGapsProps {

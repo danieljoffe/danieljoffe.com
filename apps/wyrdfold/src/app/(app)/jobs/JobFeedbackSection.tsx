@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Info, ThumbsDown, ThumbsUp } from 'lucide-react';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { useToast } from '@/state/Toast/ToastProvider';
 

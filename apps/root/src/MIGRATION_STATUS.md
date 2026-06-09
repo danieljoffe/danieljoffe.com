@@ -2,7 +2,7 @@
 
 ## What Changed
 
-All 5 main pages migrated from modular component composition to saas-ui-kit layout patterns using inline sections with kit primitives. All `@danieljoffe.com/shared-ui` imports have been removed from `apps/root/src/`.
+All 5 main pages migrated from modular component composition to saas-ui-kit layout patterns using inline sections with kit primitives. All `@danieljoffe/shared-ui` imports have been removed from `apps/root/src/`.
 
 ### Pages Migrated
 

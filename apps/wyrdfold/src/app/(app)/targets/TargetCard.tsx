@@ -2,11 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { Briefcase, MoreVertical, Power, Trash2 } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
-import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 import { cn } from '@/lib/cn';
 import type { JobTarget } from './types';
 

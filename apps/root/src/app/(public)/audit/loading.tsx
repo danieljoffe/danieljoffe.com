@@ -1,6 +1,6 @@
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
+import { Section } from '@danieljoffe/shared-ui/Section';
 
 export default function Loading() {
   return (

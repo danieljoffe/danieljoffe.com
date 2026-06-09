@@ -58,7 +58,7 @@ interface TemplateSection {
 
 ## 4. UI affordance
 
-Default behavior should not regress: `handleGenerate` resolves `default_template_id` in order: (1) per-target default on `targets.default_template_id` (v2), (2) per-user default on `user_profiles.default_template_id` (v2), (3) global `'engineering-modern'`. The CTA stays a single button by default; clicking it generates with the resolved default. Add a small caret-disclosure adjacent to the button (`<Button name='generate-resume' />` + `<Dropdown />` from `@danieljoffe.com/shared-ui`) listing templates with a checkmark on the resolved default. The detail panel shows the template badge on the `TailoredResumeRecord` (using `record.resume_type` — already present). Cover-letter generation gets the same picker for parity.
+Default behavior should not regress: `handleGenerate` resolves `default_template_id` in order: (1) per-target default on `targets.default_template_id` (v2), (2) per-user default on `user_profiles.default_template_id` (v2), (3) global `'engineering-modern'`. The CTA stays a single button by default; clicking it generates with the resolved default. Add a small caret-disclosure adjacent to the button (`<Button name='generate-resume' />` + `<Dropdown />` from `@danieljoffe/shared-ui`) listing templates with a checkmark on the resolved default. The detail panel shows the template badge on the `TailoredResumeRecord` (using `record.resume_type` — already present). Cover-letter generation gets the same picker for parity.
 
 ## 5. API surface
 

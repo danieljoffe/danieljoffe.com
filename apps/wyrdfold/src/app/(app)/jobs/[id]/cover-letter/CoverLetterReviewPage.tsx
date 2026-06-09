@@ -10,12 +10,12 @@ import {
   RotateCcw,
   Unlock,
 } from 'lucide-react';
-import { Dropdown } from '@danieljoffe.com/shared-ui/Dropdown';
-import type { DropdownItem } from '@danieljoffe.com/shared-ui/Dropdown';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
+import type { DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import MarkdownPreviewEditor from '@/components/MarkdownPreviewEditor';
 import { extractApiError } from '@/lib/extractApiError';

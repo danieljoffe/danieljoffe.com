@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Text } from '@danieljoffe/shared-ui/Text';
 
 type DeviceSelection = 'mobile' | 'desktop' | 'both';
 

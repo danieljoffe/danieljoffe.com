@@ -29,7 +29,7 @@ to `pnpm-lock.yaml`. What happened next was an audit I didn't plan for.
 
 pnpm uses a symlinked `node_modules` structure. Each package can only access
 its declared dependencies. On the first `pnpm install`, the root app failed to
-resolve `@danieljoffe.com/shared-ui`. It had been importing the workspace
+resolve `@danieljoffe/shared-ui`. It had been importing the workspace
 library for months without declaring it:
 
 ```json
@@ -47,7 +47,7 @@ Yarn Classic resolved it through hoisting. pnpm refused. The fix was explicit:
 // apps/root/package.json — after
 {
   "dependencies": {
-    "@danieljoffe.com/shared-ui": "workspace:*"
+    "@danieljoffe/shared-ui": "workspace:*"
   }
 }
 ```
@@ -77,9 +77,9 @@ exception, not a global override. Every other package stays isolated.
 ## Subpath Exports
 
 The shared-ui library had a single barrel export. Consumers could
-`import { Button } from '@danieljoffe.com/shared-ui'`, but they couldn't
+`import { Button } from '@danieljoffe/shared-ui'`, but they couldn't
 import individual files or style constants. Under Yarn Classic, deep imports
-like `@danieljoffe.com/shared-ui/styles/formStyles` resolved through file
+like `@danieljoffe/shared-ui/styles/formStyles` resolved through file
 system traversal. pnpm requires explicit subpath exports in `package.json`:
 
 ```json

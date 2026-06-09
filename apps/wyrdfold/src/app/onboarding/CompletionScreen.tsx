@@ -3,9 +3,9 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
-import { Card } from '@danieljoffe.com/shared-ui/Card';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
+import { Card } from '@danieljoffe/shared-ui/Card';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
 import Button from '@/components/Button';
 
 export default function CompletionScreen() {

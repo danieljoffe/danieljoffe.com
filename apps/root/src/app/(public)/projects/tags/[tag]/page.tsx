@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { FolderOpen } from 'lucide-react';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { getAllTags, slugToTag, tagToSlug } from '@/lib/tags';
 import BreadCrumbs from '@/components/BreadCrumbs';

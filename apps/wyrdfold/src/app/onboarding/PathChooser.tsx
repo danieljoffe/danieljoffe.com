@@ -1,9 +1,9 @@
 'use client';
 
 import { FileText, Search, MessageCircle } from 'lucide-react';
-import { Card } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Card } from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import type { OnboardingPath } from './OnboardingWizard';
 

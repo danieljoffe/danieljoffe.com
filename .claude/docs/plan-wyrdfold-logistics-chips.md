@@ -125,7 +125,7 @@ Two variants:
 - `compact` (list rows) — chips inline below the title cell.
 - `full` (detail panel) — chips in a dedicated header row.
 
-Pure presentation, no hooks. Use the existing `Badge` primitive from `@danieljoffe.com/shared-ui`.
+Pure presentation, no hooks. Use the existing `Badge` primitive from `@danieljoffe/shared-ui`.
 
 ### Filter pills above `JobsListTable`
 

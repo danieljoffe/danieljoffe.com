@@ -4,7 +4,7 @@ import { AtSign, Download, Github, Linkedin } from 'lucide-react';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import { profileData } from '@/data/profileData';
 import { analytics } from '@/lib/analytics';
 import { PROJECTS_LINK } from '@/utils/constants';

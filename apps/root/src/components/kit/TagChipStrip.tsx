@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
 import {
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
 
 export interface TagChip {

@@ -1,8 +1,8 @@
 'use client';
 
-import { Card, CardContent } from '@danieljoffe.com/shared-ui/Card';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
+import { Card, CardContent } from '@danieljoffe/shared-ui/Card';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
 
 interface PendingTargetCardProps {
   /** Best-known title for this in-flight target. May be empty for URL mode. */

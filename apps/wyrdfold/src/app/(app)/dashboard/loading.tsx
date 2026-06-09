@@ -1,6 +1,6 @@
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Text } from '@danieljoffe/shared-ui/Text';
 
 // Mirrors apps/wyrdfold/src/app/(app)/DashboardPage.tsx so the swap from
 // skeleton to populated dashboard doesn't shift the pipeline-stats grid or

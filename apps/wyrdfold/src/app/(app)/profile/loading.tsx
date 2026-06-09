@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader } from '@danieljoffe.com/shared-ui/Card';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Card, CardContent, CardHeader } from '@danieljoffe/shared-ui/Card';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
+import { Text } from '@danieljoffe/shared-ui/Text';
 
 export default function ProfileLoading() {
   return (
