@@ -81,6 +81,17 @@ export default function OnboardingWizard() {
   }, []);
 
   const handleSkip = useCallback(() => {
+    // Mark onboarding complete on skip so the user isn't bounced back to
+    // /onboarding by the dashboard's completed_at gate. CompletionScreen
+    // hits the same endpoint on the "happy path" finish; the API is
+    // idempotent (user_profile.py:404 short-circuits if completed_at is
+    // already set) so re-completing after a finish is a no-op.
+    //
+    // Fired-and-not-awaited: the navigation should feel instant. If the
+    // POST fails for any reason the user lands on /targets anyway and
+    // the dashboard guard will redirect them back on next visit — same
+    // behavior as before this fix, never worse.
+    void fetch('/api/profile/onboarding/complete', { method: 'POST' });
     router.push('/targets');
   }, [router]);
 
