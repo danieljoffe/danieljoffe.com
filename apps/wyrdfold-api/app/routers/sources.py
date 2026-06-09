@@ -33,10 +33,21 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
+# Public projection for the source-list endpoint. Excludes operational
+# columns (last_polled_at, poll_interval_minutes, created_at) that
+# leaked through the previous select("*") and have no business surfacing
+# to JWT callers — those are operator-tuned cron internals.
+_SOURCE_LIST_COLS = "id, board_token, company_name, provider, enabled, job_count"
+
 
 @router.get("")
 async def list_sources(supabase: Client = Depends(get_supabase)) -> dict[str, Any]:
-    resp = supabase.table("sources").select("*").order("company_name").execute()
+    resp = (
+        supabase.table("sources")
+        .select(_SOURCE_LIST_COLS)
+        .order("company_name")
+        .execute()
+    )
     return {"sources": resp.data or []}
 
 
