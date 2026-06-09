@@ -97,7 +97,7 @@ class TestManualJobEndpoint:
         from app.routers.jobs import add_manual_job
 
         body = ManualJobRequest(url="https://example.com/jobs/123")
-        result = await add_manual_job(request=MagicMock(), body=body, supabase=mock_supabase)
+        result = await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=mock_supabase)
 
         assert result.success is True
         assert result.posting_id == "posting-uuid-1"
@@ -131,7 +131,7 @@ class TestManualJobEndpoint:
             title="My Custom Title",
             company_name="Override Corp",
         )
-        result = await add_manual_job(request=MagicMock(), body=body, supabase=mock_supabase)
+        result = await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=mock_supabase)
 
         assert result.success is True
         # User overrides should win
@@ -149,7 +149,7 @@ class TestManualJobEndpoint:
 
         body = ManualJobRequest(url="not-a-url")
         with pytest.raises(HTTPException) as exc_info:
-            await add_manual_job(request=MagicMock(), body=body, supabase=MagicMock())
+            await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=MagicMock())
         assert exc_info.value.status_code == 400
         assert "Malformed" in exc_info.value.detail
 
@@ -162,7 +162,7 @@ class TestManualJobEndpoint:
 
         body = ManualJobRequest(url="https://www.ziprecruiter.com/jobs/123")
         with pytest.raises(HTTPException) as exc_info:
-            await add_manual_job(request=MagicMock(), body=body, supabase=MagicMock())
+            await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=MagicMock())
         assert exc_info.value.status_code == 400
         assert "Banned" in exc_info.value.detail
 
@@ -175,7 +175,7 @@ class TestManualJobEndpoint:
         from app.routers.jobs import add_manual_job
 
         body = ManualJobRequest(url="https://example.com/opaque-page")
-        result = await add_manual_job(request=MagicMock(), body=body, supabase=MagicMock())
+        result = await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=MagicMock())
 
         assert result.success is False
         assert result.needs_manual_fields is True
@@ -199,7 +199,7 @@ class TestManualJobEndpoint:
             title="Manually Entered Job",
             company_name="Some Company",
         )
-        result = await add_manual_job(request=MagicMock(), body=body, supabase=mock_supabase)
+        result = await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=mock_supabase)
 
         assert result.success is True
         assert result.posting_id == "posting-uuid-3"
@@ -223,7 +223,7 @@ class TestManualJobEndpoint:
         from app.routers.jobs import add_manual_job
 
         body = ManualJobRequest(url=url)
-        await add_manual_job(request=MagicMock(), body=body, supabase=mock_supabase)
+        await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=mock_supabase)
 
         upsert_call = mock_supabase.table.return_value.upsert.call_args
         row = upsert_call[0][0]
@@ -242,7 +242,7 @@ class TestManualJobEndpoint:
 
         body = ManualJobRequest(url="https://example.com/jobs/123")
         with pytest.raises(HTTPException) as exc_info:
-            await add_manual_job(request=MagicMock(), body=body, supabase=MagicMock())
+            await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=MagicMock())
         assert exc_info.value.status_code == 400
         assert "fetch" in exc_info.value.detail.lower()
 
@@ -259,6 +259,6 @@ class TestManualJobEndpoint:
 
         body = ManualJobRequest(url="https://legit.com/jobs/123")
         with pytest.raises(HTTPException) as exc_info:
-            await add_manual_job(request=MagicMock(), body=body, supabase=MagicMock())
+            await add_manual_job(request=MagicMock(), body=body, user_id=None, supabase=MagicMock())
         assert exc_info.value.status_code == 400
         assert "banned" in exc_info.value.detail.lower()
