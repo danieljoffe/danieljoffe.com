@@ -112,6 +112,8 @@ def _set_mock_data(supabase: MagicMock, data: list[Any]) -> None:
     # Back-compat for the older single-``eq`` chain (kept for any callers
     # that still go through it during refactoring).
     select.eq.return_value.execute.return_value.data = data
+    # ``create_batch_resumes`` now fetches all postings in one .in_() call.
+    select.in_.return_value.execute.return_value.data = data
 
 
 def _mock_supabase_for_batch(
