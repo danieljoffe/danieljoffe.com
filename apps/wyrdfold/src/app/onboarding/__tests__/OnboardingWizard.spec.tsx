@@ -126,8 +126,17 @@ jest.mock('../../_components/ConversationChat', () => ({
   ),
 }));
 
+const originalFetch = global.fetch;
+const mockFetch = jest.fn();
+
 beforeEach(() => {
   jest.clearAllMocks();
+  mockFetch.mockResolvedValue({ ok: true, status: 200 });
+  global.fetch = mockFetch as unknown as typeof fetch;
+});
+
+afterEach(() => {
+  global.fetch = originalFetch;
 });
 
 describe('OnboardingWizard — initial state', () => {
@@ -155,6 +164,17 @@ describe('OnboardingWizard — initial state', () => {
     await user.click(screen.getByRole('button', { name: /skip for now/i }));
 
     expect(mockPush).toHaveBeenCalledWith('/targets');
+  });
+
+  it('marks onboarding complete on Skip so the dashboard guard does not bounce back', async () => {
+    const user = userEvent.setup();
+    render(<OnboardingWizard />);
+
+    await user.click(screen.getByRole('button', { name: /skip for now/i }));
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/profile/onboarding/complete', {
+      method: 'POST',
+    });
   });
 });
 
