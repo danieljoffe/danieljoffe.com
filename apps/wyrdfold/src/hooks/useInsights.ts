@@ -149,24 +149,70 @@ const INITIAL_LOADING = {
 };
 
 /**
+ * Server-rendered insights bundle passed from `page.tsx` so the dashboard
+ * paints with data instead of three skeletons → three client→Next→API
+ * round-trips (#851 P1). All slices are optional so a partial upstream
+ * failure on the server still renders the bits we did get.
+ */
+export interface InsightsInitial {
+  period: Period;
+  pipeline: PipelineInsights | undefined;
+  targets: TargetInsights | undefined;
+  skillsCost: SkillsCostInsights | undefined;
+  fetchedAt: number;
+}
+
+/**
  * Fetches the three insights endpoints in parallel and tracks their
  * loading + error state independently so the UI can render each card's
  * skeleton/empty/error state in isolation. Returns a memoized object so
  * consumers can `useMemo` keyed on slices without referential thrash.
+ *
+ * When `initial` is supplied AND its period matches the requested period,
+ * the hook seeds state from it and skips the first client fetch — the
+ * server already paid that cost in page.tsx.
  */
-export function useInsights(period: Period): InsightsData {
-  const [state, setState] = useState<InsightsState>({
-    period,
-    pipeline: undefined,
-    targets: undefined,
-    skillsCost: undefined,
-    fetchedAt: undefined,
-    ...INITIAL_LOADING,
-  });
+export function useInsights(
+  period: Period,
+  initial?: InsightsInitial
+): InsightsData {
+  const initialMatches = initial && initial.period === period;
+  const [state, setState] = useState<InsightsState>(() =>
+    initialMatches
+      ? {
+          period,
+          pipeline: initial.pipeline,
+          targets: initial.targets,
+          skillsCost: initial.skillsCost,
+          fetchedAt: initial.fetchedAt,
+          pipelineLoading: false,
+          targetsLoading: false,
+          skillsCostLoading: false,
+          pipelineFailed: false,
+          targetsFailed: false,
+          skillsCostFailed: false,
+        }
+      : {
+          period,
+          pipeline: undefined,
+          targets: undefined,
+          skillsCost: undefined,
+          fetchedAt: undefined,
+          ...INITIAL_LOADING,
+        }
+  );
   const requestRef = useRef(0);
+  // Skip the first client fetch when the server already delivered data
+  // for this period; subsequent period changes or refresh() calls still
+  // hit the API normally.
+  const skipFirstFetchRef = useRef(Boolean(initialMatches));
   const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
+    if (skipFirstFetchRef.current) {
+      skipFirstFetchRef.current = false;
+      return;
+    }
     const controller = new AbortController();
     const requestId = ++requestRef.current;
 
