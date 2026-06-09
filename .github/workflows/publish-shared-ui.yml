@@ -90,7 +90,7 @@ jobs:
           echo "Publishing version: ${VERSION}"
 
       - name: Build
-        run: pnpm nx build @danieljoffe.com/shared-ui
+        run: pnpm nx build @danieljoffe/shared-ui
 
       - name: Publish (dry-run)
         if: inputs.dry-run
