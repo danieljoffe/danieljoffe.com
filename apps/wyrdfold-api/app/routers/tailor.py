@@ -694,19 +694,27 @@ async def create_batch_resumes(
             detail="no optimized doc — derive one via POST /experience/derive first",
         )
 
-    # Verify all job posting IDs exist and fetch their descriptions + target_id
+    # Verify all job posting IDs exist and fetch their descriptions + target_id.
+    # Single .in_() round-trip; .in_() does not guarantee row order, so re-map
+    # by id to preserve the input ordering (downstream uses postings[0] for the
+    # common target_id and processes jobs in request order).
+    resp = (
+        supabase.table("jobs")
+        .select("id, title, description_html, target_id")
+        .in_("id", body.job_posting_ids)
+        .execute()
+    )
+    fetched = {
+        cast(dict[str, Any], row)["id"]: cast(dict[str, Any], row)
+        for row in (resp.data or [])
+    }
+
     warnings: list[str] = []
     postings: list[dict[str, Any]] = []
     for jid in body.job_posting_ids:
-        resp = (
-            supabase.table("jobs")
-            .select("id, title, description_html, target_id")
-            .eq("id", jid)
-            .execute()
-        )
-        if not resp.data:
+        row = fetched.get(jid)
+        if row is None:
             raise HTTPException(status_code=404, detail=f"job posting not found: {jid}")
-        row = cast(dict[str, Any], resp.data[0])
         if not row.get("description_html"):
             warnings.append(f"no_description:{jid}")
         postings.append(row)
