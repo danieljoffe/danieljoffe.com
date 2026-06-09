@@ -156,8 +156,8 @@ class OptimizedDocUpsert(BaseModel):
     markdown_view: str | None = Field(default=None, max_length=500_000)
     source: OptimizedDocSource = "llm"
 
-    # Hard ceiling on the serialized payload — generous (a realistic profile
-    # is 10–50 KB JSON) but bounded so an attacker can't push megabytes of
+    # Hard ceiling on the serialized payload: generous (a realistic profile
+    # is 10-50 KB JSON) but bounded so an attacker can't push megabytes of
     # nested arrays through the unprotected nested-string surface.
     _MAX_PAYLOAD_BYTES = 500_000
 
