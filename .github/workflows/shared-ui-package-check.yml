@@ -1,0 +1,124 @@
+# Packaging-integrity check for the @danieljoffe/shared-ui npm package.
+#
+# Runs on every PR that touches libs/shared/ui/** so packaging regressions
+# (missing files in the manifest, raw source files leaking through, broken
+# dist output, missing LICENSE/README, runaway bundle size) surface at
+# review time — not on the day someone manually triggers the publish
+# workflow.
+#
+# No secrets are used. The check only runs `npm pack --dry-run`, so it is
+# safe to run from forked PRs and never publishes anything.
+
+name: shared-ui package check
+
+on:
+  pull_request:
+    paths:
+      - 'libs/shared/ui/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/shared-ui-package-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Build shared-ui
+        run: pnpm nx build @danieljoffe/shared-ui
+
+      - name: Pack (dry run) and capture manifest
+        id: pack
+        working-directory: libs/shared/ui
+        run: |
+          set -euo pipefail
+          npm pack --dry-run --json > /tmp/pack.json
+          jq -r '.[0].files[].path' /tmp/pack.json | sort > /tmp/files.txt
+          SIZE=$(jq -r '.[0].size' /tmp/pack.json)
+          UNPACKED=$(jq -r '.[0].unpackedSize' /tmp/pack.json)
+          COUNT=$(wc -l < /tmp/files.txt | tr -d ' ')
+          echo "size=${SIZE}" >> "$GITHUB_OUTPUT"
+          echo "unpacked=${UNPACKED}" >> "$GITHUB_OUTPUT"
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+
+      - name: Assert required files are present
+        run: |
+          set -euo pipefail
+          REQUIRED=(
+            "dist/index.js"
+            "dist/index.d.ts"
+            "LICENSE.md"
+            "README.md"
+            "package.json"
+          )
+          MISSING=()
+          for f in "${REQUIRED[@]}"; do
+            if ! grep -qxF "$f" /tmp/files.txt; then
+              MISSING+=("$f")
+            fi
+          done
+          if [ ${#MISSING[@]} -ne 0 ]; then
+            echo "::error::Missing required files in npm pack manifest:"
+            printf '  - %s\n' "${MISSING[@]}"
+            exit 1
+          fi
+          echo "All required files present."
+
+      - name: Assert no source / test / story files leak through
+        run: |
+          set -euo pipefail
+          # Bare .ts / .tsx (not .d.ts), or anything matching test/spec/story patterns.
+          # The .d.ts.map files are allowed (source maps for type declarations).
+          LEAKED=$(grep -E '(\.test\.|\.spec\.|\.stories\.|^src/.*\.tsx?$)' /tmp/files.txt || true)
+          # Catch bare *.ts / *.tsx that aren't *.d.ts at the top level too
+          BARE_SOURCE=$(grep -E '^.*\.tsx?$' /tmp/files.txt | grep -vE '\.d\.tsx?$' || true)
+          if [ -n "$LEAKED" ] || [ -n "$BARE_SOURCE" ]; then
+            echo "::error::Source, test, spec, or story files leaked into the manifest:"
+            [ -n "$LEAKED" ] && echo "$LEAKED"
+            [ -n "$BARE_SOURCE" ] && echo "$BARE_SOURCE"
+            exit 1
+          fi
+          echo "No source/test/story files in manifest."
+
+      - name: Assert package size is within ceiling
+        env:
+          PACK_SIZE: ${{ steps.pack.outputs.size }}
+        run: |
+          set -euo pipefail
+          CEILING=512000  # 500 kB compressed
+          if [ "$PACK_SIZE" -gt "$CEILING" ]; then
+            echo "::error::Compressed package size ${PACK_SIZE} bytes exceeds ceiling ${CEILING} bytes."
+            echo "::error::Investigate whether new dependencies or build output bloated the bundle."
+            exit 1
+          fi
+          echo "Compressed size ${PACK_SIZE} bytes within ${CEILING} bytes ceiling."
+
+      - name: Write summary
+        env:
+          PACK_SIZE: ${{ steps.pack.outputs.size }}
+          UNPACKED_SIZE: ${{ steps.pack.outputs.unpacked }}
+          FILE_COUNT: ${{ steps.pack.outputs.count }}
+        run: |
+          {
+            echo "### shared-ui package manifest"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | --- |"
+            echo "| Compressed | ${PACK_SIZE} bytes |"
+            echo "| Unpacked | ${UNPACKED_SIZE} bytes |"
+            echo "| Files | ${FILE_COUNT} |"
+            echo ""
+            echo "<details><summary>File list</summary>"
+            echo ""
+            echo '```'
+            cat /tmp/files.txt
+            echo '```'
+            echo ""
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
