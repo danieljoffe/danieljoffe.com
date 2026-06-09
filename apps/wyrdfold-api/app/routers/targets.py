@@ -141,6 +141,26 @@ def _retro_score_existing_jobs(supabase: Client, target: JobTarget) -> int:
     return written
 
 
+def _require_user_owns_target(
+    supabase: Client, *, user_id: str | None, target_id: str
+) -> None:
+    """Raise 404 if a JWT caller is not linked to ``target_id``.
+
+    Targets are a shared resource keyed only by the explicit ``user_targets``
+    junction — there is no RLS backstop because the API uses the service-role
+    key. Without this guard any authenticated user could mutate any target.
+
+    A ``None`` user_id is the operator/api-key path (``verify_api_key_or_jwt``)
+    and bypasses the check — operators are trusted with full access.
+
+    Returns 404 (not 403) so non-owners cannot enumerate target existence.
+    """
+    if user_id is None:
+        return
+    if target_id not in crud.get_user_target_ids(supabase, user_id):
+        raise HTTPException(status_code=404, detail="Target not found")
+
+
 async def _activate_pipeline(
     supabase: Client, llm: LLMClient, target: JobTarget, user_id: str
 ) -> None:
@@ -490,7 +510,9 @@ def update_target(
     target_id: str,
     body: TargetUpdate,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobTarget:
+    _require_user_owns_target(supabase, user_id=user_id, target_id=target_id)
     target = crud.update(supabase, target_id, body)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
@@ -564,18 +586,14 @@ async def discover_sources_for_target_endpoint(
     confirms the target exists). Cron-style bulk discovery across all
     active targets isn't exposed here yet — separate follow-up PR.
     """
-    target = crud.get(supabase, target_id)
-    if target is None:
-        raise HTTPException(status_code=404, detail="Target not found")
-
     # Verify the caller is linked to this target. Discovery is target-driven
     # so it's only meaningful for the user's own targets — and we don't want
     # to let a JWT caller burn the global Brave quota on someone else's
     # search keywords.
-    if target_id not in crud.get_user_target_ids(supabase, user_id):
-        raise HTTPException(
-            status_code=403, detail="Target is not linked to this user"
-        )
+    _require_user_owns_target(supabase, user_id=user_id, target_id=target_id)
+    target = crud.get(supabase, target_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
 
     return await run_discovery_for_target(supabase, target)
 
@@ -768,6 +786,7 @@ async def derive_target_profile(
     user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobTarget:
     """Derive a scoring profile + search keywords from the target label + user experience."""
+    _require_user_owns_target(supabase, user_id=user_id, target_id=target_id)
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
@@ -890,7 +909,9 @@ async def get_target_funnel(
 async def delete_target(
     target_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> DeleteResponse:
+    _require_user_owns_target(supabase, user_id=user_id, target_id=target_id)
     deleted = crud.delete(supabase, target_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Target not found")
@@ -1120,6 +1141,7 @@ async def add_reference_jd(
     same cascade used by ``POST /jobs/manual`` (JSON-LD → meta tags →
     Firecrawl).
     """
+    _require_user_owns_target(supabase, user_id=user_id, target_id=target_id)
     # Verify target exists
     target = crud.get(supabase, target_id)
     if target is None:
@@ -1205,8 +1227,10 @@ async def delete_reference_jd(
     target_id: str,
     ref_jd_id: str,
     supabase: Client = Depends(get_supabase),
+    user_id: str | None = Depends(get_current_user_id_optional),
 ) -> JobTarget:
     """Delete a reference JD and re-merge the remaining profiles."""
+    _require_user_owns_target(supabase, user_id=user_id, target_id=target_id)
     target = crud.get(supabase, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Target not found")
