@@ -25,7 +25,11 @@ from supabase import Client
 
 from app.config import settings
 from app.models.targets import JobTarget
-from app.services.ats_detect import DetectResult, detect_ats
+
+# ``_parse_input`` is intentionally shared with the detector: discovery uses
+# it as a cheap pre-probe grouping key so 20 hits on the same board cost one
+# probe instead of 20.
+from app.services.ats_detect import DetectResult, _parse_input, detect_ats
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +65,9 @@ class DiscoveryRunStats:
     duplicates: int
     unclassified: int
     filtered: int
+    # URLs skipped without probing because an earlier hit in the same run
+    # already parsed to the same (provider, slug) key.
+    deduped: int = 0
 
 
 @dataclass(slots=True)
@@ -362,19 +369,28 @@ async def run_discovery_for_target(
     # concurrently. The cap applies to the *number of queries*, not the
     # number of URLs we process — once the cap is exhausted we stop adding
     # to the plan but still process everything we already pulled.
-    query_plan: list[tuple[str, str]] = []
-    for keyword in keywords:
-        for site_filter in _ATS_SITE_FILTERS:
-            if len(query_plan) >= cap:
-                break
-            query_plan.append((keyword, site_filter))
-        if len(query_plan) >= cap:
-            logger.info(
-                "discovery cap of %d queries hit for target %s — truncating plan",
-                cap,
-                target.id,
-            )
-            break
+    #
+    # The full combination list is shuffled before truncation. The previous
+    # in-order walk truncated the same keyword-order prefix every run, so
+    # combinations past the cap were never queried on ANY run (there is no
+    # persisted cursor — "roll over to the next run" never happened).
+    # Random sampling covers the whole keyword x site space across repeated
+    # runs without needing rotation state.
+    query_plan = [
+        (keyword, site_filter)
+        for keyword in keywords
+        for site_filter in _ATS_SITE_FILTERS
+    ]
+    random.shuffle(query_plan)
+    if len(query_plan) > cap:
+        logger.info(
+            "discovery cap of %d queries hit for target %s — sampling %d of %d combos",
+            cap,
+            target.id,
+            cap,
+            len(query_plan),
+        )
+        query_plan = query_plan[:cap]
     queries_issued = len(query_plan)
 
     # Concurrency: 8 simultaneous Brave queries. Brave's free tier docs
@@ -391,9 +407,14 @@ async def run_discovery_for_target(
             kw: str, site: str
         ) -> tuple[str, str, list[str]]:
             async with brave_semaphore:
+                # Keyword left unquoted on purpose. Exact-phrase quoting
+                # ("director of cx operations") missed boards whose posting
+                # titles phrase the role differently — and any hit on an ATS
+                # host is a valid board regardless of phrasing; the keyword
+                # only biases results toward companies hiring for the role.
                 urls = await _brave_search(
                     brave_client,
-                    query=f'"{kw}" site:{site}',
+                    query=f"{kw} site:{site}",
                     count=per_query_count,
                 )
             return kw, site, urls
@@ -418,8 +439,36 @@ async def run_discovery_for_target(
             hits.append(_SearchHit(keyword=kw, site_filter=site, url=url))
 
     # Process hits sequentially — see the comment on ``brave_semaphore``.
+    deduped = 0
+    seen_parse_keys: set[tuple[str | None, str]] = set()
     for hit in hits:
         urls_examined += 1
+
+        # Cheap pre-probe grouping: 20 result URLs for the same board all
+        # parse to the same (provider, slug). Probing each one cost up to
+        # 20 sequential detect_ats round-trips per company before this.
+        parse_key = _parse_input(hit.url)
+        if parse_key in seen_parse_keys:
+            deduped += 1
+            continue
+        seen_parse_keys.add(parse_key)
+
+        # Known-token short-circuit: for the slug-token providers the
+        # parsed slug IS the board_token, so a URL on a board we already
+        # poll needs no probe at all. (Composite-token providers like
+        # Workday fall through to the post-probe check below.)
+        provider_hint, slug = parse_key
+        if provider_hint is not None and slug in existing_tokens:
+            duplicates += 1
+            _log_discovery(
+                supabase,
+                target_id=target.id,
+                hit=hit,
+                detect=None,
+                outcome="duplicate",
+            )
+            continue
+
         # detect_ats has its own httpx client — it manages probe
         # cadence + provider fallback internally.
         detect = await detect_ats(hit.url)
@@ -487,6 +536,7 @@ async def run_discovery_for_target(
         duplicates=duplicates,
         unclassified=unclassified,
         filtered=filtered,
+        deduped=deduped,
     )
 
 
