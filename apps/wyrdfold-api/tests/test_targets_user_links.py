@@ -127,11 +127,13 @@ def _mock_supabase_for_link(
     *,
     existing_row: dict[str, Any] | None,
     active_count: int,
+    max_active_override: int | None = None,
 ) -> MagicMock:
     """Build a Supabase mock that returns deterministic answers for the
-    two reads link_user_to_target performs before its upsert: (1) "is
-    this (user, target) pair already linked, and was it active?" and
-    (2) "how many active links does this user already have?".
+    three reads link_user_to_target performs before its upsert: (1) "is
+    this (user, target) pair already linked, and was it active?",
+    (2) "how many active links does this user already have?", and
+    (3) the per-user ``max_active_targets`` override on user_profiles.
     """
     supabase = MagicMock()
     table = supabase.table.return_value
@@ -144,6 +146,15 @@ def _mock_supabase_for_link(
     # MagicMock, so we shim ``.count`` on the same return value.
     existing_chain.return_value.count = active_count
 
+    # Override read: select().eq().execute() — one .eq() shorter, so it's
+    # a distinct chain on the mock.
+    override_chain = table.select.return_value.eq.return_value.execute
+    override_chain.return_value.data = (
+        [{"max_active_targets": max_active_override}]
+        if max_active_override is not None
+        else []
+    )
+
     # Upsert: returns a row that matches what we wrote.
     table.upsert.return_value.execute.return_value.data = [
         _user_target_row(is_active=True)
@@ -152,7 +163,22 @@ def _mock_supabase_for_link(
 
 
 def test_link_user_to_target_allows_when_under_limit() -> None:
-    supabase = _mock_supabase_for_link(existing_row=None, active_count=2)
+    # Cap is 1 (cost-caps work) — "under limit" means zero active links.
+    supabase = _mock_supabase_for_link(existing_row=None, active_count=0)
+
+    result = crud.link_user_to_target(
+        supabase, user_id="user-1", target_id="target-1", is_active=True
+    )
+
+    assert result.is_active is True
+
+
+def test_link_user_to_target_honors_max_active_override() -> None:
+    """A per-user ``max_active_targets`` override (the operator's "add
+    credits" lever) raises the cap above the global default of 1."""
+    supabase = _mock_supabase_for_link(
+        existing_row=None, active_count=2, max_active_override=3
+    )
 
     result = crud.link_user_to_target(
         supabase, user_id="user-1", target_id="target-1", is_active=True

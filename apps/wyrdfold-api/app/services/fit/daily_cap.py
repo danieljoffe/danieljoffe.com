@@ -20,18 +20,20 @@ from datetime import UTC, datetime, time
 
 from supabase import Client
 
+from app.config import settings
 from app.services.fit.job_fit import JOB_FIT_PURPOSE
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_DAILY_CAP = 100
-"""Default per-target Phase 2 quota per UTC day.
+DEFAULT_DAILY_CAP = settings.phase2_daily_cap
+"""Per-target Phase 2 quota per UTC day (``PHASE2_DAILY_CAP`` env,
+default 10 — resolved once at process start).
 
-Tuned for: 5 active targets * 100 calls/day * $0.0035 = ~$1.75/day
-ceiling on Phase 2 spend across the system. Per-target quota matches
-"first page renders fast + rest defer" semantics — the user always
-gets some fresh Phase 2 grades, even when a high-volume poll cycle
-would otherwise blow the entire budget on one target.
+Was a hardcoded 100, which alone cost ~$10.50/month/target against the
+$5/month per-user allowance; 10/day ≈ $1/month/target. Per-target quota
+keeps "first page renders fast + rest defer" semantics — the user gets
+some fresh Phase 2 grades each day; the rest stay ``promising`` and
+either get next-day quota or grade on click-through.
 """
 
 

@@ -38,8 +38,10 @@ def test_quota_remaining_at_zero_used_returns_full_cap() -> None:
 
 
 def test_quota_remaining_subtracts_used_from_cap() -> None:
-    supabase = _supabase_with_count(30)
-    assert phase2_quota_remaining(supabase, "t-1") == DEFAULT_DAILY_CAP - 30
+    # Used count below the cap (10 since the cost-caps work) so the
+    # subtraction is exercised without hitting the zero floor.
+    supabase = _supabase_with_count(3)
+    assert phase2_quota_remaining(supabase, "t-1") == DEFAULT_DAILY_CAP - 3
 
 
 def test_quota_remaining_floors_at_zero_when_over_cap() -> None:

@@ -189,3 +189,26 @@ class OnboardingStepUpdate(BaseModel):
 
     path: OnboardingPath | None = None
     current_step: OnboardingStep | None = None
+
+
+class LlmUsageWindow(BaseModel):
+    """One budget window: dollars spent vs the cap (0 cap = disabled)."""
+
+    spent_usd: float
+    limit_usd: float
+
+
+class LlmUsageResponse(BaseModel):
+    """Read model for GET /profile/llm-usage — the user's allowance state.
+
+    ``monthly_resets_at`` approximates when capacity starts freeing: the
+    oldest cost row in the rolling 30-day window plus 30 days. Null when
+    the user has no spend in the window.
+    """
+
+    hourly: LlmUsageWindow
+    daily: LlmUsageWindow
+    monthly: LlmUsageWindow
+    monthly_resets_at: datetime | None = None
+    analysis_daily_used: int
+    analysis_daily_limit: int
