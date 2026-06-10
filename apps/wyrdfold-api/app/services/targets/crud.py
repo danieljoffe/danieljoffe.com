@@ -13,11 +13,13 @@ from supabase import Client
 from app.models.targets import (
     AxisWeights,
     JobTarget,
+    JobTargetSummary,
     ScoringProfile,
     TargetCreate,
     TargetReferenceJD,
     TargetUpdate,
     UserTarget,
+    UserTargetWithSummary,
     UserTargetWithTarget,
 )
 
@@ -43,6 +45,31 @@ def _parse_target(row: dict[str, Any]) -> JobTarget:
         # Slim shape (NULL on legacy rows until PR B backfill).
         seniority_hint=row.get("seniority_hint"),
         domain_hints=row.get("domain_hints") or [],
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+    )
+
+
+def _summarize_target(row: dict[str, Any]) -> JobTargetSummary:
+    """Project a raw Supabase row into the list-view summary (#863).
+
+    ``keyword_count`` / ``category_count`` are derived here from the
+    ``scoring_profile`` JSONB so list responses can omit the column itself.
+    Legacy rows with NULL/missing profile collapse to 0/0.
+    """
+    cats = ((row.get("scoring_profile") or {}).get("categories")) or {}
+    keyword_count = sum(len((c or {}).get("keywords") or {}) for c in cats.values())
+    return JobTargetSummary(
+        id=row["id"],
+        label=row["label"],
+        description=row.get("description"),
+        normalized_label=row.get("normalized_label"),
+        activation_status=row.get("activation_status") or "idle",
+        profile_version=row.get("profile_version", 1),
+        is_active=row["is_active"],
+        seniority_hint=row.get("seniority_hint"),
+        keyword_count=keyword_count,
+        category_count=len(cats),
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -117,6 +144,21 @@ def list_all(supabase: Client) -> list[JobTarget]:
         .execute()
     )
     return [_parse_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
+
+
+def list_all_summary(supabase: Client) -> list[JobTargetSummary]:
+    """List-view projection of :func:`list_all` (#863).
+
+    Still selects the full row (counts are derived from ``scoring_profile``),
+    but returns the light summary so the JSONB never crosses the wire.
+    """
+    resp = (
+        supabase.table(TARGETS_TABLE)
+        .select("*")
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return [_summarize_target(cast(dict[str, Any], r)) for r in (resp.data or [])]
 
 
 def get_active(supabase: Client) -> list[JobTarget]:
@@ -307,6 +349,51 @@ def list_user_targets_with_targets(
             UserTargetWithTarget(
                 user_target=_parse_user_target(ut_row),
                 target=target,
+            )
+        )
+    return results
+
+
+def list_user_targets_with_summary(
+    supabase: Client, user_id: str
+) -> list[UserTargetWithSummary]:
+    """List-view projection of :func:`list_user_targets_with_targets` (#863).
+
+    Same junction + targets fetch, but pairs each link with the light
+    :class:`JobTargetSummary` instead of the full target.
+    """
+    ut_resp = (
+        supabase.table(USER_TARGETS_TABLE)
+        .select("*")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
+    ut_rows = cast(list[dict[str, Any]], ut_resp.data or [])
+    if not ut_rows:
+        return []
+
+    target_ids = [r["target_id"] for r in ut_rows]
+    t_resp = (
+        supabase.table(TARGETS_TABLE)
+        .select("*")
+        .in_("id", target_ids)
+        .execute()
+    )
+    summaries_by_id = {
+        cast(dict[str, Any], r)["id"]: _summarize_target(cast(dict[str, Any], r))
+        for r in (t_resp.data or [])
+    }
+
+    results: list[UserTargetWithSummary] = []
+    for ut_row in ut_rows:
+        summary = summaries_by_id.get(ut_row["target_id"])
+        if summary is None:
+            continue
+        results.append(
+            UserTargetWithSummary(
+                user_target=_parse_user_target(ut_row),
+                target=summary,
             )
         )
     return results

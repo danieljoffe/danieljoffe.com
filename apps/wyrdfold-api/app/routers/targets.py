@@ -33,7 +33,7 @@ from app.models.targets import (
     DeleteResponse,
     JobTarget,
     MatchedSuggestions,
-    MyTargetsListResponse,
+    MyTargetsSummaryListResponse,
     ReferenceJDAdd,
     ReferenceJDsListResponse,
     ScoringProfile,
@@ -41,6 +41,7 @@ from app.models.targets import (
     TargetFromManual,
     TargetFromUrl,
     TargetsListResponse,
+    TargetsSummaryListResponse,
     TargetStatusResponse,
     TargetUpdate,
     UserTarget,
@@ -361,12 +362,12 @@ async def create_target_from_url(
     )
 
 
-@router.get("", response_model=TargetsListResponse)
+@router.get("", response_model=TargetsSummaryListResponse)
 def list_targets(
     supabase: Client = Depends(get_supabase),
-) -> TargetsListResponse:
-    targets = crud.list_all(supabase)
-    return TargetsListResponse(targets=targets)
+) -> TargetsSummaryListResponse:
+    targets = crud.list_all_summary(supabase)
+    return TargetsSummaryListResponse(targets=targets)
 
 
 @router.post(
@@ -458,14 +459,18 @@ def get_active_targets(
     return TargetsListResponse(targets=targets)
 
 
-@router.get("/mine", response_model=MyTargetsListResponse)
+@router.get("/mine", response_model=MyTargetsSummaryListResponse)
 def get_my_targets(
     supabase: Client = Depends(get_supabase),
     user_id: str = Depends(get_current_user_id),
-) -> MyTargetsListResponse:
-    """Return the current user's linked targets with fit scores."""
-    items = crud.list_user_targets_with_targets(supabase, user_id)
-    return MyTargetsListResponse(targets=items)
+) -> MyTargetsSummaryListResponse:
+    """Return the current user's linked targets with fit scores.
+
+    List projection (#863): the heavy ``scoring_profile`` JSONB is omitted;
+    the full target is available via ``GET /targets/{id}``.
+    """
+    items = crud.list_user_targets_with_summary(supabase, user_id)
+    return MyTargetsSummaryListResponse(targets=items)
 
 
 @router.get("/{target_id}", response_model=JobTarget)

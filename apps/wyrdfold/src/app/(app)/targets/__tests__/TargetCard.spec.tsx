@@ -3,29 +3,28 @@ import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TargetCard from '../TargetCard';
-import { emptyScoringProfile, type JobTarget } from '../types';
+import type { JobTargetSummary } from '../types';
 
 const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-function makeTarget(overrides: Partial<JobTarget> = {}): JobTarget {
+function makeTarget(
+  overrides: Partial<JobTargetSummary> = {}
+): JobTargetSummary {
   return {
     id: 't-1',
     label: 'Senior Frontend Engineer',
     description: null,
     normalized_label: null,
-    scoring_profile: {
-      ...emptyScoringProfile(),
-      categories: {
-        frontend: { keywords: { react: 3, typescript: 2 }, weight: 1 },
-      },
-    },
-    search_keywords: [],
     activation_status: 'ready',
     profile_version: 1,
     is_active: true,
+    seniority_hint: null,
+    // 1 category, 2 keywords — the API derives these from scoring_profile.
+    keyword_count: 2,
+    category_count: 1,
     created_at: '2026-01-01T00:00:00Z',
     updated_at: '2026-04-30T00:00:00Z',
     ...overrides,
@@ -53,6 +52,23 @@ describe('TargetCard', () => {
       />
     );
     expect(screen.getByText('Senior Frontend Engineer')).toBeInTheDocument();
+  });
+
+  it('renders category and keyword counts from the summary', () => {
+    render(
+      <TargetCard
+        target={makeTarget({ category_count: 3, keyword_count: 17 })}
+        fitScore={null}
+        fitScoreReasoning={null}
+        isActive
+        onActivate={noop}
+        onDeactivate={noop}
+        onDelete={noop}
+        onViewJobs={noop}
+      />
+    );
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('17')).toBeInTheDocument();
   });
 
   it('shows a fit-score badge when fitScore is provided', () => {

@@ -12,7 +12,7 @@ import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
-import type { UserTargetWithTarget } from '../../targets/types';
+import type { UserTargetWithSummary } from '../../targets/types';
 import JobDetailPanel from '../JobDetailPanel';
 import { MANUAL_SOURCE_ID, type JobPosting } from '../types';
 
@@ -83,7 +83,7 @@ export default function JobDetailPage({ id, targetId }: JobDetailPageProps) {
         const res = await fetch('/api/targets/mine');
         if (!res.ok) return;
         const { targets } = (await res.json()) as {
-          targets: UserTargetWithTarget[];
+          targets: UserTargetWithSummary[];
         };
         const first = targets.find(t => t.user_target.is_active);
         if (!cancelled && first) setFallbackTargetId(first.target.id);
