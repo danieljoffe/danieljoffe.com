@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import re
 from collections.abc import Callable, Coroutine
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
@@ -121,6 +122,7 @@ _NON_US_HINTS: tuple[str, ...] = (
     "poland",
     "warsaw",
     "czech",
+    "czechia",
     "prague",
     "portugal",
     "lisbon",
@@ -277,17 +279,57 @@ def _title_matches_target(title: str, keywords: list[str]) -> bool:
     return False
 
 
+# Word-boundary pattern over the hints. Plain substring matching produced
+# false drops on US locations that merely *contain* a hint: "india" ⊂
+# "Indianapolis, Indiana", "rome" ⊂ "Rome, GA", etc.
+_NON_US_RE = re.compile(
+    r"\b(?:" + "|".join(re.escape(h) for h in _NON_US_HINTS) + r")\b"
+)
+
+# Explicit US markers that short-circuit the non-US rejection. Needed for
+# US cities that share a name with a non-US hint city: "Dublin, OH",
+# "Dublin, CA", "Athens, GA", "Milan, MI" are all real US locations that
+# the hint list would otherwise reject.
+_US_COUNTRY_RE = re.compile(r"\b(?:usa|u\.s\.a?|united states)\b", re.I)
+
+_US_STATE_ABBREVS: frozenset[str] = frozenset(
+    {
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+        "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+        "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+        "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+        "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+        "DC",
+    }
+)
+
+# ", XX" with XX upper-case — the standard "City, ST" form. Checked against
+# the original casing so lowercase words ("ca" in "Africa") can't match.
+_US_STATE_ABBREV_RE = re.compile(r",\s*([A-Z]{2})\b")
+
+
 def _is_us_location(location: str | None) -> bool:
     """Return True if the location looks like it's in the US (or is ambiguous).
 
     Permissive by design: empty/None and generic 'Remote' pass through,
     since many US companies list remote roles with no country. Rejects
-    only when a known non-US country or major city name is detected.
+    only when a known non-US country or major city name is detected as a
+    whole word AND no explicit US marker (country name or "City, ST"
+    state abbreviation) is present. The US marker wins ties on purpose —
+    a rare "Berlin, DE" style ISO-code listing slips through as US, which
+    the downstream scoring tolerates far better than silently dropping
+    every "Dublin, CA".
     """
     if not location:
         return True
-    loc = location.lower()
-    return not any(hint in loc for hint in _NON_US_HINTS)
+    if _US_COUNTRY_RE.search(location):
+        return True
+    if any(
+        m.group(1) in _US_STATE_ABBREVS
+        for m in _US_STATE_ABBREV_RE.finditer(location)
+    ):
+        return True
+    return not _NON_US_RE.search(location.lower())
 
 
 def _content_dedupe_key(
