@@ -393,3 +393,71 @@ async def test_nonzero_fetch_still_archives_stale_rows(monkeypatch):
     update_payload = jobs_table.update.call_args.args[0]
     assert update_payload["status"] == "archived"
     jobs_table.update.return_value.in_.assert_called_once_with("id", ["job-1"])
+
+
+# ---- Phase 1 triage: known jobs are not re-triaged --------------------------
+
+
+@pytest.mark.asyncio
+async def test_phase1_triage_skips_known_external_ids(monkeypatch):
+    """Jobs already in the DB must not be re-sent to the Phase 1 LLM on
+    every cycle — only new external_ids are triaged, and verdict indices
+    map back to the jobs' global positions."""
+    from unittest.mock import AsyncMock
+
+    from app.config import settings as live_settings
+    from app.services import poller as poller_mod
+    from app.services.relevance.title_triage import TitleVerdict
+
+    monkeypatch.setattr(live_settings, "phase1_triage_enabled", True)
+
+    existing = [
+        {"id": "job-1", "external_id": "known-1", "title": "Old Role", "company_name": "Acme"},
+    ]
+    supabase, _jobs_table, _sources_table = _make_poll_supabase(existing)
+
+    async def two_job_fetch(_token: str) -> list[StandardJob]:
+        return [
+            StandardJob(
+                external_id="known-1",
+                title="Old Role",
+                location_name="Remote",
+                department=None,
+                content="",
+                updated_at="2026-01-01",
+                absolute_url="https://example.com/j/1",
+            ),
+            StandardJob(
+                external_id="new-1",
+                title="Brand New Role",
+                location_name="Remote",
+                department=None,
+                content="",
+                updated_at="2026-01-01",
+                absolute_url="https://example.com/j/2",
+            ),
+        ]
+
+    target = _target_with_keywords({"react": 3}, ["totally unrelated keyword"])
+    # Triage rejects the (only) submitted title. Id 1 = first title in the
+    # submitted subset, which must be the NEW job.
+    fake_triage = AsyncMock(
+        return_value=({1: TitleVerdict(id=1, promising=False)}, None)
+    )
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", two_job_fetch)
+    monkeypatch.setattr(poller_mod, "get_active_target", lambda _sb: [target])
+    monkeypatch.setattr(poller_mod, "get_default_llm_client", lambda: MagicMock())
+    monkeypatch.setattr(poller_mod, "triage_titles", fake_triage)
+
+    summary = await poller_mod._poll_one_source(dict(_GUARD_SOURCE), supabase)
+
+    assert summary["polled"] is True
+    assert summary["error"] is None
+    # Exactly one triage call, carrying ONLY the new job's title.
+    assert fake_triage.await_count == 1
+    assert fake_triage.await_args.kwargs["titles"] == ["Brand New Role"]
+    # Neither job reaches the upsert (new one rejected by Phase 1, known
+    # one fails the title prematch), so nothing was scored this cycle.
+    assert summary["new"] == 0
+    assert summary["updated"] == 0
