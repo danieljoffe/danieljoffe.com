@@ -171,6 +171,43 @@ class TestIsUsLocation:
         assert _is_us_location("BERLIN, GERMANY") is False
         assert _is_us_location("berlin") is False
 
+    def test_us_locations_containing_hint_substrings_are_allowed(self):
+        """Regression: substring matching dropped real US locations.
+
+        "india" ⊂ "Indianapolis"/"Indiana" was the worst offender; word-
+        boundary matching fixes the fragment cases.
+        """
+        assert _is_us_location("Indianapolis, IN") is True
+        assert _is_us_location("Indianapolis, Indiana") is True
+        assert _is_us_location("Remote - Indiana") is True
+
+    def test_us_cities_sharing_non_us_names_are_allowed_with_state(self):
+        """US cities named after non-US cities pass when a state is present."""
+        assert _is_us_location("Dublin, OH") is True
+        assert _is_us_location("Dublin, CA") is True
+        assert _is_us_location("Athens, GA") is True
+        assert _is_us_location("Rome, GA") is True
+        assert _is_us_location("Milan, MI") is True
+
+    def test_usa_marker_wins_over_city_hint(self):
+        assert _is_us_location("Dublin, Ohio, USA") is True
+        assert _is_us_location("Athens (United States)") is True
+
+    def test_non_us_versions_still_rejected(self):
+        assert _is_us_location("Dublin, Ireland") is False
+        assert _is_us_location("Athens, Greece") is False
+        assert _is_us_location("Rome, Italy") is False
+        assert _is_us_location("Milan") is False
+        assert _is_us_location("Bangalore, India") is False
+
+    def test_czechia_rejected(self):
+        assert _is_us_location("Prague, Czechia") is False
+
+    def test_lowercase_state_letters_do_not_count_as_us_marker(self):
+        # ", ca" lowercase isn't the "City, ST" form — "toronto, canada"
+        # style strings must not accidentally hit the state fastpath.
+        assert _is_us_location("toronto, canada") is False
+
 
 # ---- AND-semantics ingestion gate ------------------------------------------
 #
