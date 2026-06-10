@@ -22,6 +22,8 @@ from app.dependencies import (
 from app.models.user_profile import (
     IdentityFields,
     IdentityFieldsUpdate,
+    LlmUsageResponse,
+    LlmUsageWindow,
     NotificationPreferences,
     NotificationPreferencesUpdate,
     OnboardingStatus,
@@ -463,3 +465,80 @@ async def reset_onboarding(
         supabase, user_id, _ONBOARDING_COLUMNS, seed_email=user_email
     )
     return _read_onboarding(fresh)
+
+
+@router.get("/llm-usage", response_model=LlmUsageResponse)
+async def get_llm_usage(
+    supabase: Client = Depends(get_supabase),
+    user_id: str = Depends(get_current_user_id),
+) -> LlmUsageResponse:
+    """The user's allowance state across all budget windows.
+
+    Mirrors exactly what the budget gates enforce (same spend queries),
+    so the FE can render "X of Y used" without guessing.
+    """
+    from datetime import timedelta
+
+    from app.services.analysis.analyze import DEFAULT_PURPOSE
+    from app.services.llm import budget, cost_log
+
+    now = datetime.now(UTC)
+
+    def _snapshot() -> LlmUsageResponse:
+        monthly_cap = budget.effective_monthly_cap(
+            supabase, user_id=user_id, default_usd=settings.user_llm_monthly_budget_usd
+        )
+        month_since = now - timedelta(days=budget.MONTHLY_WINDOW_DAYS)
+        spent_month = cost_log.total_spend(supabase, user_id=user_id, since=month_since)
+
+        # Approximate refill point: oldest cost row in the window + 30d.
+        resets_at = None
+        oldest = cast(
+            list[dict[str, Any]],
+            supabase.table("llm_costs")
+            .select("created_at")
+            .eq("user_id", user_id)
+            .gte("created_at", month_since.isoformat())
+            .order("created_at")
+            .limit(1)
+            .execute()
+            .data
+            or [],
+        )
+        if oldest:
+            oldest_dt = datetime.fromisoformat(
+                str(oldest[0]["created_at"]).replace("Z", "+00:00")
+            )
+            resets_at = oldest_dt + timedelta(days=budget.MONTHLY_WINDOW_DAYS)
+
+        analysis_used = (
+            supabase.table("llm_costs")
+            .select("id", count="exact")  # type: ignore[arg-type]
+            .eq("user_id", user_id)
+            .eq("purpose", DEFAULT_PURPOSE)
+            .gte("created_at", (now - timedelta(hours=24)).isoformat())
+            .execute()
+            .count
+            or 0
+        )
+
+        return LlmUsageResponse(
+            hourly=LlmUsageWindow(
+                spent_usd=cost_log.total_spend(
+                    supabase, user_id=user_id, since=now - timedelta(hours=1)
+                ),
+                limit_usd=settings.user_llm_hourly_budget_usd,
+            ),
+            daily=LlmUsageWindow(
+                spent_usd=cost_log.total_spend(
+                    supabase, user_id=user_id, since=now - timedelta(hours=24)
+                ),
+                limit_usd=settings.user_llm_daily_budget_usd,
+            ),
+            monthly=LlmUsageWindow(spent_usd=spent_month, limit_usd=monthly_cap),
+            monthly_resets_at=resets_at,
+            analysis_daily_used=analysis_used,
+            analysis_daily_limit=settings.analysis_daily_limit,
+        )
+
+    return await asyncio.to_thread(_snapshot)

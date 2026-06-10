@@ -159,10 +159,23 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
 
     # Per-user LLM budget (defense-in-depth). Rolling window over llm_costs.
-    # Set to 0 to disable a window. API-key callers (cron) bypass — system
-    # paths are trusted and gated by the operator.
+    # Set to 0 to disable a window. API-key callers (cron) bypass the HTTP
+    # gate, but background work is charged to the target's activator and
+    # gated against their monthly allowance in the poller.
     user_llm_daily_budget_usd: float = Field(default=5.0, ge=0.0)
     user_llm_hourly_budget_usd: float = Field(default=1.0, ge=0.0)
+    # The overall allowance (Claude-limits model: small windows above for
+    # bursts, this for the month). Rolling 30 days; counts ALL of a user's
+    # llm_costs — interactive and background alike. Per-user override via
+    # user_profiles.llm_monthly_budget_usd (the manual "add credits" lever).
+    user_llm_monthly_budget_usd: float = Field(default=5.0, ge=0.0)
+    # On-click deep job analysis: max LLM-backed runs per user per rolling
+    # 24h. Cache hits don't write llm_costs rows, so re-views stay free.
+    analysis_daily_limit: int = Field(default=20, ge=0)
+    # Phase 2 grading quota per target per UTC day (was a hardcoded 100 in
+    # daily_cap.py — at ~$0.0035/call that alone exceeded a $5 monthly
+    # allowance; 20/day ≈ $2/month/target).
+    phase2_daily_cap: int = Field(default=20, ge=0)
 
     @property
     def allowed_hosts_list(self) -> list[str]:

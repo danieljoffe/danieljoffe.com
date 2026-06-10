@@ -97,6 +97,7 @@ class TestUploadResumeEndpoint:
 
         file = _make_upload_file(docx_bytes)
         result = await exp_router.upload_resume(
+            request=MagicMock(),
             file=file,
             auto_derive=False,
             supabase=supabase,
@@ -120,6 +121,7 @@ class TestUploadResumeEndpoint:
         file = _make_upload_file(b"")
         with pytest.raises(HTTPException) as exc_info:
             await exp_router.upload_resume(
+                request=MagicMock(),
                 file=file,
                 auto_derive=False,
                 supabase=MagicMock(),
@@ -138,6 +140,7 @@ class TestUploadResumeEndpoint:
         file = _make_upload_file(b"plain text", "notes.txt", "text/plain")
         with pytest.raises(HTTPException) as exc_info:
             await exp_router.upload_resume(
+                request=MagicMock(),
                 file=file,
                 auto_derive=False,
                 supabase=MagicMock(),
@@ -155,6 +158,7 @@ class TestUploadResumeEndpoint:
         file = _make_upload_file(b"not a docx", "bad.docx")
         with pytest.raises(HTTPException) as exc_info:
             await exp_router.upload_resume(
+                request=MagicMock(),
                 file=file,
                 auto_derive=False,
                 supabase=MagicMock(),
@@ -176,6 +180,7 @@ class TestUploadResumeEndpoint:
         file = _make_upload_file(docx_bytes)
         with pytest.raises(HTTPException) as exc_info:
             await exp_router.upload_resume(
+                request=MagicMock(),
                 file=file,
                 auto_derive=False,
                 supabase=MagicMock(),
@@ -233,6 +238,7 @@ class TestUploadResumeEndpoint:
         supabase = _mock_supabase()
         file = _make_upload_file(docx_bytes)
         result = await exp_router.upload_resume(
+            request=MagicMock(),
             file=file,
             auto_derive=False,
             supabase=supabase,
@@ -307,6 +313,7 @@ class TestUploadResumeEndpoint:
         supabase = _mock_supabase()
         file = _make_upload_file(docx_bytes)
         result = await exp_router.upload_resume(
+            request=MagicMock(),
             file=file,
             auto_derive=True,
             supabase=supabase,

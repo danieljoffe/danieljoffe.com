@@ -96,7 +96,9 @@ async def create_prose(
 
 
 @router.post("/prose/consolidate", dependencies=[Depends(enforce_llm_budget)])
+@limiter.limit("3/minute")
 async def consolidate_prose(
+    request: Request,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     user_id: str | None = Depends(get_current_user_id_optional),
@@ -159,7 +161,9 @@ async def consolidate_prose(
 
 
 @router.post("/upload-resume", dependencies=[Depends(enforce_llm_budget)])
+@limiter.limit("3/minute")
 async def upload_resume(
+    request: Request,
     file: UploadFile,
     auto_derive: bool = Query(default=False),
     supabase: Client = Depends(get_supabase),
@@ -622,7 +626,9 @@ async def append_turn(
 
 
 @router.post("/conversation/turn", dependencies=[Depends(enforce_llm_budget)])
+@limiter.limit("10/minute")
 async def conversation_turn(
+    request: Request,
     body: TurnRequest,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),

@@ -331,12 +331,15 @@ def test_get_current_user_id_optional_prefers_jwt_over_api_key():
     assert get_current_user_id_optional(req, key="testkey", s=_settings()) == USER_SUB
 
 
-def _budget_settings(daily: float = 5.0, hourly: float = 1.0) -> Settings:
+def _budget_settings(
+    daily: float = 5.0, hourly: float = 1.0, monthly: float = 5.0
+) -> Settings:
     return Settings(
         wyrdfold_api_key="testkey",
         supabase_url=TEST_SUPABASE_URL,
         user_llm_daily_budget_usd=daily,
         user_llm_hourly_budget_usd=hourly,
+        user_llm_monthly_budget_usd=monthly,
     )
 
 
@@ -362,22 +365,57 @@ def test_enforce_llm_budget_jwt_user_invokes_check(monkeypatch):
 
     captured: dict = {}
 
-    def _spy(supabase, *, user_id, daily_limit_usd, hourly_limit_usd):
+    def _spy(
+        supabase, *, user_id, daily_limit_usd, hourly_limit_usd, monthly_limit_usd
+    ):
         captured.update(
             user_id=user_id,
             daily_limit_usd=daily_limit_usd,
             hourly_limit_usd=hourly_limit_usd,
+            monthly_limit_usd=monthly_limit_usd,
         )
 
     monkeypatch.setattr(budget_mod, "check_user_budget", _spy)
+    # The dep resolves the monthly cap (user_profiles override ?? default)
+    # before the check — stub it so no Supabase round-trip happens.
+    monkeypatch.setattr(
+        budget_mod,
+        "effective_monthly_cap",
+        lambda supabase, *, user_id, default_usd: default_usd,
+    )
     enforce_llm_budget(
-        user_id=USER_SUB, supabase=MagicMock(), s=_budget_settings(daily=7.0, hourly=2.0)
+        user_id=USER_SUB,
+        supabase=MagicMock(),
+        s=_budget_settings(daily=7.0, hourly=2.0, monthly=9.0),
     )
     assert captured == {
         "user_id": USER_SUB,
         "daily_limit_usd": 7.0,
         "hourly_limit_usd": 2.0,
+        "monthly_limit_usd": 9.0,
     }
+
+
+def test_enforce_llm_budget_monthly_honors_profile_override(monkeypatch):
+    """The per-user override (the "add credits" lever) wins over the
+    settings default."""
+    from app.services.llm import budget as budget_mod
+
+    captured: dict = {}
+
+    def _spy(supabase, **kw):
+        captured.update(kw)
+
+    monkeypatch.setattr(budget_mod, "check_user_budget", _spy)
+    monkeypatch.setattr(
+        budget_mod,
+        "effective_monthly_cap",
+        lambda supabase, *, user_id, default_usd: 25.0,
+    )
+    enforce_llm_budget(
+        user_id=USER_SUB, supabase=MagicMock(), s=_budget_settings(monthly=5.0)
+    )
+    assert captured["monthly_limit_usd"] == 25.0
 
 
 def test_enforce_llm_budget_propagates_429(monkeypatch):
