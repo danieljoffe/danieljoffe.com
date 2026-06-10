@@ -1044,10 +1044,26 @@ async def _poll_one_source(
 
         # Identify stale jobs no longer on the board
         stale_ids: list[str] = []
-        for existing_job in existing_resp.data or []:
-            row_data = cast(dict[str, Any], existing_job)
-            if row_data["external_id"] not in all_external_ids:
-                stale_ids.append(row_data["id"])
+        existing_rows = cast(list[dict[str, Any]], existing_resp.data or [])
+        if not jobs and existing_rows:
+            # Mass-archive guard: several fetchers (workday in particular)
+            # swallow API errors and return [] instead of raising, which is
+            # indistinguishable from "the board emptied out". Archiving
+            # everything on a zero-job fetch turns a transient upstream
+            # hiccup into a wiped source, so we skip the stale pass and
+            # leave the rows for a cycle where the fetch returns data.
+            # Genuinely emptied boards stop producing new rows immediately;
+            # their leftover rows age out via recency scoring instead.
+            logger.warning(
+                "poll %s returned 0 jobs but %d active rows exist — "
+                "skipping stale-archive pass (suspected fetch failure)",
+                company_name,
+                len(existing_rows),
+            )
+        else:
+            for existing_job in existing_rows:
+                if existing_job["external_id"] not in all_external_ids:
+                    stale_ids.append(existing_job["id"])
 
         # Archive stale jobs AND update last_polled_at in parallel
         last_polled_query = (

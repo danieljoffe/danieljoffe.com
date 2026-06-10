@@ -1,4 +1,7 @@
 from datetime import UTC, datetime
+from unittest.mock import MagicMock
+
+import pytest
 
 from app.models.targets import (
     CategoryProfile,
@@ -11,6 +14,7 @@ from app.services.poller import (
     _title_matches_any_target,
     _title_matches_target,
 )
+from app.services.standard_job import StandardJob
 
 
 def _make_target(core_keywords: dict[str, int]) -> JobTarget:
@@ -292,3 +296,100 @@ def test_poll_sources_for_target_skips_inactive_target() -> None:
     assert result.errors == []
     # Critically: no DB traffic.
     supabase.table.assert_not_called()
+
+
+# ---- mass-archive guard -----------------------------------------------------
+
+
+def _make_poll_supabase(existing_rows: list[dict]) -> tuple[MagicMock, MagicMock, MagicMock]:
+    """Mock Supabase for a ``_poll_one_source`` run with no upserts.
+
+    Returns ``(supabase, jobs_table, sources_table)`` so tests can assert
+    on the archive UPDATE (jobs table) separately from the
+    ``last_polled_at`` stamp (sources table).
+    """
+    jobs_table = MagicMock()
+    existing_query = jobs_table.select.return_value.eq.return_value.not_.in_.return_value
+    existing_query.execute.return_value.data = existing_rows
+
+    sources_table = MagicMock()
+    supabase = MagicMock()
+    supabase.table.side_effect = lambda name: {
+        "jobs": jobs_table,
+        "sources": sources_table,
+    }[name]
+    return supabase, jobs_table, sources_table
+
+
+_GUARD_SOURCE = {
+    "id": "src-1",
+    "board_token": "acme",
+    "provider": "greenhouse",
+    "company_name": "Acme",
+}
+
+
+@pytest.mark.asyncio
+async def test_zero_job_fetch_with_existing_rows_skips_archiving(monkeypatch):
+    """Regression: fetchers like workday return [] on API errors. A
+    zero-job fetch must NOT archive the source's existing jobs — that
+    turns a transient upstream hiccup into a wiped source."""
+    from app.services import poller as poller_mod
+
+    existing = [
+        {"id": "job-1", "external_id": "e-1", "title": "T1", "company_name": "Acme"},
+        {"id": "job-2", "external_id": "e-2", "title": "T2", "company_name": "Acme"},
+    ]
+    supabase, jobs_table, sources_table = _make_poll_supabase(existing)
+
+    async def empty_fetch(_token: str) -> list[StandardJob]:
+        return []
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", empty_fetch)
+    monkeypatch.setattr(poller_mod, "get_active_target", lambda _sb: [])
+
+    summary = await poller_mod._poll_one_source(dict(_GUARD_SOURCE), supabase)
+
+    assert summary["polled"] is True
+    assert summary["archived"] == 0
+    # No jobs-table UPDATE at all — the only UPDATE this cycle is the
+    # sources-table last_polled_at stamp.
+    jobs_table.update.assert_not_called()
+    sources_table.update.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_nonzero_fetch_still_archives_stale_rows(monkeypatch):
+    """The guard must not break normal stale-archiving: a fetch that
+    returns jobs archives existing rows missing from the board."""
+    from app.services import poller as poller_mod
+
+    existing = [
+        {"id": "job-1", "external_id": "gone-1", "title": "T1", "company_name": "Acme"},
+    ]
+    supabase, jobs_table, _sources_table = _make_poll_supabase(existing)
+
+    async def one_job_fetch(_token: str) -> list[StandardJob]:
+        # Non-US location so the job is dropped pre-upsert — keeps the
+        # test on the no-upsert path while the fetch itself is non-empty.
+        return [
+            StandardJob(
+                external_id="live-1",
+                title="Director of CX",
+                location_name="London, United Kingdom",
+                department=None,
+                content="",
+                updated_at="2026-01-01",
+                absolute_url="https://example.com/j/1",
+            )
+        ]
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", one_job_fetch)
+    monkeypatch.setattr(poller_mod, "get_active_target", lambda _sb: [])
+
+    summary = await poller_mod._poll_one_source(dict(_GUARD_SOURCE), supabase)
+
+    assert summary["archived"] == 1
+    update_payload = jobs_table.update.call_args.args[0]
+    assert update_payload["status"] == "archived"
+    jobs_table.update.return_value.in_.assert_called_once_with("id", ["job-1"])
