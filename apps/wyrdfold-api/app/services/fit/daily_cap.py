@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_DAILY_CAP = settings.phase2_daily_cap
 """Per-target Phase 2 quota per UTC day (``PHASE2_DAILY_CAP`` env,
-default 10 — resolved once at process start).
+default 20 — resolved once at process start).
 
 Was a hardcoded 100, which alone cost ~$10.50/month/target against the
-$5/month per-user allowance; 10/day ≈ $1/month/target. Per-target quota
+$5/month per-user allowance; 20/day ≈ $2/month/target. Per-target quota
 keeps "first page renders fast + rest defer" semantics — the user gets
 some fresh Phase 2 grades each day; the rest stay ``promising`` and
 either get next-day quota or grade on click-through.

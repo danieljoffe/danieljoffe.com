@@ -174,8 +174,8 @@ class Settings(BaseSettings):
     analysis_daily_limit: int = Field(default=20, ge=0)
     # Phase 2 grading quota per target per UTC day (was a hardcoded 100 in
     # daily_cap.py — at ~$0.0035/call that alone exceeded a $5 monthly
-    # allowance; 10/day ≈ $1/month/target).
-    phase2_daily_cap: int = Field(default=10, ge=0)
+    # allowance; 20/day ≈ $2/month/target).
+    phase2_daily_cap: int = Field(default=20, ge=0)
 
     @property
     def allowed_hosts_list(self) -> list[str]:
