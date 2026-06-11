@@ -146,7 +146,9 @@ async def backfill(
                 1
                 for j in jobs
                 if j["id"] in state
-                and _needs_phase2(*state[j["id"]], target.profile_version)
+                # state tuples carry phase1_confidence as a 4th field for
+                # ordering; _needs_phase2 only gates on the first three.
+                and _needs_phase2(*state[j["id"]][:3], target.profile_version)
             )
             logger.info(
                 "%s — %d promising, %d need Phase 2 (dry-run)",
