@@ -163,6 +163,14 @@ class Settings(BaseSettings):
     # gate, but background work is charged to the target's activator and
     # gated against their monthly allowance in the poller.
     user_llm_daily_budget_usd: float = Field(default=5.0, ge=0.0)
+    # Global LLM circuit breaker (defense-in-depth above the per-user
+    # gates). When the day's total spend across ALL users (UTC midnight
+    # window, every llm_costs row) reaches this cap, the poll cycle's
+    # budget gate goes empty: every target's LLM work defers until the
+    # next UTC day while jobs keep ingesting fail-open. Catches runaway
+    # background spend that per-user allowances can't (many users, or
+    # mis-attributed system rows). 0 disables.
+    global_llm_daily_budget_usd: float = Field(default=10.0, ge=0.0)
     user_llm_hourly_budget_usd: float = Field(default=1.0, ge=0.0)
     # The overall allowance (Claude-limits model: small windows above for
     # bursts, this for the month). Rolling 30 days; counts ALL of a user's

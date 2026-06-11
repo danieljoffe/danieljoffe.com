@@ -475,7 +475,11 @@ async def test_phase1_triage_skips_known_external_ids(monkeypatch):
             ),
         ]
 
-    target = _target_with_keywords({"react": 3}, ["totally unrelated keyword"])
+    # The NEW title must pass the free gates (which now run before
+    # triage), while the KNOWN one must not — so the only reason the
+    # new job reaches triage and the known one doesn't is the
+    # known-external-id skip under test.
+    target = _target_with_keywords({"brand": 3}, ["brand new role"])
     # Triage rejects the (only) submitted title. Id 1 = first title in the
     # submitted subset, which must be the NEW job.
     fake_triage = AsyncMock(
@@ -555,6 +559,300 @@ async def test_load_alert_rows_no_ids_short_circuits():
 
     assert rows == [{"title": "no id"}]
     supabase.table.assert_not_called()
+
+
+# ---- free gates run before Phase 1 triage (cost ordering) -------------------
+
+
+def _job(external_id: str, title: str, location: str) -> StandardJob:
+    return StandardJob(
+        external_id=external_id,
+        title=title,
+        location_name=location,
+        department=None,
+        content="",
+        updated_at="2026-01-01",
+        absolute_url=f"https://example.com/j/{external_id}",
+    )
+
+
+@pytest.mark.asyncio
+async def test_phase1_triage_only_sees_free_gate_survivors(monkeypatch):
+    """Titles the FREE gates reject (title prematch, non-US location)
+    must never be sent to the Phase 1 LLM — classifying them is pure
+    spend since the per-job loop drops them regardless of verdict."""
+    from unittest.mock import AsyncMock
+
+    from app.config import settings as live_settings
+    from app.services import poller as poller_mod
+
+    monkeypatch.setattr(live_settings, "phase1_triage_enabled", True)
+    monkeypatch.setattr(live_settings, "validate_poll_urls", False)
+
+    supabase, jobs_table, _sources_table = _make_poll_supabase([])
+    jobs_table.upsert.return_value.execute.return_value.data = []
+
+    async def fetch(_token: str) -> list[StandardJob]:
+        return [
+            _job("n1", "Marketing Specialist", "Remote"),  # prematch miss
+            _job("n2", "Director of Customer Experience", "London, United Kingdom"),
+            _job("n3", "Director of Customer Experience", "Remote"),  # survivor
+        ]
+
+    target = _target_with_keywords(
+        {"Zendesk": 3}, ["director of customer experience"]
+    )
+    fake_triage = AsyncMock(return_value=({}, None))
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", fetch)
+    monkeypatch.setattr(poller_mod, "get_default_llm_client", lambda: MagicMock())
+    monkeypatch.setattr(poller_mod, "triage_titles", fake_triage)
+
+    open_gate = MagicMock()
+    open_gate.target_blocked.return_value = False
+
+    summary = await poller_mod._poll_one_source(
+        dict(_GUARD_SOURCE),
+        supabase,
+        budget_gate=open_gate,
+        active_targets=[target],
+        stage3_users=({}, {}),
+    )
+
+    assert summary["polled"] is True
+    assert summary["error"] is None
+    # Exactly one triage call, carrying ONLY the survivor's title.
+    assert fake_triage.await_count == 1
+    assert fake_triage.await_args.kwargs["titles"] == [
+        "Director of Customer Experience"
+    ]
+
+
+@pytest.mark.asyncio
+async def test_phase1_verdicts_keyed_by_original_indices_after_free_gates(monkeypatch):
+    """Verdicts come back keyed by position WITHIN the triaged subset;
+    they must be remapped to the jobs' ORIGINAL 1-based indices so the
+    per-job loop and Stage 2 lookups keep working."""
+    from unittest.mock import AsyncMock
+
+    from app.config import settings as live_settings
+    from app.services import poller as poller_mod
+    from app.services.relevance.title_triage import TitleVerdict
+
+    monkeypatch.setattr(live_settings, "phase1_triage_enabled", True)
+    monkeypatch.setattr(live_settings, "validate_poll_urls", False)
+
+    supabase, jobs_table, _sources_table = _make_poll_supabase([])
+    jobs_table.upsert.return_value.execute.return_value.data = []
+
+    async def fetch(_token: str) -> list[StandardJob]:
+        return [
+            # idx 0: free-gate reject (non-US) — never triaged.
+            _job("x0", "Director of Customer Experience", "Berlin, Germany"),
+            # idx 1: survivor — subset position 1, rejected by the LLM.
+            _job("s1", "Director of Customer Experience", "Remote"),
+            # idx 2: survivor — subset position 2, admitted.
+            _job("s2", "Head of CX", "Remote"),
+        ]
+
+    target = _target_with_keywords(
+        {"Zendesk": 3}, ["director of customer experience", "head of cx"]
+    )
+    fake_triage = AsyncMock(
+        return_value=(
+            {
+                1: TitleVerdict(id=1, promising=False),
+                2: TitleVerdict(id=2, promising=True),
+            },
+            None,
+        )
+    )
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", fetch)
+    monkeypatch.setattr(poller_mod, "get_default_llm_client", lambda: MagicMock())
+    monkeypatch.setattr(poller_mod, "triage_titles", fake_triage)
+
+    open_gate = MagicMock()
+    open_gate.target_blocked.return_value = False
+
+    summary = await poller_mod._poll_one_source(
+        dict(_GUARD_SOURCE),
+        supabase,
+        budget_gate=open_gate,
+        active_targets=[target],
+        stage3_users=({}, {}),
+    )
+
+    assert summary["error"] is None
+    # Only the LLM-admitted survivor reaches the upsert: subset id 1
+    # mapped back to original idx 2 (s1, dropped) and subset id 2 to
+    # original idx 3 (s2, admitted). A naive subset-as-global keying
+    # would have dropped s2 instead.
+    upserted = jobs_table.upsert.call_args.args[0]
+    assert [r["external_id"] for r in upserted] == ["s2"]
+
+
+# ---- targeted path: free gates before triage + Phase 2 ----------------------
+
+
+def _make_targeted_poll_supabase() -> tuple[MagicMock, MagicMock, MagicMock]:
+    """Mock Supabase for ``_poll_one_source_for_target`` runs.
+
+    ``jobs.upsert`` returns no rows by default (override per test) and
+    the ``user_targets`` junction is empty (no stage-3 users).
+    """
+    jobs_table = MagicMock()
+    jobs_table.upsert.return_value.execute.return_value.data = []
+    sources_table = MagicMock()
+    user_targets_table = MagicMock()
+    (
+        user_targets_table.select.return_value.eq.return_value.in_.return_value
+        .execute.return_value.data
+    ) = []
+    supabase = MagicMock()
+    supabase.table.side_effect = lambda name: {
+        "jobs": jobs_table,
+        "sources": sources_table,
+        "user_targets": user_targets_table,
+    }[name]
+    return supabase, jobs_table, user_targets_table
+
+
+@pytest.mark.asyncio
+async def test_targeted_triage_only_sees_free_gate_survivors(monkeypatch):
+    """``_poll_one_source_for_target`` mirrors the shared path: keyword
+    misses and non-US locations are dropped for free BEFORE the Phase 1
+    LLM call, and verdicts stay keyed by original indices."""
+    from unittest.mock import AsyncMock
+
+    from app.config import settings as live_settings
+    from app.services import poller as poller_mod
+
+    monkeypatch.setattr(live_settings, "phase1_triage_enabled", True)
+    monkeypatch.setattr(live_settings, "validate_poll_urls", False)
+
+    supabase, _jobs_table, _user_targets = _make_targeted_poll_supabase()
+
+    async def fetch(_token: str) -> list[StandardJob]:
+        return [
+            _job("k1", "Office Manager", "Remote"),  # keyword miss
+            _job("k2", "Staff Frontend Engineer", "Berlin, Germany"),  # non-US
+            _job("k3", "Staff Frontend Engineer", "Remote"),  # survivor
+        ]
+
+    target = _full_target(is_active=True, search_keywords=["frontend engineer"])
+    fake_triage = AsyncMock(return_value=({}, None))
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", fetch)
+    monkeypatch.setattr(poller_mod, "get_default_llm_client", lambda: MagicMock())
+    monkeypatch.setattr(poller_mod, "triage_titles", fake_triage)
+
+    summary = await poller_mod._poll_one_source_for_target(
+        dict(_GUARD_SOURCE), supabase, target, payer_user_id="payer-1"
+    )
+
+    assert summary["polled"] is True
+    assert summary["error"] is None
+    assert fake_triage.await_count == 1
+    assert fake_triage.await_args.kwargs["titles"] == ["Staff Frontend Engineer"]
+
+
+def _upserted_row() -> dict:
+    return {
+        "id": "j1",
+        "external_id": "k3",
+        "title": "Staff Frontend Engineer",
+        "description_html": "",
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:01Z",
+    }
+
+
+def _wire_targeted_stage3(monkeypatch, *, phase2_enabled: bool):
+    """Common harness for the targeted Stage-3 flag tests. Returns
+    ``(supabase, fake_phase2, fake_legacy, target)``."""
+    from unittest.mock import AsyncMock
+
+    from app.config import settings as live_settings
+    from app.services import poller as poller_mod
+
+    monkeypatch.setattr(live_settings, "phase1_triage_enabled", False)
+    monkeypatch.setattr(live_settings, "phase2_enabled", phase2_enabled)
+    monkeypatch.setattr(live_settings, "validate_poll_urls", False)
+
+    supabase, jobs_table, user_targets = _make_targeted_poll_supabase()
+    jobs_table.upsert.return_value.execute.return_value.data = [_upserted_row()]
+    # Legacy Stage 3's pre-fetch of stage-2 scores.
+    (
+        jobs_table.select.return_value.in_.return_value.execute.return_value.data
+    ) = []
+    (
+        user_targets.select.return_value.eq.return_value.in_.return_value
+        .execute.return_value.data
+    ) = [{"target_id": "t-1", "user_id": "u1"}]
+
+    async def fetch(_token: str) -> list[StandardJob]:
+        return [_job("k3", "Staff Frontend Engineer", "Remote")]
+
+    target = _full_target(is_active=True, search_keywords=["frontend engineer"])
+    doc = MagicMock()
+    doc.payload = {"profile": "stub"}
+
+    fake_phase2 = AsyncMock(return_value=1)
+    fake_legacy = AsyncMock()
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", fetch)
+    monkeypatch.setattr(poller_mod, "get_default_llm_client", lambda: MagicMock())
+    monkeypatch.setattr(poller_mod, "get_latest_optimized", lambda _sb, _uid: doc)
+    monkeypatch.setattr(poller_mod, "target_title_score_and_upsert", MagicMock())
+    monkeypatch.setattr(poller_mod, "target_score_and_upsert", MagicMock())
+    monkeypatch.setattr(poller_mod, "batch_update_global_scores", MagicMock())
+    monkeypatch.setattr(poller_mod, "run_phase2_for_jobs", fake_phase2)
+    monkeypatch.setattr(poller_mod, "_run_llm_scoring_for_row", fake_legacy)
+
+    return supabase, fake_phase2, fake_legacy, target
+
+
+@pytest.mark.asyncio
+async def test_targeted_stage3_uses_phase2_when_flag_on(monkeypatch):
+    """The activation path must stop defaulting to the legacy Sonnet
+    full-JD call ($0.038/job): with ``phase2_enabled`` it runs the same
+    capped ``run_phase2_for_jobs`` grading as ``_poll_one_source``."""
+    from app.services import poller as poller_mod
+
+    supabase, fake_phase2, fake_legacy, target = _wire_targeted_stage3(
+        monkeypatch, phase2_enabled=True
+    )
+
+    summary = await poller_mod._poll_one_source_for_target(
+        dict(_GUARD_SOURCE), supabase, target, payer_user_id="payer-1"
+    )
+
+    assert summary["error"] is None
+    assert fake_phase2.await_count == 1
+    kwargs = fake_phase2.await_args.kwargs
+    assert kwargs["target"] is target
+    assert kwargs["user_id"] == "payer-1"
+    assert [j["id"] for j in kwargs["jobs"]] == ["j1"]
+    fake_legacy.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_targeted_stage3_legacy_fallback_when_flag_off(monkeypatch):
+    """Flag off → the legacy Stage 3 path runs unchanged."""
+    from app.services import poller as poller_mod
+
+    supabase, fake_phase2, fake_legacy, target = _wire_targeted_stage3(
+        monkeypatch, phase2_enabled=False
+    )
+
+    summary = await poller_mod._poll_one_source_for_target(
+        dict(_GUARD_SOURCE), supabase, target, payer_user_id="payer-1"
+    )
+
+    assert summary["error"] is None
+    assert fake_legacy.await_count == 1
+    fake_phase2.assert_not_awaited()
 
 
 # ---- adaptive cadence: last_candidate_at stamp ------------------------------

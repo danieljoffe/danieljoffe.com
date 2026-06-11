@@ -356,3 +356,86 @@ async def test_usage_without_cache_fields_defaults_to_zero() -> None:
     )
     assert result.usage.cache_read_input_tokens == 0
     assert result.usage.cache_creation_input_tokens == 0
+
+
+# ---- message-level cache markers (cache_prefix_chars) -----------------------
+
+
+async def test_cache_prefix_chars_splits_message_into_two_blocks() -> None:
+    """The marker splits content at exactly the byte boundary: block 0
+    carries cache_control, block 1 is the remainder, and concatenation
+    is identical to the original content (marker, not a prompt change)."""
+    client, create_mock = _client_with_mocked_sdk(_fake_response())
+    content = "STATIC target context\nDYNAMIC batch of titles"
+    prefix_len = len("STATIC target context")
+    await client.complete(
+        model="claude-haiku-4-5",
+        system="sys",
+        messages=[
+            Message(role="user", content=content, cache_prefix_chars=prefix_len)
+        ],
+        purpose="test",
+    )
+    (msg,) = create_mock.call_args.kwargs["messages"]
+    blocks = msg["content"]
+    assert isinstance(blocks, list)
+    assert len(blocks) == 2
+    assert blocks[0] == {
+        "type": "text",
+        "text": "STATIC target context",
+        "cache_control": {"type": "ephemeral"},
+    }
+    assert blocks[1] == {"type": "text", "text": "\nDYNAMIC batch of titles"}
+    assert blocks[0]["text"] + blocks[1]["text"] == content
+
+
+async def test_no_cache_prefix_keeps_plain_string_content() -> None:
+    client, create_mock = _client_with_mocked_sdk(_fake_response())
+    await client.complete(
+        model="claude-haiku-4-5",
+        system="sys",
+        messages=[Message(role="user", content="plain")],
+        purpose="test",
+    )
+    (msg,) = create_mock.call_args.kwargs["messages"]
+    assert msg["content"] == "plain"
+
+
+async def test_cache_prefix_covering_whole_message_uses_single_block() -> None:
+    client, create_mock = _client_with_mocked_sdk(_fake_response())
+    await client.complete(
+        model="claude-haiku-4-5",
+        system="sys",
+        messages=[Message(role="user", content="all static", cache_prefix_chars=999)],
+        purpose="test",
+    )
+    (msg,) = create_mock.call_args.kwargs["messages"]
+    assert msg["content"] == [
+        {
+            "type": "text",
+            "text": "all static",
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+
+
+async def test_cache_prefix_chars_applies_to_tool_use_path() -> None:
+    client = AnthropicLLMClient(api_key="test-key")
+    create_mock = AsyncMock(
+        return_value=_fake_tool_use_response(
+            tool_name="grade", tool_input={"ok": True}
+        )
+    )
+    client._client.messages.create = create_mock  # type: ignore[method-assign]
+    await client.complete_tool_use(
+        model="claude-sonnet-4-6",
+        system="sys",
+        messages=[Message(role="user", content="AB", cache_prefix_chars=1)],
+        tool_name="grade",
+        tool_description="d",
+        tool_input_schema={"type": "object"},
+        purpose="test",
+    )
+    (msg,) = create_mock.call_args.kwargs["messages"]
+    assert msg["content"][0]["cache_control"] == {"type": "ephemeral"}
+    assert msg["content"][0]["text"] + msg["content"][1]["text"] == "AB"

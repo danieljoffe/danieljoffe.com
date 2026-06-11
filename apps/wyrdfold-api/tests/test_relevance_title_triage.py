@@ -243,3 +243,77 @@ class TestTriageTitles:
 # pattern matters once we add an integration test that drives the real
 # LLM client mock.
 _ = AsyncMock  # keep the import live for follow-up
+
+
+# ---- prompt-cache marker ----------------------------------------------------
+
+
+class TestCacheMarker:
+    @pytest.mark.asyncio
+    async def test_marker_covers_target_context_but_not_batch(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """``cache_prefix_chars`` must span exactly the per-target static
+        block (label + example pools) and exclude the per-batch titles."""
+        from app.services.relevance import title_triage as triage_mod
+
+        captured: dict[str, object] = {}
+
+        async def fake_complete_json(*_args: object, **kwargs: object) -> object:
+            captured.update(kwargs)
+            return TitleTriageResponse(verdicts=[]), MagicMock()
+
+        monkeypatch.setattr(triage_mod, "complete_json", fake_complete_json)
+
+        target = _target(
+            promising=["Senior FE Engineer"], unpromising=["Sales Lead"]
+        )
+        await triage_titles(
+            MagicMock(), target=target, titles=["Title One", "Title Two"]
+        )
+
+        messages = captured["messages"]
+        assert isinstance(messages, list) and len(messages) == 1
+        msg = messages[0]
+        n = msg.cache_prefix_chars
+        assert n is not None
+        prefix, suffix = msg.content[:n], msg.content[n:]
+        # Static target context lives entirely in the cached prefix...
+        assert "Staff Frontend Engineer" in prefix
+        assert "Senior FE Engineer" in prefix
+        assert "Sales Lead" in prefix
+        # ...and the dynamic batch entirely in the suffix.
+        assert "Title One" not in prefix
+        assert "Title One" in suffix
+        assert "Title Two" in suffix
+        # Marker is a split, not a rewrite: halves reassemble the exact
+        # message the prompt has always sent.
+        assert prefix + suffix == _build_user_message(
+            target, ["Title One", "Title Two"]
+        )
+
+    @pytest.mark.asyncio
+    async def test_cached_prefix_is_stable_across_batches(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Different batches for the same target must produce a byte-
+        identical cached prefix, or every call is a cache miss."""
+        from app.services.relevance import title_triage as triage_mod
+
+        prefixes: list[str] = []
+
+        async def fake_complete_json(*_args: object, **kwargs: object) -> object:
+            (msg,) = kwargs["messages"]
+            prefixes.append(msg.content[: msg.cache_prefix_chars])
+            return TitleTriageResponse(verdicts=[]), MagicMock()
+
+        monkeypatch.setattr(triage_mod, "complete_json", fake_complete_json)
+
+        target = _target(promising=["Senior FE Engineer"])
+        await triage_titles(MagicMock(), target=target, titles=["Batch One Title"])
+        await triage_titles(
+            MagicMock(), target=target, titles=["Other", "Different", "Batch"]
+        )
+
+        assert len(prefixes) == 2
+        assert prefixes[0] == prefixes[1]

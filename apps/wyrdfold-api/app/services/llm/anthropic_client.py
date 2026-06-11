@@ -13,6 +13,12 @@ cacheable prefix of **4096 tokens for Opus 4.7 / 4.6 / Haiku 4.5** and
 no-ops (no error, just `cache_creation_input_tokens: 0`). Our current
 system prompts land below 4096 tokens, so caching will activate once
 prompts grow — this is intentional plumbing, not an immediate cost win.
+
+`Message.cache_prefix_chars` adds a second, message-level breakpoint:
+the static per-target/per-user prefix of a user message is split into
+its own text block with `cache_control` (see `_api_message_content`).
+Combined with the cached system block, the whole static prompt prefix
+(system + target context) counts toward the cacheable minimum.
 """
 
 from __future__ import annotations
@@ -38,6 +44,37 @@ from app.services.llm.errors import (
     translate_api_status_error,
 )
 from app.services.llm.pricing import calculate_cost
+
+
+def _api_message_content(message: Message) -> Any:
+    """Serialize one Message for the API, honouring the cache marker.
+
+    No marker → plain string content (unchanged legacy shape). With
+    ``cache_prefix_chars`` set, the content is split into two text
+    blocks at exactly that character boundary with ``cache_control:
+    ephemeral`` on the first — Anthropic's documented incremental-
+    caching pattern. Block concatenation is byte-identical to
+    ``message.content``, so this is a cache marker, not a prompt
+    change. A marker at/past the end of the content caches the whole
+    message as a single block.
+    """
+    n = message.cache_prefix_chars
+    if not n:
+        return message.content
+    cached_block = {
+        "type": "text",
+        "text": message.content[:n],
+        "cache_control": {"type": "ephemeral"},
+    }
+    if n >= len(message.content):
+        return [cached_block]
+    return [cached_block, {"type": "text", "text": message.content[n:]}]
+
+
+def _api_messages(messages: list[Message]) -> list[dict[str, Any]]:
+    return [
+        {"role": m.role, "content": _api_message_content(m)} for m in messages
+    ]
 
 
 class AnthropicLLMClient:
@@ -114,9 +151,7 @@ class AnthropicLLMClient:
         else:
             system_param = system or ""
 
-        api_messages = [
-            {"role": m.role, "content": m.content} for m in messages
-        ]
+        api_messages = _api_messages(messages)
 
         start = time.perf_counter()
         try:
@@ -195,7 +230,7 @@ class AnthropicLLMClient:
         else:
             system_param = system or ""
 
-        api_messages = [{"role": m.role, "content": m.content} for m in messages]
+        api_messages = _api_messages(messages)
 
         tool: dict[str, Any] = {
             "name": tool_name,
@@ -286,9 +321,7 @@ class AnthropicLLMClient:
         else:
             system_param = system or ""
 
-        api_messages = [
-            {"role": m.role, "content": m.content} for m in messages
-        ]
+        api_messages = _api_messages(messages)
 
         start = time.perf_counter()
         # SDK raises APIStatusError on the initial HTTP handshake (which
