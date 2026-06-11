@@ -73,8 +73,10 @@ export default function TargetCard({
       label: 'View jobs',
       icon: <Briefcase className='size-4' aria-hidden />,
       onClick: () => onViewJobs(target.id),
-      // No jobs to view until the target is active *and* its profile exists.
-      disabled: !isActive || deriving,
+      // Saved jobs stay viewable even when the target is deactivated
+      // (the jobs page shows a paused banner). Only block while the
+      // profile is still deriving — nothing exists to show yet.
+      disabled: deriving,
     },
     {
       label: isActive ? 'Deactivate' : 'Activate',

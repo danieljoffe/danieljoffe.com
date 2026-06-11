@@ -221,8 +221,8 @@ describe('JobsList — empty targets state', () => {
 
 describe('JobsList — with targets', () => {
   const TARGETS: TargetTab[] = [
-    { id: 't1', label: 'Frontend' },
-    { id: 't2', label: 'Backend' },
+    { id: 't1', label: 'Frontend', paused: false },
+    { id: 't2', label: 'Backend', paused: false },
   ];
 
   it('renders the page heading and a target filter group with "All Jobs" + targets', () => {
@@ -250,6 +250,38 @@ describe('JobsList — with targets', () => {
     expect(
       screen.getByRole('button', { name: /backend/i })
     ).toBeInTheDocument();
+  });
+
+  it('marks paused targets in the tab strip and shows the paused banner with a working Reactivate', async () => {
+    const user = userEvent.setup();
+    const PAUSED: TargetTab[] = [
+      { id: 't1', label: 'Frontend', paused: false },
+      { id: 't2', label: 'Backend', paused: true },
+    ];
+    const fetchSpy = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ activation_status: 'ready', jobs_count: 0 }),
+    });
+    global.fetch = fetchSpy as unknown as typeof fetch;
+
+    render(<JobsList targetId='t2' initialTargets={PAUSED} />);
+
+    expect(
+      screen.getByRole('button', { name: /backend \(paused\)/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/this target is paused/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^reactivate$/i }));
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith('/api/targets/t2/activate', {
+        method: 'POST',
+      });
+    });
+  });
+
+  it('shows no paused banner on active targets', () => {
+    render(<JobsList targetId='t1' initialTargets={TARGETS} />);
+    expect(screen.queryByText(/this target is paused/i)).toBeNull();
   });
 
   it('renders the loading skeleton state via JobsListView', () => {
