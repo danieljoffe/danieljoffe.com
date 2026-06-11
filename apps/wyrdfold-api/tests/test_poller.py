@@ -555,3 +555,88 @@ async def test_load_alert_rows_no_ids_short_circuits():
 
     assert rows == [{"title": "no id"}]
     supabase.table.assert_not_called()
+
+
+# ---- adaptive cadence: last_candidate_at stamp ------------------------------
+
+
+@pytest.mark.asyncio
+async def test_last_candidate_at_stamped_when_candidates_upserted(monkeypatch):
+    """A poll that produces at least one ingestible candidate must stamp
+    ``sources.last_candidate_at`` alongside ``last_polled_at`` so the
+    lifecycle cadence sweep can tell productive sources from cold ones."""
+    from app.config import settings as live_settings
+    from app.services import poller as poller_mod
+
+    monkeypatch.setattr(live_settings, "validate_poll_urls", False)
+
+    supabase, jobs_table, sources_table = _make_poll_supabase([])
+    jobs_table.upsert.return_value.execute.return_value.data = []
+
+    async def fetch(_token: str) -> list[StandardJob]:
+        return [
+            StandardJob(
+                external_id="c-1",
+                title="Brand New Role",
+                location_name="Remote",
+                department=None,
+                content="",
+                updated_at="2026-01-01",
+                absolute_url="https://example.com/j/1",
+            )
+        ]
+
+    target = _target_with_keywords({"brand": 3}, ["brand new role"])
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", fetch)
+
+    open_gate = MagicMock()
+    open_gate.target_blocked.return_value = False
+
+    summary = await poller_mod._poll_one_source(
+        dict(_GUARD_SOURCE),
+        supabase,
+        budget_gate=open_gate,
+        active_targets=[target],
+        stage3_users=({}, {}),
+    )
+
+    assert summary["error"] is None
+    payload = sources_table.update.call_args.args[0]
+    assert "last_candidate_at" in payload
+    assert "last_polled_at" in payload
+
+
+@pytest.mark.asyncio
+async def test_no_candidates_leaves_last_candidate_at_unstamped(monkeypatch):
+    """A poll that fetched jobs but produced no ingestible candidates
+    must NOT touch the stamp — staleness is what the cadence sweep keys
+    on."""
+    from app.services import poller as poller_mod
+
+    existing = [
+        {"id": "job-1", "external_id": "gone-1", "title": "T1", "company_name": "Acme"},
+    ]
+    supabase, _jobs_table, sources_table = _make_poll_supabase(existing)
+
+    async def fetch(_token: str) -> list[StandardJob]:
+        return [
+            StandardJob(
+                external_id="c-1",
+                title="Director of CX",
+                location_name="London, United Kingdom",  # dropped at the US gate
+                department=None,
+                content="",
+                updated_at="2026-01-01",
+                absolute_url="https://example.com/j/1",
+            )
+        ]
+
+    monkeypatch.setitem(poller_mod.FETCHERS, "greenhouse", fetch)
+    monkeypatch.setattr(poller_mod, "get_active_target", lambda _sb: [])
+
+    summary = await poller_mod._poll_one_source(dict(_GUARD_SOURCE), supabase)
+
+    assert summary["error"] is None
+    payload = sources_table.update.call_args.args[0]
+    assert "last_candidate_at" not in payload
+    assert "last_polled_at" in payload

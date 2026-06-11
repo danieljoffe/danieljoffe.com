@@ -1216,15 +1216,20 @@ async def _poll_one_source(
 
         # Archive stale jobs AND update last_polled_at in parallel.
         # A successful poll also resets the failure-backoff counter.
+        mark_polled_payload: dict[str, Any] = {
+            "last_polled_at": datetime.now(UTC).isoformat(),
+            "job_count": len(jobs),
+            "consecutive_failures": 0,
+        }
+        # Adaptive cadence: a non-empty upsert batch means this source
+        # produced at least one ingestible candidate this cycle. The
+        # lifecycle sweep stretches sources whose stamp goes cold to a
+        # daily interval and restores them once they produce again.
+        if rows_to_upsert:
+            mark_polled_payload["last_candidate_at"] = datetime.now(UTC).isoformat()
         last_polled_query = (
             supabase.table("sources")
-            .update(
-                {
-                    "last_polled_at": datetime.now(UTC).isoformat(),
-                    "job_count": len(jobs),
-                    "consecutive_failures": 0,
-                }
-            )
+            .update(mark_polled_payload)
             .eq("id", source_id)
         )
 

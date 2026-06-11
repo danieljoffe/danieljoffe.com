@@ -12,7 +12,14 @@ Two cleanups, run from the poll cycle (throttled in the caller):
 2. **Batch reaper** — ``batch_runs`` stuck in ``processing`` beyond
    ``BATCH_STUCK_HOURS`` flip to ``failed`` so they stop looking alive.
 
-Idempotent by construction: both steps only transition rows, so re-runs
+3. **Adaptive source cadence** — sources whose ``last_candidate_at``
+   stamp is older than ``source_cold_after_days`` get their poll
+   interval stretched to daily (cold boards aren't worth a 4-hour
+   fetch + triage cycle); sources that produce candidates again get
+   restored to the 4-hour default. NULL stamps (rows predating the
+   column backfill) are left untouched.
+
+Idempotent by construction: all steps only transition rows, so re-runs
 (e.g. after a restart loses the throttle marker) are no-ops.
 """
 
@@ -32,18 +39,32 @@ logger = logging.getLogger(__name__)
 
 BATCH_STUCK_HOURS = 2
 
+# Adaptive cadence intervals. Cold sources poll daily; sources restored
+# after producing a candidate go back to the poller's 4-hour default.
+SOURCE_COLD_INTERVAL_MINUTES = 1440
+SOURCE_WARM_INTERVAL_MINUTES = 240
+
 
 async def run_lifecycle_sweep(supabase: Client) -> dict[str, int]:
-    """Run both cleanups; returns counts for logging/tests."""
+    """Run all cleanups; returns counts for logging/tests."""
     deactivated = await _deactivate_idle_targets(supabase)
     reaped = await _reap_stuck_batches(supabase)
-    if deactivated or reaped:
+    stretched, restored = await _adjust_source_cadence(supabase)
+    if deactivated or reaped or stretched or restored:
         logger.info(
-            "lifecycle sweep: deactivated=%d stuck_batches_failed=%d",
+            "lifecycle sweep: deactivated=%d stuck_batches_failed=%d "
+            "sources_stretched=%d sources_restored=%d",
             deactivated,
             reaped,
+            stretched,
+            restored,
         )
-    return {"deactivated": deactivated, "batches_reaped": reaped}
+    return {
+        "deactivated": deactivated,
+        "batches_reaped": reaped,
+        "sources_stretched": stretched,
+        "sources_restored": restored,
+    }
 
 
 async def _deactivate_idle_targets(supabase: Client) -> int:
@@ -119,6 +140,52 @@ async def _target_labels(supabase: Client, target_ids: list[str]) -> list[str]:
         str(r.get("label") or "")
         for r in cast(list[dict[str, Any]], resp.data or [])
     ]
+
+
+async def _adjust_source_cadence(supabase: Client) -> tuple[int, int]:
+    """Stretch cold sources to daily polling; restore productive ones.
+
+    Cold = enabled source whose ``last_candidate_at`` is older than
+    ``source_cold_after_days`` (0 disables the whole step). NULL stamps
+    are excluded by SQL comparison semantics (``NULL < cutoff`` is not
+    true), so pre-backfill rows are never touched. The restore arm only
+    rewrites rows the stretch arm previously set to the cold interval,
+    keeping any operator-tuned custom interval intact.
+
+    Returns ``(stretched, restored)`` row counts.
+    """
+    days = settings.source_cold_after_days
+    if days <= 0:
+        return 0, 0
+    cutoff = (datetime.now(UTC) - timedelta(days=days)).isoformat()
+
+    stretch_resp = await asyncio.to_thread(
+        lambda: supabase.table("sources")
+        .update({"poll_interval_minutes": SOURCE_COLD_INTERVAL_MINUTES})
+        .eq("enabled", True)
+        .lt("last_candidate_at", cutoff)
+        # Skip rows already at the cold interval; include NULL-interval
+        # rows (they currently poll at the 4h default via the poller's
+        # fallback, so they're stretchable too).
+        .or_(
+            f"poll_interval_minutes.neq.{SOURCE_COLD_INTERVAL_MINUTES},"
+            "poll_interval_minutes.is.null"
+        )
+        .execute()
+    )
+    stretched = len(cast(list[dict[str, Any]], stretch_resp.data or []))
+
+    restore_resp = await asyncio.to_thread(
+        lambda: supabase.table("sources")
+        .update({"poll_interval_minutes": SOURCE_WARM_INTERVAL_MINUTES})
+        .eq("enabled", True)
+        .gte("last_candidate_at", cutoff)
+        .eq("poll_interval_minutes", SOURCE_COLD_INTERVAL_MINUTES)
+        .execute()
+    )
+    restored = len(cast(list[dict[str, Any]], restore_resp.data or []))
+
+    return stretched, restored
 
 
 async def _reap_stuck_batches(supabase: Client) -> int:

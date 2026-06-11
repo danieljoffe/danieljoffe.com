@@ -40,6 +40,13 @@ def _supabase_for_sweep(
             ]
         elif name == "batch_runs":
             t.update.return_value.eq.return_value.lt.return_value.execute.return_value.data = []
+        elif name == "sources":
+            # Adaptive-cadence arms: stretch (.lt + .or_) and restore
+            # (.gte + .eq). Both no-op by default.
+            stretch = t.update.return_value.eq.return_value.lt.return_value.or_.return_value
+            stretch.execute.return_value.data = []
+            restore = t.update.return_value.eq.return_value.gte.return_value.eq.return_value
+            restore.execute.return_value.data = []
         return t
 
     supabase.table.side_effect = table
@@ -85,6 +92,8 @@ async def test_sweep_skips_users_with_no_active_links(monkeypatch):
 @pytest.mark.asyncio
 async def test_sweep_disabled_when_threshold_zero(monkeypatch):
     monkeypatch.setattr(lifecycle.settings, "idle_deactivate_days", 0)
+    # Keep the cadence step out of this test's raw mock.
+    monkeypatch.setattr(lifecycle.settings, "source_cold_after_days", 0)
     sb = MagicMock()
     sb.table.return_value.update.return_value.eq.return_value.lt.return_value.execute.return_value.data = []
 
@@ -116,7 +125,9 @@ async def test_email_failure_does_not_block_deactivation(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_reaper_fails_stuck_processing_batches():
+async def test_reaper_fails_stuck_processing_batches(monkeypatch):
+    # Keep the cadence step out of this test's raw mock.
+    monkeypatch.setattr(lifecycle.settings, "source_cold_after_days", 0)
     sb = MagicMock()
 
     def table(name: str) -> MagicMock:
@@ -314,3 +325,80 @@ async def test_source_failure_threshold_zero_disables_backoff(monkeypatch):
     sb = MagicMock()
     await poller._record_source_failure(sb, {"id": "s-1"})
     sb.table.assert_not_called()
+
+
+# ---- _adjust_source_cadence -------------------------------------------------
+
+
+def _supabase_for_cadence(
+    *,
+    stretched_rows: list[dict[str, Any]],
+    restored_rows: list[dict[str, Any]],
+) -> tuple[MagicMock, MagicMock]:
+    """Mock just the sources table for direct `_adjust_source_cadence`
+    calls. Returns ``(supabase, sources_table)``."""
+    sources = MagicMock()
+    stretch = sources.update.return_value.eq.return_value.lt.return_value.or_.return_value
+    stretch.execute.return_value.data = stretched_rows
+    restore = sources.update.return_value.eq.return_value.gte.return_value.eq.return_value
+    restore.execute.return_value.data = restored_rows
+    supabase = MagicMock()
+    supabase.table.return_value = sources
+    return supabase, sources
+
+
+@pytest.mark.asyncio
+async def test_cadence_stretches_cold_and_restores_fresh(monkeypatch):
+    monkeypatch.setattr(lifecycle.settings, "source_cold_after_days", 7)
+    sb, sources = _supabase_for_cadence(
+        stretched_rows=[{"id": "s-cold-1"}, {"id": "s-cold-2"}],
+        restored_rows=[{"id": "s-warm-1"}],
+    )
+
+    stretched, restored = await lifecycle._adjust_source_cadence(sb)
+
+    assert (stretched, restored) == (2, 1)
+    payloads = [c.args[0] for c in sources.update.call_args_list]
+    assert {"poll_interval_minutes": lifecycle.SOURCE_COLD_INTERVAL_MINUTES} in payloads
+    assert {"poll_interval_minutes": lifecycle.SOURCE_WARM_INTERVAL_MINUTES} in payloads
+    # Stretch arm filters on a STALE stamp (lt cutoff): NULL stamps fall
+    # out of the comparison, so pre-backfill rows are untouched.
+    lt_call = sources.update.return_value.eq.return_value.lt.call_args
+    assert lt_call.args[0] == "last_candidate_at"
+    cutoff = datetime.fromisoformat(lt_call.args[1])
+    expected = datetime.now(UTC) - timedelta(days=7)
+    assert abs((cutoff - expected).total_seconds()) < 60
+    # Restore arm only rewrites rows currently at the cold interval.
+    restore_eq = sources.update.return_value.eq.return_value.gte.return_value.eq.call_args
+    assert restore_eq.args == (
+        "poll_interval_minutes",
+        lifecycle.SOURCE_COLD_INTERVAL_MINUTES,
+    )
+
+
+@pytest.mark.asyncio
+async def test_cadence_disabled_when_setting_is_zero(monkeypatch):
+    monkeypatch.setattr(lifecycle.settings, "source_cold_after_days", 0)
+    sb, _sources = _supabase_for_cadence(stretched_rows=[], restored_rows=[])
+
+    stretched, restored = await lifecycle._adjust_source_cadence(sb)
+
+    assert (stretched, restored) == (0, 0)
+    sb.table.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_sweep_reports_cadence_counts(monkeypatch):
+    """run_lifecycle_sweep surfaces the cadence counts alongside the
+    existing steps."""
+    sb = _supabase_for_sweep(idle_user_ids=[], flipped_rows_by_user={})
+    monkeypatch.setattr(
+        lifecycle,
+        "_adjust_source_cadence",
+        AsyncMock(return_value=(3, 2)),
+    )
+
+    result = await lifecycle.run_lifecycle_sweep(sb)
+
+    assert result["sources_stretched"] == 3
+    assert result["sources_restored"] == 2
