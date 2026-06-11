@@ -264,6 +264,38 @@ def test_build_gate_zero_cap_disables_gating(monkeypatch):
     assert spend_called is False  # 0 cap short-circuits the spend query
 
 
+def test_build_gate_blocks_operator_disabled_user(monkeypatch):
+    """llm_enabled=false (the operator kill-switch) blocks the payer's
+    background work without touching spend/idle checks."""
+    import app.services.targets.payers as payers_mod
+
+    monkeypatch.setattr(
+        payers_mod,
+        "resolve_target_payers",
+        lambda sb, ids: {"t-off": "u-off", "t-on": "u-on"},
+    )
+    sb = MagicMock()
+    sb.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        {"user_id": "u-off", "llm_monthly_budget_usd": None, "llm_enabled": False},
+        {"user_id": "u-on", "llm_monthly_budget_usd": None, "llm_enabled": True},
+    ]
+    monkeypatch.setattr(payers_mod.settings, "user_llm_monthly_budget_usd", 5.0)
+    monkeypatch.setattr(payers_mod.settings, "idle_defer_days", 0)
+    spend_calls: list[str] = []
+
+    def _spend(sb, user_id, since):
+        spend_calls.append(user_id)
+        return 0.0
+
+    monkeypatch.setattr(payers_mod.cost_log, "total_spend", _spend)
+
+    gate = build_budget_gate(sb, ["t-off", "t-on"])
+    assert gate.target_blocked("t-off") is True
+    assert gate.user_blocked("u-off") is True
+    assert gate.target_blocked("t-on") is False
+    assert spend_calls == ["u-on"]  # disabled user skips the spend query
+
+
 def test_build_gate_override_raises_cap(monkeypatch):
     """A user_profiles override above the spend keeps the payer unblocked."""
     import app.services.targets.payers as payers_mod

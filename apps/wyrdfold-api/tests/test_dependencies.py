@@ -376,12 +376,12 @@ def test_enforce_llm_budget_jwt_user_invokes_check(monkeypatch):
         )
 
     monkeypatch.setattr(budget_mod, "check_user_budget", _spy)
-    # The dep resolves the monthly cap (user_profiles override ?? default)
-    # before the check — stub it so no Supabase round-trip happens.
+    # The dep resolves (cap, llm_enabled) from user_profiles before the
+    # check — stub it so no Supabase round-trip happens.
     monkeypatch.setattr(
         budget_mod,
-        "effective_monthly_cap",
-        lambda supabase, *, user_id, default_usd: default_usd,
+        "get_llm_account",
+        lambda supabase, *, user_id, default_usd: (default_usd, True),
     )
     enforce_llm_budget(
         user_id=USER_SUB,
@@ -409,13 +409,34 @@ def test_enforce_llm_budget_monthly_honors_profile_override(monkeypatch):
     monkeypatch.setattr(budget_mod, "check_user_budget", _spy)
     monkeypatch.setattr(
         budget_mod,
-        "effective_monthly_cap",
-        lambda supabase, *, user_id, default_usd: 25.0,
+        "get_llm_account",
+        lambda supabase, *, user_id, default_usd: (25.0, True),
     )
     enforce_llm_budget(
         user_id=USER_SUB, supabase=MagicMock(), s=_budget_settings(monthly=5.0)
     )
     assert captured["monthly_limit_usd"] == 25.0
+
+
+def test_enforce_llm_budget_disabled_account_403s(monkeypatch):
+    """The operator kill-switch blocks before any spend math runs."""
+    from app.services.llm import budget as budget_mod
+
+    monkeypatch.setattr(
+        budget_mod,
+        "get_llm_account",
+        lambda supabase, *, user_id, default_usd: (default_usd, False),
+    )
+    check_spy = MagicMock()
+    monkeypatch.setattr(budget_mod, "check_user_budget", check_spy)
+
+    with pytest.raises(HTTPException) as exc:
+        enforce_llm_budget(
+            user_id=USER_SUB, supabase=MagicMock(), s=_budget_settings()
+        )
+    assert exc.value.status_code == 403
+    assert exc.value.detail["code"] == "llm_disabled"
+    check_spy.assert_not_called()
 
 
 def test_enforce_llm_budget_propagates_429(monkeypatch):
