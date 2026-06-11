@@ -36,6 +36,7 @@ from app.services.llm import get_default_client as get_default_llm_client
 from app.services.llm.client import LLMClient
 from app.services.llm.cost_log import enqueue as enqueue_llm_cost
 from app.services.llm.cost_log import record as record_llm_cost
+from app.services.llm.cost_log import total_spend_all as total_llm_spend_all
 from app.services.recency import refresh_recency_scores
 from app.services.relevance.title_triage import (
     PHASE1_BATCH_SIZE,
@@ -1345,6 +1346,41 @@ async def _record_source_failure(
         )
 
 
+def _global_circuit_breaker_tripped(supabase: Client) -> bool:
+    """True when today's total LLM spend (ALL users, since UTC midnight)
+    has reached ``global_llm_daily_budget_usd``.
+
+    Defense-in-depth above the per-payer monthly gates: a runaway cycle
+    (bad prompt, bad batch math, many users at once) stops bleeding
+    within one poll tick instead of within one user-month. 0 disables.
+    """
+    cap = settings.global_llm_daily_budget_usd
+    if cap <= 0:
+        return False
+    midnight = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+    spent = total_llm_spend_all(supabase, since=midnight)
+    if spent < cap:
+        return False
+    logger.error(
+        "global LLM circuit breaker tripped: $%.4f spent today >= $%.2f cap — "
+        "deferring ALL LLM work this cycle (jobs still ingest)",
+        spent,
+        cap,
+    )
+    if settings.sentry_dsn:
+        try:
+            import sentry_sdk
+
+            sentry_sdk.capture_message(
+                f"global LLM circuit breaker tripped: ${spent:.4f} spent today "
+                f">= ${cap:.2f} daily cap",
+                level="error",
+            )
+        except Exception:
+            logger.exception("Failed to report circuit breaker trip to Sentry")
+    return True
+
+
 async def _cycle_budget_gate(supabase: Client) -> tuple[PayerBudgetGate, bool]:
     """Build the payer/allowance snapshot once per poll cycle.
 
@@ -1356,9 +1392,17 @@ async def _cycle_budget_gate(supabase: Client) -> tuple[PayerBudgetGate, bool]:
     crash or fail open. Jobs still ingest; grading defers a cycle.
     ``has_active_targets`` fails True so a gate error never silently
     stops paid-source polling that a healthy cycle would run.
+
+    The global circuit breaker check runs first: when today's spend
+    across all users hits ``global_llm_daily_budget_usd`` the cycle gets
+    the same EMPTY gate (defer everything, keep ingesting). A breaker
+    *query* failure falls into the same except arm — refuse to spend
+    when we can't see the meter.
     """
     try:
         active = await asyncio.to_thread(get_active_target, supabase)
+        if await asyncio.to_thread(_global_circuit_breaker_tripped, supabase):
+            return PayerBudgetGate(), bool(active)
         gate = await asyncio.to_thread(
             build_budget_gate, supabase, [t.id for t in active]
         )
