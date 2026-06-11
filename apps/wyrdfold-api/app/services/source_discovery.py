@@ -470,8 +470,16 @@ async def run_discovery_for_target(
             continue
 
         # detect_ats has its own httpx client — it manages probe
-        # cadence + provider fallback internally.
-        detect = await detect_ats(hit.url)
+        # cadence + provider fallback internally. Guard it anyway: a single
+        # malformed URL or an unexpected probe error must never abort the
+        # whole target's run (the bulk endpoint would record it as a generic
+        # "discovery failed" and zero out every later URL). Treat any raise
+        # as unclassified — log, count, and move to the next hit.
+        try:
+            detect = await detect_ats(hit.url)
+        except Exception as exc:
+            logger.warning("detect_ats raised for %s: %s", hit.url, exc)
+            detect = None
         if detect is None:
             unclassified += 1
             _log_discovery(
