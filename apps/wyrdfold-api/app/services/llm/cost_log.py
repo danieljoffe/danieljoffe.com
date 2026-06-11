@@ -189,6 +189,24 @@ def total_spend(
     return round(float(cast(Any, raw)), 6)
 
 
+def total_spend_all(
+    supabase: Client,
+    since: datetime | None = None,
+) -> float:
+    """Sum of ``cost_usd`` across ALL users over the window.
+
+    Powers the global LLM circuit breaker, which only ever asks for a
+    one-day window — so a client-side select+sum (same style as
+    ``_total_spend_python``) is plenty; no dedicated RPC needed.
+    """
+    query = supabase.table(TABLE).select("cost_usd")
+    if since is not None:
+        query = query.gte("created_at", since.isoformat())
+    resp = query.execute()
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    return round(sum(float(r["cost_usd"]) for r in rows), 6)
+
+
 def _spend_by_purpose_python(
     supabase: Client,
     user_id: str | None,
