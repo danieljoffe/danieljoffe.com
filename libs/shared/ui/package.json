@@ -1,6 +1,6 @@
 {
   "name": "@danieljoffe/shared-ui",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "React component library and design system shared across danieljoffe.com and WyrdFold — Tailwind CSS 4, React 19, server-component-friendly.",
   "type": "module",
   "sideEffects": false,
@@ -18,17 +18,20 @@
     "./*": {
       "@danieljoffe.com/source": "./src/lib/*.tsx",
       "types": "./dist/lib/*.d.ts",
-      "default": "./src/lib/*.tsx"
+      "import": "./dist/lib/*.js",
+      "default": "./dist/lib/*.js"
     },
     "./styles/*": {
       "@danieljoffe.com/source": "./src/lib/styles/*.ts",
       "types": "./dist/lib/styles/*.d.ts",
-      "default": "./src/lib/styles/*.ts"
+      "import": "./dist/lib/styles/*.js",
+      "default": "./dist/lib/styles/*.js"
     },
     "./types": {
       "@danieljoffe.com/source": "./src/lib/types.ts",
       "types": "./dist/lib/types.d.ts",
-      "default": "./src/lib/types.ts"
+      "import": "./dist/lib/types.js",
+      "default": "./dist/lib/types.js"
     },
     "./styles/indigo-theme.css": "./src/styles/indigo-theme.css",
     "./styles/pyre-theme.css": "./src/styles/pyre-theme.css"
