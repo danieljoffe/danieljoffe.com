@@ -9,6 +9,10 @@ os.environ["ALLOWED_HOSTS"] = "*"
 # from a single TestClient (one IP, no JWT), which would trip the limiter
 # and turn legitimate test runs into flaky 429s.
 os.environ["RATE_LIMIT_ENABLED"] = "false"
+# Disable last_seen activity stamping — it fires inside the auth deps and
+# would attempt real Supabase writes from tests that only mock per-route
+# clients.
+os.environ["ACTIVITY_TRACKING_ENABLED"] = "false"
 
 from unittest.mock import MagicMock
 
