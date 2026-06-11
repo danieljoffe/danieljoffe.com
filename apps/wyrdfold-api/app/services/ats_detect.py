@@ -86,11 +86,11 @@ async def _probe_workday(
             url,
             json={"appliedFacets": {}, "limit": 1, "offset": 0, "searchText": ""},
         )
-    except httpx.HTTPError:
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except (httpx.HTTPError, ValueError):
         return None
-    if resp.status_code != 200:
-        return None
-    data = resp.json()
     if not isinstance(data, dict):
         return None
     total = data.get("total")
@@ -142,11 +142,15 @@ async def _probe_greenhouse(slug: str, client: httpx.AsyncClient) -> DetectResul
     url = f"{GREENHOUSE_BASE}/{slug}/jobs"
     try:
         resp = await client.get(url)
-    except httpx.HTTPError:
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except (httpx.HTTPError, ValueError):
+        # ValueError covers a 200 with a non-JSON body (rate-limit HTML,
+        # Cloudflare interstitial, a marketing page sharing the host).
         return None
-    if resp.status_code != 200:
+    if not isinstance(data, dict):
         return None
-    data = resp.json()
     jobs = data.get("jobs")
     if not isinstance(jobs, list):
         return None
@@ -160,7 +164,7 @@ async def _probe_greenhouse(slug: str, client: httpx.AsyncClient) -> DetectResul
             meta = meta_resp.json()
             if isinstance(meta, dict):
                 company_name = meta.get("name") or slug
-    except httpx.HTTPError:
+    except (httpx.HTTPError, ValueError):
         pass
 
     return DetectResult(
@@ -175,11 +179,11 @@ async def _probe_lever(slug: str, client: httpx.AsyncClient) -> DetectResult | N
     url = f"{LEVER_BASE}/{slug}?mode=json&limit=1"
     try:
         resp = await client.get(url)
-    except httpx.HTTPError:
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except (httpx.HTTPError, ValueError):
         return None
-    if resp.status_code != 200:
-        return None
-    data = resp.json()
     if not isinstance(data, list) or len(data) == 0:
         return None
     # Lever doesn't expose board-level company name; use slug title-cased
@@ -195,11 +199,13 @@ async def _probe_ashby(slug: str, client: httpx.AsyncClient) -> DetectResult | N
     url = f"{ASHBY_BASE}/{slug}"
     try:
         resp = await client.get(url)
-    except httpx.HTTPError:
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except (httpx.HTTPError, ValueError):
         return None
-    if resp.status_code != 200:
+    if not isinstance(data, dict):
         return None
-    data = resp.json()
     jobs = data.get("jobs", [])
     if not isinstance(jobs, list):
         return None
@@ -217,11 +223,13 @@ async def _probe_smartrecruiters(
     url = f"{SMARTRECRUITERS_BASE}/{slug}/postings?limit=1"
     try:
         resp = await client.get(url)
-    except httpx.HTTPError:
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except (httpx.HTTPError, ValueError):
         return None
-    if resp.status_code != 200:
+    if not isinstance(data, dict):
         return None
-    data = resp.json()
     content = data.get("content", [])
     if not isinstance(content, list) or len(content) == 0:
         return None

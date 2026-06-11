@@ -544,3 +544,49 @@ async def test_discovery_fires_brave_queries_concurrently(monkeypatch):
         f"expected concurrent Brave queries, peak in-flight was {peak} "
         "— is the semaphore wired up?"
     )
+
+
+@pytest.mark.asyncio
+async def test_discovery_survives_detect_ats_raise(monkeypatch):
+    """A single URL whose probe raises must not abort the whole target.
+
+    Regression: ``detect_ats`` was called unguarded, so one bad URL (e.g. a
+    200 with a non-JSON body that made ``resp.json()`` raise) bubbled out of
+    ``run_discovery_for_target`` and the bulk endpoint recorded a generic
+    "discovery failed", zeroing out every later URL. The raise must be
+    swallowed and counted as unclassified instead.
+    """
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "brave_search_api_key", "test-key")
+    monkeypatch.setattr(live_settings, "discovery_query_cap_per_run", 1)
+
+    supabase = _make_supabase(existing_tokens=[])
+    # Two distinct boards: the first probe raises, the second classifies
+    # cleanly — proving the run continues past the failure and still inserts.
+    fake_brave = AsyncMock(
+        return_value=[
+            "https://boards.greenhouse.io/boom",
+            "https://boards.greenhouse.io/good",
+        ]
+    )
+
+    async def flaky_detect(url: str) -> DetectResult:
+        if "boom" in url:
+            raise ValueError("simulated non-JSON 200 body")
+        return DetectResult(
+            provider="greenhouse",
+            board_token="good",
+            company_name="Good Co",
+            job_count=3,
+        )
+
+    with (
+        patch("app.services.source_discovery._brave_search", fake_brave),
+        patch("app.services.source_discovery.detect_ats", side_effect=flaky_detect),
+    ):
+        stats = await run_discovery_for_target(supabase, _make_target())
+
+    assert stats.unclassified == 1
+    assert stats.inserted == 1
+    assert stats.urls_examined == 2

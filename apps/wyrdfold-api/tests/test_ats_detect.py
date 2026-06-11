@@ -143,6 +143,27 @@ async def test_detect_greenhouse_name_fetch_failure_falls_back_to_slug():
 
 
 @pytest.mark.asyncio
+async def test_detect_greenhouse_non_json_200_returns_none():
+    """Regression: a 200 response with a non-JSON body (rate-limit HTML,
+    Cloudflare interstitial) made ``resp.json()`` raise ``ValueError``, which
+    propagated out of ``detect_ats`` and aborted the entire discovery run for
+    the target. It must return None instead."""
+    resp = MagicMock()
+    resp.status_code = 200
+    resp.json.side_effect = ValueError("Expecting value: line 1 column 1")
+
+    mock_client = AsyncMock()
+    mock_client.get.return_value = resp
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats("https://boards.greenhouse.io/acme")
+
+    assert result is None
+
+
+@pytest.mark.asyncio
 async def test_detect_lever_from_url():
     mock_client = AsyncMock()
     mock_client.get.return_value = _make_http_response(200, [{"id": "1", "text": "Engineer"}])
