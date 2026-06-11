@@ -201,6 +201,31 @@ describe('TargetCard', () => {
     expect(onActivate).not.toHaveBeenCalled();
   });
 
+  it('keeps "View jobs" enabled on a deactivated target (saved jobs stay viewable)', async () => {
+    const user = userEvent.setup();
+    const onViewJobs = jest.fn();
+    const { container } = render(
+      <TargetCard
+        target={makeTarget({ is_active: false })}
+        fitScore={null}
+        fitScoreReasoning={null}
+        isActive={false}
+        onActivate={noop}
+        onDeactivate={noop}
+        onDelete={noop}
+        onViewJobs={onViewJobs}
+      />
+    );
+    const trigger = container.querySelector(
+      '[aria-haspopup="menu"]'
+    ) as HTMLElement;
+    await user.click(trigger);
+    const viewJobs = screen.getByRole('menuitem', { name: /view jobs/i });
+    expect(viewJobs).not.toHaveAttribute('aria-disabled', 'true');
+    await user.click(viewJobs);
+    expect(onViewJobs).toHaveBeenCalledWith('t-1');
+  });
+
   it('surfaces a failure state when derivation errored', () => {
     render(
       <TargetCard

@@ -36,13 +36,17 @@ export default async function FittedJobsPage({
   const targetsRes = await fetchJsonFromWyrdfoldAPI<{
     targets: UserTargetWithSummary[];
   }>('/targets/mine');
-  const initialTargets: TargetTab[] = (targetsRes?.targets ?? [])
-    .filter(t => t.user_target.is_active)
-    .map(t => ({ id: t.target.id, label: t.target.label }));
+  // Deactivated targets stay visible as paused tabs — their saved jobs
+  // remain browsable (DB reads are free); only polling/grading stops.
+  const initialTargets: TargetTab[] = (targetsRes?.targets ?? []).map(t => ({
+    id: t.target.id,
+    label: t.target.label,
+    paused: !t.user_target.is_active,
+  }));
 
-  // If the URL points to a target this user doesn't have active, drop the
-  // filter rather than rendering an empty list. Server-side redirect avoids
-  // a render → effect → client redirect waterfall.
+  // If the URL points to a target this user isn't linked to at all, drop
+  // the filter rather than rendering an empty list. Server-side redirect
+  // avoids a render → effect → client redirect waterfall.
   if (targetId && !initialTargets.some(t => t.id === targetId)) {
     redirect('/jobs');
   }
