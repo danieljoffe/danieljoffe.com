@@ -2,8 +2,34 @@
 import { readdirSync } from 'node:fs';
 import * as path from 'path';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import dts from 'vite-plugin-dts';
+
+// Rollup strips module-level `"use client"`/`"use server"` directives under
+// preserveModules, which makes the per-component dist files crash Next.js
+// Server Component builds (the file uses client hooks but no longer declares
+// the boundary). Capture each module's directive before transforms run, then
+// re-emit it at the top of the matching emitted chunk.
+const DIRECTIVE_RE =
+  /^(?:\s*(?:\/\/[^\n]*|\/\*[\s\S]*?\*\/))*\s*(['"])use (client|server)\1/;
+function preserveDirectives(): Plugin {
+  const directives = new Map<string, string>();
+  return {
+    name: 'preserve-use-directives',
+    enforce: 'pre',
+    transform(code, id) {
+      const match = DIRECTIVE_RE.exec(code);
+      if (match) directives.set(id, `'use ${match[2]}';`);
+      return null;
+    },
+    renderChunk(code, chunk) {
+      const id = chunk.facadeModuleId;
+      const directive = id ? directives.get(id) : undefined;
+      if (!directive) return null;
+      return { code: `${directive}\n${code}`, map: null };
+    },
+  };
+}
 
 // Build one ES module per source file (preserveModules) so consumers can deep-
 // import subpaths from node_modules, e.g. `@danieljoffe/shared-ui/Text` →
@@ -35,6 +61,7 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../../node_modules/.vite/libs/shared/ui',
   plugins: [
+    preserveDirectives(),
     react(),
     dts({
       entryRoot: 'src',
