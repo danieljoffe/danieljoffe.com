@@ -196,6 +196,12 @@ class Settings(BaseSettings):
     # Auto-disable a source after this many consecutive fetch failures
     # (0 disables the backoff).
     source_failure_disable_threshold: int = Field(default=10, ge=0)
+    # Adaptive source cadence. Sources whose ``last_candidate_at`` is
+    # older than this many days get their poll interval stretched to
+    # daily by the lifecycle sweep; sources that produce candidates
+    # again get restored to the 4-hour default. NULL last_candidate_at
+    # (pre-backfill rows) are left untouched. 0 disables the sweep step.
+    source_cold_after_days: int = Field(default=7, ge=0)
 
     @property
     def allowed_hosts_list(self) -> list[str]:
