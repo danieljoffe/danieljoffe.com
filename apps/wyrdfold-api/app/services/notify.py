@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
 import httpx
@@ -73,8 +73,8 @@ async def send_alerts_for_new_jobs(
 
 
 async def _fetch_active_profiles(supabase: Client) -> list[dict[str, Any]]:
-    resp = await asyncio.to_thread(
-        lambda: supabase.table("user_profiles")
+    query = (
+        supabase.table("user_profiles")
         .select(
             "id, email, job_score_threshold,"
             " phone_number, sms_notifications_enabled,"
@@ -82,8 +82,18 @@ async def _fetch_active_profiles(supabase: Client) -> list[dict[str, Any]]:
         )
         .eq("job_notifications_enabled", True)
         .is_("unsubscribed_at", "null")
-        .execute()
     )
+    # Alert hygiene: abandoned users stop receiving job alerts even
+    # before the lifecycle sweep deactivates their targets. NULL
+    # last_seen_at passes (or-filter) — never punish missing data.
+    if settings.idle_deactivate_days > 0:
+        cutoff = (
+            datetime.now(UTC) - timedelta(days=settings.idle_deactivate_days)
+        ).isoformat()
+        query = query.or_(
+            f"last_seen_at.gte.{cutoff},last_seen_at.is.null"
+        )
+    resp = await asyncio.to_thread(query.execute)
     return cast(list[dict[str, Any]], resp.data or [])
 
 
@@ -165,6 +175,64 @@ async def _post_alert(
     body = resp.json()
     resend_id = body.get("resendId")
     return resend_id if isinstance(resend_id, str) else None
+
+
+# ---------------------------------------------------------------------------
+# Idle-lifecycle "target paused" email
+# ---------------------------------------------------------------------------
+
+
+async def send_target_paused_email(
+    supabase: Client, *, user_id: str, target_labels: list[str]
+) -> bool:
+    """One email telling an idle user their target(s) were auto-paused.
+
+    Called by the lifecycle sweep only for rows it just transitioned, so
+    at-most-once holds without a dedup table (a crash between flip and
+    send loses the email — same trade as job alerts). Honors the same
+    opt-out signals as job alerts.
+    """
+    if not settings.next_app_url or not settings.job_alert_secret:
+        return False
+
+    resp = await asyncio.to_thread(
+        lambda: supabase.table("user_profiles")
+        .select("id, email, job_notifications_enabled, unsubscribed_at")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    if not rows:
+        return False
+    profile = rows[0]
+    if not profile.get("job_notifications_enabled") or profile.get("unsubscribed_at"):
+        return False
+
+    payload = {
+        "profileId": profile["id"],
+        "to": profile["email"],
+        "targetLabels": target_labels,
+        "idleDays": settings.idle_deactivate_days,
+    }
+    url = f"{settings.next_app_url.rstrip('/')}/api/email/target-paused"
+    client: httpx.AsyncClient = get_http_client()
+    try:
+        post_resp = await client.post(
+            url,
+            json=payload,
+            headers={"Authorization": f"Bearer {settings.job_alert_secret}"},
+        )
+    except Exception:
+        logger.exception("Target-paused email POST raised for user %s", user_id)
+        return False
+    if post_resp.status_code != 200:
+        logger.warning(
+            "Target-paused email POST failed: status=%s body=%s",
+            post_resp.status_code,
+            post_resp.text[:200],
+        )
+        return False
+    return True
 
 
 # ---------------------------------------------------------------------------

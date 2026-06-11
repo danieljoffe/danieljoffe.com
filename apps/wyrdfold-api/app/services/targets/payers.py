@@ -50,12 +50,14 @@ def resolve_target_payers(
 
 @dataclass(frozen=True)
 class PayerBudgetGate:
-    """Per-cycle snapshot of who pays for each target and who is over
-    their monthly allowance. Snapshot semantics: at most one cycle of
-    drift if a payer's spend or links change mid-cycle — acceptable."""
+    """Per-cycle snapshot of who pays for each target and which payers
+    are blocked — over their monthly allowance OR idle past the defer
+    threshold. Snapshot semantics: at most one cycle of drift if a
+    payer's spend, links, or activity change mid-cycle — acceptable."""
 
     payer_by_target: dict[str, str | None] = field(default_factory=dict)
     over_budget_users: frozenset[str] = frozenset()
+    idle_users: frozenset[str] = frozenset()
 
     def payer_for(self, target_id: str) -> str | None:
         return self.payer_by_target.get(target_id)
@@ -63,28 +65,33 @@ class PayerBudgetGate:
     def target_blocked(self, target_id: str) -> bool:
         """True when this target's LLM work must be skipped this cycle.
 
-        Blocked when the payer is over budget OR unknown (orphan active
-        target, or activated after the snapshot) — never spend
-        unattributed money. Jobs still ingest fail-open; grading
-        resumes once the payer's window frees up (next cycle for
-        post-snapshot activations).
+        Blocked when the payer is over budget, idle, OR unknown (orphan
+        active target, or activated after the snapshot) — never spend
+        money nobody will consume. Jobs still ingest fail-open; grading
+        resumes once the payer's window frees up / they return.
         """
         payer = self.payer_by_target.get(target_id)
-        return payer is None or payer in self.over_budget_users
+        return (
+            payer is None
+            or payer in self.over_budget_users
+            or payer in self.idle_users
+        )
 
     def user_blocked(self, user_id: str) -> bool:
-        return user_id in self.over_budget_users
+        return user_id in self.over_budget_users or user_id in self.idle_users
 
 
 def build_budget_gate(
     supabase: Client, target_ids: list[str]
 ) -> PayerBudgetGate:
-    """Build the cycle snapshot: payers, overrides, rolling-30d spends.
+    """Build the cycle snapshot: payers, overrides + activity, spends.
 
-    Three queries total (payers IN, overrides IN, one spend RPC per
+    Three queries total (payers IN, profiles IN, one spend RPC per
     distinct payer) — computed once per poll cycle, not per source/job.
-    A monthly limit of 0 (global or override) disables gating for that
-    user.
+    A monthly limit of 0 (global or override) disables budget gating;
+    ``idle_defer_days=0`` disables idle gating. A NULL ``last_seen_at``
+    (profile predating the column backfill, or no profile row) is
+    treated as active — never punish missing data.
     """
     payers = resolve_target_payers(supabase, target_ids)
     distinct = sorted({p for p in payers.values() if p is not None})
@@ -92,18 +99,37 @@ def build_budget_gate(
         return PayerBudgetGate(payer_by_target=payers)
 
     overrides: dict[str, float | None] = {}
+    last_seen: dict[str, str | None] = {}
     resp = (
         supabase.table("user_profiles")
-        .select("user_id,llm_monthly_budget_usd")
+        .select("user_id,llm_monthly_budget_usd,last_seen_at")
         .in_("user_id", distinct)
         .execute()
     )
     for row in cast(list[dict[str, Any]], resp.data or []):
         overrides[row["user_id"]] = row.get("llm_monthly_budget_usd")
+        last_seen[row["user_id"]] = row.get("last_seen_at")
 
-    since = datetime.now(UTC) - timedelta(days=MONTHLY_WINDOW_DAYS)
+    now = datetime.now(UTC)
+    since = now - timedelta(days=MONTHLY_WINDOW_DAYS)
     over: set[str] = set()
+    idle: set[str] = set()
+
+    idle_cutoff = (
+        now - timedelta(days=settings.idle_defer_days)
+        if settings.idle_defer_days > 0
+        else None
+    )
     for uid in distinct:
+        if idle_cutoff is not None:
+            seen_raw = last_seen.get(uid)
+            if seen_raw is not None:
+                seen = datetime.fromisoformat(str(seen_raw).replace("Z", "+00:00"))
+                if seen < idle_cutoff:
+                    idle.add(uid)
+                    # Idle already blocks — skip the spend query.
+                    continue
+
         raw = overrides.get(uid)
         cap = float(raw) if raw is not None else settings.user_llm_monthly_budget_usd
         if cap <= 0:
@@ -113,5 +139,7 @@ def build_budget_gate(
             over.add(uid)
 
     return PayerBudgetGate(
-        payer_by_target=payers, over_budget_users=frozenset(over)
+        payer_by_target=payers,
+        over_budget_users=frozenset(over),
+        idle_users=frozenset(idle),
     )

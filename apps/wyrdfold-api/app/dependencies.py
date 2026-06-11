@@ -212,6 +212,38 @@ def _try_decode_jwt_sub(request: Request, s: Settings) -> str | None:
     return str(payload["sub"])
 
 
+# Last write per user (time.monotonic seconds). In-process is fine on the
+# single-replica deploy — worst case after a restart is one extra stamp.
+_LAST_SEEN_STAMPED: dict[str, float] = {}
+_LAST_SEEN_THROTTLE_S = 3600.0
+
+
+def _touch_last_seen(user_id: str, s: Settings) -> None:
+    """Fire-and-forget ``user_profiles.last_seen_at`` refresh.
+
+    Drives the idle-account lifecycle (defer/deactivate). Throttled to
+    one write per user per hour, and swallowed on any failure — activity
+    tracking must never affect auth or add a failure mode to requests.
+    """
+    if not s.activity_tracking_enabled:
+        return
+    import time
+
+    now = time.monotonic()
+    last = _LAST_SEEN_STAMPED.get(user_id)
+    if last is not None and now - last < _LAST_SEEN_THROTTLE_S:
+        return
+    _LAST_SEEN_STAMPED[user_id] = now
+    try:
+        from datetime import UTC, datetime
+
+        get_supabase().table("user_profiles").update(
+            {"last_seen_at": datetime.now(UTC).isoformat()}
+        ).eq("user_id", user_id).execute()
+    except Exception:
+        logger.debug("last_seen stamp failed for %s", user_id, exc_info=True)
+
+
 def get_current_user_id(
     request: Request,
     s: Settings = Depends(get_settings),
@@ -223,6 +255,7 @@ def get_current_user_id(
     sub = _try_decode_jwt_sub(request, s)
     if sub is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
+    _touch_last_seen(sub, s)
     return sub
 
 
@@ -270,6 +303,7 @@ def get_current_user_id_optional(
     """
     sub = _try_decode_jwt_sub(request, s)
     if sub is not None:
+        _touch_last_seen(sub, s)
         return sub
     if _api_key_matches(key, s.wyrdfold_api_key):
         return None

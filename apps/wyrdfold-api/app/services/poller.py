@@ -1214,13 +1214,15 @@ async def _poll_one_source(
                 if existing_job["external_id"] not in all_external_ids:
                     stale_ids.append(existing_job["id"])
 
-        # Archive stale jobs AND update last_polled_at in parallel
+        # Archive stale jobs AND update last_polled_at in parallel.
+        # A successful poll also resets the failure-backoff counter.
         last_polled_query = (
             supabase.table("sources")
             .update(
                 {
                     "last_polled_at": datetime.now(UTC).isoformat(),
                     "job_count": len(jobs),
+                    "consecutive_failures": 0,
                 }
             )
             .eq("id", source_id)
@@ -1302,34 +1304,119 @@ async def _poll_one_source(
     except Exception:
         logger.exception("Poll failed for %s", company_name)
         summary["error"] = f"{company_name}: poll failed"
+        await _record_source_failure(supabase, source)
 
     return summary
 
 
-async def _cycle_budget_gate(supabase: Client) -> PayerBudgetGate:
+async def _record_source_failure(
+    supabase: Client, source: dict[str, Any]
+) -> None:
+    """Failure backoff: count consecutive fetch failures per source and
+    auto-disable at the threshold (a dead board otherwise gets re-fetched
+    every cycle forever). Successful polls reset the counter via the
+    ``last_polled_at`` update. Best-effort — never raises.
+    """
+    threshold = settings.source_failure_disable_threshold
+    if threshold <= 0:
+        return
+    source_id = source.get("id")
+    if not source_id:
+        return
+    try:
+        failures = int(source.get("consecutive_failures") or 0) + 1
+        updates: dict[str, Any] = {"consecutive_failures": failures}
+        if failures >= threshold:
+            updates["enabled"] = False
+            logger.warning(
+                "Source %s disabled after %d consecutive failures",
+                source.get("company_name", source_id),
+                failures,
+            )
+        await asyncio.to_thread(
+            lambda: supabase.table("sources")
+            .update(updates)
+            .eq("id", source_id)
+            .execute()
+        )
+    except Exception:
+        logger.exception(
+            "Failed to record source failure for %s", source_id
+        )
+
+
+async def _cycle_budget_gate(supabase: Client) -> tuple[PayerBudgetGate, bool]:
     """Build the payer/allowance snapshot once per poll cycle.
 
-    On any error returns an EMPTY gate, which blocks all targets'
-    LLM work for the cycle (``target_blocked`` is True for unknown
-    targets) — refuse to spend unattributed money rather than crash
-    or fail open. Jobs still ingest; grading defers a cycle.
+    Returns ``(gate, has_active_targets)`` — the active-target fetch is
+    shared with the paid-provider skip (Firecrawl sources are pointless
+    with no consumer). On any error returns an EMPTY gate, which blocks
+    all targets' LLM work for the cycle (``target_blocked`` is True for
+    unknown targets) — refuse to spend unattributed money rather than
+    crash or fail open. Jobs still ingest; grading defers a cycle.
+    ``has_active_targets`` fails True so a gate error never silently
+    stops paid-source polling that a healthy cycle would run.
     """
     try:
         active = await asyncio.to_thread(get_active_target, supabase)
-        return await asyncio.to_thread(
+        gate = await asyncio.to_thread(
             build_budget_gate, supabase, [t.id for t in active]
         )
+        return gate, bool(active)
     except Exception:
         logger.exception(
             "Budget gate build failed — deferring all LLM work this cycle"
         )
-        return PayerBudgetGate()
+        return PayerBudgetGate(), True
+
+
+# Last lifecycle sweep (time.monotonic). In-process is fine on the
+# single-replica deploy: a restart just causes one harmless early re-run
+# (the sweep is idempotent).
+_LIFECYCLE_LAST_RUN: float = 0.0
+LIFECYCLE_SWEEP_INTERVAL_S = 6 * 3600.0
+
+
+async def _maybe_run_lifecycle_sweep(supabase: Client) -> None:
+    """Run the idle-account sweep at most every 6h, never blocking polls."""
+    global _LIFECYCLE_LAST_RUN
+    import time
+
+    from app.services.lifecycle import run_lifecycle_sweep
+
+    now = time.monotonic()
+    if _LIFECYCLE_LAST_RUN and now - _LIFECYCLE_LAST_RUN < LIFECYCLE_SWEEP_INTERVAL_S:
+        return
+    _LIFECYCLE_LAST_RUN = now
+    try:
+        await run_lifecycle_sweep(supabase)
+    except Exception:
+        logger.exception("Lifecycle sweep failed — continuing with poll cycle")
+
+
+def _drop_paid_sources_if_unconsumed(
+    sources: list[dict[str, Any]], *, has_active_targets: bool
+) -> list[dict[str, Any]]:
+    """Skip paid 'crawl' (Firecrawl) sources when no targets are active.
+
+    Free ATS fetchers keep the supply warm regardless; the paid provider
+    only runs when at least one active target can consume the results.
+    """
+    if has_active_targets:
+        return sources
+    kept = [s for s in sources if s.get("provider") != "crawl"]
+    skipped = len(sources) - len(kept)
+    if skipped:
+        logger.info(
+            "Skipping %d paid crawl source(s): no active targets", skipped
+        )
+    return kept
 
 
 async def poll_all_sources(supabase: Client) -> PollResult:
     sources_query = supabase.table("sources").select("*").eq("enabled", True)
     sources_resp = await asyncio.to_thread(sources_query.execute)
-    sources = sources_resp.data or []
+    all_sources = cast(list[dict[str, Any]], sources_resp.data or [])
 
     # Cycle-wide constants resolved once instead of once per source:
     # active targets and the stage-3 (user → target/optimized-doc) maps.
@@ -1338,7 +1425,10 @@ async def poll_all_sources(supabase: Client) -> PollResult:
         supabase, active_targets, "(cycle prefetch)"
     )
 
-    budget_gate = await _cycle_budget_gate(supabase)
+    budget_gate, has_active = await _cycle_budget_gate(supabase)
+    sources = _drop_paid_sources_if_unconsumed(
+        all_sources, has_active_targets=has_active
+    )
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
@@ -1421,18 +1511,25 @@ async def poll_due_sources(supabase: Client) -> PollResult:
     sources_resp = await asyncio.to_thread(sources_query.execute)
     all_enabled = cast(list[dict[str, Any]], sources_resp.data or [])
 
+    # Idle-account housekeeping piggybacks the cron tick (throttled to
+    # ~6h inside; never blocks or fails the poll).
+    await _maybe_run_lifecycle_sweep(supabase)
+
     due = filter_due_sources(all_enabled)
     if not due:
         return PollResult(
             sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
         )
 
+    # Cycle-wide constants resolved once instead of once per source:
+    # active targets and the stage-3 (user → target/optimized-doc) maps.
     active_targets = await asyncio.to_thread(get_active_target, supabase)
     stage3_users = await _resolve_user_targets_for_stage3(
         supabase, active_targets, "(cycle prefetch)"
     )
 
-    budget_gate = await _cycle_budget_gate(supabase)
+    budget_gate, has_active = await _cycle_budget_gate(supabase)
+    due = _drop_paid_sources_if_unconsumed(due, has_active_targets=has_active)
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(source: dict[str, Any]) -> dict[str, Any]:

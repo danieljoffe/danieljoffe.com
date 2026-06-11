@@ -177,6 +177,18 @@ class Settings(BaseSettings):
     # allowance; 20/day ≈ $2/month/target).
     phase2_daily_cap: int = Field(default=20, ge=0)
 
+    # Idle-account lifecycle. last_seen_at is stamped on authenticated
+    # requests (throttled in-process); the poller defers a payer's LLM
+    # work after idle_defer_days unseen and the lifecycle sweep
+    # auto-deactivates their targets after idle_deactivate_days. 0
+    # disables each stage. Tracking off in tests via conftest.
+    activity_tracking_enabled: bool = True
+    idle_defer_days: int = Field(default=7, ge=0)
+    idle_deactivate_days: int = Field(default=30, ge=0)
+    # Auto-disable a source after this many consecutive fetch failures
+    # (0 disables the backoff).
+    source_failure_disable_threshold: int = Field(default=10, ge=0)
+
     @property
     def allowed_hosts_list(self) -> list[str]:
         return [h.strip() for h in self.allowed_hosts.split(",") if h.strip()]

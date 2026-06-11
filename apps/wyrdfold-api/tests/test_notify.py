@@ -29,6 +29,7 @@ def _build_supabase_mock(
     profiles_chain.select.return_value = profiles_chain
     profiles_chain.eq.return_value = profiles_chain
     profiles_chain.is_.return_value = profiles_chain
+    profiles_chain.or_.return_value = profiles_chain
     profiles_chain.execute.return_value = _ExecuteStub(profiles)
 
     claim_chain = MagicMock()
@@ -76,6 +77,7 @@ def _build_sms_supabase_mock(
     profiles_chain.select.return_value = profiles_chain
     profiles_chain.eq.return_value = profiles_chain
     profiles_chain.is_.return_value = profiles_chain
+    profiles_chain.or_.return_value = profiles_chain
     profiles_chain.execute.return_value = _ExecuteStub(profiles)
 
     count_chain = MagicMock()
