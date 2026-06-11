@@ -1,0 +1,255 @@
+# For detailed configuration reference documentation, visit:
+# https://supabase.com/docs/guides/local-development/cli/config
+#
+# ============================================================================
+# WYRDFOLD-ONLY Supabase workdir
+# ============================================================================
+# This is the SECOND Supabase project root in the monorepo. It backs the
+# wyrdfold product ONLY (apps/wyrdfold + apps/wyrdfold-api). The audit tool /
+# portfolio live in the root ``supabase/`` workdir against a different project.
+#
+# Drive every CLI command for this project with the ``--workdir`` flag, e.g.:
+#   supabase --workdir apps/wyrdfold-api db push
+#   supabase --workdir apps/wyrdfold-api db pull
+# The repo exposes these as ``pnpm db:wf:*`` scripts.
+#
+# Local-dev ports are offset from the root workdir's defaults so both stacks
+# can run ``supabase start`` simultaneously without colliding.
+project_id = "wyrdfold"
+
+[api]
+enabled = true
+# Offset +100 from the root workdir (54321) so both local stacks coexist.
+port = 54421
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[api.tls]
+enabled = false
+
+[db]
+port = 54422
+shadow_port = 54420
+health_timeout = "2m"
+# Must match the remote major version. The shared project runs 17.
+major_version = 17
+
+[db.pooler]
+enabled = false
+port = 54429
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[db.network_restrictions]
+enabled = false
+allowed_cidrs = ["0.0.0.0/0"]
+allowed_cidrs_v6 = ["::/0"]
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54423
+api_url = "http://127.0.0.1"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54424
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+# Resume uploads. If the shared project stores uploaded resumes in a Storage
+# bucket (not just the ``uploaded_resumes`` table), declare it here and migrate
+# the objects. Confirm at cutover — uncomment + adjust as needed.
+# [storage.buckets.resumes]
+# public = false
+# file_size_limit = "10MiB"
+# allowed_mime_types = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+
+[storage.s3_protocol]
+enabled = true
+
+[storage.analytics]
+enabled = false
+max_namespaces = 5
+max_tables = 10
+max_catalogs = 2
+
+[storage.vector]
+enabled = false
+max_buckets = 10
+max_indexes = 5
+
+[auth]
+enabled = true
+# !!! LOCAL-ONLY !!! site_url is for ``supabase start`` (local dev). The
+# production value is pinned under ``[remotes.production.auth]`` below — always
+# push with ``--linked-to production`` so the localhost default never leaks
+# into prod (see the root supabase/config.toml for the full incident history).
+site_url = "http://localhost:3100"
+# Supabase silently substitutes ``site_url`` when ``emailRedirectTo`` is not an
+# EXACT match here. List every dev variant wyrdfold is served from.
+additional_redirect_urls = [
+  "http://localhost:3000",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3100",
+  "http://localhost:3100/auth/callback",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3000/auth/callback",
+  "http://127.0.0.1:3100",
+  "http://127.0.0.1:3100/auth/callback",
+]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+minimum_password_length = 6
+password_requirements = ""
+
+[auth.rate_limit]
+email_sent = 2
+sms_sent = 30
+anonymous_users = 30
+token_refresh = 150
+sign_in_sign_ups = 30
+token_verifications = 30
+web3 = 30
+
+[auth.email]
+# wyrdfold is magic-link only. Signup-via-email stays enabled so first-time
+# magic-link requests can mint a user; password flows are unused.
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+secure_password_change = false
+max_frequency = "1s"
+otp_length = 6
+otp_expiry = 3600
+
+# WyrdFold beta — branded email templates.
+#
+# !!! IMPORTANT !!! No [auth.email.template.*] blocks live in the base config.
+# Free-tier preview projects reject ANY email-template API call (subject-only
+# edits included). The full configuration lives under
+# [remotes.production.auth.email.template.*] at the bottom of this file and is
+# applied only via ``supabase config push --linked-to production``. Local dev
+# uses Inbucket, which captures mail regardless of template overrides.
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.sms.twilio]
+enabled = false
+account_sid = ""
+message_service_sid = ""
+auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = false
+verify_enabled = false
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+otp_length = 6
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.web3.solana]
+enabled = false
+
+[auth.third_party.firebase]
+enabled = false
+
+[auth.third_party.auth0]
+enabled = false
+
+[auth.third_party.aws_cognito]
+enabled = false
+
+[auth.third_party.clerk]
+enabled = false
+
+[auth.oauth_server]
+enabled = false
+authorization_url_path = "/oauth/consent"
+allow_dynamic_registration = false
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 8183
+deno_version = 2
+
+[analytics]
+enabled = true
+port = 54427
+backend = "postgres"
+
+[experimental]
+orioledb_version = ""
+s3_host = "env(S3_HOST)"
+s3_region = "env(S3_REGION)"
+s3_access_key = "env(S3_ACCESS_KEY)"
+s3_secret_key = "env(S3_SECRET_KEY)"
+
+# ============================================================================
+# Remote-specific overrides
+# ============================================================================
+# Everything above is LOCAL-DEV config. Push auth config to the hosted wyrdfold
+# project ONLY via ``supabase config push --linked-to production`` so the
+# localhost site_url/redirects never overwrite prod. See root
+# supabase/config.toml for the outage that motivated this pattern.
+
+[remotes.production]
+# !!! REPLACE_ME !!! Set this to the NEW wyrdfold project ref once you create
+# the project in the Supabase dashboard (Project Settings → Reference ID).
+# Until it's set, `--linked-to production` pushes will not target wyrdfold.
+project_id = "REPLACE_WITH_NEW_WYRDFOLD_PROJECT_REF"
+
+[remotes.production.auth]
+site_url = "https://wyrdfold.com"
+additional_redirect_urls = [
+  "https://wyrdfold.com",
+  "https://wyrdfold.com/auth/callback",
+  "http://localhost:3000",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3100",
+  "http://localhost:3100/auth/callback",
+]
+
+# Email templates — production-only (free-tier preview projects reject template
+# API calls). content_path is resolved relative to the workdir
+# (apps/wyrdfold-api), so ``./supabase/templates/...`` points at this dir.
+
+# Sent by ``auth.admin.inviteUserByEmail`` (apps/wyrdfold/scripts/invite-beta-tester.ts).
+[remotes.production.auth.email.template.invite]
+subject = "You're in — welcome to the WyrdFold beta"
+content_path = "./supabase/templates/invite.html"
+
+# Sent by ``signInWithOtp`` from apps/wyrdfold/src/app/login/MagicLinkForm.tsx.
+[remotes.production.auth.email.template.magic_link]
+subject = "Your WyrdFold sign-in link"
+content_path = "./supabase/templates/magic-link.html"

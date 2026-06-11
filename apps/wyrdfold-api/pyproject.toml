@@ -55,6 +55,11 @@ ignore = [
   "SIM108", # if/else blocks are clearer than ternaries for query builders
 ]
 
+[tool.ruff.lint.isort]
+# The supabase/ CLI workdir alongside this package makes ruff auto-detect the
+# `supabase` SDK import as first-party. Pin it as third-party.
+known-third-party = ["supabase"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "E501", "RUF059", "F841", "SIM117", "E402", "B017"]
 "scripts/**/*.py" = [
