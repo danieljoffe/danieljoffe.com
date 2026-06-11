@@ -18,6 +18,7 @@ from app.observability import init_sentry
 from app.rate_limit import limiter
 from app.routers import (
     analysis,
+    discovery,
     experience,
     feedback,
     insights,
@@ -256,6 +257,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
 
 
 app.include_router(analysis.router)
+app.include_router(discovery.router)
 app.include_router(experience.router)
 app.include_router(feedback.router)
 app.include_router(insights.router)
