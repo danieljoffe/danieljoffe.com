@@ -205,18 +205,23 @@ Return JSON matching this extended schema:
 }"""
 
 
-def _build_user_message(
+def _split_user_message(
     *,
     payload: OptimizedPayload,
     target: JobTarget,
     job_title: str,
     jd_text: str,
-) -> str:
-    """Compose the per-call user message.
+) -> tuple[str, str]:
+    """Compose the per-call user message as ``(static_prefix, dynamic_suffix)``.
 
     Order matters for prompt caching: stable per-(user, target) context
     first, variable per-job context last. The static system prompt sits
-    above this entirely.
+    above this entirely. The split boundary feeds
+    ``Message.cache_prefix_chars`` so the profile + target block is a
+    prompt-cache breakpoint across the jobs graded in one cycle;
+    concatenating the halves yields the exact message Phase 2 has
+    always sent (the ``\\n\\n`` separator lives in the suffix so the
+    cached prefix bytes never vary with the job).
     """
     parts: list[str] = []
 
@@ -262,13 +267,28 @@ def _build_user_message(
             )
     parts.append("\n".join(target_lines))
 
-    # Job posting (last — cache-unfriendly, varies per call).
+    # Job posting (last — cache-unfriendly, varies per call). Kept out
+    # of the static prefix: it lands in the dynamic suffix below.
     jd_snippet = jd_text[:_JD_CONTEXT_CHAR_CAP]
     if len(jd_text) > _JD_CONTEXT_CHAR_CAP:
         jd_snippet += " [truncated]"
-    parts.append(f"## Job posting\n**Title:** {job_title}\n\n{jd_snippet}")
+    job_part = f"## Job posting\n**Title:** {job_title}\n\n{jd_snippet}"
 
-    return "\n\n".join(parts)
+    return "\n\n".join(parts), f"\n\n{job_part}"
+
+
+def _build_user_message(
+    *,
+    payload: OptimizedPayload,
+    target: JobTarget,
+    job_title: str,
+    jd_text: str,
+) -> str:
+    """Full user message — concatenation of the cache-split halves."""
+    static_prefix, dynamic_suffix = _split_user_message(
+        payload=payload, target=target, job_title=job_title, jd_text=jd_text
+    )
+    return static_prefix + dynamic_suffix
 
 
 async def derive_job_fit(
@@ -299,9 +319,10 @@ async def derive_job_fit(
     Callers should pass ``settings.logistics_extraction_enabled`` so
     the global flag controls the behaviour.
     """
-    user_message = _build_user_message(
+    static_prefix, dynamic_suffix = _split_user_message(
         payload=payload, target=target, job_title=job_title, jd_text=jd_text
     )
+    user_message = static_prefix + dynamic_suffix
 
     system_prompt = (
         _SYSTEM_PROMPT + _LOGISTICS_PROMPT_ADDENDUM
@@ -313,7 +334,16 @@ async def derive_job_fit(
         llm,
         model=model,
         system=system_prompt,
-        messages=[Message(role="user", content=user_message)],
+        # ``cache_prefix_chars`` marks the per-(user, target) context as
+        # a prompt-cache breakpoint — the second cacheable prefix after
+        # the system prompt. Bytes-identical split, see Message model.
+        messages=[
+            Message(
+                role="user",
+                content=user_message,
+                cache_prefix_chars=len(static_prefix),
+            )
+        ],
         schema=JobFitResult,
         purpose=purpose,
         # 1024 (was 512) to give Sonnet headroom for the evidence-first

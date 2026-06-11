@@ -208,3 +208,56 @@ class TestBuildUserMessage:
         )
         assert "[truncated]" not in msg
         assert "Short JD body." in msg
+
+
+# ---- prompt-cache marker ----------------------------------------------------
+
+
+class TestCacheMarker:
+    @pytest.mark.asyncio
+    async def test_marker_covers_profile_and_target_but_not_jd(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """``cache_prefix_chars`` must span the per-(user, target) static
+        block and exclude the per-job posting context."""
+        from unittest.mock import MagicMock
+
+        from app.services.fit import job_fit as job_fit_mod
+        from app.services.fit.job_fit import derive_job_fit
+
+        captured: dict[str, object] = {}
+
+        async def fake_complete_json(*_args: object, **kwargs: object) -> object:
+            captured.update(kwargs)
+            return MagicMock(), MagicMock()
+
+        monkeypatch.setattr(job_fit_mod, "complete_json", fake_complete_json)
+
+        await derive_job_fit(
+            MagicMock(),
+            payload=_payload(),
+            target=_target(),
+            job_title="Staff Web Engineer",
+            jd_text="We need React and TypeScript experience.",
+        )
+
+        messages = captured["messages"]
+        assert isinstance(messages, list) and len(messages) == 1
+        msg = messages[0]
+        n = msg.cache_prefix_chars
+        assert n is not None
+        prefix, suffix = msg.content[:n], msg.content[n:]
+        # Profile + target context cached...
+        assert "## User profile" in prefix
+        assert "## Target: Staff Frontend Engineer" in prefix
+        # ...job posting not.
+        assert "## Job posting" not in prefix
+        assert "## Job posting" in suffix
+        assert "Staff Web Engineer" in suffix
+        # Split, not rewrite.
+        assert prefix + suffix == _build_user_message(
+            payload=_payload(),
+            target=_target(),
+            job_title="Staff Web Engineer",
+            jd_text="We need React and TypeScript experience.",
+        )

@@ -23,6 +23,17 @@ TurnRole = Literal["user", "assistant"]
 class Message(BaseModel):
     role: TurnRole
     content: str
+    # Prompt-caching marker (optional, additive). When set, the first
+    # ``cache_prefix_chars`` characters of ``content`` are a STATIC
+    # prefix (stable across calls — e.g. the per-target example pools in
+    # Phase 1, or the user-profile + target context in Phase 2). Real
+    # Anthropic-shaped clients split the message into two text blocks at
+    # exactly that boundary and set ``cache_control: {"type":
+    # "ephemeral"}`` on the first; block concatenation is byte-identical
+    # to ``content``, so the prompt the model sees is unchanged. The
+    # mock client and any consumer that only reads ``content`` ignore
+    # the marker entirely.
+    cache_prefix_chars: int | None = Field(default=None, ge=1)
 
 
 class LLMUsage(BaseModel):
