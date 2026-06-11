@@ -33,6 +33,10 @@
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:gen-types": "supabase gen types typescript --linked > libs/shared/audit/src/lib/database.types.ts",
+    "db:wf:push": "supabase --workdir apps/wyrdfold-api db push",
+    "db:wf:reset": "supabase --workdir apps/wyrdfold-api db reset",
+    "db:wf:pull": "supabase --workdir apps/wyrdfold-api db pull",
+    "db:wf:gen-types": "supabase --workdir apps/wyrdfold-api gen types typescript --linked > apps/wyrdfold/src/lib/supabase/types.ts",
     "build-storybook:ui": "nx build-storybook @danieljoffe/shared-ui",
     "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui --only-changed",
     "prebuild": "tsx scripts/generate-search-index.ts"

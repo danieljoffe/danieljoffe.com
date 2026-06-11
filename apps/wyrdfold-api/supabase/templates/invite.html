@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>WyrdFold beta invite</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #0a0a0d;
+      font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, sans-serif;
+      color: #f5f3ee;
+    "
+  >
+    <span style="display: none; max-height: 0; overflow: hidden; opacity: 0">
+      You're in the WyrdFold private beta. Tap to set up your account.
+    </span>
+
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      style="background-color: #0a0a0d"
+    >
+      <tr>
+        <td align="center" style="padding: 40px 20px">
+          <table
+            role="presentation"
+            width="560"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            style="
+              max-width: 560px;
+              width: 100%;
+              background-color: #121215;
+              border: 1px solid #26262b;
+              border-radius: 12px;
+            "
+          >
+            <tr>
+              <td style="padding: 40px 40px 24px 40px; text-align: center">
+                <img
+                  src="https://wyrdfold.com/logo.png"
+                  alt="WyrdFold"
+                  width="48"
+                  height="36"
+                  style="display: inline-block"
+                />
+                <div
+                  style="
+                    margin-top: 12px;
+                    font-size: 13px;
+                    letter-spacing: 0.2em;
+                    color: #bdb8a8;
+                    text-transform: uppercase;
+                  "
+                >
+                  WyrdFold
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 0 40px 32px 40px">
+                <h1
+                  style="
+                    margin: 0 0 16px;
+                    font-size: 28px;
+                    line-height: 1.2;
+                    font-weight: 600;
+                    color: #f5f3ee;
+                    letter-spacing: -0.02em;
+                  "
+                >
+                  You're in.
+                </h1>
+                <p
+                  style="
+                    margin: 0 0 12px;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: #bdb8a8;
+                  "
+                >
+                  Daniel here. You've been invited to the private beta of
+                  WyrdFold.
+                </p>
+                <p
+                  style="
+                    margin: 0 0 24px;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: #bdb8a8;
+                  "
+                >
+                  Tap the button below to set up your account. After that,
+                  you'll sign in by emailed link any time you come back.
+                </p>
+
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  style="margin: 0 0 28px"
+                >
+                  <tr>
+                    <td bgcolor="#8FC900" style="border-radius: 8px">
+                      <a
+                        href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite"
+                        style="
+                          display: inline-block;
+                          padding: 14px 28px;
+                          font-size: 15px;
+                          font-weight: 600;
+                          color: #0a0a0d;
+                          text-decoration: none;
+                          border-radius: 8px;
+                        "
+                      >
+                        Accept your invite
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 13px;
+                    line-height: 1.6;
+                    color: #928d7d;
+                  "
+                >
+                  If the button doesn't work, paste this link into your
+                  browser:<br />
+                  <a
+                    href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite"
+                    style="color: #bef264; word-break: break-all"
+                    >{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash
+                    }}&type=invite</a
+                  >
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 0 40px 32px 40px">
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  style="
+                    border-left: 3px solid #e6b95c;
+                    background-color: #1a1812;
+                    border-radius: 6px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 16px 18px">
+                      <div
+                        style="
+                          font-size: 12px;
+                          font-weight: 600;
+                          color: #e6b95c;
+                          text-transform: uppercase;
+                          letter-spacing: 0.08em;
+                          margin-bottom: 6px;
+                        "
+                      >
+                        Heads up &mdash; private beta
+                      </div>
+                      <div
+                        style="
+                          font-size: 14px;
+                          line-height: 1.55;
+                          color: #bdb8a8;
+                        "
+                      >
+                        WyrdFold is under active development. Your account and
+                        data may be reset without notice while I iterate &mdash;
+                        don't store anything you'd be sad to lose.
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding: 24px 40px 40px 40px;
+                  border-top: 1px solid #26262b;
+                "
+              >
+                <p
+                  style="
+                    margin: 0 0 8px;
+                    font-size: 12px;
+                    line-height: 1.6;
+                    color: #928d7d;
+                  "
+                >
+                  Sent to {{ .Email }}. The invite link is single-use &mdash; if
+                  this wasn't expected, you can ignore the email.
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 12px;
+                    line-height: 1.6;
+                    color: #928d7d;
+                  "
+                >
+                  Reply directly if anything's broken.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
