@@ -666,6 +666,9 @@ async def _poll_one_source(
     source: dict[str, Any],
     supabase: Client,
     budget_gate: PayerBudgetGate | None = None,
+    *,
+    active_targets: list[JobTarget] | None = None,
+    stage3_users: tuple[dict[str, JobTarget], dict[str, OptimizedDoc]] | None = None,
 ) -> dict[str, Any]:
     """Poll a single job source. Returns a per-source summary dict.
 
@@ -677,6 +680,12 @@ async def _poll_one_source(
     ``budget_gate`` is the per-cycle payer/allowance snapshot (built once
     by the cycle entry points); when None it's computed locally so direct
     callers and existing tests keep working.
+
+    ``active_targets`` and ``stage3_users`` are likewise cycle-wide
+    constants — callers polling many sources should resolve them once and
+    pass them in rather than paying one targets query plus one user/doc
+    resolution per source. Both fall back to a per-source fetch when
+    omitted.
     """
     summary: dict[str, Any] = {
         "polled": False,
@@ -704,8 +713,27 @@ async def _poll_one_source(
         # so we don't archive jobs that exist on the board but don't match filters.
         all_external_ids: set[str] = {job.external_id for job in jobs}
 
-        # Fetch active targets once — used for title filtering and scoring
-        active_targets = get_active_target(supabase)
+        # Targets are normally resolved once per cycle by the caller; the
+        # fallback keeps direct/legacy callers working.
+        if active_targets is None:
+            active_targets = await asyncio.to_thread(get_active_target, supabase)
+
+        # Existing rows are needed in three places: skipping Phase 1
+        # triage for already-known jobs, the (company, title) dedupe, and
+        # stale-row archiving. Fetch once, up front.
+        existing_query = (
+            supabase.table("jobs")
+            .select("id, external_id, title, company_name")
+            .eq("source_id", source_id)
+            .not_.in_("status", ["saved", "applied", "archived"])
+        )
+        existing_resp = await asyncio.to_thread(
+            execute_with_retry_sync,
+            existing_query.execute,
+            label=f"poll existing {company_name}",
+        )
+        existing_rows = cast(list[dict[str, Any]], existing_resp.data or [])
+        known_external_ids = {r.get("external_id") for r in existing_rows}
 
         # Payer/allowance snapshot: who pays for each target's LLM work,
         # and which payers are over their monthly allowance. Built once
@@ -730,10 +758,20 @@ async def _poll_one_source(
         # flag so the PR can ship dark; when flag is False the gate
         # admits everything (pass-through) and we rely on downstream
         # keyword scoring for filtering.
+        #
+        # Only NEW external_ids are triaged. Jobs already in the DB were
+        # admitted on a previous cycle; re-triaging them re-paid the LLM
+        # cost for the same titles on every poll. Known jobs simply have
+        # no verdict entry, which the fail-open gate treats as admit.
         phase1_verdicts: dict[str, dict[int, TitleVerdict]] = {}
-        if settings.phase1_triage_enabled and active_targets and jobs:
+        triage_candidates = [
+            (idx, job)
+            for idx, job in enumerate(jobs)
+            if job.external_id not in known_external_ids
+        ]
+        if settings.phase1_triage_enabled and active_targets and triage_candidates:
             llm = get_default_llm_client()
-            titles = [job.title for job in jobs]
+            titles = [job.title for _, job in triage_candidates]
             for active_target in active_targets:
                 if gate.target_blocked(active_target.id):
                     # Payer over monthly allowance (or unattributable) —
@@ -776,10 +814,14 @@ async def _poll_one_source(
                                 "Failed to record Phase 1 cost for target %s",
                                 active_target.id,
                             )
-                    # Shift batch-local ids to global (1-based) job indices.
+                    # Shift batch-local ids (1-based within the triage
+                    # subset) to global 1-based job indices via the
+                    # triage-candidate mapping.
                     for batch_idx, verdict in verdicts.items():
-                        global_idx = start + batch_idx  # batch_idx is 1-based
-                        target_verdicts[global_idx] = verdict
+                        subset_pos = start + batch_idx - 1  # 0-based
+                        if 0 <= subset_pos < len(triage_candidates):
+                            global_idx = triage_candidates[subset_pos][0] + 1
+                            target_verdicts[global_idx] = verdict
                 phase1_verdicts[active_target.id] = target_verdicts
 
         def _any_target_admits(global_job_idx: int) -> bool:
@@ -849,39 +891,18 @@ async def _poll_one_source(
         if settings.validate_poll_urls and rows_to_upsert:
             rows_to_upsert = await _validate_rows(rows_to_upsert)
 
-        # Fetch existing rows BEFORE the upsert so we can dedupe
-        # against in-DB jobs with the same (company, title) but a
-        # different external_id. This catches the case Greenhouse
-        # surfaces the same role under multiple location offices as
-        # separate listings (e.g. Smartsheet's "Professional Services
-        # Business Development Director" at "-REMOTE, USA-" + "Bellevue,
-        # WA, USA"). Within-batch dedupe handles the case where both
-        # arrive in the same poll cycle; cross-batch dedupe (the
-        # existing_by_content lookup below) handles the case where the
-        # duplicate appears across multiple cycles.
-        existing_query = (
-            supabase.table("jobs")
-            .select("id, external_id, title, company_name")
-            .eq("source_id", source_id)
-            .not_.in_("status", ["saved", "applied", "archived"])
-        )
-
         new_rows: list[dict[str, Any]] = []
         if rows_to_upsert:
-            existing_resp = await asyncio.to_thread(
-                execute_with_retry_sync,
-                existing_query.execute,
-                label=f"poll existing {company_name}",
-            )
-
             # Dedupe rows_to_upsert by (company, title). Both within
             # the current batch and against existing rows that have a
-            # different external_id.
+            # different external_id. This catches the case Greenhouse
+            # surfaces the same role under multiple location offices as
+            # separate listings (e.g. Smartsheet's "Professional Services
+            # Business Development Director" at "-REMOTE, USA-" +
+            # "Bellevue, WA, USA").
             rows_to_upsert = _dedupe_by_content(
                 rows_to_upsert,
-                existing=cast(
-                    list[dict[str, Any]], existing_resp.data or []
-                ),
+                existing=existing_rows,
                 source=company_name,
             )
 
@@ -1018,9 +1039,15 @@ async def _poll_one_source(
             # lives on ``user_targets``. One query maps active target IDs
             # to their owning users, then we group: per user pick the
             # first active target and that user's latest optimized doc.
-            primary_by_user, user_optimized = await _resolve_user_targets_for_stage3(
-                supabase, active_targets, company_name
-            )
+            if stage3_users is not None:
+                primary_by_user, user_optimized = stage3_users
+            else:
+                (
+                    primary_by_user,
+                    user_optimized,
+                ) = await _resolve_user_targets_for_stage3(
+                    supabase, active_targets, company_name
+                )
 
             if settings.phase2_enabled and primary_by_user:
                 # ---- Phase 2: LLM job-fit grading (#6) ----
@@ -1136,12 +1163,9 @@ async def _poll_one_source(
                     logger.exception(
                         "Recency refresh failed for %s", company_name
                     )
-        else:
-            existing_resp = await asyncio.to_thread(existing_query.execute)
 
         # Identify stale jobs no longer on the board
         stale_ids: list[str] = []
-        existing_rows = cast(list[dict[str, Any]], existing_resp.data or [])
         if not jobs and existing_rows:
             # Mass-archive guard: several fetchers (workday in particular)
             # swallow API errors and return [] instead of raising, which is
@@ -1361,9 +1385,12 @@ async def poll_all_sources(supabase: Client) -> PollResult:
     sources_resp = await asyncio.to_thread(sources_query.execute)
     all_sources = cast(list[dict[str, Any]], sources_resp.data or [])
 
-    # Optimized doc is fetched per-user inside ``_poll_one_source`` now —
-    # the previous shared-doc fetch (``user_id=None``) never returned a
-    # row in the multi-user schema, silently disabling stage 3.
+    # Cycle-wide constants resolved once instead of once per source:
+    # active targets and the stage-3 (user → target/optimized-doc) maps.
+    active_targets = await asyncio.to_thread(get_active_target, supabase)
+    stage3_users = await _resolve_user_targets_for_stage3(
+        supabase, active_targets, "(cycle prefetch)"
+    )
 
     budget_gate, has_active = await _cycle_budget_gate(supabase)
     sources = _drop_paid_sources_if_unconsumed(
@@ -1374,7 +1401,11 @@ async def poll_all_sources(supabase: Client) -> PollResult:
     async def _worker(raw_source: Any) -> dict[str, Any]:
         async with semaphore:
             return await _poll_one_source(
-                cast(dict[str, Any], raw_source), supabase, budget_gate
+                cast(dict[str, Any], raw_source),
+                supabase,
+                budget_gate,
+                active_targets=active_targets,
+                stage3_users=stage3_users,
             )
 
     summaries = await asyncio.gather(*(_worker(s) for s in sources))
@@ -1457,13 +1488,26 @@ async def poll_due_sources(supabase: Client) -> PollResult:
             sources_polled=0, new_jobs=0, updated_jobs=0, archived_jobs=0, errors=[]
         )
 
+    # Cycle-wide constants resolved once instead of once per source:
+    # active targets and the stage-3 (user → target/optimized-doc) maps.
+    active_targets = await asyncio.to_thread(get_active_target, supabase)
+    stage3_users = await _resolve_user_targets_for_stage3(
+        supabase, active_targets, "(cycle prefetch)"
+    )
+
     budget_gate, has_active = await _cycle_budget_gate(supabase)
     due = _drop_paid_sources_if_unconsumed(due, has_active_targets=has_active)
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(source: dict[str, Any]) -> dict[str, Any]:
         async with semaphore:
-            return await _poll_one_source(source, supabase, budget_gate)
+            return await _poll_one_source(
+                source,
+                supabase,
+                budget_gate,
+                active_targets=active_targets,
+                stage3_users=stage3_users,
+            )
 
     summaries = await asyncio.gather(*(_worker(s) for s in due))
 

@@ -137,6 +137,8 @@ async def test_poll_due_sources_polls_only_due_rows() -> None:
 
     with (
         patch("app.services.poller.get_latest_optimized") as get_opt,
+        # Cycle-level prefetch — irrelevant to the due-filter under test.
+        patch("app.services.poller.get_active_target", return_value=[]),
         patch("app.services.poller._poll_one_source", new_callable=AsyncMock) as poll_one,
     ):
         get_opt.return_value = None
@@ -169,6 +171,8 @@ async def test_poll_due_sources_aggregates_errors() -> None:
 
     with (
         patch("app.services.poller.get_latest_optimized") as get_opt,
+        # Cycle-level prefetch — irrelevant to the error aggregation under test.
+        patch("app.services.poller.get_active_target", return_value=[]),
         patch("app.services.poller._poll_one_source", new_callable=AsyncMock) as poll_one,
     ):
         get_opt.return_value = None
