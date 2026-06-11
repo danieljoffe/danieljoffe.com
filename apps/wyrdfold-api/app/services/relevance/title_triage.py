@@ -164,37 +164,48 @@ class TitleTriageResponse(BaseModel):
     verdicts: list[TitleVerdict] = Field(default_factory=list)
 
 
-def _build_user_message(target: JobTarget, titles: list[str]) -> str:
-    """Compose the per-call user message: target context + numbered batch.
+def _split_user_message(target: JobTarget, titles: list[str]) -> tuple[str, str]:
+    """Compose the per-call user message as ``(static_prefix, dynamic_suffix)``.
 
     Target context (label + example pools) sits at the top so it's a
     natural prompt-cache prefix when grading multiple batches for the
-    same target in one poll cycle.
+    same target in one poll cycle. The split boundary feeds
+    ``Message.cache_prefix_chars`` — the prefix depends only on the
+    target, the suffix carries the per-batch titles. Concatenating the
+    two halves yields the exact message Phase 1 has always sent (the
+    boundary newline lives in the suffix so the cached prefix bytes
+    never vary with the batch).
     """
-    lines: list[str] = [f"Target role: {target.label}"]
+    static_lines: list[str] = [f"Target role: {target.label}"]
 
     if target.example_promising_titles:
-        lines.append("")
-        lines.append("Examples of PROMISING titles for this target:")
+        static_lines.append("")
+        static_lines.append("Examples of PROMISING titles for this target:")
         for ex in target.example_promising_titles:
-            lines.append(f"- {ex}")
+            static_lines.append(f"- {ex}")
 
     if target.example_unpromising_titles:
-        lines.append("")
-        lines.append("Examples of UNPROMISING titles:")
+        static_lines.append("")
+        static_lines.append("Examples of UNPROMISING titles:")
         for ex in target.example_unpromising_titles:
-            lines.append(f"- {ex}")
+            static_lines.append(f"- {ex}")
 
-    lines.append("")
-    lines.append(
+    dynamic_lines: list[str] = [""]
+    dynamic_lines.append(
         f"Grade the following {len(titles)} candidate titles. Return one "
         "verdict per id."
     )
-    lines.append("")
+    dynamic_lines.append("")
     for idx, title in enumerate(titles, start=1):
-        lines.append(f"{idx}. {title}")
+        dynamic_lines.append(f"{idx}. {title}")
 
-    return "\n".join(lines)
+    return "\n".join(static_lines), "\n" + "\n".join(dynamic_lines)
+
+
+def _build_user_message(target: JobTarget, titles: list[str]) -> str:
+    """Full user message — concatenation of the cache-split halves."""
+    static_prefix, dynamic_suffix = _split_user_message(target, titles)
+    return static_prefix + dynamic_suffix
 
 
 async def triage_titles(
@@ -233,14 +244,25 @@ async def triage_titles(
             f"PHASE1_BATCH_SIZE={PHASE1_BATCH_SIZE}. Chunk the input."
         )
 
-    user_message = _build_user_message(target, titles)
+    static_prefix, dynamic_suffix = _split_user_message(target, titles)
+    user_message = static_prefix + dynamic_suffix
 
     try:
         parsed, result = await complete_json(
             llm,
             model=model,
             system=_SYSTEM_PROMPT,
-            messages=[Message(role="user", content=user_message)],
+            # ``cache_prefix_chars`` marks the per-target context (label
+            # + example pools) as a prompt-cache breakpoint — the second
+            # cacheable prefix after the system prompt. Bytes-identical
+            # split, see Message model.
+            messages=[
+                Message(
+                    role="user",
+                    content=user_message,
+                    cache_prefix_chars=len(static_prefix),
+                )
+            ],
             schema=TitleTriageResponse,
             purpose=purpose,
             # Output is ~250 verdicts x~30 tokens each = ~7500 tokens.
