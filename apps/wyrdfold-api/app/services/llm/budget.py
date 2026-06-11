@@ -25,25 +25,45 @@ no first-of-month reset stampede, and it matches how Claude's own usage
 limits behave."""
 
 
-def effective_monthly_cap(
+def get_llm_account(
     supabase: Client, *, user_id: str, default_usd: float
-) -> float:
-    """Resolve the user's monthly allowance: per-user override or default.
+) -> tuple[float, bool]:
+    """One profile read → (effective monthly cap, llm_enabled).
 
-    ``user_profiles.llm_monthly_budget_usd`` is the manual "add credits"
-    lever — NULL (or no profile row) means the global default applies.
+    ``llm_monthly_budget_usd`` is the manual "add credits" lever — NULL
+    (or no profile row) means the global default. ``llm_enabled`` is the
+    operator kill-switch; missing rows default to enabled.
     """
     rows = cast(
         list[dict[str, Any]],
         supabase.table("user_profiles")
-        .select("llm_monthly_budget_usd")
+        .select("llm_monthly_budget_usd,llm_enabled")
         .eq("user_id", user_id)
         .execute()
         .data
         or [],
     )
     override = rows[0].get("llm_monthly_budget_usd") if rows else None
-    return float(cast(float, override)) if override is not None else default_usd
+    enabled = bool(rows[0].get("llm_enabled", True)) if rows else True
+    cap = float(cast(float, override)) if override is not None else default_usd
+    return cap, enabled
+
+
+def effective_monthly_cap(
+    supabase: Client, *, user_id: str, default_usd: float
+) -> float:
+    """Back-compat wrapper around :func:`get_llm_account` (cap only)."""
+    cap, _ = get_llm_account(supabase, user_id=user_id, default_usd=default_usd)
+    return cap
+
+
+def raise_if_llm_disabled(enabled: bool) -> None:
+    """403 when the operator kill-switch is off for this account."""
+    if not enabled:
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "llm_disabled"},
+        )
 
 
 def _raise_budget_429(scope: str, limit_usd: float, spent_usd: float) -> None:

@@ -94,6 +94,15 @@ export async function extractApiError(
     detail &&
     typeof detail === 'object' &&
     'code' in detail &&
+    (detail as { code: unknown }).code === 'llm_disabled'
+  ) {
+    return 'AI features are currently disabled for your account.';
+  }
+
+  if (
+    detail &&
+    typeof detail === 'object' &&
+    'code' in detail &&
     (detail as { code: unknown }).code === 'analysis_daily_limit'
   ) {
     const d = detail as { limit?: number };
