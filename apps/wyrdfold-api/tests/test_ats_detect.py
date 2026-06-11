@@ -85,9 +85,12 @@ def _make_http_response(status: int, json_data: object) -> MagicMock:
 @pytest.mark.asyncio
 async def test_detect_greenhouse_from_url():
     mock_client = AsyncMock()
-    mock_client.get.return_value = _make_http_response(
-        200, {"name": "Stripe", "departments": [{}, {}]}
-    )
+    # First GET probes /{slug}/jobs for the live count, second fetches the
+    # board root for the display name.
+    mock_client.get.side_effect = [
+        _make_http_response(200, {"jobs": [{"id": 1}, {"id": 2}]}),
+        _make_http_response(200, {"name": "Stripe", "content": "..."}),
+    ]
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
@@ -98,6 +101,45 @@ async def test_detect_greenhouse_from_url():
     assert result.provider == "greenhouse"
     assert result.board_token == "stripe"
     assert result.company_name == "Stripe"
+    assert result.job_count == 2
+
+
+@pytest.mark.asyncio
+async def test_detect_greenhouse_counts_jobs_not_departments():
+    """Regression: the board root has no ``departments`` key, so the old
+    probe reported job_count=0 for every board and discovery filtered all
+    Greenhouse boards as dead."""
+    mock_client = AsyncMock()
+    mock_client.get.side_effect = [
+        _make_http_response(200, {"jobs": [{"id": n} for n in range(5)]}),
+        _make_http_response(200, {"name": "Acme"}),
+    ]
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats("https://boards.greenhouse.io/acme")
+
+    assert result is not None
+    assert result.job_count == 5
+
+
+@pytest.mark.asyncio
+async def test_detect_greenhouse_name_fetch_failure_falls_back_to_slug():
+    mock_client = AsyncMock()
+    mock_client.get.side_effect = [
+        _make_http_response(200, {"jobs": [{"id": 1}]}),
+        httpx.HTTPError("boom"),
+    ]
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats("https://boards.greenhouse.io/acme")
+
+    assert result is not None
+    assert result.company_name == "acme"
+    assert result.job_count == 1
 
 
 @pytest.mark.asyncio
@@ -195,7 +237,10 @@ async def test_detect_handles_network_error():
 async def test_detect_careers_page_url_probes_all():
     """A generic careers URL extracts the domain stem and probes all providers."""
     mock_client = AsyncMock()
-    mock_client.get.return_value = _make_http_response(200, {"name": "Notion", "departments": []})
+    mock_client.get.side_effect = [
+        _make_http_response(200, {"jobs": [{"id": 1}]}),
+        _make_http_response(200, {"name": "Notion"}),
+    ]
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
@@ -205,6 +250,77 @@ async def test_detect_careers_page_url_probes_all():
     assert result is not None
     assert result.provider == "greenhouse"
     assert result.board_token == "notion"
+
+
+# --- Workday detection ---
+
+
+@pytest.mark.asyncio
+async def test_detect_workday_from_posting_url():
+    """A Workday job-posting URL yields a pollable {base}|{tenant}|{site} token."""
+    mock_client = AsyncMock()
+    mock_client.post.return_value = _make_http_response(
+        200, {"total": 137, "jobPostings": [{"title": "Engineer"}]}
+    )
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats(
+            "https://salesforce.wd12.myworkdayjobs.com/en-US/External_Career_Site"
+            "/job/Japan---Tokyo/Senior-Manager--Sales_JR343895"
+        )
+
+    assert result is not None
+    assert result.provider == "workday"
+    assert result.board_token == (
+        "https://salesforce.wd12.myworkdayjobs.com|salesforce|External_Career_Site"
+    )
+    assert result.company_name == "Salesforce"
+    assert result.job_count == 137
+    # The probe hits the CXS list endpoint with a limit-1 page.
+    args, kwargs = mock_client.post.call_args
+    assert args[0] == (
+        "https://salesforce.wd12.myworkdayjobs.com/wday/cxs/salesforce"
+        "/External_Career_Site/jobs"
+    )
+    assert kwargs["json"]["limit"] == 1
+
+
+@pytest.mark.asyncio
+async def test_detect_workday_without_locale_segment():
+    mock_client = AsyncMock()
+    mock_client.post.return_value = _make_http_response(200, {"total": 3})
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats("https://acme.wd5.myworkdayjobs.com/careers")
+
+    assert result is not None
+    assert result.board_token == "https://acme.wd5.myworkdayjobs.com|acme|careers"
+
+
+@pytest.mark.asyncio
+async def test_detect_workday_root_url_returns_none_without_probing():
+    """A site-less Workday URL is unpollable — no fallback probes fired."""
+    mock_client = AsyncMock()
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats("https://acme.wd5.myworkdayjobs.com")
+
+    assert result is None
+    mock_client.get.assert_not_called()
+    mock_client.post.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_detect_workday_probe_failure_returns_none():
+    mock_client = AsyncMock()
+    mock_client.post.return_value = _make_http_response(404, {})
+
+    with patch("app.services.ats_detect.httpx.AsyncClient", return_value=mock_client):
+        result = await detect_ats(
+            "https://acme.wd5.myworkdayjobs.com/en-US/careers"
+        )
+
+    assert result is None
 
 
 @pytest.mark.asyncio

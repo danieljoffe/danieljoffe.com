@@ -201,6 +201,108 @@ async def test_discovery_dedupes_existing_board_tokens(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_discovery_existing_token_skips_probe_entirely(monkeypatch):
+    """A URL whose parsed slug is already a known board_token should be
+    counted as duplicate without a detect_ats probe at all."""
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "brave_search_api_key", "test-key")
+    monkeypatch.setattr(live_settings, "discovery_query_cap_per_run", 1)
+
+    supabase = _make_supabase(existing_tokens=["example"])
+    fake_brave = AsyncMock(return_value=["https://boards.greenhouse.io/example"])
+    fake_detect = AsyncMock()
+
+    with (
+        patch("app.services.source_discovery._brave_search", fake_brave),
+        patch("app.services.source_discovery.detect_ats", fake_detect),
+    ):
+        stats = await run_discovery_for_target(supabase, _make_target())
+
+    assert stats.duplicates == 1
+    assert fake_detect.await_count == 0
+
+
+@pytest.mark.asyncio
+async def test_discovery_dedupes_same_board_urls_before_probing(monkeypatch):
+    """Multiple result URLs that parse to the same (provider, slug) should
+    cost exactly one detect_ats probe."""
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "brave_search_api_key", "test-key")
+    monkeypatch.setattr(live_settings, "discovery_query_cap_per_run", 1)
+
+    supabase = _make_supabase(existing_tokens=[])
+    fake_brave = AsyncMock(
+        return_value=[
+            "https://boards.greenhouse.io/example/jobs/123",
+            "https://boards.greenhouse.io/example/jobs/456",
+            "https://boards.greenhouse.io/example",
+        ]
+    )
+    fake_detect = AsyncMock(
+        return_value=DetectResult(
+            provider="greenhouse",
+            board_token="example",
+            company_name="Example Co",
+            job_count=5,
+        )
+    )
+
+    with (
+        patch("app.services.source_discovery._brave_search", fake_brave),
+        patch("app.services.source_discovery.detect_ats", fake_detect),
+    ):
+        stats = await run_discovery_for_target(supabase, _make_target())
+
+    assert fake_detect.await_count == 1
+    assert stats.inserted == 1
+    assert stats.deduped == 2
+    assert stats.urls_examined == 3
+
+
+@pytest.mark.asyncio
+async def test_discovery_queries_are_unquoted(monkeypatch):
+    """Keywords must not be wrapped in exact-phrase quotes — quoting missed
+    boards whose titles phrase the role differently."""
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "brave_search_api_key", "test-key")
+    monkeypatch.setattr(live_settings, "discovery_query_cap_per_run", 1)
+
+    supabase = _make_supabase()
+    fake_brave = AsyncMock(return_value=[])
+
+    with patch("app.services.source_discovery._brave_search", fake_brave):
+        await run_discovery_for_target(supabase, _make_target())
+
+    query = fake_brave.await_args.kwargs["query"]
+    assert '"' not in query
+    assert query.startswith("director of cx site:")
+
+
+@pytest.mark.asyncio
+async def test_discovery_cap_samples_across_full_combo_space(monkeypatch):
+    """With cap >= total combos, every keyword × site pair is queried
+    exactly once (shuffling must sample, never duplicate or drop)."""
+    from app.config import settings as live_settings
+
+    monkeypatch.setattr(live_settings, "brave_search_api_key", "test-key")
+    monkeypatch.setattr(live_settings, "discovery_query_cap_per_run", 100)
+
+    supabase = _make_supabase()
+    fake_brave = AsyncMock(return_value=[])
+    target = _make_target(keywords=["a", "b"])
+
+    with patch("app.services.source_discovery._brave_search", fake_brave):
+        stats = await run_discovery_for_target(supabase, target)
+
+    assert stats.queries_issued == 12  # 2 keywords x 6 site filters
+    queries = sorted(c.kwargs["query"] for c in fake_brave.await_args_list)
+    assert len(queries) == len(set(queries)) == 12
+
+
+@pytest.mark.asyncio
 async def test_discovery_unclassified_urls_are_logged_but_not_inserted(monkeypatch):
     """detect_ats returning None should bump unclassified and skip insert."""
     from app.config import settings as live_settings

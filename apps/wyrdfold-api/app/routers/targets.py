@@ -271,7 +271,9 @@ async def create_target(
     status_code=201,
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("5/minute")
 async def create_target_from_manual(
+    request: Request,
     body: TargetFromManual,
     background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
@@ -315,7 +317,9 @@ async def create_target_from_manual(
     status_code=201,
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("5/minute")
 async def create_target_from_url(
+    request: Request,
     body: TargetFromUrl,
     background_tasks: BackgroundTasks,
     supabase: Client = Depends(get_supabase),
@@ -375,7 +379,9 @@ def list_targets(
     response_model=MatchedSuggestions,
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("3/minute")
 async def suggest(
+    request: Request,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     user_id: str = Depends(get_current_user_id),
@@ -408,7 +414,9 @@ async def suggest(
     response_model=LateralSuggestions,
     dependencies=[Depends(enforce_llm_budget)],
 )
+@limiter.limit("3/minute")
 async def suggest_lateral(
+    request: Request,
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     user_id: str = Depends(get_current_user_id),

@@ -12,10 +12,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from supabase import Client
 
 from app.cache import job_list_cache, jobs_cache_prefix
+from app.config import Settings
 from app.dependencies import (
     enforce_llm_budget,
     get_current_user_id_optional,
     get_llm_client,
+    get_settings,
     get_supabase,
     verify_api_key_or_jwt,
 )
@@ -24,7 +26,7 @@ from app.services.analysis import persistence
 from app.services.analysis.analyze import DEFAULT_PURPOSE, analyze_job
 from app.services.analysis.scoring import blend_scores, scorecard_to_numeric
 from app.services.experience import optimized
-from app.services.llm import cost_log
+from app.services.llm import budget, cost_log
 from app.services.llm.client import LLMClient
 from app.services.targets import crud as targets_crud
 
@@ -44,6 +46,7 @@ async def create_analysis(
     supabase: Client = Depends(get_supabase),
     llm: LLMClient = Depends(get_llm_client),
     user_id: str | None = Depends(get_current_user_id_optional),
+    s: Settings = Depends(get_settings),
 ) -> JobAnalysisRecord:
     # 1. Fetch optimized doc (needed for cache key)
     current_optimized = optimized.get_latest(supabase, user_id=user_id)
@@ -79,6 +82,17 @@ async def create_analysis(
             analysis_id=cached.id,
         )
         return cached
+
+    # Cache miss → this run WILL spend LLM money. Count gate sits here,
+    # after the cache check, so re-viewing a cached analysis is always
+    # free and never 429s (cache hits write no llm_costs row).
+    if user_id is not None:
+        budget.check_daily_count(
+            supabase,
+            user_id=user_id,
+            purpose=DEFAULT_PURPOSE,
+            limit=s.analysis_daily_limit,
+        )
 
     # 3. Fetch target (existence check + context for the LLM)
     target = targets_crud.get(supabase, target_id)

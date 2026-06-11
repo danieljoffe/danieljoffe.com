@@ -16,6 +16,7 @@ import { Switch } from '@danieljoffe/shared-ui/Switch';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import { extractApiError } from '@/lib/extractApiError';
 import { useToast } from '@/state/Toast/ToastProvider';
+import LlmUsageCard from './LlmUsageCard';
 import OnboardingResetCard from './OnboardingResetCard';
 import { ResumeStylePreview } from './ResumeStylePreview';
 import {
@@ -625,6 +626,8 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <LlmUsageCard />
 
       <OnboardingResetCard />
     </div>

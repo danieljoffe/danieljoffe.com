@@ -283,10 +283,11 @@ def enforce_llm_budget(
 ) -> None:
     """Defense-in-depth budget gate for LLM-touching routes.
 
-    JWT users get checked against rolling daily/hourly cost caps from
-    `llm_costs`. API-key callers (cron/poller/batch) bypass — those
-    system paths are trusted and gated by the operator. Limits are
-    configured via `user_llm_*_budget_usd` settings; 0 disables.
+    JWT users get checked against rolling hourly/daily/monthly cost caps
+    from `llm_costs`. API-key callers (cron/poller/batch) bypass here —
+    background work is charged to the target's activator and gated in
+    the poller. Limits come from `user_llm_*_budget_usd` settings; the
+    monthly cap honors the per-user `user_profiles` override; 0 disables.
     """
     if user_id is None:
         return
@@ -297,4 +298,9 @@ def enforce_llm_budget(
         user_id=user_id,
         daily_limit_usd=s.user_llm_daily_budget_usd,
         hourly_limit_usd=s.user_llm_hourly_budget_usd,
+        monthly_limit_usd=budget.effective_monthly_cap(
+            supabase, user_id=user_id, default_usd=s.user_llm_monthly_budget_usd
+        ),
     )
+
+

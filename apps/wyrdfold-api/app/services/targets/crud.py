@@ -402,15 +402,29 @@ def list_user_targets_with_summary(
 # ---- User-Target junction CRUD ----------------------------------------------
 
 
-MAX_ACTIVE_TARGETS_PER_USER = 5
+MAX_ACTIVE_TARGETS_PER_USER = 1
 """Per-user cap on simultaneously active targets.
 
-Caps fan-out of the upcoming LLM scoring pipeline (Phase 1/2 spend
-scales with active targets) and keeps a single user from scattering
-attention across a long list of marginal targets. Inactive targets are
-not counted — a user can keep arbitrarily many as "saved searches" they
-cycle between.
+Caps fan-out of the LLM scoring pipeline (Phase 1/2 spend scales with
+active targets — each one costs ~$1/month in background grading against
+a $5/month allowance). Inactive targets are not counted — a user can
+keep arbitrarily many as "saved searches" they cycle between. Per-user
+override via ``user_profiles.max_active_targets`` (the operator's "add
+credits" lever).
 """
+
+
+def effective_active_target_cap(supabase: Client, user_id: str) -> int:
+    """The user's active-target cap: per-user override or global default."""
+    resp = (
+        supabase.table("user_profiles")
+        .select("max_active_targets")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    rows = cast(list[dict[str, Any]], resp.data or [])
+    override = rows[0].get("max_active_targets") if rows else None
+    return int(override) if override is not None else MAX_ACTIVE_TARGETS_PER_USER
 
 
 class ActiveTargetLimitError(Exception):
@@ -475,8 +489,9 @@ def link_user_to_target(
         already_active = bool(existing and existing[0].get("is_active"))
         if not already_active:
             current = count_active_for_user(supabase, user_id)
-            if current >= MAX_ACTIVE_TARGETS_PER_USER:
-                raise ActiveTargetLimitError(current, MAX_ACTIVE_TARGETS_PER_USER)
+            cap = effective_active_target_cap(supabase, user_id)
+            if current >= cap:
+                raise ActiveTargetLimitError(current, cap)
 
     row: dict[str, Any] = {
         "user_id": user_id,

@@ -36,7 +36,9 @@ class BatchJob(BaseModel):
 class BatchRequest(BaseModel):
     """Router input for POST /tailor/batch."""
 
-    job_posting_ids: list[str] = Field(min_length=1, max_length=20)
+    # Capped at 10 (was 20): each id is a Sonnet tailor call, so the max
+    # batch is the single most expensive user action in the product.
+    job_posting_ids: list[str] = Field(min_length=1, max_length=10)
     contact: ContactInfo | None = None
     """Optional override; backend resolves from user_profiles when absent (F3-A)."""
     resume_type: ResumeType | None = None

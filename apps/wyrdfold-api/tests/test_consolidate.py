@@ -144,7 +144,7 @@ class TestConsolidateEndpoint:
 
         with pytest.raises(HTTPException) as exc_info:
             await exp_router.consolidate_prose(
-                supabase=MagicMock(), llm=MagicMock()
+                request=MagicMock(), supabase=MagicMock(), llm=MagicMock()
             )
         assert exc_info.value.status_code == 404
 
@@ -177,7 +177,7 @@ class TestConsolidateEndpoint:
         )
 
         result = await exp_router.consolidate_prose(
-            supabase=MagicMock(), llm=MockLLMClient()
+            request=MagicMock(), supabase=MagicMock(), llm=MockLLMClient()
         )
         assert result.no_op is True
         assert result.chars_before == result.chars_after
@@ -228,7 +228,9 @@ class TestConsolidateEndpoint:
         # Sanity: input must clear MIN_CONSOLIDATE_CHARS for the LLM to run.
         assert len(bloated) >= MIN_CONSOLIDATE_CHARS
 
-        result = await exp_router.consolidate_prose(supabase=MagicMock(), llm=llm)
+        result = await exp_router.consolidate_prose(
+            request=MagicMock(), supabase=MagicMock(), llm=llm
+        )
 
         assert result.prose.version == 3
         assert result.chars_before == len(bloated)

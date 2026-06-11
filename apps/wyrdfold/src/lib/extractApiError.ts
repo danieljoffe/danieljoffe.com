@@ -66,17 +66,39 @@ export async function extractApiError(
       limit_usd?: number;
       spent_usd?: number;
     };
-    const scope = d.scope === 'daily' ? 'daily' : 'hourly';
+    const scope =
+      d.scope === 'monthly'
+        ? 'monthly'
+        : d.scope === 'daily'
+          ? 'daily'
+          : 'hourly';
     const spent =
       typeof d.spent_usd === 'number' ? `$${d.spent_usd.toFixed(2)}` : null;
     const limit =
       typeof d.limit_usd === 'number' ? `$${d.limit_usd.toFixed(2)}` : null;
     const waitHint =
-      scope === 'hourly' ? ' — try again in an hour' : ' — try again tomorrow';
+      scope === 'hourly'
+        ? ' — try again in an hour'
+        : scope === 'daily'
+          ? ' — try again tomorrow'
+          : ' — frees up as usage rolls out of the 30-day window';
+    const label =
+      scope === 'monthly' ? 'Monthly LLM allowance' : `LLM ${scope} budget`;
     if (spent && limit) {
-      return `LLM ${scope} budget reached (${spent} of ${limit})${waitHint}.`;
+      return `${label} reached (${spent} of ${limit})${waitHint}.`;
     }
-    return `LLM ${scope} budget reached${waitHint}.`;
+    return `${label} reached${waitHint}.`;
+  }
+
+  if (
+    detail &&
+    typeof detail === 'object' &&
+    'code' in detail &&
+    (detail as { code: unknown }).code === 'analysis_daily_limit'
+  ) {
+    const d = detail as { limit?: number };
+    const limit = typeof d.limit === 'number' ? ` (${d.limit}/day)` : '';
+    return `Daily deep-analysis limit reached${limit} — more tomorrow. Already-analyzed jobs stay free to revisit.`;
   }
 
   return statusFallback;

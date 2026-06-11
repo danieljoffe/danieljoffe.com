@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import re
 from collections.abc import Callable, Coroutine
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
@@ -60,6 +61,7 @@ from app.services.target_scoring import (
     score_title_and_upsert as target_title_score_and_upsert,
 )
 from app.services.targets.crud import get_active as get_active_target
+from app.services.targets.payers import PayerBudgetGate, build_budget_gate
 from app.services.validate import validate_job_url
 from app.services.workday import fetch_workday_jobs
 
@@ -121,6 +123,7 @@ _NON_US_HINTS: tuple[str, ...] = (
     "poland",
     "warsaw",
     "czech",
+    "czechia",
     "prague",
     "portugal",
     "lisbon",
@@ -277,17 +280,57 @@ def _title_matches_target(title: str, keywords: list[str]) -> bool:
     return False
 
 
+# Word-boundary pattern over the hints. Plain substring matching produced
+# false drops on US locations that merely *contain* a hint: "india" ⊂
+# "Indianapolis, Indiana", "rome" ⊂ "Rome, GA", etc.
+_NON_US_RE = re.compile(
+    r"\b(?:" + "|".join(re.escape(h) for h in _NON_US_HINTS) + r")\b"
+)
+
+# Explicit US markers that short-circuit the non-US rejection. Needed for
+# US cities that share a name with a non-US hint city: "Dublin, OH",
+# "Dublin, CA", "Athens, GA", "Milan, MI" are all real US locations that
+# the hint list would otherwise reject.
+_US_COUNTRY_RE = re.compile(r"\b(?:usa|u\.s\.a?|united states)\b", re.I)
+
+_US_STATE_ABBREVS: frozenset[str] = frozenset(
+    {
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+        "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+        "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+        "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+        "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+        "DC",
+    }
+)
+
+# ", XX" with XX upper-case — the standard "City, ST" form. Checked against
+# the original casing so lowercase words ("ca" in "Africa") can't match.
+_US_STATE_ABBREV_RE = re.compile(r",\s*([A-Z]{2})\b")
+
+
 def _is_us_location(location: str | None) -> bool:
     """Return True if the location looks like it's in the US (or is ambiguous).
 
     Permissive by design: empty/None and generic 'Remote' pass through,
     since many US companies list remote roles with no country. Rejects
-    only when a known non-US country or major city name is detected.
+    only when a known non-US country or major city name is detected as a
+    whole word AND no explicit US marker (country name or "City, ST"
+    state abbreviation) is present. The US marker wins ties on purpose —
+    a rare "Berlin, DE" style ISO-code listing slips through as US, which
+    the downstream scoring tolerates far better than silently dropping
+    every "Dublin, CA".
     """
     if not location:
         return True
-    loc = location.lower()
-    return not any(hint in loc for hint in _NON_US_HINTS)
+    if _US_COUNTRY_RE.search(location):
+        return True
+    if any(
+        m.group(1) in _US_STATE_ABBREVS
+        for m in _US_STATE_ABBREV_RE.finditer(location)
+    ):
+        return True
+    return not _NON_US_RE.search(location.lower())
 
 
 def _content_dedupe_key(
@@ -424,6 +467,7 @@ async def _run_llm_scoring_for_row(
     target: JobTarget,
     *,
     current_score: int | None = None,
+    payer_user_id: str | None = None,
 ) -> None:
     """Stage 3: Run LLM analysis and mark target scores as complete.
 
@@ -531,8 +575,9 @@ async def _run_llm_scoring_for_row(
         # Cron path: enqueue instead of inline INSERT. The background
         # buffer batches per-row writes into a single bulk INSERT every
         # few seconds, so a fan-out of N concurrent LLM calls produces
-        # ~1 cost-log INSERT instead of N.
-        enqueue_llm_cost(None, "poll_scoring", llm_result)
+        # ~1 cost-log INSERT instead of N. Charged to the payer (the
+        # user whose optimized doc this run scores against).
+        enqueue_llm_cost(payer_user_id, "poll_scoring", llm_result)
 
         llm_score = scorecard_to_numeric(analysis.scorecard)
         blended = blend_scores(current_score, llm_score)
@@ -620,6 +665,7 @@ async def _resolve_user_targets_for_stage3(
 async def _poll_one_source(
     source: dict[str, Any],
     supabase: Client,
+    budget_gate: PayerBudgetGate | None = None,
     *,
     active_targets: list[JobTarget] | None = None,
     stage3_users: tuple[dict[str, JobTarget], dict[str, OptimizedDoc]] | None = None,
@@ -631,10 +677,15 @@ async def _poll_one_source(
       2. Full JD match for stage-1 matches (async, after upsert)
       3. LLM analysis for top stage-2 scores (async)
 
-    ``active_targets`` and ``stage3_users`` are cycle-wide constants —
-    callers polling many sources should resolve them once and pass them
-    in rather than paying one targets query plus one user/doc resolution
-    per source. Both fall back to a per-source fetch when omitted.
+    ``budget_gate`` is the per-cycle payer/allowance snapshot (built once
+    by the cycle entry points); when None it's computed locally so direct
+    callers and existing tests keep working.
+
+    ``active_targets`` and ``stage3_users`` are likewise cycle-wide
+    constants — callers polling many sources should resolve them once and
+    pass them in rather than paying one targets query plus one user/doc
+    resolution per source. Both fall back to a per-source fetch when
+    omitted.
     """
     summary: dict[str, Any] = {
         "polled": False,
@@ -684,6 +735,22 @@ async def _poll_one_source(
         existing_rows = cast(list[dict[str, Any]], existing_resp.data or [])
         known_external_ids = {r.get("external_id") for r in existing_rows}
 
+        # Payer/allowance snapshot: who pays for each target's LLM work,
+        # and which payers are over their monthly allowance. Built once
+        # per cycle by the entry points; locally as a fallback.
+        gate = budget_gate
+        if gate is None:
+            try:
+                gate = await asyncio.to_thread(
+                    build_budget_gate, supabase, [t.id for t in active_targets]
+                )
+            except Exception:
+                logger.exception(
+                    "Budget gate build failed for %s — deferring LLM work",
+                    company_name,
+                )
+                gate = PayerBudgetGate()
+
         # Phase 1: per-target LLM binary title triage (replaces cosine
         # prefilter). See ``app/services/relevance/title_triage.py``.
         # Verdicts: phase1_verdicts[target.id][1-based job idx] -> bool.
@@ -706,6 +773,20 @@ async def _poll_one_source(
             llm = get_default_llm_client()
             titles = [job.title for _, job in triage_candidates]
             for active_target in active_targets:
+                if gate.target_blocked(active_target.id):
+                    # Payer over monthly allowance (or unattributable) —
+                    # spend nothing. Empty verdicts → fail-open admit, so
+                    # jobs still ingest (promising, score=NULL) and get
+                    # graded once the payer's window frees up. Same defer
+                    # semantics as the Phase 2 daily cap.
+                    phase1_verdicts[active_target.id] = {}
+                    logger.info(
+                        "Phase 1 deferred for target %s (payer %s over "
+                        "monthly allowance or unknown)",
+                        active_target.id,
+                        gate.payer_for(active_target.id),
+                    )
+                    continue
                 # Chunk to PHASE1_BATCH_SIZE per call. Sources usually
                 # return well under one batch (10-200 jobs); larger
                 # sources spread cost across multiple calls.
@@ -719,7 +800,7 @@ async def _poll_one_source(
                         try:
                             record_llm_cost(
                                 supabase,
-                                user_id=None,
+                                user_id=gate.payer_for(active_target.id),
                                 purpose=PHASE1_PURPOSE,
                                 result=result,
                                 metadata={
@@ -983,6 +1064,17 @@ async def _poll_one_source(
                     cast(dict[str, Any], r) for r in upsert_resp.data or []
                 ]
                 for uid, p2_target in primary_by_user.items():
+                    if gate.user_blocked(uid):
+                        # Over monthly allowance — defer. Jobs keep
+                        # promising=True/score=NULL and get graded when
+                        # the rolling window frees up.
+                        logger.info(
+                            "Phase 2 deferred for user %s / target %s "
+                            "(over monthly allowance)",
+                            uid,
+                            p2_target.id,
+                        )
+                        continue
                     try:
                         await run_phase2_for_jobs(
                             supabase,
@@ -1025,6 +1117,7 @@ async def _poll_one_source(
                     row_data: dict[str, Any],
                     target: JobTarget,
                     doc: OptimizedDoc,
+                    payer: str,
                 ) -> None:
                     async with llm_sem:
                         await _run_llm_scoring_for_row(
@@ -1036,6 +1129,7 @@ async def _poll_one_source(
                             current_score=score_map.get(
                                 cast(str, row_data.get("id", "")), 0
                             ),
+                            payer_user_id=payer,
                         )
 
                 await asyncio.gather(
@@ -1044,9 +1138,13 @@ async def _poll_one_source(
                             cast(dict[str, Any], r),
                             primary_by_user[uid],
                             user_optimized[uid],
+                            uid,
                         )
                         for r in upsert_resp.data or []
                         for uid in primary_by_user
+                        # Over-allowance payers defer — same semantics as
+                        # the Phase 2 branch above.
+                        if not gate.user_blocked(uid)
                     )
                 )
 
@@ -1175,6 +1273,26 @@ async def _poll_one_source(
     return summary
 
 
+async def _cycle_budget_gate(supabase: Client) -> PayerBudgetGate:
+    """Build the payer/allowance snapshot once per poll cycle.
+
+    On any error returns an EMPTY gate, which blocks all targets'
+    LLM work for the cycle (``target_blocked`` is True for unknown
+    targets) — refuse to spend unattributed money rather than crash
+    or fail open. Jobs still ingest; grading defers a cycle.
+    """
+    try:
+        active = await asyncio.to_thread(get_active_target, supabase)
+        return await asyncio.to_thread(
+            build_budget_gate, supabase, [t.id for t in active]
+        )
+    except Exception:
+        logger.exception(
+            "Budget gate build failed — deferring all LLM work this cycle"
+        )
+        return PayerBudgetGate()
+
+
 async def poll_all_sources(supabase: Client) -> PollResult:
     sources_query = supabase.table("sources").select("*").eq("enabled", True)
     sources_resp = await asyncio.to_thread(sources_query.execute)
@@ -1187,6 +1305,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
         supabase, active_targets, "(cycle prefetch)"
     )
 
+    budget_gate = await _cycle_budget_gate(supabase)
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
@@ -1194,6 +1313,7 @@ async def poll_all_sources(supabase: Client) -> PollResult:
             return await _poll_one_source(
                 cast(dict[str, Any], raw_source),
                 supabase,
+                budget_gate,
                 active_targets=active_targets,
                 stage3_users=stage3_users,
             )
@@ -1279,6 +1399,7 @@ async def poll_due_sources(supabase: Client) -> PollResult:
         supabase, active_targets, "(cycle prefetch)"
     )
 
+    budget_gate = await _cycle_budget_gate(supabase)
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(source: dict[str, Any]) -> dict[str, Any]:
@@ -1286,6 +1407,7 @@ async def poll_due_sources(supabase: Client) -> PollResult:
             return await _poll_one_source(
                 source,
                 supabase,
+                budget_gate,
                 active_targets=active_targets,
                 stage3_users=stage3_users,
             )
@@ -1313,8 +1435,16 @@ async def _poll_one_source_for_target(
     source: dict[str, Any],
     supabase: Client,
     target: JobTarget,
+    payer_user_id: str | None = None,
+    payer_over_budget: bool = False,
 ) -> dict[str, Any]:
-    """Poll a single source for a specific target. Three-stage pipeline."""
+    """Poll a single source for a specific target. Three-stage pipeline.
+
+    ``payer_user_id`` is the user charged for this target's LLM work
+    (the activator); ``payer_over_budget`` skips Phase 1 spend while
+    still ingesting fail-open — both resolved once by
+    ``poll_sources_for_target``.
+    """
     summary: dict[str, Any] = {"polled": False, "new": 0, "updated": 0, "error": None}
     company_name: str = source.get("company_name", "?")
 
@@ -1333,9 +1463,11 @@ async def _poll_one_source_for_target(
 
         # Phase 1 per-target triage (single target). Same semantics as
         # ``_poll_one_source`` but the candidate set is one target, so
-        # ``phase1_verdicts`` collapses to a single dict.
+        # ``phase1_verdicts`` collapses to a single dict. Skipped when
+        # the payer is over their monthly allowance (or unattributable):
+        # empty verdicts → fail-open ingest, grading defers.
         target_verdicts: dict[int, TitleVerdict] = {}
-        if settings.phase1_triage_enabled and jobs:
+        if settings.phase1_triage_enabled and jobs and not payer_over_budget:
             llm = get_default_llm_client()
             titles = [job.title for job in jobs]
             for start in range(0, len(titles), PHASE1_BATCH_SIZE):
@@ -1347,7 +1479,7 @@ async def _poll_one_source_for_target(
                     try:
                         record_llm_cost(
                             supabase,
-                            user_id=None,
+                            user_id=payer_user_id,
                             purpose=PHASE1_PURPOSE,
                             result=result,
                             metadata={
@@ -1499,7 +1631,14 @@ async def _poll_one_source_for_target(
             primary_by_user, user_optimized = await _resolve_user_targets_for_stage3(
                 supabase, [target], company_name
             )
-            if primary_by_user:
+            if primary_by_user and payer_over_budget:
+                logger.info(
+                    "Stage 3 deferred for target %s (payer %s over "
+                    "monthly allowance)",
+                    target.id,
+                    payer_user_id,
+                )
+            elif primary_by_user:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
 
@@ -1525,6 +1664,7 @@ async def _poll_one_source_for_target(
                             current_score=score_map_t.get(
                                 cast(str, row_data.get("id", "")), 0
                             ),
+                            payer_user_id=payer_user_id,
                         )
 
                 await asyncio.gather(
@@ -1600,12 +1740,37 @@ async def poll_sources_for_target(supabase: Client, target: JobTarget) -> PollRe
     # ``_poll_one_source_for_target`` now — the previous shared-doc fetch
     # (``user_id=None``) never returned a row in the multi-user schema.
 
+    # Resolve the payer (activator) once for the whole fan-out; their
+    # monthly allowance decides whether Phase 1 spends anything. On
+    # failure: refuse to spend (defer LLM work), keep ingesting.
+    try:
+        gate = await asyncio.to_thread(build_budget_gate, supabase, [target.id])
+    except Exception:
+        logger.exception(
+            "Budget gate build failed for target %s — deferring LLM work",
+            target.id,
+        )
+        gate = PayerBudgetGate()
+    payer = gate.payer_for(target.id)
+    over = gate.target_blocked(target.id)
+    if over:
+        logger.info(
+            "poll_sources_for_target: Phase 1 deferred for target %s "
+            "(payer %s over monthly allowance or unknown)",
+            target.id,
+            payer,
+        )
+
     semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
 
     async def _worker(raw_source: Any) -> dict[str, Any]:
         async with semaphore:
             return await _poll_one_source_for_target(
-                cast(dict[str, Any], raw_source), supabase, target
+                cast(dict[str, Any], raw_source),
+                supabase,
+                target,
+                payer_user_id=payer,
+                payer_over_budget=over,
             )
 
     summaries = await asyncio.gather(*(_worker(s) for s in sources))
