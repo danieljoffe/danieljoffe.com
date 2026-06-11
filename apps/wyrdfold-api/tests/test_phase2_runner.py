@@ -330,3 +330,64 @@ async def test_confidence_ties_break_by_first_seen_at_desc(
     )
     assert n == 1
     assert graded == ["j-new"]
+
+
+# ---- seniority pre-gate (#902) --------------------------------------------
+
+
+def _director_target() -> JobTarget:
+    t = _target(1)
+    t.seniority_hint = "director"
+    return t
+
+
+def _gate_rows(ids: list[str]) -> list[dict[str, Any]]:
+    return [
+        {"job_posting_id": jid, "promising": True, "scoring_status": "stage2",
+         "scored_profile_version": 1, "phase1_confidence": 90}
+        for jid in ids
+    ]
+
+
+@pytest.mark.asyncio
+async def test_seniority_gate_skips_below_level_when_enabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    graded = _patch_grader(monkeypatch)
+    _patch_quota(monkeypatch, 100)
+    monkeypatch.setattr(f"{_RUNNER}.settings.phase2_seniority_gate_enabled", True)
+    monkeypatch.setattr(f"{_RUNNER}.settings.phase2_seniority_gate_tolerance", 1)
+    rows = _gate_rows(["j-dir", "j-mgr", "j-coord", "j-eng"])
+    jobs = [
+        {"id": "j-dir", "title": "Director of CX Operations", "description_html": ""},
+        {"id": "j-mgr", "title": "Customer Success Manager", "description_html": ""},
+        {"id": "j-coord", "title": "CX Coordinator", "description_html": ""},
+        {"id": "j-eng", "title": "Senior Sales Engineer", "description_html": ""},
+    ]
+    n = await run_phase2_for_jobs(
+        _supabase(rows), MagicMock(), target=_director_target(),
+        payload=_payload(), jobs=jobs,
+    )
+    # Director + (tolerance=1) Manager grade; Coordinator + senior-IC dropped.
+    assert n == 2
+    assert set(graded) == {"j-dir", "j-mgr"}
+
+
+@pytest.mark.asyncio
+async def test_seniority_gate_noop_when_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Flag off (default) → every promising candidate still grades."""
+    graded = _patch_grader(monkeypatch)
+    _patch_quota(monkeypatch, 100)
+    rows = _gate_rows(["j-dir", "j-coord"])
+    jobs = [
+        {"id": "j-dir", "title": "Director of CX", "description_html": ""},
+        {"id": "j-coord", "title": "CX Coordinator", "description_html": ""},
+    ]
+    n = await run_phase2_for_jobs(
+        _supabase(rows), MagicMock(), target=_director_target(),
+        payload=_payload(), jobs=jobs,
+    )
+    assert n == 2
+    assert set(graded) == {"j-dir", "j-coord"}

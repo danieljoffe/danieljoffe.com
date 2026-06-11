@@ -35,10 +35,12 @@ from typing import Any, cast
 
 from supabase import Client
 
+from app.config import settings
 from app.models.experience import OptimizedPayload
 from app.models.targets import JobTarget
 from app.services.fit.daily_cap import DEFAULT_DAILY_CAP, phase2_quota_remaining
 from app.services.fit.score_persistence import score_with_phase2_and_persist
+from app.services.fit.seniority_gate import passes_seniority_gate
 from app.services.llm.client import LLMClient
 from app.services.scoring import strip_html
 
@@ -174,6 +176,36 @@ async def run_phase2_for_jobs(
     ]
     if not candidates:
         return 0
+
+    # Cheap seniority pre-gate (#902): Phase 1's promising verdict is
+    # domain-oriented and permissive, so it forwards many roles whose
+    # *seniority* is well below the target's — Phase 2 then spends a real grade
+    # to discover the mismatch. Drop clearly-below-level titles first. Flag-off
+    # by default; shadow-measured via scripts/shadow_seniority_gate.py before
+    # enforcing (per the prompt/scoring-change rollout rule).
+    if settings.phase2_seniority_gate_enabled and target.seniority_hint:
+        kept = [
+            jid
+            for jid in candidates
+            if passes_seniority_gate(
+                job_by_id[jid].get("title") or "",
+                target.seniority_hint,
+                tolerance=settings.phase2_seniority_gate_tolerance,
+            )
+        ]
+        skipped = len(candidates) - len(kept)
+        if skipped:
+            logger.info(
+                "Phase 2 seniority gate: skipped %d/%d below-level candidate(s) "
+                "for target %s (hint=%s)",
+                skipped,
+                len(candidates),
+                target.id,
+                target.seniority_hint,
+            )
+        candidates = kept
+        if not candidates:
+            return 0
 
     # Order candidates so the Phase 2 daily cap goes to the highest-leverage
     # jobs first:

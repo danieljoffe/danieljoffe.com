@@ -185,6 +185,17 @@ class Settings(BaseSettings):
     # allowance; 20/day ≈ $2/month/target).
     phase2_daily_cap: int = Field(default=20, ge=0)
 
+    # Phase 2 seniority pre-gate (#902). When True, candidates whose title is
+    # clearly below the target's ``seniority_hint`` are dropped before Phase 2
+    # spends a Sonnet grade on them (shadow-measured: ~32% of grades skipped
+    # for a director target, 94% of them genuine waste). Only gates targets
+    # hinted director-or-above; ambiguous titles always pass. Ships False so
+    # the skip volume can be validated per-target before enforcing.
+    phase2_seniority_gate_enabled: bool = False
+    # Allowed rungs below the hint (1 = a Manager still grades for a Director
+    # target — the stretch case — but a Coordinator does not).
+    phase2_seniority_gate_tolerance: int = Field(default=1, ge=0, le=6)
+
     # Idle-account lifecycle. last_seen_at is stamped on authenticated
     # requests (throttled in-process); the poller defers a payer's LLM
     # work after idle_defer_days unseen and the lifecycle sweep
