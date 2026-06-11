@@ -333,6 +333,24 @@ def _is_us_location(location: str | None) -> bool:
     return not _NON_US_RE.search(location.lower())
 
 
+def _passes_free_gates(job: StandardJob, active_targets: list[JobTarget]) -> bool:
+    """The zero-cost ingestion gates, conjunction form.
+
+    Same semantics as the per-job loop in ``_poll_one_source`` — title
+    prematch (including the excluded-admits-for-audit rule and the
+    empty-``search_keywords`` fallback inside
+    ``_title_matches_any_target``; skipped entirely when no targets are
+    active) AND the US-location pass. Used to pre-filter the Phase 1
+    triage candidate set so the LLM only ever sees titles that could
+    actually be ingested: a job these gates reject is dropped in the
+    per-job loop regardless of its verdict, so classifying it is pure
+    spend.
+    """
+    if active_targets and not _title_matches_any_target(job.title, active_targets):
+        return False
+    return _is_us_location(job.location_name)
+
+
 def _content_dedupe_key(
     company: str | None, title: str | None
 ) -> tuple[str, str]:
@@ -791,11 +809,19 @@ async def _poll_one_source(
         # admitted on a previous cycle; re-triaging them re-paid the LLM
         # cost for the same titles on every poll. Known jobs simply have
         # no verdict entry, which the fail-open gate treats as admit.
+        #
+        # Only FREE-GATE SURVIVORS are triaged. The per-job loop below
+        # drops title-prematch misses and non-US locations regardless of
+        # their Phase 1 verdict, so paying Haiku to classify them was
+        # pure waste (the bulk of the June 5-7 triage bill). Non-survivors
+        # simply have no verdict entry — fail-open admit at the Phase 1
+        # gate, then dropped at the free gates exactly as before.
         phase1_verdicts: dict[str, dict[int, TitleVerdict]] = {}
         triage_candidates = [
             (idx, job)
             for idx, job in enumerate(jobs)
             if job.external_id not in known_external_ids
+            and _passes_free_gates(job, active_targets)
         ]
         if settings.phase1_triage_enabled and active_targets and triage_candidates:
             llm = get_default_llm_client()
@@ -875,24 +901,30 @@ async def _poll_one_source(
         phase1_idx_by_external_id: dict[str, int] = {}
         # Pre-DB drop counters for #845 funnel diagnostics. Order
         # matches the gate order below — first miss wins, mutually
-        # exclusive. Emitted as a single `poll_funnel` log line at end
-        # of cycle so an operator can grep one source's funnel without
-        # a DB pass.
+        # exclusive. The FREE gates run before the Phase 1 check now
+        # (mirroring the triage-candidate pre-filter above), so
+        # ``dropped_phase1`` counts only free-gate survivors the LLM
+        # actually rejected; free-gate misses land in their own
+        # counters whether or not Phase 1 ever saw them. Emitted as a
+        # single `poll_funnel` log line at end of cycle so an operator
+        # can grep one source's funnel without a DB pass.
         dropped_phase1 = 0
         dropped_title_prematch = 0
         dropped_non_us = 0
         for idx, job in enumerate(jobs):
-            # Phase 1 IDs are 1-based; the per-target verdict-check
-            # below uses the same idx + 1 convention.
-            if not _any_target_admits(idx + 1):
-                dropped_phase1 += 1
-                continue
             # Filter by target relevance instead of static keyword list
             if active_targets and not _title_matches_any_target(job.title, active_targets):
                 dropped_title_prematch += 1
                 continue
             if not _is_us_location(job.location_name):
                 dropped_non_us += 1
+                continue
+            # Phase 1 IDs are 1-based; the per-target verdict-check
+            # below uses the same idx + 1 convention. Non-survivors
+            # never reach this line, so their missing verdicts can't
+            # fail-open anything into the upsert.
+            if not _any_target_admits(idx + 1):
+                dropped_phase1 += 1
                 continue
 
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
@@ -1596,10 +1628,23 @@ async def _poll_one_source_for_target(
         # ``phase1_verdicts`` collapses to a single dict. Skipped when
         # the payer is over their monthly allowance (or unattributable):
         # empty verdicts → fail-open ingest, grading defers.
+        #
+        # Only FREE-GATE SURVIVORS are triaged (mirrors
+        # ``_poll_one_source``): the per-job loop below drops keyword
+        # misses and non-US locations regardless of verdict, so paying
+        # the LLM to classify them was pure waste. Verdicts stay keyed
+        # by ORIGINAL 1-based job index via the candidate mapping;
+        # non-survivors have no entry (fail-open, then free-gate drop).
         target_verdicts: dict[int, TitleVerdict] = {}
-        if settings.phase1_triage_enabled and jobs and not payer_over_budget:
+        triage_candidates = [
+            (idx, job)
+            for idx, job in enumerate(jobs)
+            if _title_matches_target(job.title, target.search_keywords)
+            and _is_us_location(job.location_name)
+        ]
+        if settings.phase1_triage_enabled and triage_candidates and not payer_over_budget:
             llm = get_default_llm_client()
-            titles = [job.title for job in jobs]
+            titles = [job.title for _, job in triage_candidates]
             for start in range(0, len(titles), PHASE1_BATCH_SIZE):
                 batch = titles[start : start + PHASE1_BATCH_SIZE]
                 verdicts, result = await triage_titles(
@@ -1623,22 +1668,30 @@ async def _poll_one_source_for_target(
                             "Failed to record Phase 1 cost for target %s",
                             target.id,
                         )
+                # Shift batch-local ids (1-based within the triage
+                # subset) back to global 1-based job indices via the
+                # candidate mapping.
                 for batch_idx, verdict in verdicts.items():
-                    target_verdicts[start + batch_idx] = verdict
+                    subset_pos = start + batch_idx - 1  # 0-based
+                    if 0 <= subset_pos < len(triage_candidates):
+                        global_idx = triage_candidates[subset_pos][0] + 1
+                        target_verdicts[global_idx] = verdict
 
         rows_to_upsert: list[dict[str, Any]] = []
         phase1_idx_by_external_id: dict[str, int] = {}
         for idx, job in enumerate(jobs):
+            # Free gates first — Phase 1 only ever saw their survivors,
+            # so a non-survivor's missing verdict can't fail-open here.
+            if not _title_matches_target(job.title, target.search_keywords):
+                continue
+            if not _is_us_location(job.location_name):
+                continue
             # Phase 1 ids are 1-based. Fail-open when no verdict (gate
             # disabled or LLM dropped the entry).
             if target_verdicts:
                 v = target_verdicts.get(idx + 1)
                 if v is not None and not v.promising:
                     continue
-            if not _title_matches_target(job.title, target.search_keywords):
-                continue
-            if not _is_us_location(job.location_name):
-                continue
 
             salary = job.salary_text or extract_salary_from_text(strip_html(job.content))
 
@@ -1768,6 +1821,43 @@ async def _poll_one_source_for_target(
                     target.id,
                     payer_user_id,
                 )
+            elif settings.phase2_enabled and primary_by_user:
+                # ---- Phase 2: LLM job-fit grading (#6) ----
+                # Mirrors ``_poll_one_source``: the Haiku-batched
+                # scorecard with the promising gate, re-grade contract
+                # and per-target daily cap — NOT the legacy full-JD
+                # Sonnet call ($0.038/job) below, which previously ran
+                # unconditionally on this activation path. Legacy stays
+                # only as the flag-off fallback.
+                llm = get_default_llm_client()
+                cycle_rows = [
+                    cast(dict[str, Any], r) for r in upsert_resp.data or []
+                ]
+                for uid in primary_by_user:
+                    try:
+                        await run_phase2_for_jobs(
+                            supabase,
+                            llm,
+                            target=target,
+                            payload=user_optimized[uid].payload,
+                            jobs=cycle_rows,
+                            user_id=payer_user_id,
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Phase 2 grading failed for user %s / target %s",
+                            uid,
+                            target.id,
+                        )
+                if s2_ids:
+                    try:
+                        await asyncio.to_thread(
+                            batch_update_global_scores, supabase, s2_ids
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Global score update failed after Phase 2"
+                        )
             elif primary_by_user:
                 llm = get_default_llm_client()
                 llm_sem = asyncio.Semaphore(LLM_CONCURRENCY)
