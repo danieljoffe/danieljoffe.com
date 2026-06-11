@@ -83,6 +83,48 @@ router = APIRouter(
     dependencies=[Depends(verify_api_key_or_jwt)],
 )
 
+
+def _resolve_target_for_posting(
+    supabase: Client, *, user_id: str | None, job_posting_id: str
+) -> str | None:
+    """Resolve which target a posting belongs to, via ``scores``.
+
+    ``jobs.target_id`` is a vestigial column the poller never writes —
+    the job ↔ target link lives in ``scores`` (same resolution as
+    ``routers/jobs.py``). JWT callers are scoped to their own targets via
+    ``user_targets`` and get their best-scoring one when several match;
+    API-key (operator) callers resolve across all targets.
+    """
+    target_ids: list[str] | None = None
+    if user_id is not None:
+        ut_resp = (
+            supabase.table("user_targets")
+            .select("target_id")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        target_ids = [
+            cast(dict[str, Any], r)["target_id"]
+            for r in (ut_resp.data or [])
+            if isinstance(r, dict) and r.get("target_id")
+        ]
+        if not target_ids:
+            return None
+
+    score_query = (
+        supabase.table("scores")
+        .select("target_id")
+        .eq("job_posting_id", job_posting_id)
+    )
+    if target_ids is not None:
+        score_query = score_query.in_("target_id", target_ids)
+    rows = (
+        score_query.order("score", desc=True).limit(1).execute().data or []
+    )
+    if not rows:
+        return None
+    return cast(str, cast(dict[str, Any], rows[0])["target_id"])
+
 @router.post(
     "/resume",
     responses={422: {"model": TailorLintFailureResponse | GapGateFailureResponse}},
@@ -120,51 +162,47 @@ async def create_tailored_resume(
 
     # Reuse check (#504): skip pipeline if a similar resume exists in the target
     if not body.force_fresh and body.job_posting_id:
-        jp_resp = (
-            supabase.table("jobs")
-            .select("target_id")
-            .eq("id", body.job_posting_id)
-            .execute()
+        target_id = _resolve_target_for_posting(
+            supabase, user_id=user_id, job_posting_id=body.job_posting_id
         )
-        if jp_resp.data:
-            target_id = cast(dict[str, Any], jp_resp.data[0]).get("target_id")
-            if target_id:
-                target_resp = (
-                    supabase.table("targets")
-                    .select("scoring_profile")
-                    .eq("id", target_id)
-                    .execute()
-                )
-                if target_resp.data:
-                    from app.models.targets import ScoringProfile
+        if target_id:
+            target_resp = (
+                supabase.table("targets")
+                .select("scoring_profile")
+                .eq("id", target_id)
+                .execute()
+            )
+            if target_resp.data:
+                from app.models.targets import ScoringProfile
 
-                    target_row = cast(dict[str, Any], target_resp.data[0])
-                    profile = ScoringProfile.model_validate(
-                        target_row["scoring_profile"]
+                target_row = cast(dict[str, Any], target_resp.data[0])
+                profile = ScoringProfile.model_validate(
+                    target_row["scoring_profile"]
+                )
+                keywords = extract_profile_keywords(profile)
+                if keywords:
+                    reusable = find_reusable_resume(
+                        supabase,
+                        target_id=target_id,
+                        job_description=body.job_description,
+                        profile_keywords=keywords,
+                        user_id=user_id,
                     )
-                    keywords = extract_profile_keywords(profile)
-                    if keywords:
-                        reusable = find_reusable_resume(
+                    if reusable is not None:
+                        cloned = clone_resume_for_job(
                             supabase,
-                            target_id=target_id,
+                            source=reusable,
+                            job_posting_id=body.job_posting_id,
                             job_description=body.job_description,
-                            profile_keywords=keywords,
+                            user_id=user_id,
                         )
-                        if reusable is not None:
-                            cloned = clone_resume_for_job(
-                                supabase,
-                                source=reusable,
-                                job_posting_id=body.job_posting_id,
-                                job_description=body.job_description,
-                                user_id=user_id,
-                            )
-                            persistence.mark_job_resume_draft(
-                                supabase, body.job_posting_id
-                            )
-                            return TailorResponse(
-                                record=cloned,
-                                lint_warnings=[],
-                            )
+                        persistence.mark_job_resume_draft(
+                            supabase, body.job_posting_id
+                        )
+                        return TailorResponse(
+                            record=cloned,
+                            lint_warnings=[],
+                        )
 
     prefs_row = preferences.get(supabase, user_id=user_id)
     prefs_payload = prefs_row.payload if prefs_row else None
@@ -701,13 +739,13 @@ async def create_batch_resumes(
             detail="no optimized doc — derive one via POST /experience/derive first",
         )
 
-    # Verify all job posting IDs exist and fetch their descriptions + target_id.
+    # Verify all job posting IDs exist and fetch their descriptions.
     # Single .in_() round-trip; .in_() does not guarantee row order, so re-map
-    # by id to preserve the input ordering (downstream uses postings[0] for the
-    # common target_id and processes jobs in request order).
+    # by id to preserve the input ordering (downstream processes jobs in
+    # request order).
     resp = (
         supabase.table("jobs")
-        .select("id, title, description_html, target_id")
+        .select("id, title, description_html")
         .in_("id", body.job_posting_ids)
         .execute()
     )
@@ -726,8 +764,16 @@ async def create_batch_resumes(
             warnings.append(f"no_description:{jid}")
         postings.append(row)
 
-    # Derive common target_id from first posting (all batch jobs share a target)
-    target_id: str | None = postings[0].get("target_id") if postings else None
+    # Derive the common target from the first posting (all batch jobs share
+    # a target). Resolved via ``scores`` — ``jobs.target_id`` is vestigial
+    # and always NULL, which silently disabled batch reuse.
+    target_id: str | None = (
+        _resolve_target_for_posting(
+            supabase, user_id=user_id, job_posting_id=body.job_posting_ids[0]
+        )
+        if body.job_posting_ids
+        else None
+    )
 
     prefs_row = preferences.get(supabase, user_id=user_id)
     prefs_payload = prefs_row.payload if prefs_row else None

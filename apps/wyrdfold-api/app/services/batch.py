@@ -172,6 +172,7 @@ async def process_batch(
                     target_id=target_id,
                     job_description=description_html,
                     profile_keywords=scoring_keywords,
+                    user_id=user_id,
                 )
                 if reusable is not None:
                     cloned = clone_resume_for_job(

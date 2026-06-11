@@ -505,3 +505,53 @@ async def test_phase1_triage_skips_known_external_ids(monkeypatch):
     # one fails the title prematch), so nothing was scored this cycle.
     assert summary["new"] == 0
     assert summary["updated"] == 0
+
+
+# ---- alert-row refresh ------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_load_alert_rows_returns_post_scoring_state():
+    """Regression: alerts dispatched with the upsert-time rows, where
+    ``score`` is the column default 0 — so no alert ever cleared the
+    threshold. The refresh must return the DB rows written by scoring."""
+    from app.services.poller import _load_alert_rows
+
+    stale = [{"id": "job-1", "title": "T1", "score": 0}]
+    refreshed_row = {"id": "job-1", "title": "T1", "score": 88}
+
+    supabase = MagicMock()
+    supabase.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        refreshed_row
+    ]
+
+    rows = await _load_alert_rows(supabase, stale)
+
+    assert rows == [refreshed_row]
+    supabase.table.return_value.select.return_value.in_.assert_called_once_with(
+        "id", ["job-1"]
+    )
+
+
+@pytest.mark.asyncio
+async def test_load_alert_rows_falls_back_to_stale_rows_on_error():
+    from app.services.poller import _load_alert_rows
+
+    stale = [{"id": "job-1", "score": 0}]
+    supabase = MagicMock()
+    supabase.table.side_effect = RuntimeError("db down")
+
+    rows = await _load_alert_rows(supabase, stale)
+
+    assert rows == stale
+
+
+@pytest.mark.asyncio
+async def test_load_alert_rows_no_ids_short_circuits():
+    from app.services.poller import _load_alert_rows
+
+    supabase = MagicMock()
+    rows = await _load_alert_rows(supabase, [{"title": "no id"}])
+
+    assert rows == [{"title": "no id"}]
+    supabase.table.assert_not_called()

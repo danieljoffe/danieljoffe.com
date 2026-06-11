@@ -459,6 +459,34 @@ async def _batch_fetch_job_scores(
     }
 
 
+async def _load_alert_rows(
+    supabase: Client, new_rows: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Re-read newly-inserted job rows with their post-scoring state.
+
+    The upsert response rows carry ``score = 0`` (the column default) —
+    the scoring stages write final scores to the DB afterwards without
+    mutating those in-memory dicts. Alert thresholds compare against
+    ``score``, so dispatching with the stale rows means no alert can
+    ever clear the bar. Falls back to the stale rows on a read failure
+    (alerts then skip this cycle, matching the old behavior, but the
+    failure is logged instead of silent).
+    """
+    new_ids = [r["id"] for r in new_rows if r.get("id")]
+    if not new_ids:
+        return new_rows
+    try:
+        resp = await asyncio.to_thread(
+            supabase.table("jobs").select("*").in_("id", new_ids).execute
+        )
+        refreshed = cast(list[dict[str, Any]], resp.data or [])
+        if refreshed:
+            return refreshed
+    except Exception:
+        logger.exception("Alert-row refresh failed — dispatching stale rows")
+    return new_rows
+
+
 async def _run_llm_scoring_for_row(
     supabase: Client,
     row_data: dict[str, Any],
@@ -1228,14 +1256,19 @@ async def _poll_one_source(
 
         # Fire email + SMS alerts for newly-inserted high-scoring jobs.
         if new_rows:
+            # ``new_rows`` was captured from the upsert response BEFORE any
+            # scoring ran, so ``score`` there is the column default 0 — which
+            # failed every alert threshold and meant no alert ever fired.
+            # Re-read the rows now that the stages have written final scores.
+            alert_rows = await _load_alert_rows(supabase, new_rows)
             try:
-                await notify.send_alerts_for_new_jobs(supabase, new_rows)
+                await notify.send_alerts_for_new_jobs(supabase, alert_rows)
             except Exception:
                 logger.exception(
                     "Email alert dispatch raised for %s", company_name
                 )
             try:
-                await notify.send_sms_alerts_for_new_jobs(supabase, new_rows)
+                await notify.send_sms_alerts_for_new_jobs(supabase, alert_rows)
             except Exception:
                 logger.exception(
                     "SMS alert dispatch raised for %s", company_name
