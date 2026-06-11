@@ -58,45 +58,82 @@ def jd_similarity(
     return len(hits_a & hits_b) / len(union)
 
 
+# How many of the caller's most recent resumes we consider for reuse.
+# Pulled first (cheap, user-scoped) and then filtered to the target via
+# ``scores`` membership — keeps the ``.in_()`` list bounded regardless of
+# how many postings the target has accumulated.
+_RECENT_RESUMES_WINDOW = 50
+_MAX_CANDIDATES = 10
+
+
 def find_reusable_resume(
     supabase: Client,
     *,
     target_id: str,
     job_description: str,
     profile_keywords: set[str],
+    user_id: str | None = None,
 ) -> TailoredResumeRecord | None:
     """Find an existing resume in the same target similar enough to reuse.
 
-    Queries documents for jobs sharing the same target_id.
+    The job ↔ target link lives in the ``scores`` table — ``jobs.target_id``
+    is a vestigial column the poller never populates, so the previous
+    implementation (``jobs.eq("target_id", …)``) always returned an empty
+    id list and reuse silently never fired (same root cause as the #676
+    ownership fixes). We now pull the caller's recent resumes and keep the
+    ones whose posting carries a ``scores`` row for this target.
+
+    Scoped to ``user_id`` so one user's resume is never cloned into
+    another user's documents (``user_id=None`` matches operator-created
+    rows, mirroring the batch-service convention).
+
     Returns the best match above SIMILARITY_THRESHOLD, or None.
     """
-    # Get job_posting_ids in this target
-    jp_resp = (
-        supabase.table("jobs")
-        .select("id")
-        .eq("target_id", target_id)
-        .execute()
-    )
-    jp_ids = [cast(dict[str, Any], r)["id"] for r in (jp_resp.data or [])]
-    if not jp_ids:
-        return None
-
-    # Get recent resumes for those job postings
-    resp = (
+    docs_query = (
         supabase.table("documents")
         .select("*")
-        .in_("job_posting_id", jp_ids)
         .eq("document_type", "resume")
         .order("created_at", desc=True)
-        .limit(10)
+        .limit(_RECENT_RESUMES_WINDOW)
+    )
+    docs_query = (
+        docs_query.is_("user_id", "null")
+        if user_id is None
+        else docs_query.eq("user_id", user_id)
+    )
+    rows = cast(list[dict[str, Any]], docs_query.execute().data or [])
+    posting_ids = list(
+        {
+            cast(str, r.get("job_posting_id"))
+            for r in rows
+            if r.get("job_posting_id")
+        }
+    )
+    if not posting_ids:
+        return None
+
+    scores_resp = (
+        supabase.table("scores")
+        .select("job_posting_id")
+        .eq("target_id", target_id)
+        .in_("job_posting_id", posting_ids)
         .execute()
     )
-    rows = cast(list[dict[str, Any]], resp.data or [])
+    in_target = {
+        cast(dict[str, Any], r)["job_posting_id"]
+        for r in (scores_resp.data or [])
+    }
+    if not in_target:
+        return None
+
+    candidates = [
+        r for r in rows if r.get("job_posting_id") in in_target
+    ][:_MAX_CANDIDATES]
 
     best_record: TailoredResumeRecord | None = None
     best_sim = 0.0
 
-    for row in rows:
+    for row in candidates:
         jd_snapshot = row.get("jd_snapshot", "")
         sim = jd_similarity(job_description, jd_snapshot, profile_keywords)
         if sim >= SIMILARITY_THRESHOLD and sim > best_sim:

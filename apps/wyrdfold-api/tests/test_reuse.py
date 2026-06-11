@@ -130,34 +130,41 @@ def test_jd_similarity_high_overlap() -> None:
 
 
 # ---- find_reusable_resume ----
+#
+# The lookup pivots through ``scores`` (the real job ↔ target link) —
+# ``jobs.target_id`` is vestigial and always NULL, which is exactly the
+# regression that silently disabled reuse before. The mocks below mirror
+# the new chain: recent user-scoped documents first, then a scores
+# membership check for the target.
 
 
-def test_find_reusable_resume_no_jobs_in_target() -> None:
-    supabase = MagicMock()
-    supabase.table.return_value.select.return_value.eq.return_value.execute.return_value.data = []
-
-    result = find_reusable_resume(
-        supabase,
-        target_id="target-1",
-        job_description="some jd",
-        profile_keywords={"react", "typescript"},
+def _reuse_supabase(
+    doc_rows: list[dict],
+    score_rows: list[dict],
+) -> MagicMock:
+    docs_mock = MagicMock()
+    docs_chain = (
+        docs_mock.select.return_value.eq.return_value.order.return_value.limit.return_value
     )
-    assert result is None
+    # ``user_id=None`` path uses .is_("user_id", "null"); a real user uses .eq.
+    docs_chain.is_.return_value.execute.return_value.data = doc_rows
+    docs_chain.eq.return_value.execute.return_value.data = doc_rows
+
+    scores_mock = MagicMock()
+    scores_mock.select.return_value.eq.return_value.in_.return_value.execute.return_value.data = (
+        score_rows
+    )
+
+    supabase = MagicMock()
+    supabase.table.side_effect = lambda name: {
+        "documents": docs_mock,
+        "scores": scores_mock,
+    }[name]
+    return supabase
 
 
 def test_find_reusable_resume_no_resumes() -> None:
-    supabase = MagicMock()
-
-    # First call: jobs query returns IDs
-    jp_mock = MagicMock()
-    jp_mock.select.return_value.eq.return_value.execute.return_value.data = [{"id": "jp-1"}]
-
-    # Second call: documents query returns empty
-    tr_mock = MagicMock()
-    tr_chain = tr_mock.select.return_value.in_.return_value.eq.return_value.order.return_value
-    tr_chain.limit.return_value.execute.return_value.data = []
-
-    supabase.table.side_effect = lambda name: jp_mock if name == "jobs" else tr_mock
+    supabase = _reuse_supabase(doc_rows=[], score_rows=[])
 
     result = find_reusable_resume(
         supabase,
@@ -168,21 +175,30 @@ def test_find_reusable_resume_no_resumes() -> None:
     assert result is None
 
 
+def test_find_reusable_resume_posting_not_in_target() -> None:
+    """A recent resume whose posting has no scores row for this target
+    must not be reused."""
+    resume_row = _record(
+        jd_snapshot="React TypeScript GraphQL Node.js developer"
+    ).model_dump(mode="json")
+    supabase = _reuse_supabase(doc_rows=[resume_row], score_rows=[])
+
+    result = find_reusable_resume(
+        supabase,
+        target_id="target-1",
+        job_description="React TypeScript GraphQL Node.js developer needed",
+        profile_keywords={"react", "typescript", "graphql", "node.js"},
+    )
+    assert result is None
+
+
 def test_find_reusable_resume_below_threshold() -> None:
-    supabase = MagicMock()
-
-    jp_mock = MagicMock()
-    jp_mock.select.return_value.eq.return_value.execute.return_value.data = [{"id": "jp-1"}]
-
-    # Resume with very different JD
     resume_row = _record(jd_snapshot="Looking for a Python Django developer").model_dump(
         mode="json"
     )
-    tr_mock = MagicMock()
-    tr_chain = tr_mock.select.return_value.in_.return_value.eq.return_value.order.return_value
-    tr_chain.limit.return_value.execute.return_value.data = [resume_row]
-
-    supabase.table.side_effect = lambda name: jp_mock if name == "jobs" else tr_mock
+    supabase = _reuse_supabase(
+        doc_rows=[resume_row], score_rows=[{"job_posting_id": "jp-1"}]
+    )
 
     result = find_reusable_resume(
         supabase,
@@ -194,20 +210,12 @@ def test_find_reusable_resume_below_threshold() -> None:
 
 
 def test_find_reusable_resume_above_threshold() -> None:
-    supabase = MagicMock()
-
-    jp_mock = MagicMock()
-    jp_mock.select.return_value.eq.return_value.execute.return_value.data = [{"id": "jp-1"}]
-
-    # Resume with very similar JD (all same keywords)
     resume_row = _record(
         jd_snapshot="Senior React TypeScript developer with GraphQL and Node.js"
     ).model_dump(mode="json")
-    tr_mock = MagicMock()
-    tr_chain = tr_mock.select.return_value.in_.return_value.eq.return_value.order.return_value
-    tr_chain.limit.return_value.execute.return_value.data = [resume_row]
-
-    supabase.table.side_effect = lambda name: jp_mock if name == "jobs" else tr_mock
+    supabase = _reuse_supabase(
+        doc_rows=[resume_row], score_rows=[{"job_posting_id": "jp-1"}]
+    )
 
     kws = {"react", "typescript", "graphql", "node.js"}
     result = find_reusable_resume(
@@ -218,6 +226,9 @@ def test_find_reusable_resume_above_threshold() -> None:
     )
     assert result is not None
     assert result.id == "rec-1"
+    # Regression guard: the lookup must never touch the vestigial
+    # ``jobs.target_id`` column.
+    assert all(c.args[0] != "jobs" for c in supabase.table.call_args_list)
 
 
 # ---- clone_resume_for_job ----
