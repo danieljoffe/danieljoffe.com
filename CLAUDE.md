@@ -18,17 +18,6 @@ pnpm tsc --noEmit         # Typecheck
 pnpm pom                  # Full quality gate: typecheck → lint → format → test → coverage → e2e → Lighthouse
 ```
 
-### Databases — two separate Supabase projects
-
-| Project                                          | Workdir                       | Migrate / types                            |
-| ------------------------------------------------ | ----------------------------- | ------------------------------------------ |
-| Audit tool + portfolio (`apps/root`)             | `supabase/`                   | `pnpm db:push` · `pnpm db:gen-types`       |
-| wyrdfold (`apps/wyrdfold` + `apps/wyrdfold-api`) | `apps/wyrdfold-api/supabase/` | `pnpm db:wf:push` · `pnpm db:wf:gen-types` |
-
-The `db:wf:*` scripts wrap the Supabase CLI with `--workdir apps/wyrdfold-api`.
-Never push wyrdfold migrations from the root workdir or vice versa. See
-`.claude/docs/architecture.md` → "Databases" for the full model.
-
 ## Critical Guardrails
 
 ### Pre-Push Checklist
@@ -67,7 +56,7 @@ Loaded contextually via `.claude/rules/` (path-scoped — only when editing matc
 - **Content posts & style guide** — MDX and content data files
 - **Testing & CI** — spec, test, story, and config files
 - **Sentry integration** — Sentry and instrumentation files
-- **Python / FastAPI** — wyrdfold-api and audit-api files
+- **Python / FastAPI** — audit-api files
 
 ## Skills & Agents
 

@@ -33,7 +33,6 @@ jobs:
     outputs:
       docs-only: ${{ steps.classify.outputs.docs-only }}
       python-changed: ${{ steps.classify.outputs.python-changed }}
-      wyrdfold-api-changed: ${{ steps.classify.outputs.wyrdfold-api-changed }}
       audit-api-changed: ${{ steps.classify.outputs.audit-api-changed }}
       e2e-changed: ${{ steps.classify.outputs.e2e-changed }}
       lighthouse-changed: ${{ steps.classify.outputs.lighthouse-changed }}
@@ -64,7 +63,6 @@ jobs:
           fi
 
           DOCS_ONLY=true
-          WYRDFOLD_API=false
           AUDIT_API=false
           E2E=false
           LH=false
@@ -83,19 +81,15 @@ jobs:
               *) DOCS_ONLY=false ;;
             esac
             case "$file" in
-              apps/wyrdfold-api/*) WYRDFOLD_API=true ;;
-            esac
-            case "$file" in
               apps/audit-api/*) AUDIT_API=true ;;
             esac
             case "$file" in
               pyproject.toml|uv.lock|.python-version)
-                WYRDFOLD_API=true
                 AUDIT_API=true
                 ;;
             esac
             case "$file" in
-              apps/root/*|apps/root-e2e/*|apps/wyrdfold/*|apps/wyrdfold-e2e/*|libs/*) E2E=true ;;
+              apps/root/*|apps/root-e2e/*|libs/*) E2E=true ;;
             esac
             case "$file" in
               apps/root/*|libs/shared/*) LH=true ;;
@@ -106,18 +100,17 @@ jobs:
           done <<< "$CHANGED"
 
           PYTHON_CHANGED=false
-          if [ "$WYRDFOLD_API" = "true" ] || [ "$AUDIT_API" = "true" ]; then
+          if [ "$AUDIT_API" = "true" ]; then
             PYTHON_CHANGED=true
           fi
 
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
           echo "python-changed=$PYTHON_CHANGED" >> "$GITHUB_OUTPUT"
-          echo "wyrdfold-api-changed=$WYRDFOLD_API" >> "$GITHUB_OUTPUT"
           echo "audit-api-changed=$AUDIT_API" >> "$GITHUB_OUTPUT"
           echo "e2e-changed=$E2E" >> "$GITHUB_OUTPUT"
           echo "lighthouse-changed=$LH" >> "$GITHUB_OUTPUT"
           echo "storybook-changed=$SB" >> "$GITHUB_OUTPUT"
-          echo "Flags: docs-only=$DOCS_ONLY wyrdfold-api=$WYRDFOLD_API audit-api=$AUDIT_API e2e=$E2E lighthouse=$LH storybook=$SB"
+          echo "Flags: docs-only=$DOCS_ONLY audit-api=$AUDIT_API e2e=$E2E lighthouse=$LH storybook=$SB"
 
   fast:
     needs: preflight
@@ -163,18 +156,6 @@ jobs:
 
       - name: Install Python dependencies
         run: uv sync --frozen
-
-      - name: Install pandoc (wyrdfold-api docx tests)
-        if: needs.preflight.outputs.wyrdfold-api-changed == 'true'
-        run: sudo apt-get update && sudo apt-get install -y pandoc
-
-      - name: wyrdfold-api — lint, typecheck, test
-        if: needs.preflight.outputs.wyrdfold-api-changed == 'true'
-        working-directory: apps/wyrdfold-api
-        run: |
-          uv run --package wyrdfold-api ruff check .
-          uv run --package wyrdfold-api mypy app/
-          uv run --package wyrdfold-api pytest -v
 
       - name: audit-api — lint, typecheck, test
         if: needs.preflight.outputs.audit-api-changed == 'true'

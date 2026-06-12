@@ -28,11 +28,8 @@ playwright-report-json
 .claude
 .git
 
-# Other apps in the monorepo — deployed separately.
-# wyrdfold only imports from libs/shared/* so the rest are upload-only ballast.
+# Other apps in the monorepo — deployed separately; upload-only ballast.
 apps/root
 apps/root-e2e
 apps/audit-api
 apps/audit-scan-service
-apps/wyrdfold-api
-apps/wyrdfold-e2e

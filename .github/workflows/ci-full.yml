@@ -93,21 +93,6 @@ jobs:
         env:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
-          # wyrdfold-e2e/playwright.config.ts only registers the
-          # ``setup`` + ``authed-chromium`` projects when all four of
-          # these are present (see apps/wyrdfold-e2e/README.md). Pass
-          # them through from the CI env so the authed smoke spec
-          # runs against a real Supabase session. Absent secrets =
-          # public tier only, exactly as before.
-          #
-          # SUPABASE_SERVICE_ROLE_KEY is required because the auth
-          # fixture mints an OTP via ``admin.generateLink`` (the
-          # wyrdfold login UI is magic-link only — there's no password
-          # path to verify against).
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_ID: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_ID }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
 
       # --- lighthouse ---
       - name: Build app for Lighthouse

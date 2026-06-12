@@ -41,6 +41,11 @@ const config: KnipConfig = {
         // @nx/s3-cache is loaded at runtime via the `s3` block in nx.json
         // (Cloudflare R2 remote cache), not via a static import.
         '@nx/s3-cache',
+        // Config-referenced by apps/root, not static imports:
+        // @next/eslint-plugin-next via eslint.config.mjs (flat-config plugin
+        // object), jest-environment-jsdom via the jest testEnvironment.
+        '@next/eslint-plugin-next',
+        'jest-environment-jsdom',
       ],
     },
 
@@ -75,45 +80,6 @@ const config: KnipConfig = {
     // -----------------------------------------------------------------
     'apps/root-e2e': {
       entry: ['src/**/*.spec.ts'],
-      project: ['src/**/*.ts'],
-    },
-
-    // -----------------------------------------------------------------
-    // apps/wyrdfold — Next.js 16 application (WyrdFold product)
-    // -----------------------------------------------------------------
-    'apps/wyrdfold': {
-      entry: [
-        'src/app/**/page.tsx',
-        'src/app/**/layout.tsx',
-        'src/app/**/loading.tsx',
-        'src/app/**/error.tsx',
-        'src/app/**/not-found.tsx',
-        'src/app/**/route.ts',
-        'src/app/api/**/route.ts',
-        // Module declaration for *.svg imports — referenced via tsconfig include
-        'index.d.ts',
-        // Placeholder kept for future regen via `supabase gen types`
-        'src/lib/supabase/types.ts',
-      ],
-      project: ['src/**/*.{ts,tsx}'],
-      ignoreDependencies: [
-        // sharp is used internally by next/image at runtime
-        'sharp',
-        // webpack is a Next.js transitive dep, referenced in next.config.mjs
-        'webpack',
-      ],
-    },
-
-    // -----------------------------------------------------------------
-    // apps/wyrdfold-e2e — Playwright E2E tests for wyrdfold
-    // -----------------------------------------------------------------
-    'apps/wyrdfold-e2e': {
-      // Playwright spec entry points: ``.spec.ts`` files and
-      // ``auth.setup.ts`` (referenced by the ``setup`` project's
-      // ``testMatch`` regex in playwright.config.ts). Without the
-      // ``.setup.ts`` glob, knip flags it as unused + cascades to
-      // mark ``@supabase/supabase-js`` as an unused dep.
-      entry: ['src/**/*.spec.ts', 'src/**/*.setup.ts'],
       project: ['src/**/*.ts'],
     },
 
