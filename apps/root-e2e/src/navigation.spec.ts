@@ -38,15 +38,15 @@ test.describe('desktop navigation', () => {
   });
 
   test('highlights current page with aria-current', async ({ page }) => {
-    await page.goto('/services', { waitUntil: 'domcontentloaded' });
+    await page.goto('/experience', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
     await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
 
-    const servicesLink = page.locator(
-      'nav[aria-label="Primary"] a[href="/services"][aria-current="page"]'
+    const experienceLink = page.locator(
+      'nav[aria-label="Primary"] a[href="/experience"][aria-current="page"]'
     );
-    await expect(servicesLink).toBeAttached();
+    await expect(experienceLink).toBeAttached();
   });
 
   test('clicking nav link navigates to correct page', async ({ page }) => {

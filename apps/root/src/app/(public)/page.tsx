@@ -194,11 +194,12 @@ export default function Index() {
           ══════════════════════════════════ */}
       <Section padding='none'>
         <CTACard
-          heading='Got a project that needs senior engineering?'
+          heading='Building something that needs senior full-stack engineering?'
           description={
             <>
-              I take on 1&ndash;2 engagements at a time. If you&apos;re building
-              something that matters, let&apos;s talk.
+              Open to full-time roles with product-focused teams. If the
+              frontend has to be excellent and you want one engineer who can own
+              the whole stack, let&apos;s talk.
             </>
           }
         >

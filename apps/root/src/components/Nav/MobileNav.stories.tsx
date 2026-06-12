@@ -8,7 +8,7 @@ const meta = {
   argTypes: {
     pathname: {
       description: 'Current pathname to highlight active link',
-      options: ['/', '/services', '/projects', '/experience', '/about'],
+      options: ['/', '/projects', '/experience', '/about'],
       control: 'select',
     },
   },
@@ -23,8 +23,8 @@ export const Default: Story = {
   },
 };
 
-export const ActiveService: Story = {
+export const ActiveProjects: Story = {
   args: {
-    pathname: '/services',
+    pathname: '/projects',
   },
 };
