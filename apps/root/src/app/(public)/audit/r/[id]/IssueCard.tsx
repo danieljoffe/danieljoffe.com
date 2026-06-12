@@ -1,8 +1,8 @@
 import Link from 'next/link';
+import { Badge, type BadgeVariant } from '@danieljoffe/shared-ui/Badge';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import type { ScanIssue } from '@danieljoffe.com/shared-audit';
-import { Badge, type BadgeVariant } from '@danieljoffe.com/shared-ui/Badge';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { getViolationSlug } from '../../insights/violations/data';
 
 const severityMap: Record<string, BadgeVariant> = {

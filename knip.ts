@@ -23,14 +23,29 @@ const config: KnipConfig = {
         'caniuse-lite',
         // ts-node is referenced in tsconfig.json "ts-node" block
         'ts-node',
-        // jest-environment-jsdom is resolved by Jest via testEnvironment: 'jsdom'
-        'jest-environment-jsdom',
         // @swc/jest is used by libs/shared/audit/jest.config.cts (hoisted dep)
         '@swc/jest',
+        // @swc/cli is the SWC compiler driver referenced via apps/*/.swcrc
+        '@swc/cli',
         // @eslint/js is required by @nx/eslint-plugin flat config presets
         '@eslint/js',
+        // eslint-plugin-react-hooks is loaded transitively by @nx/eslint-plugin
+        // flat config presets — not imported directly anywhere in our configs
+        'eslint-plugin-react-hooks',
         // ts-jest is required by @nx/jest/preset transform config
         'ts-jest',
+        // babel-jest is the Jest transformer fallback used by next/jest
+        'babel-jest',
+        // jest-util is a transitive Jest internal pulled in by next/jest
+        'jest-util',
+        // @nx/s3-cache is loaded at runtime via the `s3` block in nx.json
+        // (Cloudflare R2 remote cache), not via a static import.
+        '@nx/s3-cache',
+        // Config-referenced by apps/root, not static imports:
+        // @next/eslint-plugin-next via eslint.config.mjs (flat-config plugin
+        // object), jest-environment-jsdom via the jest testEnvironment.
+        '@next/eslint-plugin-next',
+        'jest-environment-jsdom',
       ],
     },
 

@@ -1,3 +1,9 @@
+---
+name: a11y-reviewer
+description: WCAG 2.1 AA compliance review for interactive elements, focus management, and semantics
+memory: project
+---
+
 # Accessibility Reviewer
 
 Review changed files for WCAG 2.1 AA compliance issues.
@@ -22,6 +28,15 @@ Review changed files for WCAG 2.1 AA compliance issues.
 - Playwright accessibility specs are in `apps/root-e2e/src/accessibility.spec.ts`
 - `@headlessui/react` is used for accessible components (Disclosure, Dialog, etc.)
 - Pages use `PageContainer` and `MainContent` for consistent landmark structure
+
+## Review Protocol
+
+You receive a file manifest and diff hunks from the orchestrator.
+
+- **Deleted files**: Note if deletion removes an a11y feature (skip link, aria label), but do not read them.
+- **Small changes (diff-only)**: Review the hunk. Read the full file only if you need surrounding context (e.g., to check heading hierarchy or focus management flow).
+- **Larger changes**: Read the full file via `ctx_batch_execute` for files >50 lines.
+- Stay within your assigned file list. You receive only `.tsx` files — no test files, configs, or docs.
 
 ## Output
 

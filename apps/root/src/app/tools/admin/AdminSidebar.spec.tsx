@@ -4,7 +4,7 @@ import AdminSidebar from './AdminSidebar';
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockRefresh = jest.fn();
-let mockPathname = '/tools/admin/jobs';
+let mockPathname = '/tools/admin/audit';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -22,7 +22,7 @@ const originalFetch = global.fetch;
 describe('AdminSidebar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockPathname = '/tools/admin/jobs';
+    mockPathname = '/tools/admin/audit';
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({}),
@@ -36,7 +36,6 @@ describe('AdminSidebar', () => {
   it('renders the admin heading and nav items', () => {
     render(<AdminSidebar />);
     expect(screen.getByText('Tools Admin')).toBeInTheDocument();
-    expect(screen.getByText('Jobs')).toBeInTheDocument();
     expect(screen.getByText('Site Audits')).toBeInTheDocument();
   });
 

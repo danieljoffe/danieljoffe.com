@@ -17,6 +17,7 @@ RETURNS TABLE (
 )
 LANGUAGE sql
 STABLE
+SET search_path = public
 AS $$
   SELECT
     date_trunc(bucket_interval, completed_at) AS bucket_start,

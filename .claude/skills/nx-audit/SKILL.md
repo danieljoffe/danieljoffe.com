@@ -8,6 +8,12 @@ disable-model-invocation: true
 
 Audit the Nx monorepo for structural and configuration issues against official Nx guidelines.
 
+## Token Budget Rules
+
+- Route ALL command outputs and workspace inspection results through `ctx_batch_execute` or `ctx_execute`
+- If Nx docs were already fetched via context7 in this session, skip Phase 1
+- Use Nx MCP tools for workspace queries — they're more efficient than raw CLI output
+
 ## Instructions
 
 ### Phase 1: Fetch Current Documentation
@@ -72,7 +78,7 @@ For each area below, read the relevant source files, compare against fetched doc
 - Projects not benefiting from Nx caching (missing `cache: true`)
 - Targets that could use `nx affected` but don't
 - Missing `namedInputs` for custom file patterns (e.g., MDX content files, Python sources)
-- Nx Cloud configuration: verify `nxCloudId` or `NX_CLOUD_ACCESS_TOKEN` is set, check for `NX_NO_CLOUD` overrides
+- Remote cache configuration: verify `s3` block in nx.json (Cloudflare R2 via `@nx/s3-cache`), check `NX_KEY` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` in CI env
 - CI workflow efficiency: parallel task execution, remote caching hit rates
 
 ### Phase 4: Cross-Reference

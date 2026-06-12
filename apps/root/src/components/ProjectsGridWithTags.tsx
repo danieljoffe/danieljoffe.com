@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import type { PostThumbnail } from '@/types/postTypes';
 import { PostCard, TagChipStrip } from '@/components/kit';
 import type { TagChip } from '@/components/kit';

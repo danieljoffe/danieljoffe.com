@@ -85,6 +85,26 @@ describe('Select', () => {
     expect(select.value).toBe('option2');
   });
 
+  describe('sizes', () => {
+    it('applies md size by default', () => {
+      render(<Select options={defaultOptions} />);
+      const select = screen.getByRole('combobox');
+      expect(select).toHaveClass('px-4', 'py-2.5');
+    });
+
+    it('applies sm size styles', () => {
+      render(<Select options={defaultOptions} size='sm' />);
+      const select = screen.getByRole('combobox');
+      expect(select).toHaveClass('px-3', 'py-1.5', 'text-sm');
+    });
+
+    it('applies lg size styles', () => {
+      render(<Select options={defaultOptions} size='lg' />);
+      const select = screen.getByRole('combobox');
+      expect(select).toHaveClass('px-5', 'py-3', 'text-lg');
+    });
+  });
+
   it('passes through additional select props', () => {
     render(
       <Select

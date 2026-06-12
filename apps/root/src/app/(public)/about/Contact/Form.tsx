@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { z } from 'zod/v4';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
-import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Text } from '@danieljoffe/shared-ui/Text';
+import { FormFieldError } from '@danieljoffe/shared-ui/FormFieldError';
 import {
   BASE_FIELD,
   DISABLED,
@@ -17,7 +17,7 @@ import {
   FIELD_PLACEHOLDER,
   FORM_LABEL,
   REQUIRED_MARK,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
 import { CONTACT_FORM_ID } from '@/utils/constants';
 import { formSchema } from '@/app/api/email/contact/schema';

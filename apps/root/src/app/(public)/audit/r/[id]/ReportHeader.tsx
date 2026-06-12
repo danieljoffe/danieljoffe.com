@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { GRADE_MAP } from '@danieljoffe.com/shared-audit';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
 import { formatDate } from '@/lib/dateFormatting';
 import CompareWithPreviousButton from './CompareWithPreviousButton';
 import ExpandableScreenshot from './ExpandableScreenshot';

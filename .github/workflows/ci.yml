@@ -26,10 +26,6 @@ permissions:
   contents: read
   statuses: write
 
-env:
-  # Nx Cloud org is disabled until the May 1 credit reset; skip the cloud handshake entirely.
-  NX_NO_CLOUD: 'true'
-
 jobs:
   preflight:
     runs-on: ubuntu-latest
@@ -37,7 +33,6 @@ jobs:
     outputs:
       docs-only: ${{ steps.classify.outputs.docs-only }}
       python-changed: ${{ steps.classify.outputs.python-changed }}
-      job-api-changed: ${{ steps.classify.outputs.job-api-changed }}
       audit-api-changed: ${{ steps.classify.outputs.audit-api-changed }}
       e2e-changed: ${{ steps.classify.outputs.e2e-changed }}
       lighthouse-changed: ${{ steps.classify.outputs.lighthouse-changed }}
@@ -61,13 +56,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
+            # gh pr view --json files truncates at 100 files; use the paginated REST endpoint instead.
+            CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --paginate --jq '.[].filename')
           else
             CHANGED=$(git diff --name-only "${{ steps.shas.outputs.base }}" "${{ steps.shas.outputs.head }}")
           fi
 
           DOCS_ONLY=true
-          JOB_API=false
           AUDIT_API=false
           E2E=false
           LH=false
@@ -86,14 +81,10 @@ jobs:
               *) DOCS_ONLY=false ;;
             esac
             case "$file" in
-              apps/job-api/*) JOB_API=true ;;
-            esac
-            case "$file" in
               apps/audit-api/*) AUDIT_API=true ;;
             esac
             case "$file" in
               pyproject.toml|uv.lock|.python-version)
-                JOB_API=true
                 AUDIT_API=true
                 ;;
             esac
@@ -109,18 +100,17 @@ jobs:
           done <<< "$CHANGED"
 
           PYTHON_CHANGED=false
-          if [ "$JOB_API" = "true" ] || [ "$AUDIT_API" = "true" ]; then
+          if [ "$AUDIT_API" = "true" ]; then
             PYTHON_CHANGED=true
           fi
 
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
           echo "python-changed=$PYTHON_CHANGED" >> "$GITHUB_OUTPUT"
-          echo "job-api-changed=$JOB_API" >> "$GITHUB_OUTPUT"
           echo "audit-api-changed=$AUDIT_API" >> "$GITHUB_OUTPUT"
           echo "e2e-changed=$E2E" >> "$GITHUB_OUTPUT"
           echo "lighthouse-changed=$LH" >> "$GITHUB_OUTPUT"
           echo "storybook-changed=$SB" >> "$GITHUB_OUTPUT"
-          echo "Flags: docs-only=$DOCS_ONLY job-api=$JOB_API audit-api=$AUDIT_API e2e=$E2E lighthouse=$LH storybook=$SB"
+          echo "Flags: docs-only=$DOCS_ONLY audit-api=$AUDIT_API e2e=$E2E lighthouse=$LH storybook=$SB"
 
   fast:
     needs: preflight
@@ -166,14 +156,6 @@ jobs:
 
       - name: Install Python dependencies
         run: uv sync --frozen
-
-      - name: job-api — lint, typecheck, test
-        if: needs.preflight.outputs.job-api-changed == 'true'
-        working-directory: apps/job-api
-        run: |
-          uv run --package job-api ruff check .
-          uv run --package job-api mypy app/
-          uv run --package job-api pytest -v
 
       - name: audit-api — lint, typecheck, test
         if: needs.preflight.outputs.audit-api-changed == 'true'
@@ -248,8 +230,9 @@ jobs:
       - name: Build app for snapshot generation
         run: pnpm nx build root
         env:
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          NX_CLOUD_ID: ${{ secrets.NX_CLOUD_ID }}
+          NX_KEY: ${{ secrets.NX_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
 
       - name: Regenerate VR snapshots
         working-directory: apps/root-e2e

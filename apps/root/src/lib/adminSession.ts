@@ -45,11 +45,6 @@ export async function readAdminSession(): Promise<AdminPayload | null> {
   return verifySessionToken(token);
 }
 
-export async function readAdminSessionToken(): Promise<string | null> {
-  const jar = await cookies();
-  return jar.get(ADMIN_SESSION_COOKIE)?.value ?? null;
-}
-
 export function sessionCookieOptions(
   maxAgeSeconds = ADMIN_SESSION_TTL_SECONDS
 ) {

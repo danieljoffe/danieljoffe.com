@@ -145,8 +145,10 @@ if (E2E_SCAN_ID) {
     test('network error shows network error message', async ({ page }) => {
       await page.route('**/api/leads/capture', route => route.abort());
 
+      const captureRequest = page.waitForRequest('**/api/leads/capture');
       await fillInput(page.getByLabel('Email address'), 'test@example.com');
       await page.getByRole('button', { name: 'Get full report' }).click();
+      await captureRequest;
 
       await expect(
         page.getByText('Network error. Please try again.')

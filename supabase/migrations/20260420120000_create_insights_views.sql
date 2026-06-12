@@ -15,7 +15,8 @@
 -- unique_domains extracts the host from normalized_url. normalizeUrl already
 -- strips www. and default ports, so split_part on '://' then '/' gives a
 -- stable host token.
-CREATE OR REPLACE VIEW insights_summary_view AS
+CREATE OR REPLACE VIEW insights_summary_view
+WITH (security_invoker = true) AS
 SELECT
   (
     SELECT COUNT(*)::int

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import { auditFaqStructuredData } from '@/data/structuredData/audit';
 import { getOrigin } from '@/lib/getOrigin';
 import type { SummaryData } from './insights/types';

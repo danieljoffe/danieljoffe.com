@@ -3,7 +3,13 @@
     "name": "shared-ui (all exports)",
     "path": "libs/shared/ui/src/index.ts",
     "import": "*",
-    "limit": "25 kB"
+    "limit": "30 kB"
+  },
+  {
+    "name": "shared-infra (cn)",
+    "path": "libs/shared/ui/src/lib/utils/cn.ts",
+    "import": "{ cn }",
+    "limit": "8 kB"
   },
   {
     "name": "Button",
@@ -28,5 +34,41 @@
     "path": "libs/shared/ui/src/lib/Dropdown.tsx",
     "import": "{ Dropdown }",
     "limit": "13 kB"
+  },
+  {
+    "name": "Sidebar",
+    "path": "libs/shared/ui/src/lib/Sidebar.tsx",
+    "import": "{ Sidebar }",
+    "limit": "14 kB"
+  },
+  {
+    "name": "Input",
+    "path": "libs/shared/ui/src/lib/Input.tsx",
+    "import": "{ Input }",
+    "limit": "13 kB"
+  },
+  {
+    "name": "Heading",
+    "path": "libs/shared/ui/src/lib/Heading.tsx",
+    "import": "{ Heading }",
+    "limit": "9 kB"
+  },
+  {
+    "name": "Text",
+    "path": "libs/shared/ui/src/lib/Text.tsx",
+    "import": "{ Text }",
+    "limit": "9 kB"
+  },
+  {
+    "name": "Badge",
+    "path": "libs/shared/ui/src/lib/Badge.tsx",
+    "import": "{ Badge }",
+    "limit": "9 kB"
+  },
+  {
+    "name": "Card",
+    "path": "libs/shared/ui/src/lib/Card.tsx",
+    "import": "{ Card, CardHeader, CardTitle, CardContent, CardFooter }",
+    "limit": "9 kB"
   }
 ]

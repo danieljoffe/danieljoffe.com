@@ -12,10 +12,10 @@ import {
   DISMISS_BUTTON,
   FOCUS_RING,
   FOCUS_RING_OFFSET,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
-import type { SemanticVariant } from '@danieljoffe.com/shared-ui/styles/semanticVariants';
-import { SEMANTIC_TEXT } from '@danieljoffe.com/shared-ui/styles/semanticVariants';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+} from '@danieljoffe/shared-ui/styles/formStyles';
+import type { SemanticVariant } from '@danieljoffe/shared-ui/styles/semanticVariants';
+import { SEMANTIC_TEXT } from '@danieljoffe/shared-ui/styles/semanticVariants';
+import { Text } from '@danieljoffe/shared-ui/Text';
 
 type ToastVariant = SemanticVariant;
 

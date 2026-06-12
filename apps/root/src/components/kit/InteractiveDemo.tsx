@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { Skeleton } from '@danieljoffe.com/shared-ui/Skeleton';
+import { Skeleton } from '@danieljoffe/shared-ui/Skeleton';
 import { cn } from '@/lib/cn';
 import { STORYBOOK_URL } from '@/utils/constants';
 

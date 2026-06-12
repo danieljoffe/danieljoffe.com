@@ -1,7 +1,7 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { Kbd } from '@danieljoffe.com/shared-ui/Kbd';
+import { Kbd } from '@danieljoffe/shared-ui/Kbd';
 
 export default function SearchTrigger() {
   const handleClick = () => {

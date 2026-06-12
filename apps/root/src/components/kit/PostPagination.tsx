@@ -1,4 +1,4 @@
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
 import { type PostPaginationData } from '@/data/contentOrder';
 

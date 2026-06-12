@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Monitor, Smartphone } from 'lucide-react';
-import { Spinner } from '@danieljoffe.com/shared-ui/Spinner';
-import { Alert } from '@danieljoffe.com/shared-ui/Alert';
-import { FormFieldError } from '@danieljoffe.com/shared-ui/FormFieldError';
+import { Spinner } from '@danieljoffe/shared-ui/Spinner';
+import { Alert } from '@danieljoffe/shared-ui/Alert';
+import { FormFieldError } from '@danieljoffe/shared-ui/FormFieldError';
 import {
   BASE_FIELD,
   FIELD_ERROR,
   FIELD_PADDING,
   FIELD_PLACEHOLDER,
-} from '@danieljoffe.com/shared-ui/styles/formStyles';
+} from '@danieljoffe/shared-ui/styles/formStyles';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';

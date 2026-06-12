@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import {
   isValidUuid,
   type ScanIssue,

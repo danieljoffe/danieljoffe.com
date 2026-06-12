@@ -32,20 +32,7 @@ async function isValidAdminSession(
   }
 }
 
-export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/tools/admin')) {
-    const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
-    if (!(await isValidAdminSession(token))) {
-      const loginUrl = new URL('/tools/login', request.url);
-      loginUrl.searchParams.set(
-        'next',
-        request.nextUrl.pathname + request.nextUrl.search
-      );
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+function buildCspValue(request: NextRequest, nonce: string): string {
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https: ${
@@ -65,27 +52,37 @@ export async function proxy(request: NextRequest) {
     connect-src 'self' ${allowedOrigins.join(' ')};
     img-src 'self' blob: data: ${allowedImageOrigins.join(' ')};
 `;
-  const contentSecurityPolicyHeaderValue = cspHeader
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+  return cspHeader.replace(/\s{2,}/g, ' ').trim();
+}
 
+export async function proxy(request: NextRequest) {
+  // Admin JWT auth for /tools/admin
+  if (request.nextUrl.pathname.startsWith('/tools/admin')) {
+    const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    if (!(await isValidAdminSession(token))) {
+      const loginUrl = new URL('/tools/login', request.url);
+      loginUrl.searchParams.set(
+        'next',
+        request.nextUrl.pathname + request.nextUrl.search
+      );
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const cspValue = buildCspValue(request, nonce);
+
+  // Apply CSP headers to all routes
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
-
-  requestHeaders.set(
-    'Content-Security-Policy',
-    contentSecurityPolicyHeaderValue
-  );
+  requestHeaders.set('Content-Security-Policy', cspValue);
 
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
-  response.headers.set(
-    'Content-Security-Policy',
-    contentSecurityPolicyHeaderValue
-  );
+  response.headers.set('Content-Security-Policy', cspValue);
 
   return response;
 }

@@ -2,8 +2,8 @@
 
 import { useDeferredValue, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
-import { Input } from '@danieljoffe.com/shared-ui/Input';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Input } from '@danieljoffe/shared-ui/Input';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { createSearchEngine, searchWithHighlights } from '@/lib/search';
 import { buildSearchIndex } from '@/lib/searchIndex';
 import type { PostThumbnail } from '@/types/postTypes';

@@ -9,17 +9,23 @@ user-invocable: true
 
 Build Storybook for projects affected by current changes and report any broken stories.
 
+## Token Budget Rules
+
+- Route Storybook build output through `ctx_execute` — builds produce verbose output
+- Route `nx show projects` through `ctx_batch_execute`
+
 ## Arguments
 
 `/storybook-check` — no arguments needed (detects affected projects automatically)
 
 ## Instructions
 
-1. **Identify affected projects with Storybook targets:**
+1. **Detect base branch and identify affected projects:**
 
    ```bash
-   pnpm nx show projects --affected --base=origin/develop --type=lib
-   pnpm nx show projects --affected --base=origin/develop --type=app
+   BASE=$(gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null || echo "develop")
+   pnpm nx show projects --affected --base=origin/${BASE} --type=lib
+   pnpm nx show projects --affected --base=origin/${BASE} --type=app
    ```
 
    Cross-reference with projects that have a `build-storybook` target.

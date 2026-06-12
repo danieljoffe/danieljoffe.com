@@ -16,10 +16,6 @@
     {
       "path": "/api/email/sequence",
       "schedule": "0 17 * * *"
-    },
-    {
-      "path": "/api/jobs/poll",
-      "schedule": "0 9 * * *"
     }
   ]
 }

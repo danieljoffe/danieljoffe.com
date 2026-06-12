@@ -9,13 +9,13 @@ import {
   MessageCircle,
   ChevronRight,
 } from 'lucide-react';
-import { Badge } from '@danieljoffe.com/shared-ui/Badge';
-import { CTACard } from '@danieljoffe.com/shared-ui/CTACard';
-import { Heading } from '@danieljoffe.com/shared-ui/Heading';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
-import { Section } from '@danieljoffe.com/shared-ui/Section';
-import { SectionLabel } from '@danieljoffe.com/shared-ui/SectionLabel';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Badge } from '@danieljoffe/shared-ui/Badge';
+import { CTACard } from '@danieljoffe/shared-ui/CTACard';
+import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
+import { Section } from '@danieljoffe/shared-ui/Section';
+import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { cn } from '@/lib/cn';
 import { cardBase } from '@/lib/layoutStyles';
 import { aboutMetadata } from '@/data/metadata/about';

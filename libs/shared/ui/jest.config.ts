@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const isCI = process.env.CI === 'true';
 
 export default {
-  displayName: '@danieljoffe.com/shared-ui',
+  displayName: '@danieljoffe/shared-ui',
   // Stop at first test failure in CI for fast feedback
   bail: isCI ? 1 : 0,
   preset: '../../../jest.preset.js',

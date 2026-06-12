@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
-import { Text } from '@danieljoffe.com/shared-ui/Text';
+import { Text } from '@danieljoffe/shared-ui/Text';
 import { cn } from '@/lib/cn';
 import { buildSearchIndex, type SearchEntry } from '@/lib/searchIndex';
 import { Z_INDEX } from '@/utils/constants';

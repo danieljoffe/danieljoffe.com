@@ -1,10 +1,13 @@
 import hmac
+import logging
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import APIKeyHeader
 
 from app.config import Settings, settings
+
+logger = logging.getLogger(__name__)
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
@@ -75,8 +78,15 @@ def verify_api_key_or_session(
                     algorithms=["HS256"],
                     options={"require": ["exp", "sub"]},
                 )
-            except jwt.PyJWTError:
-                pass
+            except jwt.PyJWTError as exc:
+                # Log decode failures so spikes of invalid tokens are
+                # visible in observability — silent swallow is a
+                # detection blind spot. Mirrors the wyrdfold-api pattern.
+                logger.warning(
+                    "auth_jwt_decode_failed path=%s reason=%s",
+                    request.url.path,
+                    exc,
+                )
             else:
                 if payload.get("sub") == "tools-admin":
                     return "session"

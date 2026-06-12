@@ -255,8 +255,8 @@ pnpm install                   # Full clean install with strict resolution
 
      - name: Build Storybook
        shell: bash
--      run: yarn nx build-storybook @danieljoffe.com/shared-ui
-+      run: pnpm nx build-storybook @danieljoffe.com/shared-ui
+-      run: yarn nx build-storybook @danieljoffe/shared-ui
++      run: pnpm nx build-storybook @danieljoffe/shared-ui
 ```
 
 ---
@@ -386,7 +386,7 @@ Also update the "Project Overview" section to reference pnpm instead of Yarn wor
 
 ### `libs/shared/ui/README.md`
 
-- Update `npx nx test @danieljoffe.com/shared-ui` -> `pnpm nx test @danieljoffe.com/shared-ui`
+- Update `npx nx test @danieljoffe/shared-ui` -> `pnpm nx test @danieljoffe/shared-ui`
 
 ---
 

@@ -50,6 +50,28 @@ describe('StatsCard', () => {
     expect(screen.getByText('+0%')).toBeInTheDocument();
   });
 
+  it('renders custom change unit', () => {
+    render(
+      <StatsCard
+        title='Avg days'
+        value='6d'
+        change={-1.2}
+        changeUnit='d'
+        invertChange
+      />
+    );
+    expect(screen.getByText('-1.2d')).toBeInTheDocument();
+  });
+
+  it('inverts color semantics when invertChange is set', () => {
+    const { container } = render(
+      <StatsCard title='Avg days' value='6d' change={-2} invertChange />
+    );
+    // change=-2 with invertChange=true → good → success color
+    const changeText = container.querySelector('.text-success');
+    expect(changeText).toBeInTheDocument();
+  });
+
   it('applies custom className', () => {
     const { container } = render(
       <StatsCard title='Revenue' value='$12k' className='custom-class' />

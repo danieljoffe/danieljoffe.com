@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
-import { PageLayout } from '@danieljoffe.com/shared-ui/PageLayout';
+import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import { DOMAIN_URL } from '@/utils/constants';
 import { getOrigin } from '@/lib/getOrigin';
 import type {

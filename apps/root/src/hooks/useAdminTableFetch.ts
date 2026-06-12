@@ -6,6 +6,8 @@ interface UseAdminTableFetchOptions<S extends string> {
   endpoint: string;
   /** Default sort column */
   defaultSort: S;
+  /** Default sort order */
+  defaultOrder?: 'asc' | 'desc';
   /** Number of items per page */
   pageSize?: number;
   /** Key in the API response that holds the data array (e.g. 'scans', 'leads') */
@@ -17,6 +19,7 @@ interface UseAdminTableFetchOptions<S extends string> {
 export function useAdminTableFetch<T, S extends string>({
   endpoint,
   defaultSort,
+  defaultOrder,
   pageSize = 20,
   dataKey,
   extraParams,
@@ -28,7 +31,8 @@ export function useAdminTableFetch<T, S extends string>({
 
   const { sort, order, handleSort, sortIndicator } = useTableSort<S>(
     defaultSort,
-    () => setPage(1)
+    () => setPage(1),
+    defaultOrder
   );
 
   const fetchData = useCallback(async () => {

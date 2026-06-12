@@ -22,20 +22,14 @@ pnpm pom                  # Full quality gate: typecheck → lint → format →
 
 ### Pre-Push Checklist
 
-Before pushing any changes, **always** run:
-
-```bash
-pnpm tsc --noEmit         # Must have zero errors
-pnpm nx test root         # All tests must pass
-```
-
-Do not push if either command fails. Fix the issue first.
+Before pushing, **always** run `pnpm tsc --noEmit` and `pnpm nx test root`. Do not push if either fails.
 
 ### Git Branching
 
 - **`develop`** is the default base branch for all PRs
 - **`main`** is production — only `develop` merges into `main`
 - Never open a PR targeting `main` directly from a feature branch
+- **Always use remote refs**: `git fetch origin` first, use `origin/main`, `origin/develop` — never stale local branches
 - **Keep `develop` in sync with `main`**: Before creating or updating a PR, check if `develop` is behind `main` (`git log develop..main --oneline`). If so, merge `main` into `develop` and push. Flag merge conflicts for the user.
 
 ### TypeScript
@@ -52,17 +46,17 @@ Do not push if either command fails. Fix the issue first.
 
 ## Detailed Guides
 
-For in-depth reference, see these docs (loaded on demand):
+Always loaded:
 
-- **All commands**: @.claude/docs/commands.md
 - **Architecture & structure**: @.claude/docs/architecture.md
-- **Content posts (MDX)**: @.claude/docs/content-posts.md
 - **Coding conventions**: @.claude/docs/coding-conventions.md
-- **Testing & CI**: @.claude/docs/testing.md
-- **ESLint details**: @.claude/docs/eslint.md
-- **Git workflow**: @.claude/docs/git-workflow.md
-- **Sentry integration**: @.claude/docs/sentry.md
-- **Content style guide**: @.claude/docs/content-style-guide.md
+
+Loaded contextually via `.claude/rules/` (path-scoped — only when editing matching files):
+
+- **Content posts & style guide** — MDX and content data files
+- **Testing & CI** — spec, test, story, and config files
+- **Sentry integration** — Sentry and instrumentation files
+- **Python / FastAPI** — audit-api files
 
 ## Skills & Agents
 
@@ -70,7 +64,6 @@ The workspace includes Claude Code skills and agents for common workflows:
 
 - **Skills** (`.claude/skills/`): Task-specific workflows invocable via `/skill-name`
   - `/verify-root` — verify root Next.js app (build, browser console check, full POM suite)
-  - `/verify-jobapi` — verify job-api backend + Fitted frontend workflows
   - `/verify-auditapi` — verify audit-api backend + audit tool frontend workflows
   - `/verify-sharedui` — verify shared-ui library (build, tests, Storybook, consumer smoke test)
   - `/gen-test` — generate unit tests following project conventions
@@ -93,7 +86,8 @@ The workspace includes Claude Code skills and agents for common workflows:
   - `nx-reviewer` — module boundaries and workspace structure
   - `e2e-reviewer` — Playwright test coverage
 
-- **Docs** (`.claude/docs/`): Reference documentation loaded via `@import`
+- **Rules** (`.claude/rules/`): Path-scoped instructions loaded only when editing matching files
+- **Docs** (`.claude/docs/`): Reference documentation (always-loaded via CLAUDE.md, or contextual via rules)
 
 ## Session Persistence (context-mode plugin)
 
@@ -132,6 +126,16 @@ Session state is managed by the [context-mode](https://github.com/mksglu/context
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+## Summary Instructions
+
+When summarizing this conversation, always preserve:
+
+- The current task objective and acceptance criteria
+- File paths that have been read or modified
+- Test results and error messages
+- Decisions made and the reasoning behind them
+- Which rules files were loaded and why
 
 ## General Guidelines for working with NextJS
 

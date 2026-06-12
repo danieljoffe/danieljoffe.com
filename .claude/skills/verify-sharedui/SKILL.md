@@ -2,57 +2,62 @@
 name: verify-sharedui
 description: Verify the shared-ui library — build, unit tests, Storybook, and consumer smoke test
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Verify Shared UI
 
-Run targeted verification for the shared-ui component library. Fix any issues at each step before proceeding.
+Verify the shared-ui component library passes all checks. **Do not fix failures** — report them and stop.
+
+## Token Budget Rules
+
+- Route ALL commands producing >20 lines through `ctx_batch_execute` or `ctx_execute`
+- Batch independent commands into a single `ctx_batch_execute` call
+- If any phase fails, report the failure in the summary table and **stop** — do not attempt fixes
+- No visual browser checks — interaction tests cover rendering
 
 ## Instructions
 
-### Phase 1: Lint + Typecheck
+### Phase 1: Static Checks + Unit Tests
 
-Run these sequentially, fixing failures before proceeding:
+Run via `ctx_batch_execute` (one call):
 
-1. `pnpm nx lint @danieljoffe.com/shared-ui`
-2. `pnpm nx typecheck @danieljoffe.com/shared-ui`
+```
+[
+  { "label": "lint",      "command": "pnpm nx lint @danieljoffe/shared-ui" },
+  { "label": "typecheck", "command": "pnpm nx typecheck @danieljoffe/shared-ui" },
+  { "label": "test",      "command": "pnpm nx test @danieljoffe/shared-ui" }
+]
+```
 
-### Phase 2: Unit Tests (Jest)
+Search results for failures: `ctx_search(["error", "failed", "FAILED"])`. If any command failed, report and stop.
 
-Run `pnpm nx test @danieljoffe.com/shared-ui`. These are the Jest-based spec files in `libs/shared/ui/src/`.
+### Phase 2: Storybook Build + Interaction Tests
 
-### Phase 3: Storybook Build + Interaction Tests
+Run via `ctx_batch_execute`:
 
-1. Build Storybook: `pnpm nx build-storybook @danieljoffe.com/shared-ui`
-   - Fix any build errors before continuing
-2. Run Storybook interaction tests (Vitest + Playwright): `pnpm nx test-storybook @danieljoffe.com/shared-ui`
-   - These run `play` functions from stories in a headless browser
+```
+[
+  { "label": "build-storybook", "command": "pnpm nx build-storybook @danieljoffe/shared-ui" },
+  { "label": "test-storybook",  "command": "pnpm nx test-storybook @danieljoffe/shared-ui" }
+]
+```
 
-### Phase 4: Visual Storybook Check
+Note: `test-storybook` runs Vitest + Playwright in headless browser, executing `play` functions from stories. This covers both interaction logic and rendering — no separate visual browser check needed.
 
-1. Start Storybook: `pnpm nx storybook @danieljoffe.com/shared-ui` (background)
-2. Wait for it to be ready, then open a browser using Chrome DevTools MCP
-3. Navigate to Storybook (typically `http://localhost:6006`)
-4. Spot-check a few component stories for rendering issues:
-   - A layout component (e.g., Grid, Stack, Container)
-   - A form component (e.g., Input, Select, Checkbox)
-   - A feedback component (e.g., Alert, Toast, Modal)
-5. Check console for errors/warnings
-6. Stop Storybook when done
+If build-storybook fails, report and stop (test-storybook depends on it).
 
-### Phase 5: Consumer Smoke Test
+### Phase 3: Consumer Smoke Test
 
-Verify the root app (primary consumer) still builds with the shared-ui changes:
+Verify the root app (primary consumer) still builds:
 
-```bash
-pnpm nx build root
+```
+ctx_execute(language: "shell", code: "pnpm nx build root")
 ```
 
 This catches breaking export changes, missing components, or type mismatches at the integration boundary.
 
-### Phase 6: Report
-
-After all steps pass, report a summary table:
+### Phase 4: Report
 
 | Step                  | Result |
 | --------------------- | ------ |
@@ -61,9 +66,6 @@ After all steps pass, report a summary table:
 | test (shared-ui)      | ...    |
 | build-storybook       | ...    |
 | test-storybook        | ...    |
-| visual check          | ...    |
 | consumer build (root) | ...    |
 
-Note any pre-existing warnings separately.
-
-If any fixes were made during verification, commit them before reporting.
+Note pre-existing warnings separately. **Do not commit fixes.**
