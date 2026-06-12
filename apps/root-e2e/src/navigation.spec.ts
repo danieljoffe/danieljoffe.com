@@ -64,7 +64,7 @@ test.describe('desktop navigation', () => {
     await expect(page).toHaveURL(/.*projects/);
   });
 
-  test('more dropdown contains About and Blog', async ({ page }) => {
+  test('more dropdown contains Blog', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
 
@@ -79,12 +79,9 @@ test.describe('desktop navigation', () => {
     await expect(moreTrigger).toBeVisible();
     await moreTrigger.click();
 
-    // The dropdown menu should appear with About and Blog
+    // The dropdown menu should appear with Blog (About moved to primary nav)
     const menu = page.locator('[role="menu"]');
     await expect(menu).toBeVisible();
-    await expect(
-      menu.locator('[role="menuitem"]', { hasText: 'About' })
-    ).toBeVisible();
     await expect(
       menu.locator('[role="menuitem"]', { hasText: 'Blog' })
     ).toBeVisible();
@@ -175,11 +172,11 @@ test.describe('mobile navigation', () => {
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
     await expect(sheet).toBeVisible();
 
-    // Click About — dispatch programmatically since the sheet is fixed-positioned
-    const aboutButton = sheet.locator('button', { hasText: 'About' });
-    await aboutButton.dispatchEvent('click');
+    // Click Blog — dispatch programmatically since the sheet is fixed-positioned
+    const blogButton = sheet.locator('button', { hasText: 'Blog' });
+    await blogButton.dispatchEvent('click');
 
-    await expect(page).toHaveURL(/.*about/);
+    await expect(page).toHaveURL(/.*blog/);
   });
 });
 
