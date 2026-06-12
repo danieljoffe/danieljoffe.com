@@ -12,7 +12,7 @@ describe('contentRegistry', () => {
   describe('getContentByType', () => {
     it('returns all project entries in order', () => {
       const projects = getContentByType('project');
-      expect(projects.length).toBe(12);
+      expect(projects.length).toBe(13);
       expect(projects[0].type).toBe('project');
       expect(projects[0].slug).toBe('ui-components-v1');
     });
@@ -72,7 +72,7 @@ describe('contentRegistry', () => {
       const slugs = getContentSlugs('project');
       expect(slugs).toContain('ui-components-v1');
       expect(slugs).toContain('ui-components-v2');
-      expect(slugs.length).toBe(12);
+      expect(slugs.length).toBe(13);
     });
 
     it('returns experience slugs', () => {
@@ -104,14 +104,14 @@ describe('contentRegistry', () => {
   describe('getContentPagination', () => {
     it('returns circular pagination for first project', () => {
       const pagination = getContentPagination('project', 'ui-components-v1');
-      expect(pagination.prev.slug).toBe('api-performance-case-study'); // wraps to last
+      expect(pagination.prev.slug).toBe('audit-tool-case-study'); // wraps to last
       expect(pagination.next.slug).toBe('cms-tooling-case-study'); // second project
     });
 
     it('returns circular pagination for last project', () => {
       const pagination = getContentPagination(
         'project',
-        'api-performance-case-study'
+        'audit-tool-case-study'
       );
       expect(pagination.next.slug).toBe('ui-components-v1'); // wraps to first
     });
@@ -145,7 +145,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(62); // 12 projects + 5 experiences + 45 blogs
+      expect(all.length).toBe(63); // 13 projects + 5 experiences + 45 blogs
     });
 
     it('contains entries of all types', () => {
