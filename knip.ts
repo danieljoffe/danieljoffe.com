@@ -41,6 +41,11 @@ const config: KnipConfig = {
         // @nx/s3-cache is loaded at runtime via the `s3` block in nx.json
         // (Cloudflare R2 remote cache), not via a static import.
         '@nx/s3-cache',
+        // Config-referenced by apps/root, not static imports:
+        // @next/eslint-plugin-next via eslint.config.mjs (flat-config plugin
+        // object), jest-environment-jsdom via the jest testEnvironment.
+        '@next/eslint-plugin-next',
+        'jest-environment-jsdom',
       ],
     },
 
