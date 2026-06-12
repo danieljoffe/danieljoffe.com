@@ -64,7 +64,7 @@ The Next.js route validates the URL, checks the rate limit, inserts a `scans` ro
 
 The tool is fully anonymous, so there are no user rows to scope writes to. Both writers (the Next.js route and the Python service) use the Supabase service-role key, which never leaves a server. The browser cannot reach Postgres at all; every read goes through Next.js API routes that shape and cap the output.
 
-{/* TODO: screenshot of the audit results page (grade, scores, issue list) */}
+![Audit results page showing an A grade for danieljoffe.com with category scores and Core Web Vitals](/images/projects/audit-tool-results.webp)
 
 ## The scan pipeline
 
@@ -123,7 +123,7 @@ The hypothesis had a silent dependency I never tested: people have to find the t
 
 I would make most of the same engineering calls again, at half the polish. The browser pool, the SSRF hardening, and the error taxonomy were worth building well; the comparison mode and the insights charts were polish on a funnel with nothing flowing through it. The honest sequencing is: prove the channel with something embarrassingly small, then earn the engineering.
 
-{/* TODO: screenshot of the admin dashboard (scans table, lead sources) */}
+![Admin dashboard showing 40 total scans, grade distribution charts, a scans table — and zero leads at a 0% conversion rate](/images/projects/audit-tool-admin.webp)
 
 ## Takeaway
 
