@@ -56,9 +56,9 @@ describe('TabletUpNav', () => {
   test('renders logo, primary links, More dropdown, Free Audit CTA, search, and theme toggle', () => {
     render(<TabletUpNav pathname='/' />);
     expect(screen.getByAltText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Services')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
     expect(screen.getByText('Experience')).toBeInTheDocument();
+    expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByText('More')).toBeInTheDocument();
     expect(screen.getByText('Free Audit')).toBeInTheDocument();
     expect(screen.getByTestId('search-trigger')).toBeInTheDocument();
@@ -66,8 +66,8 @@ describe('TabletUpNav', () => {
   });
 
   test('marks current page link with aria-current', () => {
-    render(<TabletUpNav pathname='/services' />);
-    expect(screen.getByText('Services')).toHaveAttribute(
+    render(<TabletUpNav pathname='/experience' />);
+    expect(screen.getByText('Experience')).toHaveAttribute(
       'aria-current',
       'page'
     );

@@ -74,14 +74,6 @@ const pages = [
     maskHCaptcha: false,
   },
   {
-    name: 'services',
-    path: '/services',
-    headingSelector: 'h1',
-    maxDiffPixelRatio: 0.02,
-    waitForStableHeight: false,
-    maskHCaptcha: false,
-  },
-  {
     name: 'audit-scan',
     path: '/audit',
     headingSelector: 'h1',

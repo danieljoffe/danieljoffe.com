@@ -101,7 +101,6 @@ import type { NavLink } from '@/types/base';
 
 export const HOME_LINK: NavLink = { href: '/', label: 'Home' };
 export const ABOUT_LINK: NavLink = { href: '/about', label: 'About' };
-export const SERVICES_LINK: NavLink = { href: '/services', label: 'Services' };
 export const PROJECTS_LINK: NavLink = { href: '/projects', label: 'Projects' };
 export const EXPERIENCE_LINK: NavLink = {
   href: '/experience',
@@ -130,13 +129,13 @@ export const POSTS_PER_PAGE = 12;
 
 /** Primary nav links — always visible in desktop and mobile bottom bar */
 export const PRIMARY_NAV_LINKS: NavLink[] = [
-  SERVICES_LINK,
   PROJECTS_LINK,
   EXPERIENCE_LINK,
+  ABOUT_LINK,
 ];
 
 /** Secondary nav links — shown in "More" dropdown on desktop, bottom sheet on mobile */
-export const MORE_NAV_LINKS: NavLink[] = [ABOUT_LINK, BLOG_LINK];
+export const MORE_NAV_LINKS: NavLink[] = [BLOG_LINK];
 
 /** All nav links for the footer and anywhere the full set is needed */
 export const NAV_LINKS: NavLink[] = [...PRIMARY_NAV_LINKS, ...MORE_NAV_LINKS];

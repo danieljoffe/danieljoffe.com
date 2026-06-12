@@ -8,10 +8,6 @@ import {
   projectStructuredData,
   projectsRootStructuredData,
 } from '../structuredData/project';
-import {
-  servicesStructuredData,
-  servicesPageStructuredData,
-} from '../structuredData/services';
 
 // ---------------------------------------------------------------------------
 // base.ts — personStructuredData
@@ -190,66 +186,5 @@ describe('projectsRootStructuredData', () => {
       expect(item.url).toMatch(/^https?:\/\//);
       expect(item.description).toBeTruthy();
     });
-  });
-});
-
-// ---------------------------------------------------------------------------
-// services.ts — servicesStructuredData & servicesPageStructuredData
-// ---------------------------------------------------------------------------
-describe('servicesStructuredData', () => {
-  it('is defined', () => {
-    expect(servicesStructuredData).toBeDefined();
-  });
-
-  it('has @context and @type "Service"', () => {
-    expect(servicesStructuredData['@context']).toBe('https://schema.org');
-    expect(servicesStructuredData['@type']).toBe('Service');
-  });
-
-  it('has a provider with @type "Person"', () => {
-    expect(servicesStructuredData.provider).toBeDefined();
-    expect(servicesStructuredData.provider['@type']).toBe('Person');
-  });
-
-  it('has hasOfferCatalog with @type "OfferCatalog"', () => {
-    const { hasOfferCatalog } = servicesStructuredData;
-    expect(hasOfferCatalog).toBeDefined();
-    expect(hasOfferCatalog['@type']).toBe('OfferCatalog');
-  });
-
-  it('has offers in the catalog', () => {
-    const offers = servicesStructuredData.hasOfferCatalog.itemListElement;
-    expect(Array.isArray(offers)).toBe(true);
-    expect(offers.length).toBeGreaterThan(0);
-    offers.forEach(offer => {
-      expect(offer['@type']).toBe('Offer');
-      expect(offer.itemOffered['@type']).toBe('Service');
-      expect(offer.itemOffered.name).toBeTruthy();
-      expect(offer.itemOffered.description).toBeTruthy();
-      expect(offer.position).toBeGreaterThan(0);
-    });
-  });
-
-  it('has a url', () => {
-    expect(servicesStructuredData.url).toMatch(/^https?:\/\//);
-  });
-});
-
-describe('servicesPageStructuredData', () => {
-  it('is defined', () => {
-    expect(servicesPageStructuredData).toBeDefined();
-  });
-
-  it('has @context and @type "WebPage"', () => {
-    expect(servicesPageStructuredData['@context']).toBe('https://schema.org');
-    expect(servicesPageStructuredData['@type']).toBe('WebPage');
-  });
-
-  it('has author with @type "Person"', () => {
-    expect(servicesPageStructuredData.author['@type']).toBe('Person');
-  });
-
-  it('has mainEntity referencing the servicesStructuredData', () => {
-    expect(servicesPageStructuredData.mainEntity).toBe(servicesStructuredData);
   });
 });

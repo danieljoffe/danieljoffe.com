@@ -2,6 +2,7 @@ import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { Section } from '@danieljoffe/shared-ui/Section';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
+import { ABOUT_LINK, CONTACT_FORM_ID } from '@/utils/constants';
 
 interface InsightsCTAProps {
   topViolation: string | null;
@@ -34,11 +35,11 @@ export default function InsightsCTA({
           </Button>
           <Button
             as='link'
-            href='/services'
+            href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
             variant='ghost'
-            name='cta-services'
+            name='cta-contact'
           >
-            Performance Services
+            Get in Touch
           </Button>
         </div>
       </div>
