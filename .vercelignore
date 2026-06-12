@@ -34,5 +34,3 @@ apps/root
 apps/root-e2e
 apps/audit-api
 apps/audit-scan-service
-apps/wyrdfold-api
-apps/wyrdfold-e2e
