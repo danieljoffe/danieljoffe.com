@@ -19,15 +19,26 @@ export function devLog(message: string, ...args: unknown[]) {
 // ENVIRONMENT VALIDATION (runs at module load time)
 // ============================================================================
 
+function warnMissingEnv(env: Record<string, unknown>) {
+  const missing = Object.entries(env)
+    .filter(([, value]) => value == null)
+    .map(([key]) => key);
+
+  if (missing.length === 0) return;
+
+  // Features gate themselves on these values (e.g. sentryEnabled), so a
+  // missing key degrades that feature instead of crashing the dev server.
+  console.warn(
+    `\x1b[33m⚠ Missing environment variable(s): ${missing.join(', ')}.\x1b[0m\n` +
+      '  Dependent features are disabled for this session. ' +
+      'Copy apps/root/.env.example to apps/root/.env.local to enable them.'
+  );
+}
+
 function validatePublicEnv() {
   if (process.env.NODE_ENV !== 'development') return;
 
-  Object.entries(publicEnv).forEach(([key, value]) => {
-    if (value == null) {
-      devLog(`Missing required environment variable: ${key}`);
-      throw new Error(`Missing required environment variable: ${key}`);
-    }
-  });
+  warnMissingEnv(publicEnv);
 }
 
 function validateEnv() {
@@ -38,12 +49,7 @@ function validateEnv() {
   // Lazy import to avoid pulling server-only env into the client bundle
   const { serverEnv } = require('@/lib/env') as typeof import('@/lib/env');
 
-  Object.entries(serverEnv).forEach(([key, value]) => {
-    if (value == null) {
-      devLog(`Missing required environment variable: ${key}`);
-      throw new Error(`Missing required environment variable: ${key}`);
-    }
-  });
+  warnMissingEnv(serverEnv);
 }
 
 validatePublicEnv();
