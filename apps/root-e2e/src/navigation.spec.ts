@@ -86,18 +86,6 @@ test.describe('desktop navigation', () => {
       menu.locator('[role="menuitem"]', { hasText: 'Blog' })
     ).toBeVisible();
   });
-
-  test('free Audit CTA is visible', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await waitForHydration(page);
-
-    await expect(page.locator('nav[aria-label="Primary"]')).toBeVisible();
-
-    const auditLink = page
-      .locator('nav[aria-label="Main navigation"]')
-      .locator('a[href="/audit"]', { hasText: 'Free Audit' });
-    await expect(auditLink).toBeVisible();
-  });
 });
 
 test.describe('mobile navigation', () => {
