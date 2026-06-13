@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Zap,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { CTACard } from '@danieljoffe/shared-ui/CTACard';
 // import { GridBg } from '@danieljoffe/shared-ui/GridBg';
@@ -71,6 +72,54 @@ export default function Index() {
 
           <HeroActions />
         </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          CURRENTLY BUILDING — single product. A list would go stale; one
+          card with a live-status indicator signals momentum without
+          maintenance cost.
+          ══════════════════════════════════ */}
+      <Section padding='none'>
+        <SectionLabel
+          icon={<Sparkles className='h-3.5 w-3.5' />}
+          label='Currently building'
+        />
+        <a
+          href='https://wyrdfold.com'
+          target='_blank'
+          rel='noopener noreferrer'
+          className={cn(
+            cardBase,
+            'group block p-5 hover:border-border-secondary transition-colors'
+          )}
+        >
+          <div className='flex items-start justify-between gap-4'>
+            <div className='space-y-2'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <Heading variant='cardTitle' as='p'>
+                  WyrdFold
+                </Heading>
+                <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400'>
+                  <span
+                    className='h-1.5 w-1.5 rounded-full bg-emerald-500'
+                    aria-hidden='true'
+                  />
+                  Live
+                </span>
+              </div>
+              <Text variant='body'>
+                AI-powered job-search product I built and run solo. Resume
+                tailoring, job ingestion, match scoring &mdash; with the
+                production LLM pipelines (versioned prompts, shadow runs, async
+                observability) behind them.
+              </Text>
+            </div>
+            <ArrowUpRight
+              className='h-5 w-5 text-text-tertiary group-hover:text-text-primary transition-colors shrink-0 mt-1'
+              aria-hidden='true'
+            />
+          </div>
+        </a>
       </Section>
 
       {/* ══════════════════════════════════
