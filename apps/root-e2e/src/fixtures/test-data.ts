@@ -42,6 +42,3 @@ export const INVALID_FORM_DATA = {
   messageWithUrl:
     'Check out https://example.com for more info about this topic.',
 };
-
-// Audit page test data
-export const VALID_AUDIT_URL = 'example.com';
