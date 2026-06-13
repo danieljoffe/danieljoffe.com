@@ -16,14 +16,14 @@ test.describe('tools admin login', () => {
     ).toBeVisible();
   });
 
-  test('redirects unauthenticated visitors from /tools/admin/jobs to /tools/login with next param', async ({
+  test('redirects unauthenticated visitors from /tools/admin/audit to /tools/login with next param', async ({
     page,
   }) => {
-    await page.goto('/tools/admin/jobs', { waitUntil: 'domcontentloaded' });
+    await page.goto('/tools/admin/audit', { waitUntil: 'domcontentloaded' });
 
     await expect(page).toHaveURL(/\/tools\/login\?next=/);
     expect(page.url()).toContain(
-      `next=${encodeURIComponent('/tools/admin/jobs')}`
+      `next=${encodeURIComponent('/tools/admin/audit')}`
     );
     await expect(
       page.getByRole('textbox', { name: /admin password/i })
@@ -33,7 +33,7 @@ test.describe('tools admin login', () => {
   test('shows an error alert when the wrong password is submitted', async ({
     page,
   }) => {
-    await page.goto('/tools/login?next=/tools/admin/jobs', {
+    await page.goto('/tools/login?next=/tools/admin/audit', {
       waitUntil: 'domcontentloaded',
     });
     await waitForHydration(page);
@@ -63,7 +63,7 @@ test.describe('tools admin login', () => {
       'TOOLS_ADMIN_PASSWORD env var not set; skipping happy-path login test'
     );
 
-    await page.goto('/tools/login?next=/tools/admin/jobs', {
+    await page.goto('/tools/login?next=/tools/admin/audit', {
       waitUntil: 'domcontentloaded',
     });
     await waitForHydration(page);
@@ -76,9 +76,9 @@ test.describe('tools admin login', () => {
     const submitButton = page.getByRole('button', { name: /sign in/i });
     await submitButton.click();
 
-    await expect(page).toHaveURL(/\/tools\/admin\/jobs$/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/tools\/admin\/audit$/, { timeout: 15000 });
     await expect(
-      page.getByRole('heading', { name: /job search/i })
+      page.getByRole('heading', { name: /audit admin/i })
     ).toBeVisible();
   });
 });
