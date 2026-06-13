@@ -3,7 +3,6 @@ import { PostMetadata } from '@/types/postTypes';
 import { rootMetadata } from '../metadata/root';
 import { aboutMetadata } from '../metadata/about';
 import { homeMetadata } from '../metadata/home';
-import { servicesMetadata } from '../metadata/services';
 import { notFoundMetadata } from '../metadata/notFound';
 import { projectRootMetadata } from '../metadata/project';
 import { experienceRootMetadata } from '../metadata/experience';
@@ -90,25 +89,6 @@ describe('metadata/home', () => {
 
   it('has description as a string', () => {
     expect(typeof homeMetadata.description).toBe('string');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// services.ts
-// ---------------------------------------------------------------------------
-
-describe('metadata/services', () => {
-  it('is defined and is an object', () => {
-    expect(servicesMetadata).toBeDefined();
-    expect(typeof servicesMetadata).toBe('object');
-  });
-
-  it('has title as a string', () => {
-    expect(typeof servicesMetadata.title).toBe('string');
-  });
-
-  it('has description as a string', () => {
-    expect(typeof servicesMetadata.description).toBe('string');
   });
 });
 

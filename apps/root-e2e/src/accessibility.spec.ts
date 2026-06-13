@@ -24,7 +24,6 @@ test.describe('accessibility tests', () => {
     { name: 'project detail page', path: '/projects/performance-case-study' },
     { name: 'experience page', path: '/experience' },
     { name: 'experience detail page', path: '/experience/fightcamp' },
-    { name: 'services page', path: '/services' },
   ];
 
   for (const { name, path } of pages) {

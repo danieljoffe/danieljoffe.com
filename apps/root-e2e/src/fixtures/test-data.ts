@@ -1,8 +1,8 @@
 // Primary navigation links — always visible in nav bar
 export const PRIMARY_NAV_LINKS = [
-  { href: '/services', label: 'Services' },
   { href: '/projects', label: 'Projects' },
   { href: '/experience', label: 'Experience' },
+  { href: '/about', label: 'About' },
 ];
 
 // Project slugs for parametrized tests (from apps/root/src/data/project.ts)

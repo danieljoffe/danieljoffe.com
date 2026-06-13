@@ -27,9 +27,9 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 import DarkModeToggle from './DarkModeToggle';
 
 const primaryIcons: Record<string, typeof Briefcase> = {
-  '/services': Briefcase,
   '/projects': FolderKanban,
   '/experience': Award,
+  '/about': User,
 };
 
 const moreSheetLinks = [

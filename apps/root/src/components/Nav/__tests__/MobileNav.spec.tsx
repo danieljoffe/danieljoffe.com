@@ -27,13 +27,10 @@ jest.mock('@/lib/analytics', () => ({
 jest.mock('@/utils/constants', () => ({
   HOME_LINK: { href: '/', label: 'Home' },
   PRIMARY_NAV_LINKS: [
-    { href: '/services', label: 'Services' },
     { href: '/projects', label: 'Projects' },
+    { href: '/experience', label: 'Experience' },
   ],
-  MORE_NAV_LINKS: [
-    { href: '/about', label: 'About' },
-    { href: '/blog', label: 'Blog' },
-  ],
+  MORE_NAV_LINKS: [{ href: '/blog', label: 'Blog' }],
   AUDIT_LINK: { href: '/audit', label: 'Audit' },
 }));
 
@@ -52,7 +49,7 @@ describe('MobileNav', () => {
     render(<MobileNav pathname='/' />);
 
     expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Services')).toBeInTheDocument();
+    expect(screen.getByText('Experience')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
   });
 
@@ -82,13 +79,12 @@ describe('MobileNav', () => {
     ).not.toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('shows more sheet links (About, Blog, Audit)', () => {
+  it('shows more sheet links (Blog, Audit)', () => {
     render(<MobileNav pathname='/' />);
 
     fireEvent.click(screen.getByRole('button', { name: /open more menu/i }));
 
     // Sheet links render as buttons with link labels
-    expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByText('Blog')).toBeInTheDocument();
     expect(screen.getByText('Audit')).toBeInTheDocument();
   });

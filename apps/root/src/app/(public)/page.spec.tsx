@@ -63,7 +63,7 @@ describe('Homepage', () => {
     render(<Page />);
     expect(
       screen.getByRole('heading', {
-        name: /got a project that needs senior engineering/i,
+        name: /building something that needs senior full-stack engineering/i,
       })
     ).toBeInTheDocument();
   });

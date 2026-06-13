@@ -6,7 +6,7 @@ export const rootMetadata: Metadata = {
     template: '%s | Daniel Joffe - Full-Stack Engineer',
   },
   description:
-    'Full-stack engineer with 10+ years experience. Reduced load times by 80% at FightCamp. Built component libraries used by 80% of apps. Taking on 1-2 projects at a time.',
+    'Full-stack engineer with 10+ years of frontend craft, shipping complete products — Next.js frontends, Python/FastAPI backends, and production LLM pipelines. Reduced load times by 80% at FightCamp.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
@@ -52,7 +52,7 @@ export const rootMetadata: Metadata = {
     card: 'summary_large_image',
     title: 'Daniel Joffe | Full-Stack Engineer',
     description:
-      'Full-stack engineer with 10+ years experience. Reduced load times by 80% at FightCamp. Taking on 1-2 projects at a time.',
+      'Full-stack engineer with 10+ years of frontend craft, shipping complete products — frontends, backends, and production LLM pipelines.',
     creator: '@danieljoffe',
   },
   robots: {

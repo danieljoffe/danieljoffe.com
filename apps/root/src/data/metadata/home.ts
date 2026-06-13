@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const homeMetadata: Metadata = {
   title: 'Full-Stack Engineer',
   description:
-    'Full-Stack Engineer with 10+ years of experience. Reduced load times by 80% at FightCamp, built design systems at Internet Brands. Taking on 1-2 projects at a time.',
+    'Full-Stack Engineer with 10+ years of frontend craft, shipping complete products — Next.js frontends, Python/FastAPI backends, and production LLM pipelines. Reduced load times by 80% at FightCamp.',
   keywords: [
     'Daniel Joffe',
     'Full-Stack Engineer',
