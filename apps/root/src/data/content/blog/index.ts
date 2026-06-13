@@ -136,6 +136,9 @@ import PoolingPlaywrightBrowsersFastapi, {
 import ClaudeCodeThreeTiersCi, {
   metadata as claudeCodeThreeTiersCiMeta,
 } from './claude-code-three-tiers-ci.mdx';
+import OperatingLlmPipelinesInProduction, {
+  metadata as operatingLlmPipelinesInProductionMeta,
+} from './operating-llm-pipelines-in-production.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -185,6 +188,7 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'railway-fastapi-playwright-deploy': RailwayFastapiPlaywrightDeploy,
   'pooling-playwright-browsers-fastapi': PoolingPlaywrightBrowsersFastapi,
   'claude-code-three-tiers-ci': ClaudeCodeThreeTiersCi,
+  'operating-llm-pipelines-in-production': OperatingLlmPipelinesInProduction,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -234,4 +238,6 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'railway-fastapi-playwright-deploy': railwayFastapiPlaywrightDeployMeta,
   'pooling-playwright-browsers-fastapi': poolingPlaywrightBrowsersFastapiMeta,
   'claude-code-three-tiers-ci': claudeCodeThreeTiersCiMeta,
+  'operating-llm-pipelines-in-production':
+    operatingLlmPipelinesInProductionMeta,
 };
