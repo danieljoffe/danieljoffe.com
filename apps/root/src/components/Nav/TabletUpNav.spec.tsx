@@ -53,14 +53,14 @@ jest.mock('@/lib/analytics', () => ({
 }));
 
 describe('TabletUpNav', () => {
-  test('renders logo, primary links, More dropdown, Free Audit CTA, search, and theme toggle', () => {
+  test('renders logo, primary links, More dropdown, search, and theme toggle', () => {
     render(<TabletUpNav pathname='/' />);
     expect(screen.getByAltText('Home')).toBeInTheDocument();
     expect(screen.getByText('Projects')).toBeInTheDocument();
     expect(screen.getByText('Experience')).toBeInTheDocument();
     expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByText('More')).toBeInTheDocument();
-    expect(screen.getByText('Free Audit')).toBeInTheDocument();
+    expect(screen.queryByText('Free Audit')).not.toBeInTheDocument();
     expect(screen.getByTestId('search-trigger')).toBeInTheDocument();
     expect(screen.getByTestId('dark-mode-toggle')).toBeInTheDocument();
   });

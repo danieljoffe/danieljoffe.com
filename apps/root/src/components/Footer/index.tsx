@@ -9,7 +9,6 @@ import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
   NAV_LINKS,
-  AUDIT_LINK,
   STORYBOOK_URL,
   RESUME_URL,
 } from '@/utils/constants';
@@ -87,14 +86,6 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link
-                href={AUDIT_LINK.href}
-                className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
-              >
-                {AUDIT_LINK.label}
-              </Link>
-            </li>
           </ul>
         </nav>
 

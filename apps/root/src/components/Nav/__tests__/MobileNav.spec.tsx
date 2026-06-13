@@ -31,7 +31,6 @@ jest.mock('@/utils/constants', () => ({
     { href: '/experience', label: 'Experience' },
   ],
   MORE_NAV_LINKS: [{ href: '/blog', label: 'Blog' }],
-  AUDIT_LINK: { href: '/audit', label: 'Audit' },
 }));
 
 jest.mock('../DarkModeToggle', () => {
@@ -79,14 +78,14 @@ describe('MobileNav', () => {
     ).not.toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('shows more sheet links (Blog, Audit)', () => {
+  it('shows more sheet links (Blog only)', () => {
     render(<MobileNav pathname='/' />);
 
     fireEvent.click(screen.getByRole('button', { name: /open more menu/i }));
 
     // Sheet links render as buttons with link labels
     expect(screen.getByText('Blog')).toBeInTheDocument();
-    expect(screen.getByText('Audit')).toBeInTheDocument();
+    expect(screen.queryByText('Audit')).not.toBeInTheDocument();
   });
 
   it('closes sheet on Escape key', () => {

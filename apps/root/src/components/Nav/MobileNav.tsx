@@ -21,7 +21,6 @@ import {
   HOME_LINK,
   PRIMARY_NAV_LINKS,
   MORE_NAV_LINKS,
-  AUDIT_LINK,
 } from '@/utils/constants';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import DarkModeToggle from './DarkModeToggle';
@@ -32,13 +31,10 @@ const primaryIcons: Record<string, typeof Briefcase> = {
   '/about': User,
 };
 
-const moreSheetLinks = [
-  ...MORE_NAV_LINKS.map(link => ({
-    ...link,
-    icon: link.href === '/about' ? User : BookOpen,
-  })),
-  { ...AUDIT_LINK, icon: Briefcase },
-];
+const moreSheetLinks = MORE_NAV_LINKS.map(link => ({
+  ...link,
+  icon: link.href === '/about' ? User : BookOpen,
+}));
 
 export default function MobileNav({ pathname }: { pathname: string }) {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -88,9 +84,7 @@ export default function MobileNav({ pathname }: { pathname: string }) {
     [router]
   );
 
-  const isMoreActive =
-    MORE_NAV_LINKS.some(l => pathname === l.href) ||
-    pathname === AUDIT_LINK.href;
+  const isMoreActive = MORE_NAV_LINKS.some(l => pathname === l.href);
 
   const isHome = pathname === '/';
 

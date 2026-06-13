@@ -2,8 +2,6 @@ import { MetadataRoute } from 'next';
 import {
   DOMAIN_URL,
   ABOUT_LINK,
-  AUDIT_LINK,
-  AUDIT_INSIGHTS_LINK,
   BLOG_LINK,
   BLOG_TAGS_LINK,
   EXPERIENCE_LINK,
@@ -51,18 +49,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: BUILD_DATE,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
-    },
-    {
-      url: `${DOMAIN_URL}${AUDIT_LINK.href}`,
-      lastModified: BUILD_DATE,
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${DOMAIN_URL}${AUDIT_INSIGHTS_LINK.href}`,
-      lastModified: BUILD_DATE,
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
     },
   ];
 
