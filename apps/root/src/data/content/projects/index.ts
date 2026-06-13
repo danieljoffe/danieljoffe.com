@@ -36,6 +36,9 @@ import ApiPerformanceCaseStudy, {
 import AuditToolCaseStudy, {
   metadata as auditToolMeta,
 } from './audit-tool-case-study.mdx';
+import SharedUiCaseStudy, {
+  metadata as sharedUiCaseStudyMeta,
+} from './shared-ui-case-study.mdx';
 
 export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
   {
@@ -52,6 +55,7 @@ export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
     'job-pipeline-case-study': JobPipelineCaseStudy,
     'api-performance-case-study': ApiPerformanceCaseStudy,
     'audit-tool-case-study': AuditToolCaseStudy,
+    'shared-ui-case-study': SharedUiCaseStudy,
   };
 
 export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
@@ -68,4 +72,5 @@ export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
   'job-pipeline-case-study': jobPipelineMeta,
   'api-performance-case-study': apiPerfMeta,
   'audit-tool-case-study': auditToolMeta,
+  'shared-ui-case-study': sharedUiCaseStudyMeta,
 };
