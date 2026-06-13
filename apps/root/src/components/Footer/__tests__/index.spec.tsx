@@ -56,20 +56,22 @@ describe('Footer', () => {
     expect(nav).toBeInTheDocument();
   });
 
-  it('renders the Storybook design system link', () => {
+  it('renders the Storybook design system link with shared-ui attribution', () => {
     render(<Footer />);
     const link = screen.getByRole('link', {
-      name: /browse the design system.*ui\.danieljoffe\.com/i,
+      name: /built with my own ui library.*@danieljoffe\/shared-ui/i,
     });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', 'https://ui.danieljoffe.com');
     expect(link).toHaveAttribute('target', '_blank');
   });
 
-  it('renders the design system link text', () => {
+  it('renders the shared-ui attribution text', () => {
     render(<Footer />);
-    expect(screen.getByText('Browse the design system')).toBeInTheDocument();
-    expect(screen.getByText('ui.danieljoffe.com')).toBeInTheDocument();
+    expect(
+      screen.getByText('Built with my own UI library')
+    ).toBeInTheDocument();
+    expect(screen.getByText('@danieljoffe/shared-ui')).toBeInTheDocument();
   });
 
   it('has no accessibility violations', async () => {

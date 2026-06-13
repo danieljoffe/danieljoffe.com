@@ -110,14 +110,14 @@ export default function Footer() {
             className={`flex items-center gap-1 rounded-sm ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
           >
             <Text variant='meta' as='span'>
-              Browse the design system
+              Built with my own UI library
             </Text>
             <Text
               variant='meta'
               as='span'
               className='inline-flex items-center gap-1 text-text-secondary hover:underline'
             >
-              ui.danieljoffe.com
+              @danieljoffe/shared-ui
               <ChevronRight className='h-3 w-3' />
             </Text>
           </a>
