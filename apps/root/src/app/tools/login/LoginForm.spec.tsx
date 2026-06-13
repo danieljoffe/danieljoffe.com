@@ -75,7 +75,7 @@ describe('LoginForm', () => {
   });
 
   it('redirects to sanitized next param on success', async () => {
-    mockSearchParamsGet.mockReturnValue('/tools/admin/jobs');
+    mockSearchParamsGet.mockReturnValue('/tools/admin/audit');
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -91,7 +91,7 @@ describe('LoginForm', () => {
     });
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/tools/admin/jobs');
+      expect(mockReplace).toHaveBeenCalledWith('/tools/admin/audit');
     });
   });
 
