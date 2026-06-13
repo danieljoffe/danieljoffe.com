@@ -3,8 +3,6 @@ import sitemap from '../sitemap';
 jest.mock('@/utils/constants', () => ({
   DOMAIN_URL: 'https://danieljoffe.com',
   ABOUT_LINK: { href: '/about' },
-  AUDIT_LINK: { href: '/audit' },
-  AUDIT_INSIGHTS_LINK: { href: '/audit/insights' },
   BLOG_LINK: { href: '/blog' },
   BLOG_TAGS_LINK: { href: '/blog/tags' },
   EXPERIENCE_LINK: { href: '/experience' },
@@ -47,7 +45,8 @@ describe('sitemap', () => {
     expect(urls).toContain('https://danieljoffe.com/projects');
     expect(urls).toContain('https://danieljoffe.com/experience');
     expect(urls).toContain('https://danieljoffe.com/blog');
-    expect(urls).toContain('https://danieljoffe.com/audit');
+    expect(urls).not.toContain('https://danieljoffe.com/audit');
+    expect(urls).not.toContain('https://danieljoffe.com/audit/insights');
   });
 
   it('includes dynamic experience routes', () => {

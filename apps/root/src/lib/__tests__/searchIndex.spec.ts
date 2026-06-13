@@ -37,8 +37,8 @@ describe('buildSearchIndex', () => {
 
   it('includes generated entries and static page entries', () => {
     const index = buildSearchIndex();
-    // 2 generated + 2 static pages
-    expect(index).toHaveLength(4);
+    // 2 generated + 1 static page
+    expect(index).toHaveLength(3);
   });
 
   it('each entry has required fields', () => {
@@ -56,14 +56,12 @@ describe('buildSearchIndex', () => {
     }
   });
 
-  it('includes static page entries for about and audit', () => {
+  it('includes static page entry for about', () => {
     const index = buildSearchIndex();
     const pages = index.filter(e => e.type === 'page');
-    expect(pages).toHaveLength(2);
+    expect(pages).toHaveLength(1);
 
-    const slugs = pages.map(p => p.slug);
-    expect(slugs).toContain('about');
-    expect(slugs).toContain('audit');
+    expect(pages[0].slug).toBe('about');
   });
 
   it('has body text for generated content entries', () => {
