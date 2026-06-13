@@ -52,7 +52,7 @@ Soft natural light, slight depth of field. Muted, slightly cool color palette wi
 No text, no logos, no people, no UI screenshots. Centered or rule-of-thirds composition.
 Subject:`;
 
-const MODEL_ID = 'imagen-3.0-generate-002';
+const MODEL_ID = 'imagen-4.0-generate-001';
 const ASPECT_RATIO = '16:9' as const;
 
 interface Frontmatter {
