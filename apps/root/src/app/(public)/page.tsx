@@ -63,13 +63,39 @@ export default function Index() {
           </div>
 
           <Heading variant='hero'>{FULL_NAME}</Heading>
-          <Text variant='subtitle' className='max-w-lg'>
-            I&apos;ve spent 10 years helping startups ship faster, building the
-            frontends, design systems, and developer tooling that let teams move
-            without friction.
+          <Text variant='subtitle' className='max-w-2xl'>
+            Senior frontend engineer turned full-stack. I ship complete products
+            &mdash; Next.js frontends, Python/FastAPI backends, Postgres, and
+            the LLM pipelines in between.
           </Text>
 
           <HeroActions />
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          ACHIEVEMENTS — surfaced to the first screen so concrete metrics
+          land before the visitor's attention drifts past the hero.
+          ══════════════════════════════════ */}
+      <Section padding='none'>
+        <SectionLabel
+          icon={<Zap className='h-3.5 w-3.5' />}
+          label='Achievements'
+        />
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+          {offerings.achievements.map((achievement, i) => (
+            <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
+              <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
+              <div>
+                <Heading variant='cardTitle' as='p'>
+                  {achievement.metric}
+                </Heading>
+                <Text variant='body' className='mt-1'>
+                  {achievement.text}
+                </Text>
+              </div>
+            </div>
+          ))}
         </div>
       </Section>
 
@@ -104,31 +130,6 @@ export default function Index() {
               </li>
             ))}
           </ul>
-        </div>
-      </Section>
-
-      {/* ══════════════════════════════════
-          ACHIEVEMENTS
-          ══════════════════════════════════ */}
-      <Section padding='none'>
-        <SectionLabel
-          icon={<Zap className='h-3.5 w-3.5' />}
-          label='Achievements'
-        />
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-          {offerings.achievements.map((achievement, i) => (
-            <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
-              <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
-              <div>
-                <Heading variant='cardTitle' as='p'>
-                  {achievement.metric}
-                </Heading>
-                <Text variant='body' className='mt-1'>
-                  {achievement.text}
-                </Text>
-              </div>
-            </div>
-          ))}
         </div>
       </Section>
 
