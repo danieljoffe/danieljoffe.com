@@ -35,7 +35,8 @@
     "db:gen-types": "supabase gen types typescript --linked > libs/shared/audit/src/lib/database.types.ts",
     "build-storybook:ui": "nx build-storybook @danieljoffe/shared-ui",
     "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui --only-changed",
-    "prebuild": "tsx scripts/generate-search-index.ts"
+    "prebuild": "tsx scripts/generate-search-index.ts",
+    "gen:cover": "tsx --env-file-if-exists=apps/root/.env --env-file-if-exists=apps/root/.env.local --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/generate-covers.ts"
   },
   "private": true,
   "browserslist": [
@@ -79,6 +80,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@ai-sdk/google": "^3.0.82",
     "@axe-core/playwright": "4.11.1",
     "@chromatic-com/storybook": "^5.1.2",
     "@eslint/compat": "^2.0.5",
@@ -127,6 +129,7 @@
     "@vitest/browser-playwright": "4.1.4",
     "@vitest/coverage-v8": "4.1.4",
     "@vitest/ui": "4.1.4",
+    "ai": "^6.0.204",
     "babel-jest": "^30.0.2",
     "chromatic": "^16.2.0",
     "eslint": "10.2.0",
