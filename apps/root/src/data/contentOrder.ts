@@ -49,6 +49,7 @@ export const projectHistory: AllowedProjectSlugs[] = [
   projectSlugs.csJobPipeline, // 2026-04-15 — Portfolio (Apr 2026)
   projectSlugs.csApiPerformance, // 2026-04-21 — Portfolio (Apr 2026)
   projectSlugs.csAuditTool, // 2026-06-11 — Portfolio (Feb-Apr 2026)
+  projectSlugs.csSharedUi, // 2026-06-13 — @danieljoffe/shared-ui (Apr-Jun 2026)
 ];
 
 /**
@@ -111,4 +112,5 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.railwayFastapiPlaywrightDeploy, // 2026-04-18
   blogSlugs.poolingPlaywrightBrowsersFastapi, // 2026-04-21
   blogSlugs.claudeCodeThreeTiersCi, // 2026-04-21
+  blogSlugs.operatingLlmPipelinesInProduction, // 2026-06-13
 ];

@@ -30,20 +30,6 @@ const staticEntries: SearchEntry[] = [
     date: null,
     author: 'Daniel Joffe',
   },
-  {
-    id: 'page:audit',
-    slug: 'audit',
-    type: 'page',
-    title: 'Audit',
-    excerpt:
-      'Service for auditing web applications and providing actionable feedback',
-    tags: [],
-    category: 'page',
-    body: '',
-    url: '/audit',
-    date: null,
-    author: 'Daniel Joffe',
-  },
 ];
 
 export function buildSearchIndex(): SearchEntry[] {

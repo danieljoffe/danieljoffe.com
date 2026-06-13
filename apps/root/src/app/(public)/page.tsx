@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Zap,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { CTACard } from '@danieljoffe/shared-ui/CTACard';
 // import { GridBg } from '@danieljoffe/shared-ui/GridBg';
@@ -63,13 +64,87 @@ export default function Index() {
           </div>
 
           <Heading variant='hero'>{FULL_NAME}</Heading>
-          <Text variant='subtitle' className='max-w-lg'>
-            I&apos;ve spent 10 years helping startups ship faster, building the
-            frontends, design systems, and developer tooling that let teams move
-            without friction.
+          <Text variant='subtitle' className='max-w-2xl'>
+            Senior frontend engineer turned full-stack. I ship complete products
+            &mdash; Next.js frontends, Python/FastAPI backends, Postgres, and
+            the LLM pipelines in between.
           </Text>
 
           <HeroActions />
+        </div>
+      </Section>
+
+      {/* ══════════════════════════════════
+          CURRENTLY BUILDING — single product. A list would go stale; one
+          card with a live-status indicator signals momentum without
+          maintenance cost.
+          ══════════════════════════════════ */}
+      <Section padding='none'>
+        <SectionLabel
+          icon={<Sparkles className='h-3.5 w-3.5' />}
+          label='Currently building'
+        />
+        <a
+          href='https://wyrdfold.com'
+          target='_blank'
+          rel='noopener noreferrer'
+          className={cn(
+            cardBase,
+            'group block p-5 hover:border-border-secondary transition-colors'
+          )}
+        >
+          <div className='flex items-start justify-between gap-4'>
+            <div className='space-y-2'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <Heading variant='cardTitle' as='p'>
+                  WyrdFold
+                </Heading>
+                <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-300'>
+                  <span
+                    className='h-1.5 w-1.5 rounded-full bg-emerald-600'
+                    aria-hidden='true'
+                  />
+                  Live
+                </span>
+              </div>
+              <Text variant='body'>
+                AI-powered job-search product I built and run solo. Resume
+                tailoring, job ingestion, match scoring &mdash; with the
+                production LLM pipelines (versioned prompts, shadow runs, async
+                observability) behind them.
+              </Text>
+            </div>
+            <ArrowUpRight
+              className='h-5 w-5 text-text-tertiary group-hover:text-text-primary transition-colors shrink-0 mt-1'
+              aria-hidden='true'
+            />
+          </div>
+        </a>
+      </Section>
+
+      {/* ══════════════════════════════════
+          ACHIEVEMENTS — surfaced to the first screen so concrete metrics
+          land before the visitor's attention drifts past the hero.
+          ══════════════════════════════════ */}
+      <Section padding='none'>
+        <SectionLabel
+          icon={<Zap className='h-3.5 w-3.5' />}
+          label='Achievements'
+        />
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+          {offerings.achievements.map((achievement, i) => (
+            <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
+              <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
+              <div>
+                <Heading variant='cardTitle' as='p'>
+                  {achievement.metric}
+                </Heading>
+                <Text variant='body' className='mt-1'>
+                  {achievement.text}
+                </Text>
+              </div>
+            </div>
+          ))}
         </div>
       </Section>
 
@@ -104,31 +179,6 @@ export default function Index() {
               </li>
             ))}
           </ul>
-        </div>
-      </Section>
-
-      {/* ══════════════════════════════════
-          ACHIEVEMENTS
-          ══════════════════════════════════ */}
-      <Section padding='none'>
-        <SectionLabel
-          icon={<Zap className='h-3.5 w-3.5' />}
-          label='Achievements'
-        />
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-          {offerings.achievements.map((achievement, i) => (
-            <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
-              <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
-              <div>
-                <Heading variant='cardTitle' as='p'>
-                  {achievement.metric}
-                </Heading>
-                <Text variant='body' className='mt-1'>
-                  {achievement.text}
-                </Text>
-              </div>
-            </div>
-          ))}
         </div>
       </Section>
 

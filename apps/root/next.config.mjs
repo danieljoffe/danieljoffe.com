@@ -261,6 +261,20 @@ const nextConfig = {
         destination: '/about',
         permanent: true,
       },
+      // Audit tool archived after the case study shipped — point any
+      // remaining inbound link (form, results, insights, per-violation,
+      // compare) at the case study. Excludes /api/audit/* so the admin
+      // dashboard keeps working until Phase C removes those routes.
+      {
+        source: '/audit',
+        destination: '/projects/audit-tool-case-study',
+        permanent: true,
+      },
+      {
+        source: '/audit/:path*',
+        destination: '/projects/audit-tool-case-study',
+        permanent: true,
+      },
     ];
   },
 

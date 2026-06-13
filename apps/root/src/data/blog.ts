@@ -46,6 +46,7 @@ export const blogSlugs = {
   railwayFastapiPlaywrightDeploy: 'railway-fastapi-playwright-deploy',
   poolingPlaywrightBrowsersFastapi: 'pooling-playwright-browsers-fastapi',
   claudeCodeThreeTiersCi: 'claude-code-three-tiers-ci',
+  operatingLlmPipelinesInProduction: 'operating-llm-pipelines-in-production',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

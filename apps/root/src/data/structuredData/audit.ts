@@ -1,4 +1,4 @@
-import { DOMAIN_URL, AUDIT_LINK } from '@/utils/constants';
+import { DOMAIN_URL } from '@/utils/constants';
 
 export const auditFaqStructuredData = Object.freeze({
   '@context': 'https://schema.org',
@@ -29,5 +29,5 @@ export const auditFaqStructuredData = Object.freeze({
       },
     },
   ],
-  url: `${DOMAIN_URL}${AUDIT_LINK.href}`,
+  url: `${DOMAIN_URL}/audit`,
 });

@@ -10,7 +10,6 @@ import { analytics } from '@/lib/analytics';
 import {
   PRIMARY_NAV_LINKS,
   MORE_NAV_LINKS,
-  AUDIT_LINK,
   HOME_LINK,
 } from '@/utils/constants';
 import SearchTrigger from './SearchTrigger';
@@ -83,14 +82,6 @@ export default function TabletUpNav({ pathname }: { pathname: string }) {
       </nav>
 
       <div className='ml-auto flex items-center gap-1'>
-        <Link
-          href={AUDIT_LINK.href}
-          onClick={() => analytics.navClick(AUDIT_LINK.label)}
-          aria-current={pathname === AUDIT_LINK.href ? 'page' : undefined}
-          className='inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors'
-        >
-          {AUDIT_LINK.label}
-        </Link>
         <SearchTrigger />
         <DarkModeToggle />
       </div>

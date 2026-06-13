@@ -9,7 +9,6 @@ import { profileData } from '@/data/profileData';
 import {
   FULL_NAME,
   NAV_LINKS,
-  AUDIT_LINK,
   STORYBOOK_URL,
   RESUME_URL,
 } from '@/utils/constants';
@@ -87,14 +86,6 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link
-                href={AUDIT_LINK.href}
-                className={`text-sm text-text-secondary hover:text-text-primary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
-              >
-                {AUDIT_LINK.label}
-              </Link>
-            </li>
           </ul>
         </nav>
 
@@ -110,14 +101,14 @@ export default function Footer() {
             className={`flex items-center gap-1 rounded-sm ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
           >
             <Text variant='meta' as='span'>
-              Browse the design system
+              Built with my own UI library
             </Text>
             <Text
               variant='meta'
               as='span'
               className='inline-flex items-center gap-1 text-text-secondary hover:underline'
             >
-              ui.danieljoffe.com
+              @danieljoffe/shared-ui
               <ChevronRight className='h-3 w-3' />
             </Text>
           </a>

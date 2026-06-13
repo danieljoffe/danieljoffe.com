@@ -32,6 +32,19 @@ export const homeMetadata: Metadata = {
     url: 'https://danieljoffe.com',
     type: 'website',
     siteName: 'Daniel Joffe',
+    // Explicit reference to the root-level app/opengraph-image.tsx — Next.js
+    // doesn't auto-merge it across the (public) route group boundary, so the
+    // homepage has been shipping with no og:image since release. Each project
+    // / experience / blog page has its own segment-level opengraph-image.tsx
+    // and gets auto-populated; the homepage is the one that needs the hint.
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Daniel Joffe — Full-Stack Engineer',
+      },
+    ],
   },
   twitter: {
     title: `Daniel Joffe | Full-Stack Engineer`,
@@ -39,5 +52,6 @@ export const homeMetadata: Metadata = {
       'Full-Stack Engineer. Performance optimization, backend architecture, and accessible web applications.',
     card: 'summary_large_image',
     creator: '@danieljoffe',
+    images: ['/opengraph-image'],
   },
 };

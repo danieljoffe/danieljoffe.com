@@ -40,7 +40,7 @@ describe('Homepage', () => {
   it('renders hero description', () => {
     render(<Page />);
     expect(
-      screen.getByText(/helping startups ship faster/i)
+      screen.getByText(/senior frontend engineer turned full-stack/i)
     ).toBeInTheDocument();
   });
 

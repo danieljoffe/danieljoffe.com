@@ -12,6 +12,7 @@ export const projectSlugs = {
   csJobPipeline: 'job-pipeline-case-study',
   csApiPerformance: 'api-performance-case-study',
   csAuditTool: 'audit-tool-case-study',
+  csSharedUi: 'shared-ui-case-study',
 } as const;
 
 export const projectPageSlugs = [...Object.values(projectSlugs)];

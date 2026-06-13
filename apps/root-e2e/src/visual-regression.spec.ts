@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { INVALID_UUID } from './fixtures/audit-mock-data';
 
 // VR baselines are captured with mocked system fonts (not Google Fonts).
 // Font mocking is a build-time webpack plugin triggered by CI=true or MOCK_FONTS=true.
@@ -73,22 +72,6 @@ const pages = [
     waitForStableHeight: false,
     maskHCaptcha: false,
   },
-  {
-    name: 'audit-scan',
-    path: '/audit',
-    headingSelector: 'h1',
-    maxDiffPixelRatio: 0.02,
-    waitForStableHeight: false,
-    maskHCaptcha: false,
-  },
-  {
-    name: 'audit-report-not-found',
-    path: `/audit/r/${INVALID_UUID}`,
-    headingSelector: undefined,
-    maxDiffPixelRatio: 0.02,
-    waitForStableHeight: false,
-    maskHCaptcha: false,
-  },
 ] as const;
 
 /**
@@ -101,16 +84,10 @@ async function waitForPageReady(
   await page.goto(entry.path, { waitUntil: 'domcontentloaded' });
   await page.waitForLoadState('load');
 
-  if (entry.name === 'audit-report-not-found') {
-    await page
-      .getByRole('heading', { name: 'Report Not Found' })
-      .waitFor({ state: 'visible' });
-  } else {
-    await page
-      .locator(entry.headingSelector!)
-      .first()
-      .waitFor({ state: 'visible' });
-  }
+  await page
+    .locator(entry.headingSelector!)
+    .first()
+    .waitFor({ state: 'visible' });
 
   if (entry.waitForStableHeight) {
     await expect
