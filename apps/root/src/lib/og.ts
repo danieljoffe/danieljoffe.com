@@ -49,10 +49,29 @@ export async function getOgFonts() {
   ];
 }
 
+// 1x1 transparent PNG. Fallback so a failed avatar read/convert degrades to an
+// empty ring rather than throwing and 500-ing the entire OG image.
+const TRANSPARENT_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
 export async function getProfileImageBase64(): Promise<string> {
-  if (!_profilePromise) _profilePromise = loadProfileImage();
-  const buffer = await _profilePromise;
-  return `data:image/png;base64,${buffer.toString('base64')}`;
+  try {
+    if (!_profilePromise) _profilePromise = loadProfileImage();
+    const buffer = await _profilePromise;
+    // The source asset is WebP, but Satori/resvg (used by next/og) only supports
+    // PNG/JPEG/GIF — so we must convert before encoding, otherwise the <img>
+    // silently fails to render and only the empty avatar ring shows.
+    // sharp is a Next.js transitive dep with no direct type declarations here.
+
+    const sharp = require('sharp') as (input: Buffer) => {
+      png: () => { toBuffer: () => Promise<Buffer> };
+    };
+    const png = await sharp(buffer).png().toBuffer();
+    return `data:image/png;base64,${png.toString('base64')}`;
+  } catch {
+    _profilePromise = null; // don't cache a failed read
+    return TRANSPARENT_PNG;
+  }
 }
 
 /**
