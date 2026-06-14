@@ -1,7 +1,7 @@
 import { type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import { cn } from './utils';
 
-type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p';
+type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
 
 export type HeadingVariant =
   | 'hero'

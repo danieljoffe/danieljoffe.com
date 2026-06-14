@@ -73,6 +73,15 @@ describe('Heading', () => {
     expect(container.firstChild?.nodeName.toLowerCase()).toBe('p');
   });
 
+  it('allows rendering as a <span> element (inline card titles)', () => {
+    const { container } = render(
+      <Heading variant='cardTitle' as='span'>
+        Inline heading
+      </Heading>
+    );
+    expect(container.firstChild?.nodeName.toLowerCase()).toBe('span');
+  });
+
   it('merges custom className with variant classes', () => {
     const { container } = render(
       <Heading variant='hero' className='custom-class'>

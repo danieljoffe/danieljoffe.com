@@ -5,6 +5,7 @@ import { Section } from '@danieljoffe/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe/shared-ui/StructuredData';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { IconText } from '@danieljoffe/shared-ui/IconText';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import { getContentByType } from '@/data/contentRegistry';
 import { experienceRootMetadata } from '@/data/metadata/experience';
@@ -90,20 +91,28 @@ export default function ExperiencePage() {
                       </Text>
                       <div className='flex items-center gap-3 mt-2'>
                         {exp.duration && (
-                          <span className='flex items-center gap-1.5'>
-                            <Calendar className='h-3 w-3 text-text-tertiary' />
+                          <IconText
+                            icon={
+                              <Calendar className='h-3 w-3 text-text-tertiary' />
+                            }
+                            className='gap-x-1.5'
+                          >
                             <Text variant='meta' as='span'>
                               {exp.duration}
                             </Text>
-                          </span>
+                          </IconText>
                         )}
                         {exp.readingTime > 0 && (
-                          <span className='flex items-center gap-1.5'>
-                            <Clock className='h-3 w-3 text-text-tertiary' />
+                          <IconText
+                            icon={
+                              <Clock className='h-3 w-3 text-text-tertiary' />
+                            }
+                            className='gap-x-1.5'
+                          >
                             <Text variant='meta' as='span'>
                               {exp.readingTime} min read
                             </Text>
-                          </span>
+                          </IconText>
                         )}
                       </div>
                     </div>
