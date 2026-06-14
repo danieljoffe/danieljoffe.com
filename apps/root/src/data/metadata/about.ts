@@ -34,15 +34,8 @@ export const aboutMetadata: Metadata = {
     card: 'summary_large_image',
     creator: '@danieljoffe',
   },
-  icons: {
-    other: [
-      {
-        url: '/images/daniel-joffe-profile.webp',
-        rel: 'preload',
-        fetchPriority: 'high',
-        media: '(max-width: 768px)',
-        type: 'image/png',
-      },
-    ],
-  },
+  // Note: the profile <Image> on /about already sets `priority`, which emits
+  // a correct <link rel="preload" as="image">. A manual icons.other preload
+  // here was redundant and rendered without a valid `as` (console warning),
+  // so it was removed.
 };

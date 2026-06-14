@@ -41,9 +41,10 @@ function getPages(currentPage: number, totalPages: number): (number | '...')[] {
   return pages;
 }
 
+// 40px minimum tap targets (was 28px arrows / 32px numbers).
 const navItemBase =
-  'rounded-md p-1.5 text-text-secondary hover:bg-surface-tertiary transition-colors';
-const pageItemBase = 'rounded-md h-8 min-w-8 px-2 text-sm transition-colors';
+  'inline-flex h-10 w-10 items-center justify-center rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors';
+const pageItemBase = 'rounded-md h-10 min-w-10 px-2 text-sm transition-colors';
 
 /**
  * Server-rendered page-number pagination using real `<Link>` elements so
