@@ -1,7 +1,10 @@
 import { Metadata } from 'next';
 
 export const blogRootMetadata: Metadata = {
-  title: 'Blog | Daniel Joffe - Full-Stack Engineer',
+  // Bare segment — the root layout's title.template appends
+  // " | Daniel Joffe - Full-Stack Engineer". Including the suffix here
+  // doubled it (e.g. "Blog | … | …").
+  title: 'Blog',
   description:
     "Notes from shipping code. Deep-dives on the problems I've debugged, the patterns I've extracted, and the decisions I'd make differently next time.",
   keywords: [
