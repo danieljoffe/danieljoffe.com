@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowUpRight, Clock } from 'lucide-react';
 import { Badge } from '@danieljoffe/shared-ui/Badge';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { IconText } from '@danieljoffe/shared-ui/IconText';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
@@ -62,12 +63,14 @@ export function PostCard({
           {post.description}
         </Text>
         {post.readingTime && (
-          <div className='flex items-center gap-1.5'>
-            <Clock className='h-3 w-3 text-text-tertiary' />
+          <IconText
+            icon={<Clock className='h-3 w-3 text-text-tertiary' />}
+            className='gap-x-1.5'
+          >
             <Text variant='meta' as='span'>
               {post.readingTime} min read
             </Text>
-          </div>
+          </IconText>
         )}
       </div>
     </Link>
