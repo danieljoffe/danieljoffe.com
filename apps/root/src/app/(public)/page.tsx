@@ -95,7 +95,7 @@ export default function Index() {
           <div className='flex items-start justify-between gap-4'>
             <div className='space-y-2'>
               <div className='flex flex-wrap items-center gap-2'>
-                <Heading variant='cardTitle' as='p'>
+                <Heading variant='cardTitle' as='span'>
                   WyrdFold
                 </Heading>
                 <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-300'>
