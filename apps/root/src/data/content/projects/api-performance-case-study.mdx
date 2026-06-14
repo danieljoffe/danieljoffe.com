@@ -52,6 +52,23 @@ Navigation changed from `wait_until="networkidle"` to `wait_until="load"` with a
 
 Lighthouse and axe-core now run in parallel via `asyncio.gather` with `return_exceptions=True`. Lighthouse runs as a subprocess; axe runs inside the Playwright page. They share nothing. The `ScanQueue` itself remains serialized because Lighthouse uses global performance marks that collide in concurrent runs.
 
+<Mermaid
+  alt="The serialized ScanQueue feeds one scan at a time into a persistent browser pool that keeps a single Chromium process alive across scans, handing each scan a fresh isolated context. Within a scan, Lighthouse (a Node subprocess) and axe-core (inside the Playwright page) run in parallel and are joined with asyncio.gather, which produces the grade."
+  chart={`flowchart LR
+  Queue["ScanQueue<br/>(serialized)"]
+  Pool["Browser pool<br/>persistent Chromium<br/>fresh context per scan"]
+  LH["Lighthouse<br/>(Node subprocess)"]
+  Axe["axe-core<br/>(Playwright page)"]
+  Gather["asyncio.gather → grade"]
+
+  Queue --> Pool
+  Pool --> LH
+  Pool --> Axe
+  LH --> Gather
+  Axe --> Gather
+`}
+/>
+
 ```python
 lighthouse_task = asyncio.create_task(_run_lighthouse(url, device))
 axe_task = asyncio.create_task(_run_axe_and_capture(url, device))
