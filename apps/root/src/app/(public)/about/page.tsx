@@ -104,8 +104,7 @@ export default function About() {
             I&apos;ve been doing this for over a decade, across startups (Winc,
             FightCamp), enterprise (Internet Brands), and specialized
             environments (The Library Corporation). The common thread: every
-            engagement left the team faster and more autonomous than I found
-            them.
+            role left the team faster and more autonomous than I found them.
           </Text>
           <Text variant='bodyLg'>
             Below is the full picture: the tools I use, the companies I&apos;ve
@@ -295,8 +294,8 @@ export default function About() {
           heading="Let's figure out if I'm the right fit."
           description={
             <>
-              Tell me about your project. I respond within 24 hours, and
-              I&apos;ll be upfront about whether I can actually help.
+              Tell me about the role or the team. I respond within 24 hours, and
+              I&apos;ll be straight about whether it&apos;s a fit.
             </>
           }
         >

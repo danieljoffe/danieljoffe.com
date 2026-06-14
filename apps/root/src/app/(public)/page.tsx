@@ -120,6 +120,16 @@ export default function Index() {
             />
           </div>
         </a>
+        <Button
+          as='link'
+          href='/blog/operating-llm-pipelines-in-production'
+          variant='ghost'
+          size='sm'
+          className='mt-3'
+        >
+          How I operate the LLM pipelines
+          <ArrowUpRight className='h-4 w-4' />
+        </Button>
       </Section>
 
       {/* ══════════════════════════════════

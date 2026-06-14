@@ -23,8 +23,17 @@ export const expertiseCategories = [
   {
     label: 'Backend',
     description:
-      'Enough backend depth to own the full stack: auth, APIs, cloud infrastructure.',
-    skills: ['Node.js', 'Express', 'REST APIs', 'S3', 'AWS Cognito', 'OAuth'],
+      'Full backend and data ownership: Python/FastAPI and Node services, Postgres, auth, and production LLM pipelines.',
+    skills: [
+      'Python',
+      'FastAPI',
+      'Node.js',
+      'PostgreSQL',
+      'Supabase',
+      'REST APIs',
+      'LLM Pipelines',
+      'AWS Cognito',
+    ],
   },
   {
     label: 'Tools',
