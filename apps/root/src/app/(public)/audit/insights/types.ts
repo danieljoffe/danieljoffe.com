@@ -1,28 +1,6 @@
-// Response types from /api/audit/insights/* endpoints
-
-export interface SummaryData {
-  totalScans: number;
-  uniqueDomains: number;
-  avgOverallScore: number | null;
-  topViolation: string | null;
-}
-
-export interface Violation {
-  category: 'performance' | 'accessibility' | 'seo' | 'ux';
-  title: string;
-  occurrenceCount: number;
-  severity: {
-    critical: number;
-    warning: number;
-    info: number;
-  };
-}
-
-export interface ViolationsData {
-  category: 'performance' | 'accessibility' | 'seo' | 'ux' | 'all';
-  limit: number;
-  violations: Violation[];
-}
+// Response types from /api/audit/insights/* endpoints consumed by the
+// admin dashboard charts (the public audit insights pages were removed in the
+// audit-tool teardown — issue #909 Phase B).
 
 export interface ScoresData {
   period: number | null;
@@ -53,16 +31,4 @@ export interface TrendsData {
   interval: 'weekly' | 'monthly';
   period: '3m' | '6m' | '12m';
   series: TrendPoint[];
-}
-
-export interface DomainEntry {
-  domain: string;
-  scanCount: number;
-  latestGrade: string | null;
-  latestScanAt: string | null;
-}
-
-export interface DomainsData {
-  limit: number;
-  domains: DomainEntry[];
 }

@@ -106,10 +106,6 @@ const nextConfig = {
       './assets/fonts/og/*',
       './public/images/daniel-joffe-profile.webp',
     ],
-    '/audit/r/[id]/opengraph-image': [
-      './assets/fonts/og/*',
-      './public/images/daniel-joffe-profile.webp',
-    ],
   },
 
   // Image optimization

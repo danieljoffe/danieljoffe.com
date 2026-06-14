@@ -94,6 +94,5 @@ initBotId({
   protect: [
     { path: '/api/email/contact', method: 'POST' },
     { path: '/api/leads/capture', method: 'POST' },
-    { path: '/api/audit/scan', method: 'POST' },
   ],
 });
