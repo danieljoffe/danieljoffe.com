@@ -30,6 +30,9 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
+      - name: Format check (Prettier)
+        run: pnpm format:check
+
       - name: Lint, typecheck, test, build affected
         run: pnpm nx affected -t lint typecheck test build --nxBail
         env:
