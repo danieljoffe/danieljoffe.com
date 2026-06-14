@@ -34,7 +34,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   error: semanticBadge('error'),
   info: semanticBadge('info'),
   brand: 'bg-brand-50 text-brand-700',
-  'brand-solid': 'bg-brand-600 text-white',
+  'brand-solid': 'bg-brand-600 text-on-brand',
 };
 
 const sizeStyles: Record<ComponentSize, string> = {

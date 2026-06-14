@@ -50,21 +50,21 @@ That meant the tool could not be a marketing veneer over PageSpeed Insights. It 
 
 Three pieces cooperate through Supabase. The browser only ever talks to Next.js; the scan service only ever talks to Postgres.
 
-```
-┌─────────────────┐  POST /api/audit/scan   ┌──────────────────────┐
-│ Browser         │────────────────────────▶│ Next.js (Vercel)     │
-│  /audit form    │  poll /api/audit/status │  validate + rate-    │
-│  /audit/r/[id]  │◀────────────────────────│  limit, insert scan  │
-└─────────────────┘                         └──────┬───────────────┘
-                                       x-api-key   │      │ service-role
-                                                   ▼      ▼
-                                  ┌────────────────────┐ ┌──────────────┐
-                                  │ FastAPI (Railway)  │ │ Supabase     │
-                                  │  queue → browser   │ │  scans       │
-                                  │  pool → Lighthouse │─▶│  scan_issues │
-                                  │  + axe → grade     │ │  leads       │
-                                  └────────────────────┘ └──────────────┘
-```
+<Mermaid
+  alt="The browser posts to and polls a Next.js route on Vercel. Next.js validates and rate-limits, inserts a scan row in Supabase Postgres with the service-role key, and fires the FastAPI scan service on Railway with an x-api-key header. FastAPI runs Lighthouse and axe through a browser pool and writes scores, issues, and a grade back to the same Supabase tables (scans, scan_issues, leads). The browser never reaches Postgres directly."
+  chart={`flowchart LR
+  Browser["Browser<br/>/audit form<br/>/audit/r/[id]"]
+  Next["Next.js (Vercel)<br/>validate + rate-limit<br/>insert scan"]
+  FastAPI["FastAPI (Railway)<br/>queue, browser pool<br/>Lighthouse + axe, grade"]
+  DB[("Supabase<br/>scans, scan_issues, leads")]
+
+Browser -->|"POST /api/audit/scan"| Next
+Next -.->|"poll /api/audit/status"| Browser
+Next -->|"x-api-key"| FastAPI
+Next -->|"service-role"| DB
+FastAPI -->|"service-role"| DB
+`}
+/>
 
 The Next.js route validates the URL, checks the rate limit, inserts a `scans` row with status `pending`, and fires the scan service inside `after()` so the response returns immediately. The FastAPI service answers `202 Accepted`, runs the scan from an internal queue, and writes scores, Core Web Vitals, parsed issues, and a computed grade back to the same row. The results page polls a status endpoint until the row flips to `completed` or `failed`.
 

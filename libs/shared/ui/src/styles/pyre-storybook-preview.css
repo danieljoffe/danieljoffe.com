@@ -38,6 +38,7 @@
   --color-text-tertiary: oklch(0.6 0.02 90);
   --color-text-inverse: oklch(0.1 0.01 270);
   --color-text-brand: oklch(0.78 0.22 127);
+  --color-on-brand: oklch(0.15 0.02 127);
 
   --color-success: oklch(0.72 0.2 145);
   --color-success-light: oklch(0.25 0.05 145);

@@ -2,7 +2,7 @@ import type { MDXComponents } from 'mdx/types';
 import type { ComponentPropsWithoutRef } from 'react';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { Alert } from '@danieljoffe/shared-ui/Alert';
-import { InteractiveDemo, MetricsDashboard } from '@/components/kit';
+import { InteractiveDemo, Mermaid, MetricsDashboard } from '@/components/kit';
 
 function slugify(text: string): string {
   return text
@@ -128,6 +128,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     Alert,
     InteractiveDemo,
+    Mermaid,
     MetricsDashboard,
     ...components,
   };

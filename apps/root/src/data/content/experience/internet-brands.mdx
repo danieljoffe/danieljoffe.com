@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Internet Brands',
   date: '2018-03-01',
   excerpt:
-    'Built a React component library adopted by 80% of healthcare apps and led a small team through HIPAA compliance at Internet Brands.',
+    'Architected the shared React infrastructure adopted by 80% of healthcare apps and led a small team through HIPAA compliance at Internet Brands.',
   author: 'Daniel Joffe',
   category: 'Career Experience',
   tags: ['React', 'Redux', 'Component Library', 'Styled Components', 'GraphQL'],
@@ -35,21 +35,23 @@ The team included 4 junior frontend developers, 6 senior backend engineers, and 
 
 ## The Challenge
 
-React components were being duplicated across applications with inconsistent implementations. Each app reinvented the wheel, buttons, inputs, and modals, all slightly different. There was no shared design language, and onboarding new developers meant explaining the same patterns over and over.
+The vertical had no shared frontend infrastructure. React components were duplicated across applications with inconsistent implementations: each app reinvented the wheel, buttons, inputs, and modals, all slightly different. There was no shared design language, no contribution path, and onboarding new developers meant explaining the same patterns over and over. The real problem wasn't any single component; it was the absence of a system that let the whole vertical move without re-solving the same problems.
 
 Meanwhile, the business needed features shipped fast, and I was now responsible for both delivery and team development.
 
 ## The Solution
 
-### React Component Library
+### Shared Component Library and Contribution Pipeline
 
-I built a centralized UI component library to unify patterns across the vertical:
+I architected a centralized UI component library as shared infrastructure for the vertical, with a contribution workflow and tooling so other teams could extend it without my involvement:
 
 - **Dumb components first**, stateless, reusable primitives (Button, Input, Select, Modal, etc.)
 - **Smart wrappers**, stateful versions when needed for specific use cases
 - **Full documentation**, every component documented with usage examples
-- **Contribution workflow**, established patterns so others could add components
+- **Contribution workflow**, established patterns and CI so others could add components safely
 - **Training program**, taught 7 developers how to use and contribute to the library
+
+This made the library a self-sustaining system rather than a folder I owned: adoption spread to 80% of Health vertical applications because contributing was easier than duplicating.
 
 ### Shipping Under Pressure
 

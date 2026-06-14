@@ -1,4 +1,5 @@
 export { InteractiveDemo } from './InteractiveDemo';
+export { Mermaid } from './Mermaid';
 export { MetricsDashboard } from './MetricsDashboard';
 export { PostCard } from './PostCard';
 export { CompanyLogo } from './CompanyLogo';
@@ -6,7 +7,6 @@ export { ListPagination } from './ListPagination';
 export { Pagination } from './Pagination';
 export { PostPagination } from './PostPagination';
 export { ScrollToTop } from './ScrollToTop';
-export { Step } from './Step';
 export { TableOfContents } from './TableOfContents';
 export { TagChipStrip } from './TagChipStrip';
 export type { TagChip } from './TagChipStrip';

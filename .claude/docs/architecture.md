@@ -2,11 +2,10 @@
 
 ## Monorepo Structure
 
-- **apps/root**: Portfolio site, blog, and audit tool (Next.js 16, App Router)
+- **apps/root**: Portfolio site and blog (Next.js 16, App Router)
 - **apps/root-e2e**: Playwright E2E tests for `apps/root`
-- **apps/audit-api**: FastAPI service for Lighthouse/axe audits
 - **libs/shared/ui**: Shared React component library (@danieljoffe/shared-ui)
-- **libs/shared/audit**: Shared audit types and utilities
+- **libs/shared/audit**: Shared audit types and Supabase database types (consumed by leads/email infra and the admin dashboard)
 
 ## Key Technologies
 

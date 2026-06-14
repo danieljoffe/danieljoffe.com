@@ -1,8 +1,0 @@
-[project]
-name = "danieljoffe-com"
-version = "0.0.0"
-description = "Workspace root — not a publishable package"
-requires-python = ">=3.11"
-
-[tool.uv.workspace]
-members = ["apps/audit-api"]

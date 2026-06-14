@@ -109,7 +109,7 @@ export function Pagination({
               FOCUS_RING_OFFSET,
               pageButtonSizeStyles[size],
               page === currentPage
-                ? 'bg-brand-600 text-white font-medium'
+                ? 'bg-brand-600 text-on-brand font-medium'
                 : 'text-text-secondary hover:bg-surface-tertiary'
             )}
           >
