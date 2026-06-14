@@ -65,7 +65,7 @@ export default function Footer() {
                 rel='noopener noreferrer'
                 aria-label={label}
                 title={label.replace(/^(Send |Visit |Download )/, '')}
-                className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
+                className={`inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}
               >
                 <Icon className='h-4 w-4' />
               </a>

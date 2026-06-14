@@ -95,9 +95,12 @@ export const formSchema = z.object({
     .pipe(
       z
         .string()
-        .regex(VALIDATION_PATTERNS.NAME, 'Name contains invalid characters')
+        // Length checks first so an empty/short field reports a length
+        // message instead of the regex's "invalid characters" (the regex
+        // requires ≥1 char, so it fired first on blank input).
         .min(NAME_MIN_LENGTH, minLengthMessage('Name', NAME_MIN_LENGTH))
         .max(NAME_MAX_LENGTH, maxLengthMessage('Name', NAME_MAX_LENGTH))
+        .regex(VALIDATION_PATTERNS.NAME, 'Name contains invalid characters')
     ),
   /** Email address with format and deliverability validation */
   email: z
