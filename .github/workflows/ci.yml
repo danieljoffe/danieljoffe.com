@@ -8,7 +8,7 @@ on:
     branches-ignore:
       - main # PRs to main are handled by ci-preview.yml
     # ready_for_review re-triggers CI when a draft is marked ready, so the
-    # draft-gated jobs (fast, ci-python) run before merge.
+    # draft-gated jobs (fast) run before merge.
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
@@ -32,8 +32,6 @@ jobs:
     timeout-minutes: 5
     outputs:
       docs-only: ${{ steps.classify.outputs.docs-only }}
-      python-changed: ${{ steps.classify.outputs.python-changed }}
-      audit-api-changed: ${{ steps.classify.outputs.audit-api-changed }}
       e2e-changed: ${{ steps.classify.outputs.e2e-changed }}
       lighthouse-changed: ${{ steps.classify.outputs.lighthouse-changed }}
       storybook-changed: ${{ steps.classify.outputs.storybook-changed }}
@@ -63,7 +61,6 @@ jobs:
           fi
 
           DOCS_ONLY=true
-          AUDIT_API=false
           E2E=false
           LH=false
           SB=false
@@ -81,14 +78,6 @@ jobs:
               *) DOCS_ONLY=false ;;
             esac
             case "$file" in
-              apps/audit-api/*) AUDIT_API=true ;;
-            esac
-            case "$file" in
-              pyproject.toml|uv.lock|.python-version)
-                AUDIT_API=true
-                ;;
-            esac
-            case "$file" in
               apps/root/*|apps/root-e2e/*|libs/*) E2E=true ;;
             esac
             case "$file" in
@@ -99,18 +88,11 @@ jobs:
             esac
           done <<< "$CHANGED"
 
-          PYTHON_CHANGED=false
-          if [ "$AUDIT_API" = "true" ]; then
-            PYTHON_CHANGED=true
-          fi
-
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
-          echo "python-changed=$PYTHON_CHANGED" >> "$GITHUB_OUTPUT"
-          echo "audit-api-changed=$AUDIT_API" >> "$GITHUB_OUTPUT"
           echo "e2e-changed=$E2E" >> "$GITHUB_OUTPUT"
           echo "lighthouse-changed=$LH" >> "$GITHUB_OUTPUT"
           echo "storybook-changed=$SB" >> "$GITHUB_OUTPUT"
-          echo "Flags: docs-only=$DOCS_ONLY audit-api=$AUDIT_API e2e=$E2E lighthouse=$LH storybook=$SB"
+          echo "Flags: docs-only=$DOCS_ONLY e2e=$E2E lighthouse=$LH storybook=$SB"
 
   fast:
     needs: preflight
@@ -133,41 +115,9 @@ jobs:
       storybook-changed: ${{ needs.preflight.outputs.storybook-changed }}
     secrets: inherit
 
-  ci-python:
-    needs: preflight
-    if: ${{ needs.preflight.outputs.docs-only != 'true' && needs.preflight.outputs.python-changed == 'true' && !inputs.update-snapshots && github.event.pull_request.draft != true }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-
-      - name: Install Python dependencies
-        run: uv sync --frozen
-
-      - name: audit-api — lint, typecheck, test
-        if: needs.preflight.outputs.audit-api-changed == 'true'
-        working-directory: apps/audit-api
-        run: |
-          uv run --package audit-api ruff check .
-          uv run --package audit-api mypy app/
-          uv run --package audit-api pytest -v
-
   ci-status:
     if: always()
-    needs: [preflight, fast, full, ci-python]
+    needs: [preflight, fast, full]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -176,16 +126,10 @@ jobs:
           echo "preflight: ${{ needs.preflight.result }}"
           echo "fast: ${{ needs.fast.result }}"
           echo "full: ${{ needs.full.result }}"
-          echo "ci-python: ${{ needs.ci-python.result }}"
 
           # fast is required when it runs (non-docs PRs and pushes)
           if [ "${{ needs.fast.result }}" = "failure" ] || [ "${{ needs.fast.result }}" = "cancelled" ]; then
             echo "CI fast failed"
-            exit 1
-          fi
-
-          if [ "${{ needs.ci-python.result }}" = "failure" ] || [ "${{ needs.ci-python.result }}" = "cancelled" ]; then
-            echo "CI Python failed"
             exit 1
           fi
 

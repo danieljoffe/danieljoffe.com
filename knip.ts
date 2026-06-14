@@ -1,10 +1,6 @@
 import type { KnipConfig } from 'knip';
 
 const config: KnipConfig = {
-  ignoreBinaries: [
-    // Python package manager used in project.json targets
-    'uv',
-  ],
   workspaces: {
     // -----------------------------------------------------------------
     // Root workspace (scripts, configs)
