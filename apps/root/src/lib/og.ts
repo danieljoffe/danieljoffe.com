@@ -52,7 +52,16 @@ export async function getOgFonts() {
 export async function getProfileImageBase64(): Promise<string> {
   if (!_profilePromise) _profilePromise = loadProfileImage();
   const buffer = await _profilePromise;
-  return `data:image/png;base64,${buffer.toString('base64')}`;
+  // The source asset is WebP, but Satori/resvg (used by next/og) only supports
+  // PNG/JPEG/GIF — so we must convert before encoding, otherwise the <img>
+  // silently fails to render and only the empty avatar ring shows.
+  // sharp is a Next.js transitive dep with no direct type declarations here.
+
+  const sharp = require('sharp') as (input: Buffer) => {
+    png: () => { toBuffer: () => Promise<Buffer> };
+  };
+  const png = await sharp(buffer).png().toBuffer();
+  return `data:image/png;base64,${png.toString('base64')}`;
 }
 
 /**
