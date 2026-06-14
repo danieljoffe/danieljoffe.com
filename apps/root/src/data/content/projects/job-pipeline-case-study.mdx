@@ -70,12 +70,12 @@ The pipeline has three services cooperating through Supabase:
   Proxy["Next.js proxy routes<br/>/api/jobs/* (verifies admin cookie)"]
   Dashboard["/tools/admin/jobs<br/>dashboard"]
 
-  ATS --> FastAPI
-  Cron -->|"x-api-key"| FastAPI
-  FastAPI -->|"writes"| DB
-  Proxy -->|"JWT bearer"| FastAPI
-  DB -->|"reads"| Proxy
-  Proxy --> Dashboard
+ATS --> FastAPI
+Cron -->|"x-api-key"| FastAPI
+FastAPI -->|"writes"| DB
+Proxy -->|"JWT bearer"| FastAPI
+DB -->|"reads"| Proxy
+Proxy --> Dashboard
 `}
 />
 

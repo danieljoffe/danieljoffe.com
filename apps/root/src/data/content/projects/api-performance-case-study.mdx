@@ -61,11 +61,11 @@ Lighthouse and axe-core now run in parallel via `asyncio.gather` with `return_ex
   Axe["axe-core<br/>(Playwright page)"]
   Gather["asyncio.gather → grade"]
 
-  Queue --> Pool
-  Pool --> LH
-  Pool --> Axe
-  LH --> Gather
-  Axe --> Gather
+Queue --> Pool
+Pool --> LH
+Pool --> Axe
+LH --> Gather
+Axe --> Gather
 `}
 />
 

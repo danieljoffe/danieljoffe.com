@@ -58,11 +58,11 @@ Three pieces cooperate through Supabase. The browser only ever talks to Next.js;
   FastAPI["FastAPI (Railway)<br/>queue, browser pool<br/>Lighthouse + axe, grade"]
   DB[("Supabase<br/>scans, scan_issues, leads")]
 
-  Browser -->|"POST /api/audit/scan"| Next
-  Next -.->|"poll /api/audit/status"| Browser
-  Next -->|"x-api-key"| FastAPI
-  Next -->|"service-role"| DB
-  FastAPI -->|"service-role"| DB
+Browser -->|"POST /api/audit/scan"| Next
+Next -.->|"poll /api/audit/status"| Browser
+Next -->|"x-api-key"| FastAPI
+Next -->|"service-role"| DB
+FastAPI -->|"service-role"| DB
 `}
 />
 
