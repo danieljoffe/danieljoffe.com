@@ -107,7 +107,7 @@ export function ListPagination({
             aria-current='page'
             className={cn(
               pageItemBase,
-              'bg-brand-600 text-white font-medium inline-flex items-center justify-center'
+              'bg-brand-600 text-on-brand font-medium inline-flex items-center justify-center'
             )}
           >
             {page}

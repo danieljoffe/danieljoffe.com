@@ -59,6 +59,10 @@
   --color-text-tertiary: #6b6b6b;
   --color-text-inverse: #ffffff;
   --color-text-brand: oklch(0.5 0.19 250);
+  /* Foreground color that reads on top of brand-500/600/700 backgrounds.
+     Indigo's brand-500 (oklch 0.54 0.19 250) is dark enough that white
+     reads cleanly. Themes with luminous brands override this token. */
+  --color-on-brand: oklch(1 0 0);
 
   /* Semantic Colors - Status */
   --color-success: #10b981;

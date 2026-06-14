@@ -89,10 +89,10 @@
   --color-text-tertiary: oklch(0.55 0.02 270);
   --color-text-inverse: oklch(0.98 0.005 270);
   --color-text-brand: oklch(0.4 0.22 127);
-  /* Brand-500 chartreuse over a near-black foreground clears WCAG
-     AA in both modes (foreground is the dark token; surface is
-     bright). */
-  --color-text-on-brand: oklch(0.15 0.02 127);
+  /* Foreground paired with brand-500/600/700 backgrounds. Brand-500
+     chartreuse over a near-black foreground clears WCAG AA in both modes
+     (foreground is the dark token; surface is bright). */
+  --color-on-brand: oklch(0.15 0.02 127);
 
   /* Semantic Colors — Status (light mode: mid-lightness hues
      readable on near-white surfaces) */
