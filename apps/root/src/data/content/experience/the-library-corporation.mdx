@@ -2,7 +2,7 @@ export const metadata = {
   title: 'The Library Corporation',
   date: '2019-09-01',
   excerpt:
-    'Built specialized cataloging features and remediated 200+ accessibility violations for 5,500+ libraries at The Library Corporation.',
+    'Architected a rules-driven serials cataloging system and remediated 200+ accessibility violations for 5,500+ libraries at The Library Corporation.',
   author: 'Daniel Joffe',
   category: 'Career Experience',
   tags: ['AngularJS', 'Java', 'HTML5', 'CSS', 'Accessibility', 'WCAG'],
@@ -52,11 +52,11 @@ I got through it by treating the domain as a learning problem. I leaned on the Q
 
 The flagship project of my time at TLC. Serials, magazines, journals, and periodicals had been the most requested feature for years, only to be repeatedly postponed.
 
-I worked with a designer, PM, backend developer, and a cataloger SME to build it from scratch:
+I worked with a designer, PM, backend developer, and a cataloger SME to architect it from scratch. The hard part was never the UI; it was modeling how serials actually behave and turning that into a system catalogers could drive:
 
-- **Core features:** Pagination, search, filtering, navigation between serial records
-- **Generation algorithms:** The complex part. Serials follow schedules: daily, weekly, monthly, quarterly, biannual, with issue types such as Volume, Part, Issue, Index, and Section. Some have predictable patterns; others are irregular. I built algorithms to generate, clone, and duplicate issues based on configurable rules.
-- **Flexible date/sequence handling:** Issues could have dates and sequences that were synchronized or independent, depending on the publication type.
+- **Generation algorithms (the core of the system):** Serials follow schedules: daily, weekly, monthly, quarterly, biannual, with issue types such as Volume, Part, Issue, Index, and Section. Some have predictable patterns; others are irregular. I designed and built the algorithms that generate, clone, and duplicate issues based on configurable rules, working across the AngularJS frontend and the Java/Spring backend to do it.
+- **Flexible date/sequence handling:** Issues could have dates and sequences that were synchronized or independent, depending on the publication type, so the model had to treat date and sequence as independently configurable axes rather than a single counter.
+- **Surface features:** Pagination, search, filtering, and navigation between serial records sat on top of that engine.
 
 This project more than doubled the application's feature count. I presented progress at company all-hands meetings throughout the year, which helped me rebuild confidence after those rough first weeks.
 
