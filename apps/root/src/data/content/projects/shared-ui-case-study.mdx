@@ -122,7 +122,22 @@ Tailwind 4's `@theme` block + `oklch()` color space means the design system toke
 
 ## What ships across products
 
-The portfolio renders almost every heading, section wrapper, and button through `shared-ui`. WyrdFold's dashboards consume the same Card, Alert, and Dropdown. The published Storybook is the third consumer — it imports from the same source via the `@danieljoffe.com/source` condition, so development hot-reloads stay instant inside the monorepo while the published artifact stays stable for outside consumers.
+The portfolio renders almost every heading, section wrapper, and button through `shared-ui`. WyrdFold's dashboards consume the same Card, Alert, and Dropdown. The published Storybook is the third consumer; it imports from the same source via the `@danieljoffe.com/source` condition, so development hot-reloads stay instant inside the monorepo while the published artifact stays stable for outside consumers.
+
+<Mermaid
+  alt="A single shared-ui source feeds two paths. Inside the monorepo, the portfolio and Storybook resolve to per-component TypeScript sources through the @danieljoffe.com/source export condition, so hot reload stays instant. The published npm package is built by Vite with Rollup preserveModules into per-component ES modules plus matching .d.ts files; the preserve-use-directives plugin re-emits stripped 'use client' directives onto the output chunks. WyrdFold, a separate repo, installs that published artifact."
+  chart={`flowchart TB
+  Source["shared-ui source<br/>src/lib/*.tsx"]
+  Cond["@danieljoffe.com/source<br/>export condition"]
+  Portfolio["Portfolio + Storybook<br/>(in-workspace, source imports)"]
+  Vite["Vite build<br/>Rollup preserveModules<br/>+ preserve-use-directives"]
+  Pkg["Published npm package<br/>per-component ESM + .d.ts"]
+  Wyrdfold["WyrdFold<br/>(separate repo, installs package)"]
+
+  Source --> Cond --> Portfolio
+  Source --> Vite --> Pkg --> Wyrdfold
+`}
+/>
 
 ## What this case study leaves out
 

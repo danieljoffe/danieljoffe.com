@@ -1,4 +1,5 @@
 export { InteractiveDemo } from './InteractiveDemo';
+export { Mermaid } from './Mermaid';
 export { MetricsDashboard } from './MetricsDashboard';
 export { PostCard } from './PostCard';
 export { CompanyLogo } from './CompanyLogo';

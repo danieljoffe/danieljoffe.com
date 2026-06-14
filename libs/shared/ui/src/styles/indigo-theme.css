@@ -59,9 +59,10 @@
   --color-text-tertiary: #6b6b6b;
   --color-text-inverse: #ffffff;
   --color-text-brand: oklch(0.5 0.19 250);
-  /* Tokenized text color paired with brand-500 bg. Indigo's brand-500
-     (oklch 0.54 0.19 250) is dark enough that white reads cleanly. */
-  --color-text-on-brand: #ffffff;
+  /* Foreground color paired with brand-500/600/700 backgrounds. Indigo's
+     brand-500 (oklch 0.54 0.19 250) is dark enough that white reads cleanly.
+     Luminous palettes (e.g. Pyre's chartreuse) override this to near-black. */
+  --color-on-brand: oklch(1 0 0);
 
   /* Semantic Colors - Status */
   --color-success: #10b981;

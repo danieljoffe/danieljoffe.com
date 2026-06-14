@@ -60,7 +60,7 @@ const baseButtonStyles =
 
 const variantButtonStyles: Record<string, string> = {
   primary:
-    'hover:shadow-lg/12.5 bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700',
+    'hover:shadow-lg/12.5 bg-brand-500 text-on-brand hover:bg-brand-600 active:bg-brand-700',
   secondary:
     'hover:shadow-lg/12.5 bg-surface-elevated text-text-primary hover:bg-surface border border-border',
   ghost:
