@@ -51,7 +51,7 @@ describe('Badge', () => {
     render(<Badge variant='brand-solid'>Solid</Badge>);
     const badge = screen.getByText('Solid');
     expect(badge).toHaveClass('bg-brand-600');
-    expect(badge).toHaveClass('text-white');
+    expect(badge).toHaveClass('text-on-brand');
   });
 
   it('applies custom className', () => {
