@@ -27,8 +27,7 @@ export interface HeadingProps extends Omit<
 
 const variantStyles: Record<HeadingVariant, string> = {
   hero: 'text-4xl sm:text-5xl font-bold text-text-primary tracking-tight leading-[1.1]',
-  detail:
-    'text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary tracking-tight',
+  detail: 'text-3xl sm:text-4xl font-bold text-text-primary tracking-tight',
   subtitle: 'text-2xl font-bold text-text-primary tracking-tight',
   section: 'text-2xl sm:text-3xl font-bold text-text-primary tracking-tight',
   cardTitle: 'text-sm font-semibold text-text-primary',
