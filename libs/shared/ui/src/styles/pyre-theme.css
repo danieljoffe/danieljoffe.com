@@ -153,9 +153,9 @@
   --color-success: oklch(0.72 0.2 145);
   --color-success-light: oklch(0.25 0.05 145);
   --color-warning: oklch(0.78 0.18 70);
-  --color-warning-light: oklch(0.28 0.05 70);
+  --color-warning-light: oklch(0.32 0.08 70);
   --color-error: oklch(0.65 0.22 25);
-  --color-error-light: oklch(0.25 0.05 25);
+  --color-error-light: oklch(0.24 0.1 25);
   --color-info: oklch(0.7 0.2 230);
   --color-info-light: oklch(0.25 0.05 230);
 }
