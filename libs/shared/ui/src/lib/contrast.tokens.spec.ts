@@ -4,6 +4,9 @@
 // a declared matrix of (foreground, background, min-ratio) pairs in both light
 // and dark modes. Runs under the shared-ui jest suite (`nx test`).
 //
+// Lives in src/lib (not src/styles) because src/styles ships raw in the
+// published package — a spec there would leak into the package manifest.
+//
 // Regrade on demand: pnpm nx test @danieljoffe/shared-ui -- contrast.tokens
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -59,7 +62,7 @@ function contrast(fg: string, bg: string): number {
 // --- parse a theme file's @theme (light) + .dark token maps ---
 type Tokens = Record<string, string>;
 function parseTheme(file: string): { light: Tokens; dark: Tokens } {
-  const css = readFileSync(join(__dirname, file), 'utf8');
+  const css = readFileSync(join(__dirname, '..', 'styles', file), 'utf8');
   const block = (selector: string): Tokens => {
     // match the real selector followed by `{`, never the word inside a comment
     const re = new RegExp(
