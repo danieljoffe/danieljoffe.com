@@ -1,0 +1,144 @@
+export const metadata = {
+  title: 'Unit-testing design tokens for WCAG contrast',
+  date: '2026-06-15',
+  excerpt:
+    'Manual review flagged three contrast issues. A jest test that parses the theme CSS found nine, including a 2.54:1 that had shipped.',
+  author: 'Daniel Joffe',
+  category: 'Testing',
+  tags: [
+    'Accessibility',
+    'WCAG',
+    'Design Systems',
+    'Jest',
+    'CI/CD',
+    'TypeScript',
+  ],
+  slug: 'design-token-contrast-test',
+  type: 'blog',
+  cover: {
+    alt: 'A grid of color swatches, each labeled with its WCAG contrast ratio, several flagged as failing',
+    src: '/images/covers/design-token-contrast-test.webp',
+  },
+};
+
+## The problem
+
+My shared-ui library ships two themes, Pyre and indigo, each with a light and a dark mode. That is four palettes built on oklch design tokens. A status color, a border, a tinted alert surface: every one is a foreground that has to stay legible against some background.
+
+I was checking contrast the way most people do. Open Storybook, look at it, trust my eyes. I even had a set of reviewer personas critique the deployed catalog. Between the eyeballing and the personas I caught about three problems. The trouble is that none of it scales: any tweak to any of the four palettes can quietly drop a pair below the WCAG threshold, and nobody notices until someone can't read an error message. A review you run by hand is a review you forget to run.
+
+## The approach
+
+WCAG contrast is not a matter of taste. It is arithmetic: two colors go in, a ratio comes out, and you compare it against 4.5:1 for normal text or 3:1 for borders and other non-text UI. The tokens already live in CSS as the source of truth, so the check needs neither a browser nor a screenshot. It can be a unit test: parse the shipped theme CSS, convert each color to sRGB, compute the ratio for every pair that actually renders together, and assert it clears the bar.
+
+Two choices make this hold up. First, read the real CSS rather than a copied list of values, so the test can never drift from what ships. Second, declare the pairs explicitly. That list of foreground, background, and minimum ratio is not boilerplate; it is the accessibility contract written down. Token text on its tint, body text on the surface, the focus ring against the page: each pair is a promise the theme makes.
+
+## The implementation
+
+The whole thing is one jest spec. Color math first: oklch or hex, to sRGB, to relative luminance, to a ratio.
+
+```ts
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+function toSrgb(value: string): number[] {
+  const v = value.trim();
+  if (v.startsWith('#')) {
+    const n = v.slice(1);
+    return [0, 2, 4].map(i => parseInt(n.slice(i, i + 2), 16) / 255);
+  }
+  const [L, C, h] = v.slice(6, v.indexOf(')')).trim().split(/\s+/).map(Number);
+  const hr = (h * Math.PI) / 180;
+  const a = C * Math.cos(hr);
+  const b = C * Math.sin(hr);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  return [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ].map(x => {
+    const c = Math.max(0, Math.min(1, x));
+    return c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+  });
+}
+
+function ratio(fg: string, bg: string): number {
+  const lum = (srgb: number[]) =>
+    srgb
+      .map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+      .reduce((acc, c, i) => acc + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const [hi, lo] = [lum(toSrgb(fg)), lum(toSrgb(bg))].sort((a, b) => b - a);
+  return (hi + 0.05) / (lo + 0.05);
+}
+```
+
+Then the contract: parse each theme's tokens per mode, declare the pairs, and make one assertion. The dark map inherits the light tokens and overrides what flips, which mirrors how the CSS itself cascades.
+
+```ts
+function parse(file: string) {
+  const css = readFileSync(join(__dirname, '..', 'styles', file), 'utf8');
+  const block = (selector: string) => {
+    const m = new RegExp(selector.replace(/[.*]/g, '\\$&') + '\\s*\\{').exec(
+      css
+    )!;
+    const body = css.slice(m.index, css.indexOf('}', m.index));
+    return Object.fromEntries(
+      [...body.matchAll(/(--color-[\w-]+):\s*([^;]+);/g)].map(d => [
+        d[1],
+        d[2].trim(),
+      ])
+    );
+  };
+  const light = block('@theme');
+  return { light, dark: { ...light, ...block('.dark') } };
+}
+
+const TEXT = 4.5;
+const UI = 3;
+const PAIRS: [string, string, number][] = [
+  ['--color-text-primary', '--color-surface', TEXT],
+  ['--color-success', '--color-success-light', TEXT],
+  ['--color-warning', '--color-warning-light', TEXT],
+  ['--color-error', '--color-error-light', TEXT],
+  ['--color-info', '--color-info-light', TEXT],
+  ['--color-border-strong', '--color-surface', UI],
+  // ...one row per promise the theme makes
+];
+
+const THEMES = {
+  pyre: parse('pyre-theme.css'),
+  indigo: parse('indigo-theme.css'),
+};
+
+it('every token pair meets its WCAG contrast threshold', () => {
+  const failures: string[] = [];
+  for (const [name, modes] of Object.entries(THEMES)) {
+    for (const mode of ['light', 'dark'] as const) {
+      for (const [fg, bg, min] of PAIRS) {
+        const tok = modes[mode];
+        const r = ratio(tok[fg], tok[bg]);
+        if (r < min) {
+          failures.push(
+            `${name}/${mode} ${fg} on ${bg}: ${r.toFixed(2)} (need ${min})`
+          );
+        }
+      }
+    }
+  }
+  expect(failures).toEqual([]);
+});
+```
+
+It reads the CSS off disk, so it runs in node in the fast CI lane in milliseconds. No browser, no flake.
+
+## The result
+
+Two themes times two modes, the real matrix is 56 pairs. The test found nine failures my eyes and the personas had missed. The worst was indigo's success green at 2.54:1 on white, less than half the required ratio, and it had been shipping. Dark-mode info was a blue too dark to read on a near-black surface.
+
+I fixed each one least-perturbation: the smallest shift that clears 4.5:1, with separate light and dark values where one token could not satisfy both. Warning and error darken on white but stay bright on near-black. The palettes still look like themselves. The difference is that a token change that breaks contrast now turns CI red instead of turning a user away.
+
+## The takeaway
+
+Contrast is a property you can assert, not a chore you have to remember. Write the pairs down once and the test guards them forever; that list of promises is the part worth maintaining. It complements axe on rendered output rather than replacing it: a test on tokens cannot catch a color set by a one-off `className`, but it catches the systemic drift that page-level checks sample right past.

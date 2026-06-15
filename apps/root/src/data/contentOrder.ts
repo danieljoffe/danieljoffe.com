@@ -113,4 +113,5 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.poolingPlaywrightBrowsersFastapi, // 2026-04-21
   blogSlugs.claudeCodeThreeTiersCi, // 2026-04-21
   blogSlugs.operatingLlmPipelinesInProduction, // 2026-06-13
+  blogSlugs.designTokenContrastTest, // 2026-06-15
 ];
