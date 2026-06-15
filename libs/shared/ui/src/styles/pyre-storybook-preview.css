@@ -31,6 +31,7 @@
 
   --color-border: oklch(0.22 0.01 270);
   --color-border-secondary: oklch(0.3 0.01 270);
+  --color-border-strong: oklch(0.48 0.01 270);
   --color-border-focus: oklch(0.67 0.28 127);
 
   --color-text-primary: oklch(0.96 0.01 90);

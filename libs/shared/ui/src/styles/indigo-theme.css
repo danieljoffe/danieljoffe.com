@@ -51,6 +51,7 @@
   /* Semantic Colors - Border */
   --color-border: #e5e7eb;
   --color-border-secondary: #d1d5db;
+  --color-border-strong: #8b909c;
   --color-border-focus: oklch(0.54 0.19 250);
 
   /* Semantic Colors - Text */
@@ -85,6 +86,7 @@
 
   --color-border: #2a2d3a;
   --color-border-secondary: #3a3d4a;
+  --color-border-strong: #5e6270;
 
   --color-text-primary: #f1f5f9;
   --color-text-secondary: #94a3b8;
