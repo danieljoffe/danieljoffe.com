@@ -83,4 +83,4 @@ export const FOCUS_RING_PEER = [
 
 /** Hover treatment for icon-only dismiss/close buttons (Alert, Modal, Toast). */
 export const DISMISS_BUTTON =
-  'text-text-tertiary hover:text-text-primary transition-colors';
+  'rounded-md text-text-tertiary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface';
