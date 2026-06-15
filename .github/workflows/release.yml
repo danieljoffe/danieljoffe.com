@@ -1,0 +1,61 @@
+# Automated release for publishable packages (currently @danieljoffe/shared-ui)
+# via Changesets.
+#
+# Flow:
+#   1. Feature PRs include a changeset file (`pnpm changeset`) declaring the
+#      semver intent + changelog line. These flow develop -> main as usual.
+#   2. On push to main, changesets/action opens/updates a bot-maintained
+#      "Version Packages" PR that bumps versions + writes CHANGELOGs. The bot
+#      pushes to its own `changeset-release/main` branch — never to main
+#      directly — so it does not fight branch protection.
+#   3. Merging that PR re-triggers this workflow; with no pending changesets
+#      it runs `pnpm release` (build + `changeset publish`), publishing to npm
+#      and creating git tags + GitHub Releases.
+#
+# Required repo secrets:
+#   NPM_TOKEN     — npm automation token with publish rights, no 2FA-on-publish.
+#   RELEASE_TOKEN — (recommended) a PAT or GitHub App token. The default
+#                   GITHUB_TOKEN cannot trigger the required status checks on
+#                   the bot's Version Packages PR, leaving it unmergeable.
+#                   Falls back to GITHUB_TOKEN if unset (publish still works;
+#                   the Version PR just won't run CI until a real token is set).
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write # create tags + GitHub Releases, push the version branch
+  pull-requests: write # open/update the Version Packages PR
+  id-token: write # npm provenance
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: npm-publish
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Create Release PR or publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm release
+          title: 'chore(release): version packages'
+          commit: 'chore(release): version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
