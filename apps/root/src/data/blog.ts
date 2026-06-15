@@ -47,6 +47,7 @@ export const blogSlugs = {
   poolingPlaywrightBrowsersFastapi: 'pooling-playwright-browsers-fastapi',
   claudeCodeThreeTiersCi: 'claude-code-three-tiers-ci',
   operatingLlmPipelinesInProduction: 'operating-llm-pipelines-in-production',
+  designTokenContrastTest: 'design-token-contrast-test',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
