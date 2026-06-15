@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StructuredData } from './StructuredData';
 
 const meta = {
-  title: 'Utility/StructuredData',
+  title: 'Utils/StructuredData',
   component: StructuredData,
   tags: ['autodocs'],
   parameters: {
