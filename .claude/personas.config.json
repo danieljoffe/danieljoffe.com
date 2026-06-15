@@ -1,0 +1,58 @@
+{
+  "stack": [
+    "nextjs",
+    "react",
+    "typescript",
+    "nx",
+    "python",
+    "fastapi",
+    "supabase-postgres"
+  ],
+  "paths": {
+    "code": [
+      "apps/audit-api/app",
+      "apps/audit-scan-service",
+      "apps/root/src",
+      "libs/shared/*/src"
+    ],
+    "migrations": ["supabase/migrations"],
+    "tests": [
+      "apps/**/tests",
+      "apps/root/src/**/*.spec.ts",
+      "apps/root/src/**/*.spec.tsx"
+    ]
+  },
+  "outOfScope": [
+    "**/node_modules/**",
+    "**/.venv/**",
+    "**/__pycache__/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/*.lock"
+  ],
+  "web": {
+    "url": "http://localhost:3000",
+    "viewport": "1440x900",
+    "targetType": "site",
+    "audience": "in-house technical recruiter sourcing a senior full-stack engineer",
+    "goal": "decide in ~45 seconds whether this candidate is worth a screen",
+    "context": "the site positions a senior full-stack + AI engineer who is open to full-time roles"
+  },
+  "harness": {
+    "claudeMd": ["CLAUDE.md"],
+    "configRoot": ".claude",
+    "alwaysLoaded": [
+      "CLAUDE.md",
+      ".claude/docs/architecture.md",
+      ".claude/docs/coding-conventions.md",
+      ".claude/docs/decisions.md"
+    ],
+    "outOfScope": [
+      ".claude/sessions/**",
+      ".claude/scratch/**",
+      ".claude/worktrees/**",
+      ".claude/agent-memory/**",
+      ".claude/scheduled_tasks.lock"
+    ]
+  }
+}
