@@ -256,6 +256,50 @@ import { Meta } from '@storybook/addon-docs/blocks';
   accessibility-first, and opinionated about the details that matter.
 </p>
 
+<h2 className='intro-section-heading'>Getting started</h2>
+
+<h3 className='intro-sub-heading'>Install</h3>
+
+```bash
+npm install @danieljoffe/shared-ui
+```
+
+Peer dependencies (install if you don't already have them):
+
+```bash
+npm install react react-dom tailwindcss lucide-react
+```
+
+<h3 className='intro-sub-heading'>Set up the theme</h3>
+
+Import a theme stylesheet once at your Tailwind CSS 4 entry point. Every token
+below is then available as both a CSS variable and a Tailwind utility:
+
+```css
+@import 'tailwindcss';
+@import '@danieljoffe/shared-ui/styles/pyre-theme.css';
+```
+
+<h3 className='intro-sub-heading'>Render a component</h3>
+
+Wrap your app in `ThemeProvider` (it manages the light/dark `.dark` class), then
+use any component:
+
+```tsx
+import { ThemeProvider, Button } from '@danieljoffe/shared-ui';
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <Button variant='primary'>Get started</Button>
+    </ThemeProvider>
+  );
+}
+```
+
+Prefer deep imports for optimal tree-shaking —
+`import { Button } from '@danieljoffe/shared-ui/Button'`.
+
 <h2 className='intro-section-heading'>Colors — Brand</h2>
 
 <div className='swatch-grid'>

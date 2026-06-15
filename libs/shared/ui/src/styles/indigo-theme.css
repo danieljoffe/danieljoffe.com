@@ -42,22 +42,23 @@
   --color-brand-950: oklch(0.22 0.08 250);
 
   /* Semantic Colors - Surface */
-  --color-surface: #ffffff;
-  --color-surface-secondary: #f9fafb;
-  --color-surface-tertiary: #f3f4f6;
-  --color-surface-elevated: #ffffff;
+  --color-surface: oklch(1 0 0);
+  --color-surface-secondary: oklch(0.9846 0.0017 247.84);
+  --color-surface-tertiary: oklch(0.967 0.0029 264.54);
+  --color-surface-elevated: oklch(1 0 0);
   --color-surface-overlay: rgba(0, 0, 0, 0.5);
 
   /* Semantic Colors - Border */
-  --color-border: #e5e7eb;
-  --color-border-secondary: #d1d5db;
+  --color-border: oklch(0.9276 0.0058 264.53);
+  --color-border-secondary: oklch(0.8717 0.0093 258.34);
+  --color-border-strong: oklch(0.6531 0.0187 267.71);
   --color-border-focus: oklch(0.54 0.19 250);
 
   /* Semantic Colors - Text */
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-tertiary: #6b6b6b;
-  --color-text-inverse: #ffffff;
+  --color-text-primary: oklch(0.2101 0.0318 264.66);
+  --color-text-secondary: oklch(0.551 0.0234 264.36);
+  --color-text-tertiary: oklch(0.5278 0 0);
+  --color-text-inverse: oklch(1 0 0);
   --color-text-brand: oklch(0.5 0.19 250);
   /* Foreground color paired with brand-500/600/700 backgrounds. Indigo's
      brand-500 (oklch 0.54 0.19 250) is dark enough that white reads cleanly.
@@ -65,37 +66,46 @@
   --color-on-brand: oklch(1 0 0);
 
   /* Semantic Colors - Status */
-  --color-success: #10b981;
-  --color-success-light: #ecfdf5;
-  --color-warning: #f59e0b;
-  --color-warning-light: #fffbeb;
-  --color-error: #ef4444;
-  --color-error-light: #fef2f2;
-  --color-info: #2563eb;
-  --color-info-light: #eff6ff;
+  --color-success: oklch(0.5367 0.1283 156.79);
+  --color-success-light: oklch(0.9793 0.0207 166.11);
+  --color-warning: oklch(0.5553 0.1455 49);
+  --color-warning-light: oklch(0.9869 0.0214 95.28);
+  --color-error: oklch(0.5446 0.2013 27.18);
+  --color-error-light: oklch(0.9705 0.0129 17.38);
+  --color-info: oklch(0.5461 0.2152 262.88);
+  --color-info-light: oklch(0.9705 0.0142 254.6);
 }
 
 /* Dark mode overrides */
 .dark {
-  --color-surface: #0f1117;
-  --color-surface-secondary: #161922;
-  --color-surface-tertiary: #1e2130;
-  --color-surface-elevated: #1a1d2b;
+  --color-surface: oklch(0.1783 0.0128 270.6);
+  --color-surface-secondary: oklch(0.2145 0.0184 270.42);
+  --color-surface-tertiary: oklch(0.2519 0.0288 275.4);
+  --color-surface-elevated: oklch(0.2345 0.0274 274.76);
   --color-surface-overlay: rgba(0, 0, 0, 0.7);
 
-  --color-border: #2a2d3a;
-  --color-border-secondary: #3a3d4a;
+  --color-border: oklch(0.2998 0.0239 274.71);
+  --color-border-secondary: oklch(0.3624 0.0228 274.99);
+  --color-border-strong: oklch(0.4977 0.0228 272.91);
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-tertiary: #8494a7;
-  --color-text-inverse: #0f1117;
+  --color-text-primary: oklch(0.9683 0.0069 247.9);
+  --color-text-secondary: oklch(0.7107 0.0351 256.79);
+  --color-text-tertiary: oklch(0.6603 0.0338 252.79);
+  --color-text-inverse: oklch(0.1783 0.0128 270.6);
   --color-text-brand: oklch(0.65 0.19 250);
 
-  --color-success-light: #052e16;
-  --color-warning-light: #451a03;
-  --color-error-light: #450a0a;
-  --color-info-light: #172554;
+  /* Status base colors kept bright for the dark surface. Light mode
+     darkens warning/error for AA on white; dark mode needs the
+     opposite (bright on near-black), so override them back here. */
+  --color-warning: oklch(0.7686 0.1647 70.08);
+  --color-error: oklch(0.6368 0.2078 25.33);
+  --color-success: oklch(0.6959 0.1491 162.48);
+  --color-info: oklch(0.66 0.1697 264.92);
+
+  --color-success-light: oklch(0.2664 0.0628 152.93);
+  --color-warning-light: oklch(0.2791 0.0742 45.64);
+  --color-error-light: oklch(0.2311 0.0778 25.75);
+  --color-info-light: oklch(0.2823 0.0874 267.94);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);

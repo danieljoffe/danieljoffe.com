@@ -48,6 +48,11 @@ const meta = {
       description: 'Button content',
       control: 'text',
     },
+    className: {
+      description:
+        'Additional CSS classes merged onto the button (escape hatch for one-off styling)',
+      control: 'text',
+    },
   },
 } satisfies Meta<typeof Button>;
 

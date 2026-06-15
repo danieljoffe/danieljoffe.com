@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FormFieldError } from './FormFieldError';
 
 const meta = {
-  title: 'Form/FormFieldError',
+  title: 'Forms/FormFieldError',
   component: FormFieldError,
   tags: ['autodocs'],
 } satisfies Meta<typeof FormFieldError>;
