@@ -70,7 +70,7 @@
   --color-success-light: #ecfdf5;
   --color-warning: #b45309;
   --color-warning-light: #fffbeb;
-  --color-error: #ef4444;
+  --color-error: #cb2424;
   --color-error-light: #fef2f2;
   --color-info: #2563eb;
   --color-info-light: #eff6ff;
@@ -93,6 +93,12 @@
   --color-text-tertiary: #8494a7;
   --color-text-inverse: #0f1117;
   --color-text-brand: oklch(0.65 0.19 250);
+
+  /* Status base colors kept bright for the dark surface. Light mode
+     darkens warning/error for AA on white; dark mode needs the
+     opposite (bright on near-black), so override them back here. */
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
 
   --color-success-light: #052e16;
   --color-warning-light: #451a03;
