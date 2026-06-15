@@ -20,7 +20,7 @@ export const REQUIRED_MARK = 'text-error ml-1';
  * Does NOT include padding — that varies per component (Input has size prop).
  */
 export const BASE_FIELD = [
-  'w-full bg-surface border border-border rounded-md',
+  'w-full bg-surface border border-border-strong rounded-md',
   'text-text-primary',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
   'focus-visible:border-transparent transition-all',
