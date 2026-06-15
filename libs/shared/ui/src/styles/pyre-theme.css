@@ -98,7 +98,7 @@
      readable on near-white surfaces) */
   --color-success: oklch(0.52 0.18 145);
   --color-success-light: oklch(0.94 0.05 145);
-  --color-warning: oklch(0.6 0.16 70);
+  --color-warning: oklch(0.54 0.16 70);
   --color-warning-light: oklch(0.95 0.05 70);
   --color-error: oklch(0.55 0.22 25);
   --color-error-light: oklch(0.94 0.05 25);
