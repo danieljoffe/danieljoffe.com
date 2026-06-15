@@ -89,6 +89,21 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Publishing version: ${VERSION}"
 
+      - name: Verify version is not already published
+        if: ${{ !inputs.dry-run }}
+        run: |
+          NAME=$(node -p "require('./libs/shared/ui/package.json').name")
+          VERSION="${{ steps.version.outputs.version }}"
+          # `npm view pkg@version version` prints the version if it exists and
+          # an empty string otherwise (exit 0 either way, since the package
+          # exists), so test for non-empty output rather than exit code.
+          PUBLISHED=$(npm view "${NAME}@${VERSION}" version 2>/dev/null || true)
+          if [ -n "${PUBLISHED}" ]; then
+            echo "::error::${NAME}@${VERSION} is already published to npm. npm forbids overwriting a version — re-run with a bumped 'version' input (e.g. 0.2.1) instead of '${VERSION}'."
+            exit 1
+          fi
+          echo "${NAME}@${VERSION} is not yet on npm — OK to publish."
+
       - name: Build
         run: pnpm nx build @danieljoffe/shared-ui
 
