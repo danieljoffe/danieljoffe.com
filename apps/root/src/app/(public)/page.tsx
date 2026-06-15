@@ -15,6 +15,7 @@ import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import { Section } from '@danieljoffe/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
+import { IconText } from '@danieljoffe/shared-ui/IconText';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import { homeMetadata } from '@/data/metadata/home';
 import { offerings } from '@/data/offerings';
@@ -53,14 +54,12 @@ export default function Index() {
         {/* <GridBg /> */}
         <div className='relative space-y-6'>
           <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
-            <span className='flex items-center gap-1.5'>
-              <MapPin className='h-3.5 w-3.5' />
+            <IconText icon={<MapPin className='h-3.5 w-3.5' />}>
               Los Angeles, CA
-            </span>
-            <span className='flex items-center gap-1.5'>
-              <Briefcase className='h-3.5 w-3.5' />
+            </IconText>
+            <IconText icon={<Briefcase className='h-3.5 w-3.5' />}>
               10+ years
-            </span>
+            </IconText>
           </div>
 
           <Heading variant='hero'>{FULL_NAME}</Heading>
@@ -96,7 +95,7 @@ export default function Index() {
           <div className='flex items-start justify-between gap-4'>
             <div className='space-y-2'>
               <div className='flex flex-wrap items-center gap-2'>
-                <Heading variant='cardTitle' as='p'>
+                <Heading variant='cardTitle' as='span'>
                   WyrdFold
                 </Heading>
                 <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-300'>
@@ -143,16 +142,18 @@ export default function Index() {
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
           {offerings.achievements.map((achievement, i) => (
-            <div key={i} className={cn(cardBase, 'p-4 flex items-start gap-3')}>
-              <achievement.Icon className='h-5 w-5 text-brand-500 shrink-0 mt-0.5' />
-              <div>
-                <Heading variant='cardTitle' as='p'>
+            <div key={i} className={cn(cardBase, 'p-4')}>
+              <IconText
+                icon={<achievement.Icon className='h-5 w-5 text-brand-500' />}
+                className='gap-x-3'
+              >
+                <Heading variant='cardTitle' as='span'>
                   {achievement.metric}
                 </Heading>
-                <Text variant='body' className='mt-1'>
-                  {achievement.text}
-                </Text>
-              </div>
+              </IconText>
+              <Text variant='body' className='mt-1'>
+                {achievement.text}
+              </Text>
             </div>
           ))}
         </div>
@@ -236,12 +237,13 @@ export default function Index() {
               )}
             >
               <div className='space-y-2'>
-                <div className='flex items-center gap-2'>
-                  <methodology.Icon className='h-4 w-4 text-brand-500' />
-                  <Heading variant='cardTitle' as='p'>
+                <IconText
+                  icon={<methodology.Icon className='h-4 w-4 text-brand-500' />}
+                >
+                  <Heading variant='cardTitle' as='span'>
                     {methodology.title}
                   </Heading>
-                </div>
+                </IconText>
                 <Text variant='body'>{methodology.text}</Text>
               </div>
             </div>
