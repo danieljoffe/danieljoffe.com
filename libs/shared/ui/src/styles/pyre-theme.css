@@ -97,13 +97,13 @@
 
   /* Semantic Colors — Status (light mode: mid-lightness hues
      readable on near-white surfaces) */
-  --color-success: oklch(0.52 0.18 145);
+  --color-success: oklch(0.5 0.18 145);
   --color-success-light: oklch(0.94 0.05 145);
-  --color-warning: oklch(0.54 0.16 70);
+  --color-warning: oklch(0.53 0.16 70);
   --color-warning-light: oklch(0.95 0.05 70);
-  --color-error: oklch(0.55 0.22 25);
+  --color-error: oklch(0.53 0.22 25);
   --color-error-light: oklch(0.94 0.05 25);
-  --color-info: oklch(0.52 0.2 230);
+  --color-info: oklch(0.49 0.2 230);
   --color-info-light: oklch(0.94 0.05 230);
 }
 
