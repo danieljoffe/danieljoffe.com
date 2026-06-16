@@ -56,7 +56,6 @@ Loaded contextually via `.claude/rules/` (path-scoped — only when editing matc
 - **Content posts & style guide** — MDX and content data files
 - **Testing & CI** — spec, test, story, and config files
 - **Sentry integration** — Sentry and instrumentation files
-- **Python / FastAPI** — audit-api files
 
 ## Skills & Agents
 

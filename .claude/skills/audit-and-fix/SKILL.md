@@ -7,7 +7,7 @@ user-invocable: true
 
 # Audit and Fix
 
-Orchestrates the post-audit workflow that recurs across `/security-review`, `/nx-audit`, `/nextjs-audit`, `/python-audit`, `/coverage-gaps --quality`, and `/supabase:supabase-postgres-best-practices`. Each of those skills produces findings; the boilerplate that follows is identical:
+Orchestrates the post-audit workflow that recurs across `/security-review`, `/nx-audit`, `/nextjs-audit`, `/coverage-gaps --quality`, and `/supabase:supabase-postgres-best-practices`. Each of those skills produces findings; the boilerplate that follows is identical:
 
 1. Branch off the canonical deploy target (`develop`)
 2. Apply HIGH-severity fixes (and obvious mechanical MEDIUMs) inline via Edit
@@ -19,7 +19,7 @@ This skill replaces ~6 manual commands per audit cycle.
 
 ## Arguments
 
-- `/audit-and-fix <audit-name>` — run the audit and complete the loop. Audit name is the slash-command minus the leading `/` (e.g. `security-review`, `nx-audit`, `nextjs-audit`, `python-audit`, `coverage-gaps`, `supabase:supabase-postgres-best-practices`).
+- `/audit-and-fix <audit-name>` — run the audit and complete the loop. Audit name is the slash-command minus the leading `/` (e.g. `security-review`, `nx-audit`, `nextjs-audit`, `coverage-gaps`, `supabase:supabase-postgres-best-practices`).
 - `/audit-and-fix <audit-name> --base <branch>` — override the PR base (default: `develop`).
 - `/audit-and-fix <audit-name> --branch <name>` — override the auto-derived branch name (default: `chore/<audit-name-slug>`).
 - `/audit-and-fix <audit-name> --no-pr` — stop after push, don't open the PR.
