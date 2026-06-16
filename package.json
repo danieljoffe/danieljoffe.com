@@ -31,6 +31,7 @@
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:gen-types": "supabase gen types typescript --linked > libs/shared/audit/src/lib/database.types.ts",
+    "release": "nx build @danieljoffe/shared-ui && changeset publish",
     "build-storybook:ui": "nx build-storybook @danieljoffe/shared-ui",
     "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui --only-changed",
     "prebuild": "tsx scripts/generate-search-index.ts",
@@ -80,6 +81,7 @@
   "devDependencies": {
     "@ai-sdk/google": "^3.0.82",
     "@axe-core/playwright": "4.11.1",
+    "@changesets/cli": "^2.31.0",
     "@chromatic-com/storybook": "^5.1.2",
     "@eslint/compat": "^2.0.5",
     "@eslint/js": "10.0.1",
