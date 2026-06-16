@@ -25,14 +25,16 @@ portfolio pages on localhost). It targets the published library, not localhost.
 - `/sharedui-smoketest --url <url>` — override the target (default
   `https://ui.danieljoffe.com`; use a Vercel preview URL to critique a branch).
 
-**Persona keys → files** (in `.claude/personas/`):
+**Persona sources** — the two bespoke lenses live locally in `.claude/personas/`;
+the two generic lenses are owned by the `personas` plugin (single source of truth),
+spawned as their own agent types:
 
-| Key        | Persona                  | File                          | Lens                                            |
-| ---------- | ------------------------ | ----------------------------- | ----------------------------------------------- |
-| `systems`  | Design Systems Engineer  | `design-systems-engineer.md`  | API consistency, composability, system cohesion |
-| `consumer` | Consuming App Engineer   | `consuming-app-engineer.md`   | adoption / developer experience                 |
-| `a11y`     | Accessibility Specialist | `accessibility-specialist.md` | WCAG 2.1 AA, keyboard, focus, ARIA              |
-| `design`   | Design-Minded Reviewer   | `design-reviewer.md`          | visual craft, tokens, motion, cohesion          |
+| Key        | Persona                  | Source                                              | Lens                                            |
+| ---------- | ------------------------ | --------------------------------------------------- | ----------------------------------------------- |
+| `systems`  | Design Systems Engineer  | local `.claude/personas/design-systems-engineer.md` | API consistency, composability, system cohesion |
+| `consumer` | Consuming App Engineer   | local `.claude/personas/consuming-app-engineer.md`  | adoption / developer experience                 |
+| `a11y`     | Accessibility Specialist | agent `personas:accessibility-specialist`           | WCAG 2.1 AA, keyboard, focus, ARIA              |
+| `design`   | Design-Minded Reviewer   | agent `personas:design-reviewer`                    | visual craft, tokens, motion, cohesion          |
 
 ## Instructions
 
@@ -46,19 +48,30 @@ portfolio pages on localhost). It targets the published library, not localhost.
 
 ### Step 2: Load persona definitions
 
-For each selected persona, `Read` its file from `.claude/personas/`. Extract the
-**"Persona (paste into the subagent prompt)"** and **"How to run (subagent
-instructions)"** sections verbatim — those two sections are the agent's brief.
+- **Local personas** (`systems`, `consumer`): `Read` the file from
+  `.claude/personas/` and extract the **"Persona (paste into the subagent
+  prompt)"** and **"How to run (subagent instructions)"** sections verbatim —
+  those two sections are the agent's brief.
+- **Plugin personas** (`a11y`, `design`): nothing to read — they're spawned as
+  their own agent types (`personas:accessibility-specialist`,
+  `personas:design-reviewer`), which already carry their brief and Return
+  contract. The `personas` plugin is the single source of truth for these two.
 
 ### Step 3: Spawn persona subagents SEQUENTIALLY (one at a time)
 
-Launch one Agent per selected persona, `subagent_type: general-purpose` (they
-need Playwright MCP browser access). Each agent prompt MUST contain:
+Launch one Agent per selected persona. **Local personas** (`systems`,
+`consumer`) use `subagent_type: general-purpose` (they need Playwright MCP
+browser access); **plugin personas** (`a11y`, `design`) use their own
+`subagent_type` (`personas:accessibility-specialist`, `personas:design-reviewer`).
+Each agent prompt MUST contain:
 
-1. The persona's two extracted sections, verbatim.
-2. `TARGET_URL` to use (override the localhost references — this skill always
+1. For local personas: the two extracted sections, verbatim. For plugin
+   personas: the target context — `url` = `TARGET_URL`, `viewport` `1440x900`,
+   `targetType: storybook` (they're parameterized by this; no brief needed).
+2. `TARGET_URL` to use (override any localhost references — this skill always
    targets the deployed/preview Storybook).
-3. The persona's own **Return** contract (each file specifies one — keep it).
+3. For local personas: the persona's own **Return** contract (each file
+   specifies one — keep it). Plugin personas already define their own.
 4. A reminder: DISCOVERY ONLY, no edits/commits; synthesize to prose; **no raw
    screenshots, snapshots, or console dumps in the returned report** (keep the
    browser noise in the subagent's context, not the main one).
@@ -129,7 +142,9 @@ citations intact when merging.
   share one Playwright MCP browser; see Step 3).
 - Persona findings are signal, not truth — re-ground each against current source
   before filing or fixing (see Step 3).
-- Persona briefs are sourced from `.claude/personas/*.md` — if those files
-  change, this skill picks up the change automatically. Do not inline/duplicate
-  persona text into this skill.
-- Skip any persona key not present in the personas directory and note it.
+- Persona briefs come from two places: the bespoke `systems`/`consumer` lenses
+  live in `.claude/personas/*.md` (edit there); the generic `a11y`/`design`
+  lenses are owned by the `personas` plugin — update those in the claude-personas
+  repo, not here. Do not inline/duplicate persona text into this skill.
+- Skip any persona whose source is unavailable (local file missing, or plugin
+  agent not installed) and note it.
