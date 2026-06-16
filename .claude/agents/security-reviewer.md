@@ -24,9 +24,8 @@ Review changed files for exploitable security vulnerabilities. Report only HIGH-
 
 - **Supabase**: browser client must only use anon key, never service role key
 - **Resend**: email sending must validate recipient addresses and sanitize content
-- **Audit API** (`apps/audit-api`): Lighthouse/axe scans must not allow arbitrary URL scanning without auth; SSRF defenses on `/run-scan` URL input
 - **Bot detection** (`botid`): must not be the sole security layer
-- **Public attack surface**: contact form, lead capture, and audit scan endpoints
+- **Public attack surface**: contact form and lead capture endpoints
 - **CSP**: defined in `next.config.mjs` — changes must be reviewed for weakening
 
 ## Review Protocol

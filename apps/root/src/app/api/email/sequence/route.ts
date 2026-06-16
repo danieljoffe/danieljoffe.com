@@ -193,7 +193,7 @@ async function buildEmail(
   services: SequenceServices
 ): Promise<ReactElement | null> {
   const unsubscribeUrl = buildUnsubscribeUrl(lead.id, services.siteUrl);
-  const reportUrl = `${services.siteUrl}/audit/r/${lead.scan_id}`;
+  const reportUrl = `${services.siteUrl}/projects/audit-tool-case-study`;
 
   const { data: scan } = await services.supabase
     .from('scans')
