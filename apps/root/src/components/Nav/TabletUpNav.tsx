@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, User, BookOpen } from 'lucide-react';
+import { ChevronDown, User, BookOpen, Sparkles, Blocks } from 'lucide-react';
 import Image from 'next/image';
-import { Dropdown } from '@danieljoffe/shared-ui/Dropdown';
+import { Dropdown, type DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import {
   PRIMARY_NAV_LINKS,
   MORE_NAV_LINKS,
+  EXTERNAL_NAV_LINKS,
   HOME_LINK,
 } from '@/utils/constants';
 import SearchTrigger from './SearchTrigger';
@@ -20,17 +21,32 @@ const moreIcons: Record<string, React.ReactNode> = {
   '/blog': <BookOpen className='h-4 w-4' />,
 };
 
+const externalIcons: Record<string, React.ReactNode> = {
+  Wyrdfold: <Sparkles className='h-4 w-4' />,
+  'Shared UI': <Blocks className='h-4 w-4' />,
+};
+
 export default function TabletUpNav({ pathname }: { pathname: string }) {
   const router = useRouter();
 
-  const moreItems = MORE_NAV_LINKS.map(link => ({
-    label: link.label,
-    icon: moreIcons[link.href],
-    onClick: () => {
-      analytics.navClick(link.label);
-      router.push(link.href);
-    },
-  }));
+  const moreItems: DropdownItem[] = [
+    ...MORE_NAV_LINKS.map(link => ({
+      label: link.label,
+      icon: moreIcons[link.href],
+      onClick: () => {
+        analytics.navClick(link.label);
+        router.push(link.href);
+      },
+    })),
+    { label: '', divider: true },
+    ...EXTERNAL_NAV_LINKS.map(link => ({
+      label: link.label,
+      icon: externalIcons[link.label],
+      href: link.href,
+      external: true,
+      onClick: () => analytics.navClick(link.label),
+    })),
+  ];
 
   const isMoreActive = MORE_NAV_LINKS.some(link => pathname === link.href);
 

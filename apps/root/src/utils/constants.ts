@@ -27,6 +27,7 @@ export const GITHUB_PROFILE_URL = `${GITHUB_URL}/danieljoffe`;
 export const RESUME_URL = `${GOOGLE_DOCS_URL}/document/d/1v4IB1-XA_-h-wq5HLgzH8_dFzMbOm-PaqOwom8k5_i4/export?format=pdf&portrait=true`;
 export const CALENDLY_URL = 'https://calendly.com/hello-danieljoffe/30min';
 export const STORYBOOK_URL = 'https://ui.danieljoffe.com';
+export const WYRDFOLD_URL = 'https://wyrdfold.com';
 export const GITHUB_REPO_URL = 'https://github.com/danieljoffe/danieljoffe.com';
 
 // ============================================================================
@@ -131,6 +132,15 @@ export const PRIMARY_NAV_LINKS: NavLink[] = [
 
 /** Secondary nav links — shown in "More" dropdown on desktop, bottom sheet on mobile */
 export const MORE_NAV_LINKS: NavLink[] = [BLOG_LINK];
+
+/**
+ * External destinations shown in the "More" menu, after the internal links.
+ * Kept separate from NAV_LINKS so they never leak into the footer/sitemap.
+ */
+export const EXTERNAL_NAV_LINKS: NavLink[] = [
+  { label: 'Wyrdfold', href: WYRDFOLD_URL, external: true },
+  { label: 'Shared UI', href: STORYBOOK_URL, external: true },
+];
 
 /** All nav links for the footer and anywhere the full set is needed */
 export const NAV_LINKS: NavLink[] = [...PRIMARY_NAV_LINKS, ...MORE_NAV_LINKS];

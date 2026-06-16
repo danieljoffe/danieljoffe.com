@@ -1,5 +1,6 @@
 'use client';
 
+import { ExternalLink } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -15,6 +16,10 @@ export interface DropdownItem {
   label: string;
   icon?: ReactNode;
   onClick?: () => void;
+  /** Render the item as an anchor pointing here instead of a button. */
+  href?: string;
+  /** Open `href` in a new tab and show a trailing external-link affordance. */
+  external?: boolean;
   danger?: boolean;
   divider?: boolean;
   disabled?: boolean;
@@ -37,7 +42,7 @@ export function Dropdown({
   const [activeIndex, setActiveIndex] = useState(-1);
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const itemRefs = useRef<(HTMLButtonElement | HTMLAnchorElement | null)[]>([]);
   const uid = useId();
   const menuId = `dropdown-menu-${uid}`;
   const triggerId = `dropdown-trigger-${uid}`;
@@ -146,10 +151,17 @@ export function Dropdown({
         if (activeIndex >= 0) {
           const item = items[activeIndex];
           if (item && !item.divider && !item.disabled) {
-            item.onClick?.();
-            setOpen(false);
-            setActiveIndex(-1);
-            triggerRef.current?.focus();
+            // Anchors navigate via a synthetic click so Space activates them
+            // too (anchors only respond to Enter natively); the click handler
+            // fires onClick and closes the menu.
+            if (item.href) {
+              itemRefs.current[activeIndex]?.click();
+            } else {
+              item.onClick?.();
+              setOpen(false);
+              setActiveIndex(-1);
+              triggerRef.current?.focus();
+            }
           }
         }
         break;
@@ -190,14 +202,74 @@ export function Dropdown({
             align === 'right' ? 'right-0' : 'left-0'
           )}
         >
-          {items.map((item, i) =>
-            item.divider ? (
-              <div
-                key={i}
-                role='separator'
-                className='my-1 border-t border-border'
-              />
-            ) : (
+          {items.map((item, i) => {
+            if (item.divider) {
+              return (
+                <div
+                  key={i}
+                  role='separator'
+                  className='my-1 border-t border-border'
+                />
+              );
+            }
+
+            const itemClassName = cn(
+              'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left',
+              'transition-colors duration-100 cursor-pointer',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+              'focus-visible:ring-offset-surface',
+              item.disabled && 'opacity-50 cursor-not-allowed',
+              item.danger
+                ? 'text-error hover:bg-error-light'
+                : 'text-text-primary hover:bg-surface-tertiary'
+            );
+
+            const content = (
+              <>
+                {item.icon && (
+                  <span
+                    className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
+                    aria-hidden='true'
+                  >
+                    {item.icon}
+                  </span>
+                )}
+                <span className='flex-1 truncate'>{item.label}</span>
+                {item.external && (
+                  <ExternalLink
+                    className='ml-2 h-3.5 w-3.5 shrink-0 opacity-60'
+                    aria-hidden='true'
+                  />
+                )}
+              </>
+            );
+
+            if (item.href) {
+              return (
+                <a
+                  key={i}
+                  ref={el => {
+                    itemRefs.current[i] = el;
+                  }}
+                  role='menuitem'
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  tabIndex={i === activeIndex ? 0 : -1}
+                  onClick={() => {
+                    item.onClick?.();
+                    setOpen(false);
+                    setActiveIndex(-1);
+                    triggerRef.current?.focus();
+                  }}
+                  className={itemClassName}
+                >
+                  {content}
+                </a>
+              );
+            }
+
+            return (
               <button
                 key={i}
                 ref={el => {
@@ -213,29 +285,12 @@ export function Dropdown({
                   setActiveIndex(-1);
                   triggerRef.current?.focus();
                 }}
-                className={cn(
-                  'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left',
-                  'transition-colors duration-100 cursor-pointer',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-                  'focus-visible:ring-offset-surface',
-                  item.disabled && 'opacity-50 cursor-not-allowed',
-                  item.danger
-                    ? 'text-error hover:bg-error-light'
-                    : 'text-text-primary hover:bg-surface-tertiary'
-                )}
+                className={itemClassName}
               >
-                {item.icon && (
-                  <span
-                    className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
-                    aria-hidden='true'
-                  >
-                    {item.icon}
-                  </span>
-                )}
-                {item.label}
+                {content}
               </button>
-            )
-          )}
+            );
+          })}
         </div>
       )}
     </div>

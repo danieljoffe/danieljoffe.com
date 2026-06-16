@@ -10,6 +10,8 @@ export type WithChildren = {
 export interface NavLink {
   label: string;
   href: `/${string}` | `https://${string}` | string;
+  /** External destination — open in a new tab with an external-link affordance. */
+  external?: boolean;
 }
 
 export interface BreadCrumbsProps {

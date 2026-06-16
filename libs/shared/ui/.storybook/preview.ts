@@ -1,7 +1,23 @@
 import { withThemeByClassName } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/react-vite';
+import { create } from 'storybook/theming/create';
 
 import '../src/styles/preview.scss';
+
+// Dark docs theme so the autodocs source-code blocks render light syntax
+// tokens on a dark surface (the default light docs theme put dark tokens on a
+// dark background, making code snippets unreadable). Values mirror manager.ts.
+const docsTheme = create({
+  base: 'dark',
+  appBg: '#0f1117', // --surface (dark)
+  appContentBg: '#161922', // --surface-secondary (dark)
+  appBorderColor: '#2a2d3a', // --border (dark)
+  textColor: '#f1f5f9', // --text-primary (dark)
+  colorPrimary: '#006fd7', // brand-500
+  colorSecondary: '#006fd7', // brand-500
+  fontBase: 'ui-sans-serif, system-ui, sans-serif',
+  fontCode: 'ui-monospace, monospace',
+});
 
 const preview: Preview = {
   decorators: [
@@ -19,6 +35,7 @@ const preview: Preview = {
     layout: 'fullscreen',
 
     docs: {
+      theme: docsTheme,
       canvas: {
         sourceState: 'shown',
       },
