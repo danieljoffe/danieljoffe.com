@@ -78,6 +78,49 @@ describe('Dropdown', () => {
     expect(screen.getByText('Delete')).toBeInTheDocument();
   });
 
+  it('renders href items as links', () => {
+    render(
+      <Dropdown
+        trigger={<span>Menu</span>}
+        items={[{ label: 'Docs', href: '/docs' }]}
+      />
+    );
+    fireEvent.click(screen.getByText('Menu'));
+    const link = screen.getByRole('menuitem', { name: 'Docs' });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/docs');
+    expect(link).not.toHaveAttribute('target');
+  });
+
+  it('opens external href items in a new tab with safe rel', () => {
+    render(
+      <Dropdown
+        trigger={<span>Menu</span>}
+        items={[
+          { label: 'Wyrdfold', href: 'https://wyrdfold.com', external: true },
+        ]}
+      />
+    );
+    fireEvent.click(screen.getByText('Menu'));
+    const link = screen.getByRole('menuitem', { name: 'Wyrdfold' });
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('fires onClick and closes when an href item is activated with Enter', () => {
+    const onClick = jest.fn();
+    render(
+      <Dropdown
+        trigger={<span>Menu</span>}
+        items={[{ label: 'Docs', href: '/docs', onClick }]}
+      />
+    );
+    fireEvent.click(screen.getByText('Menu'));
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Enter' });
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
   it('renders disabled items', () => {
     render(
       <Dropdown
