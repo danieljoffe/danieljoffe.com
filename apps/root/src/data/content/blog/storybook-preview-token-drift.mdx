@@ -1,0 +1,61 @@
+export const metadata = {
+  title: 'Test the tokens you demo, not just the ones you ship',
+  date: '2026-06-16',
+  excerpt:
+    'A jest test guarded WCAG contrast on my shipped theme. Storybook rendered a second stylesheet it never parsed, and the demo had drifted to 4.53:1.',
+  author: 'Daniel Joffe',
+  category: 'Design Systems',
+  tags: ['Storybook', 'Accessibility', 'WCAG', 'CSS', 'Testing'],
+  slug: 'storybook-preview-token-drift',
+  type: 'blog',
+  cover: {
+    alt: 'Two dark rounded UI badges side by side on a soft neutral surface, the left a clean deep red and the right a muddier maroon gradient',
+    src: '/images/covers/storybook-preview-token-drift.webp',
+  },
+};
+
+## The problem
+
+I already test design-token contrast. A jest spec reads my shipped theme CSS, converts every oklch token to sRGB, and asserts each text-on-tint pair clears 4.5:1. It runs in the fast CI lane in milliseconds, and it stays green.
+
+So when a design review flagged my dark-mode warning and error badges as muddy and sitting close to the floor, the test gave me nothing. `--color-error` on `--color-error-light` measured 4.70:1, passing. The reviewer was looking at the same component and seeing something worse. One of us was reading the wrong number.
+
+The reviewer was right. They were looking at Storybook, and Storybook does not render the stylesheet my test reads.
+
+## The approach
+
+My shared-ui library ships `pyre-theme.css`. Storybook renders its canvas from a second file, `pyre-storybook-preview.css`, copied off the theme so the demo carries the brand. Two files, one source of truth in theory.
+
+In practice they had drifted. The shipped theme's dark error tint was `oklch(0.24 0.1 25)`. The preview's was `oklch(0.25 0.05 25)`: different chroma, different luminance, different contrast. My test parses `pyre-theme.css` and `indigo-theme.css`. It never opens the preview file. So the 4.70:1 it guarded was the shipped value, and the 4.53:1 the reviewer saw, a hair above the floor, lived in a file no test touched.
+
+The test was not wrong. It was vouching for a stylesheet nobody looks at.
+
+## The implementation
+
+The contrast math is the same arithmetic the spec already uses: oklch to sRGB to relative luminance to a ratio. Running it on both files told the real story. Shipped error tint, 4.70:1. Demo error tint, 4.53:1. Two numbers for one component.
+
+I collapsed both files onto a single set of values, tuned to fix the muddiness the review actually flagged. Dropping chroma pulls the brown and maroon cast out of the tint; lowering the error surface's luminance buys contrast margin, because the text is the lighter half of the pair.
+
+```css
+/* pyre-theme.css AND pyre-storybook-preview.css, .dark */
+--color-warning-light: oklch(
+  0.3 0.055 72
+); /* was 0.32 0.08 70 shipped / 0.28 0.05 70 demo */
+--color-error-light: oklch(
+  0.21 0.055 25
+); /* was 0.24 0.1 25 shipped / 0.25 0.05 25 demo */
+```
+
+Error text-on-tint lands at 5.00:1 in both files. Warning reads clean at 6.66:1.
+
+Editing two files by hand is a patch, not a fix; they drift again the next time I touch one. The durable options are to point the contrast test at the preview file too, so the demo lives under the same contract, or to delete the duplicate and let Storybook import the shipped theme directly. The copy exists for branding reasons I can solve other ways. The real move is to stop maintaining a stylesheet I can render but never test.
+
+## The result
+
+- One set of tint values across the shipped theme and the Storybook demo.
+- Dark error contrast from 4.53:1 to 5.00:1, warning de-mudded, both clear of AA.
+- The number CI reports and the color the demo shows finally describe the same component.
+
+## The takeaway
+
+A test guards the files it parses and nothing else. If your showcase renders from a copy, a green check is signing off on a stylesheet no one ever sees. Test the artifact you put on screen, or stop keeping a separate one to put there.

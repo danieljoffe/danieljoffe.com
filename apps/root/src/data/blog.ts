@@ -48,6 +48,7 @@ export const blogSlugs = {
   claudeCodeThreeTiersCi: 'claude-code-three-tiers-ci',
   operatingLlmPipelinesInProduction: 'operating-llm-pipelines-in-production',
   designTokenContrastTest: 'design-token-contrast-test',
+  storybookPreviewTokenDrift: 'storybook-preview-token-drift',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];
