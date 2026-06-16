@@ -6,11 +6,11 @@ disable-model-invocation: true
 
 # Python / FastAPI Audit
 
-Audit the Python FastAPI services (job-api, audit-api) against current documentation and project conventions, producing actionable findings and direct code fixes.
+Audit the Python FastAPI service (audit-api) against current documentation and project conventions, producing actionable findings and direct code fixes.
 
 ## Scope
 
-By default, audit **both** `apps/job-api` and `apps/audit-api`. If the user specifies a single project, audit only that one.
+By default, audit `apps/audit-api`.
 
 ## Token Budget Rules
 

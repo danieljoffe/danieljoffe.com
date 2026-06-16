@@ -9,7 +9,7 @@ user-invocable: true
 
 Orchestrates the post-audit workflow that recurs across `/security-review`, `/nx-audit`, `/nextjs-audit`, `/python-audit`, `/coverage-gaps --quality`, and `/supabase:supabase-postgres-best-practices`. Each of those skills produces findings; the boilerplate that follows is identical:
 
-1. Branch off the canonical deploy target (`wyrdfold` for app/API/db work, `develop` otherwise)
+1. Branch off the canonical deploy target (`develop`)
 2. Apply HIGH-severity fixes (and obvious mechanical MEDIUMs) inline via Edit
 3. Run the affected test/lint/typecheck targets
 4. Commit with a descriptive message that lists the findings
@@ -20,7 +20,7 @@ This skill replaces ~6 manual commands per audit cycle.
 ## Arguments
 
 - `/audit-and-fix <audit-name>` — run the audit and complete the loop. Audit name is the slash-command minus the leading `/` (e.g. `security-review`, `nx-audit`, `nextjs-audit`, `python-audit`, `coverage-gaps`, `supabase:supabase-postgres-best-practices`).
-- `/audit-and-fix <audit-name> --base develop` — override the PR base (default: `wyrdfold` if migrations / `apps/wyrdfold` / `apps/wyrdfold-api` / `audit-api` are touched, else `develop`).
+- `/audit-and-fix <audit-name> --base <branch>` — override the PR base (default: `develop`).
 - `/audit-and-fix <audit-name> --branch <name>` — override the auto-derived branch name (default: `chore/<audit-name-slug>`).
 - `/audit-and-fix <audit-name> --no-pr` — stop after push, don't open the PR.
 - `/audit-and-fix <audit-name> --dry-run` — print the planned actions without writing or pushing.
@@ -32,10 +32,9 @@ This skill replaces ~6 manual commands per audit cycle.
 ```bash
 git fetch origin
 
-# Determine deploy target. Default heuristic: if any of these paths
-# show up in recent activity (or in the audit's expected scope), use
-# `wyrdfold`; otherwise `develop`.
-BASE=${ARG_BASE:-wyrdfold}
+# Deploy target. All work in this repo bases off `develop`
+# (main is production; only develop merges into main).
+BASE=${ARG_BASE:-develop}
 SLUG=$(echo "${AUDIT_NAME}" | tr ':/' '-' | tr -cd 'a-z0-9-')
 BRANCH=${ARG_BRANCH:-chore/${SLUG}}
 ```
@@ -148,7 +147,7 @@ Print:
 
 ```
 /audit-and-fix security-review
-→ branches chore/security-review off wyrdfold
+→ branches chore/security-review off develop
 → runs /security-review
 → applies HIGH fixes
 → opens PR
