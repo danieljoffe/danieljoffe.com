@@ -142,6 +142,9 @@ import OperatingLlmPipelinesInProduction, {
 import DesignTokenContrastTest, {
   metadata as designTokenContrastTestMeta,
 } from './design-token-contrast-test.mdx';
+import StorybookPreviewTokenDrift, {
+  metadata as storybookPreviewTokenDriftMeta,
+} from './storybook-preview-token-drift.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -193,6 +196,7 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'claude-code-three-tiers-ci': ClaudeCodeThreeTiersCi,
   'operating-llm-pipelines-in-production': OperatingLlmPipelinesInProduction,
   'design-token-contrast-test': DesignTokenContrastTest,
+  'storybook-preview-token-drift': StorybookPreviewTokenDrift,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -245,4 +249,5 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
   'operating-llm-pipelines-in-production':
     operatingLlmPipelinesInProductionMeta,
   'design-token-contrast-test': designTokenContrastTestMeta,
+  'storybook-preview-token-drift': storybookPreviewTokenDriftMeta,
 };
