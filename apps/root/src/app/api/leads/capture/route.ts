@@ -136,7 +136,7 @@ export async function POST(request: Request) {
         throw new Error('Missing RESEND_API_KEY environment variable');
       }
 
-      const reportUrl = scan_id ? `${siteUrl}/audit/r/${scan_id}` : siteUrl;
+      const reportUrl = `${siteUrl}/projects/audit-tool-case-study`;
       const unsubscribeUrl = buildUnsubscribeUrl(newLead.id, siteUrl);
       const gradeInfo = scanData?.grade_overall
         ? GRADE_MAP[scanData.grade_overall]

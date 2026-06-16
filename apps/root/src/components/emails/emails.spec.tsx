@@ -62,7 +62,7 @@ describe('FollowUpEmail', () => {
     grade: 'C',
     gradeLabel: 'Needs Work',
     gradeColor: '#FFB46B',
-    reportUrl: 'https://danieljoffe.com/audit/r/123',
+    reportUrl: 'https://danieljoffe.com/projects/audit-tool-case-study',
     calendlyUrl: 'https://calendly.com/danieljoffe',
     unsubscribeUrl: 'https://danieljoffe.com/api/email/unsubscribe?token=abc',
   };
@@ -112,7 +112,7 @@ describe('FullReportEmail', () => {
       },
       { title: 'Slow LCP', severity: 'warning', category: 'performance' },
     ],
-    reportUrl: 'https://danieljoffe.com/audit/r/456',
+    reportUrl: 'https://danieljoffe.com/projects/audit-tool-case-study',
     unsubscribeUrl: 'https://danieljoffe.com/api/email/unsubscribe?token=def',
   };
 
@@ -133,7 +133,9 @@ describe('FullReportEmail', () => {
 
   it('renders CTA to view full report', () => {
     const html = renderToStaticMarkup(FullReportEmail(props));
-    expect(html).toContain('https://danieljoffe.com/audit/r/456');
+    expect(html).toContain(
+      'https://danieljoffe.com/projects/audit-tool-case-study'
+    );
     expect(html).toContain('View Full Report');
   });
 
@@ -172,7 +174,7 @@ describe('QuickWinEmail', () => {
       fix_difficulty: 'easy',
       impact: 'Improves search engine click-through rate.',
     },
-    reportUrl: 'https://danieljoffe.com/audit/r/789',
+    reportUrl: 'https://danieljoffe.com/projects/audit-tool-case-study',
     unsubscribeUrl: 'https://danieljoffe.com/api/email/unsubscribe?token=ghi',
   };
 
@@ -198,7 +200,9 @@ describe('QuickWinEmail', () => {
 
   it('renders CTA to see all issues', () => {
     const html = renderToStaticMarkup(QuickWinEmail(props));
-    expect(html).toContain('https://danieljoffe.com/audit/r/789');
+    expect(html).toContain(
+      'https://danieljoffe.com/projects/audit-tool-case-study'
+    );
     expect(html).toContain('See All Your Issues');
   });
 });

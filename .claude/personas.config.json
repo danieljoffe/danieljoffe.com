@@ -1,20 +1,7 @@
 {
-  "stack": [
-    "nextjs",
-    "react",
-    "typescript",
-    "nx",
-    "python",
-    "fastapi",
-    "supabase-postgres"
-  ],
+  "stack": ["nextjs", "react", "typescript", "nx", "supabase-postgres"],
   "paths": {
-    "code": [
-      "apps/audit-api/app",
-      "apps/audit-scan-service",
-      "apps/root/src",
-      "libs/shared/*/src"
-    ],
+    "code": ["apps/root/src", "libs/shared/*/src"],
     "migrations": ["supabase/migrations"],
     "tests": [
       "apps/**/tests",
