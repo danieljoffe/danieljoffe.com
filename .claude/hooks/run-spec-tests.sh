@@ -41,10 +41,6 @@ case "$FILE_PATH" in
     PROJECT="root"
     TEST_ARGS="-- --testPathPatterns=$SPEC_FILE --no-coverage"
     ;;
-  */apps/wyrdfold/*)
-    PROJECT="wyrdfold"
-    TEST_ARGS="-- --testPathPatterns=$SPEC_FILE --no-coverage"
-    ;;
   *)
     # Default to root for backward compatibility
     PROJECT="root"

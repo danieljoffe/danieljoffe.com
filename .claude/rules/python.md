@@ -1,6 +1,5 @@
 ---
 paths:
-  - 'apps/job-api/**'
   - 'apps/audit-api/**'
   - '**/pyproject.toml'
   - '**/conftest.py'
@@ -32,7 +31,7 @@ paths:
 - File naming: `test_<feature>.py` (e.g., `test_health.py`, `test_gap_tracker.py`)
 - Async tests: `async def test_*()` — pytest-asyncio handles the event loop
 - Mocks: `MagicMock` / `AsyncMock` for HTTP clients and external services
-- Run via: `pnpm nx test job-api` or `pnpm nx test audit-api`
+- Run via: `pnpm nx test audit-api`
 
 ## Project Structure
 

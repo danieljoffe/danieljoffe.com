@@ -103,10 +103,10 @@ library from other angles — run any subset depending on what changed:
 - **[consuming-app-engineer.md](./consuming-app-engineer.md)** — developer
   experience / adoption: install, deep imports, prop ergonomics, "can I ship
   today" rather than internal systematization.
-- **[accessibility-specialist.md](./accessibility-specialist.md)** — deeper than
-  Priya's a11y pass: keyboard-only operation, focus management, ARIA/semantics,
-  WCAG 2.1 AA contrast, cited per success criterion.
-- **[design-reviewer.md](./design-reviewer.md)** — visual craft: spacing rhythm,
+- **`personas:accessibility-specialist`** (plugin agent) — deeper than Priya's
+  a11y pass: keyboard-only operation, focus management, ARIA/semantics, WCAG 2.1
+  AA contrast, cited per success criterion.
+- **`personas:design-reviewer`** (plugin agent) — visual craft: spacing rhythm,
   type scale, motion taste, token aesthetics, and cohesion over API.
 
 All four are orchestrated together by the `/sharedui-smoketest` skill.
