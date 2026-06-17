@@ -41,6 +41,7 @@ const REPO_ROOT = resolve(__dirname, '..');
 const CONTENT_DIRS = [
   resolve(REPO_ROOT, 'apps/root/src/data/content/blog'),
   resolve(REPO_ROOT, 'apps/root/src/data/content/projects'),
+  resolve(REPO_ROOT, 'apps/root/src/data/content/experience'),
 ];
 const COVERS_OUT_DIR = resolve(REPO_ROOT, 'apps/root/public/images/covers');
 const TEMP_DIR = resolve(REPO_ROOT, '.tmp/covers-in');
