@@ -30,7 +30,6 @@ export const STORYBOOK_URL = 'https://ui.danieljoffe.com';
 export const WYRDFOLD_URL = 'https://wyrdfold.com';
 export const NPM_SHARED_UI_URL =
   'https://www.npmjs.com/package/@danieljoffe/shared-ui';
-export const GITHUB_REPO_URL = 'https://github.com/danieljoffe/danieljoffe.com';
 
 // ============================================================================
 // SECURITY & CSP CONFIGURATION
