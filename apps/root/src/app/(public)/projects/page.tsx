@@ -1,22 +1,18 @@
 import { Metadata } from 'next';
-import { FolderOpen, Github, BookOpen, Code } from 'lucide-react';
+import { FolderOpen, Code } from 'lucide-react';
 import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import { Section } from '@danieljoffe/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
 import { StructuredData } from '@danieljoffe/shared-ui/StructuredData';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { Text } from '@danieljoffe/shared-ui/Text';
+import { builtProjects } from '@/data/builtProjects';
 import { getContentByType } from '@/data/contentRegistry';
 import { projectRootMetadata } from '@/data/metadata/project';
 import { projectsRootStructuredData } from '@/data/structuredData/project';
 import { getTopTags, tagToSlug } from '@/lib/tags';
-import {
-  GITHUB_REPO_URL,
-  PROJECTS_TAGS_LINK,
-  STORYBOOK_URL,
-} from '@/utils/constants';
-import { cardBase } from '@/lib/layoutStyles';
-import Button from '@/components/Button';
+import { PROJECTS_TAGS_LINK } from '@/utils/constants';
+import { BuiltProjectCard } from '@/components/kit';
 import { ProjectsGridWithTags } from '@/components/ProjectsGridWithTags';
 
 const projectsList = getContentByType('project')
@@ -51,44 +47,17 @@ export default function Projects() {
       </Section>
 
       {/* ══════════════════════════════════
-          OPEN SOURCE CALLOUT
+          THINGS I'VE BUILT
           ══════════════════════════════════ */}
       <Section padding='none'>
         <SectionLabel
           icon={<Code className='h-3.5 w-3.5' />}
-          label='Open Source'
+          label="Things I've built"
         />
-        <div className={`${cardBase} p-5 space-y-3`}>
-          <Text variant='body'>
-            The source for this site and its design system is public. Read the
-            code on GitHub or browse the components in Storybook.
-          </Text>
-          <div className='flex flex-wrap gap-2'>
-            <Button
-              as='link'
-              href={GITHUB_REPO_URL}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='View source code on GitHub'
-              variant='secondary'
-              size='sm'
-            >
-              <Github className='h-3.5 w-3.5' aria-hidden='true' />
-              View on GitHub
-            </Button>
-            <Button
-              as='link'
-              href={STORYBOOK_URL}
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label='Browse UI component library on Storybook'
-              variant='secondary'
-              size='sm'
-            >
-              <BookOpen className='h-3.5 w-3.5' aria-hidden='true' />
-              Open Storybook
-            </Button>
-          </div>
+        <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+          {builtProjects.map(project => (
+            <BuiltProjectCard key={project.href} project={project} />
+          ))}
         </div>
       </Section>
 
