@@ -2,6 +2,8 @@ export { InteractiveDemo } from './InteractiveDemo';
 export { Mermaid } from './Mermaid';
 export { MetricsDashboard } from './MetricsDashboard';
 export { PostCard } from './PostCard';
+export { BuiltProjectCard } from './BuiltProjectCard';
+export type { BuiltProject } from './BuiltProjectCard';
 export { CompanyLogo } from './CompanyLogo';
 export { ListPagination } from './ListPagination';
 export { Pagination } from './Pagination';

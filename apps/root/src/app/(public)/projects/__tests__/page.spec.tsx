@@ -35,7 +35,8 @@ jest.mock('@/data/structuredData/project', () => ({
 }));
 
 jest.mock('@/utils/constants', () => ({
-  GITHUB_REPO_URL: 'https://github.com/test',
+  WYRDFOLD_URL: 'https://wyrdfold.test',
+  NPM_SHARED_UI_URL: 'https://npm.test/shared-ui',
   STORYBOOK_URL: 'https://storybook.test',
   PROJECTS_TAGS_LINK: { href: '/projects/tags' },
 }));
@@ -77,15 +78,19 @@ describe('Projects page', () => {
     expect(screen.getByTestId('post-card-project-b')).toBeInTheDocument();
   });
 
-  it('renders GitHub and Storybook links', () => {
+  it("renders the Things I've built project cards as external links", () => {
     render(<Projects />);
-    expect(screen.getByRole('link', { name: /github/i })).toHaveAttribute(
+    expect(screen.getByText("Things I've built")).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /wyrdfold/i })).toHaveAttribute(
       'href',
-      'https://github.com/test'
+      'https://wyrdfold.test'
     );
-    expect(screen.getByRole('link', { name: /storybook/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /npm package/i })).toHaveAttribute(
       'href',
-      'https://storybook.test'
+      'https://npm.test/shared-ui'
     );
+    const storybookLink = screen.getByRole('link', { name: /storybook/i });
+    expect(storybookLink).toHaveAttribute('href', 'https://storybook.test');
+    expect(storybookLink).toHaveAttribute('target', '_blank');
   });
 });
