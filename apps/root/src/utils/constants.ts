@@ -27,7 +27,9 @@ export const GITHUB_PROFILE_URL = `${GITHUB_URL}/danieljoffe`;
 export const RESUME_URL = `${GOOGLE_DOCS_URL}/document/d/1v4IB1-XA_-h-wq5HLgzH8_dFzMbOm-PaqOwom8k5_i4/export?format=pdf&portrait=true`;
 export const CALENDLY_URL = 'https://calendly.com/hello-danieljoffe/30min';
 export const STORYBOOK_URL = 'https://ui.danieljoffe.com';
-const WYRDFOLD_URL = 'https://wyrdfold.com';
+export const WYRDFOLD_URL = 'https://wyrdfold.com';
+export const NPM_SHARED_UI_URL =
+  'https://www.npmjs.com/package/@danieljoffe/shared-ui';
 export const GITHUB_REPO_URL = 'https://github.com/danieljoffe/danieljoffe.com';
 
 // ============================================================================
