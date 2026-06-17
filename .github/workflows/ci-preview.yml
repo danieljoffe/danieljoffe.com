@@ -19,15 +19,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check source branch
-        if: github.head_ref != 'develop'
+        if: github.head_ref != 'develop' && github.head_ref != 'changeset-release/main'
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          echo "PRs to main must come from develop, not '${HEAD_REF}'"
+          echo "PRs to main must come from develop or the changesets release branch, not '${HEAD_REF}'"
           exit 1
       - name: Source branch OK
-        if: github.head_ref == 'develop'
-        run: echo "PR is from develop"
+        if: github.head_ref == 'develop' || github.head_ref == 'changeset-release/main'
+        run: echo "PR source branch OK ('${{ github.head_ref }}')"
 
   # Full CI already ran on merge to develop; Vercel build validates compilation.
   preview:
