@@ -27,10 +27,11 @@
     // Set initial dark class (matches preview.ts defaultTheme: 'dark')
     apply();
 
-    // Guard against anything that clears the class during init.
-    // Once the channel listener is active, the observer only acts
-    // as a safety net — both the decorator and the listener set
-    // the same value so there is no conflict.
+    // Guard the INITIAL paint only: if something clears the class before the
+    // decorator's useEffect fires, re-assert it. This runs for a short window
+    // then disconnects (below) so it never fights *runtime* theme changes made
+    // by the components under test — e.g. the ThemeProvider / ThemeToggle demos
+    // toggle the `dark` class themselves and must stay visible.
     var observer = new MutationObserver(function () {
       if (currentTheme === DARK && !html.classList.contains(DARK)) {
         observer.disconnect();
@@ -43,7 +44,15 @@
     });
     observer.observe(html, { attributes: true, attributeFilter: ['class'] });
 
-    // Poll for the Storybook channel (it's created after this script).
+    // The guard is only needed during initial load. After that the decorator
+    // and the toolbar listener own the class, so stop observing — otherwise
+    // runtime theme changes from components get reverted.
+    setTimeout(function () {
+      observer.disconnect();
+    }, 1000);
+
+    // Poll for the Storybook channel (it's created after this script) to keep
+    // MDX docs pages (where decorators don't run) in sync with the toolbar.
     var timer = setInterval(function () {
       var ch = window.__STORYBOOK_ADDONS_CHANNEL__;
       if (!ch) return;
@@ -94,15 +103,13 @@
     border-color: var(--color-border) !important;
   }
 
-  #storybook-docs code {
+  /* Inline code only — leave <pre> code blocks to the dark docs theme's
+     syntax highlighter so its light tokens keep their own dark backdrop. */
+  #storybook-docs :not(pre) > code {
     background: var(--color-surface-secondary) !important;
   }
 
   #storybook-docs pre {
-    background: var(--color-brand-900) !important;
-    border-color: var(--color-border) !important;
-  }
-  .dark #storybook-docs table tbody td {
-    background: var(--color-text-primary) !important;
+    border: 1px solid var(--color-border) !important;
   }
 </style>

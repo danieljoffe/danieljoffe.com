@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
-import { Checkbox } from './Checkbox';
+import { Checkbox, type CheckboxProps } from './Checkbox';
 
 const meta = {
   title: 'Forms/Checkbox',
@@ -20,6 +21,21 @@ const meta = {
       description: 'Disables the checkbox',
       control: 'boolean',
     },
+  },
+  // Drive `checked` from clicks so stories are interactive AND the check icon
+  // shows (it renders off the `checked` prop, not native :checked state).
+  render: function Render(args) {
+    const [, updateArgs] = useArgs<CheckboxProps>();
+    return (
+      <Checkbox
+        {...args}
+        checked={args.checked ?? false}
+        onChange={e => {
+          updateArgs({ checked: e.target.checked });
+          args.onChange?.(e);
+        }}
+      />
+    );
   },
 } satisfies Meta<typeof Checkbox>;
 

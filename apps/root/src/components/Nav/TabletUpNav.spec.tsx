@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import TabletUpNav from './TabletUpNav';
 
@@ -63,6 +63,20 @@ describe('TabletUpNav', () => {
     expect(screen.queryByText('Free Audit')).not.toBeInTheDocument();
     expect(screen.getByTestId('search-trigger')).toBeInTheDocument();
     expect(screen.getByTestId('dark-mode-toggle')).toBeInTheDocument();
+  });
+
+  test('exposes external links in the More dropdown as new-tab anchors', () => {
+    render(<TabletUpNav pathname='/' />);
+    fireEvent.click(screen.getByText('More'));
+
+    const wyrdfold = screen.getByRole('menuitem', { name: /Wyrdfold/i });
+    expect(wyrdfold).toHaveAttribute('href', 'https://wyrdfold.com');
+    expect(wyrdfold).toHaveAttribute('target', '_blank');
+    expect(wyrdfold).toHaveAttribute('rel', 'noopener noreferrer');
+
+    const sharedUi = screen.getByRole('menuitem', { name: /Shared UI/i });
+    expect(sharedUi).toHaveAttribute('href', 'https://ui.danieljoffe.com');
+    expect(sharedUi).toHaveAttribute('target', '_blank');
   });
 
   test('marks current page link with aria-current', () => {

@@ -12,6 +12,9 @@ import {
   Search,
   User,
   BookOpen,
+  Sparkles,
+  Blocks,
+  ExternalLink,
   X,
 } from 'lucide-react';
 import Button from '@/components/Button';
@@ -21,6 +24,7 @@ import {
   HOME_LINK,
   PRIMARY_NAV_LINKS,
   MORE_NAV_LINKS,
+  EXTERNAL_NAV_LINKS,
 } from '@/utils/constants';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import DarkModeToggle from './DarkModeToggle';
@@ -35,6 +39,11 @@ const moreSheetLinks = MORE_NAV_LINKS.map(link => ({
   ...link,
   icon: link.href === '/about' ? User : BookOpen,
 }));
+
+const externalIcons: Record<string, typeof Briefcase> = {
+  Wyrdfold: Sparkles,
+  'Shared UI': Blocks,
+};
 
 export default function MobileNav({ pathname }: { pathname: string }) {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -241,6 +250,30 @@ export default function MobileNav({ pathname }: { pathname: string }) {
                     <Icon className='h-4 w-4' aria-hidden='true' />
                     {link.label}
                   </Button>
+                </li>
+              );
+            })}
+            {EXTERNAL_NAV_LINKS.map(link => {
+              const Icon = externalIcons[link.label] ?? Blocks;
+              return (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    onClick={() => {
+                      analytics.navClick(link.label);
+                      setSheetOpen(false);
+                    }}
+                    className='w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+                  >
+                    <Icon className='h-4 w-4' aria-hidden='true' />
+                    <span className='flex-1'>{link.label}</span>
+                    <ExternalLink
+                      className='h-3.5 w-3.5 shrink-0 opacity-60'
+                      aria-hidden='true'
+                    />
+                  </a>
                 </li>
               );
             })}

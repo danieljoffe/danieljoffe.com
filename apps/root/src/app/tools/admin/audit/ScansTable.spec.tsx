@@ -177,6 +177,9 @@ describe('ScansTable', () => {
     const row = screen.getByText('https://example.com').closest('tr');
     expect(row).toBeInTheDocument();
     fireEvent.click(row as HTMLElement);
-    expect(mockOpen).toHaveBeenCalledWith('/audit/r/scan-1', '_blank');
+    expect(mockOpen).toHaveBeenCalledWith(
+      '/projects/audit-tool-case-study',
+      '_blank'
+    );
   });
 });

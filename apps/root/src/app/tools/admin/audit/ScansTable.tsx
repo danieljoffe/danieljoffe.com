@@ -112,7 +112,9 @@ export default function ScansTable() {
                 <tr
                   key={scan.id}
                   className='border-b border-border/50 hover:bg-surface-elevated cursor-pointer'
-                  onClick={() => window.open(`/audit/r/${scan.id}`, '_blank')}
+                  onClick={() =>
+                    window.open('/projects/audit-tool-case-study', '_blank')
+                  }
                 >
                   <td className='py-3 px-3 whitespace-nowrap'>
                     {formatDate(scan.created_at)}

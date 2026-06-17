@@ -1,7 +1,40 @@
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<link rel="alternate icon" href="./favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
 <style>
+  /* Themed boot background so there's no white flash before the manager
+     mounts its dark theme. */
+  html,
+  body {
+    background: #0f1117; /* --surface (dark) */
+  }
+
   .sidebar-header img[src*='logo'] {
     width: 32px;
     height: 32px;
     object-fit: contain;
   }
 </style>
+
+<script>
+  // Brand the browser tab. Storybook resets document.title on navigation
+  // (e.g. "Component ⋅ Storybook"), so rewrite "Storybook" → the library name
+  // whenever the title node changes.
+  (function () {
+    var BRAND = 'danieljoffe/ui';
+    function brand() {
+      var next =
+        !document.title || document.title === 'Storybook'
+          ? BRAND
+          : document.title.replace(/Storybook/g, BRAND);
+      if (document.title !== next) document.title = next;
+    }
+    brand();
+    var titleEl = document.querySelector('title');
+    if (titleEl) {
+      new MutationObserver(brand).observe(titleEl, { childList: true });
+    }
+    document.addEventListener('DOMContentLoaded', brand);
+  })();
+</script>

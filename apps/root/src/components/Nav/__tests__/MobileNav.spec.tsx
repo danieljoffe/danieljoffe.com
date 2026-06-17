@@ -31,6 +31,10 @@ jest.mock('@/utils/constants', () => ({
     { href: '/experience', label: 'Experience' },
   ],
   MORE_NAV_LINKS: [{ href: '/blog', label: 'Blog' }],
+  EXTERNAL_NAV_LINKS: [
+    { label: 'Wyrdfold', href: 'https://wyrdfold.com', external: true },
+    { label: 'Shared UI', href: 'https://ui.danieljoffe.com', external: true },
+  ],
 }));
 
 jest.mock('../DarkModeToggle', () => {
@@ -86,6 +90,20 @@ describe('MobileNav', () => {
     // Sheet links render as buttons with link labels
     expect(screen.getByText('Blog')).toBeInTheDocument();
     expect(screen.queryByText('Audit')).not.toBeInTheDocument();
+  });
+
+  it('shows external links as new-tab anchors in the more sheet', () => {
+    render(<MobileNav pathname='/' />);
+
+    fireEvent.click(screen.getByRole('button', { name: /open more menu/i }));
+
+    const wyrdfold = screen.getByRole('link', { name: /Wyrdfold/i });
+    expect(wyrdfold).toHaveAttribute('href', 'https://wyrdfold.com');
+    expect(wyrdfold).toHaveAttribute('target', '_blank');
+    expect(wyrdfold).toHaveAttribute('rel', 'noopener noreferrer');
+
+    const sharedUi = screen.getByRole('link', { name: /Shared UI/i });
+    expect(sharedUi).toHaveAttribute('href', 'https://ui.danieljoffe.com');
   });
 
   it('closes sheet on Escape key', () => {

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
-import { Switch } from './Switch';
+import { Switch, type SwitchProps } from './Switch';
 
 const meta = {
   title: 'Forms/Switch',
@@ -24,6 +25,20 @@ const meta = {
       description: 'Callback when switch state changes',
       action: 'onChange executed!',
     },
+  },
+  // Keep the `checked` arg in sync with clicks so every story is interactive
+  // (Switch is controlled-only). Without this the thumb never moves.
+  render: function Render(args) {
+    const [, updateArgs] = useArgs<SwitchProps>();
+    return (
+      <Switch
+        {...args}
+        onChange={value => {
+          updateArgs({ checked: value });
+          args.onChange?.(value);
+        }}
+      />
+    );
   },
 } satisfies Meta<typeof Switch>;
 
