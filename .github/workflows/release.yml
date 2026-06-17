@@ -12,8 +12,15 @@
 #      it runs `pnpm release` (build + `changeset publish`), publishing to npm
 #      and creating git tags + GitHub Releases.
 #
+# Publishing auth: OIDC Trusted Publishing (no NPM_TOKEN).
+#   The package's npm settings must list this repo + this workflow
+#   (.github/workflows/release.yml) and the `npm-publish` environment as a
+#   trusted publisher. The job exchanges the GitHub OIDC token (id-token:
+#   write) for short-lived npm credentials at publish time — nothing stored,
+#   nothing to expire. Requires pnpm >= 10.14 (OIDC support; pinned via
+#   packageManager) and Node >= 24. Provenance is attached automatically.
+#
 # Required repo secrets:
-#   NPM_TOKEN     — npm automation token with publish rights, no 2FA-on-publish.
 #   RELEASE_TOKEN — (recommended) a PAT or GitHub App token. The default
 #                   GITHUB_TOKEN cannot trigger the required status checks on
 #                   the bot's Version Packages PR, leaving it unmergeable.
@@ -31,7 +38,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write # create tags + GitHub Releases, push the version branch
   pull-requests: write # open/update the Version Packages PR
-  id-token: write # npm provenance
+  id-token: write # OIDC trusted publishing + provenance
 
 jobs:
   release:
@@ -57,5 +64,3 @@ jobs:
           commit: 'chore(release): version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
