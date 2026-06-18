@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@danieljoffe/shared-ui/Input';
 import { Text } from '@danieljoffe/shared-ui/Text';
@@ -49,6 +49,15 @@ export function BlogSearchAndList({
   const [query, setQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(query);
+
+  // Reset scroll to the top of the list on pagination. The App Router doesn't
+  // reliably scroll to top across the /blog ↔ /blog/page/N navigation, so a
+  // visitor clicking "Next" from the bottom of the list would otherwise land
+  // mid-page. Keyed on currentPage, so it does NOT fire while searching or
+  // tag-filtering (those don't change the page).
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentPage]);
 
   const hrefFor = (page: number): string =>
     page <= 1 ? basePath : `${basePath}/page/${page}`;

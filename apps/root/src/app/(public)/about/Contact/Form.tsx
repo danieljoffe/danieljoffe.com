@@ -68,6 +68,7 @@ export default function Form() {
     formState: { errors, isSubmitting },
     setError,
     setValue,
+    clearErrors,
   } = useForm<ContactFormData>({
     resolver: zodResolver(formSchema),
   });
@@ -158,6 +159,9 @@ export default function Form() {
 
   const onVerify = (token: string) => {
     setValue('hcaptcha', token);
+    // Clear the captcha error as soon as it's solved so the assertive error
+    // summary doesn't linger until the next submit attempt.
+    clearErrors('hcaptcha');
   };
 
   return (
