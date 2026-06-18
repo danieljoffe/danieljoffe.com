@@ -72,7 +72,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const Box = ({ children }: { children: React.ReactNode }) => (
-  <div className='bg-brand-500 text-text-inverse p-4 rounded'>{children}</div>
+  <div className='bg-brand-500 text-on-brand p-4 rounded'>{children}</div>
 );
 
 export const Vertical: Story = {
@@ -157,15 +157,9 @@ export const AsUnorderedList: Story = {
     className: 'list-none',
     children: (
       <>
-        <li className='bg-brand-500 text-text-inverse p-3 rounded'>
-          First item
-        </li>
-        <li className='bg-brand-500 text-text-inverse p-3 rounded'>
-          Second item
-        </li>
-        <li className='bg-brand-500 text-text-inverse p-3 rounded'>
-          Third item
-        </li>
+        <li className='bg-brand-500 text-on-brand p-3 rounded'>First item</li>
+        <li className='bg-brand-500 text-on-brand p-3 rounded'>Second item</li>
+        <li className='bg-brand-500 text-on-brand p-3 rounded'>Third item</li>
       </>
     ),
   },
@@ -180,13 +174,11 @@ export const AsOrderedList: Story = {
     className: 'list-none',
     children: (
       <>
-        <li className='bg-brand-500 text-text-inverse p-3 rounded'>
-          Step 1: Plan
-        </li>
-        <li className='bg-brand-500 text-text-inverse p-3 rounded'>
+        <li className='bg-brand-500 text-on-brand p-3 rounded'>Step 1: Plan</li>
+        <li className='bg-brand-500 text-on-brand p-3 rounded'>
           Step 2: Build
         </li>
-        <li className='bg-brand-500 text-text-inverse p-3 rounded'>
+        <li className='bg-brand-500 text-on-brand p-3 rounded'>
           Step 3: Deploy
         </li>
       </>
@@ -203,16 +195,28 @@ export const AsNav: Story = {
     align: 'center',
     children: (
       <>
-        <a href='#' className='text-brand-500 hover:underline'>
+        <a
+          href='#'
+          className='text-brand-600 dark:text-brand-400 hover:underline'
+        >
           Home
         </a>
-        <a href='#' className='text-brand-500 hover:underline'>
+        <a
+          href='#'
+          className='text-brand-600 dark:text-brand-400 hover:underline'
+        >
           About
         </a>
-        <a href='#' className='text-brand-500 hover:underline'>
+        <a
+          href='#'
+          className='text-brand-600 dark:text-brand-400 hover:underline'
+        >
           Projects
         </a>
-        <a href='#' className='text-brand-500 hover:underline'>
+        <a
+          href='#'
+          className='text-brand-600 dark:text-brand-400 hover:underline'
+        >
           Contact
         </a>
       </>
