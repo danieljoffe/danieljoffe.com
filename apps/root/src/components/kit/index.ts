@@ -1,3 +1,4 @@
+export { CopyCodeButton } from './CopyCodeButton';
 export { InteractiveDemo } from './InteractiveDemo';
 export { Mermaid } from './Mermaid';
 export { MetricsDashboard } from './MetricsDashboard';

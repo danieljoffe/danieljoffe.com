@@ -2,7 +2,12 @@ import type { MDXComponents } from 'mdx/types';
 import type { ComponentPropsWithoutRef } from 'react';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { Alert } from '@danieljoffe/shared-ui/Alert';
-import { InteractiveDemo, Mermaid, MetricsDashboard } from '@/components/kit';
+import {
+  CopyCodeButton,
+  InteractiveDemo,
+  Mermaid,
+  MetricsDashboard,
+} from '@/components/kit';
 
 function slugify(text: string): string {
   return text
@@ -91,10 +96,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     // rehype-pretty-code wraps code blocks in <figure data-rehype-pretty-code-figure>
     // so bare <pre> only appears for non-highlighted blocks
     pre: props => (
-      <pre
-        className='p-4 bg-surface-secondary rounded-lg border border-border overflow-x-auto text-sm leading-relaxed mb-4 [&>code]:p-0 [&>code]:bg-transparent [&>code]:text-sm [&>code]:rounded-none'
-        {...props}
-      />
+      <div className='group relative'>
+        <pre
+          className='p-4 bg-surface-secondary rounded-lg border border-border overflow-x-auto text-sm leading-relaxed mb-4 [&>code]:p-0 [&>code]:bg-transparent [&>code]:text-sm [&>code]:rounded-none'
+          {...props}
+        />
+        <CopyCodeButton />
+      </div>
     ),
     hr: () => <hr className='border-border my-8' />,
     table: props => (
