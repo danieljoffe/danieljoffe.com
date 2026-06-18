@@ -50,6 +50,10 @@ function SidebarItemComponent({
           if (hasChildren) setExpanded(!expanded);
           onSelect?.(item.id);
         }}
+        // Collapsed items render icon-only, so give them an accessible name.
+        aria-label={collapsed ? item.label : undefined}
+        aria-current={isActive ? 'page' : undefined}
+        aria-expanded={hasChildren ? expanded : undefined}
         className={cn(
           'w-full justify-start',
           depth > 0 && 'ml-6 w-[calc(100%-1.5rem)]',
@@ -63,12 +67,16 @@ function SidebarItemComponent({
           <>
             <span className='flex-1 text-left truncate'>{item.label}</span>
             {item.badge !== undefined && (
-              <span className='text-xs px-1.5 py-0.5 rounded-full bg-surface-tertiary text-text-tertiary'>
+              <span
+                aria-hidden='true'
+                className='text-xs px-1.5 py-0.5 rounded-full bg-surface-tertiary text-text-tertiary'
+              >
                 {item.badge}
               </span>
             )}
             {hasChildren && (
               <ChevronDown
+                aria-hidden='true'
                 className={cn(
                   'h-4 w-4 text-text-tertiary transition-transform duration-200 motion-reduce:transition-none',
                   expanded && 'rotate-180'

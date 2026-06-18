@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
-import { Sidebar } from './Sidebar';
+import { Sidebar, type SidebarProps } from './Sidebar';
 
 const meta = {
   title: 'Navigation/Sidebar',
@@ -72,11 +73,28 @@ const iconItems = [
   },
 ];
 
+// Sidebar is controlled via `activeId` + `onSelect`. Wire it through `useArgs`
+// so selecting an item actually moves the active highlight in the showcase,
+// instead of `onSelect` being a no-op against a frozen `activeId`.
+function InteractiveSidebar(args: SidebarProps) {
+  const [, updateArgs] = useArgs<SidebarProps>();
+  return (
+    <Sidebar
+      {...args}
+      onSelect={id => {
+        updateArgs({ activeId: id });
+        args.onSelect?.(id);
+      }}
+    />
+  );
+}
+
 export const Default: Story = {
   args: {
     items: sampleItems,
     activeId: 'dashboard',
   },
+  render: InteractiveSidebar,
 };
 
 export const WithHeaderFooter: Story = {
@@ -84,8 +102,9 @@ export const WithHeaderFooter: Story = {
     items: sampleItems,
     activeId: 'dashboard',
     header: <span className='font-semibold text-sm'>My App</span>,
-    footer: <span className='text-xs text-gray-500'>v1.0.0</span>,
+    footer: <span className='text-xs text-text-secondary'>v1.0.0</span>,
   },
+  render: InteractiveSidebar,
 };
 
 export const Collapsed: Story = {
@@ -100,6 +119,7 @@ export const WithIcons: Story = {
     items: iconItems,
     activeId: 'home',
   },
+  render: InteractiveSidebar,
 };
 
 export const Interactive: Story = {
