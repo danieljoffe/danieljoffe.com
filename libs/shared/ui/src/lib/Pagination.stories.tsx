@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { Pagination } from './Pagination';
+import { Pagination, type PaginationProps } from './Pagination';
 
 const meta = {
   title: 'Navigation/Pagination',
@@ -14,20 +15,40 @@ type Story = StoryObj<typeof meta>;
 
 const noop = () => {};
 
+// Pagination is controlled (`currentPage` + `onPageChange`). Wire it through
+// `useArgs` so the showcase stories actually paginate when clicked, instead of
+// `onPageChange` being a no-op against a frozen `currentPage`.
+function InteractivePagination(args: PaginationProps) {
+  const [, updateArgs] = useArgs<PaginationProps>();
+  return (
+    <Pagination
+      {...args}
+      onPageChange={page => {
+        updateArgs({ currentPage: page });
+        args.onPageChange?.(page);
+      }}
+    />
+  );
+}
+
 export const Default: Story = {
   args: { currentPage: 1, totalPages: 10, onPageChange: noop },
+  render: InteractivePagination,
 };
 
 export const MiddlePage: Story = {
   args: { currentPage: 5, totalPages: 10, onPageChange: noop },
+  render: InteractivePagination,
 };
 
 export const FewPages: Story = {
   args: { currentPage: 2, totalPages: 3, onPageChange: noop },
+  render: InteractivePagination,
 };
 
 export const ManyPages: Story = {
   args: { currentPage: 10, totalPages: 50, onPageChange: noop },
+  render: InteractivePagination,
 };
 
 export const Interactive: Story = {
