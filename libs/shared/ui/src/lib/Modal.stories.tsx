@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from './Button';
-import { Modal } from './Modal';
+import { Modal, type ModalProps } from './Modal';
 
 const meta = {
   title: 'Overlay/Modal',
@@ -64,6 +65,24 @@ const meta = {
     docs: {
       story: { inline: false, height: '460px' },
     },
+  },
+  // Interactive showcase: wire `isOpen` through `useArgs` so the close button,
+  // backdrop, and Escape actually dismiss the modal (and a trigger re-opens it),
+  // instead of `onClose` being a no-op spy against a hardcoded `isOpen: true`.
+  render: function Render(args) {
+    const [, updateArgs] = useArgs<ModalProps>();
+    return (
+      <>
+        <Button onClick={() => updateArgs({ isOpen: true })}>Open modal</Button>
+        <Modal
+          {...args}
+          onClose={() => {
+            updateArgs({ isOpen: false });
+            args.onClose?.();
+          }}
+        />
+      </>
+    );
   },
 } satisfies Meta<typeof Modal>;
 
