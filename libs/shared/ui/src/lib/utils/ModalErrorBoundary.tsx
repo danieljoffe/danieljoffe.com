@@ -27,7 +27,10 @@ export class ModalErrorBoundary extends Component<
   }
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    if (process.env['NODE_ENV'] === 'development') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env['NODE_ENV'] === 'development'
+    ) {
       console.error('[Modal] Render error:', error, errorInfo);
     }
     // Ensure body scroll is restored on error

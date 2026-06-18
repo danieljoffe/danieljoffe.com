@@ -11,7 +11,10 @@ export function validateProps<T extends Record<string, unknown>>(
   const error = validate(props);
 
   if (error) {
-    if (process.env['NODE_ENV'] === 'development') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env['NODE_ENV'] === 'development'
+    ) {
       console.error(`[${componentName}] Invalid props: ${error}`);
     }
     return { ...defaults, ...props } as T;
