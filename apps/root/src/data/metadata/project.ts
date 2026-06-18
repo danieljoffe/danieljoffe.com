@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 
 export const projectRootMetadata: Metadata = {
-  title: 'Projects | Daniel Joffe - Full-Stack Engineer',
+  // Page name only — the root metadata title template appends
+  // "| Daniel Joffe - Full-Stack Engineer". Including the suffix here doubled it.
+  title: 'Projects',
   description:
     'Case studies from the field. Every study has the challenge, the approach, and the measurable outcome.',
   keywords: [
