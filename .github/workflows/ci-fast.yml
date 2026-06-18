@@ -39,5 +39,28 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
 
+      # shared-ui's `test-storybook` target runs the Storybook a11y + interaction
+      # suite via Vitest browser mode (Playwright/Chromium), which catches the
+      # button-name / dead-interaction / aria regressions that jest unit tests
+      # (`test`) do not. Only runs when an affected project has the target.
+      - name: Get Playwright version
+        id: pw-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+
+      - name: Install Playwright browsers (Chromium)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Storybook a11y + interaction tests (affected)
+        run: pnpm nx affected -t test-storybook --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+
       - name: Dead code check (Knip)
         run: pnpm knip

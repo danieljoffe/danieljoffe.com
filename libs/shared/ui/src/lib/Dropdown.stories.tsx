@@ -229,7 +229,11 @@ export const EnterToSelect: Story = {
     await userEvent.click(trigger);
     await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
 
-    // First item is focused, press Enter to select
+    // The menu focuses the first item on open (via rAF); wait for that before
+    // activating it, otherwise Enter lands on the still-focused trigger.
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: 'Select me' })).toHaveFocus()
+    );
     await userEvent.keyboard('{Enter}');
 
     await waitFor(() =>
@@ -257,6 +261,11 @@ export const ArrowKeyOpen: Story = {
     await userEvent.keyboard('{ArrowDown}');
     await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
 
+    // Wait for the first item to receive focus (rAF) so Tab is handled by the
+    // menu's keydown handler (which closes it) rather than the trigger.
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: 'Item A' })).toHaveFocus()
+    );
     // Tab to close
     await userEvent.keyboard('{Tab}');
     await waitFor(() =>
