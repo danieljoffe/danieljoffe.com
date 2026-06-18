@@ -27,7 +27,10 @@ export class ErrorBoundary extends Component<
   }
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    if (process.env['NODE_ENV'] === 'development') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env['NODE_ENV'] === 'development'
+    ) {
       console.error('[ErrorBoundary] Render error:', error, errorInfo);
     }
     this.props.onError?.(error, errorInfo);

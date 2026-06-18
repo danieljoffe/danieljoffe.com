@@ -54,6 +54,17 @@ const meta = {
       description: 'Optional footer content (typically action buttons)',
     },
   },
+  parameters: {
+    // Modal renders a `position: fixed inset-0` overlay. In the inline autodocs
+    // preview the fixed panel is out of flow, so the preview block collapses to
+    // a ~32px sliver and the modal is unreadable. Rendering each story in a
+    // sized iframe gives the overlay a real viewport, so it renders centered and
+    // fully visible — exactly like production. (Canvas view and interaction
+    // tests are unaffected; this only changes Docs rendering.)
+    docs: {
+      story: { inline: false, height: '460px' },
+    },
+  },
 } satisfies Meta<typeof Modal>;
 
 export default meta;
@@ -145,6 +156,13 @@ export const ExtraLarge: Story = {
 };
 
 export const ScrollableContent: Story = {
+  // Long-form content — give the docs preview iframe extra height so more of
+  // the tall modal is visible.
+  parameters: {
+    docs: {
+      story: { height: '640px' },
+    },
+  },
   args: {
     isOpen: true,
     title: 'Scrollable Content',
