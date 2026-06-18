@@ -26,6 +26,9 @@ export function PageLayout({
     <PageContainer
       as='main'
       id='main-content'
+      // Focus target for the "Skip to main content" link — without a tabindex
+      // the browser can't move focus here when the skip link is activated.
+      tabIndex={-1}
       size={wide ? 'lg' : 'sm'}
       className={cn('py-16 lg:py-24 space-y-24', className)}
       {...rest}
