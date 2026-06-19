@@ -19,8 +19,6 @@ const config: KnipConfig = {
         'caniuse-lite',
         // ts-node is referenced in tsconfig.json "ts-node" block
         'ts-node',
-        // @swc/jest is used by libs/shared/audit/jest.config.cts (hoisted dep)
-        '@swc/jest',
         // @swc/cli is the SWC compiler driver referenced via apps/*/.swcrc
         '@swc/cli',
         // @eslint/js is required by @nx/eslint-plugin flat config presets
@@ -88,17 +86,6 @@ const config: KnipConfig = {
         'src/test-setup.ts',
       ],
       project: ['src/**/*.{ts,tsx}'],
-    },
-
-    // -----------------------------------------------------------------
-    // libs/shared/audit — Shared audit types
-    // -----------------------------------------------------------------
-    'libs/shared/audit': {
-      entry: [
-        // Generated Supabase types, not imported but kept for reference
-        'src/lib/database.types.ts',
-      ],
-      project: ['src/**/*.ts'],
     },
   },
 };
