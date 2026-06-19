@@ -49,6 +49,7 @@ export const blogSlugs = {
   operatingLlmPipelinesInProduction: 'operating-llm-pipelines-in-production',
   designTokenContrastTest: 'design-token-contrast-test',
   storybookPreviewTokenDrift: 'storybook-preview-token-drift',
+  serviceWorkerStaleChunks: 'service-worker-stale-chunks',
 } as const;
 
 export const blogPageSlugs = [...Object.values(blogSlugs)];

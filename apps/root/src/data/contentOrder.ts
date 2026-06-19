@@ -115,4 +115,5 @@ export const blogHistory: AllowedBlogSlugs[] = [
   blogSlugs.operatingLlmPipelinesInProduction, // 2026-06-13
   blogSlugs.designTokenContrastTest, // 2026-06-15
   blogSlugs.storybookPreviewTokenDrift, // 2026-06-16
+  blogSlugs.serviceWorkerStaleChunks, // 2026-06-18
 ];

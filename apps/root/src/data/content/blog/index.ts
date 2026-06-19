@@ -145,6 +145,9 @@ import DesignTokenContrastTest, {
 import StorybookPreviewTokenDrift, {
   metadata as storybookPreviewTokenDriftMeta,
 } from './storybook-preview-token-drift.mdx';
+import ServiceWorkerStaleChunks, {
+  metadata as serviceWorkerStaleChunksMeta,
+} from './service-worker-stale-chunks.mdx';
 
 export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'unified-content-pipeline': UnifiedContentPipeline,
@@ -197,6 +200,7 @@ export const blogMdxComponents: Record<AllowedBlogSlugs, ComponentType> = {
   'operating-llm-pipelines-in-production': OperatingLlmPipelinesInProduction,
   'design-token-contrast-test': DesignTokenContrastTest,
   'storybook-preview-token-drift': StorybookPreviewTokenDrift,
+  'service-worker-stale-chunks': ServiceWorkerStaleChunks,
 };
 
 export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
@@ -250,4 +254,5 @@ export const blogMdxMetadata: Record<AllowedBlogSlugs, PostMetadata> = {
     operatingLlmPipelinesInProductionMeta,
   'design-token-contrast-test': designTokenContrastTestMeta,
   'storybook-preview-token-drift': storybookPreviewTokenDriftMeta,
+  'service-worker-stale-chunks': serviceWorkerStaleChunksMeta,
 };
