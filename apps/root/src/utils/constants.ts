@@ -12,7 +12,6 @@ const SENTRY_URL = 'https://www.sentry.io';
 const SENTRY_INGEST_URL = 'https://*.ingest.us.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
-const SUPABASE_STORAGE_URL = 'https://grwmzluuqyczatkxorfa.supabase.co';
 export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
 export const CALENDLY_EMBED_URL = 'https://calendly.com';
 
@@ -39,7 +38,6 @@ export const allowedImageOrigins = [
   EXAMPLE_URL,
   GOOGLE_ANALYTICS_URL,
   GOOGLE_TAG_MANAGER_URL,
-  SUPABASE_STORAGE_URL,
 ];
 
 export const allowedOrigins = [

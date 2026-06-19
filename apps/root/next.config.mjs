@@ -16,19 +16,6 @@ const isCI = process.env.CI === 'true';
 const mockFonts = process.env.MOCK_FONTS === 'true';
 const isAnalyze = process.env.ANALYZE === 'true';
 
-// Derive the Supabase storage host from the env so screenshot URLs keep working
-// when the project is swapped. Falls back to undefined if the env is missing,
-// which leaves remotePatterns empty (safe — _next/image will reject unknown hosts).
-const supabaseHost = (() => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) return undefined;
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return undefined;
-  }
-})();
-
 // Bundle analyzer
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: isAnalyze,
@@ -110,9 +97,6 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    remotePatterns: supabaseHost
-      ? [{ protocol: 'https', hostname: supabaseHost }]
-      : [],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     deviceSizes: [640, 768, 1024, 1280],
@@ -269,10 +253,10 @@ const nextConfig = {
         destination: '/about',
         permanent: true,
       },
-      // Audit tool archived after the case study shipped — point any
-      // remaining inbound link (form, results, insights, per-violation,
-      // compare) at the case study. Excludes /api/audit/* so the admin
-      // dashboard keeps working until Phase C removes those routes.
+      // Audit tool archived and decommissioned — point any remaining inbound
+      // link (form, results, insights, per-violation, compare) at the case
+      // study. The audit/admin/leads/email-funnel routes and their Supabase
+      // backend have been removed; only this SEO redirect remains.
       {
         source: '/audit',
         destination: '/projects/audit-tool-case-study',

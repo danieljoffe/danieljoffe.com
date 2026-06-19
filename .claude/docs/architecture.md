@@ -5,7 +5,6 @@
 - **apps/root**: Portfolio site and blog (Next.js 16, App Router)
 - **apps/root-e2e**: Playwright E2E tests for `apps/root`
 - **libs/shared/ui**: Shared React component library (@danieljoffe/shared-ui)
-- **libs/shared/audit**: Shared audit types and Supabase database types (consumed by leads/email infra and the admin dashboard)
 
 ## Key Technologies
 
@@ -21,7 +20,6 @@
 ## Path Aliases
 
 - `@/` maps to `apps/root/src/` in the root app
-- `@danieljoffe.com/shared-audit` maps to `libs/shared/audit/src/index.ts`
 
 ## Key Patterns
 
