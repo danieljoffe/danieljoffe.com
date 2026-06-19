@@ -13,6 +13,7 @@ export const projectSlugs = {
   csApiPerformance: 'api-performance-case-study',
   csAuditTool: 'audit-tool-case-study',
   csSharedUi: 'shared-ui-case-study',
+  csWyrdFold: 'wyrdfold-case-study',
 } as const;
 
 export const projectPageSlugs = [...Object.values(projectSlugs)];

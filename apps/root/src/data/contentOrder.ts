@@ -50,6 +50,7 @@ export const projectHistory: AllowedProjectSlugs[] = [
   projectSlugs.csApiPerformance, // 2026-04-21 — Portfolio (Apr 2026)
   projectSlugs.csAuditTool, // 2026-06-11 — Portfolio (Feb-Apr 2026)
   projectSlugs.csSharedUi, // 2026-06-13 — @danieljoffe/shared-ui (Apr-Jun 2026)
+  projectSlugs.csWyrdFold, // 2026-06-18 — WyrdFold (May 2026 - present)
 ];
 
 /**
