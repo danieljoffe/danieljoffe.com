@@ -35,6 +35,8 @@
     "build-storybook:ui": "nx build-storybook @danieljoffe/shared-ui",
     "chromatic:ui": "chromatic --build-script-name=build-storybook:ui --storybook-base-dir=libs/shared/ui --only-changed",
     "prebuild": "tsx scripts/generate-search-index.ts",
+    "content:gen": "tsx scripts/generate-content-registry.ts",
+    "postinstall": "tsx scripts/generate-search-index.ts && tsx scripts/generate-content-registry.ts",
     "gen:cover": "tsx --env-file-if-exists=apps/root/.env --env-file-if-exists=apps/root/.env.local --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/generate-covers.ts"
   },
   "private": true,

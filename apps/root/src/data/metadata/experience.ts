@@ -2,7 +2,9 @@ import { Metadata } from 'next';
 import { DOMAIN_URL, FULL_NAME, EXPERIENCE_LINK } from '@/utils/constants';
 
 export const experienceRootMetadata: Metadata = {
-  title: `Experience | ${FULL_NAME} - Full-Stack Engineer`,
+  // Page name only — the root metadata title template appends the
+  // "| Daniel Joffe - Full-Stack Engineer" suffix (was doubled here).
+  title: 'Experience',
   description:
     'Five companies, ten years. Every engagement left the team faster and more autonomous than I found them.',
   keywords: [

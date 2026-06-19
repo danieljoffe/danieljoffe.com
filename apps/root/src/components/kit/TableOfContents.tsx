@@ -102,6 +102,7 @@ function TocList({
           <button
             type='button'
             onClick={() => onSelect(id)}
+            aria-current={activeId === id ? 'location' : undefined}
             className={cn(
               'text-left text-xs leading-relaxed py-0.5 transition-colors',
               'cursor-pointer hover:text-text-primary w-full',

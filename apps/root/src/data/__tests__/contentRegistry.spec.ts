@@ -12,7 +12,7 @@ describe('contentRegistry', () => {
   describe('getContentByType', () => {
     it('returns all project entries in order', () => {
       const projects = getContentByType('project');
-      expect(projects.length).toBe(14);
+      expect(projects.length).toBe(15);
       expect(projects[0].type).toBe('project');
       expect(projects[0].slug).toBe('ui-components-v1');
     });
@@ -26,7 +26,7 @@ describe('contentRegistry', () => {
 
     it('returns all blog entries in order', () => {
       const blogs = getContentByType('blog');
-      expect(blogs.length).toBe(48);
+      expect(blogs.length).toBe(49);
       expect(blogs[0].type).toBe('blog');
       expect(blogs[0].slug).toBe('unified-content-pipeline');
       expect(blogs[1].slug).toBe('auto-generated-toc-scroll-spy');
@@ -72,7 +72,7 @@ describe('contentRegistry', () => {
       const slugs = getContentSlugs('project');
       expect(slugs).toContain('ui-components-v1');
       expect(slugs).toContain('ui-components-v2');
-      expect(slugs.length).toBe(14);
+      expect(slugs.length).toBe(15);
     });
 
     it('returns experience slugs', () => {
@@ -97,22 +97,19 @@ describe('contentRegistry', () => {
       expect(slugs).toContain('accessible-dropdown-keyboard-nav');
       expect(slugs).toContain('toast-pause-on-hover');
       expect(slugs).toContain('keyboard-navigable-data-tables');
-      expect(slugs.length).toBe(48);
+      expect(slugs.length).toBe(49);
     });
   });
 
   describe('getContentPagination', () => {
     it('returns circular pagination for first project', () => {
       const pagination = getContentPagination('project', 'ui-components-v1');
-      expect(pagination.prev.slug).toBe('shared-ui-case-study'); // wraps to last
+      expect(pagination.prev.slug).toBe('wyrdfold-case-study'); // wraps to last
       expect(pagination.next.slug).toBe('cms-tooling-case-study'); // second project
     });
 
     it('returns circular pagination for last project', () => {
-      const pagination = getContentPagination(
-        'project',
-        'shared-ui-case-study'
-      );
+      const pagination = getContentPagination('project', 'wyrdfold-case-study');
       expect(pagination.next.slug).toBe('ui-components-v1'); // wraps to first
     });
 
@@ -145,7 +142,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(67); // 14 projects + 5 experiences + 48 blogs
+      expect(all.length).toBe(69); // 15 projects + 5 experiences + 49 blogs
     });
 
     it('contains entries of all types', () => {
@@ -154,6 +151,32 @@ describe('contentRegistry', () => {
       expect(types.has('project')).toBe(true);
       expect(types.has('experience')).toBe(true);
       expect(types.has('blog')).toBe(true);
+    });
+  });
+
+  describe('display order', () => {
+    const TYPES = ['project', 'experience', 'blog'] as const;
+
+    it('sorts each type by a unique, ascending metadata.order', () => {
+      for (const type of TYPES) {
+        const orders = getContentByType(type).map(e => e.metadata.order);
+        // Registry output is sorted ascending by `order`.
+        expect(orders).toEqual([...orders].sort((a, b) => a - b));
+        // `order` is unique within a type — guarantees stable structured-data
+        // ItemList positions and prev/next pagination.
+        expect(new Set(orders).size).toBe(orders.length);
+      }
+    });
+
+    it('prints the resolved per-type display order', () => {
+      const report = TYPES.map(type => {
+        const rows = getContentByType(type)
+          .map(e => `  ${String(e.metadata.order).padStart(4)}  ${e.slug}`)
+          .join('\n');
+        return `${type}:\n${rows}`;
+      }).join('\n\n');
+      console.info(`\nResolved content display order:\n${report}\n`);
+      expect(getAllContent().length).toBe(69);
     });
   });
 });

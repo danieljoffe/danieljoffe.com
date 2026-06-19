@@ -98,7 +98,8 @@
      darkens warning/error for AA on white; dark mode needs the
      opposite (bright on near-black), so override them back here. */
   --color-warning: oklch(0.7686 0.1647 70.08);
-  --color-error: oklch(0.6368 0.2078 25.33);
+  /* Lightened from 0.6368 so error text clears AA (4.5:1) on dark surfaces. */
+  --color-error: oklch(0.68 0.2078 25.33);
   --color-success: oklch(0.6959 0.1491 162.48);
   --color-info: oklch(0.66 0.1697 264.92);
 

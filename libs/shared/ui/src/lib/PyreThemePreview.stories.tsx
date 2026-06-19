@@ -121,6 +121,19 @@ const meta = {
   component: PyrePreview,
   parameters: {
     layout: 'fullscreen',
+    a11y: {
+      config: {
+        // This is a kitchen-sink showcase that dumps many components onto one
+        // page, so component headings (e.g. CardTitle) follow the section h2s
+        // out of strict document order. heading-order is a false positive here;
+        // it stays enabled for every other story. (aria-hidden-body mirrors the
+        // global preview.ts config since a per-story rules array replaces it.)
+        rules: [
+          { id: 'aria-hidden-body', enabled: false },
+          { id: 'heading-order', enabled: false },
+        ],
+      },
+    },
   },
 } satisfies Meta<typeof PyrePreview>;
 export default meta;

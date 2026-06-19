@@ -39,5 +39,35 @@ jobs:
           NX_BASE: ${{ inputs.nx-base }}
           NX_HEAD: ${{ inputs.nx-head }}
 
+      # shared-ui's `test-storybook` target runs the Storybook a11y + interaction
+      # suite via Vitest browser mode (Playwright/Chromium), which catches the
+      # button-name / dead-interaction / aria regressions that jest unit tests
+      # (`test`) do not. Only runs when an affected project has the target.
+      - name: Get Playwright version
+        id: pw-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+
+      # No `--with-deps`: that runs `apt-get install` for system libraries, which
+      # hangs/crawls on the GitHub runner (it was taking 16+ min and timing the
+      # job out). ubuntu-latest already ships the libraries headless Chromium
+      # needs, so install only the browser binary (seconds, then cached above).
+      # timeout-minutes guards against a future hang failing fast instead of
+      # eating the whole 20-min job budget.
+      - name: Install Playwright browsers (Chromium)
+        timeout-minutes: 5
+        run: pnpm exec playwright install chromium
+
+      - name: Storybook a11y + interaction tests (affected)
+        run: pnpm nx affected -t test-storybook --nxBail
+        env:
+          NX_BASE: ${{ inputs.nx-base }}
+          NX_HEAD: ${{ inputs.nx-head }}
+
       - name: Dead code check (Knip)
         run: pnpm knip

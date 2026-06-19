@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { Alert } from './Alert';
+import { Alert, type AlertProps } from './Alert';
+import { Button } from './Button';
 
 const meta = {
   title: 'Feedback/Alert',
@@ -40,6 +42,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Alert is controlled-dismiss (`onDismiss` callback, no internal visibility
+// state). Wire `onDismiss` to local state so the dismiss button actually removes
+// the alert in the showcase, with a trigger to bring it back.
+function DismissibleAlert(args: AlertProps) {
+  const [visible, setVisible] = useState(true);
+  if (!visible) {
+    return <Button onClick={() => setVisible(true)}>Show alert</Button>;
+  }
+  return (
+    <Alert
+      {...args}
+      onDismiss={() => {
+        setVisible(false);
+        args.onDismiss?.();
+      }}
+    />
+  );
+}
+
 export const Default: Story = {
   args: {
     children: 'This is an alert message.',
@@ -55,6 +76,7 @@ export const Dismissible: Story = {
     title: 'Dismissible Alert',
     dismissible: true,
   },
+  render: DismissibleAlert,
 };
 
 export const Success: Story = {
@@ -73,6 +95,7 @@ export const Error: Story = {
     title: 'Error',
     dismissible: true,
   },
+  render: DismissibleAlert,
 };
 
 export const DismissInteraction: Story = {

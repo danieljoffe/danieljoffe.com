@@ -55,7 +55,7 @@ describe('Tabs', () => {
     const tab1Button = screen.getByText('Tab 1');
     const tab2Button = screen.getByText('Tab 2');
 
-    expect(tab1Button).toHaveClass('border-brand-500', 'text-brand-500');
+    expect(tab1Button).toHaveClass('border-brand-500', 'text-brand-600');
     expect(tab2Button).toHaveClass('border-transparent');
   });
 
@@ -68,7 +68,7 @@ describe('Tabs', () => {
     const tab2Button = screen.getByText('Tab 2');
 
     expect(tab1Button).toHaveClass('border-transparent');
-    expect(tab2Button).toHaveClass('border-brand-500', 'text-brand-500');
+    expect(tab2Button).toHaveClass('border-brand-500', 'text-brand-600');
   });
 
   it('renders nothing with empty tabs array', () => {

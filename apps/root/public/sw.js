@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `danieljoffe-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `danieljoffe-dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `danieljoffe-images-${CACHE_VERSION}`;
@@ -89,14 +89,19 @@ function getCacheStrategy(request) {
     return { strategy: 'network-only' };
   }
 
-  // HTML pages - stale-while-revalidate
+  // HTML pages - network-first.
+  // Must NOT be stale-while-revalidate: the cached HTML pins content-hashed
+  // chunk URLs from the build it was captured on, so after a deploy SWR would
+  // serve the old app shell referencing old/now-missing chunks (stale or broken
+  // app). Network-first always serves fresh HTML (with current chunk refs) when
+  // online and only falls back to the cache when offline.
   if (
     request.mode === 'navigate' ||
     request.headers.get('accept')?.includes('text/html')
   ) {
     return {
       cache: DYNAMIC_CACHE,
-      strategy: 'stale-while-revalidate',
+      strategy: 'network-first',
       limit: DYNAMIC_CACHE_LIMIT,
     };
   }

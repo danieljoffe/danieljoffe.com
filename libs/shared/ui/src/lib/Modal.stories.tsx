@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useArgs } from 'storybook/preview-api';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from './Button';
-import { Modal } from './Modal';
+import { Modal, type ModalProps } from './Modal';
 
 const meta = {
   title: 'Overlay/Modal',
@@ -53,6 +54,35 @@ const meta = {
     footer: {
       description: 'Optional footer content (typically action buttons)',
     },
+  },
+  parameters: {
+    // Modal renders a `position: fixed inset-0` overlay. In the inline autodocs
+    // preview the fixed panel is out of flow, so the preview block collapses to
+    // a ~32px sliver and the modal is unreadable. Rendering each story in a
+    // sized iframe gives the overlay a real viewport, so it renders centered and
+    // fully visible — exactly like production. (Canvas view and interaction
+    // tests are unaffected; this only changes Docs rendering.)
+    docs: {
+      story: { inline: false, height: '460px' },
+    },
+  },
+  // Interactive showcase: wire `isOpen` through `useArgs` so the close button,
+  // backdrop, and Escape actually dismiss the modal (and a trigger re-opens it),
+  // instead of `onClose` being a no-op spy against a hardcoded `isOpen: true`.
+  render: function Render(args) {
+    const [, updateArgs] = useArgs<ModalProps>();
+    return (
+      <>
+        <Button onClick={() => updateArgs({ isOpen: true })}>Open modal</Button>
+        <Modal
+          {...args}
+          onClose={() => {
+            updateArgs({ isOpen: false });
+            args.onClose?.();
+          }}
+        />
+      </>
+    );
   },
 } satisfies Meta<typeof Modal>;
 
@@ -145,6 +175,13 @@ export const ExtraLarge: Story = {
 };
 
 export const ScrollableContent: Story = {
+  // Long-form content — give the docs preview iframe extra height so more of
+  // the tall modal is visible.
+  parameters: {
+    docs: {
+      story: { height: '640px' },
+    },
+  },
   args: {
     isOpen: true,
     title: 'Scrollable Content',

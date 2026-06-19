@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
@@ -28,6 +28,38 @@ export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const router = useRouter();
+
+  // Remember what opened the palette so focus can return there on close
+  // (Escape / backdrop / ⌘K). The trigger must be captured synchronously at
+  // open time — before the palette's input autofocuses and becomes
+  // activeElement — so we capture in openPalette() rather than a post-open
+  // effect. On select we navigate away, so the restore is skipped.
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const selectedRef = useRef(false);
+  const openRef = useRef(false);
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  const openPalette = useCallback(() => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
+    selectedRef.current = false;
+    setOpen(true);
+  }, []);
+
+  // Restore focus to whatever opened the palette once it closes. Deferred to
+  // the next frame so it runs after cmdk's teardown / the input-removal focus
+  // reset (which otherwise leaves focus on <body>).
+  useEffect(() => {
+    if (open || selectedRef.current || !triggerRef.current?.isConnected) return;
+    const el = triggerRef.current;
+    triggerRef.current = null;
+    const id = requestAnimationFrame(() => {
+      if (el.isConnected) el.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open]);
 
   const { engine, entries } = useMemo(() => {
     try {
@@ -71,7 +103,8 @@ export default function CommandPalette() {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setOpen(prev => !prev);
+        if (openRef.current) setOpen(false);
+        else openPalette();
       }
       if (e.key === 'Escape') {
         setOpen(false);
@@ -79,14 +112,14 @@ export default function CommandPalette() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, []);
+  }, [openPalette]);
 
   // Allow external triggers (e.g. nav search button) to open the palette
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => openPalette();
     document.addEventListener('open-command-palette', handler);
     return () => document.removeEventListener('open-command-palette', handler);
-  }, []);
+  }, [openPalette]);
 
   // Lock body scroll when open
   useEffect(() => {
@@ -100,6 +133,7 @@ export default function CommandPalette() {
 
   const handleSelect = useCallback(
     (url: string) => {
+      selectedRef.current = true;
       setOpen(false);
       router.push(url);
     },

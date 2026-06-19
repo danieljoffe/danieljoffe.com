@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 
 export const aboutMetadata: Metadata = {
-  title: 'About Daniel Joffe | Full-Stack Engineer & Technical Leader',
+  // Page name only — the root metadata title template appends
+  // "| Daniel Joffe - Full-Stack Engineer". The previous full string doubled it.
+  title: 'About',
   description:
     '10+ years building performant web applications. Specializing in React, Vue, TypeScript, and performance optimization.',
   keywords: [

@@ -29,11 +29,31 @@
         "cwd": "{workspaceRoot}"
       }
     },
+    "generate-content-registry": {
+      "command": "tsx scripts/generate-content-registry.ts",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/scripts/generate-content-registry.ts",
+        "{projectRoot}/src/data/content/**/*.mdx"
+      ],
+      "outputs": [
+        "{projectRoot}/src/data/generated/blog.generated.ts",
+        "{projectRoot}/src/data/generated/projects.generated.ts",
+        "{projectRoot}/src/data/generated/experience.generated.ts"
+      ],
+      "options": {
+        "cwd": "{workspaceRoot}"
+      }
+    },
     "test": {
-      "dependsOn": ["generate-search-index"]
+      "dependsOn": ["generate-search-index", "generate-content-registry"]
     },
     "build": {
-      "dependsOn": ["generate-search-index", "validate-content"],
+      "dependsOn": [
+        "generate-search-index",
+        "validate-content",
+        "generate-content-registry"
+      ],
       "options": {
         "command": "next build --webpack"
       }

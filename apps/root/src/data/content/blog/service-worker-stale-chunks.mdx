@@ -1,0 +1,90 @@
+export const metadata = {
+  title: 'Why a service worker serves stale chunks after a deploy',
+  date: '2026-06-18',
+  order: 490,
+  excerpt:
+    'A correct fix looked broken across four rebuilds. The service worker served stale HTML pinning old chunk URLs. Network-first for HTML fixes it.',
+  author: 'Daniel Joffe',
+  category: 'Architecture',
+  tags: ['PWA', 'Next.js', 'React', 'Performance', 'Vercel'],
+  slug: 'service-worker-stale-chunks',
+  type: 'blog',
+  cover: {
+    alt: 'A browser window loading a cached page shell served by a service worker',
+    src: '/images/covers/service-worker-stale-chunks.webp',
+  },
+};
+
+## A fix that looks broken
+
+I ship a focus-restoration fix for the command palette: open it, press Escape, and focus returns to the element that opened it. It works on localhost. I deploy, reload production, and focus drops to the body instead.
+
+So I rewrite it. Deploy. Still broken. I try a different approach built on `requestAnimationFrame`, deploy, reload. Broken. Four rebuilds, four deploys, the same dead behavior. The code is correct in the editor and correct on localhost. Production is running something else.
+
+## Proving the browser runs old code
+
+The fastest way to settle "is my code even loaded" is to make the new code announce itself. I add a marker the old build cannot have:
+
+```ts
+// in the palette's open handler
+console.debug('palette open: focus-restore build 5');
+```
+
+Deploy, hard reload, open the palette. The console stays silent. Build 5's JavaScript is sitting on the server, but the browser is executing an earlier build. Nothing about my fix is wrong. The browser never receives it.
+
+## How stale HTML pins stale JavaScript
+
+Next.js fingerprints every chunk: `/_next/static/chunks/4f3a…b1.js`. The filename changes when the contents change, which is exactly what makes those files safe to cache forever. The HTML document is what maps the app to a specific set of those hashed URLs. New build, new chunk hashes, new `<script>` references in the document.
+
+The site is a PWA, and the service worker served HTML with a stale-while-revalidate strategy: return the cached document immediately, refresh the cache in the background. That is the right call for content that tolerates being one visit out of date. It is the wrong call for an app shell. Every reload handed the browser the _previous_ build's HTML, which pointed at the _previous_ build's chunks. The worker never cached my JavaScript; it cached the document that decides which JavaScript to load. My fix shipped on every deploy, and the worker routed around it every time.
+
+## Network-first for the document
+
+The fix is to stop treating the HTML like cacheable content. Navigations go network-first: fetch fresh HTML when online, fall back to the cache only when the network fails.
+
+```js
+// HTML pages - network-first.
+// Must NOT be stale-while-revalidate: the cached HTML pins content-hashed
+// chunk URLs from the build it was captured on, so after a deploy SWR would
+// serve the old app shell referencing old/now-missing chunks.
+if (
+  request.mode === 'navigate' ||
+  request.headers.get('accept')?.includes('text/html')
+) {
+  return {
+    cache: DYNAMIC_CACHE,
+    strategy: 'network-first',
+    limit: DYNAMIC_CACHE_LIMIT,
+  };
+}
+```
+
+The strategy itself is small: try the network, cache a copy on success, and only reach for the cache when the fetch throws.
+
+```js
+case 'network-first':
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(cache).then(c => c.put(event.request, responseClone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
+  break;
+```
+
+One detail closes the loop: a deployed service worker will not drop its old caches on its own. I bumped `CACHE_VERSION` from `v3` to `v4` so the `activate` handler deletes every cache that is not on the current version list, including the stale HTML that started this.
+
+## The result
+
+- Online navigations always get fresh HTML with current chunk references.
+- Offline still works: the cache is the fallback, not the default.
+- The focus fix, unchanged since build 2, started working the moment the worker stopped serving last week's document.
+
+## The takeaway
+
+A service worker can make a correct fix look broken, and it shows up in neither your diff nor your tests. The trap is caching the one file you cannot afford to serve stale: the HTML does not hold your app, it holds the addresses of your app. Before debugging the same fix a fifth time, prove the browser is running the build you think it is.

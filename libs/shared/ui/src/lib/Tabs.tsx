@@ -121,7 +121,7 @@ export function Tabs({
                   ? cn(
                       'border-b-2',
                       activeTab === tab.id
-                        ? 'border-brand-500 text-brand-500'
+                        ? 'border-brand-500 text-brand-600 dark:text-brand-400'
                         : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border-secondary'
                     )
                   : cn(

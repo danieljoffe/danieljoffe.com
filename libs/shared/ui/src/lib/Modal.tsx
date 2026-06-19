@@ -148,14 +148,14 @@ export function Modal({
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : 'Dialog'}
         className={cn(
-          'relative w-full rounded-lg shadow-2xl',
+          'relative flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-lg shadow-2xl',
           sizeStyles[size],
           variantStyles[variant],
           className
         )}
       >
         {title && (
-          <div className='flex items-center justify-between p-4 sm:p-6 border-b border-border'>
+          <div className='flex shrink-0 items-center justify-between p-4 sm:p-6 border-b border-border'>
             <Heading variant='component' id={titleId}>
               {title}
             </Heading>
@@ -181,9 +181,12 @@ export function Modal({
             <X className='size-5' aria-hidden='true' />
           </Button>
         )}
-        <div className='p-4 sm:p-6'>{children}</div>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focusable scroll region so keyboard users can scroll overflowing content (axe scrollable-region-focusable / WCAG 2.1.1) */}
+        <div className='min-h-0 flex-1 overflow-y-auto p-4 sm:p-6' tabIndex={0}>
+          {children}
+        </div>
         {footer && (
-          <div className='flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-border'>
+          <div className='flex shrink-0 items-center justify-end gap-3 p-4 sm:p-6 border-t border-border'>
             {footer}
           </div>
         )}

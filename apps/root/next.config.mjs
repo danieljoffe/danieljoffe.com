@@ -170,6 +170,18 @@ const nextConfig = {
           },
         ],
       },
+      // Service worker - never HTTP-cache the script itself, so a redeployed
+      // sw.js (e.g. a new CACHE_VERSION or strategy change) is picked up on the
+      // next visit instead of being pinned to a stale copy.
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
       // Static images - immutable, 1 year
       {
         source: '/images/:path*',

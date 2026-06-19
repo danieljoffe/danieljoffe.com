@@ -34,6 +34,19 @@ export interface PostBodyProps extends WithChildren {
   readingTime: number;
 }
 
+/** A single prev/next pagination link within a content type. */
+export interface PaginationLink {
+  slug: string;
+  title: string;
+  href: string;
+}
+
+/** Prev/next pagination pair for a content detail page. */
+export interface PostPaginationData {
+  prev: PaginationLink;
+  next: PaginationLink;
+}
+
 /** Supported content types in the content registry. */
 export type ContentType = 'project' | 'experience' | 'blog';
 
@@ -49,6 +62,13 @@ export interface ContentTypeConfig {
 export interface PostMetadata {
   title: string;
   date: string;
+  /**
+   * Per-type display sort key (ascending). Authored as sparse multiples of 10
+   * so new posts can be slotted between existing ones without renumbering.
+   * The content registry sorts each type by this; uniqueness is enforced at
+   * build time (see contentRegistry) and in the registry unit test.
+   */
+  order: number;
   excerpt: string;
   author: string;
   category: string;

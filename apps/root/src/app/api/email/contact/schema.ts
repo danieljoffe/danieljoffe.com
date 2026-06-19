@@ -133,6 +133,14 @@ export const formSchema = z.object({
           'Please remove links from your message'
         )
     ),
-  /** hCaptcha token for bot protection */
-  hcaptcha: z.string().min(1, 'Please verify you are human'),
+  /**
+   * hCaptcha token for bot protection. The `error` param makes the
+   * invalid-type case (token still `undefined` before the captcha is solved)
+   * report a friendly message instead of zod's raw
+   * "Invalid input: expected string, received undefined", which otherwise
+   * surfaces in the form's assertive error summary.
+   */
+  hcaptcha: z
+    .string({ error: 'Please complete the captcha verification.' })
+    .min(1, 'Please complete the captcha verification.'),
 });
