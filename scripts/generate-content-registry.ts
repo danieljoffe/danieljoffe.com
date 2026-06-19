@@ -13,9 +13,10 @@
  *
  * Scope: this only generates the component/metadata import maps (the tedious,
  * error-prone part — a missed import silently breaks the build). Slug constants
- * (data/blog.ts etc.) and display order (data/contentOrder.ts) stay hand-authored
- * because slug-array order is load-bearing (About page list, structured-data
- * ItemLists) and project order is curated, not derivable from dates.
+ * (data/blog.ts etc.) stay hand-authored because slug-array order is load-bearing
+ * (Allowed*Slugs type, About page list, structured-data ItemLists). Display order
+ * is the `order` field in each MDX's metadata — the registry sorts by it, so it is
+ * not derived here (see data/contentRegistry.ts and .claude/docs/content-posts.md).
  */
 import fs from 'node:fs';
 import path from 'node:path';

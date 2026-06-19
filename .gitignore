@@ -93,5 +93,6 @@ apps/root/src/data/generated/
 
 .claude/worktrees
 .claude/settings.local.json
+.claude/scratch/
 
 .nx/key/

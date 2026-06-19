@@ -1,6 +1,7 @@
 export const metadata = {
   title: 'asyncio.gather Is Not Enough for a Sync Client',
   date: '2026-04-17',
+  order: 410,
   excerpt:
     'A job poller stuck at 48 seconds. asyncio.gather did nothing. Batching plus asyncio.to_thread cut it to 8 seconds without a new library.',
   author: 'Daniel Joffe',
