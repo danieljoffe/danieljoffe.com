@@ -3,10 +3,8 @@
   "version": "0.0.2",
   "private": true,
   "dependencies": {
-    "@danieljoffe.com/shared-audit": "workspace:*",
     "@danieljoffe/shared-ui": "workspace:*",
     "mermaid": "^11.15.0",
-    "recharts": "^3.8.1",
     "sharp": "^0.34.5"
   }
 }
