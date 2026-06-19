@@ -210,6 +210,7 @@ describe('buildPostMetadata', () => {
   const projectMeta: PostMetadata = {
     title: 'Test Project',
     date: '2025-01-01',
+    order: 10,
     excerpt: 'A test project description',
     author: 'Daniel Joffe',
     category: 'Testing',
@@ -227,6 +228,7 @@ describe('buildPostMetadata', () => {
   const experienceMeta: PostMetadata = {
     title: 'Test Company',
     date: '2020-01-01',
+    order: 20,
     excerpt: 'A test experience description',
     author: 'Daniel Joffe',
     category: 'Career Experience',
@@ -295,6 +297,7 @@ describe('buildPostMetadata', () => {
     const blogMeta: PostMetadata = {
       title: 'Test Blog Post',
       date: '2026-04-01',
+      order: 10,
       excerpt: 'A test blog description',
       author: 'Daniel Joffe',
       category: 'Frontend',
@@ -316,6 +319,7 @@ describe('buildPostMetadata', () => {
     const blogMeta: PostMetadata = {
       title: 'Test Blog Post',
       date: '2026-04-01',
+      order: 10,
       excerpt: 'A test blog description',
       author: 'Daniel Joffe',
       category: 'Frontend',

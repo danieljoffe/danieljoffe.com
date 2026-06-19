@@ -153,4 +153,30 @@ describe('contentRegistry', () => {
       expect(types.has('blog')).toBe(true);
     });
   });
+
+  describe('display order', () => {
+    const TYPES = ['project', 'experience', 'blog'] as const;
+
+    it('sorts each type by a unique, ascending metadata.order', () => {
+      for (const type of TYPES) {
+        const orders = getContentByType(type).map(e => e.metadata.order);
+        // Registry output is sorted ascending by `order`.
+        expect(orders).toEqual([...orders].sort((a, b) => a - b));
+        // `order` is unique within a type — guarantees stable structured-data
+        // ItemList positions and prev/next pagination.
+        expect(new Set(orders).size).toBe(orders.length);
+      }
+    });
+
+    it('prints the resolved per-type display order', () => {
+      const report = TYPES.map(type => {
+        const rows = getContentByType(type)
+          .map(e => `  ${String(e.metadata.order).padStart(4)}  ${e.slug}`)
+          .join('\n');
+        return `${type}:\n${rows}`;
+      }).join('\n\n');
+      console.info(`\nResolved content display order:\n${report}\n`);
+      expect(getAllContent().length).toBe(69);
+    });
+  });
 });

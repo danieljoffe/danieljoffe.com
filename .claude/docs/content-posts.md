@@ -8,6 +8,7 @@ All content lives in `apps/root/src/data/content/`. Every MDX file **must** incl
 export const metadata = {
   title: 'Catchy, descriptive title',
   date: 'YYYY-MM-DD', // Projects: git creation date. Experience: employment start date.
+  order: 150, // Display sort key (ascending) within this content type. Sparse *10s, unique.
   excerpt: 'One-sentence summary for previews and SEO',
   author: 'Daniel Joffe',
   category: 'Category Name', // e.g. 'Design Systems', 'Performance Engineering', 'Career Experience'
@@ -55,21 +56,22 @@ Each entry contains: `slug`, `type`, `thumbnail`, `component`, `metadata`, `stru
 
 ## Content Ordering
 
-Chronological ordering arrays live in `data/contentOrder.ts`:
+Display order is the **`order`** field in each post's MDX `metadata`. The registry (`data/contentRegistry.ts`) sorts every type ascending by it, with the slug as a stable tie-breaker. There is no separate order file.
 
-- **`projectHistory`**: Ordered by git creation date; entries sharing the same date are sub-sorted by the chronology of the work they describe. New projects must be inserted in the correct position.
-- **`experienceHistory`**: Ordered by employment start date (earliest first). New entries must be inserted chronologically.
-- **`blogHistory`**: Ordered by publish date (earliest first).
+- Values are **sparse multiples of 10** (10, 20, 30, …) so a new post can slot between two existing ones without renumbering — to place a post between `order: 40` and `order: 50`, give it `45`.
+- `order` is decoupled from `date` on purpose: `date` stays an honest publish/work date (it feeds JSON-LD `datePublished` and the visible date), while `order` encodes curated display position. Several projects share a `date` but each gets a distinct `order`.
+- **`order` must be unique within a type.** A duplicate (or missing) value fails the build — asserted in `contentRegistry.ts` and in the registry unit test (`data/__tests__/contentRegistry.spec.ts`), which also prints the full resolved per-type order.
+- Convention: projects ascend oldest→newest by the chronology of the work (newest renders last); experience ascends by employment start date; blog ascends by publish date.
 
 ## Adding a New Post
 
 MDX is the single source of truth for every content field that appears on the site — thumbnail title, excerpt, cover image, SEO, OG images, and structured data all derive from the same `export const metadata` block.
 
-1. Create the `.mdx` file with an `export const metadata` block including the `cover` field (see format below).
-2. Add the slug constant to `data/project.ts`, `data/experience.ts`, or `data/blog.ts`.
-3. Import the MDX component **and metadata** in the corresponding `data/content/*/index.ts`.
-4. Insert the slug into the correct position in `contentOrder.ts`.
-5. For **experience** entries only: also add a hand-authored `ExperienceStructuredData` entry in `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata — no manual step.
+1. Create the `.mdx` file with an `export const metadata` block including the `order` field (display position — see Content Ordering) and the `cover` field (see format below).
+2. Add the slug constant to `data/project.ts`, `data/experience.ts`, or `data/blog.ts`. (This array's order is separate from display `order`: it backs the `Allowed*Slugs` type, the About page list, and the structured-data `ItemList`s.)
+3. For **experience** entries only: also add a hand-authored `ExperienceStructuredData` entry in `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata — no manual step.
+
+> The component/metadata import maps in `data/content/{type}/index.ts` are **generated automatically** from the `.mdx` files by `scripts/generate-content-registry.ts` (runs on `pnpm install` via `postinstall` and as an Nx dependency of `build`/`test`). You no longer hand-edit those maps — drop the `.mdx` file and they regenerate. Output lives in the gitignored `data/generated/`.
 
 The MDX `metadata` block must include at minimum:
 
@@ -77,6 +79,7 @@ The MDX `metadata` block must include at minimum:
 export const metadata = {
   title: 'Specific, outcome-driven title',
   date: 'YYYY-MM-DD',
+  order: 500, // Display position within the type (ascending). Sparse *10s, unique.
   excerpt: 'One compelling sentence, ≤ 160 chars, no em dashes',
   author: 'Daniel Joffe',
   category: 'Category Name',

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import type { PostPaginationData } from '@/data/contentOrder';
+import type { PostPaginationData } from '@/types/postTypes';
 import { PostPagination } from './PostPagination';
 
 expect.extend(toHaveNoViolations);

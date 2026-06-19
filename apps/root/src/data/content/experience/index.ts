@@ -1,34 +1,19 @@
 import { ComponentType } from 'react';
+import {
+  experienceMdxComponents as components,
+  experienceMdxMetadata as metadata,
+} from '@/data/generated/experience.generated';
 import { AllowedExperienceSlugs } from '@/types/base';
 import { PostMetadata } from '@/types/postTypes';
-import Winc, { metadata as wincMeta } from './winc.mdx';
-import InternetBrands, { metadata as ibMeta } from './internet-brands.mdx';
-import TheLibraryCorporation, {
-  metadata as tlcMeta,
-} from './the-library-corporation.mdx';
-import FightCamp, { metadata as fcMeta } from './fightcamp.mdx';
-import ProfessionalDevelopment, {
-  metadata as sdMeta,
-} from './professional-development.mdx';
 
+// The component/metadata maps are generated from data/content/experience/*.mdx by
+// scripts/generate-content-registry.ts (gitignored output). Re-typing them to a
+// Record over AllowedExperienceSlugs makes a missing/extra slug a compile error.
 export const experienceMdxComponents: Record<
   AllowedExperienceSlugs,
   ComponentType
-> = {
-  winc: Winc,
-  'internet-brands': InternetBrands,
-  'the-library-corporation': TheLibraryCorporation,
-  fightcamp: FightCamp,
-  'professional-development': ProfessionalDevelopment,
-};
-
+> = components;
 export const experienceMdxMetadata: Record<
   AllowedExperienceSlugs,
   PostMetadata
-> = {
-  winc: wincMeta,
-  'internet-brands': ibMeta,
-  'the-library-corporation': tlcMeta,
-  fightcamp: fcMeta,
-  'professional-development': sdMeta,
-};
+> = metadata;

@@ -1,12 +1,11 @@
 import type { NavLink } from '@/types/base';
-import { ContentType } from '@/types/postTypes';
+import { ContentType, type PostPaginationData } from '@/types/postTypes';
 import { contentTypeConfigs } from '@/data/contentTypeConfig';
 import {
   getContentBySlug,
   getContentPagination,
   type ContentEntry,
 } from '@/data/contentRegistry';
-import { type PostPaginationData } from '@/data/contentOrder';
 
 export interface PostDetailProps {
   entry: ContentEntry;

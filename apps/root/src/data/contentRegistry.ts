@@ -4,7 +4,12 @@ import {
   ExperienceStructuredData,
   BlogStructuredData,
 } from '@/types/base';
-import { ContentType, PostMetadata, PostThumbnail } from '@/types/postTypes';
+import {
+  ContentType,
+  PostMetadata,
+  PostThumbnail,
+  type PostPaginationData,
+} from '@/types/postTypes';
 import { contentTypeConfigs } from '@/data/contentTypeConfig';
 import { buildThumbnail } from '@/data/buildThumbnail';
 import {
@@ -19,12 +24,6 @@ import { blogMdxComponents, blogMdxMetadata } from '@/data/content/blog';
 import { projectStructuredData } from '@/data/structuredData/project';
 import { experienceStructuredData } from '@/data/structuredData/experience';
 import { blogStructuredData } from '@/data/structuredData/blog';
-import {
-  projectHistory,
-  experienceHistory,
-  blogHistory,
-  type PostPaginationData,
-} from '@/data/contentOrder';
 import {
   projectReadingTimes,
   experienceReadingTimes,
@@ -50,58 +49,81 @@ export interface ContentEntry {
 // Build the registry from MDX metadata (the single source of truth)
 // ---------------------------------------------------------------------------
 
-function buildProjectEntries(): ContentEntry[] {
-  return projectHistory.map(slug => {
-    const metadata = projectMdxMetadata[slug];
-    const readingTime = projectReadingTimes[slug];
-    return {
-      slug,
-      type: 'project' as const,
-      thumbnail: buildThumbnail(metadata, readingTime),
-      component: projectMdxComponents[slug],
-      metadata,
-      structuredData: projectStructuredData[slug],
-      readingTime,
-    };
-  });
-}
+/**
+ * Builds the display-ordered entries for one content type.
+ *
+ * Display order is the `order` field on each post's MDX metadata (ascending),
+ * with the slug as a stable tie-breaker so a collision can never silently
+ * shuffle output. `order` must be present and unique within a type — a missing
+ * or duplicate value would make structured-data ItemList positions and prev/next
+ * pagination non-deterministic — so both are asserted here at module load, which
+ * fails the build (and is covered by the registry unit test).
+ */
+function buildEntries<Slug extends string>(
+  type: ContentType,
+  components: Record<Slug, ComponentType>,
+  metadataMap: Record<Slug, PostMetadata>,
+  readingTimes: Record<Slug, number>,
+  structuredData: Record<Slug, ContentStructuredData>
+): ContentEntry[] {
+  const slugs = (Object.keys(metadataMap) as Slug[]).sort(
+    (a, b) => metadataMap[a].order - metadataMap[b].order || a.localeCompare(b)
+  );
 
-function buildExperienceEntries(): ContentEntry[] {
-  return experienceHistory.map(slug => {
-    const metadata = experienceMdxMetadata[slug];
-    const readingTime = experienceReadingTimes[slug];
-    return {
-      slug,
-      type: 'experience' as const,
-      thumbnail: buildThumbnail(metadata, readingTime),
-      component: experienceMdxComponents[slug],
-      metadata,
-      structuredData: experienceStructuredData[slug],
-      readingTime,
-    };
-  });
-}
+  const seenOrder = new Map<number, string>();
+  for (const slug of slugs) {
+    const { order } = metadataMap[slug];
+    if (typeof order !== 'number' || !Number.isFinite(order)) {
+      throw new Error(
+        `Content "${type}/${slug}" is missing a numeric \`order\` in its MDX metadata.`
+      );
+    }
+    const clash = seenOrder.get(order);
+    if (clash) {
+      throw new Error(
+        `Duplicate \`order\` ${order} for type "${type}": "${clash}" and "${slug}". Each post needs a unique order.`
+      );
+    }
+    seenOrder.set(order, slug);
+  }
 
-function buildBlogEntries(): ContentEntry[] {
-  return blogHistory.map(slug => {
-    const metadata = blogMdxMetadata[slug];
-    const readingTime = blogReadingTimes[slug];
+  return slugs.map(slug => {
+    const metadata = metadataMap[slug];
+    const readingTime = readingTimes[slug];
     return {
       slug,
-      type: 'blog' as const,
+      type,
       thumbnail: buildThumbnail(metadata, readingTime),
-      component: blogMdxComponents[slug],
+      component: components[slug],
       metadata,
-      structuredData: blogStructuredData[slug],
+      structuredData: structuredData[slug],
       readingTime,
     };
   });
 }
 
 const entries: ContentEntry[] = [
-  ...buildProjectEntries(),
-  ...buildExperienceEntries(),
-  ...buildBlogEntries(),
+  ...buildEntries(
+    'project',
+    projectMdxComponents,
+    projectMdxMetadata,
+    projectReadingTimes,
+    projectStructuredData
+  ),
+  ...buildEntries(
+    'experience',
+    experienceMdxComponents,
+    experienceMdxMetadata,
+    experienceReadingTimes,
+    experienceStructuredData
+  ),
+  ...buildEntries(
+    'blog',
+    blogMdxComponents,
+    blogMdxMetadata,
+    blogReadingTimes,
+    blogStructuredData
+  ),
 ];
 
 // Lookup maps for O(1) access

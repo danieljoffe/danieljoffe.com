@@ -1,4 +1,7 @@
-export const projectSlugs = {
+// Internal named handles used only to build (and order) projectPageSlugs below.
+// The display order of posts now lives in each MDX's `order` metadata field;
+// this array's order backs AllowedProjectSlugs, the About list, and ItemLists.
+const projectSlugs = {
   uiV1: 'ui-components-v1',
   uiV2: 'ui-components-v2',
   csPerformance: 'performance-case-study',

@@ -1,6 +1,6 @@
 import { Text } from '@danieljoffe/shared-ui/Text';
 import Button from '@/components/Button';
-import { type PostPaginationData } from '@/data/contentOrder';
+import { type PostPaginationData } from '@/types/postTypes';
 
 interface PostPaginationProps {
   pagination: PostPaginationData;
