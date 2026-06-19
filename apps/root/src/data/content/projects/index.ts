@@ -39,6 +39,9 @@ import AuditToolCaseStudy, {
 import SharedUiCaseStudy, {
   metadata as sharedUiCaseStudyMeta,
 } from './shared-ui-case-study.mdx';
+import WyrdFoldCaseStudy, {
+  metadata as wyrdFoldMeta,
+} from './wyrdfold-case-study.mdx';
 
 export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
   {
@@ -56,6 +59,7 @@ export const projectMdxComponents: Record<AllowedProjectSlugs, ComponentType> =
     'api-performance-case-study': ApiPerformanceCaseStudy,
     'audit-tool-case-study': AuditToolCaseStudy,
     'shared-ui-case-study': SharedUiCaseStudy,
+    'wyrdfold-case-study': WyrdFoldCaseStudy,
   };
 
 export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
@@ -73,4 +77,5 @@ export const projectMdxMetadata: Record<AllowedProjectSlugs, PostMetadata> = {
   'api-performance-case-study': apiPerfMeta,
   'audit-tool-case-study': auditToolMeta,
   'shared-ui-case-study': sharedUiCaseStudyMeta,
+  'wyrdfold-case-study': wyrdFoldMeta,
 };
