@@ -67,9 +67,10 @@ MDX is the single source of truth for every content field that appears on the si
 
 1. Create the `.mdx` file with an `export const metadata` block including the `cover` field (see format below).
 2. Add the slug constant to `data/project.ts`, `data/experience.ts`, or `data/blog.ts`.
-3. Import the MDX component **and metadata** in the corresponding `data/content/*/index.ts`.
-4. Insert the slug into the correct position in `contentOrder.ts`.
-5. For **experience** entries only: also add a hand-authored `ExperienceStructuredData` entry in `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata — no manual step.
+3. Insert the slug into the correct position in `contentOrder.ts` (this is where publish order/date is authored).
+4. For **experience** entries only: also add a hand-authored `ExperienceStructuredData` entry in `data/structuredData/experience.ts` (the `Role`/`worksFor` shape). Blog and project structured data are auto-derived from MDX metadata — no manual step.
+
+> The component/metadata import maps in `data/content/{type}/index.ts` are **generated automatically** from the `.mdx` files by `scripts/generate-content-registry.ts` (runs on `pnpm install` via `postinstall` and as an Nx dependency of `build`/`test`). You no longer hand-edit those maps — drop the `.mdx` file and they regenerate. Output lives in the gitignored `data/generated/`.
 
 The MDX `metadata` block must include at minimum:
 
