@@ -18,9 +18,9 @@ export const metadata = {
 ## Why Import Order Matters
 
 In a monorepo with multiple path aliases (`@/` for app internals,
-`@danieljoffe.com/*` for library packages), imports can appear in any order.
-Over time this creates a subtle problem: you can't glance at the top of a file
-and immediately understand its dependency layers.
+`@danieljoffe.com/*` for library packages), imports can land in any order, and
+over time that creates a subtle problem: you can't glance at the top of a file
+and immediately tell which dependency layer each import belongs to.
 
 Compare these two versions of the same imports:
 
@@ -42,8 +42,8 @@ import { analytics } from '@/lib/analytics';
 import Button from '@/components/Button';
 ```
 
-The second version tells a story: framework deps first, then library deps,
-then app internals. You know at a glance where each import comes from.
+The second version reads in layers: framework deps first, then library deps,
+then app internals, so you know at a glance where each import comes from.
 
 ## The Configuration
 
@@ -80,13 +80,13 @@ to handle the monorepo aliases:
 ],
 ```
 
-The `pathGroups` configuration places `@danieljoffe.com/*` imports after
-other external packages but before `@/` app-internal imports. This creates
-a clear visual hierarchy: node → npm packages → monorepo libraries → app code
+The `pathGroups` config places `@danieljoffe.com/*` imports after the
+other external packages but before `@/` app-internal imports, which gives me
+a clear hierarchy: node → npm packages → monorepo libraries → app code
 → local files.
 
-I intentionally omit `alphabetize`. Forcing alphabetical order within groups
-adds friction without meaningful readability gains.
+I leave out `alphabetize` on purpose, since forcing alphabetical order within
+groups adds friction without buying much readability.
 
 ## The ESLint 10 Compatibility Problem
 
@@ -97,11 +97,11 @@ TypeError: sourceCode.getTokenOrCommentBefore is not a function
 Rule: "import/order"
 ```
 
-`eslint-plugin-import` 2.32.0 uses `getTokenOrCommentBefore`, an API removed
-in ESLint 10. The Next.js ESLint config registers the plugin without the
-compatibility shim, so it worked for some rules but crashed on `import/order`.
+`eslint-plugin-import` 2.32.0 uses `getTokenOrCommentBefore`, an API that
+ESLint 10 removed. The Next.js ESLint config registers the plugin without the
+compatibility shim, so it worked for some rules but blew up on `import/order`.
 
-The fix: strip the `import` plugin from Next.js's config and re-register it
+The fix is to strip the `import` plugin out of Next.js's config and re-register it
 with `fixupPluginRules`, the same pattern already used for `eslint-plugin-react`:
 
 ```js
@@ -121,10 +121,10 @@ const nextConfigs = nextCoreWebVitals.map(cfg => {
 
 ## Fixing 77 Violations
 
-After the config was stable, the initial lint run found 77 errors. 66 were
-auto-fixable with `--fix`. The rule reorders import statements automatically.
+Once the config was stable, the first lint run turned up 77 errors, and 66 of
+them were auto-fixable with `--fix` since the rule reorders import statements for you.
 
-The remaining 11 were all in test files with a common pattern:
+The remaining 11 were all in test files, with the same pattern:
 
 ```tsx
 import { render } from '@testing-library/react';
@@ -134,9 +134,9 @@ import CalendlyButton from './CalendlyButton';
 import { analytics } from '@/lib/analytics';
 ```
 
-The fix was consistent: move all imports to the top (grouped together), then
-place `jest.mock()` calls after. Jest hoists mock calls regardless of
-position, so this is purely a readability improvement:
+The fix was the same each time: move all the imports to the top, grouped
+together, and put the `jest.mock()` calls after them. Jest hoists mock calls
+regardless of where they sit, so this is purely a readability win:
 
 ```tsx
 import { render } from '@testing-library/react';
@@ -148,12 +148,12 @@ jest.mock('@/lib/analytics');
 
 ## Circular Dependency Prevention
 
-Alongside `import/order`, I added `import/no-cycle` as an error. This
-catches circular imports at lint time rather than at runtime (where they
-cause mysterious `undefined` values).
+Alongside `import/order`, I turned on `import/no-cycle` as an error, so
+circular imports get caught at lint time instead of at runtime, where they
+surface as mysterious `undefined` values.
 
-The shared-ui library already had this rule. Extending it to the app ensures
-the entire monorepo is protected.
+The shared-ui library already had this rule, so extending it to the app means
+the whole monorepo is covered.
 
 ## Results
 

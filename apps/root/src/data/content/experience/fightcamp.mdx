@@ -30,17 +30,17 @@ export const metadata = {
 
 ## The Context
 
-FightCamp, often described as "Peloton for boxing", was a connected fitness startup riding the pandemic home-workout boom. I joined a small web team of 3 engineers, reconnecting with a former mentee from Internet Brands who'd recommended me for the role.
+FightCamp was the "Peloton for boxing", a connected fitness startup riding the pandemic home-workout boom. I joined a small web team of three engineers, and I got the role through a former mentee from Internet Brands who'd recommended me.
 
-The company had grown fast, but the website's technical foundations hadn't kept pace. I discovered just how much during my first R&D Friday.
+The company had grown fast, but the website's foundations hadn't kept up; I found out exactly how far behind they were on my first R&D Friday.
 
 ## The Challenge
 
 ### Performance Discovery
 
-FightCamp held monthly R&D Fridays, dedicated time for code cleanup, refactoring, and investigation. On my first one, I ran Lighthouse audits on the marketing site. The scores were bad. Really bad.
+No one had ever run a Lighthouse audit on the marketing site, so on my first R&D Friday (monthly time set aside for cleanup, refactoring, and poking around), I did. The scores were dismal.
 
-Mobile First Contentful Paint was 8-12 seconds. Users on 3G/4G connections were bouncing before they could see any content. I dug into why:
+Mobile First Contentful Paint was 8-12 seconds, which meant users on 3G/4G were bouncing before they ever saw a thing. So I dug into why:
 
 - **Images:** HD images (hundreds of megabytes total) served regardless of viewport size
 - **Videos:** Hero videos were 500-800 MB, downloaded entirely on page load
@@ -48,17 +48,17 @@ Mobile First Contentful Paint was 8-12 seconds. Users on 3G/4G connections were 
 - **No lazy loading:** Everything loaded upfront, blocking render
 - **Missing optimizations:** Incorrect image dimensions, missing HTML attributes
 
-I proposed a systematic fix to my manager. He approved, and it became my primary project.
+I pitched my manager a systematic fix, he approved it, and it became my primary project.
 
-### Marketing Bottleneck (Again)
+### Marketing Was Bottlenecked, Again
 
-Sound familiar? Just as at Winc, marketing relied on engineering for content updates. Every copy change, image swap, or new section required a developer. The pattern was clear; I'd solved this before.
+I'd seen this exact pattern before, at Winc: marketing leaned on engineering for every content update. A copy change, an image swap, a new section, all of it needed a developer. I'd already solved this once, so I knew where it was heading.
 
 ## The Solution
 
 ### Performance Optimization
 
-I attacked each root cause systematically:
+I went after each root cause one at a time:
 
 _Images:_
 
@@ -81,24 +81,24 @@ _Bundle:_
 - Reduced bundle from ~725 KB to ~275 KB
 
 _Discovery:_
-While debugging, I found that the Vue store alone caused a 20-point Lighthouse impact. Without the store loaded, scores jumped to 98-99. (The store stayed; the functionality was needed, but it explained the ceiling.)
+While debugging, I found the Vue store alone was costing 20 Lighthouse points; with it unloaded, scores jumped to 98-99. The store stayed because we needed the functionality, but at least it explained the ceiling I kept hitting.
 
 ### Storyblok CMS Migration
 
-I analyzed 7 marketing pages for common patterns, then extended the UI component library with 10+ CMS-connected components:
+I went through 7 marketing pages looking for the patterns they shared, then extended the UI component library with 10+ CMS-connected components:
 
 - PageSection, Copy, Video, Image, Hero, Thumbnail, and more
-- Each component is documented in Storybook with usage examples
+- Each one documented in Storybook with usage examples
 - Full Jest test coverage
 - Storyblok API integration with input validation rules
 
-This lets the content team build and update pages without engineering involvement.
+That let the content team build and update pages without pulling in an engineer.
 
 ### A/B Testing Infrastructure
 
-Marketing wanted to run experiments on different copy angles, video variations, ands, but had no way to do so without offering a structure without engineering building each variant.
+Marketing wanted to experiment with different copy angles, video variations, and offers, but every variant meant an engineer hand-building it, so the experiments just never happened.
 
-I built configurable test components integrated with Google Optimize:
+So I built configurable test components wired into Google Optimize:
 
 - Quarterly collaboration with marketing on test design
 - 2-week test cycles
@@ -106,7 +106,7 @@ I built configurable test components integrated with Google Optimize:
 
 ### Mentorship
 
-I paired with Sam, a junior developer, on complex TypeScript tickets. Focused on teaching component breakdown and task decomposition, the same approach my mentors had used with me.
+I paired with Sam, a junior developer, on the gnarlier TypeScript tickets. I focused on teaching him how to break a component down and decompose a task, the same way my own mentors had taught me.
 
 ## The Impact
 
@@ -128,13 +128,13 @@ I paired with Sam, a junior developer, on complex TypeScript tickets. Focused on
 
 ## Why I Left
 
-I was furloughed in January 2023 during the post-pandemic market correction. Connected fitness contracted hard; Peloton's struggles around the same time tell the broader story. FightCamp had over-projected growth, and when the market shifted, they reduced headcount.
+I was furloughed in January 2023 during the post-pandemic correction. Connected fitness contracted hard, and Peloton's troubles around the same time tell the broader story. FightCamp had over-projected its growth, so when the market turned they cut headcount.
 
 ## What I Learned
 
-This role reinforced a pattern I first saw at Winc: the highest-leverage engineering work often isn't the most technically complex; it's the work that removes friction for other teams. The CMS migration wasn't glamorous, but it changed how fast marketing could move.
+This role reinforced something I'd first seen at Winc: the highest-leverage engineering work usually isn't the most technically difficult; it's the work that takes friction off another team. The CMS migration wasn't glamorous, but it changed how fast marketing could move, and that's what mattered.
 
-The performance work taught me something different: sometimes the biggest wins are hiding in plain sight. No one had run a Lighthouse audit. I did, and it became the most impactful project of my time there.
+The performance work taught me something else: sometimes the biggest wins are sitting in plain sight, waiting for someone to bother looking. No one had run a Lighthouse audit, so I did, and it turned into the most impactful thing I shipped there.
 
 ## Tech Stack
 

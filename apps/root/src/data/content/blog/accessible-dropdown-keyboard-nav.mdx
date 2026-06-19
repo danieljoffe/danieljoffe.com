@@ -15,22 +15,23 @@ export const metadata = {
   },
 };
 
-## The Default Move
+## The default move
 
-When a dropdown needs to be accessible, most teams reach for Radix or
-Headless UI. These are excellent libraries. But if your component library
-already has a custom Dropdown — one that works, is styled, and is used
-everywhere — pulling in a new dependency just for ARIA attributes feels
-backwards.
+When a dropdown needs to be accessible, the reflex is to reach for Radix or
+Headless UI, and they're genuinely good libraries; but if your component
+library already has a custom Dropdown that works, is styled, and is used
+everywhere, pulling in a whole new dependency just for some ARIA attributes
+feels backwards.
 
 I had that exact Dropdown. It opened on click, closed on outside click, and
-rendered items. No ARIA roles, no keyboard navigation, no focus management.
-Screen readers saw a `<button>` that spawned some `<div>`s.
+rendered items, and that was the whole story: no ARIA roles, no keyboard
+navigation, no focus management. A screen reader saw a `<button>` that
+spawned some `<div>`s and shrugged.
 
-## What the Spec Actually Requires
+## What the spec actually requires
 
-The [WAI-ARIA Menu Pattern](https://www.w3.org/WAI/ARIA/apd/patterns/menu/)
-defines a clear contract:
+The good news is the [WAI-ARIA Menu Pattern](https://www.w3.org/WAI/ARIA/apd/patterns/menu/)
+spells out a clear contract:
 
 - **Trigger**: `aria-haspopup="true"`, `aria-expanded`, `aria-controls`
   pointing to the menu
@@ -42,14 +43,14 @@ defines a clear contract:
 - **Keyboard**: Arrow keys to navigate, Enter/Space to activate, Escape to
   close, Home/End to jump
 
-That's it. No mystery. The spec is prescriptive enough that the
-implementation almost writes itself.
+That's the whole thing, and it's prescriptive enough that the implementation
+almost writes itself.
 
 ## Roving tabIndex
 
-The key pattern is roving `tabIndex`. Instead of moving DOM focus with
-`document.activeElement` tricks, each item declares whether it's the current
-focus target:
+The key pattern is roving `tabIndex`: instead of moving DOM focus around with
+`document.activeElement` tricks, each item just declares whether it's the
+current focus target.
 
 ```tsx
 <button
@@ -72,14 +73,14 @@ const focusItem = useCallback((index: number) => {
 }, []);
 ```
 
-This gives screen readers a clear signal about which item is current, and
-Tab moves focus _out_ of the menu entirely, which is the correct behavior
-per spec.
+This gives a screen reader a clear signal about which item is current, and
+Tab moves focus _out_ of the menu entirely, which is exactly what the spec
+wants.
 
-## Skipping Non-Actionable Items
+## Skipping non-actionable items
 
-Dropdown items aren't always clickable. Dividers and disabled items should
-be skipped during keyboard navigation. I pre-compute the actionable
+Dropdown items aren't always clickable; dividers and disabled items need to
+be skipped during keyboard navigation. So I pre-compute the actionable
 indices once:
 
 ```tsx
@@ -94,10 +95,10 @@ const actionableItems = useMemo(
 ```
 
 Arrow key handlers index into this array, so pressing Down from the last
-actionable item wraps to the first, and disabled items in between are
-invisible to the keyboard.
+actionable item wraps back to the first, and any disabled items in between
+are invisible to the keyboard.
 
-## The Full Keyboard Contract
+## The full keyboard contract
 
 The `handleMenuKeyDown` switch covers every interaction the spec demands:
 
@@ -120,11 +121,12 @@ case ' ': {
 case 'Tab': { closeMenu(); break; }
 ```
 
-Escape and Tab both close, but with a difference: Escape returns focus to
-the trigger (`triggerRef.current?.focus()`), while Tab lets the browser move
-focus naturally to the next element in the document.
+Escape and Tab both close the menu, but they differ on where focus lands:
+Escape returns focus to the trigger (`triggerRef.current?.focus()`), while
+Tab lets the browser move focus naturally to the next element in the
+document.
 
-## ID Linkage with useId
+## ID linkage with useId
 
 React 19's `useId()` generates stable, SSR-safe identifiers for the
 trigger-to-menu relationship:
@@ -135,14 +137,14 @@ const menuId = `dropdown-menu-${uid}`;
 const triggerId = `dropdown-trigger-${uid}`;
 ```
 
-The trigger gets `aria-controls={menuId}`, and the menu gets
-`aria-labelledby={triggerId}`. No prop drilling, no collision risk across
-multiple Dropdowns on the same page.
+The trigger gets `aria-controls={menuId}`, the menu gets
+`aria-labelledby={triggerId}`, and there's no prop drilling and no collision
+risk across multiple Dropdowns on the same page.
 
-## Testing the Invisible
+## Testing the invisible
 
-Accessibility features are invisible to sighted users, which makes testing
-non-negotiable. I added 22 tests covering:
+Accessibility features are invisible to sighted users, which is exactly why
+testing isn't optional here. I added 22 tests covering:
 
 - ARIA attributes render correctly on trigger, menu, and items
 - Arrow keys cycle through actionable items and wrap
@@ -151,13 +153,13 @@ non-negotiable. I added 22 tests covering:
 - Escape closes and returns focus to trigger
 - Focus moves to the first actionable item on open
 
-The test count went from 10 to 32. The component gained ~120 lines of code.
-No new dependencies.
+The test count went from 10 to 32, the component gained ~120 lines, and I
+added zero new dependencies.
 
-## The Takeaway
+## The takeaway
 
-The ARIA menu spec is specific enough to follow mechanically. The
-implementation is `useId` for linkage, `useMemo` for actionable indices,
-`useCallback` for focus management, and a `switch` statement for keyboard
-events. If your design system already owns the Dropdown, you already own
-the accessibility story too. You just need to write it.
+The ARIA menu spec is specific enough to follow mechanically: `useId` for
+linkage, `useMemo` for the actionable indices, `useCallback` for focus
+management, and a `switch` statement for keyboard events. If your design
+system already owns the Dropdown, it already owns the accessibility too;
+the only thing left is to sit down and write it.

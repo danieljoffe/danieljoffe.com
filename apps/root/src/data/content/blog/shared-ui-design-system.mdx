@@ -15,12 +15,12 @@ export const metadata = {
   },
 };
 
-## The Problem
+## The problem
 
-The portfolio site had grown organically. A shared-ui library existed with
-generic components (Button, Alert, Spinner), but the app had its own `kit/`
-directory full of wrappers that re-exported shared-ui components with "app-specific"
-additions. The result was a layered mess:
+The portfolio site had grown organically. There was a shared-ui library with
+generic components (Button, Alert, Spinner), but the app also had its own `kit/`
+directory full of wrappers that re-exported those same components with
+"app-specific" additions bolted on. The result was a layered mess:
 
 - **Typography wrappers**: `kit/Heading.tsx` imported `shared-ui/Heading`, added
   7 app variants (`hero`, `subtitle`, `mdxH1`–`mdxH4`), and duplicated the entire
@@ -32,14 +32,14 @@ additions. The result was a layered mess:
 - **Component wrappers**: `kit/Spinner.tsx`, `kit/ErrorAlert.tsx`, `kit/SectionLabel.tsx`,
   and others re-exported shared-ui equivalents with minor prop adaptations.
 
-Every wrapper created a maintenance burden: parallel variant sets to keep in sync,
-duplicated type definitions, and confusion about where to import from. Consumers
-had to know which layer owned which variant. Pages mixed `@/components/kit` and
-`@danieljoffe/shared-ui` imports inconsistently.
+Every wrapper was its own little tax: parallel variant sets to keep in sync,
+duplicated type definitions, and constant confusion about where to import from.
+Consumers had to know which layer owned which variant, and pages ended up mixing
+`@/components/kit` and `@danieljoffe/shared-ui` imports with no real logic to it.
 
-## The Principles
+## The principles
 
-Before writing any code, I established three rules:
+Before I wrote any code, I set three rules:
 
 1. **shared-ui is the single source of truth** for all reusable UI primitives:
    typography, layout, and generic components. It depends only on React and
@@ -51,15 +51,16 @@ Before writing any code, I established three rules:
    use the same spacing, bake it in as the default. Don't make every consumer
    repeat the same props.
 
-## The Typography System
+## The typography system
 
-The first target was the Heading/Text split. The kit wrappers maintained a
-`sharedVariants` set to decide whether to delegate to shared-ui or render
-locally: a runtime check for a compile-time concern.
+The first target was the Heading/Text split. The kit wrappers kept a
+`sharedVariants` set around to decide, at runtime, whether to delegate to
+shared-ui or render locally: a runtime check standing in for a compile-time
+concern.
 
 The fix was simple: move every variant into shared-ui.
 
-### Heading: 10 Variants
+### Heading: 10 variants
 
 ```tsx
 const variantStyles: Record<HeadingVariant, string> = {
@@ -77,10 +78,10 @@ const variantStyles: Record<HeadingVariant, string> = {
 ```
 
 Each variant maps to a sensible default HTML element (`hero` → `h1`,
-`cardTitle` → `h3`), overridable via the `as` prop. The consumer picks
-the visual intent; the component handles the semantics.
+`cardTitle` → `h3`), and you can override it with the `as` prop. The consumer
+picks the visual intent; the component takes care of the semantics.
 
-### Text: 10 Variants
+### Text: 10 variants
 
 ```tsx
 const variantStyles: Record<TextVariant, string> = {
@@ -104,13 +105,14 @@ import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { Text } from '@danieljoffe/shared-ui/Text';
 ```
 
-No kit layer. No delegation. No variant sets to keep in sync.
+No kit layer, no delegation, no variant sets to keep in sync.
 
-## Layout Primitives With Defaults
+## Layout primitives with defaults
 
-The second insight came from looking at the 15 pages that all repeated
-`className='py-16 lg:py-24 space-y-24'` on their PageLayout. If every
-consumer passes the same props, those aren't options. They're the default.
+The second realization came from staring at the 15 pages that all repeated
+`className='py-16 lg:py-24 space-y-24'` on their PageLayout. When every single
+consumer passes the same props, those aren't options anymore; they're the
+default.
 
 ### PageLayout
 
@@ -139,14 +141,14 @@ Now a page is just:
 </PageLayout>
 ```
 
-No props needed for the common case. `wide` toggles to a wider container
-for data-heavy pages. Custom `className` merges with the defaults via `cn()`.
+No props needed for the common case. `wide` toggles to a wider container for
+data-heavy pages, and a custom `className` merges with the defaults via `cn()`.
 
 ### Section
 
 The shared-ui Section had defaults that didn't match reality: `center=true`
-and `overflow='hidden'`. Every page overrode both. I flipped the defaults
-and added the base horizontal padding that every section needed:
+and `overflow='hidden'`, both of which every page overrode anyway. So I flipped
+the defaults and folded in the base horizontal padding every section needed:
 
 ```tsx
 export function Section({
@@ -168,10 +170,10 @@ export function Section({
 }
 ```
 
-## Component Promotion
+## Component promotion
 
-With the typography and layout systems consolidated, the remaining kit
-components fell into two categories:
+With the typography and layout systems consolidated, the leftover kit
+components sorted themselves into two piles:
 
 ### Moved to shared-ui (no Next.js deps)
 
@@ -181,8 +183,8 @@ components fell into two categories:
 - **SectionLabel**: icon + label + decorative rule
 - **CTACard**: card with heading, description, and action slot
 
-Each was a pure React + Tailwind component that had been in kit only by
-convention. Moving them to shared-ui made them available to any app in
+Each one was a pure React + Tailwind component that had been sitting in kit
+purely out of habit. Moving them to shared-ui made them available to any app in
 the monorepo.
 
 ### Kept in kit (Next.js dependent)
@@ -191,8 +193,8 @@ the monorepo.
 - **CoverImage**: uses `next/image` for optimization
 - **CompanyLogo**: uses `next/image`
 
-These genuinely compose Next.js APIs with shared-ui primitives. That's
-what kit is for.
+These genuinely compose Next.js APIs with shared-ui primitives, which is
+exactly what kit is for.
 
 ### Deleted entirely
 
@@ -205,14 +207,14 @@ what kit is for.
 
 ## Enforcement
 
-A design system without enforcement is just a suggestion. I added a custom
-ESLint rule that bans raw `<h1>` through `<h6>` elements in JSX, directing
-developers to use the `Heading` component instead. The rule catches violations
-at lint time, not in code review.
+A design system without enforcement is just a strongly worded suggestion. So I
+added a custom ESLint rule that bans raw `<h1>` through `<h6>` elements in JSX
+and points developers at the `Heading` component instead. The rule catches
+violations at lint time, well before they reach code review.
 
 ## Results
 
-- **176 files changed**, -4,282 / +2,273 lines. A net reduction of ~2,000 lines
+- **176 files changed**, -4,282 / +2,273 lines, a net reduction of ~2,000 lines
 - **31 consumer files** updated to import directly from shared-ui
 - **11 kit wrapper files** deleted
 - **Zero new dependencies**: shared-ui still only requires React + Tailwind
@@ -221,16 +223,17 @@ at lint time, not in code review.
 ## Takeaways
 
 **Wrappers that only add variants are a code smell.** If the wrapper doesn't
-add behavior (hooks, state, API calls), the variants belong in the library.
-The "app-specific" label was just an excuse to avoid touching the shared layer.
+add real behavior (hooks, state, API calls), those variants belong in the
+library. The "app-specific" label was just an excuse to avoid touching the
+shared layer.
 
 **Defaults should encode the dominant pattern.** When every consumer overrides
-a default, the default is wrong. Changing `center=true` to `center=false` in
-Section eliminated 15 identical prop overrides.
+a default, the default is the thing that's wrong. Flipping `center=true` to
+`center=false` in Section deleted 15 identical prop overrides in one go.
 
-**The Rule of Three applies to deletion too.** If three wrappers exist just
-to flip a prop, delete all three and fix the source.
+**The Rule of Three applies to deletion too.** If three wrappers exist just to
+flip a prop, delete all three and fix the source instead.
 
-**Enforce at the tool level.** A lint rule catches more violations than a
-convention document. The `no-raw-headings` rule has already prevented
-regressions in the same session it was introduced.
+**Enforce at the tool level.** A lint rule catches far more than a convention
+doc ever will; the `no-raw-headings` rule had already caught regressions in the
+same session I introduced it.

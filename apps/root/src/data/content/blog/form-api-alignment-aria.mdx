@@ -18,13 +18,13 @@ export const metadata = {
 ## Five Components, Five APIs
 
 The shared-ui library has five form components: Input, Textarea, Select,
-Checkbox, and Switch. Input and Textarea were the most mature: they had
+Checkbox, and Switch. Input and Textarea were the most mature ones, with
 `error`, `helperText`, and `success` props, `aria-describedby` linking
 the input to its error message, `aria-required` on required fields, and
 a required asterisk in the label.
 
-Select had none of that and neither did Checkbox or Switch. A developer
-building a form with all five components would get consistent error
+Select had none of that, and neither did Checkbox or Switch, so a developer
+building a form with all five components got consistent error
 handling on two of them and _nothing_ on the other three.
 
 ## The Forcing Function
@@ -32,13 +32,13 @@ handling on two of them and _nothing_ on the other three.
 The fix wasn't "add `helperText` to Select because Input has it." The
 forcing function was `aria-describedby`. Without it, a screen reader
 user who tabs to a Select with a validation error hears "Country,
-combobox" and nothing about what went wrong. The error message is
-visually present but programmatically invisible.
+combobox" and nothing about what went wrong; the error message is
+there visually but invisible to the API.
 
 Once `aria-describedby` is the requirement, the rest of the API falls
-into place: you need an `errorId` to point to, which means you need a
-stable `id` on the component (via `useId`), which means you need the
-error and helper text elements to have matching `id` attributes.
+into place: you need an `errorId` to point at, which means you need a
+stable `id` on the component (via `useId`), which means the
+error and helper text elements need matching `id` attributes.
 
 ## The Pattern
 
@@ -52,9 +52,9 @@ const helperId = helperText && !error ? `${inputId}-helper` : undefined;
 const describedBy = errorId || helperId;
 ```
 
-The `describedBy` logic: error messages take priority over helper text.
-If both exist, the screen reader announces the error because that's
-the actionable information. The helper text is supplementary.
+The `describedBy` logic gives error messages priority over helper text.
+If both exist, the screen reader announces the error, because that's
+the actionable bit; the helper text is supplementary.
 
 ```tsx
 <select
@@ -66,12 +66,12 @@ the actionable information. The helper text is supplementary.
 
 ## Checkbox and Switch
 
-Checkbox and Switch needed more than just new props: their DOM structure
-had to change.
+Checkbox and Switch needed more than new props; their DOM structure
+had to change too.
 
 Checkbox uses a hidden native `<input type="checkbox">` with a visual
-`<span>` overlay. The `aria-describedby` goes on the `<input>`, not the
-visual element, because that's what the screen reader actually interacts with:
+`<span>` overlay, and the `aria-describedby` goes on the `<input>`, not the
+visual element, because the `<input>` is what the screen reader actually interacts with:
 
 ```tsx
 <input
@@ -111,14 +111,14 @@ After alignment, all five components share:
 - Consistent disabled styling (`opacity-50`, `cursor-not-allowed`)
 - Error state border color (`border-error`)
 
-Input, Textarea, and Select additionally share `helperText` and
-`success` props. Checkbox and Switch omit those because they're binary
+Input, Textarea, and Select additionally share the `helperText` and
+`success` props. Checkbox and Switch leave those off, since they're binary
 controls that rarely need supplementary text.
 
 ## The Takeaway
 
-API consistency in a form library isn't ergonomics. It's accessibility.
+API consistency in a form library isn't really ergonomics; it's accessibility.
 When one component has `aria-describedby` and another doesn't, the
 inconsistency is invisible to sighted users and impassable for screen
-reader users. I've aligned the API around the accessibility requirement
-first, and the developer experience follows.
+reader users. I aligned the API around the accessibility requirement
+first, and the developer experience came along for free.

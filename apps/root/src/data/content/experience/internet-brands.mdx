@@ -30,21 +30,21 @@ export const metadata = {
 
 ## The Context
 
-I joined the Health vertical expecting to learn from experienced React developers. One month in, the senior frontend engineer left, and I became the de facto technical lead for React across the team, despite being mid-level on paper.
+I joined the Health vertical expecting to learn React from people who'd been doing it for years. A month in, the senior frontend engineer left, and I became the de facto technical lead for React across the team, even though I was mid-level on paper.
 
-The team included 4 junior frontend developers, 6 senior backend engineers, and 2 PMs. None of the remaining frontend engineers knew React. I had production experience from my ForceShield contract, but I'd never led a team or architected shared infrastructure at scale.
+The team was 4 junior frontend developers, 6 senior backend engineers, and 2 PMs, and none of the remaining frontend folks knew React. I had production experience from my ForceShield contract, but I'd never led a team or architected shared infrastructure at any kind of scale.
 
 ## The Challenge
 
-The vertical had no shared frontend infrastructure. React components were duplicated across applications with inconsistent implementations: each app reinvented the wheel, buttons, inputs, and modals, all slightly different. There was no shared design language, no contribution path, and onboarding new developers meant explaining the same patterns over and over. The real problem wasn't any single component; it was the absence of a system that let the whole vertical move without re-solving the same problems.
+The vertical had no shared frontend infrastructure at all. React components were copied across applications and implemented differently every time; each app reinvented buttons, inputs, and modals, all slightly off from one another. There was no shared design language, no way to contribute, and onboarding a new developer meant explaining the same patterns yet again. The real problem was never any one component; it was that nothing let the whole vertical move without re-solving the same problems over and over.
 
-Meanwhile, the business needed features shipped fast, and I was now responsible for both delivery and team development.
+Meanwhile the business needed features shipped fast, and I was suddenly on the hook for both delivery and growing the team.
 
 ## The Solution
 
 ### Shared Component Library and Contribution Pipeline
 
-I architected a centralized UI component library as shared infrastructure for the vertical, with a contribution workflow and tooling so other teams could extend it without my involvement:
+I architected a centralized UI component library to serve as shared infrastructure for the vertical, and I built a contribution workflow and tooling around it so other teams could extend it without coming through me:
 
 - **Dumb components first**, stateless, reusable primitives (Button, Input, Select, Modal, etc.)
 - **Smart wrappers**, stateful versions when needed for specific use cases
@@ -52,23 +52,23 @@ I architected a centralized UI component library as shared infrastructure for th
 - **Contribution workflow**, established patterns and CI so others could add components safely
 - **Training program**, taught 7 developers how to use and contribute to the library
 
-This made the library a self-sustaining system rather than a folder I owned: adoption spread to 80% of Health vertical applications because contributing was easier than duplicating.
+That turned the library into a self-sustaining system instead of a folder I personally owned, and adoption spread to 80% of Health vertical applications because contributing to it was genuinely easier than duplicating.
 
-### Shipping Under Pressure
+### Shipping While Building the Foundation
 
-While building infrastructure, I also led delivery on critical projects:
+I wasn't only building infrastructure; I also led delivery on the projects that couldn't wait:
 
-- **Mobile messaging app redesign:** Re-architected a desktop-only doctor messaging app for mobile-first in under one month. Collaborated closely with design on UX; paired with a junior developer throughout.
-- **Doctor-to-doctor communication app:** Took over a stalled project from another team. Directed 6 developers (mix of senior, mid, and junior) to deliver on deadline. Features included messaging, WYSIWYG email composition, and patient treatment tracking.
-- **Electron medical dashboard:** Mentored a junior developer through an entire build, call detection, phone integration, and client data queries. Used it as a teaching opportunity to build pipelines and the component library.
+- **Mobile messaging app redesign:** Re-architected a desktop-only doctor messaging app to be mobile-first in under a month. I worked closely with design on the UX and paired with a junior developer the whole way through.
+- **Doctor-to-doctor communication app:** Took over a stalled project from another team and directed 6 developers, a mix of senior, mid, and junior, to ship it on deadline. It covered messaging, WYSIWYG email composition, and patient treatment tracking.
+- **Electron medical dashboard:** Mentored a junior developer through an entire build, including call detection, phone integration, and client data queries, and used it as a chance to teach pipelines and the component library along the way.
 
 ### Hiring
 
-With the senior role still vacant, I led the hiring process:
+The senior role was still open, so I ran the hiring myself:
 
 - Interviewed 13 candidates (5 senior, 8 junior)
-- Hired a senior developer who became a key contributor
-- Recommended a junior candidate whom another department hired
+- Hired a senior developer who turned into a key contributor
+- Recommended a junior candidate who got hired by another department
 
 ## The Impact
 
@@ -81,11 +81,11 @@ With the senior role still vacant, I led the hiring process:
 
 ## Why I Left
 
-I asked for a promotion to Senior after a year of performing at that level, leading teams, architecting systems, and hiring. I was told it was "too much too soon." I left voluntarily, frustrated by the gap between my responsibilities and my title.
+After a year of doing the work, leading teams, architecting systems, and hiring, I asked for the promotion to Senior. I was told it was "too much too soon." So I left, voluntarily, fed up with the gap between what I was responsible for and what my title said.
 
 ## What I Learned
 
-This role proved I could lead without authority. But it also taught me to advocate for myself; doing senior work doesn't automatically get recognized. You have to make the case explicitly.
+This role proved to me I could lead without the authority on paper. It also taught me to advocate for myself, because doing senior work doesn't get recognized on its own; you have to make the case out loud.
 
 ## Tech Stack
 

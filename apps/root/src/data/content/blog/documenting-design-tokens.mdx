@@ -25,20 +25,20 @@ had a README that said:
 
 That's it. One line.
 
-Developers consuming the library had to read the source code to discover
-available tokens, understand component APIs, or learn the conventions.
-Every question — "What's the text-tertiary color?" "Is there a card variant
-for elevated surfaces?" — required grepping through `theme.css`.
+Anyone consuming the library had to read the source code to discover
+the available tokens, understand component APIs, or learn the conventions.
+Every question, like "what's the text-tertiary color?" or "is there a card variant
+for elevated surfaces?", meant grepping through `theme.css`.
 
 ## Docs Are Part of the Design System
 
 A component library without documentation is a codebase, not a design system.
 The distinction matters because a design system encodes **decisions**, not just
-code. When you choose `text-text-secondary` for body text, that's a decision.
-When a developer guesses `text-gray-500` because they don't know the token
+code. When you choose `text-text-secondary` for body text, that's a decision;
+when a developer guesses `text-gray-500` because they don't know the token
 exists, the decision is lost.
 
-Documentation captures three things code alone cannot:
+Documentation captures three things the code alone can't:
 
 1. **Intent**: Why `text-text-secondary` exists and when to use it
 2. **Constraints**: What's available and what's off-limits
@@ -46,9 +46,9 @@ Documentation captures three things code alone cannot:
 
 ## The Token Reference Structure
 
-I organized the theme documentation around usage categories, not
-implementation details. Developers think "I need a muted text color," not
-"I need an oklch value":
+I organized the theme documentation around usage categories rather than
+implementation details, because developers think "I need a muted text color,"
+not "I need an oklch value":
 
 ### Color Tokens
 
@@ -70,8 +70,8 @@ Border colors:
   --color-border-secondary → Emphasized borders (hover states)
 ```
 
-Each token includes light and dark mode values. Developers don't need to
-remember oklch values. They pick the semantic token that matches their intent.
+Each token includes light and dark mode values, so nobody has to
+remember oklch values; they just pick the semantic token that matches their intent.
 
 ### Typography Tokens
 
@@ -84,7 +84,7 @@ Rather than listing font sizes, I documented the **variant components**:
 | Body text  | `<Text variant="body">`         | 14px, secondary color        |
 | Metadata   | `<Text variant="meta">`         | 12px, tertiary color         |
 
-This bridges the gap between "I need small gray text" and "use
+That bridges the gap between "I need small gray text" and "use
 `<Text variant='meta'>`."
 
 ## Component Catalog
@@ -118,20 +118,20 @@ The README includes rules for adding new components:
 4. **Accept `className` for style extensions** via `cn()` merging
 5. **Export types alongside components** from the barrel index
 
-These rules prevent the library from drifting back toward the inconsistent
+These rules keep the library from drifting back toward the inconsistent
 state I started in.
 
 ## The Impact
 
-After shipping the comprehensive README:
+After I shipped the full README:
 
-- **Onboarding friction dropped**: new components follow documented patterns
+- **Onboarding friction dropped**: new components follow the documented patterns
   instead of cargo-culting from existing code
-- **Token adoption increased**: developers use `text-text-tertiary` instead
+- **Token adoption went up**: developers reach for `text-text-tertiary` instead
   of guessing gray values
-- **PR reviews got faster**: reviewers point to the docs instead of
+- **PR reviews got faster**: reviewers point at the docs instead of
   explaining conventions from memory
 
-Documentation isn't a nice-to-have. It's the interface between your design
+Documentation isn't a nice-to-have; it's the interface between your design
 decisions and the developers who implement them. Without it, every decision
 lives in one person's head, and that doesn't scale.

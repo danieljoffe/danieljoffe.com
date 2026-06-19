@@ -17,20 +17,20 @@ export const metadata = {
 
 ## The Crash
 
-Every page except the homepage threw "Something went wrong!", the root
-error boundary. No build errors, no type errors, no lint warnings. The app
-compiled cleanly and the homepage rendered fine. Navigate anywhere else and
+Every page except the homepage threw "Something went wrong!", which is the root
+error boundary. There were no build errors, no type errors, and no lint warnings; the app
+compiled cleanly and the homepage rendered fine. Navigate anywhere else, though, and
 the entire React tree unmounted.
 
-The error: `Cannot read properties of undefined (reading 'href')`.
+The error was `Cannot read properties of undefined (reading 'href')`.
 
 ## Tracing the Cycle
 
 The undefined value was `BLOG_LINK`, a constant exported from
-`utils/constants.ts`. It's used everywhere, and it's clearly defined. So
-why was it `undefined`?
+`utils/constants.ts`. It's used everywhere and it's clearly defined, so it
+had no business being `undefined`.
 
-The answer was a five-module circular dependency:
+The answer turned out to be a five-module circular dependency:
 
 ```
 constants.ts ──imports NavLink──→ types/base.ts ──imports blogPageSlugs──→ data/blog.ts
@@ -45,17 +45,17 @@ import**:
 import { NavLink } from '@/types/base';
 ```
 
-`NavLink` is a TypeScript interface. It doesn't exist at runtime. But
+`NavLink` is a TypeScript interface, so it doesn't exist at runtime, but
 Turbopack doesn't know that at module evaluation time. A value import tells
-the bundler "this module needs to be evaluated before mine." So Turbopack
+the bundler "this module has to be evaluated before mine," so Turbopack
 evaluates `types/base.ts`, which imports `blogPageSlugs` from `data/blog.ts`,
 which imports `blogThumbnails.ts`, which imports `BLOG_LINK` from
-`constants.ts`, the module that hasn't finished initializing yet.
+`constants.ts`, the very module that hasn't finished initializing yet.
 
-Result: `BLOG_LINK` is `undefined` when `blogThumbnails.ts` reads it.
+The result is that `BLOG_LINK` is `undefined` by the time `blogThumbnails.ts` reads it.
 
 The homepage survived because its render path didn't touch `CommandPalette`
-early enough to trigger the cycle. Every other page hit it immediately.
+early enough to trip the cycle; every other page hit it right away.
 
 ## The One-Line Fix
 
@@ -65,9 +65,9 @@ early enough to trigger the cycle. Every other page hit it immediately.
 ```
 
 `import type` is guaranteed to be erased by TypeScript before the bundler
-sees it. No module evaluation, no dependency edge, no cycle. I applied
-the same fix to the two other files that imported types from `types/base.ts`
-using value imports:
+ever sees it, so there's no module evaluation, no dependency edge, and no cycle. I applied
+the same fix to the two other files that were importing types from `types/base.ts`
+as value imports:
 
 ```diff
 // BreadCrumbs.tsx
@@ -79,24 +79,23 @@ using value imports:
 + import type { NavLink } from '@/types/base';
 ```
 
-Three lines changed. Every page renders.
+Three lines changed, and every page renders again.
 
 ## Why This Wasn't Caught Earlier
 
-Webpack resolved the cycle differently. It happened to evaluate modules
-in an order that worked. Turbopack (used in Next.js dev mode) evaluates
-more eagerly, exposing cycles that webpack silently tolerated. The ESLint
+Webpack resolved the cycle differently; it happened to evaluate the modules
+in an order that worked. Turbopack, which Next.js dev mode uses, evaluates
+more eagerly, so it exposes cycles that webpack silently tolerated. The ESLint
 `import/no-cycle` rule I added later would have caught this, but it
-wasn't enabled at the time.
+wasn't on at the time.
 
 ## The Rule
 
 **Always use `import type` for type-only imports.** It's not a style
-preference. It's a correctness guarantee. Value imports create module
-evaluation dependencies. Type imports don't. In a codebase with enough
-modules, that distinction is the difference between "it works" and
+preference, it's a correctness guarantee. Value imports create module
+evaluation dependencies and type imports don't, and in a codebase with enough
+modules that distinction is the difference between "it works" and
 "every page crashes."
 
-TypeScript's `verbatimModuleSyntax` flag enforces this automatically. If
-you're not using it yet, the next circular dependency crash might convince
-you.
+TypeScript's `verbatimModuleSyntax` flag enforces this for you automatically, and if
+you're not using it yet, the next circular dependency crash will probably talk you into it.

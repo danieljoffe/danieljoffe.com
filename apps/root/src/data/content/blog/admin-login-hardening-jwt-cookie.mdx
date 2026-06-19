@@ -17,7 +17,7 @@ export const metadata = {
 
 ## The problem
 
-My admin dashboards started as a single password gate per surface. An audit page, a jobs page, a leads page. Each asked for a password, stored it in memory, and sent it as `x-admin-password` on every fetch. It worked, and then it stopped working at about three dashboards and two subtle attacks I had not yet thought about.
+My admin dashboards started life as a single password gate per surface: an audit page, a jobs page, a leads page, each one asking for a password, holding it in memory, and sending it as `x-admin-password` on every fetch. It worked fine, right up until it didn't, which was at about three dashboards and two subtle attacks I hadn't thought about yet.
 
 Four things were wrong:
 
@@ -26,13 +26,13 @@ Four things were wrong:
 3. Each dashboard prompted for the password separately, and every refresh re-prompted.
 4. The scraping service trusted inbound HTML from a third-party API without sanitizing it.
 
-The fix is four small changes: trust the right header, compare in constant time, mint one JWT cookie that every dashboard honors, and sanitize on write.
+So the fix is four small changes: trust the right header, compare in constant time, mint one JWT cookie that every dashboard honors, and sanitize on write.
 
 ## IP spoofing on Vercel
 
-A login rate limiter needs an identifier for the caller. The obvious choice is `x-forwarded-for`, but on a Vercel function that header is whatever the client injected, optionally with Vercel appending one entry. A hostile client sends `x-forwarded-for: 1.1.1.1, 2.2.2.2` and the server sees whichever entry it naively picks.
+A login rate limiter needs some identifier for the caller, and the obvious choice is `x-forwarded-for`; but on a Vercel function that header is whatever the client injected, optionally with Vercel appending one entry of its own. A hostile client sends `x-forwarded-for: 1.1.1.1, 2.2.2.2` and the server happily believes whichever entry it naively picks.
 
-Vercel sets `x-real-ip` to the actual edge-observed address. When `x-forwarded-for` has to be trusted, the rightmost entry is the one the immediate upstream added; the left-hand entries are whatever the client sent.
+Vercel sets `x-real-ip` to the actual edge-observed address, so that's the one to reach for. When you do have to trust `x-forwarded-for`, the rightmost entry is the one the immediate upstream added; the left-hand entries are whatever the client felt like sending.
 
 ```ts title="apps/root/src/app/api/tools/login/route.ts"
 function getClientIp(req: NextRequest): string {
@@ -51,11 +51,11 @@ function getClientIp(req: NextRequest): string {
 }
 ```
 
-Prefer `x-real-ip`; fall back to the last `x-forwarded-for` entry; never trust the first. On a platform where the proxy sets a canonical header, use it.
+Prefer `x-real-ip`, fall back to the last `x-forwarded-for` entry, and never trust the first one. If the platform sets a canonical header for you, use it.
 
 ## Timing-safe comparison
 
-`a === b` on strings returns as soon as it finds a mismatched character. Over enough requests, the response-time difference leaks the length of the correct prefix. Node ships a constant-time comparison in `node:crypto`:
+`a === b` on strings bails out the moment it hits a mismatched character, and over enough requests that response-time difference leaks the length of the correct prefix. Node ships a constant-time comparison in `node:crypto` for exactly this:
 
 ```ts
 import { timingSafeEqual } from 'node:crypto';
@@ -72,7 +72,7 @@ if (!constantTimeEqual(password, expected)) {
 }
 ```
 
-`timingSafeEqual` requires equal-length buffers, which is why the length guard has to come first. The length guard itself leaks one bit (length match or not), which is acceptable; what matters is that a character-by-character compare no longer does.
+`timingSafeEqual` requires equal-length buffers, which is why the length guard has to come first. That guard does leak one bit (whether the lengths match), but I'm fine with that; what matters is that a character-by-character compare no longer does.
 
 The FastAPI side of the house does the same thing with `hmac.compare_digest`:
 
@@ -85,11 +85,11 @@ def _api_key_matches(presented: str | None, expected: str) -> bool:
     return hmac.compare_digest(presented, expected)
 ```
 
-Same principle, same constant-time primitive, different runtime. Both paths now refuse to leak.
+Same principle, same constant-time primitive, just a different runtime. Both paths now refuse to leak.
 
 ## One login, one cookie, many dashboards
 
-The per-dashboard password gate scaled badly. Every admin route rendered a `PasswordGate`, every refresh re-prompted, and every dashboard shipped its own copy of the auth state. The replacement is one route that mints a JWT cookie, and one middleware that guards the admin tree.
+The per-dashboard password gate scaled badly: every admin route rendered a `PasswordGate`, every refresh re-prompted, and every dashboard shipped its own copy of the auth state. The replacement is one route that mints a JWT cookie and one middleware that guards the whole admin tree.
 
 The login route signs an HS256 JWT with `jose`, sets it as an httpOnly cookie, and returns:
 
@@ -118,9 +118,9 @@ export function sessionCookieOptions(
 }
 ```
 
-The session helper lives in `lib/adminSession.ts` and is imported by both the login route and the proxy. The secret must be at least 32 characters; the helper refuses to sign or verify with anything shorter.
+The session helper lives in `lib/adminSession.ts` and gets imported by both the login route and the proxy. The secret has to be at least 32 characters; the helper flat-out refuses to sign or verify with anything shorter.
 
-Guarding the admin tree used to be a job for `middleware.ts`, but Next.js 16 moves per-request edge logic into `proxy.ts`. The auth check slots in at the top of the existing CSP proxy:
+Guarding the admin tree used to be a job for `middleware.ts`, but Next.js 16 moves per-request edge logic into `proxy.ts`, so the auth check slots in right at the top of the existing CSP proxy:
 
 ```ts title="apps/root/src/proxy.ts"
 export async function proxy(request: NextRequest) {
@@ -139,7 +139,7 @@ export async function proxy(request: NextRequest) {
 }
 ```
 
-Every `/tools/admin/*` request either carries a valid JWT cookie or gets redirected to `/tools/login?next=<original-url>`. The dashboards themselves stopped caring about auth entirely. They fetch their data and assume the proxy has already done the work.
+Every `/tools/admin/*` request either carries a valid JWT cookie or gets redirected to `/tools/login?next=<original-url>`, and the dashboards themselves stopped caring about auth entirely; they just fetch their data and assume the proxy already did the work.
 
 The FastAPI service accepts either the existing `x-api-key` (for the cron poller, which has no session) or a bearer JWT signed with the same secret:
 
@@ -163,13 +163,13 @@ def verify_api_key_or_session(
     raise HTTPException(status_code=401, detail="Unauthorized")
 ```
 
-The cron poller stays API-key-only so it can run unattended. Everything behind the dashboard uses the same JWT the browser already has.
+The cron poller stays API-key-only so it can run unattended, and everything behind the dashboard reuses the same JWT the browser already has.
 
 ## Sanitize third-party HTML on write
 
-The last fix is unrelated to login and worth the same attention. The scraper pulls job descriptions from Greenhouse as HTML. "Greenhouse gives you clean HTML" is a comfortable assumption and a wrong one. The description can contain inline event handlers, arbitrary tags, and whatever the posting company's ATS editor emitted.
+The last fix has nothing to do with login, but it deserves the same attention. The scraper pulls job descriptions from Greenhouse as HTML, and "Greenhouse gives you clean HTML" is a comfortable assumption that happens to be wrong; a description can contain inline event handlers, arbitrary tags, and whatever the posting company's ATS editor decided to emit.
 
-Sanitize on the way into the database, not on the way out:
+So sanitize on the way into the database, not on the way out:
 
 ```python title="apps/job-api/app/services/sanitize.py"
 import bleach
@@ -195,8 +195,8 @@ def sanitize_html(raw: str) -> str:
     return cleaned
 ```
 
-`strip=True` removes disallowed tags entirely rather than escaping them into visible markup. Sanitizing on write means the database never holds a malicious string, and every consumer of the data inherits the safety without having to remember it.
+`strip=True` removes disallowed tags entirely instead of escaping them into visible markup. Sanitizing on write means the database never holds a malicious string in the first place, and every consumer of the data inherits the safety without having to remember to ask for it.
 
 ## The takeaway
 
-Each fix is small. A header name, a crypto primitive, a cookie, a sanitizer. Each replaces a reasonable-looking default with the version that actually holds up under the attack it was written to defend against. The login went from "it works on localhost" to "it would survive a determined bot" in about two hundred lines of diff, and the JWT cookie made the UX better at the same time.
+Each fix is small on its own: a header name, a crypto primitive, a cookie, a sanitizer. What they have in common is that each one swaps a reasonable-looking default for the version that actually holds up under the attack it was written to defend against. The login went from "it works on localhost" to "it would survive a determined bot" in about two hundred lines of diff, and the JWT cookie made the UX better while it was at it.

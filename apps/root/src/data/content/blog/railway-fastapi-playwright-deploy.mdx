@@ -17,9 +17,9 @@ export const metadata = {
 
 ## The problem
 
-I was shipping a new FastAPI service to Railway. The container runs Lighthouse CLI and Playwright to audit pages. Builds were green; deploys were red, eight times in a row. Each failure pointed somewhere specific and wrong.
+I was shipping a new FastAPI service to Railway, a container that runs Lighthouse CLI and Playwright to audit pages. The builds went green; the deploys went red, eight times running. Each failure pointed somewhere specific, and each time it pointed somewhere wrong.
 
-A single deploy cycle on Railway is about three minutes: pull image, start container, wait on the healthcheck. Eight cycles is most of an evening. Below is the failure chain and the three root causes worth internalizing.
+A single deploy cycle on Railway is about three minutes: pull the image, start the container, wait on the healthcheck. Eight of those is most of an evening. Here's the failure chain, plus the three root causes that are actually worth carrying forward.
 
 ## The chain
 
@@ -34,13 +34,13 @@ A single deploy cycle on Railway is about three minutes: pull image, start conta
 | 7   | `scan_issues_scan_id_fkey` violation             | Env pointing at wrong Supabase      |
 | 8   | (diagnosis) 20s silent fail on every scan        | Undetected row miss                 |
 
-The first two were stupid-mine. Chromium needs all of Playwright's vetted system libs; I should have started from the Playwright base image instead of apt-installing. Lighthouse needs Node; the Python-variant Playwright image ships Python only. Add NodeSource. Done.
+The first two were squarely on me. Chromium needs all of Playwright's vetted system libs, so I should have started from the Playwright base image instead of apt-installing it myself. Lighthouse needs Node, and the Python-variant Playwright image ships Python only, so I added NodeSource and moved on.
 
-The next three are the ones I had not seen before, and they generalize.
+The next three I hadn't run into before, and they generalize past this one project.
 
 ## uv grabbed Python 3.14
 
-I asked uv for a FastAPI service and it built one. What I did not notice was which Python it had picked. uv defaults to the newest Python it can find. At the time, that was 3.14. One of my transitive dependencies (pyiceberg, via supabase) does not publish wheels for 3.14, so uv started a source build, which needs a C toolchain the container does not have.
+I asked uv for a FastAPI service and it built me one; what I didn't clock was which Python it had reached for. uv defaults to the newest Python it can find, which at the time was 3.14. One of my transitive dependencies (pyiceberg, by way of supabase) doesn't publish wheels for 3.14, so uv kicked off a source build, and a source build wants a C toolchain the container doesn't have.
 
 The fix was to pin Python at the Dockerfile layer, not the pyproject layer:
 
@@ -50,19 +50,19 @@ RUN uv python install 3.11 \
     && uv sync --frozen --no-dev --no-editable --package audit-api --python 3.11
 ```
 
-`uv python install 3.11` materializes the managed interpreter before `uv sync` runs. `--python 3.11` forces the sync to use it. Without both flags, uv can and will pick a newer interpreter on the next build just because it exists in the cache.
+`uv python install 3.11` materializes the managed interpreter before `uv sync` runs, and `--python 3.11` forces the sync to use it. Leave off either flag and uv will happily pick a newer interpreter on the next build for no reason other than it's sitting in the cache.
 
-The lesson: pinning a Python version in `pyproject.toml` (`requires-python = ">=3.11"`) tells uv the minimum. It does not tell uv which version to choose when several satisfy the minimum. Pin the actual version in the Dockerfile.
+The lesson: pinning a Python version in `pyproject.toml` (`requires-python = ">=3.11"`) only tells uv the floor; it says nothing about which version to grab when several clear that floor. Pin the actual version in the Dockerfile.
 
 ## The /root mode 700 problem
 
-uv installs its managed Python interpreters under `$HOME/.local/share/uv/python` by default. When the container runs as root, that is `/root/.local/share/uv/python`. When the container runs as a non-root user (which it should), the venv shebang still points at `/root/...`, and `/root` is mode 700. Result:
+By default, uv installs its managed Python interpreters under `$HOME/.local/share/uv/python`. Run the container as root and that's `/root/.local/share/uv/python`. Run it as a non-root user (which you should), and the venv shebang still points at `/root/...`, except `/root` is mode 700. So:
 
 ```text
 sh: 1: exec: /app/.venv/bin/uvicorn: Permission denied
 ```
 
-The venv shebang can be read; the interpreter it points at cannot. The healthcheck fails. Railway kills the container.
+The venv shebang reads fine; the interpreter it points at doesn't. The healthcheck fails, and Railway kills the container.
 
 The fix is to relocate uv's managed Python before the sync runs:
 
@@ -70,15 +70,15 @@ The fix is to relocate uv's managed Python before the sync runs:
 ENV UV_PYTHON_INSTALL_DIR=/app/.uv-python
 ```
 
-`chown -R app:app /app` at the end of the build covers the relocated interpreter. The venv shebang now points at `/app/.uv-python/...`, which the non-root `app` user can exec.
+A `chown -R app:app /app` at the end of the build sweeps up the relocated interpreter too. The venv shebang now points at `/app/.uv-python/...`, which the non-root `app` user can actually exec.
 
-This applies to anyone running uv-managed Python under a non-root user. The failure mode is loud (`Permission denied` at container start), but the cause is not in any error message; it is in the default install location.
+This bites anyone running uv-managed Python under a non-root user. The failure is loud (`Permission denied` the moment the container starts), but the cause isn't in any error message; it's in the default install location.
 
 ## Playwright's version-locked browser paths
 
-Playwright pre-installs browsers at version-specific paths. `/ms-playwright/chromium_headless_shell-1208/` for Playwright 1.48. `/ms-playwright/chromium_headless_shell-1172/` for a different version. The Playwright pypi package refuses to launch a browser at an unexpected path, because the protocol between the pypi client and the browser changes across versions.
+Playwright pre-installs browsers at version-specific paths: `/ms-playwright/chromium_headless_shell-1208/` for Playwright 1.48, `/ms-playwright/chromium_headless_shell-1172/` for a different version. The Playwright pypi package flat-out refuses to launch a browser at an unexpected path, because the protocol between the pypi client and the browser shifts from version to version.
 
-My `uv.lock` had resolved `playwright>=1.48` up to 1.58 at install time. My Dockerfile was still `FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy`. The pypi client looked for 1.58's browser build; the image had 1.48's. Launch failed on every scan.
+My `uv.lock` had resolved `playwright>=1.48` all the way up to 1.58 at install time, but my Dockerfile was still `FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy`. So the pypi client went looking for 1.58's browser build while the image only had 1.48's, and launch failed on every scan.
 
 The fix is to lock both in a single commit:
 
@@ -94,13 +94,13 @@ dependencies = [
 FROM mcr.microsoft.com/playwright/python:v1.58.0-jammy AS base
 ```
 
-Pin the pypi package, pin the image tag, put them next to each other, bump in lockstep. A floating range plus a pinned image is a time bomb.
+Pin the pypi package, pin the image tag, keep them next to each other, and bump them in lockstep. A floating range plus a pinned image is a time bomb with a long fuse.
 
 ## The layout-agnostic binary lookup
 
-Lighthouse's `chrome-launcher` follows `CHROME_PATH`. I had been pointing it at `/ms-playwright/chromium-NNN/chrome-linux/chrome`. Playwright 1.58's base image reorganized things: no `chrome-linux/`, no standalone `chrome` in some variants, only `chrome-headless-shell`. The glob returned nothing, the `ln -sf` silently failed, the scan crashed later when Lighthouse could not spawn Chrome.
+Lighthouse's `chrome-launcher` follows `CHROME_PATH`, and I'd been pointing it at `/ms-playwright/chromium-NNN/chrome-linux/chrome`. Playwright 1.58's base image then rearranged the furniture: no `chrome-linux/`, no standalone `chrome` in some variants, just `chrome-headless-shell`. The glob came back empty, the `ln -sf` failed silently, and the scan crashed later when Lighthouse couldn't spawn Chrome.
 
-Replace the glob with a `find` that matches any launcher-capable binary:
+Swap the glob for a `find` that matches any launcher-capable binary:
 
 ```dockerfile
 RUN CHROME_BIN="$(find /ms-playwright -path '*chromium*' -type f \
@@ -109,8 +109,8 @@ RUN CHROME_BIN="$(find /ms-playwright -path '*chromium*' -type f \
     && ln -sf "$CHROME_BIN" /usr/local/bin/chrome
 ```
 
-`test -n "$CHROME_BIN"` fails the build loudly if nothing matched. A silent empty glob that produces an empty symlink is a setup that looks fine until runtime; a build that fails when the layout changes is a setup that tells you to look.
+`test -n "$CHROME_BIN"` fails the build loudly the moment nothing matches. A silent empty glob that produces an empty symlink looks fine right up until runtime; a build that breaks when the layout changes is one that tells you where to look.
 
 ## Takeaway
 
-Every failure in this chain was visible at build time to someone paying attention. Every one was silent at runtime until the first real request. The pattern across all three generalizable causes is the same: a default that works in isolation (uv picking the newest Python, uv picking the default home, a glob that evaluates to nothing) becomes wrong at the boundary where another system expects a contract. Pin the defaults; validate them in the build; fail loud.
+Every failure in this chain was visible at build time if you were paying attention, and every one stayed quiet at runtime until the first real request. All three of the generalizable causes share a shape: a default that works fine in isolation (uv grabbing the newest Python, uv using the default home, a glob that evaluates to nothing) goes wrong the instant it hits a boundary where another system is expecting a contract. So pin the defaults, validate them in the build, and fail loud.

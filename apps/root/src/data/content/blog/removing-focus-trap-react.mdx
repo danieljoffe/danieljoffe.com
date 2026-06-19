@@ -15,11 +15,11 @@ export const metadata = {
   },
 };
 
-## The Dependency Problem
+## The dependency problem
 
-The shared-ui library had a single external runtime dependency beyond React:
-`focus-trap-react`. It was used in exactly one component, the `Modal`. And
-it brought baggage:
+Beyond React, the shared-ui library had exactly one external runtime dependency:
+`focus-trap-react`, and it earned its keep in exactly one component, the `Modal`.
+For that one job it brought a lot of baggage:
 
 - **~15KB** added to the bundle (focus-trap + tabbable + focus-trap-react)
 - **Deprecated context APIs** that broke with ESLint 10 and required compat shims
@@ -27,22 +27,22 @@ it brought baggage:
 - **An implicit contract** that every consumer of shared-ui also needed this
   dependency in their bundle
 
-For a library whose guiding principle is "only depend on React and Tailwind
+For a library whose whole guiding principle is "only depend on React and Tailwind
 CSS," this was a violation hiding in plain sight.
 
-## The Native Alternative
+## The native alternative
 
-Modern browsers give me everything I need for focus trapping. The HTML
-`<dialog>` element, when opened with `showModal()`, provides:
+Modern browsers already hand me everything I need for focus trapping. Open the
+HTML `<dialog>` element with `showModal()` and you get:
 
 - **Built-in focus trapping**: Tab cycles within the dialog automatically
 - **Inert backdrop**: Content behind the dialog becomes non-interactive
 - **Escape key handling**: The `cancel` event fires on Escape
 - **Focus restoration**: Focus returns to the trigger element on close
 
-For the React component, the refactored Modal stores a ref to the triggering
-element, manages `document.body.style.overflow` for scroll lock, and uses
-keyboard event listeners for Escape:
+On the React side, the refactored Modal stores a ref to the triggering element,
+manages `document.body.style.overflow` for scroll lock, and listens for Escape
+with a keyboard handler:
 
 ```tsx
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
@@ -70,18 +70,18 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 }
 ```
 
-## What I Gained
+## What I gained
 
-1. **Zero runtime dependencies** in shared-ui (beyond React peer dep)
-2. **Deleted** the mock file. One less testing workaround
-3. **Smaller bundle**: ~15KB saved for every page that imports from shared-ui
+1. **Zero runtime dependencies** in shared-ui (beyond the React peer dep)
+2. **Deleted** the mock file, so there's one less testing workaround
+3. **Smaller bundle**: ~15KB saved on every page that imports from shared-ui
 4. **ESLint 10 compatibility**: no more `fixupPluginRules` shims for this dep
-5. **Simpler mental model**: the Modal manages its own focus lifecycle
+5. **Simpler mental model**: the Modal owns its own focus lifecycle
 
-## Accessibility Testing
+## Accessibility testing
 
-The critical question: does it still work for keyboard and screen reader users?
-I verified:
+The part that actually mattered was whether it still works for keyboard and screen
+reader users, so I verified:
 
 - **Tab cycling** stays within the modal when open
 - **Shift+Tab** wraps correctly at the first focusable element
@@ -90,15 +90,15 @@ I verified:
 - **`aria-modal="true"`** and **`role="dialog"`** remain on the container
 - **`aria-labelledby`** connects the title to the dialog
 
-The existing Playwright E2E tests and Jest unit tests all pass without
-modification. The behavioral contract is identical.
+The existing Playwright E2E tests and Jest unit tests all pass without a single
+change. The behavioral contract is identical.
 
-## The Lesson
+## The lesson
 
-Before adding a dependency, check what the platform already provides. Focus
-trapping was a solved problem in 2020 when `<dialog>` shipped in all major
-browsers. Three years later, the shared-ui library was still bundling a polyfill-style library
+Before reaching for a dependency, check what the platform already gives you. Focus
+trapping was a solved problem back in 2020 when `<dialog>` shipped in every major
+browser, yet three years on, shared-ui was still bundling a polyfill-style library
 for something the browser does natively.
 
-The shared-ui library now has a clean dependency story: React, Tailwind CSS,
-and nothing else.
+The shared-ui library now has a clean dependency story: React, Tailwind CSS, and
+nothing else.

@@ -15,13 +15,13 @@ export const metadata = {
   },
 };
 
-## The Problem
+## The problem
 
-Sentry's Next.js SDK initializes in three places: `instrumentation-client.ts` (browser), `sentry.server.config.ts` (Node), and `sentry.edge.config.ts` (edge runtime). Each calls `Sentry.init()` at module scope. When the DSN environment variable is missing, the SDK throws, polluting the console with errors on every request.
+Sentry's Next.js SDK initializes in three places: `instrumentation-client.ts` (browser), `sentry.server.config.ts` (Node), and `sentry.edge.config.ts` (edge runtime). Each one calls `Sentry.init()` at module scope, and when the DSN environment variable is missing, the SDK throws and spews errors into the console on every request.
 
-That is fine in production where the DSN is always set. In local development, on a fresh clone, or in CI jobs that do not need error monitoring, it makes the terminal unreadable.
+That's fine in production, where the DSN is always set. On local dev, a fresh clone, or a CI job that doesn't need error monitoring, it just makes the terminal unreadable.
 
-## One Boolean, Three Files
+## One boolean, three files
 
 The fix is a single exported constant in the shared config:
 
@@ -41,11 +41,11 @@ if (sentryEnabled) {
 }
 ```
 
-The edge config is identical. The client config follows the same pattern but has additional work inside the guard: deferred integration loading via `requestIdleCallback` to avoid blocking LCP.
+The edge config is identical. The client config follows the same pattern, just with a bit more work inside the guard: it defers integration loading via `requestIdleCallback` so it doesn't block LCP.
 
-## The Router Transition Export
+## The router transition export
 
-Next.js 16 expects `instrumentation-client.ts` to export `onRouterTransitionStart` for Sentry's router instrumentation. When Sentry is disabled, the export should be `undefined` so Next.js skips it:
+Next.js 16 expects `instrumentation-client.ts` to export `onRouterTransitionStart` for Sentry's router instrumentation. When Sentry's off, that export should be `undefined` so Next.js skips it:
 
 ```ts
 export const onRouterTransitionStart = sentryEnabled
@@ -53,8 +53,8 @@ export const onRouterTransitionStart = sentryEnabled
   : undefined;
 ```
 
-This avoids a runtime error from calling `Sentry.captureRouterTransitionStart` when the SDK was never initialized.
+That keeps Next.js from calling `Sentry.captureRouterTransitionStart` when the SDK was never initialized, which would throw at runtime.
 
-## The Takeaway
+## The takeaway
 
-SDKs that initialize at module scope should always be guarded by the presence of their configuration. One boolean in a shared config file is cheaper than debugging why local dev is spewing errors, and it keeps the "works on a fresh clone" contract honest.
+Any SDK that initializes at module scope should be guarded behind the presence of its config. One boolean in a shared config file is a lot cheaper than an evening spent figuring out why local dev is spewing errors, and it keeps the "works on a fresh clone" promise honest.

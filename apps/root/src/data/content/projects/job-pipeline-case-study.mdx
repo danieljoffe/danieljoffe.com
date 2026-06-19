@@ -47,7 +47,7 @@ _Updated 2026-04-17: expanded from a single-ATS Greenhouse poller to six provide
 
 ## The challenge
 
-The original pipeline spoke only Greenhouse. Ten hand-curated boards, one fetcher, a scoring engine, a dashboard. That worked for a week. Then I needed Lever, then Ashby, then a Workday instance, then two Workdays with different tenants, then a careers page that rendered through JavaScript and exposed nothing but JSON-LD in the HTML. The hard parts were:
+The original pipeline only spoke Greenhouse: ten hand-curated boards, one fetcher, a scoring engine, and a dashboard, and that held up for about a week. Then I needed Lever, then Ashby, then a Workday instance, then two Workdays on different tenants, then a careers page that rendered through JavaScript and exposed nothing but JSON-LD in the HTML. The hard parts were:
 
 - Unifying five wildly different ATS APIs behind one fetcher contract
 - Detecting a provider automatically from either a careers URL or a plain company name, so adding a source is one input instead of three
@@ -80,13 +80,13 @@ Proxy --> Dashboard
 `}
 />
 
-The admin browser only ever talks to the Next.js app. Next.js verifies the admin JWT cookie in `proxy.ts`, then forwards the session token to FastAPI as a bearer credential. The scraper itself runs from a Vercel cron that authenticates with `x-api-key`. One backend, two valid credentials, one source of truth for sessions.
+The admin browser only ever talks to the Next.js app; Next.js verifies the admin JWT cookie in `proxy.ts` and forwards the session token to FastAPI as a bearer credential. The scraper itself runs from a Vercel cron that authenticates with `x-api-key`. So that's one backend, two valid credentials, and one source of truth for sessions.
 
 ## The scraper
 
-The ATS clients and poller live in `apps/job-api/app/services/`. The loop is small: list sources, fetch each board with the right fetcher, diff against stored postings, score the new ones, write them back.
+The ATS clients and poller live in `apps/job-api/app/services/`, and the loop is small: list the sources, fetch each board with the right fetcher, diff against stored postings, score the new ones, and write them back.
 
-Each ATS has its own fetcher, but every fetcher returns the same `StandardJob` dataclass. The poller dispatches off the provider column on `job_sources`:
+Each ATS has its own fetcher, but every fetcher returns the same `StandardJob` dataclass, so the poller just dispatches off the provider column on `job_sources`:
 
 ```python
 FETCHERS: dict[str, Fetcher] = {
@@ -99,17 +99,17 @@ FETCHERS: dict[str, Fetcher] = {
 }
 ```
 
-Adding a new ATS means adding a fetcher and a row to that dict. The poller, scoring, sanitization, and dashboard do not change.
+Adding a new ATS means adding a fetcher and a row to that dict; the poller, scoring, sanitization, and dashboard don't change at all.
 
-The JSON-LD fetcher is the fallback for career pages with no public API. It reads the page, parses every `<script type="application/ld+json">` block with Python's stdlib `html.parser`, and normalizes the three shapes you find in the wild (single object, array, `@graph`) into `StandardJob` rows. Zero new dependencies for the scraping layer.
+The JSON-LD fetcher is the fallback for career pages with no public API. It reads the page, parses every `<script type="application/ld+json">` block with Python's stdlib `html.parser`, and normalizes the three shapes you find in the wild (single object, array, `@graph`) into `StandardJob` rows, all without adding a single new dependency to the scraping layer.
 
-The scoring engine is a weighted keyword config with five tiers: role titles, core technologies, domain skills, seniority signals, and negative keywords. A senior React/Next.js role scores high; a junior PHP contract lands in the negative zone and never surfaces. The weights live in version control, so recalibrating the filter is a PR, not a UI toggle.
+The scoring engine is a weighted keyword config with five tiers: role titles, core technologies, domain skills, seniority signals, and negative keywords. A senior React/Next.js role scores high, while a junior PHP contract lands in the negative zone and never surfaces. The weights live in version control, so recalibrating the filter is a PR rather than a UI toggle.
 
-HTML descriptions get sanitized on write with `bleach` and a tag allowlist. The assumption that a third-party API returns safe HTML is the wrong one; stripping tags before the row lands in Postgres means every consumer (dashboard, email, backup export) inherits the safety without having to remember it.
+HTML descriptions get sanitized on write with `bleach` and a tag allowlist. Assuming a third-party API hands you safe HTML is the wrong bet, so stripping tags before the row lands in Postgres means every consumer (the dashboard, email, backup export) inherits the safety without having to remember it.
 
 ## Auto-detecting the provider
 
-Adding a source used to mean three decisions: provider dropdown, board token, company name. For every new company, I would open the careers page, identify the ATS, copy the right slug, paste. The dashboard now does it in one input:
+Adding a source used to mean three decisions: the provider dropdown, the board token, and the company name. For every new company I'd open the careers page, work out the ATS, copy the right slug, and paste it in. The dashboard now does all of that from one input:
 
 ```
 Company name or careers URL: stripe
@@ -117,17 +117,17 @@ Company name or careers URL: stripe
               Detected: Greenhouse (stripe), 142 jobs
 ```
 
-The `detect_ats` service first tries to parse a known ATS URL pattern (`boards.greenhouse.io/*`, `jobs.lever.co/*`, `jobs.ashbyhq.com/*`, `*.myworkdayjobs.com/*`, `careers.smartrecruiters.com/*`). If the input is a bare slug, it probes each provider's public API and keeps the first one that responds with a non-empty board. One input, five providers covered, a collapsible "Advanced" pane preserves manual entry for the edge cases.
+The `detect_ats` service first tries to parse a known ATS URL pattern (`boards.greenhouse.io/*`, `jobs.lever.co/*`, `jobs.ashbyhq.com/*`, `*.myworkdayjobs.com/*`, `careers.smartrecruiters.com/*`). If the input is a bare slug, it probes each provider's public API and keeps the first one that responds with a non-empty board. That's one input covering five providers, and a collapsible "Advanced" pane preserves manual entry for the edge cases that don't fit the pattern.
 
 ## Making the scan button fast
 
-Fanning out across 49 sources exposed a chain of bottlenecks none of which were visible with ten Greenhouse boards. A single scan started the day at 48 seconds and ended at 8, through three targeted fixes: concurrent polling with `asyncio.gather`, batched Supabase writes to collapse the N+1 round-trip pattern, and `asyncio.to_thread` on every `.execute()` so `supabase-py`'s sync client stops blocking the event loop.
+Fanning out across 49 sources exposed a chain of bottlenecks, none of which had shown up with ten Greenhouse boards. A single scan started the day at 48 seconds and ended it at 8, through three targeted fixes: concurrent polling with `asyncio.gather`, batched Supabase writes to collapse the N+1 round-trip pattern, and `asyncio.to_thread` on every `.execute()` so `supabase-py`'s sync client stops blocking the event loop.
 
-The first fix did nothing on its own, which is the most instructive part of the story. That walk-through lives in its own blog post: [asyncio.gather is not enough for a sync client](/blog/asyncio-gather-sync-client).
+The most instructive bit is that the first fix did nothing at all on its own. I wrote the whole walk-through up separately: [asyncio.gather is not enough for a sync client](/blog/asyncio-gather-sync-client).
 
 ## Auth across two runtimes
 
-The scraper runs unattended on a cron schedule, so it needs a credential that does not expire. The dashboard runs in a browser, so it should not hold a long-lived API key.
+The scraper runs unattended on a cron schedule, so it needs a credential that doesn't expire. The dashboard runs in a browser, so it shouldn't be holding a long-lived API key.
 
 The FastAPI service accepts either, and both paths are constant-time:
 
@@ -151,13 +151,13 @@ def verify_api_key_or_session(
     raise HTTPException(status_code=401, detail="Unauthorized")
 ```
 
-The Next.js app mints the JWT on `/tools/login` with `jose`, stores it as an httpOnly cookie, and verifies it in `proxy.ts` for every `/tools/admin/*` request. The Python service verifies the same HS256 signature with `pyjwt`. One shared secret, two runtimes, zero cross-origin quirks because the browser only ever hits same-origin Next.js proxy routes.
+The Next.js app mints the JWT on `/tools/login` with `jose`, stores it as an httpOnly cookie, and verifies it in `proxy.ts` for every `/tools/admin/*` request. The Python service verifies the same HS256 signature with `pyjwt`. So it's one shared secret across two runtimes, and there are no cross-origin quirks because the browser only ever hits same-origin Next.js proxy routes.
 
-The poll endpoint deliberately stays API-key-only. A session cookie is not a thing cron has.
+The poll endpoint deliberately stays API-key-only, since a session cookie isn't something cron has anyway.
 
 ## Running Python inside Nx
 
-The service lives in `apps/job-api/` next to the Next.js and Playwright workspaces. Nx has no Python integration, which is fine because Nx only needs to dispatch commands:
+The service lives in `apps/job-api/` next to the Next.js and Playwright workspaces. Nx has no Python integration, which turned out not to matter, because all Nx needs to do is dispatch commands:
 
 ```json title="apps/job-api/project.json"
 {
@@ -195,9 +195,9 @@ The service lives in `apps/job-api/` next to the Next.js and Playwright workspac
 }
 ```
 
-A single uv workspace at the repo root locks every Python dependency. A dedicated `ci-python` GitHub Actions job runs `pnpm nx run-many -t lint test mypy -p job-api` on every non-docs PR, gated by `ci-status` alongside the Node checks. Mypy runs in strict mode; ruff runs with an opinionated `select` list; pytest covers 129 tests across sanitize, scoring, dependencies, schemas, every ATS fetcher, the ATS detector, the poller, and all three routers.
+A single uv workspace at the repo root locks every Python dependency, and a dedicated `ci-python` GitHub Actions job runs `pnpm nx run-many -t lint test mypy -p job-api` on every non-docs PR, gated by `ci-status` alongside the Node checks. Mypy runs in strict mode, ruff runs with an opinionated `select` list, and pytest covers 129 tests across sanitize, scoring, dependencies, schemas, every ATS fetcher, the ATS detector, the poller, and all three routers.
 
-(The uv-in-Nx plumbing got its own blog post: [Running a uv Python workspace inside an Nx monorepo](/blog/uv-python-workspace-nx-monorepo).)
+The uv-in-Nx plumbing got its own blog post too: [Running a uv Python workspace inside an Nx monorepo](/blog/uv-python-workspace-nx-monorepo).
 
 ## The deploy
 
@@ -210,14 +210,14 @@ RUN uv sync --frozen --no-dev --no-editable --package job-api
 COPY apps/job-api/app ./apps/job-api/app
 ```
 
-`railway.toml` binds the container to `$PORT` and points Railway's healthcheck at `/health`. A `TrustedHostMiddleware` wired off an `ALLOWED_HOSTS` env var refuses requests with forged `Host` headers. The only public endpoint is `/health`; everything else sits behind `verify_api_key` or `verify_api_key_or_session`.
+`railway.toml` binds the container to `$PORT` and points Railway's healthcheck at `/health`, and a `TrustedHostMiddleware` wired off an `ALLOWED_HOSTS` env var refuses requests with forged `Host` headers. The only public endpoint is `/health`; everything else sits behind `verify_api_key` or `verify_api_key_or_session`.
 
 ## The result
 
-The dashboard shows a ranked table of everything the poller has found in the last 30 days, with a detail view that renders the sanitized description and a status column I can flip to `applied`, `interviewing`, or `rejected`. Each status change appends a row to `job_status_log`, so the history is immutable and exportable.
+The dashboard shows a ranked table of everything the poller has found in the last 30 days, with a detail view that renders the sanitized description and a status column I can flip to `applied`, `interviewing`, or `rejected`. Each status change appends a row to `job_status_log`, so the history stays immutable and exportable.
 
-What this replaced: a folder of browser tabs and a Notion page I updated by hand. What it enabled: actually knowing, at any moment, which postings are new and which are worth the next round of applications. Every piece of the system is small; the value is in having them all talking to each other behind one login.
+What it replaced was a folder of browser tabs and a Notion page I kept updating by hand, and what it bought me is actually knowing, at any moment, which postings are new and which are worth the next round of applications. Every piece of the system is small on its own; the value comes from having them all talking to each other behind one login.
 
 ## Takeaway
 
-Full-stack projects across two languages are easier than they sound if each tool owns its job. uv owns Python dependency resolution; Nx owns task dispatch; Next.js owns the browser boundary; FastAPI owns the database. Pick a shared JWT secret, put constant-time comparisons on both sides, and the rest is plumbing.
+Full-stack projects across two languages are easier than they sound as long as each tool owns one job: uv owns Python dependency resolution, Nx owns task dispatch, Next.js owns the browser boundary, and FastAPI owns the database. Pick a shared JWT secret, put constant-time comparisons on both sides, and the rest really is just plumbing.

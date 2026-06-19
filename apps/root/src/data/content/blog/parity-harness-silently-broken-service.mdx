@@ -17,13 +17,13 @@ export const metadata = {
 
 ## The problem
 
-I was porting a Lighthouse + axe scan service from Node to Python. Same API contract, same Supabase tables, same grading thresholds. The frontend would not change. "Zero frontend changes" is the kind of claim that sounds safe until the first production scan comes back wrong.
+I was porting a Lighthouse + axe scan service from Node to Python: same API contract, same Supabase tables, same grading thresholds, and the frontend wouldn't change at all. "Zero frontend changes" is the kind of claim that sounds safe right up until the first production scan comes back wrong.
 
-The old Node service was already live on Railway. The new FastAPI one was coming up alongside it. Both would write to the same `scans` and `scan_issues` tables. The risk was not whether the Python service worked; the risk was whether it worked the same. A port that drifts on score rounding, issue count, or Core Web Vitals math looks identical in dev and fails the moment a real user hits it.
+The old Node service was already live on Railway, and the new FastAPI one was coming up alongside it, both writing to the same `scans` and `scan_issues` tables. The risk wasn't whether the Python service worked; it was whether it worked the _same_. A port that drifts on score rounding, issue count, or Core Web Vitals math looks identical in dev and then falls over the moment a real user hits it.
 
 ## The harness
 
-Fire both services against the same URL, poll Supabase until both finish, diff the two rows, fail on anything outside a tolerance band.
+The idea was simple: fire both services against the same URL, poll Supabase until both finish, diff the two rows, and fail on anything outside a tolerance band.
 
 ```python title="apps/audit-api/scripts/parity.py (excerpt)"
 TEST_URLS = ["https://example.com", "https://web.dev", "https://vercel.com"]
@@ -39,7 +39,7 @@ CWV_TOLERANCE_PCT = 0.3
 ISSUE_COUNT_TOLERANCE = 3
 ```
 
-Performance gets a wide band because Lighthouse is noisy over the network. The other three dimensions are deterministic; a three-point drift means the scoring logic diverged. Core Web Vitals compare within a 30% envelope. Issue counts allow plus or minus three because both Lighthouse versions emit minor audits differently.
+Performance gets a wide band because Lighthouse is noisy over the network. The other three dimensions are deterministic, so a three-point drift there means the scoring logic actually diverged. Core Web Vitals compare within a 30% envelope, and issue counts allow plus or minus three because the two Lighthouse versions emit minor audits slightly differently.
 
 The harness fires both services in parallel, uses the same `x-api-key` contract each service exposes, then offloads the blocking Supabase polls to `asyncio.to_thread` so the two waits overlap:
 
@@ -60,7 +60,7 @@ async def run_one(client, node, python, supabase, url):
     )
 ```
 
-Each URL takes about 20 seconds end-to-end. Three URLs, two services, overlapped: the whole parity sweep finishes in roughly a minute.
+Each URL takes about 20 seconds end-to-end, so with three URLs across two services overlapped, the whole parity sweep finishes in roughly a minute.
 
 ## What parity revealed
 
@@ -76,15 +76,15 @@ The diff table from the first run:
     - lcp_ms: node=None python=1204 diff>30%
 ```
 
-The Python service looked right. The Node service was returning `perf=0` on every URL. It had been returning `perf=0` for weeks. Nobody noticed because the HTTP response was a clean `202 Accepted`, the `scans` row went to `completed`, and the admin dashboard dutifully rendered a gauge at zero. A successful HTTP response is not a successful scan.
+The Python service looked right. The Node service was returning `perf=0` on every URL, and it had been doing it for weeks. Nobody noticed because the HTTP response was a clean `202 Accepted`, the `scans` row went to `completed`, and the admin dashboard dutifully rendered a gauge at zero. A successful HTTP response just isn't the same thing as a successful scan.
 
-The root cause was a Lighthouse CLI upgrade that broke the Node service's JSON extraction a couple of versions back. It never crashed. It just silently lost the performance category while every other dimension kept working. Logs showed "scan completed"; the database confirmed it; the gauge was wrong.
+The root cause was a Lighthouse CLI upgrade that broke the Node service's JSON extraction a couple of versions back. It never crashed; it just quietly lost the performance category while every other dimension kept working. The logs said "scan completed," the database agreed, and the gauge was flat wrong.
 
 ## The log problem
 
-You cannot alert on "the category is missing" because missing categories look like successful scans to everything downstream. You can alert on exceptions, on HTTP status codes, on queue depth. You cannot alert on the absence of an integer that Lighthouse never promised to include.
+You can't alert on "the category is missing," because a missing category looks like a successful scan to everything downstream. You can alert on exceptions, on HTTP status codes, on queue depth, but you can't alert on the absence of an integer that Lighthouse never promised to include in the first place.
 
-Two implementations of the same contract can. If service A returns `perf=0` and service B returns `perf=88` for the same URL, one of them is lying. The harness does not need to know which one is right; it only needs to know they disagree.
+Two implementations of the same contract can, though. If service A returns `perf=0` and service B returns `perf=88` for the same URL, one of them is lying, and the harness doesn't need to know which one is right; it only needs to know they disagree.
 
 ## The full harness
 
@@ -105,8 +105,8 @@ async def main() -> int:
     return 0 if all_pass else 1
 ```
 
-Run locally with the service URLs and API keys for both the Node and Python instances, plus the Supabase service role key. The script exits non-zero on any mismatch, so it is CI-ready if you want to gate the cutover.
+Run it locally with the service URLs and API keys for both the Node and Python instances, plus the Supabase service role key. The script exits non-zero on any mismatch, so it's CI-ready if you want to gate the cutover on it.
 
 ## Takeaway
 
-During a migration you get something you never have otherwise: two working implementations of the same contract. Diff them. The harness that proves the port is right will also prove the original was wrong, and that second finding often matters more than the first.
+During a migration you get something you never have any other time: two working implementations of the same contract sitting side by side. Diff them. The harness that proves the port is right will also tell you when the original was wrong, and that second finding often matters more than the one you set out to get.
