@@ -83,7 +83,7 @@ export default defineConfig(() => ({
       entry,
       formats: ['es' as const],
     },
-    rollupOptions: {
+    rolldownOptions: {
       // Peer/runtime deps consumers install themselves — keep them out of the
       // build so they aren't duplicated across the per-module chunks.
       external: [
