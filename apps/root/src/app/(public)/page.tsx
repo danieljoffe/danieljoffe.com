@@ -64,8 +64,8 @@ export default function Index() {
 
           <Heading variant='hero'>{FULL_NAME}</Heading>
           <Text variant='subtitle' className='max-w-2xl'>
-            Senior frontend engineer turned full-stack. I ship complete products
-            &mdash; Next.js frontends, Python/FastAPI backends, Postgres, and
+            Senior frontend engineer turned full-stack. I ship complete
+            products: Next.js frontends, Python/FastAPI backends, Postgres, and
             the LLM pipelines in between.
           </Text>
 
@@ -107,9 +107,9 @@ export default function Index() {
                 </span>
               </div>
               <Text variant='body'>
-                AI-powered job-search product I built and run solo. Resume
-                tailoring, job ingestion, match scoring &mdash; with the
-                production LLM pipelines (versioned prompts, shadow runs, async
+                An AI-powered job-search product I built and run solo: resume
+                tailoring, job ingestion, and match scoring, with the production
+                LLM pipelines (versioned prompts, shadow runs, async
                 observability) behind them.
               </Text>
             </div>
@@ -169,8 +169,8 @@ export default function Index() {
         />
         <div className='space-y-6'>
           <Text variant='bodyLg'>
-            I&apos;ve worked with these companies to build fast, beautiful, and
-            inclusive digital experiences.
+            I&apos;ve worked with these companies to build frontends that are
+            fast, accessible, and genuinely good to use.
           </Text>
           <ul className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6'>
             {companies.map(company => (
@@ -256,7 +256,7 @@ export default function Index() {
           ══════════════════════════════════ */}
       <Section padding='none'>
         <CTACard
-          heading='Building something that needs senior full-stack engineering?'
+          heading='Senior full-stack engineering, frontend included.'
           description={
             <>
               Open to full-time roles with product-focused teams. If the
