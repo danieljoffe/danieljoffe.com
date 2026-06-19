@@ -1,0 +1,46 @@
+name: Deploy Preview
+
+# Auto-deploys a Vercel preview for the root app on every PR to develop and
+# posts the URL as a PR comment. PRs to main are handled by ci-preview.yml.
+#
+# The root project's Vercel Git-integration build is disabled (dashboard
+# "Ignored Build Step"), so feature-branch previews would otherwise never
+# build. This workflow drives the preview from CI using the same vercel-deploy
+# action production uses, so previews are generated automatically.
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: preview-develop-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Vercel Preview
+    # Skip drafts; the ready_for_review trigger runs it once the PR is opened.
+    if: ${{ github.event.pull_request.draft != true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/vercel-deploy
+        id: deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - uses: ./.github/actions/preview-comment
+        with:
+          label: Preview deployed
+          url: ${{ steps.deploy.outputs.url }}
+          marker: '<!-- vercel-preview-url -->'
+          github-token: ${{ github.token }}

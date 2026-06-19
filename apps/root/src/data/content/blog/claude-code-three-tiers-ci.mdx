@@ -17,9 +17,9 @@ export const metadata = {
 
 ## The design question
 
-I want Claude Code in my CI pipeline, but "add AI to CI" is too vague. An unrestricted agent that reviews, fixes, and responds to comments in one workflow is impossible to scope. A correction to a lint error should not require the same budget as an architectural review. And any workflow that pushes commits must answer: what stops it from looping?
+I wanted Claude Code in my CI pipeline, but "add AI to CI" is far too vague to build against. An unrestricted agent that reviews, fixes, and answers comments all in one workflow is impossible to scope, and fixing a lint error shouldn't draw on the same budget as an architectural review. On top of that, any workflow that pushes commits has to answer one uncomfortable question up front: what stops it from looping forever.
 
-I split the answer into three separate GitHub Actions workflows, each with its own trigger, permissions, and constraints.
+So I split the answer into three separate GitHub Actions workflows, each with its own trigger, permissions, and constraints.
 
 ## Tier 1: read-only PR review
 
@@ -36,13 +36,13 @@ permissions:
   id-token: write
 ```
 
-The prompt is explicit: "Do NOT make any code changes." It reviews against a project-specific checklist (accessibility, performance, architecture, TypeScript strictness) and outputs a verdict with `file:line` references.
+The prompt is blunt about it: "Do NOT make any code changes." It reviews against a project-specific checklist (accessibility, performance, architecture, TypeScript strictness) and spits out a verdict with `file:line` references.
 
-It skips bot PRs (Renovate, Dependabot) and PRs targeting main. The review runs against the full diff from `origin/develop...HEAD`, not just the latest commit.
+It skips bot PRs (Renovate, Dependabot) and any PR targeting main, and the review runs against the full diff from `origin/develop...HEAD`, not just the latest commit.
 
 ## Tier 2: constrained auto-fix
 
-Triggers when CI fails on a PR branch. Diagnoses and fixes only mechanical failures:
+Triggers when CI fails on a PR branch, then diagnoses and fixes only the mechanical failures:
 
 ```yaml
 on:
@@ -51,9 +51,9 @@ on:
     types: [completed]
 ```
 
-The scope is rigid: lint auto-fix, formatting, typecheck errors from renames, and snapshot updates. No behavior changes, no test logic modifications, no architectural decisions. If the failure requires judgment, it leaves a PR comment explaining what it found and stops.
+The scope is deliberately rigid: lint auto-fix, formatting, typecheck errors from renames, and snapshot updates, and nothing else. No behavior changes, no test-logic edits, no architectural decisions. If a failure needs actual judgment, it leaves a PR comment explaining what it found and stops there.
 
-The loop guard is the critical piece. Without it, auto-fix pushes a commit, CI re-runs, fails again, auto-fix pushes again. I check the last five commits for a prior `fix(ci):` from `github-actions[bot]`:
+The loop guard is the critical piece here. Without it, auto-fix pushes a commit, CI re-runs, fails again, and auto-fix pushes again, on and on. So I check the last five commits for a prior `fix(ci):` from `github-actions[bot]`:
 
 ```javascript
 const commits = await github.rest.pulls.listCommits({
@@ -69,9 +69,9 @@ const hasAutoFix = commits.data.some(
 );
 ```
 
-One attempt per CI failure. If the fix does not resolve it, a human looks.
+One attempt per CI failure, and if the fix doesn't resolve it, a human takes a look.
 
-Visual regression snapshots get their own step: if the auto-fix step already committed, skip. Otherwise, run Playwright with `--update-snapshots` and commit the new baselines. This is separate because snapshot updates need a full build and browser install that the lint/format step does not.
+Visual regression snapshots get their own step: if the auto-fix step already committed, skip; otherwise run Playwright with `--update-snapshots` and commit the new baselines. It's separate because snapshot updates need a full build and browser install that the lint/format step doesn't.
 
 ## Tier 3: interactive @claude
 
@@ -85,14 +85,14 @@ on:
     types: [created]
 ```
 
-No prompt template. The comment itself is the instruction. This tier has `contents: write` because the user is explicitly asking for code changes.
+There's no prompt template here; the comment itself is the instruction. This tier gets `contents: write` because someone is explicitly asking for code changes.
 
 ## The input validation lesson
 
-The first deployment fails immediately. The `claude-code-action@v1` action does not accept `max_turns`, `timeout_minutes`, or `direct_prompt` as inputs. The actual inputs are `prompt` (not `direct_prompt`) and `claude_args` (for flags like `--max-turns 20`). It also requires `id-token: write` for OIDC authentication.
+The first deployment fell over immediately. The `claude-code-action@v1` action doesn't accept `max_turns`, `timeout_minutes`, or `direct_prompt` as inputs; the actual inputs are `prompt` (not `direct_prompt`) and `claude_args` (for flags like `--max-turns 20`), and it also requires `id-token: write` for OIDC authentication.
 
-No amount of reading the README prevented this. The action's `action.yml` is the source of truth for valid inputs. I had to read the error output, cross-reference the valid input list, and fix all three workflows in a single commit.
+No amount of reading the README would have saved me here; the action's `action.yml` is the real source of truth for valid inputs. I ended up reading the error output, cross-referencing the valid input list, and fixing all three workflows in a single commit.
 
 ## Takeaway
 
-Scope AI in CI the same way you scope any automation: by trigger, by permissions, and by what it is allowed to change. Read-only review, constrained auto-fix, and interactive assistance are three different trust levels. Mixing them into one workflow conflates the question "should this agent read or write?" with "is this agent responding to a failure or a human?"
+Scope AI in CI the way you'd scope any other automation: by trigger, by permissions, and by what it's allowed to change. Read-only review, constrained auto-fix, and interactive assistance are three different trust levels, and folding them into one workflow tangles up "should this agent read or write?" with "is this agent reacting to a failure or to a human?"

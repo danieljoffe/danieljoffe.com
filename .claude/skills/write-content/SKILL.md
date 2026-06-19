@@ -81,10 +81,9 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
 
 1. **Determine content type**: `blog` for technique/lesson posts, `project` for case studies showcasing outcomes.
 
-2. **Read existing content** for voice and structure calibration:
-   - Read 2-3 existing posts of the same type from `apps/root/src/data/content/{blog,projects}/`
-   - Match the tone: technical but conversational, first-person singular ("I"), concrete code examples, clear section progression
-   - Match the structure: problem → approach → implementation → result → takeaway
+2. **Calibrate voice from the fingerprint, not from existing posts.** The voice anchor is the **"Voice fingerprint"** section of `.claude/docs/content-style-guide.md`, including Daniel's verbatim samples. Read it first and imitate its texture: flowing sentences (no staccato fragments), a hook before the facts, plain words over writerly ones, dry/self-deprecating asides, contractions, no rhetorical questions. **Do _not_ calibrate tone by reading existing posts** — most were AI-drafted and read generic, which is precisely the drift this corrects.
+   - Read 2-3 existing posts of the same type **only for structure and metadata shape** (section progression, code-example density, registry wiring) — never for voice.
+   - Match the structure: hook → reason → context → implementation → result → takeaway
 
 3. **Draft the MDX file** with the required metadata export. MDX is the single source of truth — thumbnail title, excerpt, cover image, SEO, OG images, and structured data all derive from this one block.
 
@@ -121,6 +120,7 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
    - Keep it under 800 words. These are sharp technical notes, not tutorials
    - Use code blocks with language hints (`tsx`, `bash`, `css`)
    - No emojis, no "In this post we'll explore..." filler
+   - No rhetorical questions, no staccato one-word emphasis, no corporate jargon ("synergy"). Flow sentences together; read the draft aloud and cut anything that sounds like a LinkedIn post
    - When a post is about a script or tool, include the complete version in a dedicated section. Readers should be able to copy-paste and use it
 
 6. **Complete the post checklist** (from CLAUDE.md "Adding a New Post"):
@@ -145,7 +145,7 @@ When the user selects a topic (or invokes with `/write-content draft <slug>`):
 
 The canonical style guide lives at **`.claude/docs/content-style-guide.md`**. Read it before drafting — it covers:
 
-- **Voice pillars** (direct, evidence-backed, calm confidence, builder's mindset)
+- **Voice pillars** (direct-with-a-hook, evidence-backed, engaged and irreverent, builder's-eye honesty) and the **Voice fingerprint** section with Daniel's verbatim samples — the canonical "sounds like Daniel" anchor
 - **Per-surface calibration** (home hero, about, services, blog body, thumbnail title/excerpt, CTA)
 - **Tense rules** (blog = present, project/experience = past, hero/about/services = present)
 - **Length budgets** for short-form surfaces (title ≤ 60, excerpt ≤ 160, headline ≤ 60, subtitle ≤ 180, CTA ≤ 50)

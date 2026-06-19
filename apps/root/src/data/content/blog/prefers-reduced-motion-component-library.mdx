@@ -15,24 +15,25 @@ export const metadata = {
   },
 };
 
-## The Audit
+## The audit
 
-The shared-ui library had 30+ components. Twelve of them used CSS animations
-or transitions: Spinner, Loading, ProgressBar, Switch, Sidebar, ThemeToggle,
-Button, Skeleton, Dropdown, Toast, Modal, and Tooltip. None of them respected
-`prefers-reduced-motion`.
+Of the 30+ components in shared-ui, twelve animated something and not one of them
+checked `prefers-reduced-motion` first. The offenders were Spinner, Loading,
+ProgressBar, Switch, Sidebar, ThemeToggle, Button, Skeleton, Dropdown, Toast,
+Modal, and Tooltip.
 
-A global CSS rule like `@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }` would have been a one-line fix. But it's a
-blunt instrument. It removes all animation indiscriminately, including
-transitions that communicate state changes. I needed a component-level
-approach.
+A global CSS rule like `@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }`
+would have been a one-line fix, and it's exactly the kind of fix I'd reach for at
+5pm on a Friday. It's also a blunt instrument: it kills every animation
+indiscriminately, including the transitions that tell you a state actually
+changed. I wanted to decide component by component instead.
 
-## Decorative vs. Functional
+## Decorative vs. functional
 
-The audit forced a classification for every animation in the library.
+The audit forced me to put every animation in the library into one of two buckets.
 
-**Decorative animations** exist for visual polish. Removing them changes nothing
-about the user's understanding of the interface:
+**Decorative animations** are there for polish, and pulling them changes nothing
+about how someone reads the interface:
 
 | Component   | Animation          | Verdict    |
 | ----------- | ------------------ | ---------- |
@@ -41,8 +42,8 @@ about the user's understanding of the interface:
 | Skeleton    | `animate-pulse`    | Decorative |
 | ProgressBar | indeterminate fill | Decorative |
 
-**Functional transitions** communicate state changes. Removing them requires a
-static alternative so the user still understands what happened:
+**Functional transitions** communicate a state change, so killing them means
+giving the element a static alternative that still tells the user what happened:
 
 | Component | Animation        | Verdict                    |
 | --------- | ---------------- | -------------------------- |
@@ -51,15 +52,15 @@ static alternative so the user still understands what happened:
 | Toast     | entry/exit slide | Functional (instant show)  |
 | Dropdown  | menu slide-down  | Functional (instant show)  |
 
-For decorative animations, `motion-reduce:animate-none` is sufficient. For
-functional transitions, `motion-reduce:transition-none` snaps the element to
-its final state instantly.
+For decorative animations, `motion-reduce:animate-none` is enough. For functional
+transitions, `motion-reduce:transition-none` snaps the element to its final state
+instantly.
 
-## The Tailwind Pattern
+## The Tailwind pattern
 
-Tailwind CSS 4's `motion-reduce:` variant maps directly to
-`@media (prefers-reduced-motion: reduce)`. I applied it at the component
-level, next to the animation it modifies:
+Tailwind CSS 4's `motion-reduce:` variant maps straight onto
+`@media (prefers-reduced-motion: reduce)`, so I applied it right at the component
+level, next to the animation it's modifying:
 
 ```tsx
 // Spinner — decorative, safe to freeze
@@ -76,8 +77,8 @@ level, next to the animation it modifies:
 ```
 
 For functional transitions, I paired `motion-reduce:transition-none` with the
-existing transition class. The Switch thumb, for example, still moves to the
-correct position; it just snaps there instead of sliding:
+existing transition class. The Switch thumb still lands in the right spot; it just
+snaps there instead of sliding:
 
 ```tsx
 // Switch — functional, snap to final position
@@ -89,13 +90,13 @@ correct position; it just snaps there instead of sliding:
 />
 ```
 
-The `translate-x` still applies. The `transition-transform` is what gets
-removed. Position changes are instant, but the end state is identical.
+The `translate-x` still applies; it's the `transition-transform` that gets
+removed, so the position change is instant and the end state is identical.
 
-## Testing Motion Preferences
+## Testing motion preferences
 
-Each component that received `motion-reduce:` support got a corresponding test
-verifying the class is present:
+Every component that picked up `motion-reduce:` support got a matching test that
+checks the class is actually present:
 
 ```tsx
 it('applies motion-reduce:animate-none', () => {
@@ -105,13 +106,14 @@ it('applies motion-reduce:animate-none', () => {
 });
 ```
 
-This isn't testing browser behavior; it's testing that the class survives
-refactoring. A future contributor who removes the animation classes will see a
-failing test that makes the intent explicit.
+This isn't testing browser behavior; it's testing that the class survives a
+refactor. A future contributor who strips the animation classes gets a failing
+test that spells out the intent for them.
 
-## The Takeaway
+## The takeaway
 
-A global `animation: none` rule treats all motion the same. Component-level
-`motion-reduce:` utilities let me distinguish between motion that's decorative
-and motion that communicates state. Twelve components, twelve decisions, twelve
-lines of Tailwind. The audit is the work; the implementation is trivial.
+A global `animation: none` rule treats all motion the same, while component-level
+`motion-reduce:` utilities let me separate the motion that's pure decoration from
+the motion that's carrying meaning. Twelve components, twelve decisions, twelve
+lines of Tailwind. The audit was the actual work; once that was done the code was
+the easy part.

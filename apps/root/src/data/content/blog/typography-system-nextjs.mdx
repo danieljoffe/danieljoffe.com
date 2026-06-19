@@ -15,10 +15,11 @@ export const metadata = {
   },
 };
 
-## The Audit That Started It All
+## The audit that kicked it off
 
-Every mature codebase accumulates typographic debt. Ours had three competing
-systems that didn't agree on what an `<h2>` should look like:
+Every codebase that's been around a while picks up typographic debt, and mine
+had three competing systems that couldn't agree on what an `<h2>` should look
+like:
 
 | Layer                  | h1                          | h2                 | h3                 |
 | ---------------------- | --------------------------- | ------------------ | ------------------ |
@@ -27,14 +28,14 @@ systems that didn't agree on what an `<h2>` should look like:
 | **Page components**    | `text-4xl sm:text-5xl bold` | varies             | varies             |
 
 The same "card title" pattern (`text-sm font-semibold text-text-primary`)
-appeared in 5+ files. Hero headings were copy-pasted across 6 pages with
-identical 94-character class strings. And MDX h3 and h4 were visually
-indistinguishable, both `text-sm font-semibold`.
+showed up in 5+ files, hero headings were copy-pasted across 6 pages with
+identical 94-character class strings, and MDX h3 and h4 were visually
+indistinguishable since both were `text-sm font-semibold`.
 
-## Designing the Variant API
+## Designing the variant API
 
-The goal was a component API that encodes every approved text style as a
-named variant, with sensible defaults for the rendered HTML element:
+I wanted a component API that encodes every approved text style as a named
+variant, with sensible defaults for the rendered HTML element:
 
 ```tsx
 <Heading variant="hero">Page Title</Heading>        // → <h1>
@@ -44,14 +45,15 @@ named variant, with sensible defaults for the rendered HTML element:
 ```
 
 Each variant maps to a fixed set of Tailwind classes. The `as` prop overrides
-the default element when semantic context demands it (a card title that
-isn't a heading). And `className` allows one-off extensions via `cn()` merging.
+the default element when the semantic context calls for it, like a card title
+that isn't actually a heading, and `className` allows one-off extensions via
+`cn()` merging.
 
-## Shared-UI vs App-Specific
+## Shared-UI vs app-specific
 
-The key architecture decision was **what belongs where**. The shared-ui library
-(`@danieljoffe/shared-ui`) can't depend on Next.js, so variants tied to
-page layout or MDX rendering had to stay in the app.
+The architecture decision that mattered was **what belongs where**. The
+shared-ui library (`@danieljoffe/shared-ui`) can't depend on Next.js, so any
+variant tied to page layout or MDX rendering had to stay in the app.
 
 **Shared-ui variants** (framework-agnostic):
 
@@ -63,8 +65,8 @@ page layout or MDX rendering had to stay in the app.
 - `Heading`: `hero`, `detail`, `subtitle`, `mdxH1`–`mdxH4`
 - `Text`: `subtitle`
 
-The app-level components delegate shared variants to the shared-ui
-implementations and only handle app-specific ones locally:
+The app-level components hand the shared variants off to the shared-ui
+implementations and only deal with the app-specific ones locally:
 
 ```tsx
 export function Heading({ variant, ...props }: HeadingProps) {
@@ -75,25 +77,26 @@ export function Heading({ variant, ...props }: HeadingProps) {
 }
 ```
 
-## Fixing Under-Styled Shared Components
+## Fixing under-styled shared components
 
-The audit revealed that several shared-ui components had inadequate typography:
+The audit turned up several shared-ui components with thin typography:
 
-- **Modal title**: A bare `<h3>` with zero styling classes
-- **Alert title**: Only `mb-1 mt-0`, no font size or weight
+- **Modal title**: a bare `<h3>` with zero styling classes
+- **Alert title**: only `mb-1 mt-0`, no font size or weight
 - **CardTitle**: `text-lg` in shared-ui but `text-sm` everywhere in the app
-- **Toast**: Inline `text-sm font-medium` instead of using the system
+- **Toast**: inline `text-sm font-medium` instead of using the system
 
-Each was updated to use the new typography components internally. `CardTitle`
-was the most impactful. Changing from `text-lg` to `text-sm` via
-`<Heading variant="cardTitle">` aligned the library with actual usage.
+I updated each of them to use the new typography components internally.
+`CardTitle` was the one that moved the most: switching from `text-lg` to
+`text-sm` via `<Heading variant="cardTitle">` lined the library up with how
+it was actually used.
 
-## The MDX Heading Fix
+## The MDX heading fix
 
-One subtle win: MDX `h4` was visually identical to `h3` (both
-`text-sm font-semibold`). The new `mdxH4` variant uses
-`text-xs font-medium uppercase tracking-wider`. A distinct visual treatment
-that signals a different level in the content hierarchy.
+One quiet win: MDX `h4` was visually identical to `h3`, both
+`text-sm font-semibold`. The new `mdxH4` variant uses
+`text-xs font-medium uppercase tracking-wider`, a distinct treatment that
+signals a different level in the content hierarchy.
 
 ```tsx
 // mdx-components.tsx — now uses the typography system
@@ -109,7 +112,7 @@ h4: props => <Heading variant="mdxH4" id={headingId(props)}>{props.children}</He
 - MDX h4 now visually distinct from h3
 - Modal, Alert, Toast, and form components all properly styled
 
-The typography system eliminated an entire category of inconsistency. New pages
-start with `<Heading variant="hero">` instead of copying a 94-character class
-string from another file. And when the design evolves, one variant definition
-updates every instance.
+The typography system wiped out a whole category of inconsistency. A new page
+now starts with `<Heading variant="hero">` instead of copying a 94-character
+class string out of another file, and when the design moves, one variant
+definition updates every instance at once.

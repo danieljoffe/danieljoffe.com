@@ -15,30 +15,31 @@ export const metadata = {
   },
 };
 
-## The Silent Failure
+## The silent failure
 
-I wanted a simple optimization: skip CI when a pull request only
-touches documentation files (`.md`, `.claude/*`, `.vscode/*`, workflow
-files). The standard approach is `dorny/paths-filter`, a GitHub Action
-that checks changed files against glob patterns.
+I wanted one simple optimization: skip CI when a pull request only touches
+documentation files (`.md`, `.claude/*`, `.vscode/*`, workflow files). The
+standard approach is `dorny/paths-filter`, a GitHub Action that checks
+changed files against glob patterns.
 
-I configured it, tested it, and it never worked. Docs-only PRs ran
-the full CI suite every time. No error, no warning, no indication that
-anything was wrong.
+I configured it, tested it, and it never worked: docs-only PRs ran the full
+CI suite every single time, with no error, no warning, and no hint that
+anything was off.
 
-The cause was two bugs compounding. First, `paths-filter` does not
-support the `predicate-quantifier` option I set. It silently ignores
-it. Second, its glob matching failed to match `.claude/**` files, so
-the Claude Code config changes were never classified as docs-only.
+The cause turned out to be two bugs compounding. First, `paths-filter`
+doesn't support the `predicate-quantifier` option I'd set, and it silently
+ignores it. Second, its glob matching failed to match `.claude/**` files, so
+my Claude Code config changes were never classified as docs-only.
 
-I spent three commits trying to fix the configuration: adjusting globs,
-adding `predicate-quantifier`, inverting the pattern logic. None of it
-worked because the underlying Action was not behaving as documented.
+I burned three commits fighting the configuration: adjusting globs, adding
+`predicate-quantifier`, inverting the pattern logic. None of it worked,
+because the underlying Action just wasn't behaving the way it was documented.
 
-## The Shell Replacement
+## The shell replacement
 
-The entire paths-filter dependency was doing one thing: classifying PR
-files as docs-only or not. A `case` statement does that in 15 lines:
+The whole paths-filter dependency was really doing one job: deciding whether
+the PR's files were docs-only or not. A `case` statement does that in 15
+lines:
 
 ```yaml
 - name: Check for docs-only changes
@@ -73,13 +74,14 @@ files as docs-only or not. A `case` statement does that in 15 lines:
     echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
 ```
 
-Push events to `develop` always run CI (the early exit). For PRs, the
-`gh` CLI fetches the file list and the `case` statement classifies each
-one. The first non-docs file sets `DOCS_ONLY=false` and breaks.
+Push events to `develop` always run CI, via the early exit. For PRs, the `gh`
+CLI fetches the file list and the `case` statement classifies each one; the
+first non-docs file sets `DOCS_ONLY=false` and breaks out of the loop.
 
-## The Gate Job
+## The gate job
 
-The `ci-status` gate job makes this work with branch protection:
+The `ci-status` gate job is what makes this play nicely with branch
+protection:
 
 ```yaml
 ci-status:
@@ -97,27 +99,27 @@ ci-status:
 ```
 
 Branch protection requires `ci-status`, not `ci`. When the `ci` job is
-skipped (docs-only PR), `ci-status` will run and pass. When `ci`
-fails, `ci-status` fails too. The gate job is always green or red,
-never skipped, so branch protection just works.
+skipped on a docs-only PR, `ci-status` still runs and passes; when `ci`
+fails, `ci-status` fails right alongside it. The gate job is always green or
+red and never skipped, so branch protection just works.
 
-## The nx affected Optimization
+## The nx affected optimization
 
-A related change in the same PR cluster: `nx affected` was always
-diffing against `main`, even for feature branches targeting `develop`.
-This meant every feature branch CI run compared against `main` and
-rebuilt more than necessary.
+A related change rode along in the same PR cluster: `nx affected` was always
+diffing against `main`, even for feature branches targeting `develop`, so
+every feature-branch CI run compared against `main` and rebuilt more than it
+needed to.
 
-The fix passes `${{ github.base_ref || 'main' }}` as the `--base` flag.
-PRs into `develop` now diff against `develop`. Pushes to `develop`
-still diff against `main`. One line, fewer unnecessary rebuilds.
+The fix passes `${{ github.base_ref || 'main' }}` as the `--base` flag, so
+PRs into `develop` now diff against `develop` while pushes to `develop` still
+diff against `main`. One line, and a pile of unnecessary rebuilds gone.
 
-## The Takeaway
+## The takeaway
 
-Third-party Actions are dependencies. They can silently break, silently
-ignore configuration, and silently change behavior between versions.
-For simple file classification logic, shell is more transparent, more
-debuggable, and has no upstream risk. Reserve Actions for when they
-genuinely reduce complexity — caching, deployment orchestration,
-multi-platform matrices. "Classify files against a list of patterns"
-is exactly what shell's `case` does natively.
+Third-party Actions are dependencies, and they can silently break, silently
+ignore your configuration, and silently change behavior between versions. For
+simple file-classification logic, shell is more transparent, easier to debug,
+and carries no upstream risk. Save the Actions for when they genuinely cut
+complexity: caching, deployment orchestration, multi-platform matrices.
+"Classify files against a list of patterns" is exactly what shell's `case`
+already does natively.

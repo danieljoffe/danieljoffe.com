@@ -17,13 +17,13 @@ export const metadata = {
 
 ## The problem
 
-A scan button in my jobs dashboard was hitting 48 seconds, and Vercel's Hobby tier kills functions at 60. The button triggers a FastAPI poller that fans out across 49 career boards across six ATS providers (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, and a JSON-LD fallback fetcher), pulls thousands of postings, filters them, and writes the survivors to Supabase. One button, one scan, the whole pipeline cost visible at the click.
+A scan button in my jobs dashboard was creeping up to 48 seconds, and Vercel's Hobby tier kills functions at 60, so the margin was getting uncomfortable. That button triggers a FastAPI poller that fans out across 49 career boards over six ATS providers (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, and a JSON-LD fallback fetcher), pulls thousands of postings, filters them, and writes the survivors to Supabase. One button, one scan, the whole pipeline's cost staring back at you the moment you click.
 
-The poller was already async. `httpx` fetches in parallel, and a `for` loop iterated sources. Every real operation called `await`. It looked concurrent.
+The poller was already async: `httpx` fetched in parallel, a `for` loop iterated the sources, and every real operation called `await`. It looked concurrent.
 
 ## Fix 1: actually concurrent polling
 
-Kill the `for` loop, use `asyncio.gather` with a bounded semaphore:
+Kill the `for` loop, reach for `asyncio.gather` with a bounded semaphore:
 
 ```python
 semaphore = asyncio.Semaphore(POLL_CONCURRENCY)
@@ -37,7 +37,7 @@ summaries = await asyncio.gather(*(_worker(s) for s in sources))
 
 Ran it. Still 48 seconds.
 
-`asyncio.gather` should have overlapped 49 sources across 10 concurrent workers. The HTTP fetches were clearly not the bottleneck; `httpx` does I/O asynchronously. So what was blocking?
+`asyncio.gather` should have overlapped 49 sources across 10 concurrent workers, and the HTTP fetches clearly weren't the bottleneck since `httpx` does its I/O asynchronously. Something else was blocking, and I didn't know what yet.
 
 ## Fix 2: batch the DB writes
 
@@ -48,7 +48,7 @@ for job in jobs:
     supabase.table("job_postings").upsert(row).execute()
 ```
 
-Across 49 sources with a few hundred jobs each, that is on the order of thousands of round trips per scan. One bulk upsert per source collapses the fan-out, and a single `.in_()` archive call replaces the stale-job update loop:
+Across 49 sources with a few hundred jobs each, that's on the order of thousands of round trips per scan. One bulk upsert per source collapses the fan-out, and a single `.in_()` archive call replaces the stale-job update loop:
 
 ```python
 if rows_to_upsert:
@@ -62,15 +62,15 @@ if stale_ids:
     ).in_("id", stale_ids).execute()
 ```
 
-Scan time: 48s → 22s. Half the runtime gone, still too slow for a button that fires synchronously from the browser.
+Scan time: 48s → 22s. Half the runtime gone, and still too slow for a button that fires synchronously from the browser.
 
 ## Fix 3: offload the sync client to a thread pool
 
-Here is the thing I kept missing. `supabase-py` is a synchronous client. Every `.execute()` is a regular blocking call. Calling it from an `async` function does not make it non-blocking; it runs at the line where `await` would usually yield.
+Here's the thing I kept missing: `supabase-py` is a synchronous client, so every `.execute()` is a plain blocking call, and calling it from an `async` function doesn't magically make it non-blocking; it just runs right at the line where `await` would normally yield.
 
-When my ten workers each called `.execute()` inside their `async with semaphore`, they were not overlapping DB I/O. Each worker took the event loop, held it for a 30-100ms round trip, then released it. Ten workers "running concurrently" actually executed their DB calls one after another. Pure theater.
+When my ten workers each called `.execute()` inside their `async with semaphore`, they weren't overlapping any DB I/O at all. Each worker grabbed the event loop, held it for a 30-100ms round trip, then released it, so ten workers "running concurrently" were really executing their DB calls one after another. Pure theater.
 
-`asyncio.to_thread` fixes this by handing the sync call to Python's default thread pool executor:
+`asyncio.to_thread` fixes this by handing the sync call off to Python's default thread pool executor:
 
 ```python
 upsert_query = supabase.table("job_postings").upsert(
@@ -79,7 +79,7 @@ upsert_query = supabase.table("job_postings").upsert(
 upsert_resp = await asyncio.to_thread(upsert_query.execute)
 ```
 
-Each worker now submits its blocking call to a thread, releases the event loop, and gets resumed when the thread returns. Ten workers, ten overlapping DB round trips, real concurrency.
+Each worker now submits its blocking call to a thread, releases the event loop, and gets resumed when the thread returns. Ten workers, ten overlapping DB round trips, real concurrency this time.
 
 Scan time: 22s → 8s.
 
@@ -92,7 +92,7 @@ Scan time: 22s → 8s.
 | Batched upsert and archive                | 22s             |
 | `asyncio.to_thread` on every `.execute()` | 8s              |
 
-Fix 1 on its own did nothing. If I had stopped at fix 2 and declared victory at 22s, I would have shipped theater as a win. The diagnosis that mattered was not "concurrency is broken." It was "I wrote `async` but my library still blocks, so `gather` is a shape, not a behavior."
+Fix 1 on its own did nothing, and if I'd stopped at fix 2 and declared victory at 22s, I'd have shipped theater and called it a win. The diagnosis that actually mattered wasn't "concurrency is broken"; it was "I wrote `async` but my library still blocks, so `gather` is a shape, not a behavior."
 
 ## The full poller
 
@@ -137,8 +137,8 @@ async def poll_all_sources(supabase):
     return await asyncio.gather(*(_worker(s) for s in sources))
 ```
 
-The same poller powers a JSON-LD fallback fetcher that extracts `schema.org/JobPosting` from any careers page with Python's stdlib `html.parser`, zero new dependencies. Small aside, but worth noting: once the concurrency model is honest, adding a slow fetcher does not compound into a slow scan.
+That same poller also powers a JSON-LD fallback fetcher that extracts `schema.org/JobPosting` from any careers page using Python's stdlib `html.parser`, with zero new dependencies. It's a small aside, but worth noting: once the concurrency model is honest, bolting on a slow fetcher doesn't compound into a slow scan.
 
 ## Takeaway
 
-`async` is a shape you put on a function. Concurrency is whether the thing inside that function actually yields. A sync library wrapped in `async def` is still blocking; `asyncio.to_thread` is how you make it yield. Run the timer before and after every fix, and it will tell you which theater you bought.
+`async` is just a shape you put on a function; concurrency is whether the thing inside that function actually yields. A sync library wrapped in `async def` is still blocking, and `asyncio.to_thread` is how you make it yield. Run the timer before and after every fix and it'll tell you which theater you just bought.

@@ -29,17 +29,17 @@ export const metadata = {
 
 **Duration:** August 19-24, 2025
 
-**Purpose:** Ship a production-ready contact form with layered security — not just "a form that sends email"
+**Purpose:** Ship a production-ready contact form with layered security, not just "a form that sends email"
 
 ## Business Impact
 
-- Implemented spam prevention (hCaptcha) that blocks automated submissions while maintaining user experience
-- Added rate limiting and input sanitization to protect against abuse
-- Reduced spam submissions to near-zero without adding friction for legitimate users
+- Added hCaptcha spam prevention that blocks automated submissions without getting in real visitors' way
+- Layered on rate limiting and input sanitization to keep abuse out
+- Cut spam submissions to near-zero without adding friction for legitimate users
 
 ## The Challenge
 
-A contact form on a public portfolio site is an open invitation for abuse. Bots scrape forms constantly, and a naive implementation would be drowning in spam within days. The goal was to build something that felt effortless for real visitors but hostile to automated submissions — and to do it properly from the start rather than patching holes later.
+A contact form on a public portfolio site is an open invitation for abuse. Bots scrape forms around the clock, and a naive version would be drowning in spam inside a few days. I wanted something that felt effortless for real visitors but hostile to automated submissions, and I wanted to do it properly from the start instead of patching holes later.
 
 ### Requirements:
 
@@ -54,7 +54,7 @@ A contact form on a public portfolio site is an open invitation for abuse. Bots 
 
 ### Layer 1: Client-Side Validation with React Hook Form + Yup
 
-The form uses `react-hook-form` with a `yupResolver` for instant feedback. The same Yup schema validates on both client and server — one source of truth.
+The form uses `react-hook-form` with a `yupResolver` for instant feedback, and the same Yup schema validates on both the client and the server, so there's one source of truth.
 
 ```typescript title="schema.ts" {21-23}
 // schema.ts — shared between client and server
@@ -88,7 +88,7 @@ export const formSchema = yup
   .required();
 ```
 
-The anti-spam URL check in the message field catches a surprising amount of automated submissions — most spam bots inject links.
+The anti-spam URL check in the message field catches a surprising number of automated submissions, since most spam bots can't resist injecting a link.
 
 Every form input includes proper ARIA attributes for accessibility:
 
@@ -107,7 +107,7 @@ The `data-sentry-mask` attribute ensures PII never reaches error tracking.
 
 ### Layer 2: Honeypot Field
 
-A hidden `address` field that real users never see. Bots filling out every field trigger an immediate 403:
+There's a hidden `address` field that real users never see. A bot that dutifully fills out every field trips an immediate 403:
 
 ```tsx title="ContactForm.tsx" {4}
 {
@@ -135,7 +135,7 @@ if (data?.address && data.address.length > 0) {
 }
 ```
 
-The honeypot check runs outside the `try/catch` block intentionally — a filled honeypot is a hard rejection, not a validation error.
+The honeypot check sits outside the `try/catch` block on purpose, because a filled honeypot is a hard rejection, not a validation error.
 
 ### Layer 3: hCaptcha with Lazy Loading
 
@@ -163,7 +163,7 @@ useEffect(() => {
 }, []);
 ```
 
-The `rootMargin: '200px'` starts loading the captcha before the user actually scrolls to it — by the time they reach the form, it is ready.
+The `rootMargin: '200px'` kicks off the captcha load before the user actually scrolls to it, so by the time they reach the form it's already there.
 
 ### Layer 4: Rate Limiting
 
@@ -193,7 +193,7 @@ export const rateLimit = async (req: NextRequest) => {
 };
 ```
 
-Expired entries are purged every 5 minutes to prevent unbounded memory growth. The 429 response includes a `Retry-After` header.
+Expired entries get purged every 5 minutes so the store can't grow without bound, and the 429 response carries a `Retry-After` header.
 
 ### Layer 5: Input Sanitization
 
@@ -211,11 +211,11 @@ const sanitized: RawFormData = {
 await schema.validate(sanitized, { stripUnknown: true });
 ```
 
-`stripUnknown: true` drops any fields not in the schema — an extra safeguard against injection of unexpected data.
+`stripUnknown: true` drops any field that isn't in the schema, which is an extra safeguard against someone slipping in unexpected data.
 
 ### Layer 6: Source Validation
 
-The API route verifies the request originated from the contact page via the referer header:
+The API route confirms the request actually came from the contact page by checking the referer header:
 
 ```typescript title="requestFromSource.ts" /referer/
 export const requestFromSource = async (req: NextRequest, source: string) => {
@@ -229,7 +229,7 @@ export const requestFromSource = async (req: NextRequest, source: string) => {
 
 ### The API Route: Bringing It All Together
 
-Each security layer is a composable middleware. The route handler reads like a checklist:
+Each security layer is its own composable middleware, so the route handler reads like a checklist:
 
 ```typescript title="route.ts" {5-8}
 export async function POST(request: NextRequest) {
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-Each function throws a typed `ErrorResponse` on failure, so the catch block handles all error cases uniformly — 400 for validation, 403 for bots, 429 for rate limits, 500 for service failures.
+Each function throws a typed `ErrorResponse` on failure, so the catch block handles every error case the same way: 400 for validation, 403 for bots, 429 for rate limits, 500 for service failures.
 
 ## The Results
 
@@ -269,10 +269,10 @@ Each function throws a typed `ErrorResponse` on failure, so the catch block hand
 
 ## Key Takeaways
 
-- **Defense in depth works because each layer catches what others miss.** The honeypot stops dumb bots, hCaptcha stops smart ones, rate limiting stops persistent ones, and sanitization stops malicious ones.
-- **Shared validation schemas eliminate drift.** One Yup schema validates on both client and server — the client provides instant feedback, the server enforces the rules.
-- **Lazy loading security widgets preserves performance.** hCaptcha loads via IntersectionObserver only when the form is visible, keeping it off the critical rendering path.
-- **Composable middleware keeps the route handler readable.** Each security concern is a standalone async function that either passes or throws — the route reads like a pipeline.
+- **Defense in depth works because each layer catches what the others miss.** The honeypot stops the dumb bots, hCaptcha stops the smart ones, rate limiting stops the persistent ones, and sanitization stops the malicious ones.
+- **Shared validation schemas kill drift.** One Yup schema validates on both the client and the server, so the client gives instant feedback while the server actually enforces the rules.
+- **Lazy-loading the security widgets keeps the page fast.** hCaptcha loads via IntersectionObserver only once the form is visible, which keeps it off the critical rendering path.
+- **Composable middleware keeps the route handler readable.** Each security concern is a standalone async function that either passes or throws, so the route reads like a pipeline.
 
 ## Technologies Used
 

@@ -17,20 +17,20 @@ export const metadata = {
 
 ## The problem
 
-I wanted to add a FastAPI service to a pnpm + Nx monorepo. Nx has no idea what Python is. The `affected` graph cannot see Python imports, `pnpm install` cannot install Python packages, and the default Nx CI path runs lint, test, and build only against projects it recognizes.
+I wanted to add a FastAPI service to a pnpm + Nx monorepo, and Nx has no idea what Python even is. The `affected` graph can't see Python imports, `pnpm install` can't install Python packages, and the default Nx CI path runs lint, test, and build only against the projects it recognizes.
 
-The service is real work: a Greenhouse scraper, a scoring engine, a poller, database migrations. It needs its own linter, formatter, type checker, and test runner. I did not want to bolt a Poetry install into every CI step or ask `pnpm` to pretend to be a Python installer.
+The service is real work: a Greenhouse scraper, a scoring engine, a poller, database migrations. It needs its own linter, formatter, type checker, and test runner, and I didn't want to bolt a Poetry install onto every CI step or ask `pnpm` to pretend it's a Python installer.
 
 ## The approach
 
-Four escape hatches, each small:
+Four escape hatches, each one small:
 
 1. **uv workspace** at the monorepo root, with the Python package as a member.
 2. **Docker build from the repo root**, not the service directory, so the workspace lockfile is reachable.
 3. **A dedicated `ci-python` CI job** that runs alongside the Node jobs and uses the same `pnpm nx` CLI to dispatch uv-backed tasks.
 4. **Project-level Nx targets** (`dev`, `test`, `lint`, `mypy`) that shell out to `uv run --package job-api ...`.
 
-Nothing about this asks Nx to understand Python. Nx dispatches commands; uv owns the Python universe.
+None of this asks Nx to understand Python; Nx just dispatches commands, and uv owns the Python side of things.
 
 ## uv workspace
 
@@ -47,11 +47,11 @@ requires-python = ">=3.11"
 members = ["apps/job-api"]
 ```
 
-The service `pyproject.toml` in `apps/job-api/` declares dependencies normally. The single `uv.lock` lives at the root and locks every Python dependency across every member. uv is fast enough (Rust, same author as Ruff) that `uv sync --frozen` finishes in a few seconds even in CI.
+The service `pyproject.toml` in `apps/job-api/` declares its dependencies normally. The single `uv.lock` lives at the root and locks every Python dependency across every member. uv is fast enough (Rust, same author as Ruff) that `uv sync --frozen` finishes in a few seconds even in CI.
 
 ## Docker from the monorepo root
 
-This is the gotcha. The service's Dockerfile lives in `apps/job-api/Dockerfile`, but the build context has to be the monorepo root, because the workspace lockfile is at the root. Building from the service directory cannot see `uv.lock`.
+This is the gotcha. The service's Dockerfile lives at `apps/job-api/Dockerfile`, but the build context has to be the monorepo root, because that's where the workspace lockfile sits. Build from the service directory and it can't see `uv.lock` at all.
 
 ```dockerfile title="apps/job-api/Dockerfile"
 FROM python:3.11-slim
@@ -75,11 +75,11 @@ EXPOSE 8000
 CMD ["uv", "run", "--package", "job-api", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-On Railway, this means setting the service's build context to the repo root and the Dockerfile path to `apps/job-api/Dockerfile`. Locally, the equivalent is `docker build -f apps/job-api/Dockerfile .`. Two flags. I had to relearn this lesson the first time CI ran `docker build .` inside the service directory and got a `uv.lock not found` error.
+On Railway that means setting the service's build context to the repo root and the Dockerfile path to `apps/job-api/Dockerfile`; locally the equivalent is `docker build -f apps/job-api/Dockerfile .`. Two flags, and I had to relearn the lesson the hard way the first time CI ran `docker build .` inside the service directory and handed me a `uv.lock not found` error.
 
 ## Project targets that pretend to be JavaScript
 
-The `project.json` exposes Python work as Nx targets so the rest of the monorepo can run everything through the same `pnpm nx` entrypoint:
+The `project.json` exposes the Python work as Nx targets so the rest of the monorepo can run everything through the same `pnpm nx` entrypoint:
 
 ```json title="apps/job-api/project.json"
 {
@@ -119,11 +119,11 @@ The `project.json` exposes Python work as Nx targets so the rest of the monorepo
 }
 ```
 
-One subtle rename: the Python type-check target is `mypy`, not `typecheck`. The `@nx/js/typescript` plugin auto-infers a `typecheck` target on every project with a `tsconfig`. If the service also defined `typecheck`, the name would collide with the workspace-wide TypeScript typecheck sweep and one would silently overwrite the other. Using `mypy` sidesteps the conflict.
+One quiet rename matters here: the Python type-check target is `mypy`, not `typecheck`. The `@nx/js/typescript` plugin auto-infers a `typecheck` target on every project with a `tsconfig`, so if the service also defined `typecheck`, the name would collide with the workspace-wide TypeScript typecheck sweep and one would silently overwrite the other. Naming it `mypy` sidesteps the whole conflict.
 
 ## A dedicated ci-python job
 
-Nx `affected` cannot see Python changes, so putting the Python work in the main affected pipeline would mean every Python commit looked like a no-op to Nx and skipped the tests. The fix is a parallel GitHub Actions job that always runs when a non-docs PR touches the workspace:
+Nx `affected` can't see Python changes, so dropping the Python work into the main affected pipeline would make every Python commit look like a no-op to Nx and quietly skip the tests. The fix is a parallel GitHub Actions job that always runs when a non-docs PR touches the workspace:
 
 ```yaml title=".github/workflows/ci.yml (excerpt)"
 ci-python:
@@ -147,12 +147,12 @@ ci-python:
       run: pnpm nx run-many -t lint test mypy --nxBail -p job-api
 ```
 
-Two details matter. First, the job installs both pnpm _and_ uv: pnpm to get the Nx CLI, uv to execute the actual Python work dispatched by Nx. Second, `pnpm nx run-many -t lint test mypy -p job-api` runs the three Python targets in parallel; `--nxBail` kills the run on the first failure.
+Two details matter here. First, the job installs both pnpm _and_ uv: pnpm to get the Nx CLI, uv to actually execute the Python work Nx dispatches. Second, `pnpm nx run-many -t lint test mypy -p job-api` runs the three Python targets in parallel, and `--nxBail` kills the run on the first failure.
 
-The `ci-status` gate treats `ci-python` as a required check alongside `fast` and `full`. If mypy fails, the PR cannot merge.
+The `ci-status` gate treats `ci-python` as a required check alongside `fast` and `full`, so if mypy fails, the PR can't merge.
 
 ## The takeaway
 
-Nx does not have to understand every language in the repo. It only has to dispatch work. Give uv the lockfile, let it own dependency resolution, and expose the Python tasks as `nx:run-commands` targets so the rest of the pipeline speaks one CLI.
+Nx doesn't have to understand every language in the repo; it only has to dispatch the work. Hand uv the lockfile, let it own dependency resolution, and expose the Python tasks as `nx:run-commands` targets so the rest of the pipeline speaks one CLI.
 
-The two things that catch you are the Docker build context (has to be the repo root) and the `typecheck` name collision (rename the Python target). Past those, a Python service in a JS monorepo is boring infrastructure.
+The two things that catch you are the Docker build context (has to be the repo root) and the `typecheck` name collision (rename the Python target). Once you're past those, a Python service in a JS monorepo is boring infrastructure, which is exactly what you want.

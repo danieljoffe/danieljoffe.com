@@ -18,19 +18,19 @@ export const metadata = {
 
 ## The trap
 
-Shipping an LLM feature for the first time looks like a normal feature: form, API call, JSON in, JSON out. The trap is that this resemblance hides every operational difference that matters. Three concretely:
+Shipping an LLM feature for the first time looks like a normal feature: form, API call, JSON in, JSON out. The trap is that the resemblance hides every operational difference that actually matters. Three of them, concretely:
 
-1. **The output isn't deterministic.** Two calls with the same input return slightly different responses. The cache layer that worked for the regular API works for the network round-trip but not for the model behind it.
-2. **The prompt is the source code.** A typo or tweak doesn't break a test — it shifts a distribution. Reverting is harder than reverting code.
-3. **The cost has a floor and a ceiling, and the ceiling is yours to enforce.** No budget = a runaway loop bills you for the night.
+1. **The output isn't deterministic.** Two calls with the same input come back slightly different, so the cache layer that worked for the regular API works for the network round-trip but not for the model behind it.
+2. **The prompt is the source code.** A typo or a tweak doesn't break a test; it shifts a distribution, and reverting it is harder than reverting code.
+3. **The cost has a floor and a ceiling, and the ceiling is yours to enforce.** With no budget in place, a runaway loop happily bills you for the night.
 
-I've learned this operating WyrdFold, an AI-powered job-search product I built and run solo. Three practices stick out — none glamorous, all necessary.
+I've learned all this operating WyrdFold, an AI-powered job-search product I built and run solo. Three practices stand out, and none of them are glamorous; they're just the parts you can't skip.
 
 ## 1. The prompt version belongs in the cache key
 
-The most expensive class of bug I've shipped in this space is a cache miss I didn't see. The trap goes like this: I key an LLM result on `hash(input + model + parameters)` and call it done.
+The most expensive class of bug I've shipped here is a cache hit I didn't see coming. It goes like this: I key an LLM result on `hash(input + model + parameters)` and call it done.
 
-Then I edit the prompt. Behavior changes. The new prompt's output writes rows into a cache that already has results keyed by the same inputs — and _those_ old results keep getting served, because the cache hits on input+model and skips the model entirely.
+Then I edit the prompt and the behavior changes. The new prompt writes its output into a cache that already has results keyed by the same inputs, and _those_ old results keep getting served, because the cache hits on input+model and skips the model entirely.
 
 The fix is one column:
 
@@ -45,27 +45,27 @@ CREATE TABLE llm_result_cache (
 );
 ```
 
-And one rule: **every prompt is versioned, and the version is part of the cache key.** Bumping `prompt_version` invalidates every cached row for that prompt automatically. No migrations, no purges. The cache becomes a function of the prompt source.
+And one rule: **every prompt is versioned, and the version is part of the cache key.** Bumping `prompt_version` invalidates every cached row for that prompt automatically, with no migrations and no purges; the cache just becomes a function of the prompt source.
 
-The version doesn't need to be semver. A short tag like `v3` or a date like `2026-06-13` is enough, as long as it bumps every time the prompt changes.
+The version doesn't need to be semver either. A short tag like `v3` or a date like `2026-06-13` is plenty, as long as it bumps every single time the prompt changes.
 
 ## 2. Shadow-run before flipping
 
-Prompts behave like distributions, not functions. "Better in five spot checks" is not "better in production." The cheap way to find out without risk is a shadow run.
+Prompts behave like distributions, not functions, so "better in five spot checks" isn't the same as "better in production." The cheap way to find out without taking the risk is a shadow run.
 
 The pattern:
 
 1. The new prompt ships behind a flag, off by default.
-2. For every real production call, the _new_ prompt also runs — its result gets written to a log table alongside the _old_ prompt's result, which is the one served to the user.
+2. For every real production call, the _new_ prompt also runs, and its result gets written to a log table alongside the _old_ prompt's result, which is the one served to the user.
 3. The shadow run continues for at least a week.
 4. I compare the two: token usage, latency, agreement rate against the user's eventual action, qualitative spot checks on disagreements.
 5. Only then does the flag flip.
 
-This costs roughly 2× the inference budget for the shadow week, which sounds bad until the first time you ship a "small improvement" that quietly halves scoring accuracy in a long-tail edge case. The doubled cost is buying the right to see the comparison.
+This costs roughly 2× the inference budget for the shadow week, which sounds bad right up until the first time you ship a "small improvement" that quietly halves scoring accuracy in some long-tail edge case. The doubled cost is buying you the right to see the comparison before it's live.
 
 ## 3. Treat every async LLM task as a row that fails
 
-The other shape an LLM call takes is async — a slow job kicked off from a user action, polled or webhook'd back. The default failure mode is "the job dies, the user's spinner spins forever, nobody knows." I've shipped that more than once.
+The other shape an LLM call takes is async: a slow job kicked off from a user action, then polled or webhook'd back. The default failure mode is "the job dies, the user's spinner spins forever, and nobody finds out." I've shipped that one more than once.
 
 The minimum durable shape:
 
@@ -74,21 +74,21 @@ The minimum durable shape:
 - **A persisted error.** When the worker catches an exception, it writes the error to the same row before re-raising. The frontend reads it via the same polling endpoint it already uses.
 - **A retry path.** A failed row has a "Try again" button. Idempotency lives on the worker (re-running the job is safe) and the row tracks `attempt_count`.
 
-The whole pattern fits in one Postgres table and one cron sweeper. Nobody calls this an architecture pattern. It is one.
+The whole thing fits in one Postgres table and one cron sweeper. Nobody would call this an architecture pattern, but it quietly is one.
 
 ## 4. Cost caps are a feature
 
-The LLM provider will happily bill you for a runaway loop. The platform should not.
+The LLM provider will happily bill you for a runaway loop; the platform shouldn't let it.
 
 Two enforcement layers I run:
 
-- **Per-purpose daily cap.** Every LLM call passes through a router that records cost into an `llm_costs` table tagged with a purpose (`phase1_triage`, `phase2_fit`, etc.). A circuit breaker checks the day's running total at the UTC boundary and refuses new calls past a cap.
-- **A `/admin/cost-summary` rollup.** When the breaker trips or a Sentry alert fires, the operator (me) has one endpoint that shows today's spend, last-24h/7d/30d totals, and a per-purpose breakdown. The runaway prompt is immediately legible: "`phase1_triage` 3× yesterday vs 30-day average."
+- **Per-purpose daily cap.** Every LLM call passes through a router that records its cost into an `llm_costs` table tagged with a purpose (`phase1_triage`, `phase2_fit`, etc.), and a circuit breaker checks the day's running total at the UTC boundary and refuses new calls once it's past a cap.
+- **A `/admin/cost-summary` rollup.** When the breaker trips or a Sentry alert fires, the operator (me) has one endpoint showing today's spend, the last-24h/7d/30d totals, and a per-purpose breakdown. The runaway prompt is immediately legible: "`phase1_triage` 3× yesterday vs the 30-day average."
 
-The breakers don't replace the prompt-version discipline. They catch the mistakes the discipline didn't.
+The breakers don't replace the prompt-version discipline; they catch the mistakes the discipline didn't.
 
 ## What this looks like in production
 
-None of this is hard individually. All of it is _easy to skip_, and the consequence of skipping it is a class of incident that's expensive in time, money, and trust.
+None of this is hard on its own. All of it is _easy to skip_, and the cost of skipping it is a class of incident that's expensive in time, money, and trust all at once.
 
-I write production LLM features with the assumption that the model is the least reliable thing in the system. That doesn't mean I distrust it; it means I instrument it like I would any other unreliable dependency — caching keyed on what changes, shadow runs before behavior flips, durable retries, and a budget I enforce. The unglamorous parts are the parts I'm good at.
+I write production LLM features assuming the model is the least reliable thing in the system. That doesn't mean I distrust it; it means I instrument it the way I would any other unreliable dependency: caching keyed on what changes, shadow runs before behavior flips, durable retries, and a budget I actually enforce. The unglamorous parts are the parts I'm good at, and on a solo product they're the difference between an incident and a Tuesday.

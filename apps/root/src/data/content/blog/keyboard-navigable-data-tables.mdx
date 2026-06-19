@@ -19,18 +19,18 @@ export const metadata = {
 
 Custom table components tend to inherit all of HTML's visual structure and
 none of its semantic structure. The shared-ui `Table` had `<thead>`,
-`<tbody>`, `<th>`, and `<td>` — correct markup. But it was missing the
-attributes that tell assistive technology how to interpret that markup.
+`<tbody>`, `<th>`, and `<td>`, so the markup was correct, but it was missing
+the attributes that tell assistive technology how to interpret that markup.
 
-And then there was `onRowClick`. A clickable table row that only responded
-to mouse events. Keyboard users couldn't reach it. Screen reader users
-didn't know it was interactive.
+Then there was `onRowClick`, a clickable table row that only responded to
+mouse events. Keyboard users couldn't reach it, and screen reader users had
+no idea it was interactive at all.
 
 ## scope="col" — The One Attribute Every Table Needs
 
 Without `scope`, a screen reader has to guess which header belongs to which
-column. On a simple table it usually guesses right. On a table with merged
-cells or ambiguous layout, it doesn't.
+column. On a simple table it usually guesses right; on a table with merged
+cells or an ambiguous layout, it doesn't.
 
 ```tsx
 <th scope='col' className={cn('px-4 py-3 font-medium text-text-secondary')}>
@@ -38,7 +38,7 @@ cells or ambiguous layout, it doesn't.
 </th>
 ```
 
-One attribute, applied to every `<th>` in the header. It removes all
+One attribute, applied to every `<th>` in the header, and it removes all the
 ambiguity about the header-to-data relationship.
 
 ## Caption vs aria-label
@@ -61,14 +61,14 @@ I support both, with `caption` taking precedence:
   )}
 ```
 
-This avoids the common mistake of providing both, which can cause screen
-readers to announce the table's identity twice.
+This avoids the common mistake of providing both, which can make screen
+readers announce the table's identity twice.
 
 ## Making Clickable Rows Accessible
 
 The `onRowClick` prop was the real accessibility gap. A `<tr>` with an
-`onClick` handler looks interactive to a mouse user (via hover styles and a
-pointer cursor) but is completely invisible to keyboard navigation.
+`onClick` handler looks interactive to a mouse user, thanks to hover styles
+and a pointer cursor, but it's completely invisible to keyboard navigation.
 
 The fix has three parts:
 
@@ -101,23 +101,24 @@ const handleRowKeyDown = (e: KeyboardEvent<HTMLTableRowElement>, row: T) => {
 };
 ```
 
-`e.preventDefault()` on Space is essential. Without it, the page scrolls.
+`e.preventDefault()` on Space is essential; without it the page scrolls out
+from under you.
 
 ## The rowKey and getRowAriaLabel Props
 
 Two small API additions that solve real problems:
 
-**`rowKey`** replaces array-index keys. When table data changes (sorting,
-filtering, pagination), index-based keys cause React to remount rows
-unnecessarily. A stable key function avoids this:
+**`rowKey`** replaces array-index keys. When the table data changes through
+sorting, filtering, or pagination, index-based keys make React remount rows
+for no reason, so a stable key function avoids the churn:
 
 ```tsx
 <tr key={rowKey ? rowKey(row) : i}>
 ```
 
 **`getRowAriaLabel`** gives clickable rows a meaningful accessible name.
-Without it, a screen reader announces "button" with no indication of what
-the row represents. With it:
+Without it a screen reader just announces "button" with no clue what the row
+actually represents; with it:
 
 ```tsx
 // Usage
@@ -129,8 +130,8 @@ the row represents. With it:
 
 ## The Takeaway
 
-Table accessibility is cumulative. No single attribute makes a table
-accessible. It's `scope` _and_ `caption` _and_ keyboard support _and_
-focus indicators working together. The total diff was ~60 lines of
-component code and 16 new tests. None of it was clever. All of it was
-necessary.
+Table accessibility is cumulative; no single attribute makes a table
+accessible on its own. It's `scope` _and_ `caption` _and_ keyboard support
+_and_ focus indicators all working together. The total diff was about 60
+lines of component code and 16 new tests, and none of it was clever; it was
+just the stuff that should have been there all along.

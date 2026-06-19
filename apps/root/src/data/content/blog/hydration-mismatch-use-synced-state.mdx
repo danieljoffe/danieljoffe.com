@@ -19,26 +19,26 @@ export const metadata = {
 
 The mobile navigation uses `aria-current="page"` to mark the active link.
 The value comes from `usePathname()`, which returns the current URL on the
-client, but during server-side rendering, every page's nav gets the same
-initial pathname. The result: the server marks "Home" as the active link, the client
+client, but during server-side rendering every page's nav gets the same
+initial pathname. So the server marks "Home" as the active link, the client
 marks "Projects" as the active link, and React throws a hydration error.
 
-The error itself is harmless. React recovers by re-rendering on the client.
-But it's noisy in dev, breaks strict mode, and indicates a real disagreement
-between server and client output. Suppressing it with
+The error itself is harmless, since React recovers by re-rendering on the client.
+But it's noisy in dev, it breaks strict mode, and it points at a real disagreement
+between the server and client output. Suppressing it with
 `suppressHydrationWarning` just hides the symptom.
 
 ## The Wrong Fix
 
 The first instinct is to move the entire nav into a client-only component
 with `dynamic(() => import('./Nav'), { ssr: false })`. That works, but it
-means the navigation renders nothing on the server: bad for SEO, bad for
-first paint and performance, and it introduces a layout shift when the nav pops in after
+means the navigation renders nothing on the server, which is bad for SEO, bad for
+first paint and performance, and it adds a layout shift when the nav pops in after
 hydration.
 
 ## The Right Fix
 
-The actual problem is narrow: I're rendering a _value_ that differs
+The actual problem is narrow: I'm rendering a _value_ that differs
 between server and client. I don't need to skip SSR entirely; I just
 need to render a neutral value during SSR and switch to the real one after
 hydration.
@@ -57,8 +57,8 @@ function useHydrated() {
 ```
 
 The hook returns `false` on the server and `true` on the client after
-hydration. No external store, no state, no effect: just React's built-in
-mechanism for declaring "this value differs between environments."
+hydration, with no external store, no state, and no effect; it's just React's built-in
+way of declaring "this value differs between environments."
 
 ## Applying It
 
@@ -82,14 +82,14 @@ export default function Nav() {
 ```
 
 During SSR, `activePathname` is `''`, so no link gets `aria-current="page"`.
-After hydration, it switches to the real pathname, and the correct link
-lights up. Server and client agree on the initial render. No mismatch.
+After hydration it switches to the real pathname and the correct link
+lights up, so the server and client agree on the initial render and there's no mismatch.
 
 ## The Bonus: Skeleton Loading
 
 Since the desktop nav uses `dynamic(() => import('./TabletUpNav'), { ssr: false })`
-for code splitting, it already has a loading state. I replaced the generic
-`Spinner` with a `NavSkeleton` that mirrors the actual nav layout: a logo
+for code splitting, it already had a loading state, so I swapped the generic
+`Spinner` for a `NavSkeleton` that mirrors the actual nav layout: a logo
 placeholder, four link-shaped rectangles, and three right-side elements.
 
 ```tsx
@@ -108,12 +108,12 @@ function NavSkeleton() {
 }
 ```
 
-The widths match the actual rendered links. No layout shift, no spinner
-that gives no spatial information about what's loading.
+The widths match the actual rendered links, so there's no layout shift and no spinner
+that tells you nothing about what's loading.
 
 ## The Takeaway
 
-When server and client disagree on a value, the fix isn't to skip SSR or
-suppress the warning. I find the narrowest possible and acceptable neutral state
-that both environments can agree on. Then, I upgrade to the real value after
-hydration. React's `useSyncExternalStore` makes that an easy three-line hook.
+When the server and client disagree on a value, the fix isn't to skip SSR or
+suppress the warning. I find the narrowest neutral state that both
+environments can agree on, then upgrade to the real value after
+hydration. React's `useSyncExternalStore` makes that a three-line hook.

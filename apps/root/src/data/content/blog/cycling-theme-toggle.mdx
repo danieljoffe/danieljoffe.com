@@ -15,22 +15,22 @@ export const metadata = {
   },
 };
 
-## Three Buttons, No Room
+## Three buttons, no room
 
 The site's theme toggle was a three-button radio group: Light, Dark, System.
-Each option rendered as an icon button with an active indicator. On desktop,
-it occupied ~120px of horizontal space in the top nav. Workable.
+Each option rendered as an icon button with an active indicator, and on
+desktop it ate up ~120px of horizontal space in the top nav, which was fine.
 
-Then I added a mobile bottom navigation bar. Five slots: Home, Services,
-Projects, Experience, and a More menu. The theme toggle needed to fit inside
-the More sheet alongside secondary links. A three-button radio group with
-padding, active states, and a keyboard hint took more horizontal space than
+Then I added a mobile bottom navigation bar with five slots: Home, Services,
+Projects, Experience, and a More menu. The theme toggle had to fit inside the
+More sheet alongside the secondary links, and a three-button radio group with
+its padding, active states, and keyboard hint took more horizontal space than
 the sheet could spare.
 
-## The Cycle Pattern
+## The cycle pattern
 
-I replaced the radio group with a single button that cycles through the three
-states on each press:
+So I replaced the radio group with a single button that cycles through the
+three states on each press:
 
 ```tsx
 const cycleOrder: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
@@ -43,15 +43,15 @@ const cycleTheme = useCallback(() => {
 }, [theme, setTheme]);
 ```
 
-The button displays the icon for the current theme. One tap advances to the
+The button shows the icon for the current theme, and one tap advances to the
 next. Three states, one button, ~40px of space.
 
-## The Accessibility Trade-off
+## The accessibility trade-off
 
-A radio group communicates all available options at once. A cycling button
-hides two of the three states. For sighted users, the icon (sun, moon,
-monitor) signals the current mode. For screen reader users, I label the
-button with the next state, not the current one:
+A radio group communicates all the available options at once; a cycling
+button hides two of the three states. For sighted users the icon (sun, moon,
+monitor) signals the current mode, and for screen reader users I label the
+button with the _next_ state rather than the current one:
 
 ```tsx
 const nextLabel =
@@ -67,40 +67,43 @@ const nextLabel =
 </button>;
 ```
 
-`aria-label="Switch to dark mode"` tells a screen reader user what will happen
-on activation. The `title` attribute shows the current state on hover for
-sighted users who need confirmation.
+`aria-label="Switch to dark mode"` tells a screen reader user what activation
+will actually do, and the `title` attribute shows the current state on hover
+for sighted users who want the confirmation.
 
-## The Keyboard Shortcut
+## The keyboard shortcut
 
-The radio group had a built-in advantage: arrow keys moved between options. The
-cycling button loses that. I compensated with a global keyboard shortcut:
+The radio group had one built-in advantage: arrow keys moved between options,
+and the cycling button gives that up. I made up for it with a global keyboard
+shortcut:
 
 ```tsx
 useKeyboardShortcut('d', cycleTheme);
 ```
 
-Pressing `D` anywhere on the page cycles the theme. A `<Kbd>D</Kbd>` badge
+Pressing `D` anywhere on the page cycles the theme, and a `<Kbd>D</Kbd>` badge
 next to the button advertises the shortcut. Power users get faster theme
-switching than the radio group ever offered; casual users tap the button.
+switching than the radio group ever offered, and casual users just tap the
+button.
 
-## What I Lost, What I Gained
+## What I lost, what I gained
 
-**Lost:** At-a-glance visibility of all three options. A user who doesn't know
-System mode exists won't discover it until they cycle past Dark.
+**Lost:** at-a-glance visibility of all three options. Someone who doesn't
+know System mode exists won't stumble onto it until they cycle past Dark.
 
-**Gained:** 80px of horizontal space. A toggle that fits in a bottom nav sheet,
-a desktop nav bar, and a mobile More menu without layout changes. A keyboard
-shortcut that's faster than clicking any of the three radio buttons.
+**Gained:** 80px of horizontal space, a toggle that fits in a bottom nav
+sheet, a desktop nav bar, and a mobile More menu without any layout changes,
+and a keyboard shortcut that's faster than clicking any of the three radio
+buttons.
 
-For a portfolio site where theme preference is a secondary concern, the compact
-cycling button is the right trade-off. If this were a settings page where users
-configure preferences they'll keep for months, the radio group would be worth
-the space.
+For a portfolio site where theme preference is a secondary concern, the
+compact cycling button is the right trade-off. If this were a settings page
+where people configure preferences they'll keep for months, the radio group
+would earn back the space it costs.
 
-## The Principle
+## The principle
 
-UI controls should match the frequency and importance of the action. A
-three-state preference used once per session doesn't need three persistent
-buttons. A single cycling button with a keyboard shortcut gives the same
-functionality in a fraction of the space.
+UI controls should match the frequency and importance of the action behind
+them. A three-state preference used once per session doesn't need three
+persistent buttons; a single cycling button with a keyboard shortcut delivers
+the same functionality in a fraction of the space.

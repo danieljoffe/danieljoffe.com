@@ -22,29 +22,29 @@ export const metadata = {
   },
 };
 
-## The Failure Mode
+## The failure mode
 
-A Storybook interaction test for `ThemeToggle` asserted the active button had a specific background class:
+A Storybook interaction test for `ThemeToggle` asserted that the active button carried a specific background class:
 
 ```tsx
 await expect(lightButton).toHaveClass('bg-surface');
 ```
 
-It passed. Then I updated the design tokens. `bg-surface` became `bg-surface-primary`. The component worked perfectly. The test failed. The assertion was testing an implementation detail, not the behavior users interact with.
+It passed, and then I updated the design tokens and `bg-surface` became `bg-surface-primary`. The component still worked perfectly, but the test failed, because the assertion was checking an implementation detail rather than the behavior anyone actually interacts with.
 
-This pattern was scattered across the component library: `toHaveClass('opacity-0')` on hidden tooltips, `toHaveClass('bg-surface')` on active themes, `.tagName` checks on breadcrumb items. Every Tailwind refactor risked breaking tests that had nothing to do with the change.
+This pattern was scattered all over the component library: `toHaveClass('opacity-0')` on hidden tooltips, `toHaveClass('bg-surface')` on active themes, `.tagName` checks on breadcrumb items. Every Tailwind refactor risked breaking tests that had nothing to do with the change.
 
-## Six Rules
+## Six rules
 
-I codified six rules for interaction tests and applied them across the library in one pass. The rules target the gap between what a test checks and what a user experiences.
+So I wrote down six rules for interaction tests and applied them across the library in one pass. They all target the same gap: the space between what a test checks and what a user actually experiences.
 
 ### 1. Query by role first
 
-`getByRole('button', { name: 'Label' })` over `getByText('Label')` for interactive elements. `getByText` is for non-interactive content: headings, paragraphs, empty-state messages. The distinction matters because role queries verify the element is interactive, not just visible.
+Reach for `getByRole('button', { name: 'Label' })` over `getByText('Label')` on interactive elements; `getByText` is for non-interactive content like headings, paragraphs, and empty-state messages. The distinction matters because a role query verifies the element is interactive, not just visible.
 
 ### 2. Always `waitFor` after state changes
 
-Any `userEvent` that triggers React state needs `waitFor` on subsequent assertions. Without it, the test reads stale DOM. This is the most common source of CI flakes in Storybook interaction tests.
+Any `userEvent` that triggers React state needs a `waitFor` on the assertions that follow it, or the test reads stale DOM. This is the single most common source of CI flakes in Storybook interaction tests.
 
 ```tsx
 await userEvent.click(button);
@@ -57,7 +57,7 @@ await waitFor(() => expect(menu).toBeInTheDocument());
 
 ### 3. Never assert CSS classes
 
-This is the rule that triggered the audit. The fix is ARIA attributes: `aria-hidden`, `aria-pressed`, `aria-expanded`, `aria-selected`. If the component does not expose a semantic attribute for the state being tested, fix the component first.
+This is the rule that kicked off the whole audit. The fix is ARIA attributes: `aria-hidden`, `aria-pressed`, `aria-expanded`, `aria-selected`. If the component doesn't expose a semantic attribute for the state you're testing, fix the component first.
 
 ### 4. No `.tagName` checks
 
@@ -74,11 +74,11 @@ await expect(
 ).not.toBeInTheDocument();
 ```
 
-The test now verifies that the current page is not a link, which is the actual requirement. Whether it renders as a `<span>` or a `<div>` is irrelevant.
+Now the test verifies that the current page isn't a link, which is the actual requirement; whether it renders as a `<span>` or a `<div>` is beside the point.
 
 ### 5. Use `step()` for three or more sequential interactions
 
-Group related phases so the Storybook Interactions panel is self-documenting:
+Group the related phases so the Storybook Interactions panel documents itself:
 
 ```tsx
 await step('Open menu', async () => {
@@ -99,11 +99,11 @@ await step('Close menu', async () => {
 
 ### 6. Every `fn()` spy must be asserted
 
-If a story defines `onClick: fn()` in args, the play function must assert it. Dead spies are noise: they suggest the test verifies click behavior when it does not. Remove the spy or assert it.
+If a story defines `onClick: fn()` in its args, the play function has to assert it. A dead spy is just noise: it implies the test verifies click behavior when it doesn't. So either assert the spy or delete it.
 
-## Before and After
+## Before and after
 
-The ThemeToggle fix required a one-line production code change. The component did not expose `aria-pressed`, so there was nothing semantic to assert. Adding it fixed both the test and the accessibility:
+The ThemeToggle fix needed a one-line change to production code. The component didn't expose `aria-pressed`, so there was nothing semantic to assert in the first place; adding it fixed both the test and the accessibility in one go:
 
 ```tsx
 // ThemeToggle.tsx — added aria-pressed
@@ -118,7 +118,7 @@ await waitFor(() =>
 );
 ```
 
-The Tooltip followed the same pattern. `opacity-0` and `opacity-100` became `aria-hidden`:
+The Tooltip followed the same pattern, where `opacity-0` and `opacity-100` became `aria-hidden`:
 
 ```tsx
 // Before
@@ -130,10 +130,10 @@ await expect(tooltip).toHaveAttribute('aria-hidden', 'true');
 await waitFor(() => expect(tooltip).toHaveAttribute('aria-hidden', 'false'));
 ```
 
-## The Result
+## The result
 
-One commit touched 11 files: +123 lines, -88 lines. Every CSS class assertion was replaced with a semantic equivalent. Three components gained ARIA attributes they should have had from the start. Zero interaction tests now depend on Tailwind class names.
+One commit touched 11 files: +123 lines, -88 lines. Every CSS class assertion got swapped for a semantic equivalent, three components gained ARIA attributes they should have had from the start, and zero interaction tests now lean on Tailwind class names.
 
-The tests are more stable because they assert behavior, not styling. They are also better accessibility tests by accident: if `aria-pressed` ever gets removed from `ThemeToggle`, the interaction test catches it before a screen reader user does.
+The tests are steadier now because they assert behavior instead of styling, and they turned into better accessibility tests almost by accident: if `aria-pressed` ever gets dropped from `ThemeToggle`, the interaction test catches it before a screen reader user does.
 
-Tests should verify the contract between a component and its users. CSS classes are not part of that contract. ARIA attributes are.
+A test should verify the contract between a component and its users, and a CSS class is never part of that contract; an ARIA attribute is.

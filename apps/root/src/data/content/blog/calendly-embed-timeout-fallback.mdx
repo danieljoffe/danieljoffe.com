@@ -15,20 +15,19 @@ export const metadata = {
   },
 };
 
-## The Invisible Failure
+## The invisible failure
 
 The services page embeds a Calendly scheduling widget in an iframe. It
-loads lazily via IntersectionObserver and shows a spinner until the
-iframe fires `onLoad`. Clean pattern, _should_ work well,
-until it does not load at all.
-Ad blockers, corporate proxies, CSP policies, and flaky connections
-can all prevent the iframe from loading. When that happens, the spinner
-spins and spins forever. No error, no feedback, no way for the user to
-book a call. The page looks and is effectively broken.
+loads lazily via IntersectionObserver and shows a spinner until the iframe
+fires `onLoad`; it's a clean pattern and it _should_ work well, right up
+until the iframe doesn't load at all. Ad blockers, corporate proxies, CSP
+policies, and flaky connections can each keep the iframe from loading, and
+when that happens the spinner just spins forever: no error, no feedback, no
+way for the visitor to book a call. The page looks broken because it is.
 
-## The Timeout
+## The timeout
 
-The fix is straightforward: if the iframe has not loaded after 8
+The fix is about as simple as it sounds: if the iframe hasn't loaded after 8
 seconds, give up and show a fallback.
 
 ```tsx
@@ -46,15 +45,15 @@ useEffect(() => {
 }, [shouldLoad, isLoaded]);
 ```
 
-Three states: `shouldLoad` (IntersectionObserver triggered), `isLoaded`
-(iframe fired `onLoad`), and `timedOut` (8 seconds elapsed without
-`onLoad`). The timeout only starts when `shouldLoad` is true and clears
+There are three states: `shouldLoad` (IntersectionObserver triggered),
+`isLoaded` (iframe fired `onLoad`), and `timedOut` (8 seconds elapsed without
+`onLoad`). The timeout only starts once `shouldLoad` is true, and it clears
 itself if `isLoaded` arrives first.
 
-## The Fallback
+## The fallback
 
-When the timeout fires, the entire embed is replaced with a card
-containing a direct link to Calendly:
+When the timeout fires, the whole embed gets replaced with a card holding a
+direct link to Calendly:
 
 ```tsx
 if (timedOut && !isLoaded) {
@@ -85,24 +84,24 @@ if (timedOut && !isLoaded) {
 }
 ```
 
-The fallback click is tracked with analytics so I can see how often
-users hit this path. If the number is high, there is a conversation to
-have about whether an iframe embed is the right approach at all.
+The fallback click is tracked with analytics so I can see how often people
+actually hit this path. If that number ever gets high, there's a conversation
+to have about whether an iframe embed is the right call at all.
 
-## Why 8 Seconds
+## Why 8 seconds
 
-The timeout needs to be long enough that slow connections can still
-load the embed, and short enough that users do not leave. Calendly's
-embed is heavy: it loads its own JavaScript, CSS, and API calls. On a
-3G connection, 4-5 seconds is realistic. I chose 8 seconds as a
-buffer above that, which means a user on a working but slow connection
-will never see the fallback, but a user whose ad blocker killed the
-request will see it within a reasonable wait.
+The timeout has to be long enough that slow connections can still load the
+embed, and short enough that people don't give up and leave. Calendly's embed
+is heavy: it loads its own JavaScript, CSS, and API calls, and on a 3G
+connection 4-5 seconds is realistic. I picked 8 seconds as a buffer above
+that, so a visitor on a working-but-slow connection never sees the fallback,
+while a visitor whose ad blocker killed the request sees it after a wait
+that's still reasonable.
 
-## The Late Load
+## The late load
 
-If the iframe loads after the timeout fires, the `onLoad` handler still
-works:
+If the iframe loads after the timeout has already fired, the `onLoad` handler
+still does its job:
 
 ```tsx
 const onIframeLoad = useCallback(() => {
@@ -111,16 +110,16 @@ const onIframeLoad = useCallback(() => {
 }, []);
 ```
 
-Setting `timedOut` back to `false` switches the UI from fallback to
-embed. This handles the rare case where a slow connection delivers the
-iframe after 8 seconds. The user sees the fallback briefly, then the
-real widget appears. Not ideal, but better than showing the fallback
-permanently when the embed eventually loads.
+Setting `timedOut` back to `false` flips the UI from fallback to embed. This
+covers the rare case where a slow connection delivers the iframe after 8
+seconds: the visitor sees the fallback briefly, then the real widget shows up.
+It's not ideal, but it beats showing the fallback forever when the embed
+eventually loads anyway.
 
-## The Takeaway
+## The takeaway
 
-Third-party iframes fail silently. They do not throw errors, they do
-not fire `onerror`, and they do not tell you they've been blocked. A
-timeout with a direct link fallback turns a broken page into a
-functional one. Any embedded widget where you control neither the
-content nor the network path deserves the same treatment.
+Third-party iframes fail silently; they don't throw errors, they don't fire
+`onerror`, and they don't tell you they've been blocked. A timeout with a
+direct-link fallback turns a broken-looking page back into a working one, and
+any embedded widget where you control neither the content nor the network path
+deserves exactly that treatment.

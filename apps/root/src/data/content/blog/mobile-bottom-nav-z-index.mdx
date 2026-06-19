@@ -17,19 +17,19 @@ export const metadata = {
 
 ## The Layering Problem
 
-Adding a fixed bottom navigation bar to a mobile app sounds simple. But
-this site already had two fixed-position elements at the bottom of the
-screen: a scroll-to-top FAB on the right and a table-of-contents FAB on
-the left. Both sat at `bottom: 1.5rem` and `z-index: 50`.
+Adding a fixed bottom navigation bar to a mobile app sounds simple, but
+this site already had two fixed-position elements down at the bottom of the
+screen: a scroll-to-top FAB on the right and a table-of-contents FAB on the
+left, both sitting at `bottom: 1.5rem` and `z-index: 50`.
 
-Drop a `h-14` fixed bottom bar at `z-index: 50` and both buttons
-disappear behind it. Tap where the scroll-to-top button should be and
-you're hitting the nav bar instead.
+Drop a `h-14` fixed bottom bar at `z-index: 50` and both buttons vanish
+behind it, so you tap where the scroll-to-top button should be and hit the
+nav bar instead.
 
 ## The Z-Index Stack
 
-The fix required defining a deliberate stacking order, not just "make it
-higher." I settled on three layers:
+The fix needed a deliberate stacking order, not just "make it higher." I
+settled on three layers:
 
 | Layer      | z-index | Elements                          |
 | ---------- | ------- | --------------------------------- |
@@ -37,9 +37,10 @@ higher." I settled on three layers:
 | Navigation | 50      | Bottom bar, backdrop              |
 | Sheets     | 51      | ToC bottom sheet, More menu sheet |
 
-FABs sit below the nav bar. They're secondary actions: you can always
-scroll to find the content, but you always need the nav. Sheets that
-slide up from the bottom need to cover the nav bar, so they get `z-51`.
+FABs sit below the nav bar because they're secondary actions: you can
+always scroll to find the content, but you always need the nav. Sheets
+that slide up from the bottom have to cover the nav bar, so they get
+`z-51`.
 
 ```tsx
 // ScrollToTop — z-40, raised above nav on mobile
@@ -54,21 +55,21 @@ slide up from the bottom need to cover the nav bar, so they get `z-51`.
 
 ## The Responsive Escape Hatch
 
-The bottom nav only exists on mobile (`md:hidden`). Desktop has a
-traditional sticky top bar. So FABs need different positioning per
+The bottom nav only exists on mobile (`md:hidden`); desktop keeps a
+traditional sticky top bar. So the FABs need different positioning per
 breakpoint:
 
 ```tsx
 className = 'fixed bottom-20 md:bottom-6 right-6 z-40 ...';
 ```
 
-`bottom-20` (5rem) clears the `h-14` (3.5rem) nav bar plus breathing
-room on mobile. `md:bottom-6` restores the original position on desktop
-where there's no bottom bar. One utility class, no JavaScript.
+`bottom-20` (5rem) clears the `h-14` (3.5rem) nav bar with some breathing
+room on mobile, and `md:bottom-6` restores the original position on desktop
+where there's no bottom bar at all. One utility class, no JavaScript.
 
 ## Reusing the Sheet Pattern
 
-The site already had a bottom sheet for the table of contents, a
+The site already had a bottom sheet for the table of contents: a
 `translate-y` transition that slides up from off-screen:
 
 ```tsx
@@ -80,11 +81,11 @@ The site already had a bottom sheet for the table of contents, a
 >
 ```
 
-The "More" menu in the new bottom nav uses the exact same pattern:
+The "More" menu in the new bottom nav reuses the exact same pattern:
 `translate-y-0` when open, `translate-y-full pointer-events-none` when
-closed. Same focus trap hook, same Escape key handler, same body scroll
-lock. Consistency in animation patterns means users build a mental model
-once and apply it everywhere.
+closed, with the same focus trap hook, the same Escape key handler, and the
+same body scroll lock. When the animation patterns stay consistent, users
+build the mental model once and it carries over everywhere.
 
 ## Accessibility Considerations
 
@@ -105,8 +106,8 @@ aria-label={sheetOpen ? 'Close more menu' : 'Open more menu'}
 
 ## The Takeaway
 
-Fixed-position elements are easy to add individually. The complexity is in
-how they interact. Defining a z-index stack as a deliberate system, not
-ad-hoc increments, prevents the "just make it higher" escalation that
-eventually leads to `z-index: 9999`. Three layers with clear ownership
-is all this site needs.
+Fixed-position elements are easy to add one at a time; the complexity is all
+in how they interact. Defining a z-index stack as a deliberate system rather
+than ad-hoc increments heads off the "just make it higher" escalation that
+eventually lands you at `z-index: 9999`. Three layers with clear ownership is
+all this site needs, and it stays that way because nobody has to guess.

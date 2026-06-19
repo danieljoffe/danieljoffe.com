@@ -17,19 +17,19 @@ export const metadata = {
 
 ## The problem
 
-The portfolio has two audiences now. Everything under `/` is for visitors: Nav, Footer, mobile bottom-nav, the lot. Everything under `/tools/admin/*` is for me: a sidebar, a table, no reason to ship the marketing chrome. Both trees share one root layout.
+The portfolio has two audiences now. Everything under `/` is for visitors, so it gets the Nav, the Footer, the mobile bottom-nav, the lot. Everything under `/tools/admin/*` is for me: a sidebar, a table, and no reason to ship the marketing chrome along with it. Both trees share one root layout.
 
-The old shape rendered Nav and Footer inside `AppContext`, which wrapped every page. Admin routes inherited them. The options looked bad on paper:
+The old shape rendered Nav and Footer inside `AppContext`, which wrapped every page, so the admin routes inherited all of it. None of my options looked great on paper:
 
-- Gate the chrome with `usePathname()` checks. Fragile, and every admin page still paid the JavaScript cost.
-- Render a conditional server component off the URL. Same cost, more branching.
-- Duplicate the root layout for admin. Two trees to maintain, two places to forget a provider.
+- Gate the chrome with `usePathname()` checks. Fragile, and every admin page still pays the JavaScript cost.
+- Render a conditional server component off the URL. Same cost, just with more branching.
+- Duplicate the root layout for admin. Now there are two trees to maintain and two places to forget a provider.
 
 ## The approach
 
-App Router route groups are the right tool. A folder named `(public)` is treated as a path segment at the filesystem level but contributes nothing to the URL. Which means I can move every public route into `app/(public)/` and lift Nav and Footer out of the root layout into a `(public)/layout.tsx` that only that subtree uses.
+App Router route groups are the right tool here. A folder named `(public)` counts as a path segment at the filesystem level but contributes nothing to the URL, so I can move every public route into `app/(public)/` and lift Nav and Footer out of the root layout into a `(public)/layout.tsx` that only that subtree ever sees.
 
-Admin pages stay outside the group. They walk up to the root layout, which only composes providers and global UI. No Nav. No Footer. No conditional rendering.
+Admin pages stay outside the group; they walk up to the root layout, which now just composes providers and global UI. No Nav, no Footer, and no conditional rendering anywhere.
 
 ## The layout
 
@@ -69,23 +69,23 @@ app/
 │   └── admin/            // Sidebar layout, no Nav, no Footer
 ```
 
-URLs are unchanged because route groups do not contribute path segments. `/about` still resolves to `(public)/about/page.tsx`. `/tools/admin/jobs` still resolves to `tools/admin/jobs/page.tsx`. One tree renders with marketing chrome, the other renders with none, and the only thing that changed is where files live.
+The URLs don't change, because route groups don't contribute path segments. `/about` still resolves to `(public)/about/page.tsx`, and `/tools/admin/jobs` still resolves to `tools/admin/jobs/page.tsx`. One tree renders with marketing chrome, the other renders with none, and the only thing that actually moved is where the files live.
 
 A few knock-on cleanups fell out of the split:
 
-- The admin layout was using `min-h-[calc(100vh-4rem)]` to compensate for a 4rem global Nav. With the Nav gone, `min-h-screen` is correct.
-- `AppContext` used to import `Nav` alongside providers. Now it only composes providers, `Modal`, `ScrollToTop`, and `KeyboardShortcuts`. The component finally does the one thing its name promises.
-- Two absolute `@/app/*` imports that crossed into moved folders were rewritten as relative paths so later moves do not break them.
+- The admin layout had been using `min-h-[calc(100vh-4rem)]` to make room for a 4rem global Nav. With the Nav gone, `min-h-screen` is the right value.
+- `AppContext` used to import `Nav` alongside the providers; now it just composes providers, `Modal`, `ScrollToTop`, and `KeyboardShortcuts`, so it finally does the one thing its name promised all along.
+- Two absolute `@/app/*` imports that crossed into moved folders got rewritten as relative paths so the next move doesn't break them.
 
 ## The 404 problem
 
-The split broke one thing in an unexpected way: the 404 page.
+The split broke one thing I didn't see coming: the 404 page.
 
-I had `app/(public)/not-found.tsx` handling unmatched routes. After the split, it stopped firing for URLs that did not match any file. The reason is documented but easy to miss: App Router only uses `app/not-found.tsx` for globally unmatched routes. A `not-found.tsx` inside a route group scopes only to that group's matched routes, not to arbitrary URLs the router cannot resolve at all.
+I'd had `app/(public)/not-found.tsx` handling unmatched routes, and after the split it quietly stopped firing for URLs that didn't match any file. The reason is documented but easy to skim past: App Router only uses `app/not-found.tsx` for globally unmatched routes, and a `not-found.tsx` inside a route group only scopes to that group's matched routes, not to the arbitrary URLs the router can't resolve at all.
 
-Unmatched URLs rendered the stripped root layout with no Nav, no Footer, and an e2e test that asserts a `Back to Home` link inside `<main>` started failing.
+So unmatched URLs rendered the stripped root layout with no Nav and no Footer, and an e2e test that asserts a `Back to Home` link inside `<main>` started failing on me.
 
-The fix is to move the 404 to the root and inline the chrome the route group would have supplied:
+The fix is to move the 404 up to the root and inline the chrome the route group would have handed it:
 
 ```tsx title="apps/root/src/app/not-found.tsx"
 import Nav from '@/components/Nav';
@@ -102,10 +102,10 @@ export default function NotFound() {
 }
 ```
 
-Inlining feels like a regression, but it is not. The root `not-found.tsx` is the only file App Router reaches for unmatched URLs; it has to carry its own chrome because no layout above it renders any.
+Inlining feels like a step backwards, but it isn't. The root `not-found.tsx` is the only file App Router reaches for unmatched URLs, so it has to carry its own chrome; no layout above it renders any.
 
 ## The takeaway
 
-Route groups are usually introduced as a filesystem organization trick. The real value is conditional layout composition. One subtree gets the marketing chrome, another gets an admin shell, and nothing in either tree needs a `usePathname()` branch.
+Route groups get pitched as a filesystem-tidiness trick, but the real payoff is conditional layout composition. One subtree gets the marketing chrome, another gets an admin shell, and neither tree needs a `usePathname()` branch to sort itself out.
 
-The caveat worth remembering: `app/not-found.tsx` is special. It handles every unmatched route, ignores groups, and has to render whatever chrome you want on 404 pages itself.
+The caveat worth keeping in your back pocket: `app/not-found.tsx` is special. It handles every unmatched route, it ignores groups, and it has to render whatever chrome you want on a 404 page itself.

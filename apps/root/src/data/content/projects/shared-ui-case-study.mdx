@@ -24,13 +24,13 @@ export const metadata = {
 
 **Role:** Solo developer
 
-**Why it exists:** I had two products (the portfolio and WyrdFold) wanting the same Heading, Section, Button, Dropdown, Alert, Card. The Internet Brands case study covers the _first_ time I built a component library — for one application, on one team. This is the case study for the _second_ time: extracting components from one Nx workspace, publishing them as an npm package, and having a different product (WyrdFold, a different repo) consume them.
+**Why it exists:** I had two products, the portfolio and WyrdFold, both wanting the same Heading, Section, Button, Dropdown, Alert, and Card. The Internet Brands case study covers the _first_ time I built a component library, for one application on one team. This is the case study for the _second_ time: pulling components out of one Nx workspace, publishing them as an npm package, and getting a different product in a different repo (WyrdFold) to consume them.
 
 ## The interesting problem isn't the components
 
-The components were already there. What made the extraction non-trivial was the build pipeline.
+The components were already there; what made the extraction non-trivial was the build pipeline.
 
-The first attempt — a single bundled `dist/index.js` — worked locally but broke as soon as another product tried to deep-import a subpath like `@danieljoffe/shared-ui/Text`. The package's `exports` field declared a `./*` subpath that resolved to per-component TypeScript sources during local development (`@danieljoffe.com/source` condition for source-level imports inside the workspace), but the published artifact only had one bundled file. So `import { Text } from '@danieljoffe/shared-ui/Text'` resolved to nothing on npm consumers.
+My first attempt was a single bundled `dist/index.js`, and it worked fine locally right up until another product tried to deep-import a subpath like `@danieljoffe/shared-ui/Text`. The package's `exports` field declared a `./*` subpath that resolved to per-component TypeScript sources during local development (the `@danieljoffe.com/source` condition for source-level imports inside the workspace), but the published artifact only had the one bundled file, so `import { Text } from '@danieljoffe/shared-ui/Text'` resolved to nothing for npm consumers.
 
 The fix is multi-entry output with Rollup's `preserveModules`:
 
@@ -53,15 +53,15 @@ export default defineConfig({
 });
 ```
 
-Now the emitted JS layout matches the per-component `.d.ts` files that `vite-plugin-dts` was already producing: every component becomes its own importable subpath, deep-imports work, and tree-shaking falls out for free.
+Now the emitted JS layout matches the per-component `.d.ts` files that `vite-plugin-dts` was already producing: every component gets its own importable subpath, deep-imports work, and tree-shaking falls out for free.
 
 ## The "use client" directive Rollup keeps stripping
 
-This was the second non-trivial problem. Some components in the library are client-only — they use `useState`, `useRef`, or event handlers — and the file starts with `'use client'` so Next.js Server Components know to treat them as a client boundary.
+This was the second non-trivial problem. Some components in the library are client-only, since they use `useState`, `useRef`, or event handlers, and the file starts with `'use client'` so Next.js Server Components know to treat them as a client boundary.
 
-Rollup's `preserveModules` mode strips module-level string directives during the transform pipeline. The emitted chunk is functionally identical, but the directive is gone, and Next.js builds it as a server component. The runtime explodes the first time the component reads from `useState`.
+The catch is that Rollup's `preserveModules` mode strips module-level string directives during the transform pipeline. The emitted chunk is functionally identical, but the directive is gone, so Next.js builds it as a server component, and the runtime blows up the first time the component reads from `useState`.
 
-The fix is a tiny Vite plugin that captures the directive before transforms run and re-emits it on the matching output chunk:
+The fix is a tiny Vite plugin that grabs the directive before transforms run and re-emits it on the matching output chunk:
 
 ```ts
 const DIRECTIVE_RE =
@@ -87,11 +87,11 @@ function preserveDirectives(): Plugin {
 }
 ```
 
-About 20 lines. Reading the directive in the `transform` hook captures it from the original source, before Rollup has a chance to strip it. The `renderChunk` hook re-emits the directive at the top of the matching output chunk. Now both `'use client'` and `'use server'` survive `preserveModules`, and Next.js can correctly identify client component boundaries across the package.
+About 20 lines all told. Reading the directive in the `transform` hook captures it from the original source before Rollup gets a chance to strip it, and the `renderChunk` hook re-emits it at the top of the matching output chunk. Now both `'use client'` and `'use server'` survive `preserveModules`, and Next.js can correctly identify client component boundaries across the package.
 
 ## React 19 changes the ref pattern
 
-The library targets React 19, which makes one API decision easier than the previous decade. `forwardRef` is on the way out — components can accept `ref` as a regular prop:
+The library targets React 19, which makes one API decision easier than it had been for the previous decade. `forwardRef` is on the way out, so components can just accept `ref` as a regular prop:
 
 ```tsx
 interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
@@ -115,15 +115,15 @@ export function Button({
 }
 ```
 
-Components that don't use hooks or state work in both server and client contexts without `'use client'` boundaries. The package's runtime cost on a server-component-heavy page is close to zero.
+Components that don't use hooks or state work in both server and client contexts without any `'use client'` boundary, so the package's runtime cost on a server-component-heavy page is close to zero.
 
 ## Tokens via Tailwind 4
 
-Tailwind 4's `@theme` block + `oklch()` color space means the design system tokens live in CSS, not a JS object. Consumers pick up the tokens through Tailwind's own pipeline — there's no separate token export, no JSON file, no theme provider. A consumer that already uses Tailwind 4 inherits the design system by importing the package's `theme.css`.
+Tailwind 4's `@theme` block plus the `oklch()` color space means the design system tokens live in CSS rather than a JS object. Consumers pick the tokens up through Tailwind's own pipeline; there's no separate token export, no JSON file, and no theme provider. A consumer that already uses Tailwind 4 inherits the whole design system just by importing the package's `theme.css`.
 
 ## What ships across products
 
-The portfolio renders almost every heading, section wrapper, and button through `shared-ui`. WyrdFold's dashboards consume the same Card, Alert, and Dropdown. The published Storybook is the third consumer; it imports from the same source via the `@danieljoffe.com/source` condition, so development hot-reloads stay instant inside the monorepo while the published artifact stays stable for outside consumers.
+The portfolio renders almost every heading, section wrapper, and button through `shared-ui`, and WyrdFold's dashboards consume the same Card, Alert, and Dropdown. The published Storybook is the third consumer; it imports from the same source via the `@danieljoffe.com/source` condition, so hot reloads stay instant inside the monorepo while the published artifact stays stable for everyone outside it.
 
 <Mermaid
   alt="A single shared-ui source feeds two paths. Inside the monorepo, the portfolio and Storybook resolve to per-component TypeScript sources through the @danieljoffe.com/source export condition, so hot reload stays instant. The published npm package is built by Vite with Rollup preserveModules into per-component ES modules plus matching .d.ts files; the preserve-use-directives plugin re-emits stripped 'use client' directives onto the output chunks. WyrdFold, a separate repo, installs that published artifact."
@@ -142,8 +142,8 @@ Source --> Vite --> Pkg --> Wyrdfold
 
 ## What this case study leaves out
 
-The components themselves — patterns for Dropdown, Toast, Tooltip, focus management — are covered in [Building a Design System (v1)](/projects/ui-components-v1) and [Expanding the Design System (v2)](/projects/ui-components-v2). This is the case study about turning those components into a package other products can install.
+The components themselves, the patterns for Dropdown, Toast, Tooltip, and focus management, are covered in [Building a Design System (v1)](/projects/ui-components-v1) and [Expanding the Design System (v2)](/projects/ui-components-v2). This one is about turning those components into a package other products can actually install.
 
 ## Takeaway
 
-The interesting engineering wasn't picking React components or color tokens. It was making a workspace package usable from outside the workspace: getting the file layout right, getting the directives to survive the build, and finding the 20-line plugin that fixes the thing Rollup quietly broke. The components are the easy part. The publishing pipeline is where shared design systems live or die.
+The interesting engineering here wasn't picking React components or color tokens; it was making a workspace package usable from outside the workspace. That meant getting the file layout right, getting the directives to survive the build, and writing the 20-line plugin that fixes the thing Rollup quietly broke. The components are the easy part, and the publishing pipeline is where a shared design system actually lives or dies.

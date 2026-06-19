@@ -17,15 +17,15 @@ export const metadata = {
 
 ## The problem
 
-My audit-api service runs Lighthouse and axe-core against any URL a user submits. Every scan launched a fresh Chromium instance, ran the tools, closed the browser, and launched again for the next request. On Railway's container, that cold start costs 2-4 seconds per scan, and under concurrent load the memory profile gets ugly: multiple browser processes fighting for the same container RAM.
+My audit-api service runs Lighthouse and axe-core against any URL a user submits. Every scan used to launch a fresh Chromium instance, run the tools, close the browser, and then launch all over again for the next request. On Railway's container that cold start costs 2-4 seconds per scan, and under concurrent load the memory profile gets ugly fast: multiple browser processes fighting over the same container RAM.
 
-Worse, some scans never finish. The original navigation uses `wait_until="networkidle"`, which waits for zero network connections for 500ms. Sites with analytics pings, WebSocket heartbeats, or long-polling connections never reach that state. Scans against the Washington Post hit `ERR_HTTP2_PROTOCOL_ERROR` because the site's bot detection drops the connection entirely.
+Worse, some scans never finished at all. The original navigation uses `wait_until="networkidle"`, which waits for zero network connections for 500ms, and sites with analytics pings, WebSocket heartbeats, or long-polling connections simply never reach that state. Scans against the Washington Post hit `ERR_HTTP2_PROTOCOL_ERROR` because the site's bot detection drops the connection outright.
 
-Three problems: launch overhead, unbounded wait, and hostile responses.
+So that's three problems: launch overhead, an unbounded wait, and hostile responses.
 
 ## The pool pattern
 
-One Chromium process stays alive between scans. Each scan gets a fresh browser context (isolated cookies, localStorage, session state) then closes it:
+One Chromium process stays alive between scans, and each scan gets a fresh browser context (isolated cookies, localStorage, session state) and then closes it:
 
 ```python
 class BrowserPool:
@@ -50,7 +50,7 @@ class BrowserPool:
                 self._schedule_idle_shutdown()
 ```
 
-The idle timer fires after 30 minutes of no scans. `acquire()` cancels it if a new scan arrives. On app shutdown, the FastAPI lifespan handler calls `pool.shutdown()` to force-close.
+The idle timer fires after 30 minutes with no scans, and `acquire()` cancels it the moment a new scan arrives. On app shutdown, the FastAPI lifespan handler calls `pool.shutdown()` to force-close the browser.
 
 Each scan creates an isolated context with a realistic User-Agent:
 
@@ -70,11 +70,11 @@ finally:
     await context.close()
 ```
 
-`wait_until="load"` fires when the DOM and all subresources finish loading. A 10-second `networkidle` attempt follows as best-effort. If the site keeps connections alive, the scan proceeds anyway.
+`wait_until="load"` fires once the DOM and all the subresources finish loading, and a 10-second `networkidle` attempt follows as best-effort. If the site keeps connections alive forever, the scan just proceeds anyway.
 
 ## Parallel Lighthouse and axe
 
-Lighthouse runs as a subprocess. axe-core runs inside the Playwright page. They share nothing, so I overlap them:
+Lighthouse runs as a subprocess and axe-core runs inside the Playwright page, and since they share nothing, I overlap them:
 
 ```python
 lighthouse_task = asyncio.create_task(_run_lighthouse(url, device))
@@ -90,13 +90,13 @@ if isinstance(axe_results, BaseException):
     raise axe_results
 ```
 
-`return_exceptions=True` prevents one failure from cancelling the other, which matters because the axe task holds a browser context that needs cleanup. After both complete, I re-raise any exception explicitly.
+`return_exceptions=True` stops one failure from cancelling the other, which matters here because the axe task is holding a browser context that needs cleaning up. Once both complete, I re-raise any exception explicitly.
 
-The `ScanQueue` itself is serialized: one scan at a time. Lighthouse uses global performance marks that collide in concurrent runs. The parallelism is within a single scan, not across scans.
+The `ScanQueue` itself is serialized to one scan at a time, because Lighthouse uses global performance marks that collide across concurrent runs. The parallelism lives within a single scan, not across scans.
 
 ## Friendly error mapping
 
-Bot detection and network failures produce raw Playwright error strings that mean nothing to users. A tuple lookup table turns them into sentences:
+Bot detection and network failures produce raw Playwright error strings that mean nothing to a user, so a tuple lookup table turns them into actual sentences:
 
 ```python
 _ERROR_PATTERNS: list[tuple[str, str]] = [
@@ -115,8 +115,8 @@ def _friendly_error(raw: str) -> str:
     return raw or "Unknown scan error"
 ```
 
-Substring matching against the raw error string. Eight patterns cover every failure I have seen in production so far.
+It's just substring matching against the raw error string, and eight patterns cover every failure I've seen in production so far.
 
 ## Takeaway
 
-Pool the expensive resource (browser process), isolate the cheap one (context per scan). Wait for what matters (`load`), attempt what helps (`networkidle`), and do not block on what might never arrive.
+Pool the expensive resource (the browser process) and isolate the cheap one (a context per scan). Wait for what matters (`load`), attempt what helps (`networkidle`), and never block on something that might never arrive.

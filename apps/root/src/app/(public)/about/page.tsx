@@ -123,9 +123,9 @@ export default function About() {
         />
         <div className='space-y-6'>
           <Text variant='bodyLg'>
-            My journey began in frontend development, but I&apos;ve grown into a
-            full-stack engineer and technical leader who bridges the gap between
-            engineering and business teams.
+            I started in frontend development and grew into a full-stack
+            engineer and technical lead, comfortable sitting between the
+            engineering and business sides and keeping both moving.
           </Text>
 
           {/* Timeline images */}

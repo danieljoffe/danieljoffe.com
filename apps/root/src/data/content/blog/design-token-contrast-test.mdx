@@ -24,19 +24,19 @@ export const metadata = {
 
 ## The problem
 
-My shared-ui library ships two themes, Pyre and indigo, each with a light and a dark mode. That is four palettes built on oklch design tokens. A status color, a border, a tinted alert surface: every one is a foreground that has to stay legible against some background.
+My shared-ui library ships two themes, Pyre and indigo, each with a light and a dark mode, so that's four palettes built on oklch design tokens. A status color, a border, a tinted alert surface: every one of them is a foreground that has to stay legible against some background.
 
-I was checking contrast the way most people do. Open Storybook, look at it, trust my eyes. I even had a set of reviewer personas critique the deployed catalog. Between the eyeballing and the personas I caught about three problems. The trouble is that none of it scales: any tweak to any of the four palettes can quietly drop a pair below the WCAG threshold, and nobody notices until someone can't read an error message. A review you run by hand is a review you forget to run.
+I was checking contrast the way most people do, which is to open Storybook, look at it, and trust my eyes. I even had a set of reviewer personas critique the deployed catalog. Between the eyeballing and the personas I caught about three problems, but none of it scales: any tweak to any of the four palettes can quietly drop a pair below the WCAG threshold, and nobody notices until someone can't read an error message. A review you run by hand is a review you forget to run.
 
 ## The approach
 
-WCAG contrast is not a matter of taste. It is arithmetic: two colors go in, a ratio comes out, and you compare it against 4.5:1 for normal text or 3:1 for borders and other non-text UI. The tokens already live in CSS as the source of truth, so the check needs neither a browser nor a screenshot. It can be a unit test: parse the shipped theme CSS, convert each color to sRGB, compute the ratio for every pair that actually renders together, and assert it clears the bar.
+WCAG contrast isn't a matter of taste; it's arithmetic. Two colors go in, a ratio comes out, and you compare it against 4.5:1 for normal text or 3:1 for borders and other non-text UI. The tokens already live in CSS as the source of truth, so the check needs neither a browser nor a screenshot: it can be a unit test that parses the shipped theme CSS, converts each color to sRGB, computes the ratio for every pair that actually renders together, and asserts it clears the bar.
 
-Two choices make this hold up. First, read the real CSS rather than a copied list of values, so the test can never drift from what ships. Second, declare the pairs explicitly. That list of foreground, background, and minimum ratio is not boilerplate; it is the accessibility contract written down. Token text on its tint, body text on the surface, the focus ring against the page: each pair is a promise the theme makes.
+Two choices make this hold up. First, read the real CSS rather than a copied list of values, so the test can never drift from what ships. Second, declare the pairs explicitly: that list of foreground, background, and minimum ratio isn't boilerplate, it's the accessibility contract written down. Token text on its tint, body text on the surface, the focus ring against the page; each pair is a promise the theme makes.
 
 ## The implementation
 
-The whole thing is one jest spec. Color math first: oklch or hex, to sRGB, to relative luminance, to a ratio.
+The whole thing is one jest spec, and the color math comes first: oklch or hex, to sRGB, to relative luminance, to a ratio.
 
 ```ts
 import { readFileSync } from 'node:fs';
@@ -75,7 +75,7 @@ function ratio(fg: string, bg: string): number {
 }
 ```
 
-Then the contract: parse each theme's tokens per mode, declare the pairs, and make one assertion. The dark map inherits the light tokens and overrides what flips, which mirrors how the CSS itself cascades.
+Then comes the contract: parse each theme's tokens per mode, declare the pairs, and make one assertion. The dark map inherits the light tokens and overrides what flips, which mirrors how the CSS itself cascades.
 
 ```ts
 function parse(file: string) {
@@ -132,14 +132,14 @@ it('every token pair meets its WCAG contrast threshold', () => {
 });
 ```
 
-It reads the CSS off disk, so it runs in node in the fast CI lane in milliseconds. No browser, no flake.
+It reads the CSS off disk, so it runs in node in the fast CI lane in milliseconds, with no browser and nothing to flake.
 
 ## The result
 
-Two themes times two modes, the real matrix is 56 pairs. The test found nine failures my eyes and the personas had missed. The worst was indigo's success green at 2.54:1 on white, less than half the required ratio, and it had been shipping. Dark-mode info was a blue too dark to read on a near-black surface.
+Two themes times two modes, and the real matrix is 56 pairs. The test found nine failures my eyes and the personas had both missed. The worst was indigo's success green at 2.54:1 on white, less than half the required ratio, and it had been shipping. Dark-mode info was a blue too dark to read on a near-black surface.
 
-I fixed each one least-perturbation: the smallest shift that clears 4.5:1, with separate light and dark values where one token could not satisfy both. Warning and error darken on white but stay bright on near-black. The palettes still look like themselves. The difference is that a token change that breaks contrast now turns CI red instead of turning a user away.
+I fixed each one with the least perturbation I could manage: the smallest shift that clears 4.5:1, with separate light and dark values where one token couldn't satisfy both. Warning and error darken on white but stay bright on near-black, and the palettes still look like themselves. The difference is that a token change that breaks contrast now turns CI red instead of turning a user away.
 
 ## The takeaway
 
-Contrast is a property you can assert, not a chore you have to remember. Write the pairs down once and the test guards them forever; that list of promises is the part worth maintaining. It complements axe on rendered output rather than replacing it: a test on tokens cannot catch a color set by a one-off `className`, but it catches the systemic drift that page-level checks sample right past.
+Contrast is a property you can assert, not a chore you have to remember. Write the pairs down once and the test guards them forever, and that list of promises is the part worth maintaining. It complements axe on rendered output rather than replacing it: a test on tokens can't catch a color set by a one-off `className`, but it catches the systemic drift that page-level checks sample right past.

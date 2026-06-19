@@ -21,12 +21,12 @@ export const metadata = {
   },
 };
 
-## The Problem
+## The problem
 
-Every UI change on this portfolio, a new section label, a font size tweak, a
-layout restructure, risks unintended visual side effects on other pages. Manual
-visual QA doesn't scale, especially when a single PR might touch shared
-components used across dozens of routes.
+Every UI change on this portfolio, whether it's a new section label, a font-size
+tweak, or a layout restructure, risks unintended visual side effects on other
+pages. Manual visual QA doesn't scale, especially when a single PR might touch
+shared components that show up across dozens of routes.
 
 I needed a pipeline that:
 
@@ -35,9 +35,9 @@ I needed a pipeline that:
 3. **Re-runs CI automatically** after baseline updates (no manual re-trigger)
 4. **Works with Nx affected** so only changed projects get tested
 
-## The Architecture
+## The architecture
 
-The pipeline has two jobs in a single workflow file, toggled by a
+The pipeline is two jobs in a single workflow file, toggled by a
 `workflow_dispatch` input:
 
 ```yaml
@@ -63,14 +63,14 @@ baselines, Playwright fails the job.
 the app, regenerates all Playwright screenshots with `--update-snapshots`,
 commits them to the branch, and pushes.
 
-## The PAT Token Trick
+## The PAT token trick
 
 Here's the subtle part. GitHub Actions commits made with `GITHUB_TOKEN` don't
-trigger subsequent workflow runs. This is a security feature to prevent infinite
-loops. But it also means that after the snapshot job commits updated baselines,
-CI wouldn't re-run to verify them.
+trigger any subsequent workflow runs. That's a security feature to keep you out
+of infinite loops, but it also means that once the snapshot job commits updated
+baselines, CI won't re-run to verify them.
 
-The fix: check out the repo with a Personal Access Token (PAT) instead:
+The fix is to check out the repo with a Personal Access Token (PAT) instead:
 
 ```yaml
 update-snapshots:
@@ -83,20 +83,20 @@ update-snapshots:
         token: ${{ secrets.PAT_TOKEN }}
 ```
 
-When the snapshot job pushes using the PAT, GitHub sees it as a "real" push (not
-a bot push) and triggers the CI workflow on the updated branch. The cycle
-completes:
+When the snapshot job pushes with the PAT, GitHub treats it as a "real" push
+rather than a bot push and fires the CI workflow on the updated branch. That
+closes the loop:
 
 1. PR opened → CI runs → E2E fails (screenshot mismatch)
 2. Developer triggers `update-snapshots` workflow dispatch
 3. Snapshots regenerated → committed → pushed with PAT
 4. Push triggers CI → E2E passes → PR is green
 
-## Concurrency Control
+## Concurrency control
 
-Without concurrency groups, the snapshot push in step 3 could trigger a _new_ CI
-run while the old (failed) one is still queued for retry. This leads to wasted
-runner minutes and confusing status checks.
+Without concurrency groups, the snapshot push in step 3 can kick off a _new_ CI
+run while the old, failed one is still queued for retry, which burns runner
+minutes and leaves confusing status checks behind.
 
 ```yaml
 concurrency:
@@ -104,14 +104,14 @@ concurrency:
   cancel-in-progress: true
 ```
 
-The concurrency key ensures only one CI run per PR is active. When the snapshot
-push triggers a new run, any in-progress run for the same PR is cancelled
+The concurrency key keeps exactly one CI run per PR active, so when the snapshot
+push triggers a new run, any in-progress run for the same PR gets cancelled
 automatically.
 
-## Playwright Configuration
+## Playwright configuration
 
-Visual regression tests run only on Chromium in CI (all browsers + mobile
-locally). Screenshots are stored alongside the test file:
+Visual regression tests run only on Chromium in CI (all browsers plus mobile
+locally), and the screenshots live alongside the test file:
 
 ```
 apps/root-e2e/src/
@@ -123,13 +123,13 @@ apps/root-e2e/src/
     └── projects-listing-chromium-linux.png
 ```
 
-The snapshots are committed to the repo, not stored as artifacts, so
-developers can review visual diffs in the PR itself using GitHub's image
+The snapshots are committed to the repo rather than stashed as artifacts, so
+anyone can review the visual diffs right in the PR using GitHub's image
 comparison tools.
 
-## Nx Integration
+## Nx integration
 
-The CI pipeline uses `nx affected` to only test projects that changed:
+The CI pipeline leans on `nx affected` to test only the projects that changed:
 
 ```yaml
 - name: Run affected tasks
@@ -139,11 +139,12 @@ The CI pipeline uses `nx affected` to only test projects that changed:
   run: yarn nx affected -t e2e --nxBail
 ```
 
-If a PR only touches the audit service, E2E tests for the root app are skipped
-entirely. But if shared UI components change, both the root app and its E2E suite
-are marked as affected, ensuring visual regression tests run when they matter.
+If a PR only touches the audit service, the E2E tests for the root app get
+skipped entirely. But if shared UI components change, both the root app and its
+E2E suite are marked affected, so the visual regression tests run exactly when
+they matter.
 
-## The Commit-and-Push Step
+## The commit-and-push step
 
 The snapshot update job is careful about empty commits:
 
@@ -160,9 +161,9 @@ else
 fi
 ```
 
-If the snapshots haven't actually changed (maybe the test was flaky, or the
-developer already updated them locally), no commit is created. This prevents
-noise in the git history.
+If the snapshots haven't actually changed, maybe the test was flaky or someone
+already updated them locally, no commit gets created, which keeps the git
+history free of noise.
 
 ## Results
 
@@ -172,7 +173,7 @@ noise in the git history.
 - **Git-tracked baselines**: visual diffs reviewable in PR
 - **Nx-aware**: E2E only runs when the app is actually affected
 
-The pipeline has caught several regressions already: a `max-w-3xl` that should
-have been `max-w-5xl`, an `overflow-hidden` clipping content, and a SectionLabel
-addition that shifted card layouts. Each was caught before merge, fixed in the
-same PR, and verified automatically.
+The pipeline has already caught a handful of regressions: a `max-w-3xl` that
+should have been `max-w-5xl`, an `overflow-hidden` quietly clipping content, and
+a SectionLabel addition that shifted card layouts. Each one got caught before
+merge, fixed in the same PR, and verified automatically.

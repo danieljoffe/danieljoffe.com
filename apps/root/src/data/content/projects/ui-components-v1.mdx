@@ -24,7 +24,7 @@ export const metadata = {
 
 ## Building a Design System: UI Components for danieljoffe.com
 
-When building this portfolio, I wanted more than hastily assembled components—I wanted a design system that would scale. Here's what I built and why it matters. This is the first installment documenting the foundational components.
+When I built this portfolio, I wanted more than a pile of half-baked components thrown together; I wanted a design system that would actually scale. Here's what I built and why it matters, starting with the foundational components.
 
 ## Business Impact
 
@@ -36,7 +36,7 @@ When building this portfolio, I wanted more than hastily assembled components—
 
 ### Button
 
-A flexible button with three variants (primary, secondary, icon) and three sizes. Uses `React.forwardRef` for proper ref forwarding and includes built-in accessibility with ARIA attributes and keyboard navigation.
+A flexible button with three variants (primary, secondary, icon) and three sizes. It uses `React.forwardRef` for proper ref forwarding, and accessibility is built in with ARIA attributes and keyboard navigation.
 
 <InteractiveDemo
   story='forms-button--default'
@@ -52,7 +52,7 @@ A flexible button with three variants (primary, secondary, icon) and three sizes
 
 ### Input
 
-A polymorphic form component that renders as either `<input>` or `<textarea>`. Handles validation states, error messages, and success feedback with proper ARIA relationships using `React.useId()`.
+A polymorphic form component that renders as either an `<input>` or a `<textarea>`. It handles validation states, error messages, and success feedback, with proper ARIA relationships wired up through `React.useId()`.
 
 <InteractiveDemo
   story='forms-input--default'
@@ -107,20 +107,20 @@ A portal-based modal component controlled via global state. Renders content abov
 ## Design Principles
 
 **Accessibility First**
-Every component starts with accessibility: ARIA attributes, keyboard navigation, screen reader compatibility. These aren't afterthoughts—they're the foundation.
+Every component starts with accessibility: ARIA attributes, keyboard navigation, and screen reader compatibility. None of that is an afterthought; it's the foundation.
 
 **Type Safety**
-Full TypeScript support catches errors at compile time. Proper prop interfaces and strict type checking have saved countless debugging hours.
+Full TypeScript support catches errors at compile time, and proper prop interfaces plus strict type checking have saved me countless debugging hours.
 
 **Consistency via Tailwind**
-Tailwind CSS provides a consistent design language—neutral palette with blue accents—so I don't have to think about spacing or typography choices.
+Tailwind CSS gives me a consistent design language, a neutral palette with blue accents, so I'm not making one-off spacing or typography choices on every page.
 
 ## Key Takeaways
 
-- Always use labels—it's essential for accessibility
-- Meaningful error messages help users understand what went wrong
-- Test keyboard navigation—if you can't use it with a keyboard, it's broken
-- Semantic HTML matters—use the right elements for the right purposes
+- Always use labels; they're essential for accessibility
+- Meaningful error messages help users understand what actually went wrong
+- Test keyboard navigation, because if you can't use it with a keyboard, it's broken
+- Semantic HTML matters, so reach for the right element for the job
 
 ## What's Next
 
@@ -131,4 +131,4 @@ Tailwind CSS provides a consistent design language—neutral palette with blue a
 - Animation integration
 - Expanded test coverage
 
-_These components taught me that the best design systems get out of your way and let you focus on creating great user experiences._
+_Building these taught me that a primitive you can trust to be accessible and typed is one less thing you have to second-guess on every new page._
