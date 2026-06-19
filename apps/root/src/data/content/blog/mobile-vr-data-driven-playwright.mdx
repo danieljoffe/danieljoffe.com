@@ -17,13 +17,13 @@ export const metadata = {
 
 ## Nine Tests, Copied Twice
 
-I had nine visual regression tests in Playwright, one per page. Each test navigated to a URL, waited for load, and called `toHaveScreenshot`. They were nearly identical except for three things: the URL, the snapshot name, and a few per-page quirks (the homepage needs a stable-height poll for GSAP animations; the about page masks the hCaptcha widget).
+I had nine visual regression tests in Playwright, one per page. Each one navigated to a URL, waited for load, and called `toHaveScreenshot`, and they were nearly identical except for three things: the URL, the snapshot name, and a few per-page quirks (the homepage needs a stable-height poll for GSAP animations; the about page masks the hCaptcha widget).
 
-When I needed mobile screenshots at 390×844 alongside the existing 1280×720 desktops, the obvious approach was to duplicate all nine tests with a different viewport. That would have taken me from 9 tests to 18, with every line of navigation and wait logic copied.
+When I needed mobile screenshots at 390×844 alongside the existing 1280×720 desktops, the obvious move was to duplicate all nine tests with a different viewport. That would have taken me from 9 tests to 18 with every line of navigation and wait logic copied, which is exactly the kind of thing you regret the next time the wait logic changes.
 
 ## The Page Config
 
-Instead of duplicating tests, I described what varies in a typed array:
+So instead of duplicating tests, I described what actually varies in a typed array:
 
 ```ts
 const pages = [
@@ -47,11 +47,11 @@ const pages = [
 ] as const;
 ```
 
-Each entry captures the decisions that were previously buried in test bodies. The homepage gets a 5% diff threshold because GSAP animations cause layout height variance. The about page masks hCaptcha because the widget loads dynamically. Every other page uses the same 2% threshold with no masks beyond `[data-gsap]`.
+Each entry captures the decisions that used to be buried in the test bodies. The homepage gets a 5% diff threshold because GSAP animations cause layout height variance, the about page masks hCaptcha because the widget loads dynamically, and every other page just uses the same 2% threshold with no masks beyond `[data-gsap]`.
 
 ## Two Helpers, Two Loops
 
-The shared logic lives in two functions. `waitForPageReady` handles navigation, heading visibility, and the optional stable-height poll:
+The shared logic lives in two functions. `waitForPageReady` handles the navigation, the heading visibility, and the optional stable-height poll:
 
 ```ts
 async function waitForPageReady(page: Page, entry: (typeof pages)[number]) {
@@ -95,7 +95,7 @@ function getMasks(page: Page, entry: (typeof pages)[number]) {
 }
 ```
 
-The test blocks are two `test.describe` wrappers that loop over the same array at different viewport sizes. The only difference is the `beforeEach` viewport and the snapshot filename suffix:
+The test blocks are just two `test.describe` wrappers that loop over the same array at different viewport sizes. The only thing that differs between them is the `beforeEach` viewport and the snapshot filename suffix:
 
 ```ts
 test.describe('desktop (1280x720)', () => {
@@ -135,8 +135,8 @@ test.describe('mobile (390x844)', () => {
 
 ## CI Got It for Free
 
-The existing `update-snapshots` workflow dispatch runs `playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium`. Because both viewport blocks live in the same spec file, the workflow regenerates desktop and mobile baselines in one pass. No workflow changes needed.
+The existing `update-snapshots` workflow dispatch runs `playwright test src/visual-regression.spec.ts --update-snapshots --project=chromium`. Because both viewport blocks live in the same spec file, the workflow regenerates the desktop and mobile baselines in one pass; I didn't have to touch the workflow at all.
 
 ## The Takeaway
 
-When tests differ only in data, not in logic, the test itself should be a loop over that data. A nine-element config array gave me 18 visual regression tests across two viewports at 180 lines, down from what would have been 300+ lines of copy-paste. Adding a third viewport, say tablet at 768×1024, is three lines: one `test.describe`, one `setViewportSize`, one filename suffix.
+When tests differ only in data and not in logic, the test itself should be a loop over that data. A nine-element config array gave me 18 visual regression tests across two viewports in 180 lines, down from what would have been 300+ lines of copy-paste. And adding a third viewport, say tablet at 768×1024, is now three lines: one `test.describe`, one `setViewportSize`, one filename suffix.

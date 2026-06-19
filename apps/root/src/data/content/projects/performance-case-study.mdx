@@ -50,7 +50,7 @@ export const metadata = {
 
 ### The Challenge
 
-FightCamp was experiencing explosive post-pandemic growth, but the web infrastructure couldn't keep up. Mobile users—representing over 70% of traffic—faced unacceptable 10+ second load times. Bounce rates were high, marketing couldn't iterate quickly, and the content team was completely dependent on engineering for page updates.
+FightCamp was growing fast after the pandemic, but the web infrastructure couldn't keep up. Mobile users were over 70% of the traffic, and they were sitting through 10-plus-second load times. Bounce rates were high, marketing couldn't iterate quickly, and the content team had to go through engineering for every page update.
 
 #### Key Problems:
 
@@ -65,46 +65,46 @@ FightCamp was experiencing explosive post-pandemic growth, but the web infrastru
 
 #### First: Performance Audit
 
-I discovered the performance issues during an R&D Friday and received approval to investigate. Using Lighthouse, Chrome DevTools, and bundle analyzers, I identified the root causes:
+I stumbled onto the performance issues during an R&D Friday and got the go-ahead to dig in. With Lighthouse, Chrome DevTools, and bundle analyzers, I tracked down the root causes:
 
-- HD images served regardless of viewport size
-- Videos auto-downloading on page load (500-800MB each)
-- Duplicate libraries in the JavaScript bundle
-- No lazy loading implemented
-- Missing HTML attributes causing layout shifts
+- HD images served at full size regardless of viewport
+- Videos auto-downloading on page load, 500-800MB each
+- Duplicate libraries bloating the JavaScript bundle
+- No lazy loading anywhere
+- Missing HTML attributes that were causing layout shifts
 
 #### Second: Image Optimization
 
-- Implemented viewport-dependent `srcset` for responsive images
-- Built centralized image component with Storyblok + fallback providers
-- Added lazy loading with proper dimensions to prevent layout shifts
-- Served device-appropriate quality levels
+- Wired up viewport-dependent `srcset` so images matched the device
+- Built one centralized image component backed by Storyblok plus fallback providers
+- Added lazy loading with proper dimensions so layouts stopped shifting
+- Served quality levels appropriate to the device
 
 #### Third: Video Optimization
 
-- Built custom lazy-loading video component using Intersection Observer API
-- Prevented auto-play of off-screen videos
+- Built a custom lazy-loading video component on the Intersection Observer API
+- Stopped off-screen videos from auto-playing
 - Created multiple AWS S3 versions at different quality levels
-- Reduced video payloads from 500-800MB to \<300MB (MP4) / \<150MB (WebM)
+- Cut video payloads from 500-800MB down to \<300MB (MP4) / \<150MB (WebM)
 
 #### Fourth: Bundle Optimization
 
-- Removed duplicate libraries through bundle analysis
-- Implemented webpack tree-shaking and dynamic imports
-- Tailored Nuxt.js builds for production
-- Streamlined task chaining in build process
+- Hunted down and removed duplicate libraries through bundle analysis
+- Turned on webpack tree-shaking and dynamic imports
+- Tuned the Nuxt.js builds for production
+- Cleaned up the task chaining in the build process
 
 #### Fifth: CMS Migration
 
-- Analyzed 7 marketing pages for common patterns
-- Extended UI component library with 10+ CMS-connected components
-- Integrated Storyblok CMS with composable component architecture
-- Documented everything in Storybook with Jest tests
+- Pulled the common patterns out of 7 marketing pages
+- Extended the UI component library with 10+ CMS-connected components
+- Integrated Storyblok CMS with a composable component architecture
+- Documented all of it in Storybook, backed by Jest tests
 
 #### Sixth: A/B Testing Infrastructure
 
-- Built configurable test components integrated with Google Optimize
-- Enabled Marketing to run quarterly tests independently
+- Built configurable test components hooked into Google Optimize
+- Let Marketing run their quarterly tests without engineering in the loop
 - Supported copy, video, image, and offer variations
 
 ### The Results
@@ -179,9 +179,9 @@ I discovered the performance issues during an R&D Friday and received approval t
 
 ### Key Takeaways
 
-- **Performance is a business metric.** The 39% bounce rate reduction directly impacted user acquisition during a critical growth phase.
-- **Self-initiated improvements matter.** This project started as an R&D Friday discovery, not an assigned task.
-- **Building tooling for other teams multiplies impact.** The CMS migration freed engineering capacity while accelerating marketing velocity.
+- **Performance is a business metric.** That 39% drop in bounce rate fed straight into user acquisition during a critical growth phase.
+- **Self-initiated improvements matter.** This started as an R&D Friday discovery, not a ticket somebody handed me.
+- **Building tooling for other teams multiplies your impact.** The CMS migration freed up engineering capacity and sped marketing up at the same time.
 
 ### Technologies Used
 

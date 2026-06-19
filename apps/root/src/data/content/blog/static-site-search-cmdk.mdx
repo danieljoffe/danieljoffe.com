@@ -15,20 +15,21 @@ export const metadata = {
   },
 };
 
-## The Problem
+## The problem
 
-Adding search to a content site usually means choosing between a hosted service
-(Algolia, Typesense) and running your own index (ElasticSearch, Meilisearch).
-Both require a backend, API keys, and sync logic to keep the index current.
+Adding search to a content site usually comes down to a choice between a hosted
+service (Algolia, Typesense) and running your own index (ElasticSearch,
+Meilisearch). Both want a backend, API keys, and sync logic to keep the index
+current.
 
 This site has 10 projects, 5 experience entries, 24 blog posts, 4 services, and
-4 static pages. That's 47 searchable items. A server for 47 items is overhead I
-don't need.
+4 static pages, which adds up to 47 searchable items. Standing up a server for 47
+items is overhead I just don't need.
 
-## The Search Index
+## The search index
 
-The site already has a content registry that provides metadata for every page.
-I built a `buildSearchIndex()` function that aggregates it into a flat array:
+The site already has a content registry with metadata for every page, so I built
+a `buildSearchIndex()` function that flattens it all into one array:
 
 ```tsx
 export interface SearchEntry {
@@ -62,16 +63,16 @@ export function buildSearchIndex(): SearchEntry[] {
 }
 ```
 
-Each content type pulls from existing data files: thumbnails for title and
-description, MDX metadata for tags and category, content order for the slug
-list. No separate index to maintain; when I add a blog post, search updates
-automatically because it reads from the same source of truth.
+Each content type pulls from data files that already exist: thumbnails for title
+and description, MDX metadata for tags and category, content order for the slug
+list. There's no separate index to babysit; when I add a blog post, search picks
+it up automatically because it's reading from the same source of truth.
 
-## The Command Palette
+## The command palette
 
-[cmdk](https://cmdk.paco.me) is a headless command menu component. It provides
-fuzzy filtering, keyboard navigation, and grouped results with zero styling
-opinions. I feed it the search index and let it handle matching:
+[cmdk](https://cmdk.paco.me) is a headless command menu component that gives you
+fuzzy filtering, keyboard navigation, and grouped results with zero opinions
+about styling. I hand it the search index and let it do the matching:
 
 ```tsx
 const index = useMemo(() => buildSearchIndex(), []);
@@ -82,16 +83,16 @@ const index = useMemo(() => buildSearchIndex(), []);
 >
 ```
 
-The `value` prop determines what cmdk searches against. By concatenating title,
+The `value` prop is what cmdk actually searches against. By concatenating title,
 excerpt, and tags, a search for "accessibility" matches blog posts tagged
-`Accessibility`, project descriptions mentioning the word, and the audit tool
-page. cmdk handles the ranking.
+`Accessibility`, project descriptions that mention the word, and the audit tool
+page, and cmdk sorts out the ranking from there.
 
-## Decoupling the Trigger
+## Decoupling the trigger
 
-The command palette renders in the app layout. The search trigger button lives
-in the nav. Rather than prop-drilling an `onOpen` callback through the nav
-component tree, the trigger dispatches a custom DOM event:
+The command palette renders in the app layout, but the search trigger button
+lives up in the nav. Rather than prop-drill an `onOpen` callback down through the
+nav component tree, the trigger just dispatches a custom DOM event:
 
 ```tsx
 // SearchTrigger.tsx
@@ -107,25 +108,25 @@ useEffect(() => {
 }, []);
 ```
 
-The palette also listens for `Cmd+K` / `Ctrl+K` globally. Two entry points,
-zero coupling between components.
+The palette also listens for `Cmd+K` / `Ctrl+K` globally. Two entry points, and
+no coupling between the components at all.
 
-## Zero Cost Until First Use
+## Zero cost until first use
 
-The palette component is always mounted but renders nothing when closed:
+The palette component is always mounted, but it renders nothing while it's closed:
 
 ```tsx
 if (!open)
   return <span data-testid='command-palette-ready' className='hidden' />;
 ```
 
-The hidden sentinel element lets E2E tests wait for the component to mount
-before simulating keyboard shortcuts. The search index is built once via
-`useMemo` with no dependencies, so subsequent opens reuse the same array.
+That hidden sentinel element lets E2E tests wait for the component to mount before
+they fire keyboard shortcuts at it. The search index is built once via `useMemo`
+with no dependencies, so every open after the first reuses the same array.
 
-## The Takeaway
+## The takeaway
 
-Search doesn't need a server when your content is your codebase. A static
-index built from existing data files, a headless component for fuzzy matching,
-and a custom event for decoupled triggering. For a portfolio site with dozens
-of pages, this is the entire backend.
+Search doesn't need a server when your content is your codebase. A static index
+built from data files you already have, a headless component for the fuzzy
+matching, and a custom event to keep the trigger decoupled: for a portfolio site
+with a few dozen pages, that's the entire backend.

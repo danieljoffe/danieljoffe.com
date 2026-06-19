@@ -15,29 +15,30 @@ export const metadata = {
   },
 };
 
-## The Problem
+## The problem
 
 Every content type on this portfolio (projects and experience) had its own
-slug file, thumbnail file, MDX import index, content ordering array, reading
-time map, and structured data file. Adding a single project meant touching six
-files with overlapping data. Adding a _third_ content type (blog) would triple
-the duplication and make every future content addition cost 18+ file touches.
+slug file, thumbnail file, MDX import index, content-ordering array,
+reading-time map, and structured-data file. Adding a single project meant
+touching six files full of overlapping data, and adding a _third_ content type
+(blog) would have tripled the duplication and pushed every future content
+addition to 18+ file touches.
 
-## The Solution: A Content Registry
+## The solution: a content registry
 
-Instead of maintaining parallel data pipelines, I created a **single content
-registry** that serves as the source of truth for all content queries:
+Rather than keep maintaining parallel data pipelines, I built a **single
+content registry** that acts as the source of truth for every content query:
 
 - `getContentByType('project')`: ordered array for listing pages
 - `getContentBySlug('blog', 'my-post')`: single entry for detail pages
 - `getContentSlugs('experience')`: for `generateStaticParams`
 - `getContentPagination('blog', slug)`: circular prev/next navigation
 
-The registry is populated at module load time from the existing per-type data
-files, so the migration was zero-risk. Existing pages continued to work
-identically while the new abstraction layer was built on top.
+The registry gets populated at module load time from the existing per-type
+data files, so the migration carried no risk; the existing pages kept working
+exactly as before while I built the new abstraction layer on top.
 
-## Type-Safe Content Configs
+## Type-safe content configs
 
 Each content type has a config entry that maps it to its URL base path, display
 label, and content directory:
@@ -54,8 +55,8 @@ const contentTypeConfigs = {
 };
 ```
 
-This replaced hard-coded `if/else` branches in the metadata builder with a
-simple config lookup, making the system extensible without code changes.
+This swapped the hard-coded `if/else` branches in the metadata builder for a
+plain config lookup, so the system extends without any code changes.
 
 ## Results
 
@@ -64,10 +65,11 @@ simple config lookup, making the system extensible without code changes.
 - 18 new registry tests covering all query paths
 - Type-safe throughout: `ContentType` union prevents typos
 
-## The Lesson
+## The lesson
 
-The cost of adding a new content type is a signal. If it takes six files, the
-architecture is paying taxes on every addition, and every addition compounds
-the next one's cost. A single registry with a typed config flips the math:
-adding a content type is three files, and the existing query API already works
-on day one. Design for the access pattern, not for the first type that shipped.
+The cost of adding a new content type is a signal worth reading. If it takes
+six files, the architecture is paying tax on every addition, and each one
+quietly raises the price of the next. A single registry with a typed config
+flips the math: adding a content type is three files, and the existing query
+API already works on day one. So design for the access pattern, not for the
+first type that happened to ship.

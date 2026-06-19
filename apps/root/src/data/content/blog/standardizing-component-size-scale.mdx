@@ -15,25 +15,24 @@ export const metadata = {
   },
 };
 
-## The Inconsistency
+## The inconsistency
 
-The shared-ui library had grown to 20+ components, and each one had
-invented its own size scale. Avatar offered five sizes (`xs` through
-`xl`). Badge had no size prop at all. Button, Spinner, and ProgressBar
-each defined their own `sm | md | lg` type locally. Nothing was shared,
-nothing was enforced, and the Storybook for each component told a
-slightly different story about what "small" _meant_.
+The shared-ui library had grown past 20 components, and every one of them had
+invented its own size scale. Avatar offered five sizes (`xs` through `xl`),
+Badge had no size prop at all, and Button, Spinner, and ProgressBar each defined
+their own `sm | md | lg` type locally. Nothing was shared, nothing was enforced,
+and each component's Storybook told a slightly different story about what "small"
+even _meant_.
 
-The problem isn't aesthetic. When a developer reaches for a Badge next
-to an Avatar and discovers there's no way to make them the same size,
-they hardcode a `className` override. Do that enough times and the
-design system becomes a suggestion.
+The problem isn't aesthetic. When a developer drops a Badge next to an Avatar and
+finds there's no way to make them the same size, they hardcode a `className`
+override; do that enough times and the design system quietly demotes itself to a
+suggestion.
 
-## The Audit
+## The audit
 
-I listed every component with a size or variant prop and asked two
-questions: how many options does it offer, and does anyone actually _use_
-them all?
+I listed every component with a size or variant prop and checked two things for
+each: how many options it offered, and whether anyone actually _used_ them all.
 
 | Component   | Before                        | After          |
 | ----------- | ----------------------------- | -------------- |
@@ -44,23 +43,22 @@ them all?
 | ProgressBar | sm, md, lg + 5 color variants | sm, md, lg + 3 |
 | Modal       | sm, md, lg, xl + 5 variants   | sm, md, lg, xl |
 
-Avatar's `xs` and `xl` sizes appeared in exactly zero places outside
-Storybook. Spinner had six color variants (`accent`, `success`,
-`warning`, `error`, `info`, `foreground`), but every single call site used
-`accent`. ProgressBar and Modal had similar phantom variants that
-existed only in stories.
+Avatar's `xs` and `xl` sizes showed up in exactly zero places outside Storybook.
+Spinner had six color variants (`accent`, `success`, `warning`, `error`, `info`,
+`foreground`), and every single call site used `accent`. ProgressBar and Modal
+carried the same kind of phantom variants that only ever existed in stories.
 
-## The Shared Type
+## The shared type
 
-The fix started with a single, two-line file:
+The fix started with one tiny, two-line file:
 
 ```tsx
 /** Standard 3-point size scale for interactive components. */
 export type ComponentSize = 'sm' | 'md' | 'lg';
 ```
 
-Exported from the library's public API. Every component that
-accepts a size prop now imports this type instead of defining its own:
+It's exported from the library's public API, and every component that takes a
+size prop now imports this type instead of rolling its own:
 
 ```tsx
 import type { ComponentSize } from './types';
@@ -72,39 +70,38 @@ const sizeStyles: Record<ComponentSize, string> = {
 };
 ```
 
-When Badge gained a size prop, it fell into the existing scale
-automatically. No discussion about whether to add `xs` or `xl`: the
-type makes the decision for you.
+When Badge later gained a size prop, it dropped straight into the existing scale
+on its own. There was no debate about whether to add `xs` or `xl`; the type had
+already made that call.
 
-## Trimming Without Breaking
+## Trimming without breaking
 
-Removing unused variants is straightforward: delete the option, run the
-type checker, fix anything red. But Avatar's trim from five sizes to three
-required checking that no call site relied on `xs` or `xl`. A quick
-grep confirmed they were Storybook-only, so I updated the stories
-and removed the sizes.
+Removing unused variants is the easy part: delete the option, run the type
+checker, fix whatever turns red. Avatar's cut from five sizes to three did mean
+confirming that no call site leaned on `xs` or `xl`, but a quick grep showed they
+were Storybook-only, so I updated the stories and pulled the sizes.
 
-The riskier trim was Spinner. Six color variants collapsed to one. But
-every call site in the app used the default `accent` variant, so the
-others were dead weight: they made Storybook look comprehensive
-while adding no value to consumers.
+The riskier trim was Spinner, where six color variants collapsed down to one.
+Every call site in the app used the default `accent` variant, so the rest were
+dead weight: they made Storybook look thorough while doing nothing for actual
+consumers.
 
-## The Radius Token
+## The radius token
 
-While auditing sizes, I found a related inconsistency in border radius.
-Checkbox, Kbd, and Skeleton text lines all needed a radius smaller than
-`--radius-sm` (0.375rem), but it didn't exist. Each component
-improvised: `rounded`, `rounded-sm`, or a raw pixel value.
+While I was auditing sizes, I tripped over a related border-radius inconsistency.
+Checkbox, Kbd, and Skeleton text lines all wanted a radius smaller than
+`--radius-sm` (0.375rem), but no such token existed, so each component improvised
+with `rounded`, `rounded-sm`, or a raw pixel value.
 
-I added `--radius-xs` (0.25rem) to the theme and pointed all three
-components at it. Same pattern as the size scale: name the thing, put
-it in one place, reference it everywhere.
+I added `--radius-xs` (0.25rem) to the theme and pointed all three components at
+it. Same move as the size scale: name the thing, keep it in one place, reference
+it everywhere.
 
-## The Takeaway
+## The takeaway
 
-A component library's API surface is a product. Every prop, variant, and
-size option is a decision a consumer has to make. Three points cover the
-common cases without forcing developers to guess the difference between
-`md` and `lg` and `xl`. When a component genuinely needs more range, it
-can break from the shared type; the burden of proof is on the exception,
-not the rule.
+A component library's API surface is a product in its own right. Every prop,
+variant, and size option is one more decision you're handing the consumer. Three
+points cover the common cases without making anyone squint at the difference
+between `md`, `lg`, and `xl`. When a component genuinely needs more range it can
+break from the shared type, but the burden of proof sits with the exception, not
+the rule.

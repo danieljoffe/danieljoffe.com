@@ -17,17 +17,17 @@ export const metadata = {
 
 ## The Problem
 
-This portfolio has 47 MDX content files across three types: blog posts, project case studies, and experience entries. Each file already exported a `metadata` object with a title, excerpt, date, tags, and slug. But that metadata was not the source of truth for what appeared on the site.
+This portfolio has 47 MDX content files across three types: blog posts, project case studies, and experience entries. Each file already exported a `metadata` object with a title, excerpt, date, tags, and slug, but that metadata wasn't the source of truth for what actually appeared on the site.
 
-Listing-page cards pulled titles and descriptions from separate `*Thumbnails.ts` files: `blogThumbnails.ts` (430 lines), `projectThumbnails.ts` (161 lines), and `experienceThumbnails.ts` (96 lines). Structured data for blog and project pages lived in hand-authored records inside `structuredData/blog.ts` (300 lines) and `structuredData/project.ts` (104 lines). OG image generators read from the thumbnail records too.
+Listing-page cards pulled titles and descriptions from separate `*Thumbnails.ts` files: `blogThumbnails.ts` (430 lines), `projectThumbnails.ts` (161 lines), and `experienceThumbnails.ts` (96 lines). Structured data for blog and project pages lived in hand-authored records inside `structuredData/blog.ts` (300 lines) and `structuredData/project.ts` (104 lines), and the OG image generators read from the thumbnail records too.
 
-That is five files duplicating what MDX already knew. And duplication drifts. After 47 entries, several listing cards showed different titles or descriptions than the actual post. The thumbnails said one thing; the MDX said another. Nobody noticed because the data never ran through a single codepath.
+That's five files duplicating what the MDX already knew, and duplication drifts. After 47 entries, several listing cards were showing different titles or descriptions than the actual post: the thumbnails said one thing and the MDX said another. Nobody noticed because the data never ran through a single codepath.
 
 ## The Fix: Extend MDX Metadata, Delete Everything Else
 
 The approach was straightforward: make the MDX `export const metadata` block carry every field the site needs, then derive everything else from it at registry-build time.
 
-I extended `PostMetadata` with the fields that previously only lived in thumbnail records:
+So I extended `PostMetadata` with the fields that had previously only lived in the thumbnail records:
 
 ```typescript
 export interface PostMetadata {
@@ -74,11 +74,11 @@ export function buildThumbnail(
 }
 ```
 
-The content registry calls `buildThumbnail()` for every entry during module initialization. Listing cards, OG images, and pagination all read from the same derived shape. There is no second copy of the data.
+The content registry calls `buildThumbnail()` for every entry during module initialization, so listing cards, OG images, and pagination all read from the same derived shape. There's no second copy of the data to keep in sync.
 
 ## Collapsing Structured Data
 
-The structured data files were the most dramatic reduction. Blog structured data went from 300 lines of hand-authored per-slug records to a programmatic generator:
+The structured data files gave me the most dramatic reduction. Blog structured data went from 300 lines of hand-authored per-slug records down to a programmatic generator:
 
 ```typescript
 export const blogStructuredData = Object.fromEntries(
@@ -99,19 +99,19 @@ export const blogStructuredData = Object.fromEntries(
 ) as Record<AllowedBlogSlugs, BlogStructuredData>;
 ```
 
-Project structured data collapsed from 104 lines to the same pattern. Adding a new blog post or project no longer requires a structured data entry: the generator picks it up automatically from the MDX metadata.
+Project structured data collapsed from 104 lines into the same pattern. Adding a new blog post or project no longer needs a structured data entry at all; the generator picks it up automatically from the MDX metadata.
 
 ## Testing MDX Imports in Jest
 
-One complication: the content registry imports `.mdx` files to read their metadata, but Jest does not understand MDX out of the box. Turbopack handles it in dev; webpack handles it in production builds. Tests had neither.
+One complication: the content registry imports `.mdx` files to read their metadata, but Jest doesn't understand MDX out of the box. Turbopack handles it in dev and webpack handles it in production builds, but the tests had neither.
 
-I wrote a minimal Jest transformer (`__mocks__/mdxTransform.js`) that parses the `export const metadata` block from MDX source and returns it as a JavaScript module. The transformer does not render MDX content; it extracts the metadata export so registry tests can verify that every slug resolves to a valid entry with the right fields.
+So I wrote a minimal Jest transformer (`__mocks__/mdxTransform.js`) that parses the `export const metadata` block out of the MDX source and returns it as a JavaScript module. It doesn't render any MDX content; it just extracts the metadata export so registry tests can verify that every slug resolves to a valid entry with the right fields.
 
 ## The Voice Pass
 
-With MDX as the single source of truth, I ran a brand-voice audit across all 47 entries. The portfolio had accumulated first-person plural ("we built," "our library") from early drafts when the voice was undefined. I converted every instance to first-person singular, shifted project and experience excerpts to past-tense outcomes, and enforced character budgets: titles under 60 characters, excerpts under 160.
+With MDX as the single source of truth, I ran a brand-voice audit across all 47 entries. The portfolio had picked up a bunch of first-person plural ("we built," "our library") from early drafts when the voice was still undefined; I converted every instance to first-person singular, shifted project and experience excerpts to past-tense outcomes, and enforced character budgets: titles under 60 characters, excerpts under 160.
 
-The rewrite touched 32 blog entries, 10 project case studies, and 5 experience entries. It included 5 title rewrites, 19 excerpt rewrites, and over 120 body-level substitutions. Because the metadata block is now the only place titles and excerpts live, every surface picked up the new copy automatically: listing cards, OG images, structured data, and pagination links. No second file to forget.
+The rewrite touched 32 blog entries, 10 project case studies, and 5 experience entries, and it added up to 5 title rewrites, 19 excerpt rewrites, and over 120 body-level substitutions. Because the metadata block is now the only place titles and excerpts live, every surface picked up the new copy automatically: listing cards, OG images, structured data, and pagination links. No second file to forget.
 
 ## The Numbers
 
@@ -122,4 +122,4 @@ The rewrite touched 32 blog entries, 10 project case studies, and 5 experience e
 
 ## The Lesson
 
-Every duplicated record is a drift vector. If listing cards read from file A and the post reads from file B, the only question is when they diverge, not whether. Making the content file the sole authority is not just a cleanup; it changes the failure mode. With one source, incorrect metadata is visible everywhere immediately. With two, it hides in the gap between them.
+Every duplicated record is a drift vector. If listing cards read from file A and the post reads from file B, the only question is when they diverge, not whether. Making the content file the sole authority isn't just a cleanup; it changes the failure mode. With one source, wrong metadata is wrong everywhere immediately, which is annoying but obvious. With two, it hides in the gap between them, which is how you ship a card that lies about the post it links to.

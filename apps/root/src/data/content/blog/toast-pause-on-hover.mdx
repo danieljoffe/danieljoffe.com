@@ -15,29 +15,30 @@ export const metadata = {
   },
 };
 
-## The Timing Conflict
+## The timing conflict
 
-A toast notification has two jobs that fight each other. For sighted users,
-it should disappear after a few seconds so it doesn't block the UI. For
-screen reader users, `aria-live="polite"` means the announcement waits
-until the user finishes their current task, but if the toast has already
-been removed from the DOM by then, there's nothing left to announce.
+A toast notification has two jobs that pull against each other. For sighted
+users it should disappear after a few seconds so it doesn't block the UI, but
+for screen reader users, `aria-live="polite"` means the announcement waits
+until the user finishes their current task, and if the toast has already been
+yanked out of the DOM by then, there's nothing left to announce.
 
-The Toast component had neither. No ARIA roles, no auto-dismiss strategy,
-and a close button with no accessible label. It was a styled `<div>` that
-appeared and vanished.
+The Toast component had neither: no ARIA roles, no auto-dismiss strategy, and
+a close button with no accessible label. It was a styled `<div>` that appeared
+and vanished.
 
 ## role="alert" vs role="status"
 
-Not all toasts deserve the same urgency. The ARIA spec gives me two options:
+Not every toast deserves the same urgency, and the ARIA spec gives me two
+options:
 
 - **`role="status"`** with `aria-live="polite"`: for success and info
   toasts. The screen reader waits for a natural pause before announcing.
 - **`role="alert"`** with implicit `aria-live="assertive"`: for error and
   warning toasts. The screen reader interrupts whatever it's doing.
 
-The distinction matters. An "email sent" confirmation can wait. A "payment
-failed" error should not.
+The distinction matters: an "email sent" confirmation can wait, but a "payment
+failed" error shouldn't.
 
 ```tsx
 const isUrgent = t.variant === 'error' || t.variant === 'warning';
@@ -48,16 +49,16 @@ const isUrgent = t.variant === 'error' || t.variant === 'warning';
 >
 ```
 
-`aria-atomic="true"` ensures the screen reader reads the entire toast
+`aria-atomic="true"` makes the screen reader read the entire toast
 content when it changes, not just the diff.
 
-## The Pause-on-Hover Pattern
+## The pause-on-hover pattern
 
-Auto-dismiss solves the sighted user's problem: toasts go away on their
-own. But a 4-second timer is hostile if the user is still reading. The fix:
-pause the timer when the user is engaged.
+Auto-dismiss solves the sighted user's problem, since toasts go away on their
+own, but a 4-second timer is hostile if the user is still reading. So the fix
+is to pause the timer while the user is engaged.
 
-I extracted a `ToastCard` component that manages its own lifecycle with
+I pulled out a `ToastCard` component that manages its own lifecycle with
 three refs:
 
 ```tsx
@@ -81,11 +82,11 @@ const pauseTimer = useCallback(() => {
 }, []);
 ```
 
-The key insight: `remainingRef` tracks how much time is left, not how much
-has elapsed. When the user hovers away, the timer resumes with the correct
-remaining duration — not a fresh 4 seconds.
+The trick is that `remainingRef` tracks how much time is left, not how much
+has elapsed, so when the user hovers away the timer resumes with the correct
+remaining duration instead of a fresh 4 seconds.
 
-Both mouse and keyboard users benefit:
+Both mouse and keyboard users get this for free:
 
 ```tsx
 <div
@@ -96,13 +97,13 @@ Both mouse and keyboard users benefit:
 >
 ```
 
-The `onFocus`/`onBlur` pair handles keyboard users who Tab into the toast
+The `onFocus`/`onBlur` pair covers keyboard users who Tab into the toast
 to reach the close button.
 
-## Labeling the Close Button
+## Labeling the close button
 
-A bare `<button>` with an `×` icon is a screen reader dead end. It
-announces "button" with no indication of what it does or what it dismisses.
+A bare `<button>` with an `×` icon is a dead end for a screen reader; it
+just announces "button" with no hint of what it does or what it dismisses.
 
 ```tsx
 <button aria-label='Dismiss notification' onClick={() => onDismiss(t.id)}>
@@ -110,13 +111,13 @@ announces "button" with no indication of what it does or what it dismisses.
 </button>
 ```
 
-Small detail, high impact. A screen reader user now hears "Dismiss
+Small detail, big payoff. A screen reader user now hears "Dismiss
 notification, button" and knows exactly what the control does.
 
-## Testing Async Behavior
+## Testing async behavior
 
-Auto-dismiss and pause-on-hover are time-dependent, which makes tests
-inherently flaky if done wrong. I used `jest.useFakeTimers()` and
+Auto-dismiss and pause-on-hover are both time-dependent, which makes the tests
+inherently flaky if you do them wrong. I leaned on `jest.useFakeTimers()` and
 `act()` to control the clock:
 
 - Verify the toast exists at `t=0`
@@ -124,17 +125,17 @@ inherently flaky if done wrong. I used `jest.useFakeTimers()` and
 - Verify the toast is removed
 
 For pause-on-hover, I fire `mouseEnter` mid-timer, advance past the
-original deadline, verify the toast survives, then fire `mouseLeave` and
+original deadline, check that the toast survives, then fire `mouseLeave` and
 advance through the remaining time.
 
 Nine new tests cover the full matrix: role by variant, aria attributes,
-close button labeling, and the pause/resume lifecycle.
+close-button labeling, and the pause/resume lifecycle.
 
-## The Takeaway
+## The takeaway
 
-Toast notifications sit at the intersection of visual design, timing, and
-assistive technology. The three-ref timer pattern (`timerRef`, `remainingRef`,
-`startRef`) is a clean, reusable approach to any UI element that needs
-interruptible auto-dismiss. And the `role="alert"` vs `role="status"`
-distinction is one of those small ARIA decisions that separates a component
-library from an accessible one.
+Toast notifications sit right where visual design, timing, and assistive
+technology overlap. The three-ref timer pattern (`timerRef`, `remainingRef`,
+`startRef`) is a clean, reusable approach for any UI element that needs
+interruptible auto-dismiss, and the `role="alert"` vs `role="status"`
+choice is one of those small ARIA calls that separates a component library
+from an accessible one.

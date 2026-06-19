@@ -15,24 +15,24 @@ export const metadata = {
   },
 };
 
-## The Problem
+## The problem
 
-Long-form MDX posts on this portfolio, case studies running 1,500+ words with
-multiple sections, had no way for readers to see where they were or jump to a
-specific section. The browser's native scroll position was the only indicator of
-progress.
+Long-form MDX posts on this portfolio, case studies running 1,500+ words across
+a handful of sections, gave readers no way to see where they were or jump to a
+specific section; the browser's scroll bar was the only hint of progress.
 
-I needed a table of contents that:
+So I needed a table of contents that:
 
 1. **Self-generates** from the MDX content (no manual configuration per post)
 2. **Tracks reading position** in real time
 3. **Works on both desktop and mobile** with appropriate UI patterns
 4. **Respects accessibility** (focus management, reduced motion, keyboard nav)
 
-## Heading Extraction with useHeadings
+## Heading extraction with useHeadings
 
-The first challenge was getting heading data from rendered MDX without requiring
-authors to maintain a separate outline. The solution: scan the DOM after render.
+The first challenge was getting heading data out of rendered MDX without asking
+authors to maintain a separate outline by hand. The solution was to scan the DOM
+after render.
 
 ```typescript
 function useHeadings() {
@@ -65,11 +65,10 @@ Key decisions here:
 - **`el.id` filter**: MDX heading plugins auto-generate IDs; headings without
   IDs are excluded since they can't be scroll targets
 
-## Scroll Spy with IntersectionObserver
+## Scroll spy with IntersectionObserver
 
-Instead of a scroll event listener polling `getBoundingClientRect()` on every
-frame, I used IntersectionObserver to let the browser tell me when headings enter
-or leave the viewport:
+Rather than a scroll listener polling `getBoundingClientRect()` on every frame, I
+let IntersectionObserver tell me when headings enter or leave the viewport:
 
 ```typescript
 useEffect(() => {
@@ -100,16 +99,16 @@ The `rootMargin` is the secret sauce:
   so the active heading matches where the reader's eyes actually are, not
   whatever heading happens to be at the bottom of the screen
 
-This is a zero-cost approach at runtime. No `requestAnimationFrame` loops, no
-throttled scroll handlers. The browser's compositor thread handles intersection
-calculations natively.
+This costs basically nothing at runtime: no `requestAnimationFrame` loops, no
+throttled scroll handlers, just the browser's compositor thread doing the
+intersection math natively.
 
-## Responsive Design: Sidebar vs. Bottom Sheet
+## Responsive design: sidebar vs. bottom sheet
 
-Desktop and mobile need fundamentally different TOC patterns:
+Desktop and mobile want genuinely different TOC patterns:
 
 **Desktop (lg+):** A sticky sidebar pinned to the left of the article content.
-It stays visible as you scroll, showing your position at all times.
+It stays visible as you scroll, showing your position the whole way down.
 
 ```tsx
 function DesktopToc({ headings, activeId }: TocProps) {
@@ -149,13 +148,13 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 ```
 
-Both implementations share the same `TocList` component. The only difference is
-the container and trigger mechanism.
+Both implementations share the same `TocList` component; the only thing that
+differs is the container and the trigger mechanism.
 
-## Smooth Scrolling with Accessibility
+## Smooth scrolling with accessibility
 
-When a user clicks a TOC link, the page scrolls to the target heading. But
-smooth scrolling can be disorienting for users with vestibular disorders:
+When a user clicks a TOC link the page scrolls to the target heading, but smooth
+scrolling can be genuinely disorienting for people with vestibular disorders:
 
 ```typescript
 function scrollToHeading(id: string) {
@@ -173,10 +172,10 @@ function scrollToHeading(id: string) {
 }
 ```
 
-This single check respects the user's OS-level motion preference. No custom
-setting needed.
+That single check respects the user's OS-level motion preference, with no custom
+setting to wire up.
 
-## Integration with the Two-Column Layout
+## Integration with the two-column layout
 
 The TOC lives inside `PostBody`, which uses a flex layout to position it:
 
@@ -200,9 +199,9 @@ The TOC lives inside `PostBody`, which uses a flex layout to position it:
 <TableOfContents mobile />;
 ```
 
-A subtle but critical detail: the mobile TOC FAB is rendered _outside_ the
-`hidden lg:flex` container. An earlier version nested it inside, which meant the
-FAB was hidden on mobile, exactly when it was needed most.
+One subtle but critical detail: the mobile TOC FAB is rendered _outside_ the
+`hidden lg:flex` container. An earlier version of mine nested it inside, which
+meant the FAB was hidden on mobile, which is precisely when it was needed most.
 
 ## Results
 
@@ -213,11 +212,11 @@ FAB was hidden on mobile, exactly when it was needed most.
 - Works across all content types (projects, experience, blog) automatically
   through the shared `PostBody` component
 
-## The Lesson
+## The lesson
 
-The best UI affordances are the ones the browser already gives you.
-IntersectionObserver, `prefers-reduced-motion`, native `scrollIntoView`,
-and auto-generated heading IDs from the MDX plugin meant I wrote 149 lines
-of glue code and got an accessible, zero-cost TOC with scroll spy. Before
-adding a throttled scroll listener or a custom animation timing function,
-check whether the platform already solved it. Usually it did.
+The best UI affordances are usually the ones the browser already hands you.
+IntersectionObserver, `prefers-reduced-motion`, native `scrollIntoView`, and
+auto-generated heading IDs from the MDX plugin meant I wrote 149 lines of glue
+code and got an accessible, zero-cost TOC with scroll spy out of it. Before you
+reach for a throttled scroll listener or a custom animation timing function,
+check whether the platform already solved it; it usually did.

@@ -19,7 +19,7 @@ export const metadata = {
 
 I already test design-token contrast. A jest spec reads my shipped theme CSS, converts every oklch token to sRGB, and asserts each text-on-tint pair clears 4.5:1. It runs in the fast CI lane in milliseconds, and it stays green.
 
-So when a design review flagged my dark-mode warning and error badges as muddy and sitting close to the floor, the test gave me nothing. `--color-error` on `--color-error-light` measured 4.70:1, passing. The reviewer was looking at the same component and seeing something worse. One of us was reading the wrong number.
+So when a design review flagged my dark-mode warning and error badges as muddy and sitting right on the floor, the test gave me nothing. `--color-error` on `--color-error-light` measured 4.70:1 and passed. The reviewer was looking at the same component and seeing something worse, so one of us was reading the wrong number.
 
 The reviewer was right. They were looking at Storybook, and Storybook does not render the stylesheet my test reads.
 
@@ -27,15 +27,15 @@ The reviewer was right. They were looking at Storybook, and Storybook does not r
 
 My shared-ui library ships `pyre-theme.css`. Storybook renders its canvas from a second file, `pyre-storybook-preview.css`, copied off the theme so the demo carries the brand. Two files, one source of truth in theory.
 
-In practice they had drifted. The shipped theme's dark error tint was `oklch(0.24 0.1 25)`. The preview's was `oklch(0.25 0.05 25)`: different chroma, different luminance, different contrast. My test parses `pyre-theme.css` and `indigo-theme.css`. It never opens the preview file. So the 4.70:1 it guarded was the shipped value, and the 4.53:1 the reviewer saw, a hair above the floor, lived in a file no test touched.
+In practice they'd drifted. The shipped theme's dark error tint was `oklch(0.24 0.1 25)`; the preview's was `oklch(0.25 0.05 25)`, with different chroma, different luminance, and different contrast. My test parses `pyre-theme.css` and `indigo-theme.css`, and it never opens the preview file. So the 4.70:1 it guarded was the shipped value, while the 4.53:1 the reviewer saw, a hair above the floor, lived in a file no test ever touched.
 
-The test was not wrong. It was vouching for a stylesheet nobody looks at.
+The test wasn't wrong; it was vouching for a stylesheet nobody actually looks at.
 
 ## The implementation
 
-The contrast math is the same arithmetic the spec already uses: oklch to sRGB to relative luminance to a ratio. Running it on both files told the real story. Shipped error tint, 4.70:1. Demo error tint, 4.53:1. Two numbers for one component.
+The contrast math is the same arithmetic the spec already runs: oklch to sRGB to relative luminance to a ratio. Running it on both files told the real story; the shipped error tint came out at 4.70:1 and the demo error tint at 4.53:1, two numbers for one component.
 
-I collapsed both files onto a single set of values, tuned to fix the muddiness the review actually flagged. Dropping chroma pulls the brown and maroon cast out of the tint; lowering the error surface's luminance buys contrast margin, because the text is the lighter half of the pair.
+So I collapsed both files onto a single set of values, tuned to fix the muddiness the review actually flagged. Dropping chroma pulls the brown and maroon cast out of the tint, and lowering the error surface's luminance buys contrast margin, since the text is the lighter half of the pair.
 
 ```css
 /* pyre-theme.css AND pyre-storybook-preview.css, .dark */
@@ -49,7 +49,7 @@ I collapsed both files onto a single set of values, tuned to fix the muddiness t
 
 Error text-on-tint lands at 5.00:1 in both files. Warning reads clean at 6.66:1.
 
-Editing two files by hand is a patch, not a fix; they drift again the next time I touch one. The durable options are to point the contrast test at the preview file too, so the demo lives under the same contract, or to delete the duplicate and let Storybook import the shipped theme directly. The copy exists for branding reasons I can solve other ways. The real move is to stop maintaining a stylesheet I can render but never test.
+Editing two files by hand is a patch, not a fix; they'll just drift again the next time I touch one. The durable options are to point the contrast test at the preview file too, so the demo lives under the same contract, or to delete the duplicate and let Storybook import the shipped theme directly. The copy only exists for branding reasons I can solve other ways, so the real move is to stop maintaining a stylesheet I can render but never test.
 
 ## The result
 
@@ -59,4 +59,4 @@ Editing two files by hand is a patch, not a fix; they drift again the next time 
 
 ## The takeaway
 
-A test guards the files it parses and nothing else. If your showcase renders from a copy, a green check is signing off on a stylesheet no one ever sees. Test the artifact you put on screen, or stop keeping a separate one to put there.
+A test guards the files it parses and nothing else. If your showcase renders from a copy, that green check is signing off on a stylesheet no one ever sees. Test the artifact you actually put on screen, or stop keeping a separate one to put there.

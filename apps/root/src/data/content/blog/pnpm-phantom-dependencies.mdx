@@ -17,21 +17,21 @@ export const metadata = {
 
 ## The Accidental Dependency
 
-Yarn Classic hoists every package to the root `node_modules`. That means your
+Yarn Classic hoists every package up to the root `node_modules`, which means your
 code can import anything any package depends on, whether you declared it or not.
 You don't notice until you switch to a package manager that enforces what you
-actually wrote in `package.json`.
+actually wrote down in `package.json`.
 
-I migrated this Nx monorepo from Yarn Classic to pnpm v10. The command itself
+I migrated this Nx monorepo from Yarn Classic to pnpm v10, and the command itself
 was uneventful: `corepack enable pnpm && pnpm import` converts `yarn.lock`
-to `pnpm-lock.yaml`. What happened next was an audit I didn't plan for.
+to `pnpm-lock.yaml`. What happened right after was an audit I hadn't signed up for.
 
 ## The First Failure
 
-pnpm uses a symlinked `node_modules` structure. Each package can only access
-its declared dependencies. On the first `pnpm install`, the root app failed to
-resolve `@danieljoffe/shared-ui`. It had been importing the workspace
-library for months without declaring it:
+pnpm uses a symlinked `node_modules` structure, so each package can only reach
+its declared dependencies. On the very first `pnpm install`, the root app failed to
+resolve `@danieljoffe/shared-ui`; it had been importing the workspace
+library for months without ever declaring it:
 
 ```json
 // apps/root/package.json — before
@@ -42,7 +42,7 @@ library for months without declaring it:
 }
 ```
 
-Yarn Classic resolved it through hoisting. pnpm refused. The fix was explicit:
+Yarn Classic resolved it through hoisting; pnpm flatly refused. The fix was to say it out loud:
 
 ```json
 // apps/root/package.json — after
@@ -53,17 +53,17 @@ Yarn Classic resolved it through hoisting. pnpm refused. The fix was explicit:
 }
 ```
 
-One line. The kind of line that should have been there from the start.
+One line; the kind of line that should have been there from the start.
 
 ## Sentry and the Hoisting Escape Hatch
 
 The second failure was subtler. Sentry's Node.js SDK intercepts module loading
-at runtime using `import-in-the-middle`. That library patches `require` and
+at runtime using `import-in-the-middle`, a library that patches `require` and
 `import` calls to inject tracing hooks before your code runs. Under pnpm's
 strict isolation, `import-in-the-middle` can't find the modules it needs to
-patch because they live in nested `.pnpm` directories, not at the root.
+patch, because they live in nested `.pnpm` directories instead of at the root.
 
-pnpm provides an escape hatch: `.npmrc` hoist patterns.
+pnpm gives you an escape hatch for exactly this: `.npmrc` hoist patterns.
 
 ```ini
 # .npmrc
@@ -71,17 +71,17 @@ public-hoist-pattern[]=@sentry/*
 public-hoist-pattern[]=*import-in-the-middle*
 ```
 
-These patterns tell pnpm to hoist matching packages to the root
+These patterns tell pnpm to hoist matching packages up to the root
 `node_modules`, restoring the flat structure Sentry expects. It's a scoped
-exception, not a global override. Every other package stays isolated.
+exception rather than a global override, so every other package stays isolated.
 
 ## Subpath Exports
 
 The shared-ui library had a single barrel export. Consumers could
-`import { Button } from '@danieljoffe/shared-ui'`, but they couldn't
-import individual files or style constants. Under Yarn Classic, deep imports
-like `@danieljoffe/shared-ui/styles/formStyles` resolved through file
-system traversal. pnpm requires explicit subpath exports in `package.json`:
+`import { Button } from '@danieljoffe/shared-ui'`, but they couldn't reach
+individual files or style constants. Under Yarn Classic, deep imports
+like `@danieljoffe/shared-ui/styles/formStyles` resolved through plain file
+system traversal; pnpm wants explicit subpath exports in `package.json`:
 
 ```json
 {
@@ -94,16 +94,16 @@ system traversal. pnpm requires explicit subpath exports in `package.json`:
 }
 ```
 
-The `./*` wildcard initially used `*.tsx`, which couldn't match `.ts` files in
-the `styles/` directory. I added explicit `./styles/*` and `./types` entries
-to cover both extensions. Without pnpm's strictness, this mismatch would have
-surfaced only after a consumer tried tree-shaking and got an empty module.
+The `./*` wildcard started out as `*.tsx`, which couldn't match the `.ts` files in
+the `styles/` directory, so I added explicit `./styles/*` and `./types` entries
+to cover both extensions. Without pnpm's strictness, that mismatch would have
+turned up only after some consumer tried tree-shaking and got back an empty module.
 
 ## What I Gained
 
 The migration touched 4 CI workflow files, 1 Dockerfile, and the root
-`package.json` (converting Yarn `resolutions` to pnpm `pnpm.overrides`). In
-return:
+`package.json` (converting Yarn `resolutions` over to pnpm `pnpm.overrides`). In
+return I got:
 
 - **Strict dependency resolution** caught one phantom dependency and one
   incomplete export map
@@ -116,6 +116,6 @@ return:
 
 ## The Principle
 
-Loose dependency resolution doesn't mean your dependency graph is correct. It
-means your mistakes happen to work. pnpm's strict mode is a linter for your
-`package.json`: it catches what you forgot to declare before production does.
+Loose dependency resolution doesn't mean your dependency graph is correct; it
+just means your mistakes happen to work for now. pnpm's strict mode is really a
+linter for your `package.json`: it catches what you forgot to declare before production gets the chance to.

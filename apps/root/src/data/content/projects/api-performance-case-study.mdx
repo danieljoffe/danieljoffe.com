@@ -37,21 +37,21 @@ export const metadata = {
 
 ## The problems
 
-Both services had the same anti-pattern: creating expensive resources per request and running independent operations sequentially.
+Both services shared the same bad habit: they built expensive resources on every request and ran independent operations one after another when they didn't have to.
 
-**audit-api** launched a fresh Chromium instance for every scan, waited for `networkidle` (which hangs on sites with persistent connections), and ran Lighthouse and axe-core sequentially even though they share no state. Some sites blocked the headless browser with bot detection, producing cryptic errors like `ERR_HTTP2_PROTOCOL_ERROR`.
+**audit-api** launched a fresh Chromium instance for every scan, waited for `networkidle` (which hangs forever on sites with persistent connections), and ran Lighthouse and axe-core back to back even though the two share no state. Some sites blocked the headless browser with bot detection, and you'd get cryptic errors like `ERR_HTTP2_PROTOCOL_ERROR`.
 
-**job-api** created a new `httpx.AsyncClient` per ATS fetch (tearing down and rebuilding TCP connections for every request), created a new Supabase client per dependency injection call, and ran four database operations sequentially per source during polling.
+**job-api** spun up a new `httpx.AsyncClient` per ATS fetch, tearing down and rebuilding TCP connections every time, created a new Supabase client per dependency-injection call, and ran four database operations sequentially per source during polling.
 
-Security review also surfaced two gaps: JWT decode paths did not require `exp` or `sub` claims, and the `ALLOWED_HOSTS` configuration could silently default to permissive behavior.
+A security review turned up two more gaps: the JWT decode paths didn't require `exp` or `sub` claims, and the `ALLOWED_HOSTS` configuration could silently fall back to permissive behavior.
 
 ## Audit-api: browser pool and parallel scanning
 
-I replaced per-scan browser launches with a persistent `BrowserPool` that keeps one Chromium process alive across scans. Each scan gets a fresh browser context for cookie and state isolation, then closes it. An idle timer shuts down the browser after 30 minutes of inactivity. On app shutdown, the FastAPI lifespan handler calls `pool.shutdown()`.
+I swapped the per-scan browser launches for a persistent `BrowserPool` that keeps one Chromium process alive across scans. Each scan gets a fresh browser context for cookie and state isolation, then closes it; an idle timer shuts the browser down after 30 minutes of inactivity, and on app shutdown the FastAPI lifespan handler calls `pool.shutdown()`.
 
-Navigation changed from `wait_until="networkidle"` to `wait_until="load"` with a 10-second best-effort `networkidle` follow-up that never blocks. A realistic Chrome User-Agent header reduced bot detection triggers. When sites still blocked the scanner, a pattern-matching function mapped raw Playwright errors to user-friendly messages.
+Navigation moved from `wait_until="networkidle"` to `wait_until="load"`, with a 10-second best-effort `networkidle` follow-up that never blocks. A realistic Chrome User-Agent header cut down on bot-detection triggers, and when sites still blocked the scanner, a pattern-matching function mapped the raw Playwright errors to messages a person could actually read.
 
-Lighthouse and axe-core now run in parallel via `asyncio.gather` with `return_exceptions=True`. Lighthouse runs as a subprocess; axe runs inside the Playwright page. They share nothing. The `ScanQueue` itself remains serialized because Lighthouse uses global performance marks that collide in concurrent runs.
+Lighthouse and axe-core now run in parallel via `asyncio.gather` with `return_exceptions=True`. Lighthouse runs as a subprocess and axe runs inside the Playwright page, so they share nothing. The `ScanQueue` itself stays serialized because Lighthouse uses global performance marks that collide whenever two runs overlap.
 
 <Mermaid
   alt="The serialized ScanQueue feeds one scan at a time into a persistent browser pool that keeps a single Chromium process alive across scans, handing each scan a fresh isolated context. Within a scan, Lighthouse (a Node subprocess) and axe-core (inside the Playwright page) run in parallel and are joined with asyncio.gather, which produces the grade."
@@ -81,7 +81,7 @@ lighthouse_result, axe_results = await asyncio.gather(
 
 ## Job-api: connection reuse and DB parallelism
 
-A shared `httpx.AsyncClient` singleton replaced per-request client creation. The pool limits are 20 max connections and 10 keepalive, with a 15-second timeout and automatic redirect following. All six ATS fetchers (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, JSON-LD) share this pool. The client closes on app shutdown.
+A shared `httpx.AsyncClient` singleton replaced the per-request client creation. The pool caps out at 20 connections and 10 keepalive, with a 15-second timeout and automatic redirect following, and all six ATS fetchers (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, JSON-LD) share it. The client closes on app shutdown.
 
 ```python
 def get_http_client() -> httpx.AsyncClient:
@@ -97,9 +97,9 @@ def get_http_client() -> httpx.AsyncClient:
     return _client
 ```
 
-The Supabase client follows the same singleton pattern: initialized once at startup via the FastAPI lifespan, shared across all requests.
+The Supabase client follows the same singleton pattern: it's initialized once at startup via the FastAPI lifespan and shared across all requests.
 
-For the poller, I identified two phases of independent database operations. Phase 1 runs the upsert of new/updated jobs concurrently with fetching existing rows (to find stale jobs). Phase 2 runs the archive of stale jobs concurrently with updating the `last_polled_at` timestamp:
+For the poller, I found two phases of independent database operations. Phase 1 runs the upsert of new and updated jobs alongside the query that fetches existing rows to find stale jobs; Phase 2 runs the archive of stale jobs alongside the update of the `last_polled_at` timestamp:
 
 ```python
 # Phase 1: upsert + existing query in parallel
@@ -115,11 +115,11 @@ await asyncio.gather(
 )
 ```
 
-The `asyncio.to_thread` calls are essential because `supabase-py` is a synchronous client. Without them, `await` does not yield the event loop and the operations run sequentially despite `asyncio.gather`.
+The `asyncio.to_thread` calls aren't optional here, because `supabase-py` is a synchronous client. Without them, `await` never yields the event loop and the operations run one after another despite the `asyncio.gather`.
 
 ## Security hardening
 
-JWT decode paths across all three auth strategies now require `exp` and `sub` claims:
+The JWT decode paths across all three auth strategies now insist on `exp` and `sub` claims:
 
 ```python
 payload = jwt.decode(
@@ -130,7 +130,7 @@ payload = jwt.decode(
 )
 ```
 
-The `ALLOWED_HOSTS` configuration now raises a `RuntimeError` at import time if unset, preventing the server from starting with permissive defaults.
+The `ALLOWED_HOSTS` configuration now raises a `RuntimeError` at import time when it's unset, so the server can't even start with permissive defaults.
 
 ## Results
 
@@ -146,4 +146,4 @@ The `ALLOWED_HOSTS` configuration now raises a `RuntimeError` at import time if 
 
 ## Takeaway
 
-Pool expensive resources at the process level, isolate per-request state with lightweight contexts. Parallelize I/O operations that do not share mutable state. Verify that `async` actually means concurrent: a synchronous library wrapped in `async def` still blocks unless you use `asyncio.to_thread`.
+Pool the expensive resources at the process level and isolate per-request state with lightweight contexts; parallelize the I/O that doesn't share mutable state. And check that `async` actually buys you concurrency, because a synchronous library wrapped in `async def` still blocks the loop unless you hand it off with `asyncio.to_thread`.
