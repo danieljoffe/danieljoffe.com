@@ -8,14 +8,49 @@ Any human or agent drafting content for the portfolio. Daniel is the sole author
 
 ## Brand voice pillars
 
-1. **Direct.** Lead with the thing that matters. No preamble, no "In this post we'll explore."
+1. **Direct, with a hook.** Lead with the line that earns attention, then place the reason, then give the context. Daniel's own rule, verbatim: "place the reason. explain in the next sentence. grab attention, give context." A flat, accurate sentence that lists service names is a failure even when it's correct. If the reader glazes before the period, rewrite it.
 2. **Evidence-backed.** Numbers, slugs, file paths, before/after. Claims get receipts.
-3. **Calm confidence.** Never prove yourself. State what you built and why it worked.
-4. **Builder's mindset.** Show the problem as it actually appeared, the decision as it was actually made, the trade-off as it was actually weighed.
+3. **Engaged and irreverent.** Dry humor, the occasional sarcastic aside, a willingness to mock his own past decisions ("I also wanted to include the kitchen sink!"). This is the opposite of buttoned-up, press-release "calm confidence." The writing has a pulse and a point of view.
+4. **Builder's-eye honesty.** Narrate the work the way it actually happened, mess included: the bug a screenshot test caught, the feature that turned out half-baked, the detour. Name limitations plainly, without spin or drama.
+
+## Voice fingerprint (the canonical anchor)
+
+**This section is the single source of truth for "sounds like Daniel." When drafting, imitate the texture of the verbatim samples below — _not_ the polished register of existing posts. Most existing posts were AI-drafted and read generic; that drift is exactly what this guide exists to correct, so they are not a voice reference.**
+
+Daniel's writing, in his own words:
+
+> "My portfolio used a single global provider for state management and every single change, big and miniscule, triggered a re-render. Not only was I bundling the theme switch, the modal, window dimensions... I also wanted to include the kitchen sink!"
+
+> "The hard part about shipping an LLM feature is not the prompt; it's everything else: the cost, the reproducibility, and what happens when it all fails while a user is actively using the tool."
+
+> "I thought the resume generation was working fine, but a screenshot test revealed the bug... we realized the feature was half baked and needed more refinement. I had to pause what I was working on and immediately investigate, weigh the options, implement, then test the results."
+
+### The habits to copy
+
+- **Sentences flow; they don't chop.** Daniel connects clauses with conjunctions, semicolons, colons, and trailing "...". He runs related ideas together rather than breaking them into staccato fragments for punch. When he rewrote the flagship's "...not the prompt. It is everything around it:" he joined it with a semicolon: "...not the prompt; it's everything else:". Mirror that. Flow over chop.
+- **Hook, then reason, then context.** Open with the line that earns attention, explain why in the next sentence, then fill in the detail. Never open with a flat inventory ("two FastAPI services running on Railway behind a Next.js frontend").
+- **Plain words over writerly ones.** "while a user is actively using the tool," not "while a user is watching." Pick the literal phrase over the poetic one. No aphorisms, no "machinery," no "honest to name."
+- **Dry humor and self-deprecation are welcome.** Idioms ("half-baked," "kitchen sink"), an occasional exclamation for comic timing, a wry jab at his own past code. Sarcasm in small doses.
+- **Contractions always.** "it's," "there's," "I'd." The formal uncontracted register ("It is everything around it") reads as not-him.
+- **Tell the real sequence.** Daniel narrates how the work unfolded, including when a feature landed late or a test caught something. The process is part of the story.
+
+### Hard nos (Daniel telling you what he hates)
+
+- **No rhetorical questions.** Daniel: "i think they're stupid and unnecessary." Cut "Sound familiar?", "Have a performance problem?", and every other question-as-rhetoric. State it.
+- **No one-word / short-fragment emphasis.** Daniel finds it cliché ("It's. cliche"). Don't write "Failure is a row, not a log line." as clipped pieces. Keep the contrast if you want it, but say it as one flowing sentence.
+- **No corporate / LinkedIn jargon.** "synergy" is a visceral no. So is the rest of the buzzword bin (see anti-patterns).
+- **No service-name soup.** Don't string internal names ("audit-api," "job-api," "GlobalProvider") together without telling the reader what they are and why they should care, in the same breath.
+
+### Calibration calls (Daniel's defaults — override on request)
+
+- **Swearing.** Authentic to how Daniel talks ("I do swear"), but the site's audience is hiring managers during an FTE search. Default: keep literal profanity out of published posts; keep the irreverent _attitude_.
+- **"We" vs "I".** Daniel naturally says "we" for what the system does ("we score thousands of jobs per target"). For credit and decisions, use "I" — he built it, he owns it. For system behavior, name the actor ("the pipeline grades every posting") rather than forcing "I" or drifting into team-implying "we."
 
 ## Voice: first-person singular ("I", "my")
 
-Daniel works solo on the portfolio and as an individual consultant. All content uses **first-person singular**. Never "we" — even when describing a team the author was part of, prefer "the team" or name the collaborators explicitly.
+Daniel works solo on the portfolio and as an individual consultant, so **credit and decisions are always first-person singular**: "I built," "I cut," "I decided." Never claim a team's work with "we," and never soften a solo decision into "we"; if a team was involved, name them or say "the team."
+
+One real exception, because it's how Daniel actually talks: **system-voice "we"** for what the software does ("we score thousands of jobs per target") is fine. The line is credit versus behavior — "I" for what Daniel did, and for system behavior prefer naming the actor ("the pipeline grades every posting") over either an awkward "I" or a team-implying "we." See the Voice fingerprint's calibration note.
 
 ```
 BAD:  "We cut mobile load times from 10s to 2s."
@@ -44,7 +79,7 @@ Different surfaces need different registers. The pillars stay constant, the tone
 | Project excerpt        | Past-tense outcome         | "Cut mobile load times from 10 seconds to 2 and dropped bounce rates by 39% at FightCamp."                                                                |
 | Blog thumbnail title   | Specific, outcome-driven   | "Correlating a multi-step funnel with one sessionStorage ID"                                                                                              |
 | Blog thumbnail excerpt | Lead with impact           | "A timestamp and random suffix in sessionStorage ties scan, completion, email capture, and calendar booking into one GA4 funnel with zero backend state." |
-| CTA heading            | Project-focused invitation | "Have a performance problem? Let's talk."                                                                                                                 |
+| CTA heading            | Project-focused invitation | "I fix frontend performance problems. Let's talk."                                                                                                        |
 
 ## Tense rules
 
@@ -69,12 +104,11 @@ Blog body copy has no hard budget but aim for ≤ 800 words. Project case studie
 
 ## Punctuation
 
-- **Periods, colons, and semicolons for clause breaks. Em dashes sparingly.** Em dashes create choppiness when overused. Reserve them for true parenthetical asides in long-form prose.
-  - Period for independent clauses: "The negative assertion matters. It documents that the wrapper should not have the attribute."
-  - Colon to introduce a consequence or list: "the actual interactive element: the `<button>`, `<a>`, or whatever the child is."
-  - Semicolon to link related clauses: "A reasonable constraint; a tooltip without an interactive trigger element isn't useful."
-  - NO: "The error itself is harmless — React recovers by re-rendering."
-- **Em dashes are forbidden in short-form surfaces.** No em dashes in hero headlines, thumbnail titles, thumbnail excerpts, or CTAs. They eat character budget and add noise. Use a period, colon, or comma instead.
+- **Favor flow over chop.** Daniel's sentences connect; they don't fragment for punch. Reach for semicolons, colons, and conjunctions ("and," "so," "but") to keep related ideas in one breath. Resist splitting a single thought into short independent sentences for emphasis; that staccato is the AI tell he dislikes most ("It's. cliche").
+  - Semicolon to link related clauses: "The hard part isn't the prompt; it's everything else."
+  - Colon to introduce a consequence or list: "everything else: the cost, the reproducibility, and what happens when it fails."
+  - Use a period to end a thought, not to manufacture drama from a fragment. NO: "Failure is a row. Not a log line."
+- **Em dashes: sparing in long-form, forbidden in short-form.** They add choppiness and eat character budget. Reserve them for a true parenthetical aside in body prose; never use them in hero headlines, thumbnail titles, excerpts, or CTAs. Daniel reaches for a semicolon or colon first. NO: "The error itself is harmless — React recovers by re-rendering."
 - **Commas for parenthetical asides in flowing prose.** "When the logo changes, and it will, I run one command."
 - **Scare quotes for irony only.** Use them when a word means the opposite ("free" web tool, "invisible" sheet). Don't use them for technical terms.
 
@@ -150,11 +184,16 @@ Don't use any of these. Ever.
 
 - **Filler verbs:** spanning, leveraging, diving into, empowering, delighting, unlocking, unleashing, transforming
 - **Marketing clichés:** world-class, cutting-edge, best-in-class, seamless, revolutionary, game-changing
+- **Corporate / LinkedIn jargon:** synergy, synergize, circle back, move the needle, low-hanging fruit, value-add, ideate. Daniel's words: "synergy, fucking hate that word."
+- **Rhetorical questions:** "Sound familiar?", "Have a performance problem?" Daniel: "i think they're stupid and unnecessary." Make the statement instead.
+- **Staccato fragments for emphasis:** "Failure is a row, not a log line." chopped into clipped pieces. It reads cliché ("It's. cliche"). Keep the contrast if you want it, but say it as one flowing sentence.
+- **Writerly flourishes over plain words:** "while a user is watching," "honest to name," "the unglamorous machinery." Pick the literal phrase. Daniel rewrote "while a user is watching" as "while a user is actively using the tool."
+- **Service-name soup:** naming internal services or symbols ("audit-api," "GlobalProvider") with no context or hook. Tell the reader what it is and why they should care, in the same breath.
 - **Journey metaphors:** journey, path, adventure, story (unless literally about a story)
 - **Vague authority:** "industry-leading," "enterprise-grade," "proven"
-- **First-person plural for solo work:** no "we" when describing things Daniel did alone
+- **"We" that claims solo work as a team's:** no "we" for credit on things Daniel did alone. (System-voice "we" for what the software does is a separate, allowed case — see Voice fingerprint.)
 - **Em dashes in thumbnails, hero headlines, or CTAs**
-- **"In this post we'll explore..."** or any opener that previews instead of leading with the problem
+- **"In this post we'll explore..."** or any opener that previews instead of leading with the hook
 - **Restating the post in the closing line.** The takeaway should add something, not summarize
 
 ## Long-form structure (blog + project case studies)
@@ -191,14 +230,21 @@ Run this before shipping any change to a title, excerpt, headline, or CTA.
 4. **Filler audit.** None of the anti-pattern words appear.
 5. **Tense.** Blog = present, project/experience = past, hero/about/services = present.
 6. **Specific, not generic.** The sentence names a technology, number, or outcome. "A component library" is weak; "A React component library adopted by 80% of apps" is specific.
+7. **No rhetorical questions.** Zero. State it directly.
+8. **Wince test.** Read it aloud. If it sounds like a LinkedIn post or a press release instead of Daniel talking, loosen it.
 
 ## Self-check: long-form (blog posts, case studies)
 
 Run this before finalizing any long-form draft.
 
 1. **Em dash audit.** Em dashes in prose only for true parenthetical asides; otherwise replace with periods, colons, or semicolons.
-2. **Consequence check.** Every "X happened" should have a "because Y" or "which meant Z."
-3. **Takeaway voice.** The last line lands with a concrete, punchy principle. Not a restatement of the post.
-4. **Redundancy check.** No section just re-explains what a code block already shows. Fold it or cut it.
-5. **Full artifacts.** If the post is about a script or config, the complete version is included.
-6. **Voice audit.** Zero "we" or "our" unless quoting someone else verbatim.
+2. **Flow check.** No thoughts chopped into staccato fragments for fake punch. Join them with a semicolon, colon, or conjunction.
+3. **Hook check.** The opening grabs attention and gives context, never a flat inventory of service names.
+4. **Plain-word check.** No writerly flourish chosen for sound over clarity. Would Daniel say it that way to a dev friend?
+5. **Consequence check.** Every "X happened" should have a "because Y" or "which meant Z."
+6. **Takeaway voice.** The last line lands with a concrete principle that adds something, not a restatement of the post.
+7. **Redundancy check.** No section just re-explains what a code block already shows. Fold it or cut it.
+8. **Full artifacts.** If the post is about a script or config, the complete version is included.
+9. **No rhetorical questions.** Zero.
+10. **Voice audit.** "I" for credit and decisions; "we" only as system-voice for what the software does, never to claim solo work as a team's.
+11. **Wince test.** Read it aloud. If a sentence sounds like a polished essay or a LinkedIn post instead of Daniel explaining the work, rewrite it.
