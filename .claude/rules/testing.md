@@ -16,7 +16,7 @@ paths:
 - Jest config: `apps/root/jest.config.ts`, setup: `apps/root/src/test-setup.ts`
 - GSAP plugins mocked in `apps/root/__mocks__/`
 - Coverage threshold: 65% minimum (branches, functions, lines, statements)
-- Shared-ui uses Vitest (`libs/shared/ui/vitest.config.ts`)
+- Shared-ui unit tests also run on Jest (`libs/shared/ui/jest.config.ts`); Vitest (`libs/shared/ui/vitest.config.ts`) runs the Storybook interaction tests in-browser
 
 ## E2E Tests
 

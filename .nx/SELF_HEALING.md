@@ -7,8 +7,8 @@
 
 ## Off-Limits Areas
 
-- `/src/generated/` - auto-generated, do not modify
-- `/legacy/` - requires manual review
+- `apps/root/src/data/generated/` - auto-generated content registry, do not modify (regenerate via the content scripts)
+- `dist/`, `.next/`, `out-tsc/` - build output
 
 ## Fix Preferences
 
@@ -17,4 +17,4 @@
 
 ## Context
 
-See ARCHITECTURE.md for module boundaries.
+See `.claude/docs/architecture.md` for module boundaries.

@@ -40,7 +40,7 @@ Search results for failures: `ctx_search(["error", "failed"])`. If any command f
    - `/` (homepage)
    - `/about`
    - `/blog`
-   - `/audit`
+   - `/projects`
 4. If unexpected console errors appear, note them in the report
 5. Stop the dev server when done
 
