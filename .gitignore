@@ -96,3 +96,7 @@ apps/root/src/data/generated/
 .claude/scratch/
 
 .nx/key/
+
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs
