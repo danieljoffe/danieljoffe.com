@@ -82,6 +82,11 @@ const config: KnipConfig = {
     // -----------------------------------------------------------------
     'libs/shared/ui': {
       entry: [
+        // Published-library public API: consumers import via subpaths
+        // (@danieljoffe/shared-ui/Heading), so the barrels have no in-repo
+        // importer but are the package's real entry points.
+        'src/index.ts',
+        'src/lib/index.tsx',
         // Jest setup file referenced via config, not imports
         'src/test-setup.ts',
       ],
