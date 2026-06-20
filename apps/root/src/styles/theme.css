@@ -408,6 +408,44 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
   @apply text-xs rounded px-1.5 py-0.5;
 }
 
+/* ─── Scroll-reveal (progressive enhancement) ───
+ * Content is fully visible by default. Only where the browser supports
+ * scroll-driven animations AND the user has not requested reduced motion do
+ * sections / grid items rise + fade as they scroll into view. No-JS, older
+ * browsers, and reduced-motion all render everything immediately — content is
+ * never hidden behind an animation that might not run.
+ *
+ * `.reveal`         — animates the element itself (single-block sections).
+ * `.reveal-stagger` — animates each direct child as it enters, so grid items
+ *                     cascade in row by row on scroll.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+
+    .reveal-stagger > * {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 28%;
+    }
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
