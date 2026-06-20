@@ -207,18 +207,6 @@ The theme file includes an `@layer base` block that sets:
 - Scrollbar styling (WebKit)
 - `prefers-reduced-motion` support (disables animations automatically)
 
-### Experimental color schemes
-
-The `styles/` directory also contains three SCSS-based color scheme variants. These are **experimental** and use a different variable convention from the main `theme.css` (e.g., `--accent`, `--background` instead of `--color-brand-*`, `--color-surface`). They are not currently exported in `package.json` and are not intended for consumer use:
-
-| Scheme       | Directory              | Accent color |
-| ------------ | ---------------------- | ------------ |
-| Deep Teal    | `styles/deep-teal/`    | `#0d7377`    |
-| Muted Violet | `styles/muted-violet/` | `#6b5b95`    |
-| Warm Gold    | `styles/warm-gold/`    | `#9a6c18`    |
-
-Each includes a `default.scss` (light) and `dark.scss` file.
-
 ## Component catalog
 
 ### Typography

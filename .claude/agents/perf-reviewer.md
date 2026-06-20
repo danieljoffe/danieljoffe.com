@@ -23,7 +23,7 @@ Review changed files for performance implications in this Next.js 16 + React 19 
 
 ## Project Context
 
-- Lighthouse CI runs on every PR (`yarn test:lighthouse`)
+- Lighthouse CI runs on every PR (`pnpm test:lighthouse`)
 - Performance E2E specs in `apps/root-e2e/src/performance.spec.ts`
 - GSAP with ScrollTrigger is used extensively for animations
 - `next/image` with blurhash placeholders is the standard image pattern

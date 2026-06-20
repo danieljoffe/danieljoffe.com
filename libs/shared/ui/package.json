@@ -1,7 +1,7 @@
 {
   "name": "@danieljoffe/shared-ui",
   "version": "0.3.0",
-  "description": "React component library and design system shared across danieljoffe.com and WyrdFold — Tailwind CSS 4, React 19, server-component-friendly.",
+  "description": "React component library and design system — Tailwind CSS 4, React 19, server-component-friendly.",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -51,8 +51,7 @@
     "tailwindcss",
     "tailwind-css-4",
     "typescript",
-    "headless",
-    "wyrdfold"
+    "headless"
   ],
   "author": "Daniel Joffe",
   "license": "FSL-1.1-MIT",

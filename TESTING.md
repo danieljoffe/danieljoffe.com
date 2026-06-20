@@ -115,7 +115,8 @@ pnpm format
 
 ### Unit Test Coverage
 
-- **Target**: 70% minimum coverage
+- **Target**: 65% minimum coverage (branches, functions, lines, statements)
+- **Runners**: Jest + React Testing Library (`apps/root` and `libs/shared/ui`); Vitest runs the shared-ui Storybook interaction tests
 - **Components**: All React components
 - **Utilities**: Helper functions and constants
 - **Hooks**: Custom React hooks

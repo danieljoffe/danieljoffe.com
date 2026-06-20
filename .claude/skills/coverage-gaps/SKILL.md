@@ -164,7 +164,6 @@ Review whether these user flows have E2E coverage (flag missing ones):
 - Blog listing, search, tag filtering, pagination
 - Project listing and tag filtering
 - Contact form submission (success + validation errors)
-- Audit tool scan flow
 - Mobile navigation (hamburger menu)
 - Theme toggle (dark/light)
 - Keyboard navigation on interactive components

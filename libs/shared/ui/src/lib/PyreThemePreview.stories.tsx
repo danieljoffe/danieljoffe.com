@@ -1,7 +1,7 @@
 /**
  * Pyre theme preview — renders a representative subset of components so
  * the chartreuse + near-black palette can be eyeballed and a11y-checked
- * in Storybook before WyrdFold consumes it.
+ * in Storybook before consuming apps adopt it.
  *
  * The `pyre` theme is registered in `.storybook/preview.ts`
  * (`withThemeByClassName`) and toggles a `.pyre dark` class on the body.

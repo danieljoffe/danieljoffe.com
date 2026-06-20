@@ -2,7 +2,7 @@
 name: visual-audit
 description: Run a visual/UX review of a page on localhost:3000
 disable-model-invocation: true
-argument-hint: '<page path, e.g. /, /about, /audit, /services>'
+argument-hint: '<page path, e.g. /, /about, /projects, /services>'
 ---
 
 # Visual Audit

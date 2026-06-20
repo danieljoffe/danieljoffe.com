@@ -14,7 +14,7 @@ Review changed files for exploitable security vulnerabilities. Report only HIGH-
 - **XSS**: `dangerouslySetInnerHTML` without `isomorphic-dompurify` sanitization
 - **Auth/authz bypasses**: missing or incorrect authentication checks on API routes
 - **Sensitive data exposure**: PII in logs, secrets in responses, credentials in client bundles
-- **SSRF**: URL inputs (especially in audit scan endpoints) without allowlist validation
+- **SSRF**: URL inputs without allowlist validation
 - **Rate limiting**: new public endpoints missing rate limiting
 - **PII masking**: form inputs collecting PII must have `data-sentry-mask`
 - **hCaptcha**: form submissions must validate captcha tokens server-side
@@ -22,10 +22,9 @@ Review changed files for exploitable security vulnerabilities. Report only HIGH-
 
 ## Project-Specific Patterns
 
-- **Supabase**: browser client must only use anon key, never service role key
 - **Resend**: email sending must validate recipient addresses and sanitize content
 - **Bot detection** (`botid`): must not be the sole security layer
-- **Public attack surface**: contact form and lead capture endpoints
+- **Public attack surface**: the contact form endpoint (`/api/email/contact`)
 - **CSP**: defined in `next.config.mjs` — changes must be reviewed for weakening
 
 ## Review Protocol
