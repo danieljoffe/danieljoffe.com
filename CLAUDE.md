@@ -59,33 +59,17 @@ Loaded contextually via `.claude/rules/` (path-scoped — only when editing matc
 
 ## Skills & Agents
 
-The workspace includes Claude Code skills and agents for common workflows:
+Skills (`.claude/skills/`, invoke via `/name`) and review agents (`.claude/agents/`)
+are self-describing — run `ls .claude/skills` / `ls .claude/agents` for the current
+set (each carries its own description). Highlights:
 
-- **Skills** (`.claude/skills/`): Task-specific workflows invocable via `/skill-name`
-  - `/verify-root` — verify root Next.js app (build, browser console check, full POM suite)
-  - `/verify-sharedui` — verify shared-ui library (build, tests, Storybook, consumer smoke test)
-  - `/gen-test` — generate unit tests following project conventions
-  - `/coverage-gaps` — scan for missing tests and stories
-  - `/pr-review` — orchestrate all reviewers in parallel
-  - `/write-content` — draft MDX blog posts or case studies
-  - `/security-review` — security-focused code review
-  - `/storybook-check` — build and verify Storybook stories
-  - `/batch-commit` — stage and commit changes logically
-  - `/deploy-preview` — push branch and get Vercel preview URL
-  - `/release-notes` — generate changelog from develop vs main
-  - `/monitor-ci` — monitor Nx Cloud CI pipeline
-  - `/nx-workspace` — explore workspace projects, targets, dependencies
-  - `/nx-generate` — scaffold projects and features via Nx generators
+- **Verify / quality**: `/verify-root`, `/verify-sharedui`, `/storybook-check`, `/coverage-gaps`, `/gen-test`
+- **Review**: `/pr-review` (orchestrates the `*-reviewer` agents in parallel), `/security-review`
+- **Content**: `/write-content`, `/review-content-style`
+- **Workflow**: `/batch-commit`, `/deploy-preview`, `/release-notes`, `/monitor-ci`
 
-- **Agents** (`.claude/agents/`): Focused review checklists spawned by `/pr-review`
-  - `a11y-reviewer` — WCAG 2.1 AA compliance
-  - `content-reviewer` — MDX metadata, SEO, structured data
-  - `perf-reviewer` — performance and bundle size
-  - `nx-reviewer` — module boundaries and workspace structure
-  - `e2e-reviewer` — Playwright test coverage
-
-- **Rules** (`.claude/rules/`): Path-scoped instructions loaded only when editing matching files
-- **Docs** (`.claude/docs/`): Reference documentation (always-loaded via CLAUDE.md, or contextual via rules)
+- **Rules** (`.claude/rules/`): path-scoped instructions, loaded only when editing matching files.
+- **Docs** (`.claude/docs/`): reference — a couple are `@`-imported above; most are read on demand.
 
 ## Session Persistence (context-mode plugin)
 
@@ -137,6 +121,4 @@ When summarizing this conversation, always preserve:
 
 ## General Guidelines for working with NextJS
 
-**When starting work on a Next.js project, ALWAYS call the `init` tool from
-next-devtools-mcp FIRST to set up proper context and establish documentation
-requirements. Do this automatically without being asked.**
+- For **non-trivial** Next.js framework work (App Router internals, caching/rendering strategies, middleware, version upgrades), the `next-devtools-mcp` `init` tool and `nextjs_docs` are useful to ground in current APIs. Reach for them when the task warrants it — not for routine content/component edits.
