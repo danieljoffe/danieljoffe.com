@@ -12,7 +12,6 @@ const SENTRY_URL = 'https://www.sentry.io';
 const SENTRY_INGEST_URL = 'https://*.ingest.us.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
-const SUPABASE_STORAGE_URL = 'https://grwmzluuqyczatkxorfa.supabase.co';
 export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
 export const CALENDLY_EMBED_URL = 'https://calendly.com';
 
@@ -25,7 +24,6 @@ export const EMAIL_ADDRESS = 'hello@danieljoffe.com';
 export const LINKEDIN_PROFILE_URL = `${LINKEDIN_URL}/in/daniel-joffe-work`;
 export const GITHUB_PROFILE_URL = `${GITHUB_URL}/danieljoffe`;
 export const RESUME_URL = `${GOOGLE_DOCS_URL}/document/d/1v4IB1-XA_-h-wq5HLgzH8_dFzMbOm-PaqOwom8k5_i4/export?format=pdf&portrait=true`;
-export const CALENDLY_URL = 'https://calendly.com/hello-danieljoffe/30min';
 export const STORYBOOK_URL = 'https://ui.danieljoffe.com';
 export const WYRDFOLD_URL = 'https://wyrdfold.com';
 export const NPM_SHARED_UI_URL =
@@ -39,7 +37,6 @@ export const allowedImageOrigins = [
   EXAMPLE_URL,
   GOOGLE_ANALYTICS_URL,
   GOOGLE_TAG_MANAGER_URL,
-  SUPABASE_STORAGE_URL,
 ];
 
 export const allowedOrigins = [

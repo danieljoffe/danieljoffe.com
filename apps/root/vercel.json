@@ -11,11 +11,5 @@
         }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/email/sequence",
-      "schedule": "0 17 * * *"
-    }
   ]
 }
