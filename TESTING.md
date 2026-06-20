@@ -115,7 +115,8 @@ pnpm format
 
 ### Unit Test Coverage
 
-- **Target**: 70% minimum coverage
+- **Target**: 65% minimum coverage (branches, functions, lines, statements)
+- **Runners**: Jest for `apps/root`; Vitest for `libs/shared/ui`
 - **Components**: All React components
 - **Utilities**: Helper functions and constants
 - **Hooks**: Custom React hooks

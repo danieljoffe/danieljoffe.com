@@ -88,14 +88,14 @@ The LOC threshold catches the 5-file / 2000-line refactor that slips past a pure
 
 Each reviewer gets ONLY its relevant files from the manifest:
 
-| Reviewer     | Receives categories                                                         | File filter            |
-| ------------ | --------------------------------------------------------------------------- | ---------------------- |
-| **a11y**     | `app-code`, `lib-code`                                                      | `.tsx` files only      |
-| **perf**     | `app-code`, `lib-code`, `api-code`                                          | `.ts` and `.tsx` files |
-| **content**  | `content-mdx`                                                               | all                    |
-| **nx**       | `config`                                                                    | all                    |
-| **e2e**      | `e2e-test`                                                                  | all                    |
-| **security** | `api-code`, plus `app-code`/`lib-code` touching auth, env, Supabase, Resend | `.ts` and `.tsx` files |
+| Reviewer     | Receives categories                                               | File filter            |
+| ------------ | ----------------------------------------------------------------- | ---------------------- |
+| **a11y**     | `app-code`, `lib-code`                                            | `.tsx` files only      |
+| **perf**     | `app-code`, `lib-code`, `api-code`                                | `.ts` and `.tsx` files |
+| **content**  | `content-mdx`                                                     | all                    |
+| **nx**       | `config`                                                          | all                    |
+| **e2e**      | `e2e-test`                                                        | all                    |
+| **security** | `api-code`, plus `app-code`/`lib-code` touching auth, env, Resend | `.ts` and `.tsx` files |
 
 **Routing rules:**
 

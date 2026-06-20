@@ -1,10 +1,10 @@
 # Daniel Joffe - Portfolio Website
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.1.1-61DAFB?logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1.13-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
-[![Nx](https://img.shields.io/badge/Nx-21.4.1-143055?logo=nx)](https://nx.dev/)
+[![React](https://img.shields.io/badge/React-19.2.4-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.2.2-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+[![Nx](https://img.shields.io/badge/Nx-23.0.0-143055?logo=nx)](https://nx.dev/)
 
 > **A modern, performant portfolio website showcasing 8+ years of full-stack engineering expertise**
 
@@ -34,20 +34,20 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 ### Frontend
 
 - **Framework**: Next.js 16 (App Router)
-- **UI Library**: React 19.1.1
-- **Language**: TypeScript 5.9.2
-- **Styling**: Tailwind CSS 4.1.13
+- **UI Library**: React 19.2.4
+- **Language**: TypeScript 5.9.3
+- **Styling**: Tailwind CSS 4.2.2
 - **Animations**: GSAP 3.13.0
 - **Icons**: Lucide React
 
 ### Development & Build Tools
 
-- **Monorepo**: Nx 21.4.1
+- **Monorepo**: Nx 23.0.0
 - **Package Manager**: pnpm
-- **Linting**: ESLint 9 with custom configuration
-- **Testing**: Jest + React Testing Library
+- **Linting**: ESLint 10 with custom configuration
+- **Testing**: Jest + React Testing Library (Vitest for shared-ui)
 - **E2E Testing**: Playwright
-- **Component Development**: Storybook 9.1.4
+- **Component Development**: Storybook 10.4.6
 
 ### Production & Monitoring
 
@@ -67,24 +67,21 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 │   │   └── src/
 │   │       ├── app/       # Pages, API routes, and page-level components
 │   │       ├── components/
-│   │       │   └── kit/   # Next.js-specific shared components (Spinner, Pagination, etc.)
-│   │       ├── hooks/     # Custom React hooks (useTableSort, useAdminTableFetch, etc.)
+│   │       │   └── kit/   # Next.js-specific shared components (PostCard, CoverImage, TableOfContents, etc.)
+│   │       ├── hooks/     # Custom React hooks (useTableSort, etc.)
 │   │       ├── lib/       # Utilities (cn, formStyles, badgeStyles, layoutStyles, etc.)
 │   │       ├── state/     # Global state management (Toast, etc.)
 │   │       ├── types/     # TypeScript type definitions
 │   │       └── utils/     # Helper functions and constants
-│   ├── root-e2e/          # Playwright E2E tests
-│   ├── audit-api/         # FastAPI Lighthouse/axe audit service
-│   └── job-api/           # FastAPI job posting CMS
+│   └── root-e2e/          # Playwright E2E tests
 ├── libs/
 │   └── shared/
-│       ├── ui/            # Shared React component library (34 components)
-│       └── audit/         # Shared audit types and utilities
+│       └── ui/            # Shared React component library (@danieljoffe/shared-ui)
 ```
 
 ## 📚 Documentation
 
-- **API_DOCUMENTATION.md** - Complete API reference with examples in each api route
+- **[Contact API](./apps/root/src/app/api/email/contact/API_DOCUMENTATION.md)** - Contact form API reference
 - **[Testing Guide](./TESTING.md)** - Comprehensive testing and QA documentation
 - **Component Documentation** - Available via Storybook (`pnpm storybook`)
 
@@ -94,7 +91,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24+
 - pnpm package manager
 - Git
 
@@ -173,7 +170,7 @@ pnpm nx graph
 
 The project includes comprehensive testing setup:
 
-- **Unit Tests**: Jest + React Testing Library
+- **Unit Tests**: Jest + React Testing Library (Vitest for the shared-ui library)
 - **E2E Tests**: Playwright with multiple browser support
 - **Component Testing**: Storybook for visual component development
 - **Linting**: ESLint with custom rules for code quality
@@ -216,11 +213,12 @@ The application is optimized for deployment on Vercel:
 
 ### Environment Variables
 
-Key environment variables needed for production:
+Key environment variables needed for production (see `apps/root/.env.example` for the full list):
 
 ```bash
 NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=your_ga_id
 SENTRY_DSN=your_sentry_dsn
+RESEND_API_KEY=your_resend_api_key
 HCAPTCHA_SITE_KEY=your_hcaptcha_site_key
 HCAPTCHA_SECRET_KEY=your_hcaptcha_secret_key
 ```

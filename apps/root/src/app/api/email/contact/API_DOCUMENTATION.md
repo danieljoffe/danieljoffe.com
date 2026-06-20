@@ -54,7 +54,7 @@ Referer: https://danieljoffe.com/about (required)
 | ---------- | ------ | -------- | -------------------------------- | -------------------------- |
 | `name`     | string | Yes      | 5-100 chars, letters/spaces only | Full name of sender        |
 | `email`    | string | Yes      | 3-254 chars, valid email format  | Email address for reply    |
-| `message`  | string | Yes      | 30-5000 chars, no URLs           | Message content            |
+| `message`  | string | Yes      | 30-1000 chars, no URLs           | Message content            |
 | `hcaptcha` | string | Yes      | Valid hCaptcha token             | CAPTCHA verification token |
 
 #### Validation Rules
@@ -183,9 +183,14 @@ The API requires the following environment variables:
 # Application environment
 NODE_ENV=production
 
-# Public environment variables
-NEXT_PUBLIC_HCAPTCHA_SITE_ID=your_hcaptcha_site_key
+# Email delivery (Resend) — required to send contact emails
+RESEND_API_KEY=your_resend_api_key
+
+# hCaptcha public site ID
+NEXT_PUBLIC_HCAPTCHA_SITE_ID=your_hcaptcha_site_id
 ```
+
+> See `apps/root/.env.example` for the complete list of supported variables.
 
 ### Development Setup
 
@@ -219,10 +224,10 @@ Run tests:
 
 ```bash
 # Unit tests
-yarn test
+pnpm nx test root
 
 # E2E tests including API
-yarn test:e2e
+pnpm nx e2e root-e2e
 ```
 
 ### Rate Limit Testing
@@ -267,4 +272,4 @@ For API-related questions or issues:
 
 ---
 
-> _Last updated: March 2026_
+> _Last updated: June 2026_

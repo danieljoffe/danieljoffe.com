@@ -7,7 +7,7 @@ user-invocable: true
 
 # Audit and Fix
 
-Orchestrates the post-audit workflow that recurs across `/security-review`, `/nx-audit`, `/nextjs-audit`, `/coverage-gaps --quality`, and `/supabase:supabase-postgres-best-practices`. Each of those skills produces findings; the boilerplate that follows is identical:
+Orchestrates the post-audit workflow that recurs across `/security-review`, `/nx-audit`, `/nextjs-audit`, and `/coverage-gaps --quality`. Each of those skills produces findings; the boilerplate that follows is identical:
 
 1. Branch off the canonical deploy target (`develop`)
 2. Apply HIGH-severity fixes (and obvious mechanical MEDIUMs) inline via Edit
@@ -19,7 +19,7 @@ This skill replaces ~6 manual commands per audit cycle.
 
 ## Arguments
 
-- `/audit-and-fix <audit-name>` — run the audit and complete the loop. Audit name is the slash-command minus the leading `/` (e.g. `security-review`, `nx-audit`, `nextjs-audit`, `coverage-gaps`, `supabase:supabase-postgres-best-practices`).
+- `/audit-and-fix <audit-name>` — run the audit and complete the loop. Audit name is the slash-command minus the leading `/` (e.g. `security-review`, `nx-audit`, `nextjs-audit`, `coverage-gaps`).
 - `/audit-and-fix <audit-name> --base <branch>` — override the PR base (default: `develop`).
 - `/audit-and-fix <audit-name> --branch <name>` — override the auto-derived branch name (default: `chore/<audit-name-slug>`).
 - `/audit-and-fix <audit-name> --no-pr` — stop after push, don't open the PR.
@@ -72,18 +72,9 @@ Skip MEDIUM/LOW unless the audit explicitly flagged them as `mechanical safe fix
 Run the relevant targets based on what changed:
 
 ```bash
-# JS/TS edits
 pnpm tsc --noEmit
 pnpm nx test <project>             # for the touched project(s)
 pnpm nx lint <project>
-
-# Python edits
-cd apps/<project>
-uv run --package <project> ruff check .
-uv run --package <project> mypy app/
-uv run --package <project> pytest -q
-
-# Supabase edits — no local apply; the Supabase Preview check on PR catches issues
 ```
 
 Stop and report if anything fails — do **not** push a broken branch.
@@ -152,8 +143,8 @@ Print:
 → applies HIGH fixes
 → opens PR
 
-/audit-and-fix supabase:supabase-postgres-best-practices --branch chore/db-rls-perf
-→ same loop, custom branch name (good for narrowing scope when only one rule applies)
+/audit-and-fix nextjs-audit --branch chore/next16-cleanup
+→ same loop, custom branch name (good for narrowing scope when only one audit applies)
 
 /audit-and-fix coverage-gaps --quality --no-pr
 → runs /coverage-gaps --quality
