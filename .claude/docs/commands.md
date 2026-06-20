@@ -50,11 +50,3 @@ pnpm nx storybook root             # Start Storybook for root app
 pnpm nx storybook @danieljoffe/shared-ui  # Start Storybook for UI library
 pnpm chromatic:ui                  # Push shared-ui Storybook to Chromatic
 ```
-
-## Database (Supabase)
-
-```bash
-pnpm db:push                       # Push migrations to linked Supabase project
-pnpm db:reset                      # Reset database to clean state
-pnpm db:gen-types                  # Regenerate TypeScript types from schema
-```
