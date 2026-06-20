@@ -28,8 +28,10 @@ playwright-report-json
 .claude
 .git
 
-# Other apps in the monorepo — deployed separately; upload-only ballast.
-apps/root
+# Other apps/projects in the monorepo not part of this build — upload-only
+# ballast. NOTE: do NOT list apps/root here — it is the danieljoffe-com deploy
+# target, and CLI deploys (`vercel --prod`) honor .vercelignore (git deploys
+# do not). Excluding it makes the production build fail (missing app source).
 apps/root-e2e
 apps/audit-api
 apps/audit-scan-service
