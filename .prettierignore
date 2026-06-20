@@ -157,3 +157,5 @@ pnpm-lock.yaml
 # Generated files
 *.generated.*
 *next-env.d.ts
+
+.nx/self-healing
