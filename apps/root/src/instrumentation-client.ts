@@ -91,8 +91,5 @@ export const onRouterTransitionStart = sentryEnabled
   : undefined;
 
 initBotId({
-  protect: [
-    { path: '/api/email/contact', method: 'POST' },
-    { path: '/api/leads/capture', method: 'POST' },
-  ],
+  protect: [{ path: '/api/email/contact', method: 'POST' }],
 });

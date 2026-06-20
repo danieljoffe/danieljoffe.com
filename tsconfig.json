@@ -8,9 +8,6 @@
     },
     {
       "path": "./libs/shared/ui"
-    },
-    {
-      "path": "./libs/shared/audit"
     }
   ],
   "ts-node": {

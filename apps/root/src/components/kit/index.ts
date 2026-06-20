@@ -7,7 +7,6 @@ export { BuiltProjectCard } from './BuiltProjectCard';
 export type { BuiltProject } from './BuiltProjectCard';
 export { CompanyLogo } from './CompanyLogo';
 export { ListPagination } from './ListPagination';
-export { Pagination } from './Pagination';
 export { PostPagination } from './PostPagination';
 export { ScrollToTop } from './ScrollToTop';
 export { TableOfContents } from './TableOfContents';

@@ -1,6 +1,8 @@
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/nextjs-vite';
+
+const storybookDir = dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
   stories: ['../**/*.@(stories.@(js|jsx|ts|tsx|mdx))'],
@@ -12,6 +14,16 @@ const config: StorybookConfig = {
   staticDirs: ['../public'],
   docs: {
     defaultName: 'autodocs',
+  },
+  // Vite 8 (Rolldown) no longer resolves the Next.js "@/" path alias on its
+  // own, so register it explicitly for the Storybook build/preview.
+  viteFinal: async viteConfig => {
+    const { mergeConfig } = await import('vite');
+    return mergeConfig(viteConfig, {
+      resolve: {
+        alias: { '@': join(storybookDir, '../src') },
+      },
+    });
   },
 };
 

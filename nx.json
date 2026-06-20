@@ -85,7 +85,6 @@
       "plugin": "@nx/vite/plugin",
       "options": {
         "buildTargetName": "build",
-        "testTargetName": "test-storybook",
         "serveTargetName": "serve",
         "devTargetName": "dev",
         "previewTargetName": "preview",
@@ -93,6 +92,12 @@
         "typecheckTargetName": "typecheck",
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testTargetName": "test-storybook"
       }
     },
     {
@@ -113,7 +118,9 @@
       "inputs": [
         "default",
         "^production",
-        { "externalDependencies": ["jest"] }
+        {
+          "externalDependencies": ["jest"]
+        }
       ],
       "dependsOn": ["^build"]
     },
