@@ -66,7 +66,7 @@ set (each carries its own description). Highlights:
 - **Verify / quality**: `/verify-root`, `/verify-sharedui`, `/storybook-check`, `/coverage-gaps`, `/gen-test`
 - **Review**: `/pr-review` (orchestrates the `*-reviewer` agents in parallel), `/security-review`
 - **Content**: `/write-content`, `/review-content-style`
-- **Workflow**: `/batch-commit`, `/deploy-preview`, `/release-notes`, `/monitor-ci`
+- **Workflow**: `/batch-commit`, `/deploy-preview`, `/release-notes` (CI monitoring: `/nx:monitor-ci` from the nx plugin)
 
 - **Rules** (`.claude/rules/`): path-scoped instructions, loaded only when editing matching files.
 - **Docs** (`.claude/docs/`): reference — a couple are `@`-imported above; most are read on demand.
