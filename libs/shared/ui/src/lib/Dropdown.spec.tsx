@@ -97,12 +97,16 @@ describe('Dropdown', () => {
       <Dropdown
         trigger={<span>Menu</span>}
         items={[
-          { label: 'Wyrdfold', href: 'https://wyrdfold.com', external: true },
+          {
+            label: 'Documentation',
+            href: 'https://example.com',
+            external: true,
+          },
         ]}
       />
     );
     fireEvent.click(screen.getByText('Menu'));
-    const link = screen.getByRole('menuitem', { name: 'Wyrdfold' });
+    const link = screen.getByRole('menuitem', { name: 'Documentation' });
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });

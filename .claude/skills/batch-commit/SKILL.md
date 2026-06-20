@@ -57,7 +57,7 @@ Review all pending changes, group them into logical commits, and push each one.
      - Format: `type(scope): short description` or `type: short description`
      - Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `style`, `perf`, `ci`
      - Body (if needed) should explain "why", not "what"
-     - End with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+     - End with `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
    - Create the commit using a HEREDOC for the message.
    - `git push` after each commit.
 

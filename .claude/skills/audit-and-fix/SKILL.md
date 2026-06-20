@@ -85,7 +85,7 @@ Commit body should:
 
 - Lead with a one-line summary that names the audit (e.g. `sec(audit): close 2 HIGH findings from /security-review`)
 - List each finding as a bullet with `file:line` and a 1-sentence fix description
-- End with `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`
+- End with `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
 
 ```bash
 git push -u origin "${BRANCH}"

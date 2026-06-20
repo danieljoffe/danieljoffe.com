@@ -45,7 +45,7 @@ This is the personal portfolio website of Daniel Joffe, a Senior Software Engine
 - **Monorepo**: Nx 23.0.0
 - **Package Manager**: pnpm
 - **Linting**: ESLint 10 with custom configuration
-- **Testing**: Jest + React Testing Library (Vitest for shared-ui)
+- **Testing**: Jest + React Testing Library; Vitest for Storybook interaction tests
 - **E2E Testing**: Playwright
 - **Component Development**: Storybook 10.4.6
 
