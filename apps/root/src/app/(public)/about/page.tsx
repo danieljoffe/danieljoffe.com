@@ -196,9 +196,7 @@ export default function About() {
                 >
                   <CompanyLogo src={logo} alt={company} size='lg' />
                   <div className='flex-1 min-w-0'>
-                    <Heading variant='cardTitle' as='p'>
-                      {company}
-                    </Heading>
+                    <Heading variant='cardTitle'>{company}</Heading>
                     <Text variant='detail' className='mt-0.5'>
                       {role}
                     </Text>
@@ -222,7 +220,7 @@ export default function About() {
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {expertiseCategories.map(category => (
             <div key={category.label} className={cn(cardBase, 'p-4')}>
-              <Heading variant='cardTitle' as='p' className='mb-1'>
+              <Heading variant='cardTitle' className='mb-1'>
                 {category.label}
               </Heading>
               <Text variant='body' className='mb-3'>
@@ -273,7 +271,7 @@ export default function About() {
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
           {values.map(value => (
             <div key={value.title} className={cn(cardBase, 'p-4')}>
-              <Heading variant='cardTitle' as='p' className='mb-2'>
+              <Heading variant='cardTitle' className='mb-2'>
                 {value.title}
               </Heading>
               <Text variant='body'>{value.description}</Text>

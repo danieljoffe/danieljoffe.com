@@ -75,9 +75,7 @@ export default function ExperiencePage() {
                     <div className='flex-1 min-w-0'>
                       <div className='flex items-start justify-between gap-2'>
                         <div>
-                          <Heading variant='cardTitle' as='p'>
-                            {exp.title}
-                          </Heading>
+                          <Heading variant='cardTitle'>{exp.title}</Heading>
                           {exp.role && (
                             <p className='text-xs text-brand-500 font-medium mt-0.5'>
                               {exp.role}

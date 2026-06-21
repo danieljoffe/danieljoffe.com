@@ -30,7 +30,6 @@ export function BuiltProjectCard({ project }: { project: BuiltProject }) {
           <div className='flex items-start justify-between gap-2'>
             <Heading
               variant='cardTitle'
-              as='p'
               className='line-clamp-2 min-h-[2.5rem]'
             >
               {project.title}
