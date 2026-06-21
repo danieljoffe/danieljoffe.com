@@ -16,6 +16,12 @@ export interface NavLink {
 
 export interface BreadCrumbsProps {
   items: NavLink[];
+  /**
+   * Detail pages only: when set, clicking a parent crumb morphs the detail
+   * hero into the matching list card via a View Transition. The value is the
+   * shared `view-transition-name`.
+   */
+  coverTransitionName?: string | undefined;
 }
 
 export interface SlugPageProps {
