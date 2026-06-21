@@ -27,87 +27,21 @@ export const metadata = {
   featured: true,
 };
 
-## Case Studies: Daniel Joffe Portfolio
+I cut FightCamp's mobile load time from 10 seconds to 2 and dropped the mobile bounce rate by 39%, recovering more than half the visitors who used to leave before the page finished rendering. The site's growth after the pandemic had outpaced its web infrastructure: mobile was over 70% of traffic, those users sat through 10-plus-second loads, Lighthouse scores were stuck in the 30s and 40s, and the content team filed around ten engineering requests a week just to update marketing pages. I owned the fixes end to end, from how images and video were delivered to the build pipeline and the self-serve CMS that got marketing off the engineering backlog.
 
-## Case Study 1: FightCamp — Performance Optimization
+## Where the time was going
 
-### Overview
+I found the problems on an R&D Friday and got the go-ahead to dig in. Lighthouse, Chrome DevTools, and a bundle analyzer kept pointing at the same culprits: HD images served at full size no matter the viewport, videos auto-downloading 500-800MB on page load, duplicate libraries bloating a 650-800KB bundle, no lazy loading anywhere, and missing dimensions that left layouts shifting as content arrived.
 
-**Company:** FightCamp ("Peloton of Boxing")
+## The fixes
 
-**Role:** Full-Stack Engineer
+Images and video were the bulk of the payload, so they went first. I built one centralized image component backed by Storyblok with fallback providers, wired up viewport-dependent `srcset` so a phone never downloaded a desktop image, and added lazy loading with explicit dimensions so layouts stopped shifting. For video I wrote a lazy-loading component on the Intersection Observer API that kept off-screen videos from playing or downloading, and served multiple S3-hosted quality levels that cut payloads from 500-800MB to under 300MB on MP4 and 150MB on WebM.
 
-**Duration:** November 2021 - January 2023
+The bundle came next. I tracked down and removed duplicate libraries, turned on webpack tree-shaking and dynamic imports, and tuned the Nuxt.js production build, which brought it from 650-800KB down to around 300KB.
 
-**Industry:** Connected Fitness / Consumer Tech
+The last piece fixed the ten-requests-a-week problem at its source. I pulled the shared patterns out of seven marketing pages, extended the UI component library with 10-plus CMS-connected components documented in Storybook and backed by Jest, and integrated Storyblok so marketing could publish without an engineer in the loop. On top of it I built configurable A/B-test components wired to Google Optimize, so marketing ran their own quarterly copy, image, video, and offer tests.
 
-### Business Impact
-
-- Reduced mobile load times from 10s to 2s, recovering 53% of previously-bouncing mobile visitors
-- Cut bounce rates by 39%, directly increasing user engagement and conversion opportunities
-- Improved Lighthouse scores from 32-43 to ~80, boosting search visibility
-- Reduced JavaScript bundle by 62% (800KB to 300KB), lowering hosting costs
-
-### The Challenge
-
-FightCamp was growing fast after the pandemic, but the web infrastructure couldn't keep up. Mobile users were over 70% of the traffic, and they were sitting through 10-plus-second load times. Bounce rates were high, marketing couldn't iterate quickly, and the content team had to go through engineering for every page update.
-
-#### Key Problems:
-
-- Mobile First Contentful Paint: 8-12 seconds
-- Lighthouse scores: 32-43 (failing)
-- Mobile bounce rate: 60-75%
-- Bundle size: 650-800KB
-- Videos downloading 500-800MB on page load
-- Content team submitting ~10 engineering requests per week
-
-### My Approach
-
-#### First: Performance Audit
-
-I stumbled onto the performance issues during an R&D Friday and got the go-ahead to dig in. With Lighthouse, Chrome DevTools, and bundle analyzers, I tracked down the root causes:
-
-- HD images served at full size regardless of viewport
-- Videos auto-downloading on page load, 500-800MB each
-- Duplicate libraries bloating the JavaScript bundle
-- No lazy loading anywhere
-- Missing HTML attributes that were causing layout shifts
-
-#### Second: Image Optimization
-
-- Wired up viewport-dependent `srcset` so images matched the device
-- Built one centralized image component backed by Storyblok plus fallback providers
-- Added lazy loading with proper dimensions so layouts stopped shifting
-- Served quality levels appropriate to the device
-
-#### Third: Video Optimization
-
-- Built a custom lazy-loading video component on the Intersection Observer API
-- Stopped off-screen videos from auto-playing
-- Created multiple AWS S3 versions at different quality levels
-- Cut video payloads from 500-800MB down to \<300MB (MP4) / \<150MB (WebM)
-
-#### Fourth: Bundle Optimization
-
-- Hunted down and removed duplicate libraries through bundle analysis
-- Turned on webpack tree-shaking and dynamic imports
-- Tuned the Nuxt.js builds for production
-- Cleaned up the task chaining in the build process
-
-#### Fifth: CMS Migration
-
-- Pulled the common patterns out of 7 marketing pages
-- Extended the UI component library with 10+ CMS-connected components
-- Integrated Storyblok CMS with a composable component architecture
-- Documented all of it in Storybook, backed by Jest tests
-
-#### Sixth: A/B Testing Infrastructure
-
-- Built configurable test components hooked into Google Optimize
-- Let Marketing run their quarterly tests without engineering in the loop
-- Supported copy, video, image, and offer variations
-
-### The Results
+## The results
 
 <MetricsDashboard
   metrics={[
@@ -177,12 +111,6 @@ I stumbled onto the performance issues during an R&D Friday and got the go-ahead
   ]}
 />
 
-### Key Takeaways
+## What I took from it
 
-- **Performance is a business metric.** That 39% drop in bounce rate fed straight into user acquisition during a critical growth phase.
-- **Self-initiated improvements matter.** This started as an R&D Friday discovery, not a ticket somebody handed me.
-- **Building tooling for other teams multiplies your impact.** The CMS migration freed up engineering capacity and sped marketing up at the same time.
-
-### Technologies Used
-
-Vue.js, Nuxt.js, TypeScript, Webpack, Storybook, Jest, Storyblok CMS, Google Optimize, Google Analytics, AWS S3, Intersection Observer API, Lighthouse, Chrome DevTools
+Performance turned out to be a business metric: that 39% drop in bounce fed straight into acquisition during a critical growth phase. And the highest-leverage work wasn't the load-time tuning at all; it was the CMS that took marketing off the engineering backlog and sped both teams up at once.
