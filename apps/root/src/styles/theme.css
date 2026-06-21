@@ -408,6 +408,38 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
   @apply text-xs rounded px-1.5 py-0.5;
 }
 
+/* ─── Scroll-reveal (progressive enhancement) ───
+ * Content is fully visible by default. The hidden/animated state only applies
+ * once JS adds `.reveal-ready` to <html> (see the inline no-flash script in
+ * layout.tsx) AND the user has not requested reduced motion. So no-JS, JS
+ * failures, and reduced-motion all render everything immediately — content is
+ * never trapped behind a transition that might not run.
+ *
+ * An IntersectionObserver (ScrollReveal.tsx) adds `.is-visible` as elements
+ * scroll into view, which drives the transition. Works in every modern
+ * browser (Chrome, Safari, Firefox) rather than relying on scroll-driven CSS.
+ *
+ * `.reveal`         — fades/rises the element itself (single-block sections).
+ * `.reveal-stagger` — fades/rises each direct child; the observer applies an
+ *                     incremental delay so grid items cascade in.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready .reveal,
+  .reveal-ready .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-ready .reveal.is-visible,
+  .reveal-ready .reveal-stagger > *.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

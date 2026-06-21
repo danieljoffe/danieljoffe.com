@@ -31,6 +31,7 @@ import { CompanyLogo, PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
+import { ScrollReveal } from '@/components/ScrollReveal';
 import HeroActions from '../home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
@@ -47,6 +48,7 @@ const featuredProjects = getContentByType('project')
 export default function Index() {
   return (
     <PageLayout>
+      <ScrollReveal />
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
@@ -78,7 +80,7 @@ export default function Index() {
           card with a live-status indicator signals momentum without
           maintenance cost.
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' className='reveal'>
         <SectionLabel
           icon={<Sparkles className='h-3.5 w-3.5' />}
           label='Currently building'
@@ -140,7 +142,7 @@ export default function Index() {
           icon={<Zap className='h-3.5 w-3.5' />}
           label='Achievements'
         />
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 reveal-stagger'>
           {offerings.achievements.map((achievement, i) => (
             <div key={i} className={cn(cardBase, 'p-4')}>
               <IconText
@@ -172,7 +174,7 @@ export default function Index() {
             I&apos;ve worked with these companies to build frontends that are
             fast, accessible, and genuinely good to use.
           </Text>
-          <ul className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6'>
+          <ul className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 reveal-stagger'>
             {companies.map(company => (
               <li
                 key={company.slug}
@@ -201,7 +203,7 @@ export default function Index() {
           icon={<Layers className='h-3.5 w-3.5' />}
           label='Featured Projects'
         />
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 reveal-stagger'>
           {featuredProjects.map((project, i) => (
             <PostCard key={project.slug} post={project} priority={i < 3} />
           ))}
@@ -227,7 +229,7 @@ export default function Index() {
           icon={<Heart className='h-3.5 w-3.5' />}
           label='How I Think'
         />
-        <div className='grid gap-4 sm:grid-cols-2'>
+        <div className='grid gap-4 sm:grid-cols-2 reveal-stagger'>
           {offerings.methodology.map((methodology, i) => (
             <div
               key={i}
@@ -254,7 +256,7 @@ export default function Index() {
       {/* ══════════════════════════════════
           CTA / CONTACT
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' className='reveal'>
         <CTACard
           heading='Senior full-stack engineering, frontend included.'
           description={

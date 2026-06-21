@@ -54,6 +54,15 @@ export default async function RootLayout({ children }: WithChildren) {
           'focus-visible:outline-offset-2 relative',
         ].join(' ')}
       >
+        {/* No-flash reveal trigger: arms the scroll-reveal hidden state before
+            first paint, only when JS is on and motion is allowed. Without this
+            (no-JS / reduced-motion) content renders immediately and unhidden. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('reveal-ready')}}catch(e){}",
+          }}
+        />
         <a
           href='#main-content'
           className={[

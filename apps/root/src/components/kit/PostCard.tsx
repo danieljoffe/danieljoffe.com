@@ -36,7 +36,7 @@ export function PostCard({
     <Link
       href={post.link.href}
       onClick={handleClick}
-      className='group relative overflow-hidden rounded-xl border border-border bg-surface-secondary transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5'
+      className='group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface-secondary transition-all duration-200 hover:border-brand-500/40 hover:shadow-lg/5'
     >
       <div className='relative'>
         <CoverImage
@@ -51,21 +51,27 @@ export function PostCard({
         )}
       </div>
 
-      <div className='p-4 space-y-2'>
-        <div className='flex items-start justify-between gap-2'>
-          <Heading variant='cardTitle' as='p'>
-            {post.title}
-          </Heading>
-          <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
+      <div className='flex flex-1 flex-col p-4'>
+        <div className='space-y-2'>
+          <div className='flex items-start justify-between gap-2'>
+            <Heading
+              variant='cardTitle'
+              as='p'
+              className='line-clamp-2 min-h-[2.5rem]'
+            >
+              {post.title}
+            </Heading>
+            <ArrowUpRight className='h-4 w-4 text-text-tertiary shrink-0 opacity-0 group-hover:opacity-100 transition-opacity' />
+          </div>
+          {post.role && <Badge variant='brand'>{post.role}</Badge>}
+          <Text variant='cardDescription' className='line-clamp-2'>
+            {post.description}
+          </Text>
         </div>
-        {post.role && <Badge variant='brand'>{post.role}</Badge>}
-        <Text variant='cardDescription' className='line-clamp-2'>
-          {post.description}
-        </Text>
         {post.readingTime && (
           <IconText
             icon={<Clock className='h-3 w-3 text-text-tertiary' />}
-            className='gap-x-1.5'
+            className='mt-auto pt-3 gap-x-1.5'
           >
             <Text variant='meta' as='span'>
               {post.readingTime} min read
