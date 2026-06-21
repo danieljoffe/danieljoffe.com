@@ -19,79 +19,19 @@ export const metadata = {
   featured: true,
 };
 
-## Case Study 3: Winc — Self-Serve Landing Page CMS
+I built a self-serve CMS that took Winc's marketing team from 3-4 landing pages a week to over 200 in two months, and that faster iteration nudged conversion from 1.4% to 2.0%. It mattered because every campaign page used to need a developer somewhere in the loop, from collecting assets to shipping, so a 40-page campaign meant 10-plus weeks of waiting while marketing sat behind engineering. I started it as a side project, then owned it end to end: the Angular 2 form interface, the S3 asset uploads, and the backend that generated static HTML for SEO.
 
-## Overview
+## The bottleneck
 
-**Company:** Winc (formerly ClubW)
+Marketing was badly throttled by engineering. Every page required developer time at some point, so the team could only get 3-4 out per week, and the whole thing was happening mid-rebrand from ClubW to Winc on top of a legacy AngularJS codebase that needed modernizing. Customer acquisition was expensive too, $47 CAC that didn't break even until month three, so slow iteration on page designs cost real money.
 
-**Role:** Frontend Developer
+## Building the tooling
 
-**Duration:** June 2015 - October 2017
+I kept running into the same bottleneck, so I started building during downtime; my manager had the idea but not the technical chops to build it. I designed the self-serve system on Angular 2, which had just been released, with a form-based interface and input validations, S3 integration for asset uploads, database-backed page configurations, and a backend service that generated static HTML so the pages stayed SEO-friendly. On top of that I built a template system with variable asset and content injection, plus a one-off exception path for custom campaigns, which let marketing deploy immediately without an engineering review.
 
-**Industry:** E-commerce / Wine Subscription
+Then I got marketing off the backlog for good. I trained four team members on the CMS, wrote the documentation and best practices, and migrated the existing landing pages within two weeks. The CEO recruited me personally for the rebrand, where I restyled the whole site to the new Winc branding and preserved every live URL through the migration so members never hit a broken link, then sunset the old ClubW app. Later I joined a cross-functional conversion team alongside a designer, QA, PM, and data analyst, where I analyzed member funnels, fixed abandonment points, and shipped UX improvements behind A/B tests.
 
-## Business Impact
-
-- Enabled marketing to launch 200+ landing pages in 2 months (up from 12/month)
-- Tripled weekly page velocity from 3-4 to 8-12 pages without engineering involvement
-- Freed 12+ engineering hours per week previously spent on content change requests
-- Improved conversion rate from 1.4% to 2.0% through faster iteration on page designs
-
-## The Challenge
-
-Winc's marketing team was badly bottlenecked by engineering. Every campaign landing page needed a developer at some point, from collecting the assets to shipping it, so the team could only get 3-4 pages out per week; a 40-page campaign meant 10+ weeks of waiting. On top of that, the company was in the middle of a full rebrand from ClubW to Winc.
-
-### Key Problems:
-
-- Marketing limited to 3-4 landing pages per week
-- 40 pages would take 10+ weeks to deploy
-- Every page required engineering time
-- Simultaneous rebrand requiring a transition that preserved every live URL
-- High customer acquisition cost ($47 CAC, break-even at month 3)
-- Legacy AngularJS codebase needed modernization
-
-## My Approach
-
-### First: Pattern Recognition
-
-I started this as a side project during downtime, since I kept running into the same bottleneck. My manager had the idea but didn't have the technical chops to build it.
-
-### Second: CMS Architecture
-
-- Designed self-serve system using Angular 2 (newly released at the time)
-- Built form-based interface with input validations
-- Implemented AWS S3 integration for asset uploads
-- Created database storage for page configurations
-- Developed backend service generating static HTML for SEO
-
-### Third: Template System
-
-- Created reusable templates with variable asset/content injection
-- Built one-off exception capability for custom campaigns
-- Enabled immediate deployment without engineering review
-
-### Fourth: Team Enablement
-
-- Trained 4 marketing team members on CMS usage
-- Created documentation and best practices
-- Migrated existing landing pages within 2 weeks
-
-### Fifth: Company Rebrand
-
-- Recruited by CEO personally for rebrand project
-- Restyled entire website to new Winc branding
-- Preserved every live URL during the migration so members never hit a broken link
-- Sunset old ClubW application
-
-### Sixth: Conversion Optimization
-
-- Joined cross-functional conversion team (designer, QA, PM, developer, data analyst)
-- Analyzed member conversion funnels
-- Identified and fixed abandonment points
-- Implemented UX improvements with A/B testing
-
-## The Results
+## The results
 
 <MetricsDashboard
   metrics={[
@@ -140,12 +80,6 @@ I started this as a side project during downtime, since I kept running into the 
   ]}
 />
 
-## Key Takeaways
+## What I took from it
 
-- **Initiative creates opportunity.** This started as a side project and ended up earning me a title promotion and recognition across the company.
-- **Tooling for a team beats building features for a team.** The CMS multiplied marketing's output without adding a single engineer.
-- **Technical work should serve business velocity.** The best code I wrote here was the code that took engineering out of the loop entirely.
-
-## Technologies Used
-
-Angular 2, TypeScript, AngularJS, RxJS, Node.js, AWS S3, HTML5, CSS3, SASS, Git, Static Site Generation
+The best code I wrote at Winc was the code that took engineering out of the loop entirely; tooling that multiplies a team's output beats shipping that team one more feature. It started as a side project and ended up earning me a title promotion, which is its own lesson about where initiative leads.
