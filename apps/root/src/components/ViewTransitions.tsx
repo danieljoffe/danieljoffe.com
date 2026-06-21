@@ -61,15 +61,15 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
 
   // Resolver for the in-flight transition's "new DOM is ready" promise.
   const finishRef = useRef<(() => void) | null>(null);
-  // Back/forward morph: the shared name to re-apply to the destination card
-  // once it renders, plus the element we applied it to (for cleanup after).
+  // Breadcrumb morph: the shared name to apply to the destination card once it
+  // renders, plus the element we applied it to (for cleanup after).
   const pendingNameRef = useRef<string | null>(null);
   const namedElRef = useRef<HTMLElement | null>(null);
-  // True only for a browser back/forward (traverse): the destination card sits
-  // at a restored scroll the new snapshot hasn't applied yet, so recenter it.
+  // Set for a breadcrumb morph: the destination card may sit far down the list,
+  // so bring it into view before the new snapshot is captured.
   const recenterRef = useRef(false);
 
-  // Once the new route commits: for a back/forward morph, tag the destination
+  // Once the new route commits: for a breadcrumb morph, tag the destination
   // card with the shared name so it pairs with the hero we're leaving; then
   // release the transition so the browser captures the new state.
   useEffect(() => {
@@ -89,13 +89,11 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
       if (el) {
         el.style.viewTransitionName = name;
         namedElRef.current = el;
-        // On a browser traverse the App Router restores scroll *after* this
-        // commit. Bring the (now-named) destination into view so the new
-        // snapshot captures it on-screen — otherwise the morph would target
-        // its pre-restore, off-screen position and animate out of sight.
+        // The destination card may sit far down the list; bring it into view
+        // so the new snapshot captures it on-screen — otherwise the morph would
+        // target an off-screen position and animate out of sight.
         // `behavior: 'instant'` settles scroll + layout synchronously, so the
         // new snapshot (captured the moment we resolve) sees the final state.
-        // Breadcrumb pushes don't need this (they scroll to the top).
         if (recenter) {
           el.scrollIntoView({ block: 'center', behavior: 'instant' });
         }
@@ -109,12 +107,10 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const beginTransition = useCallback(
-    (start: StartViewTransition, href?: string, scroll = true) => {
+    (start: StartViewTransition, href: string, scroll = true) => {
       // Create the "new DOM is ready" promise and stash its resolver
-      // *synchronously*, before the route can re-render. For a browser
-      // traverse the App Router re-renders almost immediately, so resolving
-      // inside the (async) startViewTransition callback would race the commit
-      // effect and lose the morph.
+      // *synchronously*, before the route can re-render — so the commit effect
+      // (which fires on the next pathname change) resolves the same promise.
       let resolveReady: () => void = () => undefined;
       const ready = new Promise<void>(resolve => {
         resolveReady = resolve;
@@ -123,11 +119,10 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
 
       const transition = start(() => ready);
 
-      // Forward nav drives the route change; back/forward leaves it to the
-      // browser's own history navigation. `scroll: false` lets the commit
-      // effect own scroll (so a recentered morph target isn't yanked to the
-      // top of the destination before the snapshot is taken).
-      if (href) router.push(href, { scroll });
+      // Drive the route change. `scroll: false` (breadcrumb) lets the commit
+      // effect own scroll, so a recentered morph target isn't yanked to the top
+      // of the destination before the snapshot is taken.
+      router.push(href, { scroll });
 
       // Safety net: never leave the page frozen if the route never changes or
       // the commit effect doesn't fire.
@@ -175,38 +170,12 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
     [beginTransition, router]
   );
 
-  // Backward morph: browser back/forward off a detail page morphs the hero
-  // back into the card it came from. `popstate` fires *after* the App Router
-  // has already re-rendered (the old DOM is gone), so it can't snapshot the
-  // hero. The Navigation API's `navigate` event fires *before* the re-render
-  // while the detail DOM is still present, so we hook that instead — observe
-  // only (no `intercept()`), letting Next perform the actual routing. Card
-  // clicks are `push`/`replace`; only browser back/forward is `traverse`.
-  // Chromium-only; elsewhere back/forward is a normal navigation.
-  useEffect(() => {
-    const navigation = (
-      window as unknown as { navigation?: EventTarget | undefined }
-    ).navigation;
-    if (!navigation) return;
-
-    const onNavigate = (event: Event) => {
-      if (
-        (event as { navigationType?: string }).navigationType !== 'traverse'
-      ) {
-        return;
-      }
-      const hero = document.querySelector<HTMLElement>('[data-vt-hero]');
-      const name = hero?.getAttribute('data-vt-name') ?? null;
-      const start = getStartViewTransition();
-      if (!hero || !name || !start || prefersReducedMotion()) return;
-      pendingNameRef.current = name;
-      recenterRef.current = true;
-      beginTransition(start);
-    };
-
-    navigation.addEventListener('navigate', onNavigate);
-    return () => navigation.removeEventListener('navigate', onNavigate);
-  }, [beginTransition]);
+  // Note: there's deliberately no browser back/forward morph. A traverse
+  // commits the destination DOM before `startViewTransition` can snapshot the
+  // old state, so it photographs the destination (nothing to morph). Driving
+  // it correctly would require intercepting the Navigation API and owning the
+  // route change, which fights Next's router — not worth it. Back/forward is a
+  // normal instant navigation; the morph is a forward + breadcrumb enhancement.
 
   return (
     <ViewTransitionContext.Provider value={navigate}>
