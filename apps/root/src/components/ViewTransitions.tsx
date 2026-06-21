@@ -10,7 +10,14 @@ import {
 } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
-type NavigateFn = (href: string) => void;
+/**
+ * Navigate with a View Transition. `coverName` (optional) names the element on
+ * the *destination* page that should morph in — used when the source is a
+ * detail hero and the target is the matching list card (e.g. a breadcrumb
+ * click back to the list). Forward card clicks omit it because the card has
+ * already named its own cover.
+ */
+type NavigateFn = (href: string, coverName?: string) => void;
 
 type ViewTransitionLike = { finished?: Promise<unknown> };
 type StartViewTransition = (
@@ -120,14 +127,16 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
   );
 
   const navigate = useCallback<NavigateFn>(
-    href => {
+    (href, coverName) => {
       const start = getStartViewTransition();
       if (!start || prefersReducedMotion()) {
         router.push(href);
         return;
       }
-      // Forward: the card has already named its own cover; push inside the
-      // transition.
+      // When a cover name is given (e.g. a breadcrumb morphing the hero back to
+      // its list card), tag the destination card once the list renders. Forward
+      // card clicks pass nothing — the card has already named its own cover.
+      if (coverName) pendingNameRef.current = coverName;
       beginTransition(start, href);
     },
     [beginTransition, router]
