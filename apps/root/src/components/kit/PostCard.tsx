@@ -10,6 +10,7 @@ import { Text } from '@danieljoffe/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { useViewTransitionNavigate } from '@/components/ViewTransitions';
+import { CardSpotlight } from '@/components/CardSpotlight';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
 
@@ -104,6 +105,7 @@ export function PostCard({
           </IconText>
         )}
       </div>
+      <CardSpotlight />
     </Link>
   );
 }

@@ -33,6 +33,7 @@ import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { HeroBackdrop } from '@/components/HeroBackdrop';
+import { Marquee } from '@/components/Marquee';
 import HeroActions from '../home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
@@ -182,24 +183,27 @@ export default function Index() {
             I&apos;ve worked with these companies to build frontends that are
             fast, accessible, and genuinely good to use.
           </Text>
-          <ul className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 reveal-stagger'>
-            {companies.map(company => (
-              <li
-                key={company.slug}
-                className='flex justify-center opacity-70 hover:opacity-100 transition-opacity'
-              >
-                <a href={`${EXPERIENCE_LINK.href}/${company.slug}`}>
-                  {company.logo && (
-                    <CompanyLogo
-                      src={company.logo}
-                      alt={company.company}
-                      size='lg'
-                    />
-                  )}
+          <Marquee
+            className='py-1'
+            items={companies
+              .filter((company): company is typeof company & { logo: string } =>
+                Boolean(company.logo)
+              )
+              .map(company => (
+                <a
+                  key={company.slug}
+                  href={`${EXPERIENCE_LINK.href}/${company.slug}`}
+                  aria-label={company.company}
+                  className='block opacity-70 transition-opacity hover:opacity-100'
+                >
+                  <CompanyLogo
+                    src={company.logo}
+                    alt={company.company}
+                    size='lg'
+                  />
                 </a>
-              </li>
-            ))}
-          </ul>
+              ))}
+          />
         </div>
       </Section>
 

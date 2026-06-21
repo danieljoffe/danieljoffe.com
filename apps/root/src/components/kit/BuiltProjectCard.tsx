@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Badge } from '@danieljoffe/shared-ui/Badge';
 import { Heading } from '@danieljoffe/shared-ui/Heading';
 import { Text } from '@danieljoffe/shared-ui/Text';
+import { CardSpotlight } from '@/components/CardSpotlight';
 import { CoverImage } from './CoverImage';
 
 export interface BuiltProject {
@@ -42,6 +43,7 @@ export function BuiltProjectCard({ project }: { project: BuiltProject }) {
           </Text>
         </div>
       </div>
+      <CardSpotlight />
     </a>
   );
 }
