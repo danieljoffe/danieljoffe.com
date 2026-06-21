@@ -55,6 +55,12 @@ export default function Footer() {
             <Text variant='detail' className='mt-0.5'>
               {profileData.title}
             </Text>
+            <a
+              href={`mailto:${profileData.social.email}`}
+              className={`mt-1 inline-block text-sm text-text-secondary hover:text-text-primary hover:underline transition-colors ${FOCUS_RING} ${FOCUS_RING_OFFSET} rounded-sm`}
+            >
+              {profileData.social.email}
+            </a>
           </div>
           <div className='flex items-center gap-1'>
             {socialLinks.map(({ href, label, icon: Icon }) => (
