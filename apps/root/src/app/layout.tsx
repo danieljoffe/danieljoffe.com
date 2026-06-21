@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import * as Sentry from '@sentry/nextjs';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { headers } from 'next/headers';
 import { rootMetadata } from '@/data/metadata/root';
 import { WithChildren } from '@/types/base';
 import '@/styles/global.css';
@@ -38,6 +39,9 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: WithChildren) {
+  // Same nonce the proxy set in the CSP header, so the inline no-flash script
+  // below satisfies `strict-dynamic` instead of being blocked.
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
   return (
     <html
       lang='en'
@@ -58,6 +62,7 @@ export default async function RootLayout({ children }: WithChildren) {
             first paint, only when JS is on and motion is allowed. Without this
             (no-JS / reduced-motion) content renders immediately and unhidden. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html:
               "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('reveal-ready')}}catch(e){}",
