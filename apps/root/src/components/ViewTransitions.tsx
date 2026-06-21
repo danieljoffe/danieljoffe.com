@@ -65,13 +65,23 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
   // once it renders, plus the element we applied it to (for cleanup after).
   const pendingNameRef = useRef<string | null>(null);
   const namedElRef = useRef<HTMLElement | null>(null);
+  // True only for a browser back/forward (traverse): the destination card sits
+  // at a restored scroll the new snapshot hasn't applied yet, so recenter it.
+  const recenterRef = useRef(false);
 
   // Once the new route commits: for a back/forward morph, tag the destination
   // card with the shared name so it pairs with the hero we're leaving; then
   // release the transition so the browser captures the new state.
   useEffect(() => {
-    if (!finishRef.current) return;
+    const resolve = finishRef.current;
+    if (!resolve) return;
+    // Claim the resolver so the safety timeout can't also fire it.
+    finishRef.current = null;
+
     const name = pendingNameRef.current;
+    pendingNameRef.current = null;
+    const recenter = recenterRef.current;
+    recenterRef.current = false;
     if (name) {
       const el = document.querySelector<HTMLElement>(
         `[data-cover-name="${CSS.escape(name)}"]`
@@ -79,11 +89,20 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
       if (el) {
         el.style.viewTransitionName = name;
         namedElRef.current = el;
+        // On a browser traverse the App Router restores scroll *after* this
+        // commit. Bring the (now-named) destination into view so the new
+        // snapshot captures it on-screen — otherwise the morph would target
+        // its pre-restore, off-screen position and animate out of sight.
+        // Breadcrumb pushes don't need this (they scroll to the top).
+        if (recenter) {
+          el.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
       }
-      pendingNameRef.current = null;
     }
-    finishRef.current();
-    finishRef.current = null;
+
+    // Defer the snapshot one frame so the scroll/layout settles before the
+    // browser captures the new state.
+    requestAnimationFrame(() => resolve());
   }, [pathname]);
 
   const beginTransition = useCallback(
@@ -167,6 +186,7 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
       const start = getStartViewTransition();
       if (!hero || !name || !start || prefersReducedMotion()) return;
       pendingNameRef.current = name;
+      recenterRef.current = true;
       beginTransition(start);
     };
 
