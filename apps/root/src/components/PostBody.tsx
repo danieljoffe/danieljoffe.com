@@ -8,6 +8,7 @@ import BreadCrumbs from './BreadCrumbs';
 export default function PostBody({
   children,
   cover,
+  coverTransitionName,
   breadcrumbs,
   title,
   date,
@@ -38,6 +39,11 @@ export default function PostBody({
             priority
             sizes='(max-width: 1024px) calc(100vw - 2rem), 480px'
             className='w-full h-auto object-cover rounded-lg'
+            style={
+              coverTransitionName
+                ? { viewTransitionName: coverTransitionName }
+                : undefined
+            }
           />
         </div>
       </div>

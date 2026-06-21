@@ -10,7 +10,7 @@ export function CoverImage({
   priority?: boolean;
 }) {
   return (
-    <div className='relative h-36 overflow-hidden'>
+    <div className='relative h-36 overflow-hidden' data-cover>
       <Image
         src={src}
         alt={alt}

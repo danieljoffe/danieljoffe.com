@@ -11,6 +11,7 @@ export default function PostDetailLayout({
   entry,
   pagination,
   breadcrumbs,
+  coverTransitionName,
 }: PostDetailProps) {
   const Post = entry.component;
 
@@ -23,6 +24,7 @@ export default function PostDetailLayout({
       <div className='max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody
           cover={entry.thumbnail.cover}
+          coverTransitionName={coverTransitionName}
           breadcrumbs={breadcrumbs}
           title={entry.metadata.title}
           date={entry.metadata.date}
