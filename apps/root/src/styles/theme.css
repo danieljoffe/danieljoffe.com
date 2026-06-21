@@ -468,3 +468,24 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
     animation: none !important;
   }
 }
+
+/* ─── Hero backdrop glow ───
+ * Slow ambient drift for the brand glow behind the hero. Centering is handled
+ * by a margin (not transform), so the animation owns `transform` outright.
+ * Under reduced motion the glow simply rests at its centered position. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-glow {
+    animation: hero-glow-drift 16s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes hero-glow-drift {
+  from {
+    transform: translate3d(-24px, -12px, 0) scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: translate3d(24px, 14px, 0) scale(1.08);
+    opacity: 1;
+  }
+}
