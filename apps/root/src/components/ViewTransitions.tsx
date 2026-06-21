@@ -109,7 +109,7 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const beginTransition = useCallback(
-    (start: StartViewTransition, href?: string) => {
+    (start: StartViewTransition, href?: string, scroll = true) => {
       // Create the "new DOM is ready" promise and stash its resolver
       // *synchronously*, before the route can re-render. For a browser
       // traverse the App Router re-renders almost immediately, so resolving
@@ -124,8 +124,10 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
       const transition = start(() => ready);
 
       // Forward nav drives the route change; back/forward leaves it to the
-      // browser's own history navigation.
-      if (href) router.push(href);
+      // browser's own history navigation. `scroll: false` lets the commit
+      // effect own scroll (so a recentered morph target isn't yanked to the
+      // top of the destination before the snapshot is taken).
+      if (href) router.push(href, { scroll });
 
       // Safety net: never leave the page frozen if the route never changes or
       // the commit effect doesn't fire.
@@ -156,9 +158,18 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
         return;
       }
       // When a cover name is given (e.g. a breadcrumb morphing the hero back to
-      // its list card), tag the destination card once the list renders. Forward
-      // card clicks pass nothing — the card has already named its own cover.
-      if (coverName) pendingNameRef.current = coverName;
+      // its list card), tag the destination card once the list renders, and
+      // recenter it so the morph lands on-screen even when the card sits far
+      // down the list. We own scroll (`scroll: false`) so Next doesn't yank the
+      // page to the top before the new snapshot is captured. Forward card
+      // clicks pass nothing — the card already named its own cover, and the
+      // detail page should land at the top.
+      if (coverName) {
+        pendingNameRef.current = coverName;
+        recenterRef.current = true;
+        beginTransition(start, href, false);
+        return;
+      }
       beginTransition(start, href);
     },
     [beginTransition, router]
