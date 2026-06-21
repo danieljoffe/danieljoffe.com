@@ -57,7 +57,7 @@ export default function About() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' className='pt-12 lg:pt-20'>
         <div className='relative space-y-6'>
           <div className='flex flex-col gap-x-5 gap-y-12'>
             <Heading variant='hero' className='text-center md:text-left'>

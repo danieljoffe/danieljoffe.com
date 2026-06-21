@@ -55,7 +55,7 @@ export default function Index() {
           ══════════════════════════════════ */}
       <Section padding='none' contain='none' overflow='hidden'>
         <HeroBackdrop />
-        <Container size='sm'>
+        <Container size='sm' className='pt-16 lg:pt-28'>
           <div className='relative space-y-6'>
             <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
               <IconText icon={<MapPin className='h-3.5 w-3.5' />}>

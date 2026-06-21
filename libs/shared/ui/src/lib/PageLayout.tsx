@@ -6,13 +6,13 @@ export interface PageLayoutProps extends HTMLAttributes<HTMLElement> {
 }
 
 /**
- * Page shell: the `<main>` landmark and "Skip to main content" focus target,
- * providing vertical rhythm between sections.
+ * Page shell: the `<main>` landmark and "Skip to main content" focus target.
  *
- * It is full-width and imposes no max-width — each {@link Section} constrains
- * its own content (see Section's `contain` prop). This lets a section go
- * full-bleed (e.g. a hero with an edge-to-edge backdrop, or a full-width
- * background band) without having to break out of a shared container.
+ * It is full-width, imposes no max-width, and adds no page padding — each
+ * {@link Section} owns its own padding/margins (and constrains its own content
+ * via Section's `contain` prop). The only thing the shell contributes is the
+ * vertical rhythm *between* sections (`gap-y`); the leading whitespace belongs
+ * to the first section, and the trailing whitespace to the page's footer.
  */
 export function PageLayout({ children, className, ...rest }: PageLayoutProps) {
   return (
@@ -21,10 +21,7 @@ export function PageLayout({ children, className, ...rest }: PageLayoutProps) {
       // Without a tabindex the browser can't move focus here when the
       // "Skip to main content" link is activated.
       tabIndex={-1}
-      className={cn(
-        'flex w-full flex-col gap-y-16 py-8 lg:gap-y-20 lg:py-12',
-        className
-      )}
+      className={cn('flex w-full flex-col gap-y-16 lg:gap-y-20', className)}
       {...rest}
     >
       {children}

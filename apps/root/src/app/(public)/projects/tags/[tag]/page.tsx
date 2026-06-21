@@ -58,7 +58,7 @@ export default async function ProjectTagDetailPage({ params }: TagPageProps) {
 
   return (
     <PageLayout>
-      <Section padding='none' contain='lg'>
+      <Section padding='none' contain='lg' className='pt-8 lg:pt-12'>
         <BreadCrumbs
           items={[
             PROJECTS_LINK,

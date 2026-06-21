@@ -28,7 +28,9 @@ export interface SectionProps extends Omit<
 }
 
 const paddingClasses = {
-  none: 'py-0',
+  // Emit no padding utility (rather than `py-0`) so a caller's `className` can
+  // set its own vertical padding without losing to `py-0` in the cascade.
+  none: '',
   sm: 'py-4 sm:py-6',
   md: 'py-6 sm:py-8 md:py-12',
   lg: 'py-8 sm:py-12 md:py-16',

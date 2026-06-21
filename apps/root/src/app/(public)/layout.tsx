@@ -7,8 +7,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     <>
       <Nav />
       {children}
-      {/* pb-16 compensates for the fixed mobile bottom nav bar */}
-      <div className='pb-16 md:pb-0'>
+      {/* Trailing whitespace before the footer now lives here (the page shell
+          adds no padding). pb-16 compensates for the fixed mobile bottom nav. */}
+      <div className='pt-16 pb-16 md:pb-0 lg:pt-24'>
         <Footer />
       </div>
     </>
