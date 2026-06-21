@@ -33,11 +33,7 @@ export default function PostBody({
         <Heading variant='detail' className='lg:flex-1 lg:min-w-0'>
           {title}
         </Heading>
-        <div
-          className='lg:flex-1 lg:min-w-0'
-          data-vt-hero={coverTransitionName ? '' : undefined}
-          data-vt-name={coverTransitionName}
-        >
+        <div className='lg:flex-1 lg:min-w-0'>
           <Image
             src={cover.src}
             alt={cover.alt}

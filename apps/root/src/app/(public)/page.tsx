@@ -184,19 +184,20 @@ export default function Index() {
           </Text>
           <ul className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 reveal-stagger'>
             {companies.map(company => (
-              <li
-                key={company.slug}
-                className='flex justify-center opacity-70 hover:opacity-100 transition-opacity'
-              >
-                <a href={`${EXPERIENCE_LINK.href}/${company.slug}`}>
-                  {company.logo && (
+              <li key={company.slug} className='flex justify-center'>
+                {company.logo && (
+                  <a
+                    href={`${EXPERIENCE_LINK.href}/${company.slug}`}
+                    aria-label={company.company}
+                    className='opacity-60 grayscale transition duration-300 hover:scale-105 hover:opacity-100 hover:grayscale-0'
+                  >
                     <CompanyLogo
                       src={company.logo}
                       alt={company.company}
                       size='lg'
                     />
-                  )}
-                </a>
+                  </a>
+                )}
               </li>
             ))}
           </ul>

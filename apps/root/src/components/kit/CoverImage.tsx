@@ -26,7 +26,7 @@ export function CoverImage({
         priority={priority}
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : 'low'}
-        className='object-cover'
+        className='object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-105'
       />
       <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent' />
     </div>

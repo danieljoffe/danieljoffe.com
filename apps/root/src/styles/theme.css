@@ -489,3 +489,33 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
     opacity: 1;
   }
 }
+
+/* ─── Card cursor spotlight ───
+ * Soft brand glow that tracks the cursor over a card. Position comes from
+ * --spot-x/--spot-y (set by CardSpotlight.tsx); fades in on group-hover. */
+.card-spotlight {
+  background: radial-gradient(
+    14rem circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(99, 102, 241, 0.13),
+    transparent 60%
+  );
+}
+
+/* ─── Animated theme toggle ───
+ * The active icon spins + scales in when the theme changes. */
+@media (prefers-reduced-motion: no-preference) {
+  .theme-icon-enter {
+    animation: theme-icon-in 0.3s ease-out;
+  }
+}
+
+@keyframes theme-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}

@@ -10,6 +10,7 @@ import { Text } from '@danieljoffe/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
 import { useViewTransitionNavigate } from '@/components/ViewTransitions';
+import { CardSpotlight } from '@/components/CardSpotlight';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
 
@@ -52,6 +53,14 @@ export function PostCard({
       event.currentTarget.querySelector<HTMLElement>('[data-cover-name]');
     if (cover) {
       cover.style.viewTransitionName = coverName;
+      // Freeze the Ken-Burns hover-zoom before the snapshot: a hovered card is
+      // mid-scale, so the morph would otherwise capture the cover zoomed and
+      // jitter as it settles to the unscaled detail hero.
+      const img = cover.querySelector('img');
+      if (img) {
+        img.style.transition = 'none';
+        img.style.transform = 'none';
+      }
     }
     navigate(post.link.href);
   };
@@ -104,6 +113,7 @@ export function PostCard({
           </IconText>
         )}
       </div>
+      <CardSpotlight />
     </Link>
   );
 }
