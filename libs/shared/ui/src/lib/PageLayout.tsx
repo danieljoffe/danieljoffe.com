@@ -21,7 +21,13 @@ export function PageLayout({ children, className, ...rest }: PageLayoutProps) {
       // Without a tabindex the browser can't move focus here when the
       // "Skip to main content" link is activated.
       tabIndex={-1}
-      className={cn('flex w-full flex-col gap-y-16 lg:gap-y-20', className)}
+      // The App Router focuses this landmark after navigation; `.focus()`
+      // scrolls it into view, which would otherwise scroll the (static) nav
+      // off-screen. `scroll-mt` ≥ the nav height keeps the scroll at the top.
+      className={cn(
+        'flex w-full flex-col gap-y-16 scroll-mt-16 lg:gap-y-20',
+        className
+      )}
       {...rest}
     >
       {children}

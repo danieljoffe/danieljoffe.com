@@ -2,7 +2,7 @@
 '@danieljoffe/shared-ui': minor
 ---
 
-PageLayout is now a full-width `<main>` landmark that owns no max-width and no page padding — it contributes only the vertical rhythm _between_ sections (`gap-y`). The `wide` prop is removed.
+PageLayout is now a full-width `<main>` landmark that owns no max-width and no page padding — it contributes only the vertical rhythm _between_ sections (`gap-y`). The `wide` prop is removed. It also sets `scroll-mt` on the landmark so the App Router's post-navigation focus of `#main-content` doesn't scroll a static header off-screen.
 
 Each `Section` now owns its own spacing and containment:
 
