@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
@@ -37,6 +44,8 @@ export default function CommandPalette() {
   const triggerRef = useRef<HTMLElement | null>(null);
   const selectedRef = useRef(false);
   const openRef = useRef(false);
+  // The dialog container, for trapping Tab focus within the open palette.
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     openRef.current = open;
@@ -140,6 +149,33 @@ export default function CommandPalette() {
     [router]
   );
 
+  // Trap Tab within the dialog so focus can't reach the page behind the modal.
+  // The input is the only Tab-focusable element (cmdk drives the list via
+  // aria-activedescendant), so this keeps keyboard + SR users inside the
+  // palette until they Escape — paired with role="dialog"/aria-modal below.
+  const handleTrapKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'Tab') return;
+      const focusables = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusables || focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    []
+  );
+
   // Get matched terms from the matches object
   const getMatchedTerms = (result: {
     matches?: Record<string, string[]>;
@@ -216,6 +252,10 @@ export default function CommandPalette() {
     'results' in results &&
     results.results &&
     results.results.length > 0;
+  const searchResultCount =
+    results.isSearching && 'results' in results
+      ? (results.results?.length ?? 0)
+      : 0;
 
   return (
     <div
@@ -225,9 +265,20 @@ export default function CommandPalette() {
       data-testid='command-palette-overlay'
     >
       <div
+        ref={dialogRef}
+        role='dialog'
+        aria-modal='true'
+        aria-label='Site search'
         className='mx-auto mt-[20vh] w-full max-w-lg'
         onClick={e => e.stopPropagation()}
+        onKeyDown={handleTrapKeyDown}
       >
+        {/* Polite count so SR users hear how many results the query returned. */}
+        <div aria-live='polite' className='sr-only'>
+          {search.trim()
+            ? `${searchResultCount} result${searchResultCount === 1 ? '' : 's'}`
+            : ''}
+        </div>
         <Command
           loop
           shouldFilter={false}
@@ -243,6 +294,7 @@ export default function CommandPalette() {
               value={search}
               onValueChange={setSearch}
               autoFocus
+              aria-label='Search pages, posts, and services'
               placeholder='Search pages, posts, services…'
               className={cn(
                 'w-full bg-transparent py-3 text-sm outline-none',

@@ -8,6 +8,7 @@ export type HeadingVariant =
   | 'detail'
   | 'subtitle'
   | 'section'
+  | 'sectionLabel'
   | 'cardTitle'
   | 'component'
   | 'mdxH1'
@@ -20,7 +21,7 @@ export interface HeadingProps extends Omit<
   'children'
 > {
   ref?: Ref<HTMLHeadingElement> | undefined;
-  as?: HeadingLevel;
+  as?: HeadingLevel | undefined;
   variant: HeadingVariant;
   children: ReactNode;
 }
@@ -30,6 +31,8 @@ const variantStyles: Record<HeadingVariant, string> = {
   detail: 'text-3xl sm:text-4xl font-bold text-text-primary tracking-tight',
   subtitle: 'text-2xl font-bold text-text-primary tracking-tight',
   section: 'text-2xl sm:text-3xl font-bold text-text-primary tracking-tight',
+  sectionLabel:
+    'text-xs font-semibold uppercase tracking-wider text-text-tertiary',
   cardTitle: 'text-sm font-semibold text-text-primary',
   component: 'text-lg font-semibold text-text-primary',
   mdxH1: 'text-2xl font-bold text-text-primary tracking-tight mb-6',
@@ -44,6 +47,7 @@ const defaultLevel: Record<HeadingVariant, HeadingLevel> = {
   detail: 'h1',
   subtitle: 'h2',
   section: 'h2',
+  sectionLabel: 'h2',
   cardTitle: 'h3',
   component: 'h3',
   mdxH1: 'h1',

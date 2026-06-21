@@ -105,9 +105,7 @@ export default function Index() {
           <div className='flex items-start justify-between gap-4'>
             <div className='space-y-2'>
               <div className='flex flex-wrap items-center gap-2'>
-                <Heading variant='cardTitle' as='span'>
-                  WyrdFold
-                </Heading>
+                <Heading variant='cardTitle'>WyrdFold</Heading>
                 <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-300'>
                   <span
                     className='h-1.5 w-1.5 rounded-full bg-emerald-600'
@@ -157,9 +155,7 @@ export default function Index() {
                 icon={<achievement.Icon className='h-5 w-5 text-brand-500' />}
                 className='gap-x-3'
               >
-                <Heading variant='cardTitle' as='span'>
-                  {achievement.metric}
-                </Heading>
+                <Heading variant='cardTitle'>{achievement.metric}</Heading>
               </IconText>
               <Text variant='body' className='mt-1'>
                 {achievement.text}
@@ -251,9 +247,7 @@ export default function Index() {
                 <IconText
                   icon={<methodology.Icon className='h-4 w-4 text-brand-500' />}
                 >
-                  <Heading variant='cardTitle' as='span'>
-                    {methodology.title}
-                  </Heading>
+                  <Heading variant='cardTitle'>{methodology.title}</Heading>
                 </IconText>
                 <Text variant='body'>{methodology.text}</Text>
               </div>

@@ -69,7 +69,9 @@
   --color-success-light: #ecfdf5;
   --color-warning: #f59e0b;
   --color-warning-light: #fffbeb;
-  --color-error: #ef4444;
+  /* Darkened from #ef4444 (red-500, ~3.6:1) to clear WCAG AA 4.5:1 on light
+     surfaces (form card / inputs). Dark mode keeps the lighter red below. */
+  --color-error: #c81e1e;
   --color-error-light: #fef2f2;
   --color-info: #2563eb;
   --color-info-light: #eff6ff;
@@ -94,6 +96,8 @@
 
   --color-success-light: #052e16;
   --color-warning-light: #451a03;
+  /* Lighter red reads better on the dark surface (already clears AA there). */
+  --color-error: #ef4444;
   --color-error-light: #450a0a;
   --color-info-light: #172554;
 

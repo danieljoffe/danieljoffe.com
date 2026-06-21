@@ -14,6 +14,7 @@ const meta = {
         'detail',
         'subtitle',
         'section',
+        'sectionLabel',
         'cardTitle',
         'component',
         'mdxH1',
@@ -65,6 +66,13 @@ export const Section: Story = {
   args: {
     variant: 'section',
     children: 'Section Heading',
+  },
+};
+
+export const SectionLabel: Story = {
+  args: {
+    variant: 'sectionLabel',
+    children: 'Section Label',
   },
 };
 
