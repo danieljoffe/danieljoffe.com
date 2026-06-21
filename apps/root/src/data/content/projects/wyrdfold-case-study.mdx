@@ -3,7 +3,7 @@ export const metadata = {
   date: '2026-05-02',
   order: 150,
   excerpt:
-    'A self-hostable job-search platform: Next.js BFF, FastAPI matching service, Supabase, and a two-phase LLM pipeline with versioned prompt caching and cost caps.',
+    'Scored ~44,000 job postings for $167 in LLM spend with a two-phase pipeline. A full-stack AI job-search platform I built and run solo.',
   author: 'Daniel Joffe',
   category: 'Full-Stack Development',
   tags: [
@@ -27,13 +27,9 @@ export const metadata = {
 
 ## Overview
 
-**Project:** WyrdFold, a self-hostable, bring-your-own-key job-search platform. It polls job boards against the roles you are targeting, grades every posting for fit with an LLM pipeline, and tailors resumes and cover letters for the matches worth pursuing.
+WyrdFold is an AI job-search platform I built and run solo, and it's the project where I stopped owning just the frontend and started owning the whole stack. It polls job boards against the roles you're targeting, grades every posting for fit with a two-phase LLM pipeline, and tailors resumes and cover letters for the matches worth pursuing. In three weeks of running it on my own search it scored about 44,000 postings for $167 in LLM spend, a number that only holds because of the cost and quality guardrails wrapped around the model.
 
-**Role:** Solo Developer
-
-**Duration:** May 2026 - present
-
-**Purpose:** WyrdFold started as a quick script to scrape jobs out of a few boards, and I added one feature at a time until it outgrew the monorepo it was living in and moved into its own repo with full CI. This is the project where I stopped owning just the frontend and started owning the whole stack: a Next.js web app, a FastAPI matching service, a Postgres schema, and an LLM pipeline running in production, plus all the cost and quality guardrails you need before you trust a model in front of real users.
+It started as a quick script to scrape jobs out of a few boards, and I added one feature at a time until it outgrew the monorepo it was living in and moved into its own repo with full CI: a Next.js web app, a FastAPI matching service, a Postgres schema, and an LLM pipeline running in production.
 
 ## The problem
 
@@ -71,7 +67,7 @@ Everything past Supabase degrades gracefully. Brave Search for source discovery,
 
 ## The matching pipeline
 
-Grading every posting with a full LLM call is the obvious approach, and it's the wrong one. Most postings are off-target on the title alone, and paying for a deep reasoning pass on a job that was never a fit just burns budget for no signal. So matching runs in two phases. A cheap title-triage pass scores thousands of jobs per target and decides which ones are even worth a closer look; only the survivors reach the expensive, in-depth fit grade.
+Grading every posting with a full LLM call is the obvious approach, and it's the wrong one. Most postings are off-target on the title alone, and paying for a deep reasoning pass on a job that was never a fit just burns budget for no signal. The cheapest filter runs first and never touches the model: an embedding-similarity check on the title, `pgvector` with Voyage embeddings, drops the postings that aren't close before a token is spent. Then matching runs in two phases. A cheap title-triage pass scores thousands of jobs per target and decides which ones are even worth a closer look; only the survivors reach the expensive, in-depth fit grade.
 
 The deep grade scores four axes you can weight yourself: technologies, domain, seniority, and title. What comes back isn't a black-box number. Every job carries a score breakdown by component plus an LLM analysis with its reasoning, the skills it thinks you're missing, and a per-axis read. A job can sit at the top of the list with a plain-English "near-perfect technical match, the only gap is one backend technology that's unlikely to block a frontend-focused role" instead of an unexplained 99.
 
@@ -95,7 +91,7 @@ The hard part of shipping an LLM feature isn't the prompt; it's everything aroun
 
 ## Resume tailoring and insights
 
-Tailoring is grounded in a master document that holds your whole work history, versioned, with a health indicator, so a generated resume draws from real experience instead of inventing it. That grounding matters more than it sounds: an earlier version happily fabricated experience until a screenshot test caught it, which is exactly the kind of bug you don't want surfacing in front of a user mid-application. The profile also flags the gaps worth filling and exports finished documents to DOCX.
+Tailoring is grounded in a master document that holds your whole work history, versioned, with a health indicator, so a generated resume draws from real experience instead of inventing it. That document gets chunked and embedded by type, skills, outcomes, and roles, so tailoring retrieves the experience that actually matches a given posting instead of stuffing the entire history into the prompt. That grounding matters more than it sounds: an earlier version happily fabricated experience until a screenshot test caught it, which is exactly the kind of bug you don't want surfacing in front of a user mid-application. The profile also flags the gaps worth filling and exports finished documents to DOCX.
 
 ![WyrdFold profile page showing a Document Health indicator at 98 percent, a Gaps to Fill section, and a versioned Master Document](/images/projects/wyrdfold-profile.webp)
 
@@ -104,6 +100,8 @@ Settings expose the levers a self-hoster actually cares about: resume style and 
 ![WyrdFold settings showing resume style and accent options, a match score threshold, and SMS notification preferences](/images/projects/wyrdfold-settings.webp)
 
 ## The result
+
+The two-phase split is what keeps the bill honest. In three weeks of running it for my own search, the pipeline ingested 14,000 jobs and triaged about 44,000 postings, roughly 2,300 a day, for $167 in total LLM spend. The deep fit-grade costs about $0.04 and 26 seconds a job, so reserving it for the few hundred survivors instead of grading all 44,000 is the difference between $167 and roughly $1,750, plus a few hundred hours of model time. That ratio is the whole reason the pipeline has two phases instead of one.
 
 WyrdFold is live, owned solo, and self-hostable end to end. One person with a Supabase project and a single LLM key gets target-driven discovery, two-phase graded matching with transparent per-axis breakdowns, a tracked pipeline from saved to offer, and resume tailoring grounded in real history. It's source-available under a license that keeps self-hosting genuinely free.
 
