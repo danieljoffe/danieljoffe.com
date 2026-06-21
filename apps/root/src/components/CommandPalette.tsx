@@ -13,9 +13,22 @@ import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import { cn } from '@/lib/cn';
-import { buildSearchIndex, type SearchEntry } from '@/lib/searchIndex';
+import { type SearchEntry } from '@/lib/searchIndex';
 import { Z_INDEX } from '@/utils/constants';
-import { createSearchEngine, searchWithHighlights } from '@/lib/search';
+
+// MiniSearch + the ~288KB content index are only needed once the palette
+// opens, so they're dynamically imported on first open (a separate chunk)
+// instead of shipping in the bundle that loads on every page.
+type SearchEngine = ReturnType<
+  (typeof import('@/lib/search'))['createSearchEngine']
+>;
+type SearchHighlightsFn =
+  (typeof import('@/lib/search'))['searchWithHighlights'];
+type SearchData = {
+  entries: SearchEntry[];
+  engine: SearchEngine;
+  searchWithHighlights: SearchHighlightsFn;
+};
 
 const TYPE_ICONS: Record<SearchEntry['type'], typeof Search> = {
   project: FileText,
@@ -70,22 +83,34 @@ export default function CommandPalette() {
     return () => cancelAnimationFrame(id);
   }, [open]);
 
-  const { engine, entries } = useMemo(() => {
-    try {
-      const entries = buildSearchIndex();
-      const engine = createSearchEngine(entries);
+  const [searchData, setSearchData] = useState<SearchData | null>(null);
 
-      return { engine, entries };
-    } catch (error) {
-      console.error('Failed to build search index:', error);
-      return { engine: null, entries: [] };
-    }
-  }, []);
+  // Build the index the first time the palette opens, loading MiniSearch and
+  // the content index as a separate chunk so they stay off every page's load.
+  useEffect(() => {
+    if (!open || searchData) return;
+    let cancelled = false;
+    void Promise.all([import('@/lib/searchIndex'), import('@/lib/search')])
+      .then(([idx, searchMod]) => {
+        if (cancelled) return;
+        const entries = idx.buildSearchIndex();
+        setSearchData({
+          entries,
+          engine: searchMod.createSearchEngine(entries),
+          searchWithHighlights: searchMod.searchWithHighlights,
+        });
+      })
+      .catch(error => console.error('Failed to load search index:', error));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, searchData]);
 
   const results = useMemo(() => {
-    if (!engine || !entries.length) {
+    if (!searchData || !searchData.entries.length) {
       return { grouped: {}, isSearching: false };
     }
+    const { engine, entries, searchWithHighlights } = searchData;
 
     if (!search.trim()) {
       const grouped: Partial<Record<SearchEntry['type'], SearchEntry[]>> = {};
@@ -105,7 +130,7 @@ export default function CommandPalette() {
       console.error('Search failed:', error);
       return { grouped: {}, isSearching: false };
     }
-  }, [search, engine, entries]);
+  }, [search, searchData]);
 
   // Cmd+K / Ctrl+K toggle
   useEffect(() => {
@@ -314,7 +339,7 @@ export default function CommandPalette() {
 
           <Command.List className='max-h-96 overflow-y-auto'>
             <Command.Empty className='px-4 py-8 text-center text-sm text-neutral-400'>
-              No results found.
+              {searchData ? 'No results found.' : 'Loading…'}
             </Command.Empty>
 
             {hasGroupedResults && (
