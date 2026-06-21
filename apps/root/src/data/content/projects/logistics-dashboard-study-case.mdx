@@ -18,78 +18,16 @@ export const metadata = {
   },
 };
 
-## Case Study 5: Contract Work — Logistics Dashboard MVP
+I shipped a working logistics dashboard MVP in three months, on the deadline pinned to the founder's investor presentations, so the startup could start user testing on schedule. The catch was that the backend didn't exist yet: the frontend had to be ready to wire up to an API that hadn't been built. The work came from a former CEO I'd worked with at Winc, who was launching a logistics and operations venture and needed something concrete to put in front of investors and validate the concept.
 
-## Overview
+## Building API-ready against a backend that didn't exist
 
-**Company:** Seed-Stage Logistics Venture
+With no backend to integrate against, I designed the component structure to scale later and planned explicit integration points where the API would eventually plug in, on TypeScript patterns that kept everything type-safe. For login I wired up AWS Cognito and built role-based access control on top of it, carving out distinct permission levels for the three user types: shippers got a dashboard for outbound logistics metrics, receivers got inbound tracking and delivery management, and sales teams got pipeline and customer views. The data visualization layer was chart-ready components built to take real-time updates once the API was live, with layouts responsive across desktop and tablet.
 
-**Role:** Contracted Engineer
+## What I shipped
 
-**Duration:** May 2023 - August 2023
+I delivered the MVP inside the three-month window and handed over complete documentation so the client's team could maintain and extend it without me. The whole engagement came from a relationship rather than a job board, which is its own reminder that earlier work pays off later; the discipline that made it work was scoping hard to the deadline while still building for the scale that would come.
 
-**Industry:** Logistics / Operations
+## What I took from it
 
-## Business Impact
-
-- Delivered working MVP within 3-month deadline, enabling the startup to begin user testing on schedule
-- Implemented enterprise-grade authentication (AWS Cognito) with 3 distinct user roles
-- Provided complete handoff documentation, allowing the client's team to maintain and extend independently
-
-## The Challenge
-
-A former CEO I'd worked with at Winc was launching a new logistics and operations venture, and he needed a frontend MVP to show the platform to investors and validate the concept. The backend wasn't built yet, so the frontend had to be ready to wire up to an API that didn't exist yet.
-
-### Key Problems:
-
-- A 3-month timeline pinned to investor presentations
-- Multiple user roles, each with different access needs
-- No backend yet, so the frontend had to be API-ready
-- Real-time data visualization to build for
-- Authentication and security that couldn't be hand-waved
-
-## My Approach
-
-### First: Architecture Planning
-
-- Designed the component structure so it could scale later
-- Planned the API integration points where the backend would eventually plug in
-- Established TypeScript patterns to keep things type-safe
-
-### Second: Authentication System
-
-- Wired up AWS Cognito for the authentication
-- Built a role-based access control system on top of it
-- Carved out distinct permission levels for the different user types
-
-### Third: Role-Based Interfaces
-
-- **Shippers:** a dashboard for outbound logistics metrics
-- **Receivers:** inbound tracking and delivery management
-- **Sales Teams:** pipeline and customer metrics views
-
-### Fourth: Visualization Components
-
-- Built chart-ready components using modern patterns
-- Designed them to take real-time data updates
-- Made the layouts responsive for desktop and tablet
-
-## The Results
-
-| Deliverable            | Status       | Impact                           |
-| ---------------------- | ------------ | -------------------------------- |
-| Production-Ready MVP   | Delivered    | Supported investor presentations |
-| Timeline               | 3 months     | Met deadline                     |
-| Authentication         | AWS Cognito  | Secure, scalable                 |
-| Role-Based Access      | 3 user types | Distinct experiences             |
-| API-Ready Architecture | Complete     | Backend integration ready        |
-
-## Key Takeaways
-
-- **Professional relationships matter.** This whole thing came from a former CEO who'd valued my earlier work, not from a job board.
-- **MVP discipline is crucial.** I scoped it to fit the timeline while still building for the scale that would come later.
-- **Frontend-first can work.** Building API-ready components before the backend existed let both sides move in parallel.
-
-## Technologies Used
-
-Next.js, React, TypeScript, AWS Cognito, Role-Based Access Control, Chart.js, Tailwind CSS, Vercel
+Building API-ready components before the backend existed let both sides move in parallel instead of one waiting on the other, and that frontend-first sequencing is what kept a three-month MVP on schedule.
