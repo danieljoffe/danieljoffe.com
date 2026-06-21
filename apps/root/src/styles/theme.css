@@ -519,18 +519,3 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
     transform: rotate(0) scale(1);
   }
 }
-
-/* ─── Logo marquee ───
- * The track holds the items twice; translating -50% loops seamlessly because
- * every item carries a uniform right margin. Static under reduced motion. */
-@media (prefers-reduced-motion: no-preference) {
-  .marquee-track {
-    animation: marquee 30s linear infinite;
-  }
-}
-
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
