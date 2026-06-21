@@ -31,6 +31,7 @@ export function PostCard({
   analyticsType?: ContentType;
 }) {
   const navigate = useViewTransitionNavigate();
+  const coverName = `cover-${analyticsType}-${post.slug}`;
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     analyticsHandlers[analyticsType](post.slug);
@@ -48,9 +49,9 @@ export function PostCard({
     // Name the clicked cover so it — and only it — morphs into the detail
     // hero that carries the matching `view-transition-name`.
     const cover =
-      event.currentTarget.querySelector<HTMLElement>('[data-cover]');
+      event.currentTarget.querySelector<HTMLElement>('[data-cover-name]');
     if (cover) {
-      cover.style.viewTransitionName = `cover-${analyticsType}-${post.slug}`;
+      cover.style.viewTransitionName = coverName;
     }
     navigate(post.link.href);
   };
@@ -66,6 +67,7 @@ export function PostCard({
           src={post.cover.src}
           alt={post.cover.alt}
           priority={priority}
+          coverName={coverName}
         />
         {logo && (
           <div className='absolute bottom-3 left-3'>
