@@ -93,6 +93,8 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
         // commit. Bring the (now-named) destination into view so the new
         // snapshot captures it on-screen — otherwise the morph would target
         // its pre-restore, off-screen position and animate out of sight.
+        // `behavior: 'instant'` settles scroll + layout synchronously, so the
+        // new snapshot (captured the moment we resolve) sees the final state.
         // Breadcrumb pushes don't need this (they scroll to the top).
         if (recenter) {
           el.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -100,9 +102,10 @@ export function ViewTransitions({ children }: { children: ReactNode }) {
       }
     }
 
-    // Defer the snapshot one frame so the scroll/layout settles before the
-    // browser captures the new state.
-    requestAnimationFrame(() => resolve());
+    // Resolve synchronously: the browser suppresses rendering while it waits
+    // for this promise, so a requestAnimationFrame here would never fire and
+    // the transition would hang until the browser force-aborts it.
+    resolve();
   }, [pathname]);
 
   const beginTransition = useCallback(
