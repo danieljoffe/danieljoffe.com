@@ -23,14 +23,21 @@ export default function PostBody({
 
   return (
     <div className='flex flex-col gap-6'>
-      <BreadCrumbs items={breadcrumbs} />
+      <BreadCrumbs
+        items={breadcrumbs}
+        coverTransitionName={coverTransitionName}
+      />
 
       {/* Hero: title + cover image side by side on desktop */}
       <div className='flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10'>
         <Heading variant='detail' className='lg:flex-1 lg:min-w-0'>
           {title}
         </Heading>
-        <div className='lg:flex-1 lg:min-w-0'>
+        <div
+          className='lg:flex-1 lg:min-w-0'
+          data-vt-hero={coverTransitionName ? '' : undefined}
+          data-vt-name={coverTransitionName}
+        >
           <Image
             src={cover.src}
             alt={cover.alt}
