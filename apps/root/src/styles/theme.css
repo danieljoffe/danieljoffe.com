@@ -409,40 +409,34 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
 }
 
 /* ─── Scroll-reveal (progressive enhancement) ───
- * Content is fully visible by default. Only where the browser supports
- * scroll-driven animations AND the user has not requested reduced motion do
- * sections / grid items rise + fade as they scroll into view. No-JS, older
- * browsers, and reduced-motion all render everything immediately — content is
- * never hidden behind an animation that might not run.
+ * Content is fully visible by default. The hidden/animated state only applies
+ * once JS adds `.reveal-ready` to <html> (see the inline no-flash script in
+ * layout.tsx) AND the user has not requested reduced motion. So no-JS, JS
+ * failures, and reduced-motion all render everything immediately — content is
+ * never trapped behind a transition that might not run.
  *
- * `.reveal`         — animates the element itself (single-block sections).
- * `.reveal-stagger` — animates each direct child as it enters, so grid items
- *                     cascade in row by row on scroll.
+ * An IntersectionObserver (ScrollReveal.tsx) adds `.is-visible` as elements
+ * scroll into view, which drives the transition. Works in every modern
+ * browser (Chrome, Safari, Firefox) rather than relying on scroll-driven CSS.
+ *
+ * `.reveal`         — fades/rises the element itself (single-block sections).
+ * `.reveal-stagger` — fades/rises each direct child; the observer applies an
+ *                     incremental delay so grid items cascade in.
  */
 @media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: reveal-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 55%;
-    }
-
-    .reveal-stagger > * {
-      animation: reveal-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 5% cover 28%;
-    }
-  }
-}
-
-@keyframes reveal-rise {
-  from {
+  .reveal-ready .reveal,
+  .reveal-ready .reveal-stagger > * {
     opacity: 0;
-    transform: translateY(1rem);
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  to {
+
+  .reveal-ready .reveal.is-visible,
+  .reveal-ready .reveal-stagger > *.is-visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 

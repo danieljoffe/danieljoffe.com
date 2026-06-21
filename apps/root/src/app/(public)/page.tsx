@@ -31,6 +31,7 @@ import { CompanyLogo, PostCard } from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
+import { ScrollReveal } from '@/components/ScrollReveal';
 import HeroActions from '../home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
@@ -47,6 +48,7 @@ const featuredProjects = getContentByType('project')
 export default function Index() {
   return (
     <PageLayout>
+      <ScrollReveal />
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
