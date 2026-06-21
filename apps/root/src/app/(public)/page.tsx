@@ -9,8 +9,8 @@ import {
   Layers,
   Sparkles,
 } from 'lucide-react';
+import { Container } from '@danieljoffe/shared-ui/Container';
 import { CTACard } from '@danieljoffe/shared-ui/CTACard';
-// import { GridBg } from '@danieljoffe/shared-ui/GridBg';
 import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import { Section } from '@danieljoffe/shared-ui/Section';
 import { SectionLabel } from '@danieljoffe/shared-ui/SectionLabel';
@@ -32,6 +32,7 @@ import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
 import Button from '@/components/Button';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { HeroBackdrop } from '@/components/HeroBackdrop';
 import HeroActions from '../home/HeroActions';
 
 export const metadata: Metadata = homeMetadata;
@@ -52,27 +53,34 @@ export default function Index() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none'>
-        {/* <GridBg /> */}
-        <div className='relative space-y-6'>
-          <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
-            <IconText icon={<MapPin className='h-3.5 w-3.5' />}>
-              Los Angeles, CA
-            </IconText>
-            <IconText icon={<Briefcase className='h-3.5 w-3.5' />}>
-              10+ years
-            </IconText>
+      <Section
+        padding='none'
+        contain='none'
+        overflow='hidden'
+        className='py-8 md:py-12'
+      >
+        <HeroBackdrop />
+        <Container size='sm'>
+          <div className='relative space-y-6'>
+            <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
+              <IconText icon={<MapPin className='h-3.5 w-3.5' />}>
+                Los Angeles, CA
+              </IconText>
+              <IconText icon={<Briefcase className='h-3.5 w-3.5' />}>
+                10+ years
+              </IconText>
+            </div>
+
+            <Heading variant='hero'>{FULL_NAME}</Heading>
+            <Text variant='subtitle' className='max-w-2xl'>
+              Senior frontend engineer turned full-stack. I ship complete
+              products: Next.js frontends, Python/FastAPI backends, Postgres,
+              and the LLM pipelines in between.
+            </Text>
+
+            <HeroActions />
           </div>
-
-          <Heading variant='hero'>{FULL_NAME}</Heading>
-          <Text variant='subtitle' className='max-w-2xl'>
-            Senior frontend engineer turned full-stack. I ship complete
-            products: Next.js frontends, Python/FastAPI backends, Postgres, and
-            the LLM pipelines in between.
-          </Text>
-
-          <HeroActions />
-        </div>
+        </Container>
       </Section>
 
       {/* ══════════════════════════════════

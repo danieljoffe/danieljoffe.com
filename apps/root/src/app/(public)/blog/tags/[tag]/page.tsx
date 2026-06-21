@@ -58,7 +58,7 @@ export default async function TagDetailPage({ params }: TagPageProps) {
 
   return (
     <PageLayout>
-      <Section padding='none'>
+      <Section padding='none' className='py-8 md:py-12'>
         <BreadCrumbs
           items={[
             BLOG_LINK,

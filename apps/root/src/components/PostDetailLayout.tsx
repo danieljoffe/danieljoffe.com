@@ -19,7 +19,9 @@ export default function PostDetailLayout({
     <main
       id='main-content'
       tabIndex={-1}
-      className='w-full flex flex-col justify-center'
+      // scroll-mt keeps the post-navigation focus-scroll of this landmark at
+      // the top instead of scrolling the static nav off-screen.
+      className='w-full flex flex-col justify-center scroll-mt-16'
     >
       <div className='max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>
         <PostBody

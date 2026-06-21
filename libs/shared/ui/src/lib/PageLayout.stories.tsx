@@ -20,13 +20,19 @@ export const Default: Story = {
   },
 };
 
-export const Wide: Story = {
+export const WithSections: Story = {
   args: {
-    wide: true,
     children: (
-      <div className='p-8 bg-surface-secondary border border-border rounded-lg text-text-primary text-center'>
-        Wide page content
-      </div>
+      <>
+        {['First section', 'Second section', 'Third section'].map(label => (
+          <div
+            key={label}
+            className='p-8 bg-surface-secondary border border-border rounded-lg text-text-primary text-center'
+          >
+            {label}
+          </div>
+        ))}
+      </>
     ),
   },
 };
