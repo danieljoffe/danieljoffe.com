@@ -9,6 +9,7 @@ import {
   Layers,
   Sparkles,
 } from 'lucide-react';
+import { Container } from '@danieljoffe/shared-ui/Container';
 import { CTACard } from '@danieljoffe/shared-ui/CTACard';
 import { PageLayout } from '@danieljoffe/shared-ui/PageLayout';
 import { Section } from '@danieljoffe/shared-ui/Section';
@@ -52,9 +53,9 @@ export default function Index() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none'>
-        <div className='relative'>
-          <HeroBackdrop />
+      <Section padding='none' contain='none' overflow='hidden'>
+        <HeroBackdrop />
+        <Container size='sm'>
           <div className='relative space-y-6'>
             <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
               <IconText icon={<MapPin className='h-3.5 w-3.5' />}>
@@ -74,7 +75,7 @@ export default function Index() {
 
             <HeroActions />
           </div>
-        </div>
+        </Container>
       </Section>
 
       {/* ══════════════════════════════════

@@ -73,17 +73,7 @@ export function HeroBackdrop({
       });
     };
 
-    const layout = () => {
-      // Full-bleed to the page: span the document content width (excludes the
-      // scrollbar) anchored at the viewport's left edge, while staying as tall
-      // as the hero. Sizing in JS — rather than 100vw — keeps it perfectly
-      // flush and never adds a horizontal scrollbar.
-      const root = canvas.parentElement;
-      const host = root?.parentElement;
-      if (root && host) {
-        root.style.left = `${-host.getBoundingClientRect().left}px`;
-        root.style.width = `${document.documentElement.clientWidth}px`;
-      }
+    const resize = () => {
       const rect = canvas.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
@@ -120,12 +110,9 @@ export function HeroBackdrop({
       scheduleDraw();
     };
 
-    // Re-layout when the viewport width changes (incl. scrollbar show/hide).
-    // Observing the root element — not the canvas — avoids a feedback loop,
-    // since resizing the (absolute, clipped) backdrop never changes its size.
-    const observer = new ResizeObserver(layout);
-    observer.observe(document.documentElement);
-    layout();
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    resize();
 
     if (!reduce) {
       window.addEventListener('pointermove', onMove, { passive: true });
@@ -143,9 +130,9 @@ export function HeroBackdrop({
   return (
     <div
       aria-hidden='true'
+      // Fills its positioned ancestor — mount it in a full-bleed
+      // (`contain='none'`) Section so the grid spans the page edge to edge.
       className={cn(
-        // `inset-0` is the pre-hydration fallback; once mounted, the effect
-        // resizes this element to full page width (see `layout`).
         'pointer-events-none absolute inset-0 overflow-hidden',
         className
       )}

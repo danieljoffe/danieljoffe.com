@@ -1,39 +1,33 @@
-import { type ReactNode } from 'react';
-import { PageContainer, type PageContainerProps } from './PageContainer';
+import { type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
 
-export interface PageLayoutProps extends Omit<
-  PageContainerProps,
-  'as' | 'size'
-> {
+export interface PageLayoutProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
-  /** Use wider container (md) instead of default (sm) */
-  wide?: boolean;
 }
 
 /**
- * Standard page layout with `<main>` landmark, skip-nav target,
- * and consistent vertical spacing. Wraps PageContainer with
- * app-level defaults.
+ * Page shell: the `<main>` landmark and "Skip to main content" focus target,
+ * providing vertical rhythm between sections.
+ *
+ * It is full-width and imposes no max-width — each {@link Section} constrains
+ * its own content (see Section's `contain` prop). This lets a section go
+ * full-bleed (e.g. a hero with an edge-to-edge backdrop, or a full-width
+ * background band) without having to break out of a shared container.
  */
-export function PageLayout({
-  children,
-  wide = false,
-  className,
-  ...rest
-}: PageLayoutProps) {
+export function PageLayout({ children, className, ...rest }: PageLayoutProps) {
   return (
-    <PageContainer
-      as='main'
+    <main
       id='main-content'
-      // Focus target for the "Skip to main content" link — without a tabindex
-      // the browser can't move focus here when the skip link is activated.
+      // Without a tabindex the browser can't move focus here when the
+      // "Skip to main content" link is activated.
       tabIndex={-1}
-      size={wide ? 'lg' : 'sm'}
-      className={cn('py-16 lg:py-24 space-y-24', className)}
+      className={cn(
+        'flex w-full flex-col gap-y-16 py-8 lg:gap-y-20 lg:py-12',
+        className
+      )}
       {...rest}
     >
       {children}
-    </PageContainer>
+    </main>
   );
 }

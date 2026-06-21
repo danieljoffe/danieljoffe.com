@@ -17,11 +17,13 @@ export interface SectionProps extends Omit<
   /** Full width section */
   fullWidth?: boolean;
   /**
-   * Wrap children in a Container with the given size.
-   * Use this for standalone sections (outside PageLayout) that need
-   * their own max-width constraint and horizontal padding.
+   * Constrain the section's content to a max-width Container. Defaults to
+   * `'sm'`, so a Section contains its own content (full-width bar, centered
+   * column). Pass a larger size for wide layouts, or `'none'` for a full-bleed
+   * section that manages its own width — e.g. a hero with an edge-to-edge
+   * backdrop and a separately-contained content column.
    */
-  contain?: ContainerSize | undefined;
+  contain?: ContainerSize | 'none' | undefined;
   className?: string;
 }
 
@@ -54,15 +56,16 @@ export function Section({
   center = false,
   overflow = 'visible',
   fullWidth = true,
-  contain,
+  contain = 'sm',
   className,
   ...rest
 }: SectionProps) {
-  const content = contain ? (
-    <Container size={contain}>{children}</Container>
-  ) : (
-    children
-  );
+  const content =
+    contain === 'none' ? (
+      children
+    ) : (
+      <Container size={contain}>{children}</Container>
+    );
 
   const isElevated = background === 'elevated';
 

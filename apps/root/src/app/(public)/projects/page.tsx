@@ -32,11 +32,11 @@ export const metadata: Metadata = projectRootMetadata;
 
 export default function Projects() {
   return (
-    <PageLayout wide>
+    <PageLayout>
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' contain='lg'>
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Case studies from the field</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
@@ -49,7 +49,7 @@ export default function Projects() {
       {/* ══════════════════════════════════
           THINGS I'VE BUILT
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' contain='lg'>
         <SectionLabel
           icon={<Code className='h-3.5 w-3.5' />}
           label="Things I've built"
@@ -64,7 +64,7 @@ export default function Projects() {
       {/* ══════════════════════════════════
           PROJECT GRID
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' contain='lg'>
         <SectionLabel
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'
