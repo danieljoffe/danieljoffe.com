@@ -53,9 +53,14 @@ export default function Index() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none' contain='none' overflow='hidden'>
+      <Section
+        padding='none'
+        contain='none'
+        overflow='hidden'
+        className='py-8 md:py-12'
+      >
         <HeroBackdrop />
-        <Container size='sm' className='pt-16 lg:pt-28'>
+        <Container size='sm'>
           <div className='relative space-y-6'>
             <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
               <IconText icon={<MapPin className='h-3.5 w-3.5' />}>

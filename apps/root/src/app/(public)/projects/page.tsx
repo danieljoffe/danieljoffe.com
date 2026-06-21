@@ -36,7 +36,7 @@ export default function Projects() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none' contain='lg' className='pt-12 lg:pt-20'>
+      <Section padding='none' contain='lg' className='py-8 md:py-12'>
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Case studies from the field</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>

@@ -17,7 +17,7 @@ export default function TagsIndexPage() {
 
   return (
     <PageLayout>
-      <Section padding='none' className='pt-8 lg:pt-12'>
+      <Section padding='none' className='py-8 md:py-12'>
         <Button as='link' variant='bare' size='sm' href={'/blog'}>
           ← Back to Blog
         </Button>

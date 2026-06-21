@@ -28,7 +28,7 @@ export default function ExperiencePage() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none' className='pt-12 lg:pt-20'>
+      <Section padding='none' className='py-8 md:py-12'>
         <div className='text-center space-y-4'>
           <Heading variant='hero'>Where I&apos;ve worked, what I built</Heading>
           <Text variant='subtitle' className='max-w-xl mx-auto'>
