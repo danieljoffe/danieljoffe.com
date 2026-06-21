@@ -8,6 +8,8 @@ const GOOGLE_DOCS_URL = 'https://docs.google.com';
 const EXAMPLE_URL = 'https://example.com';
 const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
 const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
+// GA4 Google Signals sends a beacon to google.com/g/collect (connect-src only).
+const GOOGLE_URL = 'https://www.google.com';
 const SENTRY_URL = 'https://www.sentry.io';
 const SENTRY_INGEST_URL = 'https://*.ingest.us.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
@@ -41,6 +43,7 @@ export const allowedImageOrigins = [
 
 export const allowedOrigins = [
   ...allowedImageOrigins,
+  GOOGLE_URL,
   DOMAIN_URL,
   SENTRY_URL,
   SENTRY_INGEST_URL,
