@@ -450,3 +450,21 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── View transitions (card cover → detail-page hero morph) ───
+ * The navigation wrapper (ViewTransitions.tsx) drives the morph and already
+ * skips it under reduced motion; this just eases the default timing and, as a
+ * safety net, neutralizes any view-transition the browser may run when motion
+ * is not wanted (pseudo-elements aren't matched by the `*` rule above). */
+::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

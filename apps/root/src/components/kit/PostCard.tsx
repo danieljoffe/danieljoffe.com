@@ -1,5 +1,6 @@
 'use client';
 
+import { type MouseEvent } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Clock } from 'lucide-react';
 import { Badge } from '@danieljoffe/shared-ui/Badge';
@@ -8,6 +9,7 @@ import { IconText } from '@danieljoffe/shared-ui/IconText';
 import { Text } from '@danieljoffe/shared-ui/Text';
 import { analytics } from '@/lib/analytics';
 import { ContentType, PostThumbnail } from '@/types/postTypes';
+import { useViewTransitionNavigate } from '@/components/ViewTransitions';
 import { CoverImage } from './CoverImage';
 import { CompanyLogo } from './CompanyLogo';
 
@@ -28,8 +30,29 @@ export function PostCard({
   priority?: boolean;
   analyticsType?: ContentType;
 }) {
-  const handleClick = () => {
+  const navigate = useViewTransitionNavigate();
+
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     analyticsHandlers[analyticsType](post.slug);
+    // Let the browser handle modified clicks (open in new tab, etc.).
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.button !== 0
+    ) {
+      return;
+    }
+    event.preventDefault();
+    // Name the clicked cover so it — and only it — morphs into the detail
+    // hero that carries the matching `view-transition-name`.
+    const cover =
+      event.currentTarget.querySelector<HTMLElement>('[data-cover]');
+    if (cover) {
+      cover.style.viewTransitionName = `cover-${analyticsType}-${post.slug}`;
+    }
+    navigate(post.link.href);
   };
 
   return (
