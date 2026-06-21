@@ -8,7 +8,6 @@ const projectSlugs = {
   csCLibrary: 'component-library-case-study',
   csCMSTooling: 'cms-tooling-case-study',
   csA11y: 'accessibility-serials-study-case',
-  csModernPractice: 'portfolio-modern-practice-study-case',
   csLogisticsDashboard: 'logistics-dashboard-study-case',
   csContactForm: 'contact-form-case-study',
   csAppContext: 'appcontext-simplification-case-study',

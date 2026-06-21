@@ -12,7 +12,7 @@ describe('contentRegistry', () => {
   describe('getContentByType', () => {
     it('returns all project entries in order', () => {
       const projects = getContentByType('project');
-      expect(projects.length).toBe(15);
+      expect(projects.length).toBe(14);
       expect(projects[0].type).toBe('project');
       expect(projects[0].slug).toBe('ui-components-v1');
     });
@@ -72,7 +72,7 @@ describe('contentRegistry', () => {
       const slugs = getContentSlugs('project');
       expect(slugs).toContain('ui-components-v1');
       expect(slugs).toContain('ui-components-v2');
-      expect(slugs.length).toBe(15);
+      expect(slugs.length).toBe(14);
     });
 
     it('returns experience slugs', () => {
@@ -142,7 +142,7 @@ describe('contentRegistry', () => {
   describe('getAllContent', () => {
     it('returns all entries (projects + experience)', () => {
       const all = getAllContent();
-      expect(all.length).toBe(69); // 15 projects + 5 experiences + 49 blogs
+      expect(all.length).toBe(68); // 14 projects + 5 experiences + 49 blogs
     });
 
     it('contains entries of all types', () => {
@@ -176,7 +176,7 @@ describe('contentRegistry', () => {
         return `${type}:\n${rows}`;
       }).join('\n\n');
       console.info(`\nResolved content display order:\n${report}\n`);
-      expect(getAllContent().length).toBe(69);
+      expect(getAllContent().length).toBe(68);
     });
   });
 });
