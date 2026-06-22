@@ -67,7 +67,7 @@ export default function Index() {
         <Container size='sm'>
           <div className='relative space-y-6'>
             <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
-              <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:text-emerald-300'>
+              <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'>
                 <span
                   className='h-1.5 w-1.5 rounded-full bg-emerald-600'
                   aria-hidden='true'
