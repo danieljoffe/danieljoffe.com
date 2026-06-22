@@ -8,6 +8,7 @@ import {
   Heart,
   MessageCircle,
   ChevronRight,
+  FileText,
 } from 'lucide-react';
 import { Badge } from '@danieljoffe/shared-ui/Badge';
 import { CTACard } from '@danieljoffe/shared-ui/CTACard';
@@ -28,6 +29,7 @@ import {
   FULL_NAME,
   JOB_TITLE,
   EXPERIENCE_LINK,
+  RESUME_LINK,
   EMAIL_ADDRESS,
 } from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
@@ -89,6 +91,17 @@ export default function About() {
                   {JOB_TITLE}
                 </Text>
                 <SocialLinks />
+                <div className='flex justify-center sm:justify-start'>
+                  <Button
+                    as='link'
+                    href={RESUME_LINK.href}
+                    variant='outline'
+                    size='sm'
+                  >
+                    <FileText className='h-4 w-4' />
+                    View résumé
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

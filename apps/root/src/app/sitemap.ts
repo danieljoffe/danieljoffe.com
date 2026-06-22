@@ -8,6 +8,7 @@ import {
   POSTS_PER_PAGE,
   PROJECTS_LINK,
   PROJECTS_TAGS_LINK,
+  RESUME_LINK,
 } from '@/utils/constants';
 import { experiencePageSlugs } from '@/data/experience';
 import { projectPageSlugs } from '@/data/project';
@@ -49,6 +50,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: BUILD_DATE,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
+    },
+    {
+      url: `${DOMAIN_URL}${RESUME_LINK.href}`,
+      lastModified: BUILD_DATE,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
     },
   ];
 

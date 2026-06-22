@@ -109,6 +109,7 @@ export const EXPERIENCE_LINK: NavLink = {
   label: 'Experience',
 };
 export const BLOG_LINK: NavLink = { href: '/blog', label: 'Blog' };
+export const RESUME_LINK: NavLink = { href: '/resume', label: 'Résumé' };
 export const BLOG_TAGS_LINK: NavLink = {
   href: '/blog/tags',
   label: 'Tags',
@@ -132,7 +133,7 @@ export const PRIMARY_NAV_LINKS: NavLink[] = [
 ];
 
 /** Secondary nav links — shown in "More" dropdown on desktop, bottom sheet on mobile */
-export const MORE_NAV_LINKS: NavLink[] = [BLOG_LINK];
+export const MORE_NAV_LINKS: NavLink[] = [BLOG_LINK, RESUME_LINK];
 
 /**
  * External destinations shown in the "More" menu, after the internal links.
