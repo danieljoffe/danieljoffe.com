@@ -12,6 +12,7 @@ import {
   Search,
   User,
   BookOpen,
+  FileText,
   Sparkles,
   Blocks,
   ExternalLink,
@@ -35,9 +36,15 @@ const primaryIcons: Record<string, typeof Briefcase> = {
   '/about': User,
 };
 
+const moreSheetIcons: Record<string, typeof Briefcase> = {
+  '/about': User,
+  '/blog': BookOpen,
+  '/resume': FileText,
+};
+
 const moreSheetLinks = MORE_NAV_LINKS.map(link => ({
   ...link,
-  icon: link.href === '/about' ? User : BookOpen,
+  icon: moreSheetIcons[link.href] ?? BookOpen,
 }));
 
 const externalIcons: Record<string, typeof Briefcase> = {

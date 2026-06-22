@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, User, BookOpen, Sparkles, Blocks } from 'lucide-react';
+import {
+  ChevronDown,
+  User,
+  BookOpen,
+  Sparkles,
+  Blocks,
+  FileText,
+} from 'lucide-react';
 import Image from 'next/image';
 import { Dropdown, type DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
 import { cn } from '@/lib/cn';
@@ -19,6 +26,7 @@ import DarkModeToggle from './DarkModeToggle';
 const moreIcons: Record<string, React.ReactNode> = {
   '/about': <User className='h-4 w-4' />,
   '/blog': <BookOpen className='h-4 w-4' />,
+  '/resume': <FileText className='h-4 w-4' />,
 };
 
 const externalIcons: Record<string, React.ReactNode> = {

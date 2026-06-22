@@ -2,7 +2,7 @@
 // résumé Google Doc (RESUME_URL); transcribed here so the page is indexable,
 // linkable, and styled to match the rest of the site. Keep in sync with the Doc.
 
-export interface ResumeRole {
+interface ResumeRole {
   company: string;
   role: string;
   period: string;
@@ -10,17 +10,17 @@ export interface ResumeRole {
   bullets: string[];
 }
 
-export interface ResumeSkillGroup {
+interface ResumeSkillGroup {
   label: string;
   skills: string[];
 }
 
-export interface ResumeProject {
+interface ResumeProject {
   name: string;
   description: string;
 }
 
-export interface ResumeEducation {
+interface ResumeEducation {
   school: string;
   credential: string;
   detail: string | undefined;
