@@ -9,6 +9,7 @@ jest.mock('@/utils/constants', () => ({
   POSTS_PER_PAGE: 12,
   PROJECTS_LINK: { href: '/projects' },
   PROJECTS_TAGS_LINK: { href: '/projects/tags' },
+  RESUME_LINK: { href: '/resume' },
 }));
 
 jest.mock('@/lib/tags', () => ({
@@ -45,6 +46,7 @@ describe('sitemap', () => {
     expect(urls).toContain('https://danieljoffe.com/projects');
     expect(urls).toContain('https://danieljoffe.com/experience');
     expect(urls).toContain('https://danieljoffe.com/blog');
+    expect(urls).toContain('https://danieljoffe.com/resume');
     expect(urls).not.toContain('https://danieljoffe.com/audit');
     expect(urls).not.toContain('https://danieljoffe.com/audit/insights');
   });
