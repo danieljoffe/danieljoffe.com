@@ -42,8 +42,12 @@ const companies = getContentByType('experience').map(e => ({
   company: e.metadata.company ?? e.metadata.title,
   logo: e.metadata.logo,
 }));
+// Reversed so the grid leads with the newest, full-stack flagship work
+// (WyrdFold, api-performance, job-pipeline) rather than the oldest frontend
+// studies — matches the descending order on /projects.
 const featuredProjects = getContentByType('project')
   .filter(e => e.thumbnail.featured)
+  .reverse()
   .map(e => e.thumbnail);
 
 export default function Index() {
@@ -63,6 +67,13 @@ export default function Index() {
         <Container size='sm'>
           <div className='relative space-y-6'>
             <div className='flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-tertiary'>
+              <span className='inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'>
+                <span
+                  className='h-1.5 w-1.5 rounded-full bg-emerald-600'
+                  aria-hidden='true'
+                />
+                Open to full-time roles
+              </span>
               <IconText icon={<MapPin className='h-3.5 w-3.5' />}>
                 Los Angeles, CA
               </IconText>
