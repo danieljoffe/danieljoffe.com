@@ -142,16 +142,26 @@ export default function Index() {
             />
           </div>
         </TrackedExternalLink>
-        <TrackedButtonLink
-          ctaName='home_llm_pipelines'
-          href='/blog/operating-llm-pipelines-in-production'
-          variant='ghost'
-          size='sm'
-          className='mt-3'
-        >
-          How I operate the LLM pipelines
-          <ArrowUpRight className='h-4 w-4' />
-        </TrackedButtonLink>
+        <div className='mt-3 flex flex-wrap gap-2'>
+          <TrackedButtonLink
+            ctaName='home_wyrdfold_case_study'
+            href='/projects/wyrdfold-case-study'
+            variant='secondary'
+            size='sm'
+          >
+            Read the case study
+            <ArrowUpRight className='h-4 w-4' />
+          </TrackedButtonLink>
+          <TrackedButtonLink
+            ctaName='home_llm_pipelines'
+            href='/blog/operating-llm-pipelines-in-production'
+            variant='ghost'
+            size='sm'
+          >
+            How I operate the LLM pipelines
+            <ArrowUpRight className='h-4 w-4' />
+          </TrackedButtonLink>
+        </div>
       </Section>
 
       {/* ══════════════════════════════════

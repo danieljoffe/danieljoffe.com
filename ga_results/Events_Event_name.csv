@@ -1,0 +1,23 @@
+# ----------------------------------------
+# Events: Event name
+# Account: portfolio-analytics
+# Property: danieljoffe.com
+# ----------------------------------------
+# 
+# All Users
+# Start date: 20260525
+# End date: 20260621
+Event name,Event count,Total users,Event count per active user,Total revenue
+page_view,103,36,2.861111111111111,0
+user_engagement,52,10,5.2,0
+session_start,51,36,1.4166666666666667,0
+first_visit,35,35,1,0
+scroll,26,9,2.888888888888889,0
+nav_click,14,4,3.5,0
+form_start,7,2,3.5,0
+click,5,4,1.25,0
+audit_scan_failed,2,1,2,0
+audit_scan_started,2,1,2,0
+audit_scan_completed,1,1,1,0
+cta_click,1,1,1,0
+exception,1,1,1,0

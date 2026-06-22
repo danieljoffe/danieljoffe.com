@@ -1,0 +1,14 @@
+# ----------------------------------------
+# Traffic acquisition: Session primary channel group (Default Channel Group)
+# Account: portfolio-analytics
+# Property: danieljoffe.com
+# ----------------------------------------
+# 
+# All Users
+# Start date: 20260525
+# End date: 20260621
+Session primary channel group (Default Channel Group),Sessions,Engaged sessions,Engagement rate,Average engagement time per session,Events per session,Event count,Key events,Session key event rate,Total revenue
+Direct,40,11,0.275,162.65,6.25,250,0,0,0
+Referral,6,4,0.6666666666666666,71.66666666666667,4.166666666666667,25,0,0,0
+Organic Search,5,3,0.6,27.4,4.6,23,0,0,0
+Unassigned,2,0,0,19738,1,2,0,0,0
