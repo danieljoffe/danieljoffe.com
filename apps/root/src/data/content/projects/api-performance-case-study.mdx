@@ -145,6 +145,22 @@ The `ALLOWED_HOSTS` configuration now raises a `RuntimeError` at import time whe
 | Phased `asyncio.gather` on DB ops  | 4 serial DB round trips reduced to 2 parallel phases              |
 | JWT `exp`/`sub` requirement        | Tokens without expiration or subject rejected                     |
 
+## Putting numbers on it
+
+The audit-api wins predate the telemetry I keep now, so they stay qualitative. The job-api changes I could measure, so I did — a read-only benchmark that toggles each optimization off and on against the live service, forty trials apiece.
+
+Connection reuse was the one that mattered. Fetching a board eight times with a fresh `httpx.AsyncClient` per call — a new TCP and TLS handshake every time — averaged 1,860 ms; the shared pooled client did the same work in 947 ms. The tail moved further than the mean: p95 dropped from roughly 8.9 s to 2.6 s, because every cold handshake was another chance to land on a slow path.
+
+Overlapping the two independent reads in a poll phase with `asyncio.gather` and `to_thread` took that phase from 284 ms to 191 ms at the mean, 279 ms to 172 ms at the median — about a third. That fits: the phase now costs the slower query instead of the sum of the two. (Its p95 wandered the other way, but at forty trials I trust the mean and median more than the tail.) Reusing the Supabase client instead of rebuilding it per call handed back the ~3.4 ms of construction it had been spending on every request.
+
+| Change (job-api)                 | Before → after                                |
+| -------------------------------- | --------------------------------------------- |
+| Shared `httpx` client, 8 fetches | 1,860 → 947 ms mean (−49%); p95 8.9 s → 2.6 s |
+| Phased `asyncio.gather` DB reads | 284 → 191 ms mean (−33%); p50 279 → 172 ms    |
+| Reused Supabase client           | ~3.4 ms of per-request construction removed   |
+
+These are a benchmark snapshot from June 2026, not production telemetry — they size each effect rather than pin it, and they'll drift with network and load.
+
 ## Takeaway
 
 Pool the expensive resources at the process level and isolate per-request state with lightweight contexts; parallelize the I/O that doesn't share mutable state. And check that `async` actually buys you concurrency, because a synchronous library wrapped in `async def` still blocks the loop unless you hand it off with `asyncio.to_thread`.
