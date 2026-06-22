@@ -26,11 +26,16 @@ import {
   ABOUT_LINK,
   CONTACT_FORM_ID,
   EXPERIENCE_LINK,
+  WYRDFOLD_URL,
 } from '@/utils/constants';
-import { CompanyLogo, PostCard } from '@/components/kit';
+import {
+  CompanyLogo,
+  PostCard,
+  TrackedButtonLink,
+  TrackedExternalLink,
+} from '@/components/kit';
 import { cardBase } from '@/lib/layoutStyles';
 import { cn } from '@/lib/cn';
-import Button from '@/components/Button';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { HeroBackdrop } from '@/components/HeroBackdrop';
 import HeroActions from '../home/HeroActions';
@@ -104,10 +109,9 @@ export default function Index() {
           icon={<Sparkles className='h-3.5 w-3.5' />}
           label='Currently building'
         />
-        <a
-          href='https://wyrdfold.com'
-          target='_blank'
-          rel='noopener noreferrer'
+        <TrackedExternalLink
+          ctaName='home_wyrdfold_card'
+          href={WYRDFOLD_URL}
           className={cn(
             cardBase,
             'group block p-5 hover:border-border-secondary transition-colors'
@@ -137,9 +141,9 @@ export default function Index() {
               aria-hidden='true'
             />
           </div>
-        </a>
-        <Button
-          as='link'
+        </TrackedExternalLink>
+        <TrackedButtonLink
+          ctaName='home_llm_pipelines'
           href='/blog/operating-llm-pipelines-in-production'
           variant='ghost'
           size='sm'
@@ -147,7 +151,7 @@ export default function Index() {
         >
           How I operate the LLM pipelines
           <ArrowUpRight className='h-4 w-4' />
-        </Button>
+        </TrackedButtonLink>
       </Section>
 
       {/* ══════════════════════════════════
@@ -225,15 +229,15 @@ export default function Index() {
           ))}
         </div>
         <div className='flex justify-center pt-4'>
-          <Button
-            as='link'
+          <TrackedButtonLink
+            ctaName='home_view_all_projects'
             href={PROJECTS_LINK.href}
             variant='secondary'
             size='sm'
           >
             View all projects
             <ArrowUpRight className='h-4 w-4' />
-          </Button>
+          </TrackedButtonLink>
         </div>
       </Section>
 
@@ -282,23 +286,23 @@ export default function Index() {
           }
         >
           <div className='flex flex-wrap justify-center gap-3'>
-            <Button
-              as='link'
+            <TrackedButtonLink
+              ctaName='home_start_conversation'
               href={`${ABOUT_LINK.href}?scrollTo=${CONTACT_FORM_ID}`}
               size='sm'
             >
               <Mail className='h-4 w-4' />
               Start a conversation
-            </Button>
-            <Button
-              as='link'
+            </TrackedButtonLink>
+            <TrackedButtonLink
+              ctaName='home_view_my_work'
               href={PROJECTS_LINK.href}
               variant='secondary'
               size='sm'
             >
               <ArrowUpRight className='h-4 w-4' />
               View my work
-            </Button>
+            </TrackedButtonLink>
           </div>
         </CTACard>
       </Section>
