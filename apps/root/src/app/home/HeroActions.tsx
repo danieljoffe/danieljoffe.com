@@ -34,17 +34,19 @@ export default function HeroActions() {
         <Download className='h-4 w-4' />
         Download resume
       </Button>
-      <a
+      <Button
+        as='link'
         href={`mailto:${EMAIL_ADDRESS}`}
+        variant='secondary'
+        size='sm'
         aria-label={`Email ${EMAIL_ADDRESS}`}
-        className='inline-flex items-center gap-1.5 text-sm text-text-tertiary hover:text-text-primary transition-colors'
         onClick={() =>
           analytics.ctaClick('email_hero', `mailto:${EMAIL_ADDRESS}`)
         }
       >
         <Mail className='h-4 w-4' />
         {EMAIL_ADDRESS}
-      </a>
+      </Button>
     </div>
   );
 }
