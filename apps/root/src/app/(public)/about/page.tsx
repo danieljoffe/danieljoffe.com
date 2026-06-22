@@ -24,7 +24,12 @@ import { experiencePageSlugs } from '@/data/experience';
 import { getContentBySlug } from '@/data/contentRegistry';
 import { getContentByTag, tagToSlug } from '@/lib/tags';
 import { AllowedExperienceSlugs } from '@/types/base';
-import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
+import {
+  FULL_NAME,
+  JOB_TITLE,
+  EXPERIENCE_LINK,
+  EMAIL_ADDRESS,
+} from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
 import Button from '@/components/Button';
 import SocialLinks from './SocialLinks';
@@ -300,6 +305,16 @@ export default function About() {
           <Text variant='meta' as='p'>
             <span className='font-semibold'>Response time:</span> Usually within
             24 hours
+          </Text>
+          <Text variant='meta' as='p'>
+            Prefer email? Reach me directly at{' '}
+            <a
+              href={`mailto:${EMAIL_ADDRESS}`}
+              className='font-medium text-brand-500 hover:underline'
+            >
+              {EMAIL_ADDRESS}
+            </a>
+            .
           </Text>
           <ContactForm />
         </CTACard>
