@@ -88,14 +88,14 @@ describe('Contact Form', () => {
     expect(screen.getByLabelText(/name/i)).toBeRequired();
     expect(screen.getByLabelText(/email/i)).toBeRequired();
     expect(screen.getByLabelText(/message/i)).toBeRequired();
-    expect(screen.getByRole('button', { name: /submit/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /send message/i })).toBeEnabled();
   });
 
   it('shows validation errors when submitting empty fields', async () => {
     const user = userEvent.setup();
     render(<Form />);
 
-    await user.click(screen.getByRole('button', { name: /submit/i }));
+    await user.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => {
       expect(screen.getByLabelText(/name/i)).toHaveAttribute(
@@ -111,7 +111,7 @@ describe('Contact Form', () => {
     render(<Form />);
 
     await fillValidFields(user);
-    await user.click(screen.getByRole('button', { name: /submit/i }));
+    await user.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/captcha/i);
@@ -131,7 +131,7 @@ describe('Contact Form', () => {
     await user.click(
       await screen.findByRole('button', { name: /solve captcha/i })
     );
-    await user.click(screen.getByRole('button', { name: /submit/i }));
+    await user.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
@@ -157,7 +157,7 @@ describe('Contact Form', () => {
     await user.click(
       await screen.findByRole('button', { name: /solve captcha/i })
     );
-    await user.click(screen.getByRole('button', { name: /submit/i }));
+    await user.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(

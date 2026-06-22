@@ -7,24 +7,6 @@ function trackEvent(eventName: string, params?: EventParams) {
   window.gtag?.('event', eventName, params ?? {});
 }
 
-const FUNNEL_SESSION_KEY = 'audit_funnel_session_id';
-
-function generateFunnelSessionId(): string {
-  const id = `fs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  sessionStorage.setItem(FUNNEL_SESSION_KEY, id);
-  return id;
-}
-
-function getFunnelSessionId(): string | undefined {
-  if (typeof window === 'undefined') return undefined;
-  return sessionStorage.getItem(FUNNEL_SESSION_KEY) ?? undefined;
-}
-
-function funnelParams(): EventParams {
-  const id = getFunnelSessionId();
-  return id ? { funnel_session_id: id } : {};
-}
-
 export const analytics = {
   // Navigation events
   navClick: (label: string) => trackEvent('nav_click', { link_label: label }),
@@ -53,36 +35,4 @@ export const analytics = {
   // Theme events
   themeToggle: (theme: 'light' | 'dark' | 'system') =>
     trackEvent('theme_toggle', { theme }),
-
-  // Audit funnel events — all share a funnel_session_id for GA4 funnel analysis
-  auditScanStarted: (url: string) => {
-    const funnel_session_id = generateFunnelSessionId();
-    trackEvent('audit_scan_started', { url, funnel_session_id });
-  },
-  auditScanCompleted: (scanId: string, grade: string) =>
-    trackEvent('audit_scan_completed', {
-      scan_id: scanId,
-      grade,
-      ...funnelParams(),
-    }),
-  auditScanFailed: (url: string, error: string) =>
-    trackEvent('audit_scan_failed', {
-      url,
-      error_message: error,
-      ...funnelParams(),
-    }),
-  auditEmailCaptured: (scanId: string) =>
-    trackEvent('audit_email_captured', {
-      scan_id: scanId,
-      ...funnelParams(),
-    }),
-  auditCalendlyClicked: () =>
-    trackEvent('audit_calendly_clicked', {
-      ...funnelParams(),
-    }),
-  auditReportShared: (scanId: string) =>
-    trackEvent('audit_report_shared', {
-      scan_id: scanId,
-      ...funnelParams(),
-    }),
 };

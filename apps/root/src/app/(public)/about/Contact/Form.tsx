@@ -257,7 +257,7 @@ export default function Form() {
                 DISABLED,
                 errors?.message && FIELD_ERROR
               )}
-              placeholder={`Hello, I'm interested in your services.\n\nBest regards,\nJohn Doe`}
+              placeholder="Hi Daniel — we're hiring a full-stack engineer and your work caught my eye. Are you open to a conversation?"
               autoComplete='off'
               rows={5}
               required
@@ -315,7 +315,7 @@ export default function Form() {
           }
           name='submit'
         >
-          {isSubmitting ? 'Submitting...' : 'Submit'}
+          {isSubmitting ? 'Sending…' : 'Send message'}
         </Button>
       </div>
 

@@ -30,6 +30,7 @@ import {
   JOB_TITLE,
   EXPERIENCE_LINK,
   RESUME_LINK,
+  EMAIL_ADDRESS,
 } from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
 import Button from '@/components/Button';
@@ -317,6 +318,16 @@ export default function About() {
           <Text variant='meta' as='p'>
             <span className='font-semibold'>Response time:</span> Usually within
             24 hours
+          </Text>
+          <Text variant='meta' as='p'>
+            Prefer email? Reach me directly at{' '}
+            <a
+              href={`mailto:${EMAIL_ADDRESS}`}
+              className='font-medium text-brand-500 hover:underline'
+            >
+              {EMAIL_ADDRESS}
+            </a>
+            .
           </Text>
           <ContactForm />
         </CTACard>
