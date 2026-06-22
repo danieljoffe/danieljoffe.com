@@ -61,6 +61,14 @@ export default function Form() {
   const { toast } = useToast();
   const [shouldLoadCaptcha, setShouldLoadCaptcha] = useState(false);
   const captchaContainerRef = useRef<HTMLDivElement>(null);
+  // Fire form_engage once, on the first real field focus (form_start only means
+  // the form scrolled into view). focus bubbles via React's onFocus → focusin.
+  const engagedRef = useRef(false);
+  const handleFirstEngage = () => {
+    if (engagedRef.current) return;
+    engagedRef.current = true;
+    analytics.formEngage('contact');
+  };
 
   const {
     register,
@@ -169,6 +177,7 @@ export default function Form() {
       id={CONTACT_FORM_ID}
       className='flex flex-col gap-4 relative'
       onSubmit={handleSubmit(onSubmit)}
+      onFocus={handleFirstEngage}
       action=''
       aria-labelledby='contact-form-heading'
       noValidate
