@@ -95,6 +95,9 @@ apps/root/src/data/generated/
 .claude/settings.local.json
 .claude/scratch/
 
+# Local analytics exports (GA CSVs etc.) — never commit
+ga_results/
+
 .nx/key/
 
 .nx/polygraph
