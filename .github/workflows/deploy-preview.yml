@@ -3,10 +3,12 @@ name: Deploy Preview
 # Auto-deploys a Vercel preview for the root app on every PR to develop and
 # posts the URL as a PR comment. PRs to main are handled by ci-preview.yml.
 #
-# The root project's Vercel Git-integration build is disabled (dashboard
-# "Ignored Build Step"), so feature-branch previews would otherwise never
-# build. This workflow drives the preview from CI using the same vercel-deploy
-# action production uses, so previews are generated automatically.
+# Vercel's native Git auto-deploy is disabled for both projects via
+# `git.deploymentEnabled: false` (apps/root/vercel.json,
+# libs/shared/ui/vercel.json) to stay under the free-tier daily deploy cap, so
+# all deploys are CI-driven: previews here + in ci-preview.yml, production in
+# deploy-production.yml. This workflow drives the develop-PR preview using the
+# same vercel-deploy action production uses.
 
 on:
   pull_request:
