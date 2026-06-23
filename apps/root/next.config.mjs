@@ -330,7 +330,7 @@ const finalConfig =
         // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
         org: 'testing-b1',
-        project: 'javascript-nextjs',
+        project: 'danieljoffe-portfolio',
 
         // Only print logs for uploading source maps in CI
         silent: !isCI,
