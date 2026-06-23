@@ -7,6 +7,11 @@ name: Update Visual Baselines
 
 on:
   workflow_dispatch:
+  # TEMP bootstrap: the repo default branch is `main`, so workflow_dispatch is
+  # unavailable until this lands there. This push trigger generates the initial
+  # Linux baselines onto the feature branch; remove it once they're committed.
+  push:
+    branches: [feat/shared-ui-visual-regression]
 
 permissions:
   contents: write
@@ -46,7 +51,11 @@ jobs:
         timeout-minutes: 5
         run: pnpm exec playwright install chromium
 
+      # Tolerate a non-zero exit: on first generation toMatchScreenshot reports
+      # "reference created" as a failure, but the PNGs are written to disk and
+      # that is all we need to commit.
       - name: Regenerate visual baselines
+        continue-on-error: true
         env:
           VITEST_VISUAL: 'true'
         run: pnpm nx run @danieljoffe/shared-ui:test-storybook --skip-nx-cache -- --project=visual --update
@@ -59,6 +68,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No baseline changes."
           else
-            git commit -m "chore(visual): update shared-ui visual baselines from CI"
+            git commit -m "chore(visual): update shared-ui visual baselines from CI [skip ci]"
             git push
           fi
