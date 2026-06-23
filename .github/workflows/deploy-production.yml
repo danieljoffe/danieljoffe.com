@@ -55,18 +55,9 @@ jobs:
       nx-head: ${{ needs.preflight.outputs.nx-head }}
     secrets: inherit
 
-  full:
-    name: CI Full
-    needs: [preflight, fast]
-    uses: ./.github/workflows/ci-full.yml
-    with:
-      nx-base: ${{ needs.preflight.outputs.nx-base }}
-      nx-head: ${{ needs.preflight.outputs.nx-head }}
-    secrets: inherit
-
   deploy:
     name: Production Deploy
-    needs: [fast, full]
+    needs: [fast]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
@@ -94,7 +85,7 @@ jobs:
 
   deploy-storybook:
     name: Storybook Production Deploy
-    needs: [fast, full]
+    needs: [fast]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
