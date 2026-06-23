@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   preview:
-    name: Vercel Preview
+    name: Vercel Preview (develop)
     # Skip drafts; the ready_for_review trigger runs it once the PR is opened.
     if: ${{ github.event.pull_request.draft != true }}
     runs-on: ubuntu-latest
