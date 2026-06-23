@@ -32,9 +32,14 @@ test.describe('project listing and tag filtering', () => {
     // Click the tag to filter
     await firstTagButton.click();
 
-    // A filter summary should appear
-    const filterSummary = page.locator('[aria-live="polite"]');
-    await expect(filterSummary).toBeVisible();
+    // A filter summary should appear. Scope to the polite region that carries
+    // the tag-count text — the page has several aria-live="polite" regions
+    // (the site-wide RouteAnnouncer being the other), so an unscoped locator
+    // is a strict-mode violation.
+    const filterSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ case stud(y|ies) tagged/ });
+    await expect(filterSummary).toBeVisible({ timeout: 15000 });
     await expect(filterSummary).toContainText(/\d+ case stud(y|ies) tagged/);
 
     // The number of visible projects should change (could be same if all match,
@@ -73,9 +78,13 @@ test.describe('project listing and tag filtering', () => {
     await firstTagButton.click();
     await expect(firstTagButton).toHaveAttribute('aria-pressed', 'true');
 
-    // Filter summary should be visible
-    const filterSummary = page.locator('[aria-live="polite"]');
-    await expect(filterSummary).toBeVisible();
+    // Filter summary should be visible. Scope to the tag-count polite region —
+    // the site-wide RouteAnnouncer is another aria-live="polite" element, so an
+    // unscoped locator is a strict-mode violation.
+    const filterSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ case stud(y|ies) tagged/ });
+    await expect(filterSummary).toBeVisible({ timeout: 15000 });
 
     // Deactivate the tag by clicking again
     await firstTagButton.click();

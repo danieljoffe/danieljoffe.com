@@ -5,7 +5,8 @@ export const PRIMARY_NAV_LINKS = [
   { href: '/about', label: 'About' },
 ];
 
-// Project slugs for parametrized tests (from apps/root/src/data/project.ts)
+// Project slugs for parametrized tests (mirrors projectPageSlugs in
+// apps/root/src/data/project.ts — keep in sync when projects are added/removed)
 export const PROJECT_SLUGS = [
   'ui-components-v1',
   'ui-components-v2',
@@ -13,8 +14,14 @@ export const PROJECT_SLUGS = [
   'component-library-case-study',
   'cms-tooling-case-study',
   'accessibility-serials-study-case',
-  'portfolio-modern-practice-study-case',
   'logistics-dashboard-study-case',
+  'contact-form-case-study',
+  'appcontext-simplification-case-study',
+  'job-pipeline-case-study',
+  'api-performance-case-study',
+  'audit-tool-case-study',
+  'shared-ui-case-study',
+  'wyrdfold-case-study',
 ];
 
 // Experience slugs for parametrized tests (from apps/root/src/data/experience.ts)
