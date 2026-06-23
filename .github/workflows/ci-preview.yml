@@ -49,6 +49,7 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - uses: ./.github/actions/preview-comment
+        if: steps.deploy.outputs.url != ''
         with:
           label: Preview deployed
           url: ${{ steps.deploy.outputs.url }}
@@ -71,6 +72,7 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_STORYBOOK_PROJECT_ID }}
 
       - uses: ./.github/actions/preview-comment
+        if: steps.deploy-storybook.outputs.url != ''
         with:
           label: Storybook preview
           url: ${{ steps.deploy-storybook.outputs.url }}
