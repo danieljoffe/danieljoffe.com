@@ -6,6 +6,7 @@ import {
   EXPERIENCE_LINK,
   ABOUT_LINK,
   BLOG_LINK,
+  RESUME_LINK,
 } from '@/utils/constants';
 
 describe('Nav link constants', () => {
@@ -16,9 +17,10 @@ describe('Nav link constants', () => {
     expect(PRIMARY_NAV_LINKS).toHaveLength(3);
   });
 
-  test('MORE_NAV_LINKS contains Blog', () => {
+  test('MORE_NAV_LINKS contains Blog and Résumé', () => {
     expect(MORE_NAV_LINKS).toContainEqual(BLOG_LINK);
-    expect(MORE_NAV_LINKS).toHaveLength(1);
+    expect(MORE_NAV_LINKS).toContainEqual(RESUME_LINK);
+    expect(MORE_NAV_LINKS).toHaveLength(2);
   });
 
   test('NAV_LINKS is the union of PRIMARY and MORE', () => {

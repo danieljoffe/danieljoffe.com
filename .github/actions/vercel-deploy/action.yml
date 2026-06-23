@@ -59,7 +59,23 @@ runs:
       id: deploy
       shell: bash
       run: |
-        url=$(vercel deploy --prebuilt ${{ inputs.production == 'true' && '--prod' || '' }} --token=${{ inputs.vercel-token }})
+        set +e
+        out=$(vercel deploy --prebuilt ${{ inputs.production == 'true' && '--prod' || '' }} --token=${{ inputs.vercel-token }} 2>&1)
+        status=$?
+        set -e
+        echo "$out"
+        if [ "$status" -ne 0 ]; then
+          # A preview deploy that hits Vercel's free-tier daily cap must not block
+          # the PR — the code already passed full CI. Production deploys stay strict,
+          # and any other deploy error still fails.
+          if [ "${{ inputs.production }}" != "true" ] && printf '%s' "$out" | grep -qiE 'api-deployments-free-per-day|Resource is limited'; then
+            echo "::warning::Vercel free-tier daily deployment limit reached — preview deploy skipped (non-blocking)."
+            echo "url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          exit "$status"
+        fi
+        url=$(printf '%s' "$out" | grep -Eo 'https://[^[:space:]]+' | tail -n1)
         echo "url=$url" >> "$GITHUB_OUTPUT"
       env:
         VERCEL_ORG_ID: ${{ inputs.vercel-org-id }}

@@ -19,6 +19,11 @@ jest.mock('@/components/Footer', () => ({
   default: () => null,
 }));
 
+jest.mock('@/components/NotFoundTracker', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 describe('NotFound', () => {
   it('renders the 404 heading', () => {
     render(<NotFound />);

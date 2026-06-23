@@ -28,6 +28,8 @@ export interface PostThumbnail extends PostBase {
 export interface PostBodyProps extends WithChildren {
   breadcrumbs: NavLink[];
   cover: CoverImageMeta;
+  /** Shared `view-transition-name` so the hero morphs from its source card. */
+  coverTransitionName?: string | undefined;
   title: string;
   date: string;
   tags: string[];

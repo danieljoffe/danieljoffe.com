@@ -8,6 +8,7 @@ import {
   Heart,
   MessageCircle,
   ChevronRight,
+  FileText,
 } from 'lucide-react';
 import { Badge } from '@danieljoffe/shared-ui/Badge';
 import { CTACard } from '@danieljoffe/shared-ui/CTACard';
@@ -24,7 +25,13 @@ import { experiencePageSlugs } from '@/data/experience';
 import { getContentBySlug } from '@/data/contentRegistry';
 import { getContentByTag, tagToSlug } from '@/lib/tags';
 import { AllowedExperienceSlugs } from '@/types/base';
-import { FULL_NAME, JOB_TITLE, EXPERIENCE_LINK } from '@/utils/constants';
+import {
+  FULL_NAME,
+  JOB_TITLE,
+  EXPERIENCE_LINK,
+  RESUME_LINK,
+  EMAIL_ADDRESS,
+} from '@/utils/constants';
 import { CompanyLogo } from '@/components/kit';
 import Button from '@/components/Button';
 import SocialLinks from './SocialLinks';
@@ -57,7 +64,7 @@ export default function About() {
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <Section padding='none'>
+      <Section padding='none' className='py-8 md:py-12'>
         <div className='relative space-y-6'>
           <div className='flex flex-col gap-x-5 gap-y-12'>
             <Heading variant='hero' className='text-center md:text-left'>
@@ -84,6 +91,17 @@ export default function About() {
                   {JOB_TITLE}
                 </Text>
                 <SocialLinks />
+                <div className='flex justify-center sm:justify-start'>
+                  <Button
+                    as='link'
+                    href={RESUME_LINK.href}
+                    variant='outline'
+                    size='sm'
+                  >
+                    <FileText className='h-4 w-4' />
+                    View résumé
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -196,9 +214,7 @@ export default function About() {
                 >
                   <CompanyLogo src={logo} alt={company} size='lg' />
                   <div className='flex-1 min-w-0'>
-                    <Heading variant='cardTitle' as='p'>
-                      {company}
-                    </Heading>
+                    <Heading variant='cardTitle'>{company}</Heading>
                     <Text variant='detail' className='mt-0.5'>
                       {role}
                     </Text>
@@ -222,7 +238,7 @@ export default function About() {
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           {expertiseCategories.map(category => (
             <div key={category.label} className={cn(cardBase, 'p-4')}>
-              <Heading variant='cardTitle' as='p' className='mb-1'>
+              <Heading variant='cardTitle' className='mb-1'>
                 {category.label}
               </Heading>
               <Text variant='body' className='mb-3'>
@@ -273,7 +289,7 @@ export default function About() {
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
           {values.map(value => (
             <div key={value.title} className={cn(cardBase, 'p-4')}>
-              <Heading variant='cardTitle' as='p' className='mb-2'>
+              <Heading variant='cardTitle' className='mb-2'>
                 {value.title}
               </Heading>
               <Text variant='body'>{value.description}</Text>
@@ -302,6 +318,16 @@ export default function About() {
           <Text variant='meta' as='p'>
             <span className='font-semibold'>Response time:</span> Usually within
             24 hours
+          </Text>
+          <Text variant='meta' as='p'>
+            Prefer email? Reach me directly at{' '}
+            <a
+              href={`mailto:${EMAIL_ADDRESS}`}
+              className='font-medium text-brand-500 hover:underline'
+            >
+              {EMAIL_ADDRESS}
+            </a>
+            .
           </Text>
           <ContactForm />
         </CTACard>

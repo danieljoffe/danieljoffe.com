@@ -11,6 +11,8 @@ export interface PostDetailProps {
   entry: ContentEntry;
   pagination: PostPaginationData;
   breadcrumbs: NavLink[];
+  /** Shared `view-transition-name` so the cover morphs from its card. */
+  coverTransitionName: string;
 }
 
 /**
@@ -32,5 +34,10 @@ export function getPostDetailProps(
     { href: `${config.basePath}/${slug}`, label: entry.thumbnail.title },
   ];
 
-  return { entry, pagination, breadcrumbs };
+  return {
+    entry,
+    pagination,
+    breadcrumbs,
+    coverTransitionName: `cover-${type}-${slug}`,
+  };
 }

@@ -1,39 +1,36 @@
-import { type ReactNode } from 'react';
-import { PageContainer, type PageContainerProps } from './PageContainer';
+import { type HTMLAttributes, type ReactNode } from 'react';
 import { cn } from './utils';
 
-export interface PageLayoutProps extends Omit<
-  PageContainerProps,
-  'as' | 'size'
-> {
+export interface PageLayoutProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
-  /** Use wider container (md) instead of default (sm) */
-  wide?: boolean;
 }
 
 /**
- * Standard page layout with `<main>` landmark, skip-nav target,
- * and consistent vertical spacing. Wraps PageContainer with
- * app-level defaults.
+ * Page shell: the `<main>` landmark and "Skip to main content" focus target.
+ *
+ * It is full-width, imposes no max-width, and adds no page padding — each
+ * {@link Section} owns its own padding/margins (and constrains its own content
+ * via Section's `contain` prop). The only thing the shell contributes is the
+ * vertical rhythm *between* sections (`gap-y`); the leading whitespace belongs
+ * to the first section, and the trailing whitespace to the page's footer.
  */
-export function PageLayout({
-  children,
-  wide = false,
-  className,
-  ...rest
-}: PageLayoutProps) {
+export function PageLayout({ children, className, ...rest }: PageLayoutProps) {
   return (
-    <PageContainer
-      as='main'
+    <main
       id='main-content'
-      // Focus target for the "Skip to main content" link — without a tabindex
-      // the browser can't move focus here when the skip link is activated.
+      // Without a tabindex the browser can't move focus here when the
+      // "Skip to main content" link is activated.
       tabIndex={-1}
-      size={wide ? 'lg' : 'sm'}
-      className={cn('py-16 lg:py-24 space-y-24', className)}
+      // The App Router focuses this landmark after navigation; `.focus()`
+      // scrolls it into view, which would otherwise scroll the (static) nav
+      // off-screen. `scroll-mt` ≥ the nav height keeps the scroll at the top.
+      className={cn(
+        'flex w-full flex-col gap-y-16 scroll-mt-16 lg:gap-y-20',
+        className
+      )}
       {...rest}
     >
       {children}
-    </PageContainer>
+    </main>
   );
 }

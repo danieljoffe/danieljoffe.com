@@ -69,7 +69,9 @@
   --color-success-light: #ecfdf5;
   --color-warning: #f59e0b;
   --color-warning-light: #fffbeb;
-  --color-error: #ef4444;
+  /* Darkened from #ef4444 (red-500, ~3.6:1) to clear WCAG AA 4.5:1 on light
+     surfaces (form card / inputs). Dark mode keeps the lighter red below. */
+  --color-error: #c81e1e;
   --color-error-light: #fef2f2;
   --color-info: #2563eb;
   --color-info-light: #eff6ff;
@@ -94,6 +96,8 @@
 
   --color-success-light: #052e16;
   --color-warning-light: #451a03;
+  /* Lighter red reads better on the dark surface (already clears AA there). */
+  --color-error: #ef4444;
   --color-error-light: #450a0a;
   --color-info-light: #172554;
 
@@ -408,6 +412,38 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
   @apply text-xs rounded px-1.5 py-0.5;
 }
 
+/* ─── Scroll-reveal (progressive enhancement) ───
+ * Content is fully visible by default. The hidden/animated state only applies
+ * once JS adds `.reveal-ready` to <html> (see the inline no-flash script in
+ * layout.tsx) AND the user has not requested reduced motion. So no-JS, JS
+ * failures, and reduced-motion all render everything immediately — content is
+ * never trapped behind a transition that might not run.
+ *
+ * An IntersectionObserver (ScrollReveal.tsx) adds `.is-visible` as elements
+ * scroll into view, which drives the transition. Works in every modern
+ * browser (Chrome, Safari, Firefox) rather than relying on scroll-driven CSS.
+ *
+ * `.reveal`         — fades/rises the element itself (single-block sections).
+ * `.reveal-stagger` — fades/rises each direct child; the observer applies an
+ *                     incremental delay so grid items cascade in.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready .reveal,
+  .reveal-ready .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-ready .reveal.is-visible,
+  .reveal-ready .reveal-stagger > *.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -416,5 +452,74 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── View transitions (card cover → detail-page hero morph) ───
+ * The navigation wrapper (ViewTransitions.tsx) drives the morph and already
+ * skips it under reduced motion; this just eases the default timing and, as a
+ * safety net, neutralizes any view-transition the browser may run when motion
+ * is not wanted (pseudo-elements aren't matched by the `*` rule above). */
+::view-transition-group(*) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ─── Hero backdrop glow ───
+ * Slow ambient drift for the brand glow behind the hero. Centering is handled
+ * by a margin (not transform), so the animation owns `transform` outright.
+ * Under reduced motion the glow simply rests at its centered position. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-glow {
+    animation: hero-glow-drift 16s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes hero-glow-drift {
+  from {
+    transform: translate3d(-24px, -12px, 0) scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: translate3d(24px, 14px, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* ─── Card cursor spotlight ───
+ * Soft brand glow that tracks the cursor over a card. Position comes from
+ * --spot-x/--spot-y (set by CardSpotlight.tsx); fades in on group-hover. */
+.card-spotlight {
+  background: radial-gradient(
+    14rem circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(99, 102, 241, 0.13),
+    transparent 60%
+  );
+}
+
+/* ─── Animated theme toggle ───
+ * The active icon spins + scales in when the theme changes. */
+@media (prefers-reduced-motion: no-preference) {
+  .theme-icon-enter {
+    animation: theme-icon-in 0.3s ease-out;
+  }
+}
+
+@keyframes theme-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
   }
 }

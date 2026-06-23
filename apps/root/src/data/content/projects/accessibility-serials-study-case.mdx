@@ -18,91 +18,16 @@ export const metadata = {
   },
 };
 
-## Case Study 4: The Library Corporation — Accessibility & Serials Cataloging
+I fixed 200+ WCAG violations across The Library Corporation's cataloging apps in about a month, which was the work that got the company's government contracts renewed; accessibility compliance was a hard requirement to keep selling to public institutions. It mattered because those apps reach 5,500+ school and public libraries nationwide, so every unlabeled input and broken focus state was a real barrier for real users. Three months in, the lead developer moved off the project and I became the sole frontend developer for the next 23 months, on my first Java codebase and in a domain I'd never touched.
 
-## Overview
+## The remediation
 
-**Company:** The Library Corporation
+The cataloging apps were legacy Java Spring and Thymeleaf templates that had accumulated accessibility debt for years: missing alt text, missing input labels and ARIA roles, broken links and empty buttons, low contrast, out-of-order headings, and no visible focus states. I audited 15+ views with WebAIM and browser tools, categorized and prioritized the 200+ violations, then worked through them systematically over roughly a month, fixing the markup and pulling it back toward semantic HTML as I went.
 
-**Role:** Software Engineer
+## The serials cataloging system
 
-**Duration:** September 2019 - November 2021
+With the apps compliant, I took on the feature that had been requested for years and never delivered. I worked closely with a retiring senior cataloger to learn library science well enough to translate cataloging workflows into UI, then architected and built the serials cataloging system alone: pagination, advanced search filtering, and an algorithm-driven serial generator that handled limited and indefinite schedules, multiple formats from periodicals to academic journals, create/clone/duplicate/generate operations, cadences from daily through biannual, and Volume/Part/Issue/Index/Section types. To keep it from sprawling, I built polymorphic AngularJS components where a single component class handled books, magazines, encyclopedias, and serials, which killed the need for asset-specific forms and kept the design language consistent. Across 30+ delivered features I roughly doubled the application's capabilities, and accessibility testing patterns I established along the way kept new work from regressing.
 
-**Industry:** Library Software / B2B SaaS
+## What I took from it
 
-## Business Impact
-
-- Achieved WCAG compliance, reducing legal exposure for accessibility-related claims
-- Improved usability for users with disabilities, expanding the accessible user base
-- Established accessibility testing patterns that prevented future regressions
-
-## The Challenge
-
-The Library Corporation serves 5,500+ school and public libraries across the United States, and their cataloging applications were overdue for modernization: accessibility compliance was mandatory for government contracts, and a major serials cataloging feature had been requested for years but never delivered. Three months in, the lead developer moved to another project, and I was suddenly the sole frontend developer for the next 23 months.
-
-### Key Problems:
-
-- Legacy Java Spring/Thymeleaf templates with accessibility violations
-- WCAG compliance required for government contract renewals
-- Serials cataloging feature postponed for years
-- Sole frontend developer for 23 months
-- Unfamiliar domain (library science) and tech stack (first Java project)
-- Waterfall methodology with long feedback cycles
-
-## My Approach
-
-### First: Accessibility Remediation
-
-- Audited 15+ views using WebAIM and browser tools
-- Categorized and prioritized 200+ WCAG violations
-- Systematically fixed issues over 1 month:
-  - Missing alt text on images
-  - Missing input labels and ARIA roles
-  - Broken links and empty buttons
-  - Low contrast and incorrect heading order
-  - Missing focus states and semantic HTML
-
-### Second: Domain Immersion
-
-- Collaborated closely with retiring senior cataloger (SME)
-- Learned library science fundamentals and cataloging workflows
-- Translated complex requirements into intuitive UI patterns
-
-### Third: Serials Cataloging System
-
-- Architected year-long initiative as sole frontend developer
-- Built pagination, advanced search filtering, and navigation patterns
-- Developed algorithm-driven serial generation handling:
-  - Limited and indefinite schedules
-  - Multiple formats (periodicals, magazines, academic journals)
-  - Create/clone/duplicate/generate operations
-  - Cadence options (daily through biannual)
-  - Volume, Part, Issue, Index, Section types
-
-### Fifth: Polymorphic Component Architecture
-
-- Engineered scalable cataloging components using AngularJS directives
-- Single component class handling multiple asset types (books, magazines, encyclopedias, serials)
-- Reduced code duplication while maintaining consistent design language
-- Eliminated need for asset-specific forms
-
-## The Results
-
-| Metric                    | Value     | Impact                      |
-| ------------------------- | --------- | --------------------------- |
-| WCAG Violations Fixed     | 200+      | Full compliance achieved    |
-| Libraries Served          | 5,500+    | Nationwide impact           |
-| Solo Developer Duration   | 23 months | Resilience demonstrated     |
-| Features Delivered        | 30+       | Serials cataloging complete |
-| Application Feature Count | 2x        | Doubled capabilities        |
-| Government Contracts      | Renewed   | Compliance unlocked revenue |
-
-## Key Takeaways
-
-- **Domain expertise matters.** Technical skills don't get you far without understanding user needs, and librarians have complex, specialized workflows.
-- **Accessibility isn't optional.** It's not just about compliance; fixing these issues made the apps easier to use for everyone.
-- **Running solo builds confidence.** Holding the frontend alone for 23 months in a domain I'd never touched proved to me I could adapt to just about anything.
-
-## Technologies Used
-
-AngularJS, JavaScript ES6+, Java, Spring, Thymeleaf, HTML5, CSS3, WebAIM, WCAG 2.0 AA, Git, Browser Accessibility Tools
+Holding the frontend alone for 23 months in an unfamiliar domain and stack taught me that the accessibility fixes weren't a compliance chore bolted on at the end; building semantic, labeled, keyboard-navigable markup from the start made the apps easier to use for everyone, sighted users included.

@@ -6,12 +6,14 @@ import { notFoundMetadata } from '@/data/metadata/notFound';
 import Button from '@/components/Button';
 import Footer from '@/components/Footer';
 import Nav from '@/components/Nav';
+import NotFoundTracker from '@/components/NotFoundTracker';
 
 export const metadata: Metadata = notFoundMetadata;
 
 export default function NotFound() {
   return (
     <>
+      <NotFoundTracker />
       <Nav />
       <main>
         <div className='max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 md:py-14'>

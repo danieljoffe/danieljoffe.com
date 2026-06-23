@@ -8,11 +8,17 @@ const GOOGLE_DOCS_URL = 'https://docs.google.com';
 const EXAMPLE_URL = 'https://example.com';
 const GOOGLE_ANALYTICS_URL = 'https://www.google-analytics.com';
 const GOOGLE_TAG_MANAGER_URL = 'https://www.googletagmanager.com';
+// GA4 Google Signals sends a beacon to google.com/g/collect (connect-src only).
+const GOOGLE_URL = 'https://www.google.com';
 const SENTRY_URL = 'https://www.sentry.io';
 const SENTRY_INGEST_URL = 'https://*.ingest.us.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
 export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
+// hCaptcha serves challenge/telemetry from dynamic worker subdomains
+// (e.g. *.w.hcaptcha.com) at runtime, so the widget needs the wildcard on
+// connect-src + frame-src — www/newassets alone leave it CSP-blocked and blank.
+export const HCAPTCHA_WILDCARD_URL = 'https://*.hcaptcha.com';
 export const CALENDLY_EMBED_URL = 'https://calendly.com';
 
 // ============================================================================
@@ -41,11 +47,13 @@ export const allowedImageOrigins = [
 
 export const allowedOrigins = [
   ...allowedImageOrigins,
+  GOOGLE_URL,
   DOMAIN_URL,
   SENTRY_URL,
   SENTRY_INGEST_URL,
   SCHEMA_ORG_URL,
   HCAPTCHA_URL,
+  HCAPTCHA_WILDCARD_URL,
 ];
 
 // ============================================================================
@@ -106,6 +114,7 @@ export const EXPERIENCE_LINK: NavLink = {
   label: 'Experience',
 };
 export const BLOG_LINK: NavLink = { href: '/blog', label: 'Blog' };
+export const RESUME_LINK: NavLink = { href: '/resume', label: 'Résumé' };
 export const BLOG_TAGS_LINK: NavLink = {
   href: '/blog/tags',
   label: 'Tags',
@@ -129,7 +138,7 @@ export const PRIMARY_NAV_LINKS: NavLink[] = [
 ];
 
 /** Secondary nav links — shown in "More" dropdown on desktop, bottom sheet on mobile */
-export const MORE_NAV_LINKS: NavLink[] = [BLOG_LINK];
+export const MORE_NAV_LINKS: NavLink[] = [BLOG_LINK, RESUME_LINK];
 
 /**
  * External destinations shown in the "More" menu, after the internal links.

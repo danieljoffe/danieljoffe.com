@@ -8,6 +8,7 @@ import BreadCrumbs from './BreadCrumbs';
 export default function PostBody({
   children,
   cover,
+  coverTransitionName,
   breadcrumbs,
   title,
   date,
@@ -22,7 +23,10 @@ export default function PostBody({
 
   return (
     <div className='flex flex-col gap-6'>
-      <BreadCrumbs items={breadcrumbs} />
+      <BreadCrumbs
+        items={breadcrumbs}
+        coverTransitionName={coverTransitionName}
+      />
 
       {/* Hero: title + cover image side by side on desktop */}
       <div className='flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10'>
@@ -38,6 +42,11 @@ export default function PostBody({
             priority
             sizes='(max-width: 1024px) calc(100vw - 2rem), 480px'
             className='w-full h-auto object-cover rounded-lg'
+            style={
+              coverTransitionName
+                ? { viewTransitionName: coverTransitionName }
+                : undefined
+            }
           />
         </div>
       </div>

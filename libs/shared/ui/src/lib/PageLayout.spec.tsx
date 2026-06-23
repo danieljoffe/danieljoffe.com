@@ -7,50 +7,36 @@ describe('PageLayout', () => {
     expect(screen.getByText('Page Content')).toBeInTheDocument();
   });
 
-  it('renders as main element', () => {
+  it('renders a main landmark', () => {
     render(<PageLayout>Content</PageLayout>);
-    const outer = screen.getByTestId('page-container-outer');
-    expect(outer.tagName).toBe('MAIN');
+    expect(screen.getByRole('main')).toBeInTheDocument();
   });
 
-  it('has id="main-content" for skip-nav target', () => {
+  it('has id="main-content" for the skip-nav target', () => {
     render(<PageLayout>Content</PageLayout>);
-    const outer = screen.getByTestId('page-container-outer');
-    expect(outer).toHaveAttribute('id', 'main-content');
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
   });
 
-  it('uses sm size by default', () => {
+  it('is full-width and provides vertical rhythm', () => {
     render(<PageLayout>Content</PageLayout>);
-    const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('max-w-3xl');
-  });
-
-  it('uses md size when wide=true', () => {
-    render(<PageLayout wide>Content</PageLayout>);
-    const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('max-w-5xl');
-  });
-
-  it('applies default vertical spacing and section gap', () => {
-    render(<PageLayout>Content</PageLayout>);
-    const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass('py-16', 'lg:py-24', 'space-y-24');
+    expect(screen.getByRole('main')).toHaveClass(
+      'flex',
+      'w-full',
+      'flex-col',
+      'gap-y-16'
+    );
   });
 
   it('merges custom className with defaults', () => {
     render(<PageLayout className='custom-class'>Content</PageLayout>);
-    const inner = screen.getByTestId('page-container-inner');
-    expect(inner).toHaveClass(
-      'py-16',
-      'lg:py-24',
-      'space-y-24',
-      'custom-class'
-    );
+    expect(screen.getByRole('main')).toHaveClass('w-full', 'custom-class');
   });
 
   it('passes through additional HTML attributes', () => {
     render(<PageLayout aria-label='Main content'>Content</PageLayout>);
-    const outer = screen.getByTestId('page-container-outer');
-    expect(outer).toHaveAttribute('aria-label', 'Main content');
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'aria-label',
+      'Main content'
+    );
   });
 });

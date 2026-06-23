@@ -53,7 +53,7 @@ export default function SocialLinks() {
       <button
         aria-label='Download Resume (PDF)'
         onClick={() => {
-          analytics.ctaClick('download_resume', PROJECTS_LINK.href);
+          analytics.ctaClick('resume_download', PROJECTS_LINK.href);
           downloadResume();
         }}
         className={`p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors cursor-pointer ${FOCUS_RING} ${FOCUS_RING_OFFSET}`}

@@ -57,8 +57,8 @@ export default async function ProjectTagDetailPage({ params }: TagPageProps) {
     .map(toThumbnail);
 
   return (
-    <PageLayout wide>
-      <Section padding='none'>
+    <PageLayout>
+      <Section padding='none' contain='lg' className='py-8 md:py-12'>
         <BreadCrumbs
           items={[
             PROJECTS_LINK,
@@ -68,7 +68,7 @@ export default async function ProjectTagDetailPage({ params }: TagPageProps) {
         />
       </Section>
 
-      <Section padding='none'>
+      <Section padding='none' contain='lg'>
         <Heading as='h1' variant='hero'>
           Tag: {tagName}
         </Heading>
@@ -78,7 +78,7 @@ export default async function ProjectTagDetailPage({ params }: TagPageProps) {
         </Text>
       </Section>
 
-      <Section padding='none'>
+      <Section padding='none' contain='lg'>
         <SectionLabel
           icon={<FolderOpen className='h-3.5 w-3.5' />}
           label='Case Studies'

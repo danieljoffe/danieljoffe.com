@@ -1,14 +1,35 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
 import { Text } from '@danieljoffe/shared-ui/Text';
+import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { buildSearchIndex, type SearchEntry } from '@/lib/searchIndex';
+import { type SearchEntry } from '@/lib/searchIndex';
 import { Z_INDEX } from '@/utils/constants';
-import { createSearchEngine, searchWithHighlights } from '@/lib/search';
+
+// MiniSearch + the ~288KB content index are only needed once the palette
+// opens, so they're dynamically imported on first open (a separate chunk)
+// instead of shipping in the bundle that loads on every page.
+type SearchEngine = ReturnType<
+  (typeof import('@/lib/search'))['createSearchEngine']
+>;
+type SearchHighlightsFn =
+  (typeof import('@/lib/search'))['searchWithHighlights'];
+type SearchData = {
+  entries: SearchEntry[];
+  engine: SearchEngine;
+  searchWithHighlights: SearchHighlightsFn;
+};
 
 const TYPE_ICONS: Record<SearchEntry['type'], typeof Search> = {
   project: FileText,
@@ -37,6 +58,8 @@ export default function CommandPalette() {
   const triggerRef = useRef<HTMLElement | null>(null);
   const selectedRef = useRef(false);
   const openRef = useRef(false);
+  // The dialog container, for trapping Tab focus within the open palette.
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     openRef.current = open;
@@ -46,6 +69,7 @@ export default function CommandPalette() {
     triggerRef.current = document.activeElement as HTMLElement | null;
     selectedRef.current = false;
     setOpen(true);
+    analytics.searchOpen();
   }, []);
 
   // Restore focus to whatever opened the palette once it closes. Deferred to
@@ -61,22 +85,34 @@ export default function CommandPalette() {
     return () => cancelAnimationFrame(id);
   }, [open]);
 
-  const { engine, entries } = useMemo(() => {
-    try {
-      const entries = buildSearchIndex();
-      const engine = createSearchEngine(entries);
+  const [searchData, setSearchData] = useState<SearchData | null>(null);
 
-      return { engine, entries };
-    } catch (error) {
-      console.error('Failed to build search index:', error);
-      return { engine: null, entries: [] };
-    }
-  }, []);
+  // Build the index the first time the palette opens, loading MiniSearch and
+  // the content index as a separate chunk so they stay off every page's load.
+  useEffect(() => {
+    if (!open || searchData) return;
+    let cancelled = false;
+    void Promise.all([import('@/lib/searchIndex'), import('@/lib/search')])
+      .then(([idx, searchMod]) => {
+        if (cancelled) return;
+        const entries = idx.buildSearchIndex();
+        setSearchData({
+          entries,
+          engine: searchMod.createSearchEngine(entries),
+          searchWithHighlights: searchMod.searchWithHighlights,
+        });
+      })
+      .catch(error => console.error('Failed to load search index:', error));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, searchData]);
 
   const results = useMemo(() => {
-    if (!engine || !entries.length) {
+    if (!searchData || !searchData.entries.length) {
       return { grouped: {}, isSearching: false };
     }
+    const { engine, entries, searchWithHighlights } = searchData;
 
     if (!search.trim()) {
       const grouped: Partial<Record<SearchEntry['type'], SearchEntry[]>> = {};
@@ -96,7 +132,7 @@ export default function CommandPalette() {
       console.error('Search failed:', error);
       return { grouped: {}, isSearching: false };
     }
-  }, [search, engine, entries]);
+  }, [search, searchData]);
 
   // Cmd+K / Ctrl+K toggle
   useEffect(() => {
@@ -135,9 +171,39 @@ export default function CommandPalette() {
     (url: string) => {
       selectedRef.current = true;
       setOpen(false);
+      // Only log when there was an actual query — an empty query means the
+      // palette was used as a launcher, not a search.
+      if (search.trim()) analytics.search(search, url);
       router.push(url);
     },
-    [router]
+    [router, search]
+  );
+
+  // Trap Tab within the dialog so focus can't reach the page behind the modal.
+  // The input is the only Tab-focusable element (cmdk drives the list via
+  // aria-activedescendant), so this keeps keyboard + SR users inside the
+  // palette until they Escape — paired with role="dialog"/aria-modal below.
+  const handleTrapKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'Tab') return;
+      const focusables = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusables || focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    []
   );
 
   // Get matched terms from the matches object
@@ -216,6 +282,10 @@ export default function CommandPalette() {
     'results' in results &&
     results.results &&
     results.results.length > 0;
+  const searchResultCount =
+    results.isSearching && 'results' in results
+      ? (results.results?.length ?? 0)
+      : 0;
 
   return (
     <div
@@ -225,9 +295,20 @@ export default function CommandPalette() {
       data-testid='command-palette-overlay'
     >
       <div
+        ref={dialogRef}
+        role='dialog'
+        aria-modal='true'
+        aria-label='Site search'
         className='mx-auto mt-[20vh] w-full max-w-lg'
         onClick={e => e.stopPropagation()}
+        onKeyDown={handleTrapKeyDown}
       >
+        {/* Polite count so SR users hear how many results the query returned. */}
+        <div aria-live='polite' className='sr-only'>
+          {search.trim()
+            ? `${searchResultCount} result${searchResultCount === 1 ? '' : 's'}`
+            : ''}
+        </div>
         <Command
           loop
           shouldFilter={false}
@@ -243,6 +324,7 @@ export default function CommandPalette() {
               value={search}
               onValueChange={setSearch}
               autoFocus
+              aria-label='Search pages, posts, and services'
               placeholder='Search pages, posts, services…'
               className={cn(
                 'w-full bg-transparent py-3 text-sm outline-none',
@@ -262,7 +344,7 @@ export default function CommandPalette() {
 
           <Command.List className='max-h-96 overflow-y-auto'>
             <Command.Empty className='px-4 py-8 text-center text-sm text-neutral-400'>
-              No results found.
+              {searchData ? 'No results found.' : 'Loading…'}
             </Command.Empty>
 
             {hasGroupedResults && (

@@ -1,10 +1,12 @@
 import type { ReactNode, Ref } from 'react';
-import { Text } from './Text';
+import { Heading } from './Heading';
 import { cn } from './utils';
 
 export interface SectionLabelProps {
   icon: ReactNode;
   label: string;
+  /** Heading level for the label (default h2). Use h3 for a nested section. */
+  as?: 'h2' | 'h3';
   ref?: Ref<HTMLDivElement>;
   className?: string;
 }
@@ -12,6 +14,7 @@ export interface SectionLabelProps {
 export function SectionLabel({
   icon,
   label,
+  as,
   ref,
   className,
 }: SectionLabelProps) {
@@ -20,7 +23,9 @@ export function SectionLabel({
       <div className='p-1.5 rounded-md bg-surface-tertiary text-text-secondary'>
         {icon}
       </div>
-      <Text variant='label'>{label}</Text>
+      <Heading variant='sectionLabel' as={as}>
+        {label}
+      </Heading>
       <div className='flex-1 h-px bg-border ml-2' />
     </div>
   );

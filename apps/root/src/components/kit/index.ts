@@ -12,3 +12,4 @@ export { ScrollToTop } from './ScrollToTop';
 export { TableOfContents } from './TableOfContents';
 export { TagChipStrip } from './TagChipStrip';
 export type { TagChip } from './TagChipStrip';
+export { TrackedButtonLink, TrackedExternalLink } from './TrackedLink';

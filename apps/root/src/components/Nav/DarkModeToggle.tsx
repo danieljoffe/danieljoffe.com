@@ -38,7 +38,11 @@ export default function DarkModeToggle() {
       aria-label={`Switch to ${nextLabel} mode`}
       className='flex items-center gap-1.5 p-1.5 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors cursor-pointer'
     >
-      <Icon className='h-4 w-4' aria-hidden='true' />
+      <Icon
+        key={theme}
+        className='h-4 w-4 theme-icon-enter'
+        aria-hidden='true'
+      />
       <Kbd>D</Kbd>
     </button>
   );

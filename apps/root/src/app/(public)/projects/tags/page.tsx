@@ -17,7 +17,7 @@ export default function ProjectTagsIndexPage() {
 
   return (
     <PageLayout>
-      <Section padding='none'>
+      <Section padding='none' className='py-8 md:py-12'>
         <Button as='link' variant='bare' size='sm' href='/projects'>
           ← Back to Projects
         </Button>
