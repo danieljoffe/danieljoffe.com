@@ -7,11 +7,6 @@ name: Update Visual Baselines
 
 on:
   workflow_dispatch:
-  # TEMP bootstrap: the repo default branch is `main`, so workflow_dispatch is
-  # unavailable until this lands there. This push trigger generates the initial
-  # Linux baselines onto the feature branch; remove it once they're committed.
-  push:
-    branches: [feat/shared-ui-visual-regression]
 
 permissions:
   contents: write
