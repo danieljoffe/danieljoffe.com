@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import { Search, FileText, Briefcase, BookOpen, Globe } from 'lucide-react';
 import { Text } from '@danieljoffe/shared-ui/Text';
+import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { type SearchEntry } from '@/lib/searchIndex';
 import { Z_INDEX } from '@/utils/constants';
@@ -68,6 +69,7 @@ export default function CommandPalette() {
     triggerRef.current = document.activeElement as HTMLElement | null;
     selectedRef.current = false;
     setOpen(true);
+    analytics.searchOpen();
   }, []);
 
   // Restore focus to whatever opened the palette once it closes. Deferred to
@@ -169,9 +171,12 @@ export default function CommandPalette() {
     (url: string) => {
       selectedRef.current = true;
       setOpen(false);
+      // Only log when there was an actual query — an empty query means the
+      // palette was used as a launcher, not a search.
+      if (search.trim()) analytics.search(search, url);
       router.push(url);
     },
-    [router]
+    [router, search]
   );
 
   // Trap Tab within the dialog so focus can't reach the page behind the modal.

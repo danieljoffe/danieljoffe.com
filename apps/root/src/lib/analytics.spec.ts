@@ -84,4 +84,31 @@ describe('analytics', () => {
       theme: 'dark',
     });
   });
+
+  it('tracks form engage events', () => {
+    analytics.formEngage('contact');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'form_engage', {
+      form_name: 'contact',
+    });
+  });
+
+  it('tracks search open events', () => {
+    analytics.searchOpen();
+    expect(mockGtag).toHaveBeenCalledWith('event', 'search_open', {});
+  });
+
+  it('tracks search events with the query and destination', () => {
+    analytics.search('react', '/projects/component-library-case-study');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'search', {
+      search_term: 'react',
+      destination: '/projects/component-library-case-study',
+    });
+  });
+
+  it('tracks not found events with the path', () => {
+    analytics.notFound('/old/dead/link');
+    expect(mockGtag).toHaveBeenCalledWith('event', 'not_found', {
+      page_path: '/old/dead/link',
+    });
+  });
 });

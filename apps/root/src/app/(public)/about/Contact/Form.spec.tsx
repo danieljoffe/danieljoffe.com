@@ -18,6 +18,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/lib/analytics', () => ({
   analytics: {
     formStart: jest.fn(),
+    formEngage: jest.fn(),
     formSubmit: jest.fn(),
     formError: jest.fn(),
   },
