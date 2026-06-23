@@ -87,10 +87,14 @@ test.describe('blog search and filtering', () => {
     // aria-pressed should now be true
     await expect(firstTagButton).toHaveAttribute('aria-pressed', 'true');
 
-    // A filter summary should appear
-    const filterSummary = page.locator('[aria-live="polite"]');
-    await expect(filterSummary).toBeVisible();
-    await expect(filterSummary).toContainText(/\d+ posts? tagged/);
+    // A filter summary should appear. Scope to the polite region that carries
+    // the tag-count text — the page has several aria-live="polite" regions
+    // (search summary, RouteAnnouncer), so an unscoped locator is a strict-mode
+    // violation. Matches the scoped pattern used by the search tests above.
+    const filterSummary = page
+      .locator('[aria-live="polite"]')
+      .filter({ hasText: /\d+ posts? tagged/ });
+    await expect(filterSummary).toBeVisible({ timeout: 15000 });
   });
 
   test('selecting a tag clears the search input', async ({ page }) => {
