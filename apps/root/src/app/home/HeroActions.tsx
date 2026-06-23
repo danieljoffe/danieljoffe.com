@@ -27,7 +27,7 @@ export default function HeroActions() {
         aria-label='Download resume'
         name='download-resume'
         onClick={() => {
-          analytics.ctaClick('download_resume', HOME_LINK.href);
+          analytics.ctaClick('resume_download', HOME_LINK.href);
           downloadResume();
         }}
       >

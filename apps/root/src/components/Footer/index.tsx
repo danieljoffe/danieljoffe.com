@@ -41,7 +41,8 @@ const socialLinks = [
     href: RESUME_URL,
     label: 'Download Resume (PDF)',
     icon: Download,
-    cta: 'footer_resume',
+    // All résumé-download triggers share one cta_name so it's a clean GA Key Event
+    cta: 'resume_download',
   },
 ];
 
