@@ -2,6 +2,11 @@
 name: Deploy Production
 
 on:
+  # Auto-deploy production when the release lands on main (develop -> main).
+  # Vercel's native Git auto-deploy is disabled (see apps/root/vercel.json and
+  # libs/shared/ui/vercel.json), so this workflow is the sole production path.
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       confirm:
@@ -20,7 +25,10 @@ concurrency:
 jobs:
   preflight:
     name: Preflight
-    if: github.ref == 'refs/heads/main' && github.event.inputs.confirm == 'deploy'
+    # Auto-run on push to main; manual dispatch still requires the typed confirm.
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event.inputs.confirm == 'deploy')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
