@@ -96,7 +96,9 @@ test.describe('thank-you page protection', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     // Fill and submit form — scope to form to avoid matching nav "Send Email" links
     const form = page.locator('form');
@@ -107,7 +109,7 @@ test.describe('thank-you page protection', () => {
     // Complete hCaptcha verification
     await completeHCaptcha(page);
 
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for navigation to thank-you page
@@ -127,7 +129,9 @@ test.describe('thank-you page protection', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     const form1 = page.locator('form');
     await fillInput(form1.getByLabel(/name/i), VALID_FORM_DATA.name);
@@ -136,7 +140,7 @@ test.describe('thank-you page protection', () => {
 
     await completeHCaptcha(page);
 
-    await page.getByRole('button', { name: /submit/i }).click();
+    await page.getByRole('button', { name: /send message/i }).click();
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Check for noindex
@@ -155,7 +159,9 @@ test.describe('thank-you page protection', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     const form2 = page.locator('form');
     await fillInput(form2.getByLabel(/name/i), VALID_FORM_DATA.name);
@@ -164,7 +170,7 @@ test.describe('thank-you page protection', () => {
 
     await completeHCaptcha(page);
 
-    await page.getByRole('button', { name: /submit/i }).click();
+    await page.getByRole('button', { name: /send message/i }).click();
     await expect(page).toHaveURL(/.*thank-you.*email/, { timeout: 15000 });
 
     // Check for the "Back to home" button (not the nav link, which is hidden on mobile)

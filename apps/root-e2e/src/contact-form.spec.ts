@@ -18,7 +18,9 @@ test.describe('contact form validation', () => {
     // instead of React's handleSubmit (no validation errors appear).
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
   });
 
   test('form is visible on about page', async ({ page }) => {
@@ -27,7 +29,7 @@ test.describe('contact form validation', () => {
   });
 
   test('shows validation error for empty name field', async ({ page }) => {
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for validation to trigger and re-render
@@ -52,7 +54,7 @@ test.describe('contact form validation', () => {
     );
 
     // Submit form to trigger validation
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -78,7 +80,7 @@ test.describe('contact form validation', () => {
     await fillInput(emailInput, INVALID_FORM_DATA.invalidEmail);
 
     // Submit form to trigger validation
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -104,7 +106,7 @@ test.describe('contact form validation', () => {
     await fillInput(messageInput, INVALID_FORM_DATA.shortMessage);
 
     // Submit form to trigger validation
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -129,7 +131,7 @@ test.describe('contact form validation', () => {
     await fillInput(messageInput, INVALID_FORM_DATA.messageWithUrl);
 
     // Submit form to trigger validation
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for validation error to appear
@@ -170,7 +172,9 @@ test.describe('contact form submission', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     // Fill form with valid data
     await fillInput(
@@ -190,7 +194,7 @@ test.describe('contact form submission', () => {
     await completeHCaptcha(page);
 
     // Submit form
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for navigation to thank-you page
@@ -205,7 +209,9 @@ test.describe('contact form submission', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     // Fill form with valid data
     await fillInput(
@@ -225,7 +231,7 @@ test.describe('contact form submission', () => {
     await completeHCaptcha(page);
 
     // Submit form
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Wait for error alert
@@ -245,7 +251,9 @@ test.describe('contact form submission', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await waitForHydration(page);
     await page.locator('form').waitFor({ state: 'visible' });
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     // Fill form with valid data
     await fillInput(
@@ -266,10 +274,12 @@ test.describe('contact form submission', () => {
     await form.scrollIntoViewIfNeeded();
 
     // Wait for the submit button to be ready
-    await expect(page.getByRole('button', { name: /submit/i })).toBeEnabled();
+    await expect(
+      page.getByRole('button', { name: /send message/i })
+    ).toBeEnabled();
 
     // Submit form without completing captcha
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await submitButton.click();
 
     // Should show captcha error - wait for it to appear using auto-waiting
@@ -281,7 +291,7 @@ test.describe('contact form submission', () => {
     await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.locator('form').waitFor({ state: 'visible' });
 
-    const submitButton = page.getByRole('button', { name: /submit/i });
+    const submitButton = page.getByRole('button', { name: /send message/i });
     await expect(submitButton).toBeEnabled();
   });
 });
