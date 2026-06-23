@@ -15,6 +15,10 @@ const SENTRY_INGEST_URL = 'https://*.ingest.us.sentry.io';
 const SCHEMA_ORG_URL = 'https://schema.org';
 export const HCAPTCHA_URL = 'https://www.hcaptcha.com';
 export const HCAPTCHA_ASSETS_URL = 'https://newassets.hcaptcha.com';
+// hCaptcha serves challenge/telemetry from dynamic worker subdomains
+// (e.g. *.w.hcaptcha.com) at runtime, so the widget needs the wildcard on
+// connect-src + frame-src — www/newassets alone leave it CSP-blocked and blank.
+export const HCAPTCHA_WILDCARD_URL = 'https://*.hcaptcha.com';
 export const CALENDLY_EMBED_URL = 'https://calendly.com';
 
 // ============================================================================
@@ -49,6 +53,7 @@ export const allowedOrigins = [
   SENTRY_INGEST_URL,
   SCHEMA_ORG_URL,
   HCAPTCHA_URL,
+  HCAPTCHA_WILDCARD_URL,
 ];
 
 // ============================================================================
