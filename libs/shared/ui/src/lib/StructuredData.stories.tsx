@@ -12,6 +12,8 @@ const meta = {
           'Renders a JSON-LD `<script>` tag for structured data (SEO). The output is invisible in the DOM — inspect the page source to see it.',
       },
     },
+    // Renders an invisible <script> tag — nothing to snapshot.
+    visual: { disable: true },
   },
 } satisfies Meta<typeof StructuredData>;
 export default meta;

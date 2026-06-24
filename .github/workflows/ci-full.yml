@@ -25,13 +25,10 @@ on:
         required: false
         default: 'true'
       storybook-changed:
-        description: Whether paths affecting Storybook/Chromatic changed
+        description: Whether paths affecting shared-ui / Storybook changed
         type: string
         required: false
         default: 'true'
-    secrets:
-      CHROMATIC_PROJECT_TOKEN:
-        required: false
 
 env:
   # @nx/s3-cache plugin → Cloudflare R2 (see nx.json `s3` block).
@@ -50,8 +47,6 @@ jobs:
     if: ${{ inputs.e2e-changed == 'true' || inputs.lighthouse-changed == 'true' || inputs.storybook-changed == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -105,14 +100,16 @@ jobs:
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
 
-      # --- storybook + chromatic ---
-      - name: Build Storybook affected
+      # --- shared-ui visual regression (self-hosted, replaces Chromatic) ---
+      # Vitest renders every story in Chromium and diffs against the committed
+      # Linux baselines. Needs the browser binary; the e2e block installs it
+      # with --with-deps, so this plain install is a no-op when e2e also ran.
+      - name: Install Playwright (Chromium) for visual tests
         if: inputs.storybook-changed == 'true'
-        run: pnpm nx affected -t build-storybook --nxBail
-        env:
-          NX_BASE: ${{ inputs.nx-base }}
-          NX_HEAD: ${{ inputs.nx-head }}
+        run: pnpm exec playwright install chromium
 
-      - name: Run Chromatic visual tests
-        if: inputs.storybook-changed == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
-        run: pnpm chromatic:ui --exit-zero-on-changes --exit-once-sent
+      - name: Visual regression (shared-ui)
+        if: inputs.storybook-changed == 'true'
+        env:
+          VITEST_VISUAL: 'true'
+        run: pnpm nx run @danieljoffe/shared-ui:test-storybook --skip-nx-cache -- --project=visual

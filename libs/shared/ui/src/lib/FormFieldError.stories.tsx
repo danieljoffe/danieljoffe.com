@@ -29,4 +29,6 @@ export const NoMessage: Story = {
     message: undefined,
     id: 'hidden-error',
   },
+  // Renders nothing when there is no message — nothing to snapshot.
+  parameters: { visual: { disable: true } },
 };

@@ -5,6 +5,13 @@ dist
 tmp
 out-tsc
 
+# Visual-regression: only CI-generated Linux baselines are committed.
+# Local (darwin/win32) screenshots and on-failure diffs are throwaway.
+**/__screenshots__/**/*-darwin.png
+**/__screenshots__/**/*-win32.png
+**/__screenshots__/**/*.diff.png
+**/.vitest-attachments/
+
 # dependencies
 node_modules
 .venv
