@@ -89,8 +89,16 @@ const config: KnipConfig = {
         'src/lib/index.tsx',
         // Jest setup file referenced via config, not imports
         'src/test-setup.ts',
+        // Visual-regression tests run via the Vitest `visual` project, which is
+        // env-gated (VITEST_VISUAL), so Knip's Vitest plugin can't see them.
+        'src/**/*.visual.tsx',
       ],
       project: ['src/**/*.{ts,tsx}'],
+      ignoreDependencies: [
+        // The visual tests import `@vitest/browser/context`; the package is
+        // pulled transitively by @vitest/browser-playwright, not declared.
+        '@vitest/browser',
+      ],
     },
   },
 };

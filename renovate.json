@@ -28,11 +28,7 @@
     },
     {
       "description": "Group Storybook packages",
-      "matchPackagePatterns": [
-        "^@storybook/",
-        "^storybook$",
-        "^@chromatic-com/"
-      ],
+      "matchPackagePatterns": ["^@storybook/", "^storybook$"],
       "groupName": "Storybook",
       "automerge": false
     },
