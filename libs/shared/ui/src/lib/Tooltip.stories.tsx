@@ -103,6 +103,27 @@ export const HoverInteraction: Story = {
   },
 };
 
+// Visual-regression only: hover and leave the tooltip open so the popup itself
+// is captured (the other stories snapshot just the trigger).
+export const OpenState: Story = {
+  args: {
+    content: 'This is a tooltip',
+    children: <Button>Hover me</Button>,
+    position: 'bottom',
+    delay: 0,
+  },
+  parameters: { visual: { interact: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: 'Hover me' });
+    const tooltip = canvas.getByRole('tooltip', { hidden: true });
+    await userEvent.hover(trigger);
+    await waitFor(() =>
+      expect(tooltip).toHaveAttribute('aria-hidden', 'false')
+    );
+  },
+};
+
 export const TooltipAccessibility: Story = {
   args: {
     content: 'Accessible tooltip',
