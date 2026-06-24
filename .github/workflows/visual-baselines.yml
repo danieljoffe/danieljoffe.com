@@ -7,6 +7,11 @@ name: Update Visual Baselines
 
 on:
   workflow_dispatch:
+  # TEMP bootstrap: regenerate baselines for the capture-fix branch (default
+  # branch is main, so workflow_dispatch isn't available here yet). Remove once
+  # the updated baselines are committed.
+  push:
+    branches: [fix/visual-capture-full-viewport]
 
 permissions:
   contents: write
