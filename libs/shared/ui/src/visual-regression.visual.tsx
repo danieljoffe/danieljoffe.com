@@ -24,7 +24,8 @@ import {
 
 type StoryModule = Parameters<typeof composeStories>[0];
 type ComposedStory = {
-  parameters?: { visual?: { disable?: boolean } };
+  parameters?: { visual?: { disable?: boolean; interact?: boolean } };
+  play?: (context: { canvasElement: HTMLElement }) => Promise<void> | void;
 };
 
 const storyModules = import.meta.glob<StoryModule>('./lib/**/*.stories.tsx', {
@@ -93,6 +94,18 @@ for (const [filePath, storyModule] of Object.entries(storyModules)) {
         // Wait for web fonts so text rendering is stable (small text otherwise
         // flakes between the pre- and post-font-load frame).
         await document.fonts.ready;
+        // Overlay components (Tooltip, Dropdown) only show their popup after
+        // interaction. Opt in with `parameters.visual.interact` to run the
+        // story's play — which opens and leaves the overlay open — before the
+        // capture, so the opened state is snapshotted instead of just the
+        // trigger.
+        if (story.parameters?.visual?.interact && story.play) {
+          await story.play({ canvasElement: container });
+          await new Promise<void>(resolve =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+          );
+          await document.fonts.ready;
+        }
         await expect(page.getByTestId('visual-root')).toMatchScreenshot(
           `${componentName}-${storyName}`
         );

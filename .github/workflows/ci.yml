@@ -57,7 +57,16 @@ jobs:
             # gh pr view --json files truncates at 100 files; use the paginated REST endpoint instead.
             CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --paginate --jq '.[].filename')
           else
-            CHANGED=$(git diff --name-only "${{ steps.shas.outputs.base }}" "${{ steps.shas.outputs.head }}")
+            # Classify on the actual pushed range. The nx-set-shas base tracks the
+            # last *successful workflow* and can skip over commits (e.g. `[skip ci]`
+            # baseline updates), which once let a shared-ui change miss the
+            # storybook flag. before..sha is exactly what this push introduced.
+            BEFORE="${{ github.event.before }}"
+            if [ "$BEFORE" != "0000000000000000000000000000000000000000" ] && git rev-parse --verify -q "$BEFORE^{commit}" >/dev/null 2>&1; then
+              CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+            else
+              CHANGED=$(git diff --name-only "${{ steps.shas.outputs.base }}" "${{ steps.shas.outputs.head }}")
+            fi
           fi
 
           DOCS_ONLY=true
