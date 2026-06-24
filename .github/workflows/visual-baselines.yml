@@ -7,10 +7,6 @@ name: Update Visual Baselines
 
 on:
   workflow_dispatch:
-  # TEMP bootstrap: add the 2 new open-state baselines on Linux (default branch
-  # is main, so workflow_dispatch isn't available here yet). Remove once committed.
-  push:
-    branches: [chore/visual-testing-hardening]
 
 permissions:
   contents: write
