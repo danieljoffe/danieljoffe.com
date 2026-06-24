@@ -148,6 +148,28 @@ export const OpenAndClose: Story = {
   },
 };
 
+// Visual-regression only: open the menu and leave it open so the popup is
+// captured (the other stories snapshot just the trigger).
+export const OpenState: Story = {
+  args: {
+    trigger: (
+      <span className='px-3 py-1.5 border rounded-md text-sm'>Open menu</span>
+    ),
+    items: [
+      { label: 'Edit' },
+      { label: 'Duplicate' },
+      { label: '', divider: true },
+      { label: 'Delete', danger: true },
+    ],
+  },
+  parameters: { visual: { interact: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: 'Open menu' }));
+    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+  },
+};
+
 export const ItemClick: Story = {
   args: {
     trigger: (
