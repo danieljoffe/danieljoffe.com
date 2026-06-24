@@ -38,7 +38,9 @@ beforeAll(() => {
   // Freeze animations/transitions and hide the text caret so snapshots are
   // deterministic across runs (spinners, pulses, fades would otherwise flake).
   const style = document.createElement('style');
-  style.textContent = `*, *::before, *::after {
+  style.textContent = `
+  html, body { margin: 0 !important; padding: 0 !important; }
+  *, *::before, *::after {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
     transition-duration: 0s !important;
@@ -51,6 +53,11 @@ beforeAll(() => {
 beforeEach(() => {
   container = document.createElement('div');
   container.setAttribute('data-testid', 'visual-root');
+  // Fill the viewport so fixed/overlay components (Modal, Dropdown, Tooltip,
+  // Toast) and any portaled content land inside the captured region rather than
+  // being clipped to the story's flow box.
+  container.style.width = '100%';
+  container.style.minHeight = '100vh';
   document.body.appendChild(container);
   root = createRoot(container);
 });
