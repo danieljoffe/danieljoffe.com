@@ -254,15 +254,15 @@ The theme file includes an `@layer base` block that sets:
 
 ### Forms
 
-| Component          | Description                    | Key props                                                                                              |
-| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| **Button**         | Button with variants and sizes | `variant`: `bare`, `primary`, `secondary`, `outline`. `size`: `sm`, `md`, `lg`. `loading`, `as`/`href` |
-| **Checkbox**       | Checkbox input                 | `checked`, `onChange`, `label`                                                                         |
-| **FormFieldError** | Validation error message       | `message`, `id` (for `aria-describedby`)                                                               |
-| **Input**          | Text input with label/error    | `label`, `error`, `helper`                                                                             |
-| **Select**         | Select dropdown                | `options: SelectOption[]`, `label`, `error`                                                            |
-| **Switch**         | Toggle switch                  | `checked`, `onChange`, `label`                                                                         |
-| **Textarea**       | Multi-line text input          | `label`, `error`, `helper`                                                                             |
+| Component          | Description                    | Key props                                                                                                                                 |
+| ------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Button**         | Button with variants and sizes | `variant` emphasis (`bare`/`primary`/`secondary`/`outline`) + status (`error`/`warning`/`success`/`info`). `size`, `loading`, `as`/`href` |
+| **Checkbox**       | Checkbox input                 | `checked`, `onChange`, `label`                                                                                                            |
+| **FormFieldError** | Validation error message       | `message`, `id` (for `aria-describedby`)                                                                                                  |
+| **Input**          | Text input with label/error    | `label`, `error`, `helper`                                                                                                                |
+| **Select**         | Select dropdown                | `options: SelectOption[]`, `label`, `error`                                                                                               |
+| **Switch**         | Toggle switch                  | `checked`, `onChange`, `label`                                                                                                            |
+| **Textarea**       | Multi-line text input          | `label`, `error`, `helper`                                                                                                                |
 
 ### Feedback
 

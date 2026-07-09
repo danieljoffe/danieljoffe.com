@@ -216,14 +216,83 @@ import { Spinner } from './Spinner';
   </tbody>
 </table>
 
+<h2 className='doc-section'>Status Variants</h2>
+
+<p className='doc-p'>
+  Four solid, high-emphasis variants carry <em>intent</em>: they demand more
+  attention than a neutral button. Reserve them for definitive, consequential
+  actions — the color is a signal, not decoration. Each is a deep, saturated
+  fill with white text (the <code>on-semantic</code> token), so it reads as a
+  definitive control and clears WCAG AA in both themes, light and dark.
+</p>
+
+<div className='doc-grid'>
+  <Button variant='error'>Delete</Button>
+  <Button variant='warning'>Archive</Button>
+  <Button variant='success'>Approve</Button>
+  <Button variant='info'>Learn more</Button>
+</div>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Use when</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>error</code>
+      </td>
+      <td>Destructive or irreversible actions — Delete, Remove, Revoke.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>warning</code>
+      </td>
+      <td>Actions with caution-worthy consequences — Archive, Disable.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>success</code>
+      </td>
+      <td>Confirming or completing a positive flow — Approve, Publish.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>info</code>
+      </td>
+      <td>Neutral-but-notable actions you want to draw the eye to.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Put a status variant on the <strong>definitive</strong> action of a flow —
+      the confirm button in a delete dialog — not on every color-tinted control.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't pair intent with low emphasis — there is no "secondary error". A
+      quiet danger button is a whispered alarm. If it's low-emphasis it's{' '}
+      <code>secondary</code>, and the intent lives in the label.
+    </p>
+  </div>
+</div>
+
 <h3 className='doc-sub'>Need a variant we don't ship?</h3>
 
 <p className='doc-p'>
-  The four variants above are the complete set — <code>success</code>,{' '}
-  <code>ghost</code>, and <code>danger</code> are <em>not</em> valid{' '}
-  <code>variant</code> values (passing one renders an unstyled button). When you
-  need a different look, extend <code>bare</code> — which is intentionally
-  style-free — with utilities:
+  <code>ghost</code> and <code>danger</code> are <em>not</em> variants (passing
+  one renders an unstyled button — use <code>error</code> for danger). For a
+  genuinely different look, extend <code>bare</code>, which is intentionally
+  style-free:
 </p>
 
 <div className='doc-grid'>

@@ -13,7 +13,17 @@ const meta = {
     variant: {
       description: 'Visual style of the button',
       control: 'select',
-      options: [undefined, 'bare', 'primary', 'secondary', 'outline'],
+      options: [
+        undefined,
+        'bare',
+        'primary',
+        'secondary',
+        'outline',
+        'error',
+        'warning',
+        'success',
+        'info',
+      ],
       table: {
         defaultValue: { summary: 'primary' },
       },
@@ -80,6 +90,74 @@ export const Bare: Story = {
     variant: 'bare',
     children: 'Bare',
   },
+};
+
+// Status (intent) variants — solid, high-emphasis fills for definitive,
+// attention-demanding actions. The a11y addon (test: 'error') validates the
+// foreground/fill contrast on each in the default (dark) theme.
+export const ErrorVariant: Story = {
+  name: 'Error',
+  args: {
+    variant: 'error',
+    children: 'Delete',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    variant: 'warning',
+    children: 'Archive',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    variant: 'success',
+    children: 'Approve',
+  },
+};
+
+export const Info: Story = {
+  args: {
+    variant: 'info',
+    children: 'Learn more',
+  },
+};
+
+// Side-by-side showcase — emphasis row + status row — for eyeballing the bolder
+// labels and the solid status fills together. Toggle the theme in the toolbar to
+// check both light and dark.
+export const AllVariants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+        }}
+      >
+        <Button variant='primary'>Primary</Button>
+        <Button variant='secondary'>Secondary</Button>
+        <Button variant='outline'>Outline</Button>
+        <Button variant='bare'>Bare</Button>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+        }}
+      >
+        <Button variant='error'>Delete</Button>
+        <Button variant='warning'>Archive</Button>
+        <Button variant='success'>Approve</Button>
+        <Button variant='info'>Learn more</Button>
+      </div>
+    </div>
+  ),
 };
 
 export const Small: Story = {
