@@ -1,0 +1,296 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Badge } from './Badge';
+import { Button } from './Button';
+
+<Meta title="Guides/Extend, Don't Reimplement" />
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Extend, Don't Reimplement</h1>
+<p className='doc-lead'>
+  The fastest way to fall out of sync with this library is to rebuild a
+  component you could have extended. This page is the decision tree for staying
+  on the paved path — when to use a primitive as-is, when to extend it, when to
+  compose it in your own app, and the rare case where reimplementing is right.
+</p>
+
+<h2 className='doc-section'>The decision tree</h2>
+
+<p className='doc-p'>
+  Before you write a component, walk these four steps in order. Stop at the
+  first one that fits.
+</p>
+
+<div className='doc-steps'>
+  <div className='doc-step'>
+    <div className='doc-step-num'>1</div>
+    <p className='doc-step-body'>
+      <strong>Does a primitive already cover it?</strong> Use it. A raw{' '}
+      <code>&lt;button&gt;</code>, <code>&lt;table&gt;</code>, or{' '}
+      <code>&lt;input&gt;</code> almost always has a primitive here that already
+      handles focus states, dark mode, and accessibility. See{' '}
+      <a href='?path=/docs/guides-reach-for-a-primitive--docs'>
+        Reach for a Primitive
+      </a>{' '}
+      for the full map.
+    </p>
+  </div>
+  <div className='doc-step'>
+    <div className='doc-step-num'>2</div>
+    <p className='doc-step-body'>
+      <strong>Does one almost fit, but you need a tweak?</strong> Extend it —
+      don't fork it. Every component merges a <code>className</code> (via{' '}
+      <code>cn()</code>, so your classes win), and layout/typography primitives
+      take an <code>as</code> prop to change the element. Reach for these before
+      copying source.
+    </p>
+  </div>
+  <div className='doc-step'>
+    <div className='doc-step-num'>3</div>
+    <p className='doc-step-body'>
+      <strong>Is the difference app-specific meaning?</strong> Compose. If the
+      gap is <em>your</em> domain — a score-to-color mapping, your nav items,
+      your confirm dialog — wrap the primitive in an app component. The
+      primitive stays generic; your logic stays in your app.
+    </p>
+  </div>
+  <div className='doc-step'>
+    <div className='doc-step-num'>4</div>
+    <p className='doc-step-body'>
+      <strong>None of the above?</strong> That's rare, and it usually means the
+      library is missing something. Open a PR or an issue before hand-rolling —
+      a component you maintain forever is the most expensive option on this
+      list.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>
+  Extend: className and <code>as</code>
+</h2>
+
+<p className='doc-p'>
+  Every component accepts a <code>className</code> that is merged with{' '}
+  <code>cn()</code> (clsx + tailwind-merge). Because tailwind-merge dedupes
+  conflicting utilities in your favor, the classes you pass override the
+  defaults — no <code>!important</code>, no specificity war.
+</p>
+
+<p className='doc-p'>
+  The library ships four Button variants — <code>bare</code>,{' '}
+  <code>primary</code>, <code>secondary</code>, and <code>outline</code>. Say
+  you want a "ghost" look that isn't one of them. Start from <code>bare</code>{' '}
+  (which is intentionally style-free) and add utilities:
+</p>
+
+<div className='doc-grid'>
+  <Button variant='primary'>Primary</Button>
+  <Button variant='outline'>Outline</Button>
+  <Button
+    variant='bare'
+    className='px-4 py-3 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
+  >
+    Ghost (extended)
+  </Button>
+</div>
+
+```tsx
+// A one-off ghost button — extend `bare`, don't fork Button:
+<Button
+  variant='bare'
+  className='px-4 py-3 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
+>
+  Ghost
+</Button>
+```
+
+<div className='doc-note'>
+  <strong>The rule of three applies upstream too.</strong> If a whole team keeps
+  re-deriving the same "ghost" look, that's the signal to add a{' '}
+  <code>ghost</code> variant to Button in a PR — so every consumer gets it — not
+  to paste the same <code>className</code> into fifty call sites or fork the
+  component.
+</div>
+
+<p className='doc-p'>
+  For layout and typography primitives, the <code>as</code> prop changes the
+  rendered element without losing the styles. A <code>Button</code> becomes a
+  real anchor for navigation; a <code>Stack</code> becomes a semantic{' '}
+  <code>&lt;section&gt;</code>:
+</p>
+
+```tsx
+<Button as='a' href='/pricing'>View pricing</Button>
+<Stack as='section' gap='md'>…</Stack>
+<Text as='label' htmlFor='email'>Email</Text>
+```
+
+<h2 className='doc-section'>Compose: wrap for app-specific meaning</h2>
+
+<p className='doc-p'>
+  When the difference is domain logic rather than styling, compose the primitive
+  inside an app component. The two canonical shapes are a{' '}
+  <strong>semantic wrapper</strong> (map your data to a primitive's props) and a{' '}
+  <strong>behavioral wrapper</strong> (add app behavior around a primitive).
+</p>
+
+<h3 className='doc-sub'>
+  Semantic wrapper — <code>ScoreBadge</code> composes Badge
+</h3>
+
+<p className='doc-p'>
+  Badge exposes semantic variants; the mapping from a number to a variant is
+  your app's rule, so it lives in your app. Below is the live output of the
+  three branches:
+</p>
+
+<div className='doc-grid'>
+  <Badge variant='success'>92</Badge>
+  <Badge variant='warning'>64</Badge>
+  <Badge variant='error'>31</Badge>
+</div>
+
+```tsx
+import { Badge, type BadgeProps } from '@danieljoffe/shared-ui';
+
+// Domain logic (thresholds) lives here; the visual primitive stays in the library.
+export function ScoreBadge({ score }: { score: number }) {
+  const variant: BadgeProps['variant'] =
+    score >= 80 ? 'success' : score >= 50 ? 'warning' : 'error';
+  return <Badge variant={variant}>{score}</Badge>;
+}
+```
+
+<h3 className='doc-sub'>
+  Behavioral wrapper — <code>ConfirmModal</code> wraps Modal
+</h3>
+
+<p className='doc-p'>
+  Modal already owns the hard parts — the focus trap, <code>Escape</code> to
+  close, returning focus to the trigger, <code>role="dialog"</code>. Don't
+  rebuild that to add a confirm/cancel footer; wrap it.
+</p>
+
+```tsx
+import { Modal, Button } from '@danieljoffe/shared-ui';
+
+export function ConfirmModal({
+  open,
+  onClose,
+  onConfirm,
+  title,
+  children,
+}: ConfirmModalProps) {
+  return (
+    <Modal open={open} onClose={onClose} title={title}>
+      {children}
+      <div className='mt-6 flex justify-end gap-2'>
+        <Button variant='secondary' onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant='primary' onClick={onConfirm}>
+          Confirm
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+```
+
+<h3 className='doc-sub'>Configure, don't fork — Sidebar takes your nav</h3>
+
+<p className='doc-p'>
+  App navigation is always app-specific, which is exactly why Sidebar is a{' '}
+  <em>shell</em>: you pass <code>items</code>, <code>activeId</code>, and{' '}
+  <code>onSelect</code>, plus optional <code>header</code>/<code>footer</code>{' '}
+  slots. The chrome (collapse, nesting, active state, ARIA) is the library's;
+  the content is yours. Reaching for a hand-rolled <code>&lt;nav&gt;</code> here
+  means re-implementing the keyboard and <code>aria-current</code> behavior it
+  already ships.
+</p>
+
+```tsx
+<Sidebar
+  items={[
+    { id: 'home', label: 'Home', href: '/', icon: <Home /> },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: <Cog /> },
+  ]}
+  activeId={activeId}
+  onSelect={setActiveId}
+  header={<Logo />}
+/>
+```
+
+<h2 className='doc-section'>Kit vs. your app</h2>
+
+<p className='doc-p'>
+  One boundary trips people up: this library depends only on React and Tailwind
+  — no Next.js. Anything that needs <code>next/link</code>,{' '}
+  <code>next/image</code>, <code>useRouter</code>, or <code>usePathname</code>{' '}
+  can't live here. That's not a reimplementation; it's a{' '}
+  <strong>kit component</strong> in your app that wraps the primitive with the
+  framework glue. Button's <code>as</code> prop is the seam:
+</p>
+
+```tsx
+// app/components/kit/LinkButton.tsx
+import NextLink from 'next/link';
+import { Button, type ButtonProps } from '@danieljoffe/shared-ui';
+
+// The primitive supplies the styles; the kit supplies the framework.
+export function LinkButton(props: ButtonProps & { href: string }) {
+  return <Button as={NextLink} {...props} />;
+}
+```
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Wrap the primitive with the framework glue in <code>components/kit/</code>
+      , passing it through <code>as</code>. One thin adapter, styles inherited.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't copy Button's styles into a bespoke <code>NavButton</code> just to
+      get an <code>&lt;a&gt;</code>. You'll drift the moment the library's focus
+      ring or tokens change.
+    </p>
+  </div>
+</div>
+
+<h2 className='doc-section'>When reimplementing is actually right</h2>
+
+<p className='doc-p'>
+  It happens — just rarely. Reimplement when you need a genuinely new primitive
+  the library doesn't have, or a behavior fundamentally different from what an
+  existing one models. When you hit that, treat it as a gap in the library, not
+  a private workaround: open an issue or a PR. If three apps need it, it belongs
+  here (the rule of three), and everyone benefits from one accessible, tested,
+  themed implementation instead of three divergent ones.
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Do</div>
+    <p className='doc-do-body'>
+      Extend with <code>className</code>/<code>as</code>, compose primitives
+      into app components, and push genuinely-shared gaps upstream as PRs.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Don't</div>
+    <p className='doc-dont-body'>
+      Don't fork a component to change a color, and don't hand-roll a{' '}
+      <code>&lt;table&gt;</code> or <code>&lt;nav&gt;</code> to avoid reading
+      the props. The accessibility you skip is the accessibility you'll ship
+      broken.
+    </p>
+  </div>
+</div>
+
+</div>
+</div>

@@ -209,6 +209,8 @@ The theme file includes an `@layer base` block that sets:
 
 ## Component catalog
 
+> The tables below are a high-level index. For authoritative, always-current props — types, defaults, and descriptions generated from the source — open a component in the [Storybook catalog](https://ui.danieljoffe.com); its autodocs can't drift. See also the **Guides** section there: _Reach for a Primitive_, _Extend, Don't Reimplement_, and _Accessibility_.
+
 ### Typography
 
 | Component   | Description                                | Key props                                                                                                                                                                 |
@@ -218,49 +220,49 @@ The theme file includes an `@layer base` block that sets:
 
 ### Layout
 
-| Component               | Description                                | Key props                              |
-| ----------------------- | ------------------------------------------ | -------------------------------------- |
-| **Container**           | Max-width centered container               | `size`: `sm`, `md`, `lg`, `xl`, `full` |
-| **Grid** / **GridItem** | CSS Grid wrapper                           | `cols`, `gap`, `responsive`            |
-| **PageContainer**       | Page-level wrapper with consistent padding | `wide`                                 |
-| **PageLayout**          | Full page layout with sections             | `wide`                                 |
-| **Section**             | Semantic section with spacing              | `id`, `className`                      |
-| **SectionLabel**        | Section header with icon + label           | `icon`, `label`                        |
-| **Spacer**              | Vertical/horizontal spacing                | `size`: `xs`-`xl`                      |
-| **Stack**               | Flex stack (vertical/horizontal)           | `direction`, `gap`, `align`, `justify` |
-| **Sidebar**             | Navigation sidebar                         | `items`, `activeItem`                  |
+| Component               | Description                                | Key props                                                         |
+| ----------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| **Container**           | Max-width centered container               | `size`: `sm`, `md`, `lg`, `xl`, `full`                            |
+| **Grid** / **GridItem** | CSS Grid wrapper                           | `cols`, `gap`, `responsive`                                       |
+| **PageContainer**       | Page-level wrapper with consistent padding | `as`, `size`, `wrapperClassName`                                  |
+| **PageLayout**          | Full page layout with sections             | `children` (a `<main>` shell; Section owns spacing via `contain`) |
+| **Section**             | Semantic section with spacing              | `id`, `className`                                                 |
+| **SectionLabel**        | Section header with icon + label           | `icon`, `label`                                                   |
+| **Spacer**              | Vertical/horizontal spacing                | `size`: `xs`-`xl`                                                 |
+| **Stack**               | Flex stack (vertical/horizontal)           | `direction`, `gap`, `align`, `justify`                            |
+| **Sidebar**             | Navigation sidebar                         | `items`, `activeId`, `onSelect`                                   |
 
 ### Data display
 
-| Component                                                                    | Description                                 | Key props                                                                           |
-| ---------------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Avatar**                                                                   | User avatar with fallback                   | `src`, `alt`, `size`                                                                |
-| **Badge**                                                                    | Status/category label                       | `variant`: `default`, `brand`, `brand-solid`, `success`, `warning`, `error`, `info` |
-| **Breadcrumb**                                                               | Navigation breadcrumb trail                 | `items: BreadcrumbItem[]`                                                           |
-| **Card** / **CardHeader** / **CardTitle** / **CardContent** / **CardFooter** | Composable card                             | Standard card sections                                                              |
-| **CTACard**                                                                  | Call-to-action card with heading and action | `title`, `description`, `action`                                                    |
-| **Divider**                                                                  | Horizontal rule with optional label         | `label`                                                                             |
-| **Kbd**                                                                      | Keyboard shortcut display                   | `children` (key text)                                                               |
-| **Pagination**                                                               | Page navigation controls                    | `currentPage`, `totalPages`, `onPageChange`                                         |
-| **ProgressBar**                                                              | Progress indicator                          | `value`, `max`, `variant`                                                           |
-| **Skeleton**                                                                 | Loading placeholder                         | `width`, `height`, `variant`: `text`, `circular`, `rectangular`                     |
-| **StatsCard**                                                                | Metric display card                         | `label`, `value`, `subtitle`, `trend`                                               |
-| **StructuredData**                                                           | JSON-LD script injection                    | `data`                                                                              |
-| **Table**                                                                    | Data table with sorting                     | `columns: Column[]`, `data`, `sortable`                                             |
-| **Tabs**                                                                     | Tab navigation                              | `tabs: Tab[]`, `activeTab`, `onTabChange`                                           |
-| **Tooltip**                                                                  | Hover tooltip                               | `content`, `position`                                                               |
+| Component                                                                    | Description                                      | Key props                                                                           |
+| ---------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| **Avatar**                                                                   | User avatar with fallback                        | `src`, `alt`, `size`                                                                |
+| **Badge**                                                                    | Status/category label                            | `variant`: `default`, `brand`, `brand-solid`, `success`, `warning`, `error`, `info` |
+| **Breadcrumb**                                                               | Navigation breadcrumb trail                      | `items: BreadcrumbItem[]`                                                           |
+| **Card** / **CardHeader** / **CardTitle** / **CardContent** / **CardFooter** | Composable card                                  | Standard card sections                                                              |
+| **CTACard**                                                                  | Call-to-action card with heading and action      | `title`, `description`, `action`                                                    |
+| **Divider**                                                                  | Horizontal rule with optional label              | `label`                                                                             |
+| **Kbd**                                                                      | Keyboard shortcut display                        | `children` (key text)                                                               |
+| **Pagination**                                                               | Page navigation controls                         | `currentPage`, `totalPages`, `onPageChange`                                         |
+| **ProgressBar**                                                              | Progress indicator                               | `value`, `max`, `variant`                                                           |
+| **Skeleton**                                                                 | Loading placeholder                              | `width`, `height`, `variant`: `text`, `circular`, `rectangular`                     |
+| **StatsCard**                                                                | Metric display card                              | `label`, `value`, `subtitle`, `trend`                                               |
+| **StructuredData**                                                           | JSON-LD script injection                         | `data`                                                                              |
+| **Table**                                                                    | Semantic data table with keyboard-navigable rows | `columns: Column<T>[]`, `data`, `onRowClick`, `striped`, `caption`                  |
+| **Tabs**                                                                     | Tab navigation                                   | `tabs: Tab[]`, `activeTab`, `onTabChange`                                           |
+| **Tooltip**                                                                  | Hover tooltip                                    | `content`, `position`                                                               |
 
 ### Forms
 
-| Component          | Description                    | Key props                                                                                 |
-| ------------------ | ------------------------------ | ----------------------------------------------------------------------------------------- |
-| **Button**         | Button with variants and sizes | `variant`: `primary`, `secondary`, `ghost`, `outline`, `danger`. `size`: `sm`, `md`, `lg` |
-| **Checkbox**       | Checkbox input                 | `checked`, `onChange`, `label`                                                            |
-| **FormFieldError** | Validation error message       | `message`, `id` (for `aria-describedby`)                                                  |
-| **Input**          | Text input with label/error    | `label`, `error`, `helper`                                                                |
-| **Select**         | Select dropdown                | `options: SelectOption[]`, `label`, `error`                                               |
-| **Switch**         | Toggle switch                  | `checked`, `onChange`, `label`                                                            |
-| **Textarea**       | Multi-line text input          | `label`, `error`, `helper`                                                                |
+| Component          | Description                    | Key props                                                                                              |
+| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| **Button**         | Button with variants and sizes | `variant`: `bare`, `primary`, `secondary`, `outline`. `size`: `sm`, `md`, `lg`. `loading`, `as`/`href` |
+| **Checkbox**       | Checkbox input                 | `checked`, `onChange`, `label`                                                                         |
+| **FormFieldError** | Validation error message       | `message`, `id` (for `aria-describedby`)                                                               |
+| **Input**          | Text input with label/error    | `label`, `error`, `helper`                                                                             |
+| **Select**         | Select dropdown                | `options: SelectOption[]`, `label`, `error`                                                            |
+| **Switch**         | Toggle switch                  | `checked`, `onChange`, `label`                                                                         |
+| **Textarea**       | Multi-line text input          | `label`, `error`, `helper`                                                                             |
 
 ### Feedback
 
@@ -275,10 +277,10 @@ The theme file includes an `@layer base` block that sets:
 
 ### Theming
 
-| Component                        | Description                   | Key props                                  |
-| -------------------------------- | ----------------------------- | ------------------------------------------ |
-| **ThemeProvider** / **useTheme** | Theme context provider        | Wraps app, provides `theme`, `toggleTheme` |
-| **ThemeToggle**                  | Dark/light mode toggle button | Uses `useTheme` internally                 |
+| Component                        | Description                             | Key props                                  |
+| -------------------------------- | --------------------------------------- | ------------------------------------------ |
+| **ThemeProvider** / **useTheme** | Theme context provider                  | Wraps app, provides `theme`, `toggleTheme` |
+| **ThemeToggle**                  | Light / dark / system segmented control | Uses `useTheme` internally                 |
 
 ### Decorative
 
@@ -334,6 +336,51 @@ function MyForm() {
 
 - **No Next.js APIs**: This library depends only on React and Tailwind CSS. Components requiring `next/link`, `next/image`, `useRouter`, etc. belong in the consuming app's `components/kit/` directory.
 - **No framework-specific code**: Components work in any React 19+ environment with Tailwind CSS 4.
+
+## Linked development
+
+By default, `import { Button } from '@danieljoffe/shared-ui'` resolves to the compiled `dist/`. That's right for production, but iterating on the library from a consumer would otherwise mean a build-version-publish-bump cycle just to see a change render. This package ships a **source export condition** so you can skip that loop: import the TypeScript source directly, edit a component, see it live in your app, and publish once at the end.
+
+Every export declares a `@danieljoffe.com/source` condition pointing at `src/`:
+
+```jsonc
+// libs/shared/ui/package.json
+"exports": {
+  ".": {
+    "@danieljoffe.com/source": "./src/index.ts", // ← linked dev: raw source
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js"                   // ← published default: built dist
+  }
+}
+```
+
+**Inside this monorepo** it is already wired — apps opt into the condition and resolve shared-ui straight from `libs/shared/ui/src` with no build step, so editing a component hot-reloads the app.
+
+**From a separate repo**, put the library's source on disk beside your app (a workspace entry, `pnpm link`, or a plain checkout), then opt your toolchain into the condition:
+
+- **TypeScript** — resolve types from source:
+
+  ```jsonc
+  // tsconfig.json
+  { "compilerOptions": { "customConditions": ["@danieljoffe.com/source"] } }
+  ```
+
+- **Next.js (webpack)** — prepend the condition so imports resolve to `src/`:
+
+  ```js
+  // next.config.mjs
+  webpack: (config) => {
+    config.resolve.conditionNames = [
+      '@danieljoffe.com/source',
+      ...(config.resolve.conditionNames ?? ['import', 'require', 'default']),
+    ];
+    return config;
+  },
+  ```
+
+- **Other bundlers** — add `@danieljoffe.com/source` to the resolver's condition list (e.g. Vite's `resolve.conditions`), ahead of `import`/`default`.
+
+With the condition active, `@danieljoffe/shared-ui` imports resolve to the library's TypeScript source; edits show up live. Leave the condition unset in production builds so they always resolve the compiled `dist/`.
 
 ## Development
 

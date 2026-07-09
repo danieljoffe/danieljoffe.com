@@ -1,0 +1,415 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title='Guides/Reach for a Primitive' />
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Reach for a Primitive</h1>
+<p className='doc-lead'>
+  A one-page cheat-sheet: before you type a raw HTML element, check whether a
+  primitive already owns it. Nearly every interactive element here ships focus
+  states, dark mode, and accessibility you'd otherwise re-implement (usually
+  incompletely). When one almost fits, extend it — see{' '}
+  <a href='?path=/docs/guides-extend-don-t-reimplement--docs'>
+    Extend, Don't Reimplement
+  </a>
+  .
+</p>
+
+<div className='doc-note'>
+  <strong>How to read this.</strong> "Instead of" is the raw thing people reach
+  for out of habit. "Reach for" is the primitive that already solves it. "You'd
+  otherwise re-derive" is what you silently take on by hand-rolling — almost
+  always accessibility.
+</div>
+
+<h2 className='doc-section'>Actions &amp; navigation</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Instead of</th>
+      <th>Reach for</th>
+      <th>You'd otherwise re-derive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>&lt;button&gt;</code>
+      </td>
+      <td>
+        <code>Button</code>
+      </td>
+      <td>Variants, sizes, loading state, disabled, focus-visible ring</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;a&gt;</code> styled as a button
+      </td>
+      <td>
+        <code>Button as='a'</code>
+      </td>
+      <td>Button styling on a real anchor, with correct link semantics</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;nav&gt;</code> side navigation
+      </td>
+      <td>
+        <code>Sidebar</code>
+      </td>
+      <td>
+        <code>aria-current</code>, collapse, nesting, keyboard handling
+      </td>
+    </tr>
+    <tr>
+      <td>Breadcrumb trail</td>
+      <td>
+        <code>Breadcrumb</code>
+      </td>
+      <td>
+        <code>nav[aria-label]</code>, <code>aria-current="page"</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Prev / next page links</td>
+      <td>
+        <code>Pagination</code>
+      </td>
+      <td>Labelled controls, disabled edges, current-page marker</td>
+    </tr>
+    <tr>
+      <td>Action menu</td>
+      <td>
+        <code>Dropdown</code>
+      </td>
+      <td>Full menu ARIA + arrow/Home/End/Escape keyboard, roving focus</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Typography</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Instead of</th>
+      <th>Reach for</th>
+      <th>You'd otherwise re-derive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code>
+      </td>
+      <td>
+        <code>Heading</code>
+      </td>
+      <td>
+        Type scale, balanced wrapping; set level with <code>as</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;p&gt;</code> / <code>&lt;span&gt;</code> copy
+      </td>
+      <td>
+        <code>Text</code>
+      </td>
+      <td>Semantic variants (body, caption, error, helper, meta…)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;kbd&gt;</code>
+      </td>
+      <td>
+        <code>Kbd</code>
+      </td>
+      <td>Consistent keycap styling</td>
+    </tr>
+    <tr>
+      <td>Pill / tag / status label</td>
+      <td>
+        <code>Badge</code>
+      </td>
+      <td>Semantic + brand variants, sizes</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Forms</h2>
+
+<p className='doc-p'>
+  Every form control wires up <code>aria-invalid</code>,{' '}
+  <code>aria-describedby</code>, <code>aria-required</code>, and an error node
+  with <code>role="alert"</code> for you. Hand-rolling means re-doing that on
+  every field.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Instead of</th>
+      <th>Reach for</th>
+      <th>You'd otherwise re-derive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>&lt;input&gt;</code>
+      </td>
+      <td>
+        <code>Input</code>
+      </td>
+      <td>Label, error, helper, ARIA wiring</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;textarea&gt;</code>
+      </td>
+      <td>
+        <code>Textarea</code>
+      </td>
+      <td>Same label/error/ARIA wiring</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;select&gt;</code>
+      </td>
+      <td>
+        <code>Select</code>
+      </td>
+      <td>Label/error wiring over native options</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;input type="checkbox"&gt;</code>
+      </td>
+      <td>
+        <code>Checkbox</code>
+      </td>
+      <td>Accessible custom control, focus, error state</td>
+    </tr>
+    <tr>
+      <td>On/off toggle</td>
+      <td>
+        <code>Switch</code>
+      </td>
+      <td>
+        <code>role="switch"</code>, <code>aria-checked</code>, focus ring
+      </td>
+    </tr>
+    <tr>
+      <td>Ad-hoc error text under a field</td>
+      <td>
+        <code>FormFieldError</code>
+      </td>
+      <td>
+        The <code>id</code> that a field's <code>aria-describedby</code> targets
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Data display</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Instead of</th>
+      <th>Reach for</th>
+      <th>You'd otherwise re-derive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>&lt;table&gt;</code>
+      </td>
+      <td>
+        <code>Table</code>
+      </td>
+      <td>
+        <code>&lt;th scope&gt;</code>, caption, keyboard rows, empty state
+      </td>
+    </tr>
+    <tr>
+      <td>Tabbed sections</td>
+      <td>
+        <code>Tabs</code>
+      </td>
+      <td>
+        <code>tablist</code>/<code>tab</code>/<code>tabpanel</code>, arrow keys
+      </td>
+    </tr>
+    <tr>
+      <td>Card container</td>
+      <td>
+        <code>Card</code> + <code>CardHeader/Title/Content/Footer</code>
+      </td>
+      <td>Composable sections with consistent padding</td>
+    </tr>
+    <tr>
+      <td>Avatar / initials circle</td>
+      <td>
+        <code>Avatar</code>
+      </td>
+      <td>
+        Image fallback, <code>alt</code> handling
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;hr&gt;</code>
+      </td>
+      <td>
+        <code>Divider</code>
+      </td>
+      <td>
+        Orientation, optional label, <code>role="separator"</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Feedback &amp; overlays</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Instead of</th>
+      <th>Reach for</th>
+      <th>You'd otherwise re-derive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hand-built dialog</td>
+      <td>
+        <code>Modal</code>
+      </td>
+      <td>
+        Focus trap, <code>Escape</code>, focus return,{' '}
+        <code>role="dialog"</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Inline banner</td>
+      <td>
+        <code>Alert</code>
+      </td>
+      <td>
+        <code>role="alert"</code>/<code>status</code>, <code>aria-live</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Transient notification</td>
+      <td>
+        <code>useToast()</code> / <code>ToastProvider</code>
+      </td>
+      <td>Polite live region, timing, pause-on-hover</td>
+    </tr>
+    <tr>
+      <td>Hover hint</td>
+      <td>
+        <code>Tooltip</code>
+      </td>
+      <td>
+        <code>role="tooltip"</code>, <code>aria-describedby</code>, Escape
+      </td>
+    </tr>
+    <tr>
+      <td>Loading spinner / bar</td>
+      <td>
+        <code>Spinner</code> · <code>ProgressBar</code> · <code>Loading</code>
+      </td>
+      <td>
+        <code>role="status"</code> / <code>role="progressbar"</code> + values
+      </td>
+    </tr>
+    <tr>
+      <td>Grey loading blocks</td>
+      <td>
+        <code>Skeleton</code>
+      </td>
+      <td>Consistent placeholder sizing and shimmer</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Layout &amp; utilities</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Instead of</th>
+      <th>Reach for</th>
+      <th>You'd otherwise re-derive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>&lt;div style="max-width"&gt;</code>
+      </td>
+      <td>
+        <code>Container</code>
+      </td>
+      <td>Consistent max-widths and centering</td>
+    </tr>
+    <tr>
+      <td>
+        <code>&lt;div className="flex gap-…"&gt;</code>
+      </td>
+      <td>
+        <code>Stack</code> / <code>Grid</code>
+      </td>
+      <td>Token-bound direction, gap, align, justify</td>
+    </tr>
+    <tr>
+      <td>Light/dark toggle</td>
+      <td>
+        <code>ThemeToggle</code>
+      </td>
+      <td>
+        Light/dark/system, <code>aria-pressed</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>class1 + (cond ? 'a' : 'b')</code>
+      </td>
+      <td>
+        <code>cn(...)</code>
+      </td>
+      <td>clsx + tailwind-merge (conflicting utilities dedupe correctly)</td>
+    </tr>
+    <tr>
+      <td>
+        Hand-written JSON-LD <code>&lt;script&gt;</code>
+      </td>
+      <td>
+        <code>StructuredData</code>
+      </td>
+      <td>Typed JSON-LD injection</td>
+    </tr>
+  </tbody>
+</table>
+
+<div className='doc-note'>
+  Missing something on this list, or a primitive that almost fits? That's a
+  library gap, not a reason to hand-roll — open an issue or a PR. See{' '}
+  <a href='?path=/docs/guides-extend-don-t-reimplement--docs'>
+    Extend, Don't Reimplement
+  </a>{' '}
+  for the full decision tree, and{' '}
+  <a href='?path=/docs/guides-accessibility--docs'>Accessibility</a> for the
+  guarantees each primitive makes.
+</div>
+
+</div>
+</div>

@@ -196,13 +196,6 @@ import { Spinner } from './Spinner';
     </tr>
     <tr>
       <td>
-        <code>ghost</code>
-      </td>
-      <td>Tertiary actions that shouldn't compete with primary/secondary.</td>
-      <td>Settings, View more, Filter</td>
-    </tr>
-    <tr>
-      <td>
         <code>outline</code>
       </td>
       <td>
@@ -223,28 +216,33 @@ import { Spinner } from './Spinner';
   </tbody>
 </table>
 
-<h3 className='doc-sub'>Semantic Variants</h3>
+<h3 className='doc-sub'>Need a variant we don't ship?</h3>
 
 <p className='doc-p'>
-  Use <code>success</code>, <code>error</code>, <code>warning</code>, and{' '}
-  <code>info</code> only when the action itself has semantic meaning — not for
-  decoration.
+  The four variants above are the complete set — <code>success</code>,{' '}
+  <code>ghost</code>, and <code>danger</code> are <em>not</em> valid{' '}
+  <code>variant</code> values (passing one renders an unstyled button). When you
+  need a different look, extend <code>bare</code> — which is intentionally
+  style-free — with utilities:
 </p>
 
 <div className='doc-grid'>
-  <Button variant='success' size='sm'>
-    Approve
-  </Button>
-  <Button variant='error' size='sm'>
-    Delete
-  </Button>
-  <Button variant='warning' size='sm'>
-    Archive
-  </Button>
-  <Button variant='info' size='sm'>
-    Learn More
+  <Button
+    variant='bare'
+    className='px-4 py-3 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'
+  >
+    Ghost (extended)
   </Button>
 </div>
+
+<p className='doc-p'>
+  If a look is needed across the app, add it as a real variant upstream in a PR
+  rather than repeating classes. See{' '}
+  <a href='?path=/docs/guides-extend-don-t-reimplement--docs'>
+    Extend, Don't Reimplement
+  </a>
+  .
+</p>
 
 <h2 className='doc-section'>Sizes</h2>
 
