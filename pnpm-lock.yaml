@@ -424,8 +424,18 @@ importers:
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
+    devDependencies:
+      '@danieljoffe/eslint-config':
+        specifier: workspace:*
+        version: link:../../libs/shared/eslint-config
 
   apps/root-e2e: {}
+
+  libs/shared/eslint-config:
+    dependencies:
+      eslint:
+        specifier: '>=9'
+        version: 10.2.0(jiti@2.6.1)
 
   libs/shared/ui:
     dependencies:

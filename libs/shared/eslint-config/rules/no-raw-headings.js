@@ -1,5 +1,5 @@
 /**
- * @fileoverview Ban raw <h1>-<h6> tags in favor of the kit Heading component.
+ * @fileoverview Ban raw <h1>-<h6> tags in favor of the Heading component.
  */
 
 'use strict';
@@ -12,11 +12,11 @@ module.exports = {
     type: 'suggestion',
     docs: {
       description:
-        'Disallow raw HTML heading elements (<h1>-<h6>); use the Heading component from @/components/kit instead.',
+        'Disallow raw HTML heading elements (<h1>-<h6>); use the Heading component instead.',
     },
     messages: {
       noRawHeading:
-        "Use <Heading> from '@/components/kit' instead of <{{tag}}>. This enforces consistent typography across the app.",
+        'Use the Heading component instead of <{{tag}}> for a consistent type scale.',
     },
     schema: [],
   },
