@@ -1,0 +1,23 @@
+{
+  "name": "@danieljoffe/eslint-config",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/eslint-config",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:eslint-config", "platform:shared"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test",
+        "cwd": "libs/shared/eslint-config"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint index.js rules",
+        "cwd": "libs/shared/eslint-config"
+      }
+    }
+  }
+}

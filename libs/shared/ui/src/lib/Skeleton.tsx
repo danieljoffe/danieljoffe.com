@@ -42,6 +42,7 @@ export function Skeleton({
     const defaultSize = circularSizeDefaults[size];
     return (
       <div
+        aria-hidden='true'
         className={cn(base, 'rounded-full', className)}
         style={{
           width: width || defaultSize,
@@ -54,6 +55,7 @@ export function Skeleton({
   if (variant === 'rectangular') {
     return (
       <div
+        aria-hidden='true'
         className={cn(base, 'rounded-lg', className)}
         style={{
           width: width || '100%',
@@ -64,7 +66,11 @@ export function Skeleton({
   }
 
   return (
-    <div className={cn('space-y-2', className)} style={{ width }}>
+    <div
+      aria-hidden='true'
+      className={cn('space-y-2', className)}
+      style={{ width }}
+    >
       {Array.from({ length: lines }).map((_, i) => (
         <div
           key={i}

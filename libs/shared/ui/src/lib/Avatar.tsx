@@ -1,7 +1,12 @@
+import { type HTMLAttributes, type Ref } from 'react';
 import type { ComponentSize } from './types';
 import { cn } from './utils/cn';
 
-export interface AvatarProps {
+export interface AvatarProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'className'
+> {
+  ref?: Ref<HTMLDivElement> | undefined;
   src?: string;
   alt?: string;
   initials?: string;
@@ -30,9 +35,15 @@ export function Avatar({
   size = 'md',
   status,
   className,
+  ref,
+  ...rest
 }: AvatarProps) {
   return (
-    <div className={cn('relative inline-flex shrink-0', className)}>
+    <div
+      ref={ref}
+      className={cn('relative inline-flex shrink-0', className)}
+      {...rest}
+    >
       <div
         className={cn(
           'rounded-full flex items-center justify-center font-medium overflow-hidden',

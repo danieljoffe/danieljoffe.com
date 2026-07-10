@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState, type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import { Button } from './Button';
 import { cn } from './utils/cn';
 
@@ -14,7 +14,11 @@ export interface SidebarItem {
   children?: SidebarItem[];
 }
 
-export interface SidebarProps {
+export interface SidebarProps extends Omit<
+  HTMLAttributes<HTMLElement>,
+  'className' | 'onSelect'
+> {
+  ref?: Ref<HTMLElement> | undefined;
   items: SidebarItem[];
   activeId?: string;
   onSelect?: (id: string) => void;
@@ -112,15 +116,19 @@ export function Sidebar({
   footer,
   collapsed = false,
   className,
+  ref,
+  ...rest
 }: SidebarProps) {
   return (
     <aside
+      ref={ref}
       className={cn(
         'flex flex-col h-full bg-surface border-r border-border',
         'transition-all duration-200 motion-reduce:transition-none',
         collapsed ? 'w-16' : 'w-48 md:w-60',
         className
       )}
+      {...rest}
     >
       {header && (
         <div className='p-4 border-b border-border shrink-0'>{header}</div>

@@ -205,20 +205,22 @@ describe('Pagination', () => {
       expect(screen.getByLabelText('Next page')).toBeInTheDocument();
     });
 
-    it('adds aria-disabled to prev button on first page', () => {
+    it('uses native disabled (no redundant aria-disabled) on the prev button on first page', () => {
       render(
         <Pagination currentPage={1} totalPages={5} onPageChange={jest.fn()} />
       );
       const prevButton = screen.getByLabelText('Previous page');
-      expect(prevButton).toHaveAttribute('aria-disabled', 'true');
+      expect(prevButton).toBeDisabled();
+      expect(prevButton).not.toHaveAttribute('aria-disabled');
     });
 
-    it('adds aria-disabled to next button on last page', () => {
+    it('uses native disabled (no redundant aria-disabled) on the next button on last page', () => {
       render(
         <Pagination currentPage={5} totalPages={5} onPageChange={jest.fn()} />
       );
       const nextButton = screen.getByLabelText('Next page');
-      expect(nextButton).toHaveAttribute('aria-disabled', 'true');
+      expect(nextButton).toBeDisabled();
+      expect(nextButton).not.toHaveAttribute('aria-disabled');
     });
 
     it('does not add aria-disabled when buttons are enabled', () => {

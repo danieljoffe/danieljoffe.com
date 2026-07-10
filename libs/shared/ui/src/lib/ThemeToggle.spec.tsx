@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { ThemeProvider } from './ThemeProvider';
@@ -23,6 +24,17 @@ describe('ThemeToggle', () => {
         removeEventListener: jest.fn(),
       }),
     });
+  });
+
+  it('forwards ref and spreads rest props to the root element', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <ThemeProvider>
+        <ThemeToggle ref={ref} data-testid='theme-toggle' />
+      </ThemeProvider>
+    );
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('data-testid', 'theme-toggle');
   });
 
   it('renders three theme buttons', () => {

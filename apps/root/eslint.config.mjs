@@ -5,8 +5,7 @@ import reactPlugin from 'eslint-plugin-react';
 import importPlugin from 'eslint-plugin-import';
 import { fixupPluginRules } from '@eslint/compat';
 import baseConfig from '../../eslint.config.mjs';
-import requireButtonName from './eslint-rules/require-button-name.js';
-import noRawHeadings from './eslint-rules/no-raw-headings.js';
+import danieljoffe from '@danieljoffe/eslint-config';
 
 // eslint-config-next bundles its own typescript-eslint, eslint-plugin-react, and
 // eslint-plugin-import instances. typescript-eslint conflicts with the Nx-managed
@@ -87,12 +86,7 @@ const config = [
     files: ['**/*.tsx'],
     ignores: ['**/*.stories.tsx'],
     plugins: {
-      'custom-rules': {
-        rules: {
-          'require-button-name': requireButtonName,
-          'no-raw-headings': noRawHeadings,
-        },
-      },
+      'custom-rules': danieljoffe,
     },
     rules: {
       'custom-rules/require-button-name': 'warn',

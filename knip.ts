@@ -100,6 +100,18 @@ const config: KnipConfig = {
         '@vitest/browser',
       ],
     },
+
+    // -----------------------------------------------------------------
+    // libs/shared/eslint-config — shareable ESLint rules (plain CJS)
+    // -----------------------------------------------------------------
+    'libs/shared/eslint-config': {
+      // index.js is auto-detected as the entry via package.json main/exports;
+      // it requires the rule modules, so those are reachable too. Only the
+      // `node --test` files need declaring — Knip's jest/vitest plugins don't
+      // detect node:test, so it would otherwise flag them as unused.
+      entry: ['test/**/*.js'],
+      project: ['**/*.js'],
+    },
   },
 };
 
