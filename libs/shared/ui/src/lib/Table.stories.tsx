@@ -38,6 +38,13 @@ const columns = [
   { key: 'status', header: 'Status' },
 ];
 
+const sortableColumns = [
+  { key: 'name', header: 'Name', sortable: true },
+  { key: 'email', header: 'Email' },
+  { key: 'role', header: 'Role', sortable: true },
+  { key: 'status', header: 'Status', sortable: true },
+];
+
 export const Default: Story = {
   args: { columns, data: sampleData },
 };
@@ -49,15 +56,12 @@ export const Striped: Story = {
 // Controlled sorting: the Table renders aria-sort + the header controls; the
 // consumer owns the sort order and re-sorts `data` in response to `onSort`.
 export const Sortable: Story = {
+  // Required args satisfy the generic component's type; the custom render owns
+  // the controlled sort state and re-sorts the data itself.
+  args: { columns: sortableColumns, data: sampleData },
   render: function SortableStory() {
     const [sortKey, setSortKey] = useState('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const sortableColumns = [
-      { key: 'name', header: 'Name', sortable: true },
-      { key: 'email', header: 'Email' },
-      { key: 'role', header: 'Role', sortable: true },
-      { key: 'status', header: 'Status', sortable: true },
-    ];
     const sorted = [...sampleData].sort((a, b) => {
       const cmp = String(a[sortKey as keyof User]).localeCompare(
         String(b[sortKey as keyof User])
