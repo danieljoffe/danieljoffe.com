@@ -1,5 +1,26 @@
 # @danieljoffe/shared-ui
 
+## 0.5.0
+
+### Minor Changes
+
+- 430a9e4: Add solid status variants to Button, make filled labels bold, and tighten the default height.
+  - **Status variants** — `error`, `warning`, `success`, and `info` are now valid `Button` variants: deep, solid, high-emphasis fills with white text, for definitive, attention-demanding actions. They reuse the shared `SemanticVariant` scale. There are intentionally no low-emphasis semantic combos — intent only rides the definitive variants, so a quiet "danger" button (a whispered alarm) isn't representable. New mode-independent `--color-{error,warning,success,info}-solid` fill tokens paired with a white `--color-on-semantic` foreground mean every status button clears WCAG AA in both the indigo and pyre themes, light and dark.
+  - **Bold labels** — filled variants (everything except `bare`) now render `font-bold`, so button text carries more weight and is easier to distinguish. `bare` stays weightless, so consumers that build on it (e.g. nav items) keep full control.
+  - **Shorter default** — the `md` size drops from `py-3` to `py-2` for a less bulky default height (`sm` and `lg` unchanged).
+
+  Adds the `--color-on-semantic` and `--color-*-solid` theme tokens. No breaking changes.
+
+### Patch Changes
+
+- 6662088: Add adoption-focused documentation and correct drift between the docs and the code.
+  - New **Guides** in the Storybook catalog: _Extend, Don't Reimplement_ (the use → extend → compose → rebuild decision tree, plus the kit-vs-app boundary), _Reach for a Primitive_ (a raw-HTML → component cheat-sheet), and _Accessibility_ (per-component guarantees and the edges you still own).
+  - Documented the linked-development workflow in the README — the `@danieljoffe.com/source` export condition lets a consumer import the library's source directly and iterate without a publish cycle.
+  - Fixed documentation that described a different component than the one shipped: Button variants (`bare`/`primary`/`secondary`/`outline` — the previously-listed `ghost`/`danger`/semantic variants are not real and rendered unstyled), Table (no built-in sorting), Sidebar (`activeId`, not `activeItem`), ThemeToggle (light/dark/system), and PageLayout/PageContainer props.
+  - Extracted the Storybook guide-page styles that were duplicated across every component MDX into a single stylesheet, and pointed the README component catalog at the Storybook autodocs as the authoritative prop reference.
+
+  No runtime or public API changes.
+
 ## 0.4.0
 
 ### Minor Changes
