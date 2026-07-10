@@ -4,20 +4,13 @@ Shareable ESLint rules for the [danieljoffe.com](https://danieljoffe.com) design
 
 ## Install
 
-This package currently ships inside the danieljoffe.com monorepo and is consumed as a workspace dependency:
-
-```jsonc
-// package.json
-{
-  "devDependencies": {
-    "@danieljoffe/eslint-config": "workspace:*",
-  },
-}
+```bash
+npm install -D @danieljoffe/eslint-config
 ```
 
-Publishing to npm (`npm install -D @danieljoffe/eslint-config`) is planned — it needs a one-time npm trusted-publisher bootstrap for the new package name.
-
 Requires ESLint 9+ (flat config).
+
+> Inside the danieljoffe.com monorepo this package is consumed as a workspace dependency (`"@danieljoffe/eslint-config": "workspace:*"`).
 
 ## Usage
 
