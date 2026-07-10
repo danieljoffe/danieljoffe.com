@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Avatar } from './Avatar';
@@ -5,6 +6,14 @@ import { Avatar } from './Avatar';
 expect.extend(toHaveNoViolations);
 
 describe('Avatar', () => {
+  it('forwards ref and spreads rest props to the root element', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(<Avatar ref={ref} data-testid='avatar-root' title='avatar' />);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('data-testid', 'avatar-root');
+    expect(ref.current).toHaveAttribute('title', 'avatar');
+  });
+
   it('renders initials when no src provided', () => {
     render(<Avatar initials='DJ' />);
     expect(screen.getByText('DJ')).toBeInTheDocument();

@@ -1,10 +1,19 @@
 'use client';
 
 import { Sun, Moon, Monitor } from 'lucide-react';
+import { type HTMLAttributes, type Ref } from 'react';
 import { useTheme } from './ThemeProvider';
 import { cn } from './utils/cn';
 
-export function ThemeToggle() {
+export interface ThemeToggleProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'className'
+> {
+  ref?: Ref<HTMLDivElement> | undefined;
+  className?: string;
+}
+
+export function ThemeToggle({ className, ref, ...rest }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
   const options = [
@@ -14,7 +23,14 @@ export function ThemeToggle() {
   ];
 
   return (
-    <div className='inline-flex items-center gap-0.5 p-0.5 bg-surface-tertiary rounded-lg'>
+    <div
+      ref={ref}
+      className={cn(
+        'inline-flex items-center gap-0.5 p-0.5 bg-surface-tertiary rounded-lg',
+        className
+      )}
+      {...rest}
+    >
       {options.map(({ value, icon: Icon, label }) => (
         <button
           key={value}

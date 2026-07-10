@@ -1,5 +1,5 @@
 import { ChevronRight } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import { cn } from './utils/cn';
 
 export interface BreadcrumbItem {
@@ -8,16 +8,27 @@ export interface BreadcrumbItem {
   icon?: ReactNode;
 }
 
-export interface BreadcrumbProps {
+export interface BreadcrumbProps extends Omit<
+  HTMLAttributes<HTMLElement>,
+  'className'
+> {
+  ref?: Ref<HTMLElement> | undefined;
   items: BreadcrumbItem[];
   className?: string;
 }
 
-export function Breadcrumb({ items, className }: BreadcrumbProps) {
+export function Breadcrumb({
+  items,
+  className,
+  ref,
+  ...rest
+}: BreadcrumbProps) {
   return (
     <nav
+      ref={ref}
       aria-label='Breadcrumb'
       className={cn('flex items-center gap-1 text-sm', className)}
+      {...rest}
     >
       {items.map((item, i) => {
         const isLast = i === items.length - 1;

@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Sidebar } from './Sidebar';
@@ -18,6 +19,13 @@ const items = [
 ];
 
 describe('Sidebar', () => {
+  it('forwards ref and spreads rest props to the root element', () => {
+    const ref = createRef<HTMLElement>();
+    render(<Sidebar items={items} ref={ref} data-testid='sidebar-root' />);
+    expect(ref.current?.tagName).toBe('ASIDE');
+    expect(ref.current).toHaveAttribute('data-testid', 'sidebar-root');
+  });
+
   it('renders all top-level items', () => {
     render(<Sidebar items={items} />);
     expect(screen.getByText('Home')).toBeInTheDocument();

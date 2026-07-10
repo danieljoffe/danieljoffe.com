@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Breadcrumb } from './Breadcrumb';
@@ -10,6 +11,13 @@ describe('Breadcrumb', () => {
     { label: 'Projects', href: '/projects' },
     { label: 'Current' },
   ];
+
+  it('forwards ref and spreads rest props to the root element', () => {
+    const ref = createRef<HTMLElement>();
+    render(<Breadcrumb items={items} ref={ref} data-testid='crumb-root' />);
+    expect(ref.current?.tagName).toBe('NAV');
+    expect(ref.current).toHaveAttribute('data-testid', 'crumb-root');
+  });
 
   it('renders all items', () => {
     render(<Breadcrumb items={items} />);
