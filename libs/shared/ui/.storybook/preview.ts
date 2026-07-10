@@ -3,6 +3,7 @@ import type { Preview } from '@storybook/react-vite';
 import { create } from 'storybook/theming/create';
 
 import '../src/styles/preview.scss';
+import '../src/styles/storybook-docs.css';
 
 // Dark docs theme so the autodocs source-code blocks render light syntax
 // tokens on a dark surface (the default light docs theme put dark tokens on a
@@ -43,7 +44,16 @@ const preview: Preview = {
 
     options: {
       storySort: {
-        order: ['Introduction', '*'],
+        order: [
+          'Introduction',
+          'Guides',
+          [
+            "Extend, Don't Reimplement",
+            'Reach for a Primitive',
+            'Accessibility',
+          ],
+          '*',
+        ],
       },
     },
 

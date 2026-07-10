@@ -1,0 +1,418 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title='Guides/Accessibility' />
+
+<div class="sb-unstyled">
+<div className="doc-wrap">
+
+<h1 className='doc-title'>Accessibility</h1>
+<p className='doc-lead'>
+  Accessibility is a contract this library keeps so you don't re-implement it —
+  usually incompletely. This page states the guarantees each interactive
+  primitive makes, and, just as important, where the boundary is: the small set
+  of things that are still your job. Trust the primitive over a hand-rolled{' '}
+  <code>&lt;table&gt;</code> or <code>&lt;nav&gt;</code>; the accessibility
+  you'd skip is the accessibility you'd ship broken.
+</p>
+
+<div className='doc-note'>
+  <strong>These guarantees are enforced, not aspirational.</strong> Every story
+  runs through <code>@storybook/addon-a11y</code> with{' '}
+  <code>a11y: &#123; test: 'error' &#125;</code> — an axe violation fails the
+  test run in CI. If a component's story is green, its rendered output passed
+  automated checks.
+</div>
+
+<h2 className='doc-section'>Library-wide guarantees</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Concern</th>
+      <th>What you get, everywhere</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Focus visibility</td>
+      <td>
+        Interactive elements render a <code>focus-visible</code> ring offset
+        from the surface — keyboard focus is always visible, mouse focus stays
+        quiet.
+      </td>
+    </tr>
+    <tr>
+      <td>Reduced motion</td>
+      <td>
+        Animations are gated behind <code>motion-reduce:</code> utilities, and
+        the theme's base layer disables animation under{' '}
+        <code>prefers-reduced-motion</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>Contrast</td>
+      <td>
+        WCAG AA is the minimum bar. Text on brand and on solid status buttons
+        uses the <code>text-on-brand</code> / <code>text-on-semantic</code>{' '}
+        tokens — a foreground picked to clear AA on the fill in every theme —
+        rather than a hardcoded color that fails on one of them.
+      </td>
+    </tr>
+    <tr>
+      <td>Dark mode</td>
+      <td>
+        Every component is designed dark-first and verified in light — no
+        low-contrast surprises when the theme flips.
+      </td>
+    </tr>
+    <tr>
+      <td>Keyboard</td>
+      <td>
+        Every interactive primitive is fully operable by keyboard; the
+        per-component table below lists the specific keys.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Actions, menus &amp; overlays</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Roles &amp; ARIA</th>
+      <th>Keyboard</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>Button</code>
+      </td>
+      <td>
+        Native <code>button</code> (or your element via <code>as</code>);{' '}
+        <code>aria-busy</code> while <code>loading</code>
+      </td>
+      <td>
+        <span className='doc-kbd'>Space</span> /{' '}
+        <span className='doc-kbd'>Enter</span> activate
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Modal</code>
+      </td>
+      <td>
+        <code>role="dialog"</code>, <code>aria-modal</code>,{' '}
+        <code>aria-labelledby</code>; backdrop <code>aria-hidden</code>
+      </td>
+      <td>
+        <span className='doc-kbd'>Esc</span> closes;{' '}
+        <span className='doc-kbd'>Tab</span> trapped &amp; wrapped; focus
+        returns to the trigger on close
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Dropdown</code>
+      </td>
+      <td>
+        <code>role="menu"</code>/<code>menuitem</code>/<code>separator</code>;{' '}
+        <code>aria-haspopup</code>, <code>aria-expanded</code>,{' '}
+        <code>aria-controls</code>
+      </td>
+      <td>
+        <span className='doc-kbd'>↑</span>/<span className='doc-kbd'>↓</span>,{' '}
+        <span className='doc-kbd'>Home</span>/
+        <span className='doc-kbd'>End</span>,{' '}
+        <span className='doc-kbd'>Enter</span>/
+        <span className='doc-kbd'>Space</span>,{' '}
+        <span className='doc-kbd'>Esc</span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Tooltip</code>
+      </td>
+      <td>
+        <code>role="tooltip"</code>; trigger gets <code>aria-describedby</code>,
+        toggled with <code>aria-hidden</code>
+      </td>
+      <td>
+        Shows on focus/hover; <span className='doc-kbd'>Esc</span> dismisses
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Tabs</code>
+      </td>
+      <td>
+        <code>role="tablist"</code>/<code>tab</code>/<code>tabpanel</code>;{' '}
+        <code>aria-selected</code>, <code>aria-controls</code>, roving{' '}
+        <code>tabindex</code>
+      </td>
+      <td>
+        <span className='doc-kbd'>←</span>/<span className='doc-kbd'>→</span>,{' '}
+        <span className='doc-kbd'>Home</span>/
+        <span className='doc-kbd'>End</span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>ThemeToggle</code>
+      </td>
+      <td>
+        Three buttons (light/dark/system) with <code>aria-pressed</code> on the
+        active option
+      </td>
+      <td>
+        <span className='doc-kbd'>Space</span> /{' '}
+        <span className='doc-kbd'>Enter</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Forms</h2>
+
+<p className='doc-p'>
+  Every control links its error node to the field via{' '}
+  <code>aria-describedby</code>, sets <code>aria-invalid</code> when in error
+  and <code>aria-required</code> when required, and renders the error with{' '}
+  <code>role="alert"</code> so it's announced on appearance.
+</p>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Roles &amp; ARIA</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>Input</code> · <code>Textarea</code> · <code>Select</code>
+      </td>
+      <td>
+        <code>aria-invalid</code>, <code>aria-required</code>,{' '}
+        <code>aria-describedby</code>; error node <code>role="alert"</code>
+      </td>
+      <td>Native element under the hood</td>
+    </tr>
+    <tr>
+      <td>
+        <code>Checkbox</code>
+      </td>
+      <td>
+        Real <code>&lt;input&gt;</code> (<code>sr-only</code>) with a styled
+        box; <code>aria-invalid</code>, <code>aria-describedby</code>
+      </td>
+      <td>Keyboard + screen readers use the native input</td>
+    </tr>
+    <tr>
+      <td>
+        <code>Switch</code>
+      </td>
+      <td>
+        <code>role="switch"</code>, <code>aria-checked</code>,{' '}
+        <code>aria-labelledby</code>, <code>aria-describedby</code>
+      </td>
+      <td>
+        <span className='doc-kbd'>Space</span> toggles
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>FormFieldError</code>
+      </td>
+      <td>
+        Supplies the <code>id</code> that a field's{' '}
+        <code>aria-describedby</code> points at
+      </td>
+      <td>
+        Form controls add <code>role="alert"</code> around it — see "what you
+        still own" if using it standalone
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Status &amp; live regions</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Roles &amp; ARIA</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>Alert</code>
+      </td>
+      <td>
+        <code>role="alert"</code> + <code>aria-live="assertive"</code> when
+        urgent, else <code>role="status"</code> + <code>polite</code>;{' '}
+        <span className='doc-kbd'>Esc</span> dismisses when dismissible
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Toast</code> / <code>ToastProvider</code>
+      </td>
+      <td>
+        Provider is an <code>aria-live="polite"</code>, <code>aria-atomic</code>{' '}
+        region; each toast is <code>role="alert"</code>/<code>status</code> and
+        pauses its timer on hover/focus
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>ProgressBar</code>
+      </td>
+      <td>
+        <code>role="progressbar"</code> with <code>aria-valuenow/min/max</code>{' '}
+        and an <code>aria-label</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Spinner</code> · <code>Loading</code>
+      </td>
+      <td>
+        <code>role="status"</code> with an <code>aria-label</code> (Loading adds{' '}
+        <code>aria-live="polite"</code>)
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>Navigation &amp; structure</h2>
+
+<table className='doc-table'>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Roles &amp; ARIA</th>
+      <th>Keyboard</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>Table</code>
+      </td>
+      <td>
+        Semantic <code>&lt;table&gt;</code> with{' '}
+        <code>&lt;th scope="col"&gt;</code> and a <code>caption</code> or{' '}
+        <code>aria-label</code>; clickable rows get <code>role="button"</code>{' '}
+        and a <code>getRowAriaLabel</code>
+      </td>
+      <td>
+        <span className='doc-kbd'>Enter</span>/
+        <span className='doc-kbd'>Space</span> on clickable rows
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>Sidebar</code>
+      </td>
+      <td>
+        Semantic <code>&lt;aside&gt;</code>/<code>&lt;nav&gt;</code>;{' '}
+        <code>aria-current="page"</code>, <code>aria-expanded</code>,{' '}
+        <code>aria-label</code> on collapsed icon items
+      </td>
+      <td>Inherited from the underlying Button items</td>
+    </tr>
+    <tr>
+      <td>
+        <code>Breadcrumb</code>
+      </td>
+      <td>
+        <code>nav[aria-label="Breadcrumb"]</code>,{' '}
+        <code>aria-current="page"</code> on the last crumb,{' '}
+        <code>aria-hidden</code> separators
+      </td>
+      <td>Native link focus</td>
+    </tr>
+    <tr>
+      <td>
+        <code>Pagination</code>
+      </td>
+      <td>
+        <code>nav[aria-label]</code>; labelled Previous/Next/Page controls,{' '}
+        <code>aria-current="page"</code> on the active page
+      </td>
+      <td>Native button activation</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 className='doc-section'>What you still own</h2>
+
+<p className='doc-p'>
+  The contract has edges. These are the places where the primitive stops and
+  your app picks up — call them out so nobody assumes a guarantee that isn't
+  there.
+</p>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Table sorting</div>
+    <p className='doc-do-body'>
+      Table renders semantic markup and keyboard-operable rows, but has{' '}
+      <strong>no built-in column sorting</strong>. If you make columns sortable,
+      you own the <code>aria-sort</code> on the <code>&lt;th&gt;</code> and the
+      sort control. Don't hand-roll the whole table to add it — layer sorting on
+      top.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Skeleton is silent</div>
+    <p className='doc-dont-body'>
+      Skeleton is a visual placeholder with no ARIA of its own. Mark its
+      container <code>aria-busy="true"</code> while loading, or{' '}
+      <code>aria-hidden="true"</code> if it's purely decorative, so
+      screen-reader users aren't left guessing.
+    </p>
+  </div>
+</div>
+
+<div className='doc-do-dont'>
+  <div className='doc-do'>
+    <div className='doc-do-label'>Standalone FormFieldError</div>
+    <p className='doc-do-body'>
+      Inside <code>Input</code>/<code>Select</code>/etc. the error is wrapped
+      with <code>role="alert"</code> for you. If you render{' '}
+      <code>FormFieldError</code> on its own, add <code>role="alert"</code>{' '}
+      yourself so the message is announced.
+    </p>
+  </div>
+  <div className='doc-dont'>
+    <div className='doc-dont-label'>Icon-only buttons</div>
+    <p className='doc-dont-body'>
+      A Button with only an icon has no accessible name. Add an{' '}
+      <code>aria-label</code> — the library can't infer one from an icon.
+    </p>
+  </div>
+</div>
+
+<div className='doc-note'>
+  Found an accessibility gap not listed here? That's a bug, not a "your problem"
+  — open an issue or PR. See{' '}
+  <a href='?path=/docs/guides-extend-don-t-reimplement--docs'>
+    Extend, Don't Reimplement
+  </a>{' '}
+  and{' '}
+  <a href='?path=/docs/guides-reach-for-a-primitive--docs'>
+    Reach for a Primitive
+  </a>
+  .
+</div>
+
+</div>
+</div>
