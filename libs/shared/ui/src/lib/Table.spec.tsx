@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Table } from './Table';
 
@@ -242,6 +243,81 @@ describe('Table', () => {
     const bodyRows = rows.slice(1);
     bodyRows.forEach(row => {
       expect(row.className).not.toContain('focus-visible:outline-2');
+    });
+  });
+
+  it('forwards ref and spreads rest props to the wrapper element', () => {
+    const ref = createRef<HTMLDivElement>();
+    render(
+      <Table columns={columns} data={data} ref={ref} data-testid='table-root' />
+    );
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+    expect(ref.current).toHaveAttribute('data-testid', 'table-root');
+  });
+
+  it('uses a defined focus-ring token on clickable rows (not the phantom accent)', () => {
+    render(<Table columns={columns} data={data} onRowClick={jest.fn()} />);
+    const row = screen.getAllByRole('button')[0];
+    expect(row.className).toContain('focus-visible:outline-brand-500');
+    expect(row.className).not.toContain('outline-accent');
+  });
+
+  describe('sortable columns', () => {
+    const sortableColumns = [
+      { key: 'name', header: 'Name', sortable: true },
+      { key: 'age', header: 'Age', sortable: true },
+      { key: 'role', header: 'Role' },
+    ];
+
+    it('renders a header button only for sortable columns', () => {
+      render(<Table columns={sortableColumns} data={data} />);
+      expect(screen.getByRole('button', { name: 'Name' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Age' })).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Role' })
+      ).not.toBeInTheDocument();
+    });
+
+    it('defaults aria-sort to "none" on unsorted sortable columns and omits it on non-sortable', () => {
+      render(<Table columns={sortableColumns} data={data} />);
+      expect(
+        screen.getByRole('columnheader', { name: /Name/ })
+      ).toHaveAttribute('aria-sort', 'none');
+      expect(
+        screen.getByRole('columnheader', { name: 'Role' })
+      ).not.toHaveAttribute('aria-sort');
+    });
+
+    it('reflects sortKey + sortDirection as aria-sort ascending/descending', () => {
+      const { rerender } = render(
+        <Table
+          columns={sortableColumns}
+          data={data}
+          sortKey='name'
+          sortDirection='asc'
+        />
+      );
+      expect(
+        screen.getByRole('columnheader', { name: /Name/ })
+      ).toHaveAttribute('aria-sort', 'ascending');
+      rerender(
+        <Table
+          columns={sortableColumns}
+          data={data}
+          sortKey='name'
+          sortDirection='desc'
+        />
+      );
+      expect(
+        screen.getByRole('columnheader', { name: /Name/ })
+      ).toHaveAttribute('aria-sort', 'descending');
+    });
+
+    it('calls onSort with the column key when a sortable header is activated', () => {
+      const onSort = jest.fn();
+      render(<Table columns={sortableColumns} data={data} onSort={onSort} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Age' }));
+      expect(onSort).toHaveBeenCalledWith('age');
     });
   });
 });
