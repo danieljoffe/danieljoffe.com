@@ -65,6 +65,17 @@
      Luminous palettes (e.g. Pyre's chartreuse) override this to near-black. */
   --color-on-brand: oklch(1 0 0);
 
+  /* Solid semantic (status) button fills + their white foreground. The `*-solid`
+     fills are deep and mode-independent (unlike --color-error etc., which
+     lighten in dark mode for text legibility), so white clears WCAG AA on every
+     fill in both light and dark — a danger button is deep-red with white text,
+     not a pale tint. */
+  --color-on-semantic: oklch(1 0 0);
+  --color-error-solid: oklch(0.5446 0.2013 27.18);
+  --color-warning-solid: oklch(0.5553 0.1455 49);
+  --color-success-solid: oklch(0.5367 0.1283 156.79);
+  --color-info-solid: oklch(0.5461 0.2152 262.88);
+
   /* Semantic Colors - Status */
   --color-success: oklch(0.5367 0.1283 156.79);
   --color-success-light: oklch(0.9793 0.0207 166.11);

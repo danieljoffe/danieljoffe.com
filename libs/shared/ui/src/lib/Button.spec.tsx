@@ -37,12 +37,35 @@ describe('Button', () => {
       expect(button).not.toHaveClass('bg-surface-elevated');
       expect(button).not.toHaveClass('border-border-secondary');
     });
+
+    it.each([
+      ['error', 'bg-error-solid'],
+      ['warning', 'bg-warning-solid'],
+      ['success', 'bg-success-solid'],
+      ['info', 'bg-info-solid'],
+    ] as [ButtonVariant, string][])(
+      'renders %s as a solid semantic fill with the on-semantic foreground',
+      (variant, fillClass) => {
+        render(<Button variant={variant}>{variant}</Button>);
+        expect(screen.getByRole('button')).toHaveClass(
+          fillClass,
+          'text-on-semantic'
+        );
+      }
+    );
+
+    it('applies font-bold to filled variants but not bare', () => {
+      const { rerender } = render(<Button variant='primary'>P</Button>);
+      expect(screen.getByRole('button')).toHaveClass('font-bold');
+      rerender(<Button variant='bare'>B</Button>);
+      expect(screen.getByRole('button')).not.toHaveClass('font-bold');
+    });
   });
 
   describe('sizes', () => {
     it('applies md size by default', () => {
       render(<Button>Medium</Button>);
-      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-3');
+      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-2');
     });
 
     it.each([
@@ -146,7 +169,7 @@ describe('Button', () => {
 
     it('uses regular padding when iconOnly is false', () => {
       render(<Button>Text</Button>);
-      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-3');
+      expect(screen.getByRole('button')).toHaveClass('px-4', 'py-2');
     });
   });
 

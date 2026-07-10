@@ -49,4 +49,10 @@
   --color-error-light: oklch(0.21 0.055 25);
   --color-info: oklch(0.7 0.2 230);
   --color-info-light: oklch(0.25 0.05 230);
+
+  /* Solid status button fills — lockstep with pyre-theme.css @theme. */
+  --color-error-solid: oklch(0.53 0.22 25);
+  --color-warning-solid: oklch(0.53 0.16 70);
+  --color-success-solid: oklch(0.5 0.18 145);
+  --color-info-solid: oklch(0.49 0.2 230);
 }
