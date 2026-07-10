@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Badge } from './Badge';
 import { Table } from './Table';
@@ -43,6 +44,44 @@ export const Default: Story = {
 
 export const Striped: Story = {
   args: { columns, data: sampleData, striped: true },
+};
+
+// Controlled sorting: the Table renders aria-sort + the header controls; the
+// consumer owns the sort order and re-sorts `data` in response to `onSort`.
+export const Sortable: Story = {
+  render: function SortableStory() {
+    const [sortKey, setSortKey] = useState('name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const sortableColumns = [
+      { key: 'name', header: 'Name', sortable: true },
+      { key: 'email', header: 'Email' },
+      { key: 'role', header: 'Role', sortable: true },
+      { key: 'status', header: 'Status', sortable: true },
+    ];
+    const sorted = [...sampleData].sort((a, b) => {
+      const cmp = String(a[sortKey as keyof User]).localeCompare(
+        String(b[sortKey as keyof User])
+      );
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+    return (
+      <Table
+        columns={sortableColumns}
+        data={sorted}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSort={key => {
+          if (key === sortKey) {
+            setSortDirection(d => (d === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setSortKey(key);
+            setSortDirection('asc');
+          }
+        }}
+        ariaLabel='Sortable users'
+      />
+    );
+  },
 };
 
 export const Empty: Story = {
