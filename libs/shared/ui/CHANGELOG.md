@@ -1,5 +1,24 @@
 # @danieljoffe/shared-ui
 
+## 0.6.0
+
+### Minor Changes
+
+- 14853e6: Add `ref` + rest-prop escape hatches to Sidebar, ThemeToggle, Avatar, and Breadcrumb.
+
+  Each now accepts a React 19 `ref` on its root element and spreads unrecognized props (`data-*`, `id`, `style`, event handlers, etc.) onto it — matching the pattern already used by Button/Badge — so consumers can extend them without forking. ThemeToggle additionally gains a `className` prop.
+
+- dcb37ed: Table: controlled sortable columns + `ref`/rest-spread, and a focus-ring bug fix.
+  - **Sortable columns** — mark a `Column` as `sortable` and pass `sortKey` / `sortDirection` / `onSort`. Sortable headers become keyboard-operable buttons with a direction indicator, and each `<th>` exposes the correct `aria-sort` (`ascending` / `descending` / `none`). Sorting is **controlled**: the Table renders the state and header control, while the consumer owns the order and re-sorts `data` in response to `onSort`.
+  - **Escape hatch** — Table now accepts a `ref` on its wrapper element and spreads rest props onto it.
+  - **Fix** — the clickable-row focus outline used `outline-accent`, but `--color-accent` is not defined in any theme (so the outline rendered with no color); switched to the defined `outline-brand-500`.
+
+### Patch Changes
+
+- 2c8d13e: Accessibility fixes for Pagination and Skeleton.
+  - **Pagination** — remove the redundant `aria-disabled` on the prev/next buttons. They already use native `disabled`, and per ARIA `aria-disabled` is only for elements that lack a native disabled state.
+  - **Skeleton** — mark the decorative loading placeholder `aria-hidden="true"` so screen readers skip it (the loading state should be conveyed by an `aria-busy` container instead).
+
 ## 0.5.0
 
 ### Minor Changes
