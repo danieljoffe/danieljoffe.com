@@ -69,7 +69,6 @@ export function Pagination({
         onClick={() => onPageChange(currentPage - 1)}
         disabled={isPrevDisabled}
         aria-label='Previous page'
-        aria-disabled={isPrevDisabled ? 'true' : undefined}
         className={cn(
           'rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
           DISABLED,
@@ -121,7 +120,6 @@ export function Pagination({
         onClick={() => onPageChange(currentPage + 1)}
         disabled={isNextDisabled}
         aria-label='Next page'
-        aria-disabled={isNextDisabled ? 'true' : undefined}
         className={cn(
           'rounded-md text-text-secondary hover:bg-surface-tertiary transition-colors cursor-pointer',
           DISABLED,
