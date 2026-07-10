@@ -39,6 +39,15 @@ describe('Skeleton', () => {
     expect(container.firstChild).toHaveClass('rounded-lg');
   });
 
+  it('marks the placeholder aria-hidden (decorative) across variants', () => {
+    const { container: text } = render(<Skeleton />);
+    expect(text.firstChild).toHaveAttribute('aria-hidden', 'true');
+    const { container: circ } = render(<Skeleton variant='circular' />);
+    expect(circ.firstChild).toHaveAttribute('aria-hidden', 'true');
+    const { container: rect } = render(<Skeleton variant='rectangular' />);
+    expect(rect.firstChild).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('applies custom width and height to circular variant', () => {
     const { container } = render(
       <Skeleton variant='circular' width={60} height={60} />
