@@ -23,6 +23,7 @@ export type ButtonVariant =
   | 'primary'
   | 'secondary'
   | 'outline'
+  | 'strong'
   | SemanticVariant;
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -52,10 +53,16 @@ export const baseButtonStyles = [
   'hover:cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none',
 ].join(' ');
 
-// `font-bold` gives every filled variant's label weight so it reads as a
-// definitive control. `bare` opts out (it never gets regularButton), keeping it
-// a true blank slate — e.g. Sidebar items own their own weight.
-const regularButton = 'font-bold hover:shadow-lg/12.5';
+// Shared by every non-`bare` variant. `font-bold` gives filled labels a
+// definitive weight. `border border-transparent` reserves a 1px border box so
+// the borderless fills (primary/strong/semantic) render at the *exact* same
+// size as the visibly-bordered secondary/outline — a 1px border on an
+// auto-height box changes its footprint, so without this the fills would be
+// ~2px smaller and variant would silently change a button's size. `bare` opts
+// out (it never gets regularButton), staying a true blank slate — e.g. Sidebar
+// items own their own weight and size.
+const regularButton =
+  'font-bold hover:shadow-lg/12.5 border border-transparent';
 
 // Solid semantic (status) fills. The `*-solid` tokens are deep and
 // mode-independent (unlike `bg-error` etc., which lighten in dark mode for
@@ -74,6 +81,14 @@ export const variantButtonStyles: Record<ButtonVariant, string> = {
     // Pyre's chartreuse brand-500 with white text was 2.76:1 (below AA);
     // the token resolves to near-black on pyre and white on indigo.
   } bg-brand-500 text-on-brand hover:bg-brand-600 active:bg-brand-700`,
+  // Highest-emphasis brand action: a deep brand fill that carries WHITE text
+  // at AA. Chartreuse brand-500 is too light for white (2.76:1 on Pyre), so
+  // `strong` uses the purpose-built `brand-strong` token instead. hover/active
+  // darken via `brightness` — which only *raises* contrast with the white
+  // label — matching the semantic solids rather than primary's bg steps.
+  strong: `${
+    regularButton
+  } bg-brand-strong text-on-brand-strong hover:brightness-95 active:brightness-90`,
   secondary: `${
     regularButton
   } bg-surface-elevated text-text-primary hover:bg-surface border border-border`,
@@ -91,6 +106,7 @@ const baseOutline =
 export const variantLinkOutline: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${baseOutline} hover:outline-brand-500`,
+  strong: `${baseOutline} hover:outline-brand-strong`,
   secondary: `${baseOutline} hover:outline-border-strong`,
   outline: `${baseOutline} hover:outline-border-strong`,
   error: `${baseOutline} hover:outline-error`,

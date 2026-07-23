@@ -38,6 +38,14 @@ describe('Button', () => {
       expect(button).not.toHaveClass('border-border-secondary');
     });
 
+    it('renders strong as a solid brand fill with the white on-brand-strong foreground', () => {
+      render(<Button variant='strong'>Get started</Button>);
+      expect(screen.getByRole('button')).toHaveClass(
+        'bg-brand-strong',
+        'text-on-brand-strong'
+      );
+    });
+
     it.each([
       ['error', 'bg-error-solid'],
       ['warning', 'bg-warning-solid'],
@@ -78,6 +86,44 @@ describe('Button', () => {
         expect(screen.getByRole('button')).toHaveClass(...expectedClasses);
       }
     );
+
+    it('keeps dimensions independent of variant — non-bare variants share a padding + 1px border box', () => {
+      // A 1px border grows an auto-height button by ~2px, so bordered variants
+      // (secondary/outline) would differ in size from borderless fills unless
+      // the fills reserve the same border. Every non-bare variant therefore
+      // carries identical padding AND a 1px border box (`border`), so variant
+      // never changes a button's rendered footprint.
+      const sizedVariants: ButtonVariant[] = [
+        'primary',
+        'strong',
+        'secondary',
+        'outline',
+        'error',
+        'warning',
+        'success',
+        'info',
+      ];
+      for (const variant of sizedVariants) {
+        const { unmount } = render(
+          <Button variant={variant} size='md'>
+            {variant}
+          </Button>
+        );
+        expect(screen.getByRole('button')).toHaveClass(
+          'px-4',
+          'py-2',
+          'border'
+        );
+        unmount();
+      }
+    });
+
+    it('leaves bare as a blank slate — same padding, but no reserved border box', () => {
+      render(<Button variant='bare'>bare</Button>);
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('px-4', 'py-2');
+      expect(button).not.toHaveClass('border');
+    });
   });
 
   describe('interaction', () => {

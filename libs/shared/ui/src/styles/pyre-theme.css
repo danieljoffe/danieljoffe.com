@@ -95,6 +95,13 @@
      (foreground is the dark token; surface is bright). */
   --color-on-brand: oklch(0.15 0.02 127);
 
+  /* `strong` Button variant — a deep chartreuse fill built to carry WHITE
+     text at WCAG AA. Chartreuse brand-500 is too light for white (2.86:1);
+     this darker, still-vivid green clears 4.5:1 (white ≈ 5.1:1). Same in
+     both modes — the brand colour doesn't flip. */
+  --color-brand-strong: oklch(0.53 0.14 127);
+  --color-on-brand-strong: oklch(1 0 0);
+
   /* Solid semantic (status) button fills + their white foreground. The `*-solid`
      fills are deep and mode-independent, so white clears WCAG AA on every fill
      in both light and dark (unlike on-brand, which is near-black under

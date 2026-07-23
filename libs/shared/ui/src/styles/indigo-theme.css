@@ -65,6 +65,13 @@
      Luminous palettes (e.g. Pyre's chartreuse) override this to near-black. */
   --color-on-brand: oklch(1 0 0);
 
+  /* `strong` Button variant — the deepest solid brand fill, always white
+     text. Indigo's brand is already dark enough for white, so this is just a
+     deeper brand step (matches brand-600); white ≈ 6:1. Luminous palettes
+     (Pyre) override this to a darkened chartreuse that stays AA under white. */
+  --color-brand-strong: oklch(0.5 0.19 250);
+  --color-on-brand-strong: oklch(1 0 0);
+
   /* Solid semantic (status) button fills + their white foreground. The `*-solid`
      fills are deep and mode-independent (unlike --color-error etc., which
      lighten in dark mode for text legibility), so white clears WCAG AA on every
