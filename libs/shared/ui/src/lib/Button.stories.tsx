@@ -17,6 +17,7 @@ const meta = {
         undefined,
         'bare',
         'primary',
+        'strong',
         'secondary',
         'outline',
         'error',
@@ -70,6 +71,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+// Highest-emphasis brand action — a deep brand fill with white text, one step
+// above `primary`. On Pyre its fill is a darkened chartreuse (`brand-strong`)
+// chosen so white text clears WCAG AA, which the signature bright chartreuse
+// cannot. The a11y addon validates the white/fill contrast.
+export const Strong: Story = {
+  args: {
+    variant: 'strong',
+    children: 'Get started',
+  },
+};
 
 export const Secondary: Story = {
   args: {
@@ -138,6 +150,7 @@ export const AllVariants: Story = {
           alignItems: 'center',
         }}
       >
+        <Button variant='strong'>Strong</Button>
         <Button variant='primary'>Primary</Button>
         <Button variant='secondary'>Secondary</Button>
         <Button variant='outline'>Outline</Button>

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Button } from './Button';
 import { CTACard } from './CTACard';
 
 const meta = {
@@ -16,9 +17,7 @@ export const Default: Story = {
     description: 'Join thousands of developers building better software.',
     children: (
       <div className='flex justify-center'>
-        <span className='px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium'>
-          Get Started
-        </span>
+        <Button variant='primary'>Get Started</Button>
       </div>
     ),
   },
@@ -30,12 +29,8 @@ export const WithMultipleActions: Story = {
     description: "Let's discuss how we can work together.",
     children: (
       <div className='flex justify-center gap-3'>
-        <span className='px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium'>
-          Contact Me
-        </span>
-        <span className='px-4 py-2 border border-border text-text-primary rounded-lg text-sm font-medium'>
-          View Work
-        </span>
+        <Button variant='primary'>Contact Me</Button>
+        <Button variant='outline'>View Work</Button>
       </div>
     ),
   },
