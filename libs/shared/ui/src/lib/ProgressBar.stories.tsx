@@ -20,7 +20,7 @@ const meta = {
     variant: {
       description: 'Color variant of the progress bar',
       control: 'select',
-      options: [undefined, 'accent', 'success', 'error'],
+      options: [undefined, 'accent', 'success', 'warning', 'error'],
       table: {
         defaultValue: { summary: 'accent' },
       },
@@ -84,6 +84,15 @@ export const Success: Story = {
     value: 70,
     variant: 'success',
     'aria-label': 'Success progress',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    value: 80,
+    variant: 'warning',
+    showLabel: true,
+    'aria-label': 'Usage approaching limit',
   },
 };
 

@@ -10,9 +10,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Spinner } from './Spinner';
 import { cn } from './utils/cn';
 
 export interface DropdownItem {
+  /** Item text — also the accessible name when `content` is provided. */
   label: string;
   icon?: ReactNode;
   onClick?: () => void;
@@ -23,6 +25,16 @@ export interface DropdownItem {
   danger?: boolean;
   divider?: boolean;
   disabled?: boolean;
+  /**
+   * Pending state: shows a spinner in the icon slot and makes the item
+   * non-actionable (e.g. an async "Adding…" item). Pair with
+   * `closeOnClick: false` so the menu stays open while pending.
+   */
+  loading?: boolean;
+  /** Custom item body; replaces the default icon/label/external rendering. */
+  content?: ReactNode;
+  /** Set to false to keep the menu open after `onClick` (async pickers). */
+  closeOnClick?: boolean;
 }
 
 export interface DropdownProps {
@@ -50,7 +62,7 @@ export function Dropdown({
   const actionableItems = useMemo(
     () =>
       items.reduce<number[]>((acc, item, i) => {
-        if (!item.divider && !item.disabled) acc.push(i);
+        if (!item.divider && !item.disabled && !item.loading) acc.push(i);
         return acc;
       }, []),
     [items]
@@ -150,7 +162,7 @@ export function Dropdown({
         e.preventDefault();
         if (activeIndex >= 0) {
           const item = items[activeIndex];
-          if (item && !item.divider && !item.disabled) {
+          if (item && !item.divider && !item.disabled && !item.loading) {
             // Anchors navigate via a synthetic click so Space activates them
             // too (anchors only respond to Enter natively); the click handler
             // fires onClick and closes the menu.
@@ -158,9 +170,11 @@ export function Dropdown({
               itemRefs.current[activeIndex]?.click();
             } else {
               item.onClick?.();
-              setOpen(false);
-              setActiveIndex(-1);
-              triggerRef.current?.focus();
+              if (item.closeOnClick !== false) {
+                setOpen(false);
+                setActiveIndex(-1);
+                triggerRef.current?.focus();
+              }
             }
           }
         }
@@ -219,30 +233,34 @@ export function Dropdown({
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
               'focus-visible:ring-offset-surface',
               item.disabled && 'opacity-50 cursor-not-allowed',
+              item.loading && 'cursor-wait',
               item.danger
                 ? 'text-error hover:bg-error-light'
                 : 'text-text-primary hover:bg-surface-tertiary'
             );
 
-            const content = (
-              <>
-                {item.icon && (
-                  <span
-                    className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
-                    aria-hidden='true'
-                  >
-                    {item.icon}
-                  </span>
-                )}
-                <span className='flex-1 truncate'>{item.label}</span>
-                {item.external && (
-                  <ExternalLink
-                    className='ml-2 h-3.5 w-3.5 shrink-0 opacity-60'
-                    aria-hidden='true'
-                  />
-                )}
-              </>
-            );
+            const content =
+              item.content != null ? (
+                item.content
+              ) : (
+                <>
+                  {(item.loading || item.icon) && (
+                    <span
+                      className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
+                      aria-hidden='true'
+                    >
+                      {item.loading ? <Spinner size='sm' /> : item.icon}
+                    </span>
+                  )}
+                  <span className='flex-1 truncate'>{item.label}</span>
+                  {item.external && (
+                    <ExternalLink
+                      className='ml-2 h-3.5 w-3.5 shrink-0 opacity-60'
+                      aria-hidden='true'
+                    />
+                  )}
+                </>
+              );
 
             if (item.href) {
               return (
@@ -252,15 +270,18 @@ export function Dropdown({
                     itemRefs.current[i] = el;
                   }}
                   role='menuitem'
+                  aria-label={item.content != null ? item.label : undefined}
                   href={item.href}
                   target={item.external ? '_blank' : undefined}
                   rel={item.external ? 'noopener noreferrer' : undefined}
                   tabIndex={i === activeIndex ? 0 : -1}
                   onClick={() => {
                     item.onClick?.();
-                    setOpen(false);
-                    setActiveIndex(-1);
-                    triggerRef.current?.focus();
+                    if (item.closeOnClick !== false) {
+                      setOpen(false);
+                      setActiveIndex(-1);
+                      triggerRef.current?.focus();
+                    }
                   }}
                   className={itemClassName}
                 >
@@ -276,14 +297,18 @@ export function Dropdown({
                   itemRefs.current[i] = el;
                 }}
                 role='menuitem'
+                aria-label={item.content != null ? item.label : undefined}
                 tabIndex={i === activeIndex ? 0 : -1}
-                aria-disabled={item.disabled || undefined}
+                aria-disabled={item.disabled || item.loading || undefined}
+                aria-busy={item.loading || undefined}
                 onClick={() => {
-                  if (item.disabled) return;
+                  if (item.disabled || item.loading) return;
                   item.onClick?.();
-                  setOpen(false);
-                  setActiveIndex(-1);
-                  triggerRef.current?.focus();
+                  if (item.closeOnClick !== false) {
+                    setOpen(false);
+                    setActiveIndex(-1);
+                    triggerRef.current?.focus();
+                  }
                 }}
                 className={itemClassName}
               >

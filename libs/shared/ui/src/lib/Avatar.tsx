@@ -2,6 +2,8 @@ import { type HTMLAttributes, type Ref } from 'react';
 import type { ComponentSize } from './types';
 import { cn } from './utils/cn';
 
+export type AvatarShape = 'circle' | 'square';
+
 export interface AvatarProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'className'
@@ -11,8 +13,14 @@ export interface AvatarProps extends Omit<
   alt?: string;
   initials?: string;
   size?: ComponentSize;
+  shape?: AvatarShape;
   status?: 'online' | 'offline' | 'away' | 'busy';
   className?: string;
+  /**
+   * Merged onto the inner tile, after the defaults — override the initials
+   * tile's `bg-*`/`text-*` for a deterministic per-entity color.
+   */
+  tileClassName?: string;
 }
 
 const sizeStyles: Record<ComponentSize, string> = {
@@ -33,8 +41,10 @@ export function Avatar({
   alt = '',
   initials,
   size = 'md',
+  shape = 'circle',
   status,
   className,
+  tileClassName,
   ref,
   ...rest
 }: AvatarProps) {
@@ -46,9 +56,11 @@ export function Avatar({
     >
       <div
         className={cn(
-          'rounded-full flex items-center justify-center font-medium overflow-hidden',
+          shape === 'square' ? 'rounded-md' : 'rounded-full',
+          'flex items-center justify-center font-medium overflow-hidden',
           'bg-brand-100 text-brand-700',
-          sizeStyles[size]
+          sizeStyles[size],
+          tileClassName
         )}
       >
         {src ? (
