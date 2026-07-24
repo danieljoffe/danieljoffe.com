@@ -402,6 +402,118 @@ describe('Dropdown', () => {
     });
   });
 
+  describe('Async and rich items', () => {
+    it('marks loading items aria-disabled and aria-busy', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Adding…', loading: true }]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      const item = screen.getByRole('menuitem', { name: 'Adding…' });
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      expect(item).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('does not fire onClick on a loading item', () => {
+      const onClick = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Adding…', loading: true, onClick }]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Adding…' }));
+      expect(onClick).not.toHaveBeenCalled();
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('skips loading items during keyboard navigation', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[
+            { label: 'First', onClick: jest.fn() },
+            { label: 'Adding…', loading: true },
+            { label: 'Last', onClick: jest.fn() },
+          ]}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems[0]).toHaveFocus();
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(menuItems[2]).toHaveFocus();
+    });
+
+    it('keeps the menu open when closeOnClick is false', () => {
+      const onClick = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Add to target', onClick, closeOnClick: false }]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Add to target' }));
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('keeps the menu open on Enter when closeOnClick is false', () => {
+      const onClick = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Add to target', onClick, closeOnClick: false }]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Enter' });
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('renders custom content with label as the accessible name', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[
+            {
+              label: 'Target A',
+              content: (
+                <div>
+                  <div>Target A</div>
+                  <div>3 jobs tracked</div>
+                </div>
+              ),
+            },
+          ]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      const item = screen.getByRole('menuitem', { name: 'Target A' });
+      expect(item).toHaveAttribute('aria-label', 'Target A');
+      expect(screen.getByText('3 jobs tracked')).toBeInTheDocument();
+    });
+
+    it('open menu with loading and custom-content items has no a11y violations', async () => {
+      const { container } = render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[
+            { label: 'Adding…', loading: true },
+            { label: 'Target A', content: <div>Target A</div> },
+          ]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <Dropdown trigger={<span>Menu</span>} items={items} />

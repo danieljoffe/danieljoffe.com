@@ -50,6 +50,13 @@ describe('ProgressBar', () => {
     expect(fill).toHaveClass('bg-success');
   });
 
+  it('applies warning variant styles', () => {
+    render(<ProgressBar value={80} variant='warning' />);
+    const bar = screen.getByRole('progressbar');
+    const fill = bar.firstElementChild!;
+    expect(fill).toHaveClass('bg-warning');
+  });
+
   it('applies error variant styles', () => {
     render(<ProgressBar value={50} variant='error' />);
     const bar = screen.getByRole('progressbar');

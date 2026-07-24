@@ -3,7 +3,7 @@ import { Text } from './Text';
 import type { ComponentSize } from './types';
 import { cn } from './utils';
 
-type ProgressBarVariant = 'accent' | 'success' | 'error';
+type ProgressBarVariant = 'accent' | 'success' | 'warning' | 'error';
 
 export interface ProgressBarProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -21,6 +21,7 @@ export interface ProgressBarProps extends Omit<
 const variantStyles: Record<ProgressBarVariant, string> = {
   accent: 'bg-brand-500',
   success: 'bg-success',
+  warning: 'bg-warning',
   error: 'bg-error',
 };
 

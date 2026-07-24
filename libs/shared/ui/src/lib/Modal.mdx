@@ -326,6 +326,21 @@ import { Button } from './Button';
     </tr>
     <tr>
       <td>
+        <code>placement</code>
+      </td>
+      <td>
+        <code>'center' | 'sheet'</code>
+      </td>
+      <td>
+        <code>'center'</code>
+      </td>
+      <td>
+        <code>'sheet'</code> anchors the dialog to the bottom edge as a mobile
+        bottom sheet (rounded top, slide-up entrance).
+      </td>
+    </tr>
+    <tr>
+      <td>
         <code>closeOnBackdropClick</code>
       </td>
       <td>
@@ -390,6 +405,27 @@ import { Button } from './Button';
   <code>closeOnBackdropClick=&#123;false&#125;</code> to prevent accidental
   dismissal when users have entered data.
 </p>
+
+<h3 className='doc-sub'>Bottom Sheet</h3>
+
+<p className='doc-p'>
+  Use <code>placement="sheet"</code> for mobile-first flows (filters, quick
+  pickers) where actions should sit within thumb reach. The sheet keeps Modal's
+  focus trap, scroll lock, Escape handling, and backdrop; only the positioning
+  and entrance change.
+</p>
+
+```jsx
+<Modal
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  title='Filter jobs'
+  placement='sheet'
+  footer={<Button onClick={applyFilters}>Apply</Button>}
+>
+  {/* filter fields */}
+</Modal>
+```
 
 <h2 className='doc-section'>Accessibility</h2>
 
