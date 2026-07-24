@@ -14,9 +14,12 @@ describe('Button', () => {
   });
 
   describe('variants', () => {
-    it('applies primary variant by default', () => {
+    it('applies primary variant by default (solid brand fill, white text)', () => {
       render(<Button>Primary</Button>);
-      expect(screen.getByRole('button')).toHaveClass('bg-brand-500');
+      expect(screen.getByRole('button')).toHaveClass(
+        'bg-brand-strong',
+        'text-on-brand-strong'
+      );
     });
 
     it.each([
@@ -33,17 +36,9 @@ describe('Button', () => {
     it('applies bare variant without background or border styles', () => {
       render(<Button variant='bare'>Bare</Button>);
       const button = screen.getByRole('button');
-      expect(button).not.toHaveClass('bg-brand-500');
+      expect(button).not.toHaveClass('bg-brand-strong');
       expect(button).not.toHaveClass('bg-surface-elevated');
       expect(button).not.toHaveClass('border-border-secondary');
-    });
-
-    it('renders strong as a solid brand fill with the white on-brand-strong foreground', () => {
-      render(<Button variant='strong'>Get started</Button>);
-      expect(screen.getByRole('button')).toHaveClass(
-        'bg-brand-strong',
-        'text-on-brand-strong'
-      );
     });
 
     it.each([
@@ -95,7 +90,6 @@ describe('Button', () => {
       // never changes a button's rendered footprint.
       const sizedVariants: ButtonVariant[] = [
         'primary',
-        'strong',
         'secondary',
         'outline',
         'error',

@@ -23,7 +23,6 @@ export type ButtonVariant =
   | 'primary'
   | 'secondary'
   | 'outline'
-  | 'strong'
   | SemanticVariant;
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -75,18 +74,14 @@ const semanticFill = (bg: string) =>
 
 export const variantButtonStyles: Record<ButtonVariant, string> = {
   bare: '',
+  // Solid brand fill with WHITE text in both themes, so primary matches every
+  // other filled button (all white-on-color). Uses the deep `brand-strong`
+  // fill, not `brand-500`: Pyre's bright chartreuse is too light to carry white
+  // (2.76:1, fails AA), so brand-strong is a darkened chartreuse on Pyre (~5:1);
+  // on Indigo it equals brand-500, so Indigo's primary is unchanged. hover/
+  // active darken via `brightness` (raises contrast with the white label) —
+  // Pyre's brand-600/700 are too light to darken toward.
   primary: `${
-    regularButton
-    // ``text-on-brand`` (themed) instead of hardcoded ``text-white``.
-    // Pyre's chartreuse brand-500 with white text was 2.76:1 (below AA);
-    // the token resolves to near-black on pyre and white on indigo.
-  } bg-brand-500 text-on-brand hover:bg-brand-600 active:bg-brand-700`,
-  // Highest-emphasis brand action: a deep brand fill that carries WHITE text
-  // at AA. Chartreuse brand-500 is too light for white (2.76:1 on Pyre), so
-  // `strong` uses the purpose-built `brand-strong` token instead. hover/active
-  // darken via `brightness` — which only *raises* contrast with the white
-  // label — matching the semantic solids rather than primary's bg steps.
-  strong: `${
     regularButton
   } bg-brand-strong text-on-brand-strong hover:brightness-95 active:brightness-90`,
   secondary: `${
@@ -106,7 +101,6 @@ const baseOutline =
 export const variantLinkOutline: Record<ButtonVariant, string> = {
   bare: '',
   primary: `${baseOutline} hover:outline-brand-500`,
-  strong: `${baseOutline} hover:outline-brand-strong`,
   secondary: `${baseOutline} hover:outline-border-strong`,
   outline: `${baseOutline} hover:outline-border-strong`,
   error: `${baseOutline} hover:outline-error`,
