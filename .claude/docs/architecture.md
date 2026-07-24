@@ -24,5 +24,3 @@
 ## Key Patterns
 
 - Content access goes through `data/contentRegistry.ts` — the single data access layer
-- Shared-ui must only depend on React and Tailwind CSS — no Next.js APIs
-- Kit components (`components/kit/`) wrap Next.js-specific concerns (Link, Image, useRouter)
