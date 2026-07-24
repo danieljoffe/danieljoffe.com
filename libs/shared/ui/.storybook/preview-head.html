@@ -1,4 +1,24 @@
 <!doctype html>
+<script>
+  // No-op React Fast Refresh globals. @vitejs/plugin-react (pulled in via the
+  // library vite.config.ts that .storybook/main.ts references through
+  // viteConfigPath) instruments every module with $RefreshReg$/$RefreshSig$, but
+  // the runtime preamble that defines them isn't injected into Storybook's
+  // iframe — so the dev preview crashed with "$RefreshReg$ is not defined". These
+  // no-ops (plus the installed flag) let modules load; Fast Refresh degrades to a
+  // full reload on edit. Plain script, no dev-server import, harmless in the
+  // static build too.
+  window.$RefreshReg$ = window.$RefreshReg$ || function () {};
+  window.$RefreshSig$ =
+    window.$RefreshSig$ ||
+    function () {
+      return function (type) {
+        return type;
+      };
+    };
+  window.__vite_plugin_react_preamble_installed__ = true;
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
