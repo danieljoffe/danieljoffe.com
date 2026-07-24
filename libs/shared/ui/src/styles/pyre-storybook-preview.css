@@ -40,7 +40,7 @@
   --color-text-inverse: oklch(0.1 0.01 270);
   --color-text-brand: oklch(0.78 0.22 127);
   --color-on-brand: oklch(0.15 0.02 127);
-  /* `strong` variant fill — darkened chartreuse that stays AA under white.
+  /* `primary` Button fill — darkened chartreuse that stays AA under white.
      on-brand-strong is white in both themes, so it inherits from :root. */
   --color-brand-strong: oklch(0.53 0.14 127);
 

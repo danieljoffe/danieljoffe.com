@@ -65,11 +65,11 @@
      Luminous palettes (e.g. Pyre's chartreuse) override this to near-black. */
   --color-on-brand: oklch(1 0 0);
 
-  /* `strong` Button variant — the deepest solid brand fill, always white
-     text. Indigo's brand is already dark enough for white, so this is just a
-     deeper brand step (matches brand-600); white ≈ 6:1. Luminous palettes
-     (Pyre) override this to a darkened chartreuse that stays AA under white. */
-  --color-brand-strong: oklch(0.5 0.19 250);
+  /* Fill + foreground for the `primary` Button — a solid brand fill that always
+     carries white text (every filled Button is white-on-color). On Indigo this
+     equals brand-500, so Indigo's primary is unchanged; luminous palettes (Pyre)
+     override it to a darkened chartreuse that stays AA under white. */
+  --color-brand-strong: oklch(0.54 0.19 250);
   --color-on-brand-strong: oklch(1 0 0);
 
   /* Solid semantic (status) button fills + their white foreground. The `*-solid`
