@@ -1,6 +1,6 @@
 {
   "name": "@danieljoffe/shared-ui",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "React component library and design system — Tailwind CSS 4, React 19, server-component-friendly.",
   "type": "module",
   "sideEffects": false,
