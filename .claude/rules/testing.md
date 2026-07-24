@@ -7,6 +7,7 @@ paths:
   - '**/vitest.config*'
   - '**/playwright.config*'
   - '**/test-setup*'
+  - '**/.github/workflows/**'
 ---
 
 # Testing Conventions
