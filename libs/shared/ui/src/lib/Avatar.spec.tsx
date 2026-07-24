@@ -80,6 +80,31 @@ describe('Avatar', () => {
     expect(container.firstChild).toHaveClass('custom-class');
   });
 
+  it('renders a circular tile by default', () => {
+    const { container } = render(<Avatar initials='A' />);
+    const inner = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(inner).toHaveClass('rounded-full');
+  });
+
+  it('renders a rounded-square tile when shape is square', () => {
+    const { container } = render(<Avatar initials='A' shape='square' />);
+    const inner = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(inner).toHaveClass('rounded-md');
+    expect(inner).not.toHaveClass('rounded-full');
+  });
+
+  it('tileClassName overrides the default tile background', () => {
+    const { container } = render(
+      <Avatar initials='A' tileClassName='bg-sky-100 text-sky-700' />
+    );
+    const inner = (container.firstChild as HTMLElement).firstElementChild!;
+    expect(inner).toHaveClass('bg-sky-100');
+    expect(inner).toHaveClass('text-sky-700');
+    // tailwind-merge drops the defaults so the override actually wins
+    expect(inner).not.toHaveClass('bg-brand-100');
+    expect(inner).not.toHaveClass('text-brand-700');
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(<Avatar initials='DJ' />);
     expect(await axe(container)).toHaveNoViolations();

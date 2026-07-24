@@ -8,6 +8,22 @@ const meta = {
   title: 'Forms/Checkbox',
   component: Checkbox,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          'The native input renders `sr-only` behind a styled `<span>` box, so ',
+          '`className` lands on the visual box, not the input. ',
+          '**Inside a clickable row** (e.g. a selectable list item), stop click ',
+          'bubbling on a *wrapper* around the Checkbox — ',
+          '`<span onClick={e => e.stopPropagation()}><Checkbox … /></span>` — ',
+          "not on the input's own `onClick`: clicks land on the visual box and ",
+          'bubble to the row from there, so a handler on the input never sees ',
+          'them.',
+        ].join(''),
+      },
+    },
+  },
   argTypes: {
     label: {
       description: 'Label text displayed next to the checkbox',

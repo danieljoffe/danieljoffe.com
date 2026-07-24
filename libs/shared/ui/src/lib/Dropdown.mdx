@@ -320,6 +320,62 @@ import { Dropdown } from './Dropdown';
       </td>
       <td>Prevents activation and skips during keyboard navigation.</td>
     </tr>
+    <tr>
+      <td>
+        <code>href</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>Renders the item as an anchor pointing here instead of a button.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>external</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        Opens <code>href</code> in a new tab with a trailing external-link icon.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>loading</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        Pending state: spinner in the icon slot, <code>aria-busy</code>, and
+        non-actionable until it resolves.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>content</code>
+      </td>
+      <td>
+        <code>ReactNode</code>
+      </td>
+      <td>
+        Custom item body replacing the icon/label rendering; <code>label</code>{' '}
+        becomes the accessible name.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>closeOnClick</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        Set <code>false</code> to keep the menu open after activation (async
+        pickers). Defaults to <code>true</code>.
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -354,6 +410,31 @@ import { Dropdown } from './Dropdown';
   Use <code>align="right"</code> when the trigger is positioned near the right
   edge of the viewport to prevent the menu from overflowing.
 </p>
+
+<h3 className='doc-sub'>Async Picker</h3>
+
+<p className='doc-p'>
+  For items that trigger an async action (e.g. "add to list"), set{' '}
+  <code>closeOnClick: false</code> so the menu stays open, flip{' '}
+  <code>loading: true</code> while the action runs, and mark completed items{' '}
+  <code>disabled</code>. For richer rows (title + subtitle), pass{' '}
+  <code>content</code>; the required <code>label</code> stays the accessible
+  name. If the picker needs its own loading/error/empty states outside the
+  items, reach for <code>Popover</code> instead.
+</p>
+
+```jsx
+<Dropdown
+  trigger={<>Add to target ▾</>}
+  items={targets.map(target => ({
+    label: target.name,
+    loading: pendingId === target.id,
+    disabled: addedIds.includes(target.id),
+    closeOnClick: false,
+    onClick: () => addToTarget(target.id),
+  }))}
+/>
+```
 
 <h2 className='doc-section'>Accessibility</h2>
 

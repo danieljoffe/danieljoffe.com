@@ -76,6 +76,39 @@ describe('Modal', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
+  describe('placement', () => {
+    it('centers the dialog by default', () => {
+      renderModal();
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveClass('rounded-lg');
+      expect(dialog.parentElement).toHaveClass('items-center');
+    });
+
+    it('anchors the dialog to the bottom as a sheet', () => {
+      renderModal({ placement: 'sheet' });
+      const dialog = screen.getByRole('dialog');
+      expect(dialog.parentElement).toHaveClass('items-end');
+      expect(dialog).toHaveClass('rounded-t-lg');
+      expect(dialog).toHaveClass('max-h-[85dvh]');
+      expect(dialog).not.toHaveClass('rounded-lg');
+    });
+
+    it('animates the sheet with slide-up, disabled under reduced motion', () => {
+      renderModal({ placement: 'sheet' });
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveClass('animate-slide-up');
+      expect(dialog).toHaveClass('motion-reduce:animate-none');
+    });
+
+    it('sheet placement has no accessibility violations', async () => {
+      const { container } = renderModal({
+        placement: 'sheet',
+        title: 'Sheet',
+      });
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   it('applies sm size styles', () => {
     const { container } = renderModal({ size: 'sm' });
     expect(container.querySelector('.max-w-md')).toBeInTheDocument();

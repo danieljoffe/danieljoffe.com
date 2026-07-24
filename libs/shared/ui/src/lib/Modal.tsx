@@ -12,13 +12,11 @@ import {
 import { Button } from './Button';
 import { Heading } from './Heading';
 import { DISMISS_BUTTON } from './styles/formStyles';
-import { cn } from './utils';
-
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+import { cn, FOCUSABLE_SELECTOR } from './utils';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 type ModalVariant = 'default';
+export type ModalPlacement = 'center' | 'sheet';
 
 export interface ModalProps {
   ref?: Ref<HTMLDivElement> | undefined;
@@ -29,6 +27,8 @@ export interface ModalProps {
   size?: ModalSize;
   footer?: ReactNode;
   variant?: ModalVariant;
+  /** `sheet` anchors the dialog to the bottom edge as a mobile bottom sheet. */
+  placement?: ModalPlacement;
   className?: string | undefined;
   closeOnBackdropClick?: boolean;
 }
@@ -44,6 +44,17 @@ const variantStyles: Record<ModalVariant, string> = {
   default: 'bg-surface-elevated border border-border-secondary',
 };
 
+const placementWrapperStyles: Record<ModalPlacement, string> = {
+  center: 'items-center p-4',
+  sheet: 'items-end',
+};
+
+const placementPanelStyles: Record<ModalPlacement, string> = {
+  center: 'max-h-[calc(100dvh-2rem)] rounded-lg',
+  sheet:
+    'max-h-[85dvh] rounded-t-lg animate-slide-up motion-reduce:animate-none',
+};
+
 export function Modal({
   isOpen,
   onClose,
@@ -52,6 +63,7 @@ export function Modal({
   size = 'md',
   footer,
   variant = 'default',
+  placement = 'center',
   className,
   closeOnBackdropClick = true,
   ref,
@@ -128,7 +140,12 @@ export function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+    <div
+      className={cn(
+        'fixed inset-0 z-50 flex justify-center',
+        placementWrapperStyles[placement]
+      )}
+    >
       <div
         className='absolute inset-0 bg-surface/80 backdrop-blur-sm'
         onClick={closeOnBackdropClick ? handleClose : undefined}
@@ -148,7 +165,8 @@ export function Modal({
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : 'Dialog'}
         className={cn(
-          'relative flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-lg shadow-2xl',
+          'relative flex w-full flex-col overflow-hidden shadow-2xl',
+          placementPanelStyles[placement],
           sizeStyles[size],
           variantStyles[variant],
           className

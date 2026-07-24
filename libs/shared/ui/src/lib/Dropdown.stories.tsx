@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Dropdown } from './Dropdown';
 
@@ -262,6 +263,100 @@ export const EnterToSelect: Story = {
       expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
     );
     await expect(args.items[0].onClick).toHaveBeenCalled();
+  },
+};
+
+function AsyncPickerDemo() {
+  const [pending, setPending] = useState<string | null>(null);
+  const [added, setAdded] = useState<string[]>([]);
+  const targets = ['Design Systems Team', 'Platform Guild', 'Frontend Chapter'];
+  return (
+    <Dropdown
+      trigger={
+        <span className='px-3 py-1.5 border rounded-md text-sm'>
+          Add to target
+        </span>
+      }
+      items={targets.map(target => ({
+        label: added.includes(target) ? `${target} — added` : target,
+        loading: pending === target,
+        disabled: added.includes(target),
+        closeOnClick: false,
+        onClick: () => {
+          setPending(target);
+          setTimeout(() => {
+            setPending(null);
+            setAdded(current => [...current, target]);
+          }, 1200);
+        },
+      }))}
+    />
+  );
+}
+
+/**
+ * An async picker: `closeOnClick: false` keeps the menu open, `loading` shows
+ * a per-item pending spinner while the action runs, and completed items flip
+ * to `disabled`. Click a target to see the flow.
+ */
+export const AsyncPicker: StoryObj<typeof Dropdown> = {
+  render: () => <AsyncPickerDemo />,
+};
+
+// Visual-regression only: open menu capturing loading, custom-content, and
+// disabled item states together.
+export const OpenAsyncState: Story = {
+  args: {
+    trigger: (
+      <span className='px-3 py-1.5 border rounded-md text-sm'>
+        Add to target
+      </span>
+    ),
+    items: [
+      {
+        label: 'Design Systems Team',
+        closeOnClick: false,
+        content: (
+          <span className='flex flex-col py-0.5'>
+            <span>Design Systems Team</span>
+            <span className='text-xs text-text-tertiary'>3 jobs tracked</span>
+          </span>
+        ),
+      },
+      { label: 'Adding…', loading: true, closeOnClick: false },
+      { label: 'Platform Guild — added', disabled: true },
+    ],
+  },
+  parameters: { visual: { interact: true } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Add to target' })
+    );
+    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+  },
+};
+
+export const KeepsMenuOpenForAsyncItems: Story = {
+  args: {
+    trigger: (
+      <span className='px-3 py-1.5 border rounded-md text-sm'>Async</span>
+    ),
+    items: [{ label: 'Add to target', onClick: fn(), closeOnClick: false }],
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Async' }));
+    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+
+    await userEvent.click(
+      canvas.getByRole('menuitem', { name: 'Add to target' })
+    );
+    await expect(args.items[0].onClick).toHaveBeenCalled();
+
+    // closeOnClick: false keeps the menu open for async feedback
+    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
   },
 };
 

@@ -42,6 +42,15 @@ const meta = {
         defaultValue: { summary: 'default' },
       },
     },
+    placement: {
+      description:
+        'Dialog position: centered (default) or a bottom sheet for mobile-friendly flows',
+      control: 'select',
+      options: [undefined, 'center', 'sheet'],
+      table: {
+        defaultValue: { summary: 'center' },
+      },
+    },
     onClose: {
       description:
         'Callback fired when modal is closed (via backdrop click, Escape key, or close button)',
@@ -170,6 +179,23 @@ export const ExtraLarge: Story = {
     title: 'Extra Large Modal',
     children: 'This is an extra large modal with maximum content space.',
     size: 'xl',
+    onClose: fn(),
+  },
+};
+
+/**
+ * `placement='sheet'` anchors the dialog to the bottom edge — a mobile
+ * bottom-sheet with `rounded-t` corners and a slide-up entrance, while keeping
+ * Modal's focus trap, scroll lock, and backdrop behavior.
+ */
+export const BottomSheet: Story = {
+  args: {
+    isOpen: true,
+    title: 'Filter jobs',
+    placement: 'sheet',
+    children:
+      'A bottom sheet keeps thumb-reach actions at the bottom of the screen on mobile.',
+    footer: <Button name='apply-filters'>Apply filters</Button>,
     onClose: fn(),
   },
 };

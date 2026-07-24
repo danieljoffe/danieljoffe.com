@@ -8,12 +8,22 @@ const meta = {
   argTypes: {
     size: {
       control: 'select',
-      options: ['xs', 'sm', 'md', 'lg', 'xl'],
+      options: ['sm', 'md', 'lg'],
       table: { defaultValue: { summary: 'md' } },
+    },
+    shape: {
+      control: 'select',
+      options: [undefined, 'circle', 'square'],
+      table: { defaultValue: { summary: 'circle' } },
     },
     status: {
       control: 'select',
       options: [undefined, 'online', 'offline', 'away', 'busy'],
+    },
+    tileClassName: {
+      description:
+        'Merged onto the inner tile after the defaults — override bg/text for a per-entity color',
+      control: 'text',
     },
   },
 } satisfies Meta<typeof Avatar>;
@@ -49,6 +59,25 @@ export const AllSizes: Story = {
 
 export const Fallback: Story = {
   args: { alt: 'Daniel' },
+};
+
+export const Square: Story = {
+  args: { initials: 'DJ', shape: 'square' },
+};
+
+/**
+ * `tileClassName` overrides the tile's default `bg-*`/`text-*`, enabling a
+ * deterministic per-entity color (e.g. a stable hue per company in a list).
+ */
+export const PerEntityColors: Story = {
+  render: () => (
+    <div className='flex items-center gap-4'>
+      <Avatar initials='AC' tileClassName='bg-sky-100 text-sky-700' />
+      <Avatar initials='GL' tileClassName='bg-emerald-100 text-emerald-700' />
+      <Avatar initials='VN' tileClassName='bg-amber-100 text-amber-700' />
+      <Avatar initials='ST' tileClassName='bg-rose-100 text-rose-700' />
+    </div>
+  ),
 };
 
 export const Online: Story = {
