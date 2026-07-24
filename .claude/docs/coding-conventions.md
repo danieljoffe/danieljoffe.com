@@ -2,37 +2,24 @@
 
 ## Rule of Three
 
-When the same pattern appears 3+ times across files, extract it:
+Same pattern 3+ times → extract: UI element → kit component (`components/kit/`); className strings → shared styles (`lib/`, e.g. `formStyles.ts`); stateful logic → hook (`hooks/`); magic values → `utils/constants.ts`. Test extractions that contain logic; pure style extractions don't need tests.
 
-| Pattern             | Extract to                        | Example                                                 |
-| ------------------- | --------------------------------- | ------------------------------------------------------- |
-| UI element          | Kit component (`components/kit/`) | `Spinner`, `ErrorAlert`, `FormFieldError`, `Pagination` |
-| className string    | Shared styles (`lib/`)            | `formStyles.ts`, `badgeStyles.ts`                       |
-| Stateful logic      | Custom hook (`hooks/`)            | `useTableSort`                                          |
-| Magic number/string | `utils/constants.ts`              | `FORM_LIMITS`, `VALIDATION_PATTERNS`                    |
+## Components
 
-Test abstractions that contain logic. Pure style extractions don't need tests.
-
-## Component Patterns
-
-- **Button**: Always use `@/components/Button` for buttons and button-styled links. The `name` prop is required by lint (except in `.stories.tsx`). Use `as='link'` with `href` for navigation that looks like a button.
-- **Shared UI library**: Check `libs/shared/ui/src/lib/` before building a new component; prefer `@danieljoffe/shared-ui` over app-specific equivalents. Extend close-but-not-quite components in the library rather than duplicating locally; promote app patterns to shared-ui only per the Rule of Three. shared-ui depends only on React + Tailwind — no Next.js APIs (`Link`, `useRouter`, `next/image`, etc.).
-- **Refs (React 19)**: No `forwardRef` in shared-ui — accept `ref` as a regular prop (`ref?: Ref<HTMLElement>`). Pure components (no hooks/state) work in server and client contexts without `'use client'`; don't create `Client*` wrappers in the app just to add a client boundary — that pattern is obsolete.
-- **Kit components**: Anything depending on Next.js APIs (`Link`, `useRouter`, `next/image`, `usePathname`, etc.) lives in `components/kit/` or `components/` within the app. Import from the `@/components/kit` barrel, not individual files; new kit components must be added to `kit/index.ts`.
-- **Toasts**: Use `useToast()` from `@/state/Toast/ToastProvider` for user feedback on async actions.
-- **`global-error.tsx`**: Inline styles are intentional (renders outside the app tree where Tailwind isn't available). Don't convert to Tailwind.
+- **Button**: always `@/components/Button` for buttons and button-styled links; `name` prop required (lint); `as='link'` + `href` for navigation that looks like a button.
+- **shared-ui first**: check `libs/shared/ui/src/lib/` before building anything new; extend close-but-not-quite components in the library rather than duplicating locally; promote app patterns only per Rule of Three. shared-ui depends on React + Tailwind only — no Next.js APIs.
+- **Refs (React 19)**: no `forwardRef` — accept `ref` as a regular prop (`ref?: Ref<HTMLElement>`). Pure components work in server and client contexts without `'use client'`; don't create `Client*` wrappers.
+- **Kit**: anything needing Next.js APIs (`Link`, `useRouter`, `next/image`, …) lives in `components/kit/`; import via the `@/components/kit` barrel and register new components in `kit/index.ts`.
+- **Toasts**: `useToast()` from `@/state/Toast/ToastProvider` for async-action feedback. **`global-error.tsx`**: inline styles intentional (renders outside the app tree) — don't convert to Tailwind.
 
 ## Styling
 
-- Use `cn()` from `@/lib/cn` for conditional class merging (never `.join(' ')` with ternaries). Static multi-line `.join(' ')` arrays are fine when there are no conditionals.
-- Tailwind CSS 4 uses `@theme` directive and oklch color space — design tokens in `styles/theme.css`.
+`cn()` from `@/lib/cn` for conditional class merging — never ternary `.join(' ')`; static `.join(' ')` arrays are fine. Tailwind 4: `@theme` directive + oklch, tokens in `styles/theme.css`.
 
-## Accessibility & Privacy
+## A11y & Privacy
 
-- Form inputs with validation errors must have `aria-describedby` pointing to the error element's `id`; use `<FormFieldError message={error} id='field-error' />` for consistent display.
-- Add `data-sentry-mask` to all form inputs that collect PII (email, name, password).
+Inputs with validation errors get `aria-describedby` pointing at the error element's `id` (use `<FormFieldError message={error} id='…-error' />`). `data-sentry-mask` on every PII-collecting input.
 
 ## TypeScript
 
-- `exactOptionalPropertyTypes` is enabled. When a prop can receive `undefined` from an expression (e.g., `errors?.name?.message`), declare it as `prop: string | undefined`, not `prop?: string`.
-- Pre-commit hooks run lint-staged (ESLint + Prettier) then full typecheck. Both must pass.
+`exactOptionalPropertyTypes` is on: a prop receiving `undefined` from an expression (e.g. `errors?.name?.message`) is declared `prop: string | undefined`, not `prop?: string`.

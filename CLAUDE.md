@@ -1,12 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) in this repository.
 
 ## Project Overview
 
-Personal portfolio website for Daniel Joffe built with Next.js 16 (App Router), React 19, and TypeScript. Nx monorepo with pnpm workspaces.
-
-Live site: https://danieljoffe.com
+Personal portfolio site and blog: Next.js 16 (App Router), React 19, TypeScript. Nx monorepo with pnpm workspaces. Live: https://danieljoffe.com
 
 ## Quick Reference
 
@@ -22,68 +20,33 @@ Full command list (incl. `pom:affected` vs `affected`): `.claude/docs/commands.m
 
 ## Critical Guardrails
 
-### Pre-Push Checklist
+- **Pre-push**: `pnpm tsc --noEmit` and `pnpm nx test root` must both be green before any push.
+- **Branching, repo specifics** (base rules come from the master rules): always `git fetch origin` first and work from remote refs. Before creating or updating a PR, check `git log develop..main --oneline`; if `develop` is behind, merge `main` into `develop` and push — this sync push to `develop` is the sanctioned exception. Flag merge conflicts for the user.
+- **Lint beyond standard** (pre-commit + CI enforce; knowing these avoids a failed cycle): custom rules `require-button-name` (`name` required on `<Button>`) and `no-raw-headings` (kit heading components, never raw `<h1>`–`<h6>`); import order builtin → external → `@danieljoffe.com/*` → `@/*` → local; `import/no-cycle` and `@nx/enforce-module-boundaries` violations are errors.
 
-Before pushing, **always** run `pnpm tsc --noEmit` and `pnpm nx test root`. Do not push if either fails.
-
-### Git Branching
-
-- **`develop`** is the default base branch for all PRs
-- **`main`** is production — only `develop` merges into `main`; never PR a feature branch to `main`
-- **Always use remote refs**: `git fetch origin` first, then `origin/main` / `origin/develop` — never stale local branches
-- **Keep `develop` in sync with `main`**: before creating or updating a PR, check `git log develop..main --oneline`. If `develop` is behind, merge `main` into `develop` and push. Flag merge conflicts for the user.
-
-### ESLint
-
-Flat config at `apps/root/eslint.config.mjs` (ESLint 10):
-
-- **Custom rules**: `require-button-name` (`name` prop required on `<Button>`) and `no-raw-headings` (kit heading components, never raw `<h1>`–`<h6>`)
-- **Import ordering**: builtin → external → `@danieljoffe.com/*` → `@/*` → local
-- **Cycle detection**: `import/no-cycle` — circular imports are errors
-- **Module boundaries**: `@nx/enforce-module-boundaries` restricts cross-project imports
-
-## Detailed Guides
+## Guides & Rules
 
 Always loaded:
 
-- **Architecture & structure**: @.claude/docs/architecture.md
-- **Coding conventions**: @.claude/docs/coding-conventions.md
+- @.claude/docs/architecture.md
+- @.claude/docs/coding-conventions.md
 
-Path-scoped rules (`.claude/rules/`) load only when editing matching files: content posts & style guide, testing & CI, Sentry.
+Path-scoped (`.claude/rules/`, load only when editing matching files): content posts & style guide, testing & CI, Sentry.
 
 ## Skills & Agents
 
-Skills (`.claude/skills/`, invoke via `/name`) and review agents (`.claude/agents/`) are self-describing — run `ls .claude/skills` / `ls .claude/agents` for the current set. Highlights:
-
-- **Verify / quality**: `/verify-root`, `/verify-sharedui`, `/storybook-check`, `/coverage-gaps`, `/gen-test`
-- **Review**: `/pr-review` (runs the `*-reviewer` agents in parallel), `/security-review`
-- **Content**: `/write-content`, `/review-content-style`
-- **Workflow**: `/batch-commit`, `/deploy-preview`, `/release-notes`
+Self-describing — `ls .claude/skills` / `ls .claude/agents`. Frequent: `/verify-root`, `/verify-sharedui`, `/storybook-check`, `/coverage-gaps`, `/gen-test`, `/pr-review`, `/security-review`, `/write-content`, `/review-content-style`, `/batch-commit`, `/deploy-preview`, `/release-notes`.
 
 ## Session Persistence
 
-The [context-mode](https://github.com/mksglu/context-mode) plugin tracks session state (file edits, git ops, tasks, errors) automatically and injects its own usage guidance at session start. It does NOT manage:
+The context-mode plugin tracks session state and injects its own usage guidance. Outside it: `.claude/docs/decisions.md` (manually-maintained append-only ADR log, injected on SessionStart) and the hand-curated `.claude/docs/`.
 
-- **`.claude/docs/decisions.md`** — manually-maintained append-only ADR log, injected on SessionStart
-- **`.claude/docs/`** — hand-curated reference docs, read on demand
+## Nx & Next.js
 
-## Nx
+- Run tasks through Nx with the package-manager prefix (`pnpm nx run` / `run-many` / `affected`) — never the underlying tooling directly; check `nx_docs` / `--help` instead of guessing flags.
+- `nx-workspace` skill for workspace exploration; `nx-generate` first for scaffolding.
+- Non-trivial Next.js framework work: ground in current APIs via `next-devtools-mcp` (`init`, `nextjs_docs`).
 
-- Run tasks through Nx (`pnpm nx run` / `run-many` / `affected`), never the underlying tooling directly, and always prefix with the package manager (`pnpm nx ...`)
-- Workspace exploration → invoke the `nx-workspace` skill first; scaffolding/generators → `nx-generate` first
-- NEVER guess CLI flags — check `nx_docs` or `--help` (skip nx_docs for basic syntax you already know)
-- Plugin best practices: `node_modules/@nx/<plugin>/PLUGIN.md`, when present
+## Summarizing
 
-## Next.js
-
-For non-trivial framework work (App Router internals, caching/rendering strategies, middleware, version upgrades), ground in current APIs via the `next-devtools-mcp` `init` tool and `nextjs_docs` — not needed for routine content/component edits.
-
-## Summary Instructions
-
-When summarizing this conversation, always preserve:
-
-- The current task objective and acceptance criteria
-- File paths that have been read or modified
-- Test results and error messages
-- Decisions made and the reasoning behind them
-- Which rules files were loaded and why
+Preserve: task objective and acceptance criteria, file paths touched, test results and errors, decisions with reasoning, which rules files were loaded.
