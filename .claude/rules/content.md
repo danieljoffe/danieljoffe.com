@@ -2,7 +2,7 @@
 paths:
   - '**/*.mdx'
   - '**/data/content/**'
-  - '**/data/contentOrder*'
+  - '**/data/metadata/**'
   - '**/data/contentRegistry*'
   - '**/data/blog*'
   - '**/data/project*'

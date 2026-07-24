@@ -1,28 +1,6 @@
 # Architecture
 
-## Monorepo Structure
-
-- **apps/root**: Portfolio site and blog (Next.js 16, App Router)
-- **apps/root-e2e**: Playwright E2E tests for `apps/root`
-- **libs/shared/ui**: Shared React component library (@danieljoffe/shared-ui)
-
-## Key Technologies
-
-- **Monorepo**: Nx with pnpm workspaces
-- **Framework**: Next.js 16 with App Router
-- **Styling**: Tailwind CSS 4
-- **Animations**: GSAP
-- **Search**: MiniSearch (client-side full-text search on blog index)
-- **Forms**: react-hook-form with yup validation
-- **Error Tracking**: Sentry
-- **Testing**: Jest + RTL (unit), Playwright (E2E), jest-axe (a11y), Vitest (shared-ui)
-
-## Path Aliases
-
-- `@/` maps to `apps/root/src/` in the root app
-
-## Key Patterns
-
-- Content access goes through `data/contentRegistry.ts` — the single data access layer
-- Shared-ui must only depend on React and Tailwind CSS — no Next.js APIs
-- Kit components (`components/kit/`) wrap Next.js-specific concerns (Link, Image, useRouter)
+- **apps/root** — portfolio + blog (Next.js 16, App Router); **apps/root-e2e** — Playwright E2E; **libs/shared/ui** — shared component library (`@danieljoffe/shared-ui`)
+- Stack: Nx + pnpm workspaces, Tailwind CSS 4, GSAP, MiniSearch (client-side blog search), react-hook-form + yup, Sentry. Tests: Jest + RTL, Playwright, jest-axe, Vitest (shared-ui)
+- Path alias: `@/` → `apps/root/src/`
+- All content access goes through `data/contentRegistry.ts` — the single data access layer
