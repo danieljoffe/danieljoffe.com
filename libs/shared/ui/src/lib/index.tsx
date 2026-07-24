@@ -1,4 +1,5 @@
 // Components
+export { Accordion } from './Accordion';
 export { Alert } from './Alert';
 export { AspectRatio } from './AspectRatio';
 export { Avatar } from './Avatar';
@@ -34,6 +35,7 @@ export { Kbd } from './Kbd';
 export { Loading } from './Loading';
 export { Modal } from './Modal';
 export { Pagination } from './Pagination';
+export { Popover } from './Popover';
 export { ProgressBar } from './ProgressBar';
 export { Section } from './Section';
 export { SectionLabel } from './SectionLabel';
@@ -59,9 +61,10 @@ export { cn, validateProps, ErrorBoundary, ModalErrorBoundary } from './utils';
 
 // Types
 export type { ComponentSize } from './types';
+export type { AccordionItem, AccordionProps } from './Accordion';
 export type { AlertProps } from './Alert';
 export type { AspectRatioProps } from './AspectRatio';
-export type { AvatarProps } from './Avatar';
+export type { AvatarProps, AvatarShape } from './Avatar';
 export type { BadgeProps, BadgeVariant } from './Badge';
 export type { BreadcrumbItem, BreadcrumbProps } from './Breadcrumb';
 export type {
@@ -87,8 +90,9 @@ export type { GridBgProps } from './GridBg';
 export type { InputProps } from './Input';
 export type { KbdProps } from './Kbd';
 export type { LoadingProps } from './Loading';
-export type { ModalProps } from './Modal';
+export type { ModalPlacement, ModalProps } from './Modal';
 export type { PaginationProps } from './Pagination';
+export type { PopoverProps } from './Popover';
 export type { ProgressBarProps } from './ProgressBar';
 export type { SectionProps } from './Section';
 export type { SectionLabelProps } from './SectionLabel';
