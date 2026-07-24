@@ -7,7 +7,7 @@
     ":timezone(America/Los_Angeles)",
     "schedule:weekdays"
   ],
-  "baseBranches": ["develop"],
+  "baseBranchPatterns": ["develop"],
   "labels": ["dependencies"],
   "rangeStrategy": "bump",
   "prConcurrentLimit": 10,
@@ -22,70 +22,75 @@
   "packageRules": [
     {
       "description": "Group Nx packages (must stay in lockstep)",
-      "matchPackagePatterns": ["^@nx/", "^nx$"],
+      "matchPackageNames": ["/^@nx//", "/^nx$/"],
       "groupName": "Nx",
       "automerge": false
     },
     {
       "description": "Group Storybook packages",
-      "matchPackagePatterns": ["^@storybook/", "^storybook$"],
+      "matchPackageNames": ["/^@storybook//", "/^storybook$/"],
       "groupName": "Storybook",
       "automerge": false
     },
     {
       "description": "Group Sentry packages",
-      "matchPackagePatterns": ["^@sentry/"],
+      "matchPackageNames": ["/^@sentry//"],
       "groupName": "Sentry"
     },
     {
       "description": "Group testing packages",
-      "matchPackagePatterns": [
-        "^@testing-library/",
-        "^jest",
-        "^@types/jest",
-        "^jest-axe",
-        "^ts-jest",
-        "^@playwright/",
-        "^playwright$"
+      "matchPackageNames": [
+        "/^@testing-library//",
+        "/^jest/",
+        "/^@types/jest/",
+        "/^jest-axe/",
+        "/^ts-jest/",
+        "/^@playwright//",
+        "/^playwright$/"
       ],
       "groupName": "Testing"
     },
     {
       "description": "Group TypeScript/ESLint toolchain",
-      "matchPackagePatterns": [
-        "^typescript",
-        "^@typescript-eslint/",
-        "^eslint",
-        "^prettier"
+      "matchPackageNames": [
+        "/^typescript/",
+        "/^@typescript-eslint//",
+        "/^eslint/",
+        "/^prettier/"
       ],
       "groupName": "Lint and TypeScript",
       "automerge": false
     },
     {
       "description": "Group SWC packages",
-      "matchPackagePatterns": ["^@swc/"],
+      "matchPackageNames": ["/^@swc//"],
       "groupName": "SWC"
     },
     {
       "description": "Group Tailwind packages",
-      "matchPackagePatterns": ["^tailwindcss", "^@tailwindcss/"],
+      "matchPackageNames": ["/^tailwindcss/", "/^@tailwindcss//"],
       "groupName": "Tailwind CSS"
     },
     {
       "description": "Group Next.js packages",
-      "matchPackagePatterns": ["^next$", "^@next/", "^eslint-config-next"],
+      "matchPackageNames": ["/^next$/", "/^@next//", "/^eslint-config-next/"],
       "groupName": "Next.js",
       "automerge": false
     },
     {
       "description": "Group React packages",
-      "matchPackagePatterns": ["^react$", "^react-dom$", "^@types/react"],
+      "matchPackageNames": ["/^react$/", "/^react-dom$/", "/^@types/react/"],
       "groupName": "React",
       "automerge": false
     },
     {
       "description": "Group Vite/Vitest packages",
-      "matchPackagePatterns": ["^vitest", "^@vitest/", "^vite$", "^@vitejs/"],
+      "matchPackageNames": [
+        "/^vitest/",
+        "/^@vitest//",
+        "/^vite$/",
+        "/^@vitejs//"
+      ],
       "groupName": "Vite and Vitest"
     },
     {
