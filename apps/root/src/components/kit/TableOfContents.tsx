@@ -47,24 +47,48 @@ function useHeadings(contentSelector: string) {
 
     if (items.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      entries => {
-        const visible = entries.find(e => e.isIntersecting);
-        if (visible?.target.id) {
-          setActiveId(visible.target.id);
+    // Scroll-position-derived spy instead of an IntersectionObserver: the
+    // active section is the last heading above the reading line, falling
+    // back to the first heading when the viewport is above all sections.
+    // The observer version only updated when a heading crossed its band, so
+    // it highlighted nothing on load and stayed stuck on the last section
+    // after scrolling back to the top.
+    //
+    // Must clear the scroll-margin headings land at after a TOC click
+    // (scroll-mt puts them ~166px down), or the clicked section would
+    // never register as active.
+    const READING_LINE_PX = 180;
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      let current = items[0]?.id ?? '';
+      for (const { id } of items) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= READING_LINE_PX) {
+          current = id;
         }
-      },
-      { rootMargin: '-80px 0px -60% 0px' }
-    );
+      }
+      setActiveId(current);
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
 
-    items.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
+    queueMicrotask(() => {
+      setHeadings(items);
+      update();
     });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
 
-    queueMicrotask(() => setHeadings(items));
-
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, [contentSelector]);
 
   return { headings, activeId };
