@@ -1,13 +1,14 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { TableOfContents } from '../TableOfContents';
 
 expect.extend(toHaveNoViolations);
-
-// Mock useFocusTrap
-jest.mock('@/hooks/useFocusTrap', () => ({
-  useFocusTrap: () => ({ current: null }),
-}));
 
 // Mock IntersectionObserver
 const mockObserve = jest.fn();
@@ -153,6 +154,39 @@ describe('TableOfContents', () => {
     expect(
       screen.getByRole('button', { name: /open table of contents/i })
     ).toBeInTheDocument();
+    // The sheet slides out, then unmounts
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { hidden: true })).toBeNull()
+    );
+  });
+
+  it('closes mobile sheet on backdrop click', async () => {
+    const { container: wrapper } = render(<TableOfContents mobile />);
+    await act(() => Promise.resolve());
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /open table of contents/i })
+    );
+    const backdrop = wrapper.querySelector('.backdrop-blur-sm');
+    expect(backdrop).not.toBeNull();
+    fireEvent.click(backdrop!);
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { hidden: true })).toBeNull()
+    );
+  });
+
+  it('open mobile sheet has no accessibility violations', async () => {
+    const { container: wrapper } = render(<TableOfContents mobile />);
+    await act(() => Promise.resolve());
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /open table of contents/i })
+    );
+    expect(
+      screen.getByRole('dialog', { name: /table of contents/i })
+    ).toBeInTheDocument();
+    expect(await axe(wrapper)).toHaveNoViolations();
   });
 
   it('renders both desktop and mobile when no prop specified', async () => {

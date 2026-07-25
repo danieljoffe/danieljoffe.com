@@ -336,7 +336,38 @@ import { Button } from './Button';
       </td>
       <td>
         <code>'sheet'</code> anchors the dialog to the bottom edge as a mobile
-        bottom sheet (rounded top, slide-up entrance).
+        bottom sheet: it slides up from the bottom on open and slides back out
+        on close (centered dialogs close instantly).
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>showCloseButton</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>
+        Set to <code>false</code> when the content supplies its own close
+        affordance — always keep <em>some</em> visible way out besides Escape.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>aria-label</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Accessible name when there is no <code>title</code> (falls back to
+        "Dialog").
       </td>
     </tr>
     <tr>
@@ -364,6 +395,22 @@ import { Button } from './Button';
         <code>undefined</code>
       </td>
       <td>Additional classes on the dialog container.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>bodyClassName</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Merged onto the scrollable body — override padding or add safe-area
+        insets (e.g.{' '}
+        <code>pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]</code>).
+      </td>
     </tr>
   </tbody>
 </table>
@@ -411,8 +458,10 @@ import { Button } from './Button';
 <p className='doc-p'>
   Use <code>placement="sheet"</code> for mobile-first flows (filters, quick
   pickers) where actions should sit within thumb reach. The sheet keeps Modal's
-  focus trap, scroll lock, Escape handling, and backdrop; only the positioning
-  and entrance change.
+  focus trap, scroll lock, Escape handling, and backdrop; it slides up on open
+  and slides back out on close. For a full-bleed sheet, override the width cap
+  with <code>className="max-w-none"</code>; use <code>bodyClassName</code> for
+  safe-area padding on devices with a home indicator.
 </p>
 
 ```jsx

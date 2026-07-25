@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { List } from 'lucide-react';
+import { Modal } from '@danieljoffe/shared-ui/Modal';
 import { cn } from '@/lib/cn';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface TocItem {
   id: string;
@@ -164,47 +164,21 @@ function MobileToc({
   activeId: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const sheetRef = useFocusTrap(isOpen) as React.RefObject<HTMLDivElement>;
-  const fabRef = useRef<HTMLButtonElement>(null);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-        fabRef.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen]);
-
-  // Lock body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
 
   const handleSelect = useCallback((id: string) => {
     setIsOpen(false);
-    // Small delay so the sheet closes before scrolling
+    // Small delay so the sheet starts closing before scrolling
     requestAnimationFrame(() => scrollToHeading(id));
   }, []);
 
   return (
     <div className='lg:hidden'>
-      {/* FAB */}
+      {/* FAB — while the sheet is open it sits under the Modal backdrop, so
+          clicking its spot dismisses via the backdrop; Modal returns focus
+          here on close. */}
       <button
-        ref={fabRef}
         type='button'
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => setIsOpen(true)}
         aria-label={
           isOpen ? 'Close table of contents' : 'Open table of contents'
         }
@@ -214,25 +188,13 @@ function MobileToc({
         <List className='size-4' aria-hidden='true' />
       </button>
 
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          className='fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] transition-opacity'
-          onClick={() => setIsOpen(false)}
-          aria-hidden='true'
-        />
-      )}
-
-      {/* Bottom sheet */}
-      <div
-        ref={sheetRef}
-        role='dialog'
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        placement='sheet'
         aria-label='Table of contents'
-        aria-modal={isOpen}
-        className={cn(
-          'fixed bottom-0 left-0 right-0 z-51 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
-          isOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
-        )}
+        className='max-w-none rounded-t-2xl border-t border-border max-h-[60vh]'
+        bodyClassName='px-6 py-5'
       >
         <span className='text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-3 block'>
           On this page
@@ -242,7 +204,7 @@ function MobileToc({
           activeId={activeId}
           onSelect={handleSelect}
         />
-      </div>
+      </Modal>
     </div>
   );
 }
