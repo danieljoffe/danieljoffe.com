@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Modal } from './Modal';
 
@@ -93,10 +93,10 @@ describe('Modal', () => {
       expect(dialog).not.toHaveClass('rounded-lg');
     });
 
-    it('animates the sheet with slide-up, disabled under reduced motion', () => {
+    it('animates the sheet in with sheet-in, disabled under reduced motion', () => {
       renderModal({ placement: 'sheet' });
       const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveClass('animate-slide-up');
+      expect(dialog).toHaveClass('animate-sheet-in');
       expect(dialog).toHaveClass('motion-reduce:animate-none');
     });
 
@@ -106,6 +106,75 @@ describe('Modal', () => {
         title: 'Sheet',
       });
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('sheet exit animation', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    const sheet = (isOpen: boolean) => (
+      <Modal isOpen={isOpen} onClose={() => {}} placement='sheet'>
+        <button>OK</button>
+      </Modal>
+    );
+
+    it('keeps the sheet mounted and inert while it slides out, then unmounts', () => {
+      const { rerender } = render(sheet(true));
+      rerender(sheet(false));
+
+      const dialog = screen.getByRole('dialog', { hidden: true });
+      expect(dialog).toHaveClass('animate-sheet-out');
+      expect(dialog).toHaveAttribute('inert');
+      // Dismissal is not interactive during the exit
+      expect(dialog.parentElement).toHaveClass('pointer-events-none');
+
+      act(() => {
+        jest.advanceTimersByTime(250);
+      });
+      expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
+    });
+
+    it('removes the backdrop at close-start, before the sheet finishes exiting', () => {
+      const { rerender, container } = render(sheet(true));
+      expect(container.querySelector('.backdrop-blur-sm')).toBeInTheDocument();
+      rerender(sheet(false));
+      expect(container.querySelector('.backdrop-blur-sm')).toBeNull();
+      expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument();
+    });
+
+    it('reopening during the exit renders the sheet as open again', () => {
+      const { rerender } = render(sheet(true));
+      rerender(sheet(false));
+      rerender(sheet(true));
+
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveClass('animate-sheet-in');
+      expect(dialog).not.toHaveAttribute('inert');
+      // Outlive the (cleared) exit timer: the sheet must remain open
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    it('closes centered dialogs instantly (no exit phase)', () => {
+      const { rerender } = render(
+        <Modal isOpen={true} onClose={() => {}}>
+          <button>OK</button>
+        </Modal>
+      );
+      rerender(
+        <Modal isOpen={false} onClose={() => {}}>
+          <button>OK</button>
+        </Modal>
+      );
+      expect(screen.queryByRole('dialog', { hidden: true })).toBeNull();
     });
   });
 
@@ -139,6 +208,27 @@ describe('Modal', () => {
     expect(
       screen.getByRole('button', { name: 'Close dialog' })
     ).toBeInTheDocument();
+  });
+
+  it('hides the close button with showCloseButton={false} (no title)', () => {
+    renderModal({ showCloseButton: false, 'aria-label': 'Sheet' });
+    expect(
+      screen.queryByRole('button', { name: 'Close dialog' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides the close button with showCloseButton={false} (with title)', () => {
+    renderModal({ showCloseButton: false, title: 'Sheet' });
+    expect(screen.getByText('Sheet')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Close dialog' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('merges bodyClassName onto the scrollable body', () => {
+    renderModal({ bodyClassName: 'px-6 py-5' });
+    const body = screen.getByText('OK').parentElement;
+    expect(body).toHaveClass('px-6', 'py-5', 'overflow-y-auto');
   });
 
   describe('body scroll cleanup', () => {
@@ -191,6 +281,19 @@ describe('Modal', () => {
       renderModal();
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-label', 'Dialog');
+    });
+
+    it('uses the aria-label prop over the "Dialog" fallback when no title', () => {
+      renderModal({ 'aria-label': 'Table of contents' });
+      expect(
+        screen.getByRole('dialog', { name: 'Table of contents' })
+      ).toBeInTheDocument();
+    });
+
+    it('title wins over the aria-label prop', () => {
+      renderModal({ title: 'My Dialog', 'aria-label': 'Ignored' });
+      const dialog = screen.getByRole('dialog', { name: 'My Dialog' });
+      expect(dialog).not.toHaveAttribute('aria-label');
     });
 
     it('close button has accessible name "Close dialog"', () => {

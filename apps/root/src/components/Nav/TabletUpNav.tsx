@@ -11,7 +11,11 @@ import {
   FileText,
 } from 'lucide-react';
 import Image from 'next/image';
-import { Dropdown, type DropdownItem } from '@danieljoffe/shared-ui/Dropdown';
+import {
+  Dropdown,
+  type DropdownItem,
+  type DropdownTriggerProps,
+} from '@danieljoffe/shared-ui/Dropdown';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
 import {
@@ -87,10 +91,11 @@ export default function TabletUpNav({ pathname }: { pathname: string }) {
         ))}
 
         <Dropdown
-          trigger={
-            <span
+          trigger={(props: DropdownTriggerProps) => (
+            <button
+              {...props}
               className={cn(
-                'flex items-center gap-0.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-0.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
                 isMoreActive
                   ? 'text-text-primary bg-surface-tertiary'
                   : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
@@ -98,8 +103,8 @@ export default function TabletUpNav({ pathname }: { pathname: string }) {
             >
               More
               <ChevronDown className='h-3.5 w-3.5' aria-hidden='true' />
-            </span>
-          }
+            </button>
+          )}
           items={moreItems}
           align='left'
         />

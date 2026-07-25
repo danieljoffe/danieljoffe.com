@@ -137,15 +137,13 @@ test.describe('mobile navigation', () => {
     const sheet = page.locator('[role="dialog"][aria-label="More navigation"]');
     await expect(sheet).toBeVisible();
 
-    // Close via the backdrop overlay — use dispatchEvent because the fixed
-    // bottom nav bar (z-50) sits above the overlay (z-40) and intercepts
-    // normal Playwright clicks.
-    const overlay = page.getByTestId('sheet-overlay');
-    await overlay.dispatchEvent('click');
-    // The sheet slides off-screen via translate-y-full and sets aria-hidden.
-    // Playwright's toBeHidden() requires display:none or visibility:hidden,
-    // so assert the semantic close state instead.
-    await expect(sheet).toHaveAttribute('aria-hidden', 'true');
+    // Close via the Modal backdrop — it covers the whole viewport (bottom
+    // bar included), so a real click lands on it.
+    const backdrop = page.locator('div[aria-hidden="true"].backdrop-blur-sm');
+    await backdrop.click();
+    // The sheet slides out and unmounts; toHaveCount(0) auto-waits through
+    // the exit animation.
+    await expect(sheet).toHaveCount(0);
   });
 
   test('navigates from More sheet', async ({ page }) => {

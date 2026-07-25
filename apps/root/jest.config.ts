@@ -43,11 +43,13 @@ const config = {
   forceExit: true,
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   moduleNameMapper: {
-    '^@danieljoffe\\.com/shared-ui$':
-      '<rootDir>/../../libs/shared/ui/src/index.ts',
-    '^@danieljoffe\\.com/shared-ui/styles/(.*)$':
+    // Map the published scope to library SOURCE, not the built dist a stale
+    // node_modules symlink would serve — app tests must exercise the same
+    // shared-ui code the repo ships from.
+    '^@danieljoffe/shared-ui$': '<rootDir>/../../libs/shared/ui/src/index.ts',
+    '^@danieljoffe/shared-ui/styles/(.*)$':
       '<rootDir>/../../libs/shared/ui/src/lib/styles/$1.ts',
-    '^@danieljoffe\\.com/shared-ui/(.*)$':
+    '^@danieljoffe/shared-ui/(.*)$':
       '<rootDir>/../../libs/shared/ui/src/lib/$1.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
   },

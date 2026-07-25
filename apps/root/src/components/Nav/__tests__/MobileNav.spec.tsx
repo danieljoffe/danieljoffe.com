@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import MobileNav from '../MobileNav';
 
@@ -7,10 +7,6 @@ expect.extend(toHaveNoViolations);
 const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
-}));
-
-jest.mock('@/hooks/useFocusTrap', () => ({
-  useFocusTrap: () => ({ current: null }),
 }));
 
 // analytics is imported by MobileNav; mocks prevent the real module from loading.
@@ -106,16 +102,45 @@ describe('MobileNav', () => {
     expect(sharedUi).toHaveAttribute('href', 'https://ui.danieljoffe.com');
   });
 
-  it('closes sheet on Escape key', () => {
+  it('closes sheet on Escape key', async () => {
+    const { analytics } = jest.requireMock('@/lib/analytics');
     render(<MobileNav pathname='/' />);
 
     fireEvent.click(screen.getByRole('button', { name: /open more menu/i }));
+    expect(analytics.mobileMenuToggle).toHaveBeenCalledWith('open');
 
     fireEvent.keyDown(document, { key: 'Escape' });
 
     expect(
       screen.getByRole('button', { name: /open more menu/i })
     ).toBeInTheDocument();
+    expect(analytics.mobileMenuToggle).toHaveBeenCalledWith('close');
+    // The sheet slides out, then unmounts
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { hidden: true })).toBeNull()
+    );
+  });
+
+  it('closes sheet on backdrop click', async () => {
+    const { container } = render(<MobileNav pathname='/' />);
+
+    fireEvent.click(screen.getByRole('button', { name: /open more menu/i }));
+    const backdrop = container.querySelector('.backdrop-blur-sm');
+    expect(backdrop).not.toBeNull();
+    fireEvent.click(backdrop!);
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { hidden: true })).toBeNull()
+    );
+  });
+
+  it('open sheet has no accessibility violations', async () => {
+    const { container } = render(<MobileNav pathname='/' />);
+    fireEvent.click(screen.getByRole('button', { name: /open more menu/i }));
+    expect(
+      screen.getByRole('dialog', { name: /more navigation/i })
+    ).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it('has no accessibility violations', async () => {

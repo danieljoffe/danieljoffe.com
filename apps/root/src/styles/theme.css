@@ -26,6 +26,8 @@
   --animate-slide-up: slide-up 0.2s ease-out;
   --animate-slide-down: slide-down 0.15s ease-out;
   --animate-slide-out-down: slide-out-down 0.15s ease-in forwards;
+  --animate-sheet-in: sheet-in 0.3s ease-out;
+  --animate-sheet-out: sheet-out 0.25s ease-in forwards;
   --animate-scale-in: scale-in 0.15s ease-out;
 
   /* Colors - Brand (blue-indigo, oklch hue 250) */
@@ -521,5 +523,25 @@ code[data-line-numbers-max-digits='3'] > [data-line]::before {
   to {
     opacity: 1;
     transform: rotate(0) scale(1);
+  }
+}
+
+/* Full-height bottom-sheet travel (Modal placement='sheet') — unlike the
+   subtle 8px slide-up/down pop used by anchored popups. */
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
   }
 }

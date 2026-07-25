@@ -51,6 +51,23 @@ const meta = {
         defaultValue: { summary: 'center' },
       },
     },
+    showCloseButton: {
+      description:
+        'Hide the built-in dismiss X when the content supplies its own close affordance',
+      control: 'boolean',
+      table: {
+        defaultValue: { summary: 'true' },
+      },
+    },
+    bodyClassName: {
+      description:
+        'Merged onto the scrollable body — override padding, add safe-area insets, etc.',
+      control: 'text',
+    },
+    'aria-label': {
+      description: 'Accessible name for the dialog when there is no title',
+      control: 'text',
+    },
     onClose: {
       description:
         'Callback fired when modal is closed (via backdrop click, Escape key, or close button)',
@@ -185,8 +202,9 @@ export const ExtraLarge: Story = {
 
 /**
  * `placement='sheet'` anchors the dialog to the bottom edge — a mobile
- * bottom-sheet with `rounded-t` corners and a slide-up entrance, while keeping
- * Modal's focus trap, scroll lock, and backdrop behavior.
+ * bottom-sheet with `rounded-t` corners that slides up from the bottom on
+ * open and slides back out on close, while keeping Modal's focus trap,
+ * scroll lock, and backdrop behavior.
  */
 export const BottomSheet: Story = {
   args: {
@@ -197,6 +215,62 @@ export const BottomSheet: Story = {
       'A bottom sheet keeps thumb-reach actions at the bottom of the screen on mobile.',
     footer: <Button name='apply-filters'>Apply filters</Button>,
     onClose: fn(),
+  },
+};
+
+/**
+ * Closing a sheet plays a slide-out exit before it unmounts (centered
+ * dialogs close instantly). While exiting, the sheet is inert and the
+ * backdrop is already gone.
+ */
+export const SheetExitAnimation: Story = {
+  args: {
+    isOpen: false,
+    onClose: fn(),
+    children: null,
+  },
+  render: function SheetExitDemo() {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <>
+        <Button onClick={() => setIsOpen(true)}>Open sheet</Button>
+        <Modal
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          placement='sheet'
+          title='Slides out on close'
+        >
+          Close this sheet (X, Escape, or backdrop) and it slides back down
+          before unmounting.
+        </Modal>
+      </>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+
+    await step('Open the sheet', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Open sheet' }));
+      await waitFor(() =>
+        expect(canvas.getByRole('dialog')).toBeInTheDocument()
+      );
+    });
+
+    await step(
+      'Close: exit phase keeps it mounted, then it unmounts',
+      async () => {
+        await userEvent.click(
+          canvas.getByRole('button', { name: 'Close dialog' })
+        );
+        // Still present mid-exit (inert), gone once the slide-out finishes
+        await expect(
+          canvas.getByRole('dialog', { hidden: true })
+        ).toBeInTheDocument();
+        await waitFor(() =>
+          expect(canvas.queryByRole('dialog', { hidden: true })).toBeNull()
+        );
+      }
+    );
   },
 };
 
