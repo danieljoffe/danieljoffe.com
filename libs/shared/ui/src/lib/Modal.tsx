@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type ReactNode,
   type Ref,
 } from 'react';
@@ -30,6 +31,12 @@ export interface ModalProps {
   /** `sheet` anchors the dialog to the bottom edge as a mobile bottom sheet. */
   placement?: ModalPlacement;
   className?: string | undefined;
+  /** Merged onto the scrollable body — override its padding, add safe-area insets, etc. */
+  bodyClassName?: string | undefined;
+  /** Accessible name for the dialog when there is no `title`. */
+  'aria-label'?: string | undefined;
+  /** Hide the built-in dismiss X when the content supplies its own close affordance. */
+  showCloseButton?: boolean;
   closeOnBackdropClick?: boolean;
 }
 
@@ -51,9 +58,11 @@ const placementWrapperStyles: Record<ModalPlacement, string> = {
 
 const placementPanelStyles: Record<ModalPlacement, string> = {
   center: 'max-h-[calc(100dvh-2rem)] rounded-lg',
-  sheet:
-    'max-h-[85dvh] rounded-t-lg animate-slide-up motion-reduce:animate-none',
+  sheet: 'max-h-[85dvh] rounded-t-lg',
 };
+
+/** Matches the `sheet-out` animation duration in the consuming theme. */
+const SHEET_EXIT_MS = 250;
 
 export function Modal({
   isOpen,
@@ -65,11 +74,33 @@ export function Modal({
   variant = 'default',
   placement = 'center',
   className,
+  bodyClassName,
+  'aria-label': ariaLabel,
+  showCloseButton = true,
   closeOnBackdropClick = true,
   ref,
 }: ModalProps) {
   const triggerRef = useRef<Element | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Sheets slide out before unmounting (same dismissing pattern as Toast);
+  // centered dialogs have no entrance animation, so they close instantly.
+  const [exiting, setExiting] = useState(false);
+  const prevOpenRef = useRef(isOpen);
+  useEffect(() => {
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = isOpen;
+    if (isOpen) {
+      setExiting(false);
+      return undefined;
+    }
+    if (wasOpen && placement === 'sheet') {
+      setExiting(true);
+      const timer = setTimeout(() => setExiting(false), SHEET_EXIT_MS);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [isOpen, placement]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -137,20 +168,26 @@ export function Modal({
 
   const titleId = useId();
 
-  if (!isOpen) return null;
+  const isExiting = !isOpen && exiting;
+  if (!isOpen && !exiting) return null;
 
   return (
     <div
       className={cn(
         'fixed inset-0 z-50 flex justify-center',
-        placementWrapperStyles[placement]
+        placementWrapperStyles[placement],
+        isExiting && 'pointer-events-none'
       )}
     >
-      <div
-        className='absolute inset-0 bg-surface/80 backdrop-blur-sm'
-        onClick={closeOnBackdropClick ? handleClose : undefined}
-        aria-hidden='true'
-      />
+      {/* The backdrop pops away at close-start while the sheet slides out —
+          keeping dismissal feedback immediate. */}
+      {isOpen && (
+        <div
+          className='absolute inset-0 bg-surface/80 backdrop-blur-sm'
+          onClick={closeOnBackdropClick ? handleClose : undefined}
+          aria-hidden='true'
+        />
+      )}
       <div
         ref={node => {
           (dialogRef as React.MutableRefObject<HTMLDivElement | null>).current =
@@ -162,11 +199,17 @@ export function Modal({
         }}
         role='dialog'
         aria-modal='true'
+        inert={isExiting || undefined}
         aria-labelledby={title ? titleId : undefined}
-        aria-label={title ? undefined : 'Dialog'}
+        aria-label={title ? undefined : (ariaLabel ?? 'Dialog')}
         className={cn(
           'relative flex w-full flex-col overflow-hidden shadow-2xl',
           placementPanelStyles[placement],
+          placement === 'sheet' &&
+            cn(
+              'motion-reduce:animate-none',
+              isExiting ? 'animate-sheet-out' : 'animate-sheet-in'
+            ),
           sizeStyles[size],
           variantStyles[variant],
           className
@@ -177,18 +220,20 @@ export function Modal({
             <Heading variant='component' id={titleId}>
               {title}
             </Heading>
-            <Button
-              variant='bare'
-              size='sm'
-              onClick={handleClose}
-              aria-label='Close dialog'
-              className={DISMISS_BUTTON}
-            >
-              <X className='size-5' aria-hidden='true' />
-            </Button>
+            {showCloseButton && (
+              <Button
+                variant='bare'
+                size='sm'
+                onClick={handleClose}
+                aria-label='Close dialog'
+                className={DISMISS_BUTTON}
+              >
+                <X className='size-5' aria-hidden='true' />
+              </Button>
+            )}
           </div>
         )}
-        {!title && (
+        {!title && showCloseButton && (
           <Button
             variant='bare'
             size='sm'
@@ -199,10 +244,17 @@ export function Modal({
             <X className='size-5' aria-hidden='true' />
           </Button>
         )}
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focusable scroll region so keyboard users can scroll overflowing content (axe scrollable-region-focusable / WCAG 2.1.1) */}
-        <div className='min-h-0 flex-1 overflow-y-auto p-4 sm:p-6' tabIndex={0}>
+        {/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- focusable scroll region so keyboard users can scroll overflowing content (axe scrollable-region-focusable / WCAG 2.1.1) */}
+        <div
+          className={cn(
+            'min-h-0 flex-1 overflow-y-auto p-4 sm:p-6',
+            bodyClassName
+          )}
+          tabIndex={0}
+        >
           {children}
         </div>
+        {/* eslint-enable jsx-a11y/no-noninteractive-tabindex */}
         {footer && (
           <div className='flex shrink-0 items-center justify-end gap-3 p-4 sm:p-6 border-t border-border'>
             {footer}

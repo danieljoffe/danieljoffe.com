@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,6 +18,7 @@ import {
   ExternalLink,
   X,
 } from 'lucide-react';
+import { Modal } from '@danieljoffe/shared-ui/Modal';
 import Button from '@/components/Button';
 import { cn } from '@/lib/cn';
 import { analytics } from '@/lib/analytics';
@@ -27,7 +28,6 @@ import {
   MORE_NAV_LINKS,
   EXTERNAL_NAV_LINKS,
 } from '@/utils/constants';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import DarkModeToggle from './DarkModeToggle';
 
 const primaryIcons: Record<string, typeof Briefcase> = {
@@ -56,7 +56,6 @@ export default function MobileNav({ pathname }: { pathname: string }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const router = useRouter();
   const moreButtonRef = useRef<HTMLButtonElement>(null);
-  const sheetRef = useFocusTrap(sheetOpen) as React.RefObject<HTMLDivElement>;
 
   const openSheet = useCallback(() => {
     analytics.mobileMenuToggle('open');
@@ -68,28 +67,6 @@ export default function MobileNav({ pathname }: { pathname: string }) {
     setSheetOpen(false);
     moreButtonRef.current?.focus();
   }, []);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!sheetOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeSheet();
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [sheetOpen, closeSheet]);
-
-  // Lock body scroll when sheet is open
-  useEffect(() => {
-    if (sheetOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [sheetOpen]);
 
   const handleSheetLink = useCallback(
     (label: string, href: string) => {
@@ -189,103 +166,89 @@ export default function MobileNav({ pathname }: { pathname: string }) {
         </nav>
       </div>
 
-      {/* Backdrop */}
-      {sheetOpen && (
-        <div
-          data-testid='sheet-overlay'
-          className='md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity'
-          onClick={closeSheet}
-          aria-hidden='true'
-        />
-      )}
-
-      {/* Bottom sheet — slides up like TableOfContents */}
-      <div
-        ref={sheetRef}
-        role='dialog'
-        aria-label='More navigation'
-        aria-modal='true'
-        aria-hidden={!sheetOpen}
-        inert={!sheetOpen ? true : undefined}
-        className={cn(
-          'md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out max-h-[60vh] overflow-y-auto px-6 py-5',
-          sheetOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
-        )}
-        style={{
-          paddingBottom: sheetOpen
-            ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 1.25rem)'
-            : undefined,
-        }}
-      >
-        <div className='flex items-center justify-between mb-3'>
-          <span className='text-xs font-semibold text-text-tertiary uppercase tracking-wider'>
-            More
-          </span>
-          <div className='flex items-center gap-1'>
-            <DarkModeToggle />
-            <Button
-              name='close-more-menu'
-              variant='bare'
-              size='sm'
-              iconOnly
-              onClick={closeSheet}
-              aria-label='Close more menu'
-              className='rounded-lg text-text-tertiary hover:text-text-primary'
-            >
-              <X className='h-4 w-4' />
-            </Button>
+      {/* Bottom sheet — the md:hidden wrapper scopes the (non-portaled)
+          Modal to mobile, backdrop included, even if the viewport grows
+          while it is open. */}
+      <div className='md:hidden'>
+        <Modal
+          isOpen={sheetOpen}
+          onClose={closeSheet}
+          placement='sheet'
+          aria-label='More navigation'
+          showCloseButton={false}
+          className='max-w-none rounded-t-2xl border-t border-border max-h-[60vh]'
+          bodyClassName='px-6 py-5 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+1.25rem)]'
+        >
+          <div className='flex items-center justify-between mb-3'>
+            <span className='text-xs font-semibold text-text-tertiary uppercase tracking-wider'>
+              More
+            </span>
+            <div className='flex items-center gap-1'>
+              <DarkModeToggle />
+              <Button
+                name='close-more-menu'
+                variant='bare'
+                size='sm'
+                iconOnly
+                onClick={closeSheet}
+                aria-label='Close more menu'
+                className='rounded-lg text-text-tertiary hover:text-text-primary'
+              >
+                <X className='h-4 w-4' />
+              </Button>
+            </div>
           </div>
-        </div>
-        <nav aria-label='More links'>
-          <ul className='space-y-1'>
-            {moreSheetLinks.map(link => {
-              const Icon = link.icon;
-              const active = pathname === link.href;
-              return (
-                <li key={link.href}>
-                  <Button
-                    name={`more-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
-                    variant='bare'
-                    onClick={() => handleSheetLink(link.label, link.href)}
-                    className={cn(
-                      'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer',
-                      active
-                        ? 'text-brand-500 bg-surface-tertiary'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
-                    )}
-                  >
-                    <Icon className='h-4 w-4' aria-hidden='true' />
-                    {link.label}
-                  </Button>
-                </li>
-              );
-            })}
-            {EXTERNAL_NAV_LINKS.map(link => {
-              const Icon = externalIcons[link.label] ?? Blocks;
-              return (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    onClick={() => {
-                      analytics.navClick(link.label);
-                      setSheetOpen(false);
-                    }}
-                    className='w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
-                  >
-                    <Icon className='h-4 w-4' aria-hidden='true' />
-                    <span className='flex-1'>{link.label}</span>
-                    <ExternalLink
-                      className='h-3.5 w-3.5 shrink-0 opacity-60'
-                      aria-hidden='true'
-                    />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+          <nav aria-label='More links'>
+            <ul className='space-y-1'>
+              {moreSheetLinks.map(link => {
+                const Icon = link.icon;
+                const active = pathname === link.href;
+                return (
+                  <li key={link.href}>
+                    <Button
+                      name={`more-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                      variant='bare'
+                      onClick={() => handleSheetLink(link.label, link.href)}
+                      className={cn(
+                        'w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg hover:scale-100 text-sm font-medium transition-colors cursor-pointer',
+                        active
+                          ? 'text-brand-500 bg-surface-tertiary'
+                          : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+                      )}
+                    >
+                      <Icon className='h-4 w-4' aria-hidden='true' />
+                      {link.label}
+                    </Button>
+                  </li>
+                );
+              })}
+              {EXTERNAL_NAV_LINKS.map(link => {
+                const Icon = externalIcons[link.label] ?? Blocks;
+                return (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      onClick={() => {
+                        analytics.navClick(link.label);
+                        setSheetOpen(false);
+                      }}
+                      className='w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-tertiary'
+                    >
+                      <Icon className='h-4 w-4' aria-hidden='true' />
+                      <span className='flex-1'>{link.label}</span>
+                      <ExternalLink
+                        className='h-3.5 w-3.5 shrink-0 opacity-60'
+                        aria-hidden='true'
+                      />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </Modal>
       </div>
     </>
   );
