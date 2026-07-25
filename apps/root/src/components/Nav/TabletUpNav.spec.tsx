@@ -100,6 +100,42 @@ describe('TabletUpNav', () => {
     ).toBeInTheDocument();
   });
 
+  describe('composed More trigger (shared-ui 0.10 render-prop)', () => {
+    test('renders as a single styled button with menu wiring', () => {
+      const { container } = render(<TabletUpNav pathname='/' />);
+      const trigger = screen.getByRole('button', { name: 'More' });
+      expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+      expect(trigger).toHaveAttribute('type', 'button');
+      // The interactive element itself carries the nav-item styling — no
+      // unstyled wrapper button around a styled span, and no nested buttons.
+      expect(trigger).toHaveClass('rounded-lg');
+      expect(trigger.querySelector('button')).toBeNull();
+      expect(
+        container.querySelectorAll("button[aria-haspopup='menu']")
+      ).toHaveLength(1);
+    });
+
+    test('marks the trigger active when the current page is a More link', () => {
+      render(<TabletUpNav pathname='/blog' />);
+      expect(screen.getByRole('button', { name: 'More' })).toHaveClass(
+        'bg-surface-tertiary'
+      );
+    });
+
+    test('navigates via router when an internal More item is clicked', () => {
+      render(<TabletUpNav pathname='/' />);
+      fireEvent.click(screen.getByRole('button', { name: 'More' }));
+      fireEvent.click(screen.getByRole('menuitem', { name: /Blog/i }));
+      expect(mockPush).toHaveBeenCalledWith('/blog');
+    });
+
+    it('has no accessibility violations with the menu open', async () => {
+      const { container } = render(<TabletUpNav pathname='/' />);
+      fireEvent.click(screen.getByRole('button', { name: 'More' }));
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(<TabletUpNav pathname='/' />);
     expect(await axe(container)).toHaveNoViolations();
