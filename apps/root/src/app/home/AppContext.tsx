@@ -5,14 +5,12 @@ import dynamic from 'next/dynamic';
 import { WithChildren } from '@/types/base';
 import { ThemeProvider } from '@/state/Theme/ThemeProvider';
 import { ToastProvider } from '@/state/Toast/ToastProvider';
-import ModalProvider from '@/state/Modal/ModalProvider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { ScrollToTop } from '@/components/kit';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import { RouteAnnouncer } from '@/components/RouteAnnouncer';
 import { ViewTransitions } from '@/components/ViewTransitions';
 
-const Modal = dynamic(() => import('@/components/Modal'), { ssr: false });
 const ScrollToElement = dynamic(() => import('./ScrollToElement'), {
   ssr: false,
 });
@@ -34,7 +32,6 @@ const composeProviders = (providers: ComponentType<WithChildren>[]) =>
 const Providers = composeProviders([
   ThemeProvider,
   ToastProvider,
-  ModalProvider,
   ViewTransitions,
 ]);
 
@@ -42,7 +39,6 @@ export default function AppContext({ children }: WithChildren) {
   return (
     <Providers>
       <ErrorBoundary>{children}</ErrorBoundary>
-      <Modal />
       <ScrollToTop />
       <RouteAnnouncer />
       <KeyboardShortcuts />

@@ -59,13 +59,6 @@ export const allowedOrigins = [
 // ============================================================================
 // UI & ANIMATION CONSTANTS
 // ============================================================================
-export const ANIMATION_DURATION = {
-  FAST: 150,
-  NORMAL: 300,
-  SLOW: 500,
-  VERY_SLOW: 1000,
-} as const;
-
 export const Z_INDEX = {
   DROPDOWN: 1000,
   STICKY: 1020,
