@@ -30,7 +30,13 @@ test.describe('accessibility tests', () => {
     test(`${name} should not have accessibility violations`, async ({
       page,
     }) => {
+      // Scan the settled page: skip entrance animations (the app honors
+      // prefers-reduced-motion) and wait for hydration, so axe never
+      // measures contrast against mid-fade GSAP states. Under full-suite
+      // load that race intermittently failed color-contrast on the homepage.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await waitForHydration(page);
       await expectNoA11yViolations(page);
     });
   }
