@@ -490,6 +490,19 @@ import { Dropdown } from './Dropdown';
   items, reach for <code>Popover</code> instead.
 </p>
 
+<p className='doc-p'>
+  Whole-menu states (initial load, empty, error) are expressed as a single
+  non-actionable item — e.g.{' '}
+  <code>
+    {'{'} label: 'Loading targets…', loading: true, disabled: true {'}'}
+  </code>{' '}
+  — with <code>content</code> for richer status rows. When items arrive after
+  the menu opened in that state, focus deliberately stays where it is (no focus
+  stealing mid-read); <span className='doc-kbd'>↓</span> /{' '}
+  <span className='doc-kbd'>↑</span> on the trigger then moves focus to the
+  first / last item.
+</p>
+
 ```jsx
 <Dropdown
   trigger={<>Add to target ▾</>}
@@ -537,7 +550,11 @@ import { Dropdown } from './Dropdown';
         <span className='doc-kbd'>↓</span>
       </td>
       <td>Trigger focused</td>
-      <td>Opens menu and focuses first item</td>
+      <td>
+        Opens menu and focuses first item; on an already-open menu, moves focus
+        to the first (<span className='doc-kbd'>↓</span>) or last (
+        <span className='doc-kbd'>↑</span>) item
+      </td>
     </tr>
     <tr>
       <td>

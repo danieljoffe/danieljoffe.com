@@ -53,7 +53,10 @@ export interface DropdownTriggerProps {
   'aria-expanded': boolean;
   'aria-controls': string | undefined;
   onClick: () => void;
-  /** Opens the menu from ArrowDown/ArrowUp on the trigger. */
+  /**
+   * Opens the menu from ArrowDown/ArrowUp on the trigger; on an already-open
+   * menu, moves focus to the first (ArrowDown) or last (ArrowUp) item.
+   */
   onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
@@ -115,7 +118,10 @@ export function Dropdown({
     if (!isOpen) setActiveIndex(-1);
   }, [isOpen]);
 
-  // Focus first actionable item when menu opens
+  // Focus first actionable item when menu opens. Deliberately does NOT fire
+  // when items become actionable later (async pickers that open in a loading
+  // state): stealing focus mid-read could preempt a dismissal — the trigger's
+  // ArrowDown/ArrowUp is the explicit way in once items arrive.
   const prevOpenRef = useRef(false);
   useEffect(() => {
     const firstActionable = actionableItems[0];
@@ -132,6 +138,16 @@ export function Dropdown({
       e.preventDefault();
       if (!isOpen) {
         setOpen(true);
+      } else {
+        // Menu already open with focus still on the trigger — happens when it
+        // opened with no actionable items (async loading) and items arrived
+        // later. Arrowing is the deliberate way in; ArrowUp enters from the
+        // end, per the menu-button pattern.
+        const target =
+          e.key === 'ArrowDown'
+            ? actionableItems[0]
+            : actionableItems[actionableItems.length - 1];
+        if (target != null) focusItem(target);
       }
     }
   };

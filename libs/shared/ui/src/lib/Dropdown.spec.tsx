@@ -513,6 +513,50 @@ describe('Dropdown', () => {
       fireEvent.click(screen.getByText('Menu'));
       expect(await axe(container)).toHaveNoViolations();
     });
+
+    it('does not steal focus when items become actionable after opening', () => {
+      const { rerender } = render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Loading targets…', loading: true, disabled: true }]}
+        />
+      );
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      trigger.focus();
+      fireEvent.click(trigger);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      rerender(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      expect(trigger).toHaveFocus();
+    });
+
+    it('ArrowDown on the open trigger moves focus to the first item once items arrive', () => {
+      const { rerender } = render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Loading targets…', loading: true, disabled: true }]}
+        />
+      );
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      rerender(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+      expect(screen.getAllByRole('menuitem')[0]).toHaveFocus();
+    });
+
+    it('ArrowUp on the open trigger moves focus to the last item once items arrive', () => {
+      const { rerender } = render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Loading targets…', loading: true, disabled: true }]}
+        />
+      );
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      rerender(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.keyDown(trigger, { key: 'ArrowUp' });
+      const menuItems = screen.getAllByRole('menuitem');
+      expect(menuItems[menuItems.length - 1]).toHaveFocus();
+    });
   });
 
   describe('composable trigger', () => {
