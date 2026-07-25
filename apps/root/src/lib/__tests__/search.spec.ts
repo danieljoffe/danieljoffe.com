@@ -1,6 +1,6 @@
 import MiniSearch from 'minisearch';
 import { createSearchEngine, searchWithHighlights } from '../search';
-import type { SearchEntry } from '../searchIndex';
+import { buildSearchIndex, type SearchEntry } from '../searchIndex';
 
 describe('MiniSearch Engine', () => {
   let entries: SearchEntry[];
@@ -98,5 +98,14 @@ describe('MiniSearch Engine', () => {
     expect(results.length).toBeGreaterThan(0);
     expect(results[0]).toHaveProperty('matches');
     expect(results[0]?.id).toBe('blog:react-post');
+  });
+
+  it('finds the Résumé page by the unaccented spelling everyone types', () => {
+    // The tokenizer does no diacritic folding and fuzzy matching cannot
+    // bridge résumé→resume, so the static entry must carry the plain
+    // spelling in a searchable field. Guards the palette "resume" query.
+    const engine = createSearchEngine(buildSearchIndex());
+    const results = engine.search('resume');
+    expect(results.some(r => r.id === 'page:resume')).toBe(true);
   });
 });

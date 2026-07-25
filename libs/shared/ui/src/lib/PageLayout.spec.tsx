@@ -27,6 +27,11 @@ describe('PageLayout', () => {
     );
   });
 
+  it('suppresses the focus ring on the programmatic focus target', () => {
+    render(<PageLayout>Content</PageLayout>);
+    expect(screen.getByRole('main')).toHaveClass('outline-none');
+  });
+
   it('merges custom className with defaults', () => {
     render(<PageLayout className='custom-class'>Content</PageLayout>);
     expect(screen.getByRole('main')).toHaveClass('w-full', 'custom-class');
