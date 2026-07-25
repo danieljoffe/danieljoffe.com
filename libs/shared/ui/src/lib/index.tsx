@@ -82,7 +82,11 @@ export type { HeadingProps, HeadingVariant } from './Heading';
 export type { IconTextProps, IconTextPosition } from './IconText';
 export type { TextProps, TextVariant } from './Text';
 export type { FormFieldErrorProps } from './FormFieldError';
-export type { DropdownItem, DropdownProps } from './Dropdown';
+export type {
+  DropdownItem,
+  DropdownProps,
+  DropdownTriggerProps,
+} from './Dropdown';
 export type { PageContainerProps } from './PageContainer';
 export type { PageLayoutProps } from './PageLayout';
 export type { GridProps, GridItemProps } from './Grid';
@@ -92,7 +96,7 @@ export type { KbdProps } from './Kbd';
 export type { LoadingProps } from './Loading';
 export type { ModalPlacement, ModalProps } from './Modal';
 export type { PaginationProps } from './Pagination';
-export type { PopoverProps } from './Popover';
+export type { PopoverProps, PopoverTriggerProps } from './Popover';
 export type { ProgressBarProps } from './ProgressBar';
 export type { SectionProps } from './Section';
 export type { SectionLabelProps } from './SectionLabel';

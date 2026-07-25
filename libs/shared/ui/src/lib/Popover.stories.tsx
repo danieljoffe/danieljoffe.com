@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from './Button';
 import { Input } from './Input';
-import { Popover } from './Popover';
+import { Popover, type PopoverTriggerProps } from './Popover';
 
 const meta = {
   title: 'Overlay/Popover',
@@ -43,6 +43,48 @@ export const Default: Story = {
         <Input label='Radius (km)' size='sm' placeholder='25' />
       </div>
     ),
+  },
+};
+
+/**
+ * Pass a render function as `trigger` to supply your own trigger element —
+ * here the design-system Button. Spread every injected prop onto the element
+ * you return; the Popover keeps owning open state, dismiss, focus return,
+ * and aria wiring.
+ */
+export const ComposedTrigger: Story = {
+  args: {
+    trigger: (props: PopoverTriggerProps) => (
+      <Button {...props} variant='secondary' size='sm'>
+        Location filters
+      </Button>
+    ),
+    children: (
+      <div className='flex flex-col gap-3'>
+        <Input label='City' size='sm' placeholder='e.g. Berlin' />
+        <Input label='Radius (km)' size='sm' placeholder='25' />
+      </div>
+    ),
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: 'Location filters' });
+
+    await step('Open from the composed Button trigger', async () => {
+      await userEvent.click(trigger);
+      await waitFor(() =>
+        expect(canvas.getByRole('dialog')).toBeInTheDocument()
+      );
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    await step('Escape closes and restores focus to the Button', async () => {
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(canvas.queryByRole('dialog')).not.toBeInTheDocument()
+      );
+      await expect(trigger).toHaveFocus();
+    });
   },
 };
 

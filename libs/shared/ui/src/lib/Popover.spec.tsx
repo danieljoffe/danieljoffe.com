@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { Popover } from './Popover';
+import { Button } from './Button';
+import { Popover, type PopoverTriggerProps } from './Popover';
 
 expect.extend(toHaveNoViolations);
 
@@ -266,6 +267,118 @@ describe('Popover', () => {
       );
       fireEvent.mouseDown(screen.getByText('Outside'));
       expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('composable trigger', () => {
+    const pillTrigger = (props: PopoverTriggerProps) => (
+      <button {...props} className='pill'>
+        Filters
+      </button>
+    );
+
+    it('renders the composed element as the only trigger, with full wiring', () => {
+      const { container } = render(
+        <Popover trigger={pillTrigger}>
+          <p>Panel content</p>
+        </Popover>
+      );
+      const trigger = screen.getByRole('button', { name: 'Filters' });
+      expect(trigger).toHaveClass('pill');
+      expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+      expect(trigger).toHaveAttribute('type', 'button');
+      // No built-in button wraps the composed one — that would nest buttons
+      expect(container.querySelectorAll('button')).toHaveLength(1);
+    });
+
+    it('opens and closes from the composed trigger', () => {
+      render(
+        <Popover trigger={pillTrigger}>
+          <p>Panel content</p>
+        </Popover>
+      );
+      const trigger = screen.getByRole('button', { name: 'Filters' });
+      fireEvent.click(trigger);
+      expect(screen.getByText('Panel content')).toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      fireEvent.click(trigger);
+      expect(screen.queryByText('Panel content')).not.toBeInTheDocument();
+    });
+
+    it('labels the panel by the composed trigger', () => {
+      render(
+        <Popover trigger={pillTrigger}>
+          <p>Panel content</p>
+        </Popover>
+      );
+      const trigger = screen.getByRole('button', { name: 'Filters' });
+      fireEvent.click(trigger);
+      expect(screen.getByRole('dialog')).toHaveAttribute(
+        'aria-labelledby',
+        trigger.id
+      );
+    });
+
+    it('closes on Escape and returns focus to the composed trigger', () => {
+      render(
+        <Popover trigger={pillTrigger}>
+          <input aria-label='City' />
+        </Popover>
+      );
+      const trigger = screen.getByRole('button', { name: 'Filters' });
+      fireEvent.click(trigger);
+      fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    });
+
+    it('closes on outside click with a composed trigger', () => {
+      render(
+        <div>
+          <Popover trigger={pillTrigger}>
+            <p>Panel content</p>
+          </Popover>
+          <span>Outside</span>
+        </div>
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+      fireEvent.mouseDown(screen.getByText('Outside'));
+      expect(screen.queryByText('Panel content')).not.toBeInTheDocument();
+    });
+
+    it('composes with the design-system Button as the trigger', () => {
+      const { container } = render(
+        <Popover
+          trigger={props => (
+            <Button {...props} variant='secondary'>
+              Filters
+            </Button>
+          )}
+        >
+          <p>Panel content</p>
+        </Popover>
+      );
+      const trigger = screen.getByRole('button', { name: 'Filters' });
+      expect(container.querySelectorAll('button')).toHaveLength(1);
+      fireEvent.click(trigger);
+      expect(screen.getByText('Panel content')).toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('open popover with a composed Button trigger has no a11y violations', async () => {
+      const { container } = render(
+        <Popover
+          trigger={props => (
+            <Button {...props} variant='secondary'>
+              Filters
+            </Button>
+          )}
+        >
+          <input aria-label='City' />
+        </Popover>
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 

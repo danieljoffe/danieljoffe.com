@@ -9,9 +9,11 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { Spinner } from './Spinner';
 import { cn } from './utils/cn';
+import { useAnchoredPanel } from './utils/useAnchoredPanel';
 
 export interface DropdownItem {
   /** Item text — also the accessible name when `content` is provided. */
@@ -37,23 +39,60 @@ export interface DropdownItem {
   closeOnClick?: boolean;
 }
 
+/**
+ * Wiring the Dropdown injects into a composed trigger. Spread every prop onto
+ * your interactive element — the dropdown keeps owning open state, keyboard
+ * nav, dismiss, focus return, and aria wiring.
+ */
+export interface DropdownTriggerProps {
+  ref: Ref<HTMLButtonElement>;
+  id: string;
+  /** Guards against implicit form submission when the menu sits in a form. */
+  type: 'button';
+  'aria-haspopup': 'menu';
+  'aria-expanded': boolean;
+  'aria-controls': string | undefined;
+  onClick: () => void;
+  /**
+   * Opens the menu from ArrowDown/ArrowUp on the trigger; on an already-open
+   * menu, moves focus to the first (ArrowDown) or last (ArrowUp) item.
+   */
+  onKeyDown: (e: React.KeyboardEvent) => void;
+}
+
 export interface DropdownProps {
-  trigger: ReactNode;
+  /**
+   * Content rendered inside the built-in trigger button — or a render
+   * function receiving {@link DropdownTriggerProps} to supply your own
+   * trigger element (a design-system Button, a styled pill…). Spread all
+   * injected props onto the element you return.
+   */
+  trigger: ReactNode | ((props: DropdownTriggerProps) => ReactNode);
   items: DropdownItem[];
   align?: 'left' | 'right';
-  className?: string;
+  /** Controlled open state; omit to let the Dropdown manage its own. */
+  open?: boolean | undefined;
+  /** Called with the next open state on trigger interaction, item activation, outside click, and Escape. */
+  onOpenChange?: ((open: boolean) => void) | undefined;
+  className?: string | undefined;
+  /** Merged onto the menu — override width, padding, etc. */
+  panelClassName?: string | undefined;
 }
 
 export function Dropdown({
   trigger,
   items,
   align = 'left',
+  open,
+  onOpenChange,
   className,
+  panelClassName,
 }: DropdownProps) {
-  const [open, setOpen] = useState(false);
+  const { isOpen, setOpen, close, wrapperRef, triggerRef } = useAnchoredPanel({
+    open,
+    onOpenChange,
+  });
   const [activeIndex, setActiveIndex] = useState(-1);
-  const ref = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | HTMLAnchorElement | null)[]>([]);
   const uid = useId();
   const menuId = `dropdown-menu-${uid}`;
@@ -73,48 +112,43 @@ export function Dropdown({
     itemRefs.current[index]?.focus();
   }, []);
 
-  const openMenu = useCallback(() => {
-    setOpen(true);
-  }, []);
+  // Reset roving focus whenever the menu closes, whichever path closed it
+  // (item click, Escape, outside click, controlled flip).
+  useEffect(() => {
+    if (!isOpen) setActiveIndex(-1);
+  }, [isOpen]);
 
-  const closeMenu = useCallback(() => {
-    setOpen(false);
-    setActiveIndex(-1);
-    triggerRef.current?.focus();
-  }, []);
-
-  // Focus first actionable item when menu opens
+  // Focus first actionable item when menu opens. Deliberately does NOT fire
+  // when items become actionable later (async pickers that open in a loading
+  // state): stealing focus mid-read could preempt a dismissal — the trigger's
+  // ArrowDown/ArrowUp is the explicit way in once items arrive.
   const prevOpenRef = useRef(false);
   useEffect(() => {
     const firstActionable = actionableItems[0];
-    if (open && !prevOpenRef.current && firstActionable != null) {
+    if (isOpen && !prevOpenRef.current && firstActionable != null) {
       requestAnimationFrame(() => {
         focusItem(firstActionable);
       });
     }
-    prevOpenRef.current = open;
-  }, [open, actionableItems, focusItem]);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setActiveIndex(-1);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+    prevOpenRef.current = isOpen;
+  }, [isOpen, actionableItems, focusItem]);
 
   const handleTriggerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
-      if (!open) {
-        openMenu();
+      if (!isOpen) {
+        setOpen(true);
+      } else {
+        // Menu already open with focus still on the trigger — happens when it
+        // opened with no actionable items (async loading) and items arrived
+        // later. Arrowing is the deliberate way in; ArrowUp enters from the
+        // end, per the menu-button pattern.
+        const target =
+          e.key === 'ArrowDown'
+            ? actionableItems[0]
+            : actionableItems[actionableItems.length - 1];
+        if (target != null) focusItem(target);
       }
-    } else if (e.key === 'Escape' && open) {
-      e.preventDefault();
-      closeMenu();
     }
   };
 
@@ -152,11 +186,6 @@ export function Dropdown({
         if (last != null) focusItem(last);
         break;
       }
-      case 'Escape': {
-        e.preventDefault();
-        closeMenu();
-        break;
-      }
       case 'Enter':
       case ' ': {
         e.preventDefault();
@@ -171,9 +200,7 @@ export function Dropdown({
             } else {
               item.onClick?.();
               if (item.closeOnClick !== false) {
-                setOpen(false);
-                setActiveIndex(-1);
-                triggerRef.current?.focus();
+                close();
               }
             }
           }
@@ -181,28 +208,33 @@ export function Dropdown({
         break;
       }
       case 'Tab': {
-        closeMenu();
+        close();
         break;
       }
     }
   };
 
+  const triggerProps: DropdownTriggerProps = {
+    ref: triggerRef,
+    id: triggerId,
+    type: 'button',
+    'aria-haspopup': 'menu',
+    'aria-expanded': isOpen,
+    'aria-controls': isOpen ? menuId : undefined,
+    onClick: () => (isOpen ? close() : setOpen(true)),
+    onKeyDown: handleTriggerKeyDown,
+  };
+
   return (
-    <div ref={ref} className={cn('relative inline-flex', className)}>
-      <button
-        ref={triggerRef}
-        id={triggerId}
-        type='button'
-        aria-haspopup='menu'
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        onClick={() => (open ? closeMenu() : openMenu())}
-        onKeyDown={handleTriggerKeyDown}
-        className='inline-flex items-center'
-      >
-        {trigger}
-      </button>
-      {open && (
+    <div ref={wrapperRef} className={cn('relative inline-flex', className)}>
+      {typeof trigger === 'function' ? (
+        trigger(triggerProps)
+      ) : (
+        <button {...triggerProps} className='inline-flex items-center'>
+          {trigger}
+        </button>
+      )}
+      {isOpen && (
         <div
           id={menuId}
           role='menu'
@@ -213,7 +245,8 @@ export function Dropdown({
             'absolute z-50 mt-1 top-full min-w-[180px]',
             'bg-surface-elevated border border-border rounded-lg shadow-lg',
             'py-1 animate-slide-down motion-reduce:animate-none',
-            align === 'right' ? 'right-0' : 'left-0'
+            align === 'right' ? 'right-0' : 'left-0',
+            panelClassName
           )}
         >
           {items.map((item, i) => {
@@ -278,9 +311,7 @@ export function Dropdown({
                   onClick={() => {
                     item.onClick?.();
                     if (item.closeOnClick !== false) {
-                      setOpen(false);
-                      setActiveIndex(-1);
-                      triggerRef.current?.focus();
+                      close();
                     }
                   }}
                   className={itemClassName}
@@ -305,9 +336,7 @@ export function Dropdown({
                   if (item.disabled || item.loading) return;
                   item.onClick?.();
                   if (item.closeOnClick !== false) {
-                    setOpen(false);
-                    setActiveIndex(-1);
-                    triggerRef.current?.focus();
+                    close();
                   }
                 }}
                 className={itemClassName}
