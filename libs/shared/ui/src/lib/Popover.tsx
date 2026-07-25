@@ -1,18 +1,32 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
-import { cn, FOCUSABLE_SELECTOR } from './utils';
+import { useEffect, useId, useRef, type ReactNode, type Ref } from 'react';
+import { cn, FOCUSABLE_SELECTOR, useAnchoredPanel } from './utils';
+
+/**
+ * Wiring the Popover injects into a composed trigger. Spread every prop onto
+ * your interactive element — the popover keeps owning open state, dismiss,
+ * focus return, and aria wiring.
+ */
+export interface PopoverTriggerProps {
+  ref: Ref<HTMLButtonElement>;
+  id: string;
+  /** Guards against implicit form submission when the popover sits in a form. */
+  type: 'button';
+  'aria-haspopup': 'dialog';
+  'aria-expanded': boolean;
+  'aria-controls': string | undefined;
+  onClick: () => void;
+}
 
 export interface PopoverProps {
-  /** Content rendered inside the trigger button. */
-  trigger: ReactNode;
+  /**
+   * Content rendered inside the built-in trigger button — or a render
+   * function receiving {@link PopoverTriggerProps} to supply your own trigger
+   * element (a design-system Button, a styled pill…). Spread all injected
+   * props onto the element you return.
+   */
+  trigger: ReactNode | ((props: PopoverTriggerProps) => ReactNode);
   /**
    * Panel content. Pass a render function to receive `close` for explicit
    * dismissal (e.g. an "Apply" button or after an async action completes).
@@ -46,28 +60,14 @@ export function Popover({
   panelClassName,
   'aria-label': ariaLabel,
 }: PopoverProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-  const isControlled = open !== undefined;
-  const isOpen = isControlled ? open : uncontrolledOpen;
-  const ref = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const { isOpen, setOpen, close, wrapperRef, triggerRef } = useAnchoredPanel({
+    open,
+    onOpenChange,
+  });
   const panelRef = useRef<HTMLDivElement>(null);
   const uid = useId();
   const panelId = `popover-panel-${uid}`;
   const triggerId = `popover-trigger-${uid}`;
-
-  const setOpen = useCallback(
-    (next: boolean) => {
-      if (!isControlled) setUncontrolledOpen(next);
-      onOpenChange?.(next);
-    },
-    [isControlled, onOpenChange]
-  );
-
-  const close = useCallback(() => {
-    setOpen(false);
-    triggerRef.current?.focus();
-  }, [setOpen]);
 
   // Move focus into the panel when it opens: first focusable, else the panel
   const prevOpenRef = useRef(false);
@@ -83,49 +83,25 @@ export function Popover({
     prevOpenRef.current = isOpen;
   }, [isOpen]);
 
-  // Outside click dismisses without moving focus (matches Dropdown)
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [isOpen, setOpen]);
-
-  // Escape from anywhere inside (trigger or panel fields) dismisses. A native
-  // listener on the wrapper keeps interaction handlers off non-interactive
-  // JSX elements (jsx-a11y) while still scoping Escape to this popover.
-  useEffect(() => {
-    if (!isOpen) return;
-    const node = ref.current;
-    if (!node) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        close();
-      }
-    };
-    node.addEventListener('keydown', handler);
-    return () => node.removeEventListener('keydown', handler);
-  }, [isOpen, close]);
+  const triggerProps: PopoverTriggerProps = {
+    ref: triggerRef,
+    id: triggerId,
+    type: 'button',
+    'aria-haspopup': 'dialog',
+    'aria-expanded': isOpen,
+    'aria-controls': isOpen ? panelId : undefined,
+    onClick: () => (isOpen ? close() : setOpen(true)),
+  };
 
   return (
-    <div ref={ref} className={cn('relative inline-flex', className)}>
-      <button
-        ref={triggerRef}
-        id={triggerId}
-        type='button'
-        aria-haspopup='dialog'
-        aria-expanded={isOpen}
-        aria-controls={isOpen ? panelId : undefined}
-        onClick={() => (isOpen ? close() : setOpen(true))}
-        className='inline-flex items-center'
-      >
-        {trigger}
-      </button>
+    <div ref={wrapperRef} className={cn('relative inline-flex', className)}>
+      {typeof trigger === 'function' ? (
+        trigger(triggerProps)
+      ) : (
+        <button {...triggerProps} className='inline-flex items-center'>
+          {trigger}
+        </button>
+      )}
       {isOpen && (
         <div
           ref={panelRef}
