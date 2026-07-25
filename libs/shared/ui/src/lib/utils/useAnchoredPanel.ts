@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export interface AnchoredPanelOptions {
+interface AnchoredPanelOptions {
   /** Controlled open state; omit for internal state. */
   open?: boolean | undefined;
   /** Called with the next open state on every open/close request. */
