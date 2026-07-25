@@ -213,10 +213,14 @@ import { Dropdown } from './Dropdown';
         <code>trigger</code>
       </td>
       <td>
-        <code>ReactNode</code>
+        <code>ReactNode | (props: DropdownTriggerProps) =&gt; ReactNode</code>
       </td>
       <td>—</td>
-      <td>Content rendered inside the trigger button.</td>
+      <td>
+        Content rendered inside the built-in trigger button — or a render
+        function that returns your own trigger element with the injected props
+        spread onto it (see Composed Trigger below).
+      </td>
     </tr>
     <tr>
       <td>
@@ -242,6 +246,33 @@ import { Dropdown } from './Dropdown';
     </tr>
     <tr>
       <td>
+        <code>open</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Controlled open state; omit to let the Dropdown manage its own.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onOpenChange</code>
+      </td>
+      <td>
+        <code>(open: boolean) =&gt; void</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>
+        Called with the next open state on trigger interaction, item activation,
+        outside click, and Escape.
+      </td>
+    </tr>
+    <tr>
+      <td>
         <code>className</code>
       </td>
       <td>
@@ -251,6 +282,18 @@ import { Dropdown } from './Dropdown';
         <code>undefined</code>
       </td>
       <td>Additional classes on the wrapper div.</td>
+    </tr>
+    <tr>
+      <td>
+        <code>panelClassName</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>
+        <code>undefined</code>
+      </td>
+      <td>Merged onto the menu — override width, padding, etc.</td>
     </tr>
   </tbody>
 </table>
@@ -411,6 +454,30 @@ import { Dropdown } from './Dropdown';
   edge of the viewport to prevent the menu from overflowing.
 </p>
 
+<h3 className='doc-sub'>Composed Trigger</h3>
+
+<p className='doc-p'>
+  When the trigger must be a specific element — the design-system{' '}
+  <code>Button</code> beside another <code>Button</code>, a styled filter pill —
+  pass a render function as <code>trigger</code>. It receives{' '}
+  <code>DropdownTriggerProps</code> (<code>ref</code>, <code>id</code>,{' '}
+  <code>type</code>, <code>aria-*</code>, <code>onClick</code>,{' '}
+  <code>onKeyDown</code>); spread them all onto the element you return. The
+  Dropdown keeps owning open state, keyboard navigation, dismiss, and focus
+  return — your element only supplies the look.
+</p>
+
+```jsx
+<Dropdown
+  trigger={props => (
+    <Button {...props} variant='secondary'>
+      Add to target ▾
+    </Button>
+  )}
+  items={items}
+/>
+```
+
 <h3 className='doc-sub'>Async Picker</h3>
 
 <p className='doc-p'>
@@ -516,17 +583,19 @@ import { Dropdown } from './Dropdown';
   <div className='doc-do'>
     <div className='doc-do-label'>Do</div>
     <p className='doc-do-body'>
-      Pass descriptive content as the <code>trigger</code>, like a label with an
-      icon. The trigger renders inside a <code>&lt;button&gt;</code>{' '}
-      automatically, so pass inline content, not another button.
+      Pass inline content (label + icon) to render inside the built-in{' '}
+      <code>&lt;button&gt;</code> — or pass a render function and spread the
+      injected props when the trigger must be a <code>&lt;Button&gt;</code> or
+      another styled element.
     </p>
   </div>
   <div className='doc-dont'>
     <div className='doc-dont-label'>Don't</div>
     <p className='doc-dont-body'>
-      Don't pass a <code>&lt;Button&gt;</code> component as the trigger. The
-      Dropdown already wraps the trigger in a native button element. Nesting
-      buttons is invalid HTML and breaks accessibility.
+      Don't pass a <code>&lt;Button&gt;</code> <em>element</em> as the node form
+      of <code>trigger</code> — it nests buttons, which is invalid HTML. Use the
+      render-function form instead, and spread every injected prop, or the aria
+      wiring and focus return break.
     </p>
   </div>
 </div>

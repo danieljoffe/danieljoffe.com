@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { Dropdown } from './Dropdown';
+import { Button } from './Button';
+import { Dropdown, type DropdownTriggerProps } from './Dropdown';
 
 expect.extend(toHaveNoViolations);
 
@@ -512,6 +513,171 @@ describe('Dropdown', () => {
       fireEvent.click(screen.getByText('Menu'));
       expect(await axe(container)).toHaveNoViolations();
     });
+  });
+
+  describe('composable trigger', () => {
+    const buttonTrigger = (props: DropdownTriggerProps) => (
+      <Button {...props} variant='secondary'>
+        Menu
+      </Button>
+    );
+
+    it('renders the composed element as the only trigger, with full wiring', () => {
+      const { container } = render(
+        <Dropdown trigger={buttonTrigger} items={items} />
+      );
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+      expect(trigger).toHaveAttribute('type', 'button');
+      // No built-in button wraps the composed one — that would nest buttons
+      expect(container.querySelectorAll('button')).toHaveLength(1);
+    });
+
+    it('opens the menu from a click on the composed trigger', () => {
+      render(<Dropdown trigger={buttonTrigger} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('opens the menu and focuses the first item from ArrowDown on the composed trigger', () => {
+      render(<Dropdown trigger={buttonTrigger} items={items} />);
+      fireEvent.keyDown(screen.getByRole('button', { name: 'Menu' }), {
+        key: 'ArrowDown',
+      });
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(screen.getAllByRole('menuitem')[0]).toHaveFocus();
+    });
+
+    it('labels the menu by the composed trigger', () => {
+      render(<Dropdown trigger={buttonTrigger} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      expect(screen.getByRole('menu')).toHaveAttribute(
+        'aria-labelledby',
+        trigger.id
+      );
+    });
+
+    it('closes on Escape and returns focus to the composed trigger', () => {
+      render(<Dropdown trigger={buttonTrigger} items={items} />);
+      const trigger = screen.getByRole('button', { name: 'Menu' });
+      fireEvent.click(trigger);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    });
+
+    it('open menu with a composed Button trigger has no a11y violations', async () => {
+      const { container } = render(
+        <Dropdown trigger={buttonTrigger} items={items} />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('controlled mode', () => {
+    it('renders open when open prop is true', () => {
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={items}
+          open
+          onOpenChange={() => {}}
+        />
+      );
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('stays open until the parent flips the prop', () => {
+      const onOpenChange = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={items}
+          open
+          onOpenChange={onOpenChange}
+        />
+      );
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('requests opening via onOpenChange on trigger click', () => {
+      const onOpenChange = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={items}
+          open={false}
+          onOpenChange={onOpenChange}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+      expect(onOpenChange).toHaveBeenCalledWith(true);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+
+    it('notifies onOpenChange on outside click', () => {
+      const onOpenChange = jest.fn();
+      render(
+        <div>
+          <Dropdown
+            trigger={<span>Menu</span>}
+            items={items}
+            open
+            onOpenChange={onOpenChange}
+          />
+          <span>Outside</span>
+        </div>
+      );
+      fireEvent.mouseDown(screen.getByText('Outside'));
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it('notifies onOpenChange when an item activation closes the menu', () => {
+      const onOpenChange = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Action', onClick: jest.fn() }]}
+          open
+          onOpenChange={onOpenChange}
+        />
+      );
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Action' }));
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
+
+  it('fires onOpenChange in uncontrolled mode too', () => {
+    const onOpenChange = jest.fn();
+    render(
+      <Dropdown
+        trigger={<span>Menu</span>}
+        items={items}
+        onOpenChange={onOpenChange}
+      />
+    );
+    fireEvent.click(screen.getByText('Menu'));
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    fireEvent.click(screen.getByText('Menu'));
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('merges panelClassName onto the menu', () => {
+    render(
+      <Dropdown
+        trigger={<span>Menu</span>}
+        items={items}
+        panelClassName='w-64'
+      />
+    );
+    fireEvent.click(screen.getByText('Menu'));
+    expect(screen.getByRole('menu')).toHaveClass('w-64');
   });
 
   it('has no accessibility violations', async () => {

@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
-import { Dropdown } from './Dropdown';
+import { Button } from './Button';
+import { Dropdown, type DropdownTriggerProps } from './Dropdown';
 
 const meta = {
   title: 'Overlay/Dropdown',
@@ -12,6 +13,15 @@ const meta = {
       control: 'select',
       options: ['left', 'right'],
       table: { defaultValue: { summary: 'left' } },
+    },
+    open: {
+      description:
+        'Controlled open state — omit to let the Dropdown manage its own',
+      control: 'boolean',
+    },
+    panelClassName: {
+      description: 'Merged onto the menu to override width, padding, etc.',
+      control: 'text',
     },
   },
 } satisfies Meta<typeof Dropdown>;
@@ -30,6 +40,101 @@ export const Default: Story = {
       { label: '', divider: true },
       { label: 'Delete', danger: true },
     ],
+  },
+};
+
+/**
+ * Pass a render function as `trigger` to supply your own trigger element —
+ * here the design-system Button, sitting beside another Button without a
+ * style mismatch. Spread every injected prop onto the element you return;
+ * the Dropdown keeps owning open state, keyboard nav, dismiss, focus
+ * return, and aria wiring.
+ */
+export const ComposedTrigger: Story = {
+  args: {
+    trigger: (props: DropdownTriggerProps) => (
+      <Button {...props} variant='secondary' size='sm'>
+        Add to target
+      </Button>
+    ),
+    items: [
+      { label: 'Design Systems Team' },
+      { label: 'Platform Guild' },
+      { label: 'Frontend Chapter' },
+    ],
+  },
+  render: args => (
+    <div className='flex items-center gap-2'>
+      <Dropdown {...args} />
+      <Button variant='secondary' size='sm'>
+        Create target
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: 'Add to target' });
+
+    await step('Open from the composed Button trigger', async () => {
+      await userEvent.click(trigger);
+      await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    await step('Escape closes and restores focus to the Button', async () => {
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      );
+      await expect(trigger).toHaveFocus();
+    });
+  },
+};
+
+/**
+ * Controlled mode: drive `open` yourself and react to `onOpenChange`. The
+ * Dropdown still owns dismissal interactions (outside click, Escape, trigger
+ * toggle, item activation) and reports them through `onOpenChange`.
+ */
+export const Controlled: Story = {
+  args: {
+    trigger: (
+      <span className='px-3 py-1.5 border rounded-md text-sm'>Controlled</span>
+    ),
+    items: [{ label: 'Option A' }, { label: 'Option B' }],
+    open: false,
+    onOpenChange: fn(),
+  },
+  render: function ControlledDropdown(args) {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <Dropdown
+        {...args}
+        open={isOpen}
+        onOpenChange={next => {
+          setIsOpen(next);
+          args.onOpenChange?.(next);
+        }}
+      />
+    );
+  },
+  play: async ({ args, canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: 'Controlled' });
+
+    await step('Open via trigger', async () => {
+      await userEvent.click(trigger);
+      await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+      await expect(args.onOpenChange).toHaveBeenCalledWith(true);
+    });
+
+    await step('Close via Escape', async () => {
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      );
+      await expect(args.onOpenChange).toHaveBeenCalledWith(false);
+    });
   },
 };
 
