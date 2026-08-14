@@ -760,7 +760,7 @@ describe('Dropdown', () => {
       expect(container.contains(menu)).toBe(false);
       // …because it rides on document.body with a fixed anchor.
       expect(menu.parentElement).toBe(document.body);
-      expect(menu.className).toContain('fixed');
+      expect(menu.style.position).toBe('fixed');
     });
 
     it('does not treat a mousedown inside the portaled menu as outside', () => {
@@ -772,6 +772,25 @@ describe('Dropdown', () => {
 
       fireEvent.mouseDown(screen.getByRole('menuitem', { name: 'Edit' }));
       expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('closes on Escape from a menu portaled after the open flip', () => {
+      // The panel mounts one commit later than `open` turns true (the portal
+      // waits for mount, since react-dom/server has no `document`). The
+      // Escape listener must bind to the panel when it actually arrives, not
+      // to whatever existed when the open flip was committed.
+      const onOpenChange = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={items}
+          open
+          onOpenChange={onOpenChange}
+        />
+      );
+
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it('still activates items and closes through a full click in the portal', () => {

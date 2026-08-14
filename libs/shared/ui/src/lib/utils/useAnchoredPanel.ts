@@ -29,7 +29,17 @@ export function useAnchoredPanel({ open, onOpenChange }: AnchoredPanelOptions) {
   // longer a DOM descendant of the wrapper, so dismiss containment and the
   // Escape listener must cover this node too. Inline panels (Popover) leave
   // it unset — null is simply skipped below.
-  const panelRef = useRef<HTMLDivElement>(null);
+  //
+  // Deliberately a state-backed CALLBACK ref, not a plain ref: a portaled
+  // panel can mount in a later commit than the open flip (it waits for
+  // hydration), and a plain ref would leave the effects below bound to
+  // whatever existed when `isOpen` turned true — silently dropping Escape on
+  // a panel that appeared a commit later. Storing the node in state re-runs
+  // them when it actually arrives.
+  const [panelNode, setPanelNode] = useState<HTMLDivElement | null>(null);
+  const panelRef = useCallback((node: HTMLDivElement | null) => {
+    setPanelNode(node);
+  }, []);
 
   const setOpen = useCallback(
     (next: boolean) => {
@@ -53,14 +63,14 @@ export function useAnchoredPanel({ open, onOpenChange }: AnchoredPanelOptions) {
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
       const insideWrapper = wrapperRef.current?.contains(target) ?? false;
-      const insidePanel = panelRef.current?.contains(target) ?? false;
+      const insidePanel = panelNode?.contains(target) ?? false;
       if (!insideWrapper && !insidePanel) {
         setOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [isOpen, setOpen]);
+  }, [isOpen, setOpen, panelNode]);
 
   // Escape from anywhere inside (trigger or panel fields) dismisses. Native
   // listeners keep interaction handlers off non-interactive JSX elements
@@ -69,7 +79,7 @@ export function useAnchoredPanel({ open, onOpenChange }: AnchoredPanelOptions) {
   // not the wrapper.
   useEffect(() => {
     if (!isOpen) return;
-    const nodes = [wrapperRef.current, panelRef.current].filter(
+    const nodes = [wrapperRef.current, panelNode].filter(
       (n): n is HTMLDivElement => n !== null
     );
     if (nodes.length === 0) return;
@@ -83,7 +93,7 @@ export function useAnchoredPanel({ open, onOpenChange }: AnchoredPanelOptions) {
     return () => {
       for (const node of nodes) node.removeEventListener('keydown', handler);
     };
-  }, [isOpen, close]);
+  }, [isOpen, close, panelNode]);
 
   return { isOpen, setOpen, close, wrapperRef, triggerRef, panelRef };
 }

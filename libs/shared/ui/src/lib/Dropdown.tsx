@@ -63,6 +63,12 @@ export interface DropdownTriggerProps {
   onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
+// `useLayoutEffect` warns when a component is prerendered on the server, and
+// Next.js prerenders 'use client' components too. The menu only exists after
+// mount, so deferring to useEffect on the server is behaviourally identical.
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export interface DropdownProps {
   /**
    * Content rendered inside the built-in trigger button — or a render
@@ -112,22 +118,56 @@ export function Dropdown({
         ? {
             position: 'fixed',
             top: rect.bottom + 4,
-            right: Math.max(0, window.innerWidth - rect.right),
+            // `right` on a fixed element is measured from the layout viewport,
+            // which excludes the classic scrollbar. window.innerWidth includes
+            // it, which would shift the menu left by the scrollbar width
+            // anywhere overlay scrollbars aren't the default (i.e. not macOS).
+            right: Math.max(
+              0,
+              document.documentElement.clientWidth - rect.right
+            ),
           }
         : { position: 'fixed', top: rect.bottom + 4, left: rect.left }
     );
   }, [align, triggerRef]);
 
-  useLayoutEffect(() => {
+  // scroll fires per frame (and capture catches every nested scroller), so
+  // coalesce re-anchoring into one rAF instead of a rect read + render per
+  // event.
+  const rafRef = useRef<number | null>(null);
+  const scheduleMenuPosition = useCallback(() => {
+    if (rafRef.current !== null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      updateMenuPosition();
+    });
+  }, [updateMenuPosition]);
+
+  useIsomorphicLayoutEffect(() => {
     if (!isOpen) return;
+    // Synchronous first pass so the menu never paints unanchored.
     updateMenuPosition();
-    window.addEventListener('scroll', updateMenuPosition, true);
-    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('scroll', scheduleMenuPosition, true);
+    window.addEventListener('resize', scheduleMenuPosition);
     return () => {
-      window.removeEventListener('scroll', updateMenuPosition, true);
-      window.removeEventListener('resize', updateMenuPosition);
+      window.removeEventListener('scroll', scheduleMenuPosition, true);
+      window.removeEventListener('resize', scheduleMenuPosition);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
-  }, [isOpen, updateMenuPosition]);
+  }, [isOpen, updateMenuPosition, scheduleMenuPosition]);
+
+  // react-dom/server has neither portal support nor a `document`, and Next.js
+  // prerenders 'use client' components. Mounting the menu only after hydration
+  // costs uncontrolled dropdowns nothing (they start closed) and turns a
+  // server crash into a post-mount render for a consumer that passes
+  // `open` from the first paint.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const itemRefs = useRef<(HTMLButtonElement | HTMLAnchorElement | null)[]>([]);
   const uid = useId();
   const menuId = `dropdown-menu-${uid}`;
@@ -270,6 +310,7 @@ export function Dropdown({
         </button>
       )}
       {isOpen &&
+        mounted &&
         createPortal(
           <div
             ref={panelRef}
