@@ -5,12 +5,15 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type Ref,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { Spinner } from './Spinner';
 import { cn } from './utils/cn';
 import { useAnchoredPanel } from './utils/useAnchoredPanel';
@@ -60,6 +63,12 @@ export interface DropdownTriggerProps {
   onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
+// `useLayoutEffect` warns when a component is prerendered on the server, and
+// Next.js prerenders 'use client' components too. The menu only exists after
+// mount, so deferring to useEffect on the server is behaviourally identical.
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export interface DropdownProps {
   /**
    * Content rendered inside the built-in trigger button — or a render
@@ -88,11 +97,77 @@ export function Dropdown({
   className,
   panelClassName,
 }: DropdownProps) {
-  const { isOpen, setOpen, close, wrapperRef, triggerRef } = useAnchoredPanel({
-    open,
-    onOpenChange,
-  });
+  const { isOpen, setOpen, close, wrapperRef, triggerRef, panelRef } =
+    useAnchoredPanel({
+      open,
+      onOpenChange,
+    });
   const [activeIndex, setActiveIndex] = useState(-1);
+  // The menu renders in a body PORTAL with fixed positioning so no ancestor
+  // overflow can clip it (a menu inside a modal or scroll container used to
+  // cut off at the container edge — wyrdfold ux-sweep 2026-08-12 B2). The
+  // style anchors to the trigger's viewport rect and re-anchors on scroll
+  // (capture: nested scrollers don't bubble) and resize.
+  const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
+  const updateMenuPosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setMenuStyle(
+      align === 'right'
+        ? {
+            position: 'fixed',
+            top: rect.bottom + 4,
+            // `right` on a fixed element is measured from the layout viewport,
+            // which excludes the classic scrollbar. window.innerWidth includes
+            // it, which would shift the menu left by the scrollbar width
+            // anywhere overlay scrollbars aren't the default (i.e. not macOS).
+            right: Math.max(
+              0,
+              document.documentElement.clientWidth - rect.right
+            ),
+          }
+        : { position: 'fixed', top: rect.bottom + 4, left: rect.left }
+    );
+  }, [align, triggerRef]);
+
+  // scroll fires per frame (and capture catches every nested scroller), so
+  // coalesce re-anchoring into one rAF instead of a rect read + render per
+  // event.
+  const rafRef = useRef<number | null>(null);
+  const scheduleMenuPosition = useCallback(() => {
+    if (rafRef.current !== null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      updateMenuPosition();
+    });
+  }, [updateMenuPosition]);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!isOpen) return;
+    // Synchronous first pass so the menu never paints unanchored.
+    updateMenuPosition();
+    window.addEventListener('scroll', scheduleMenuPosition, true);
+    window.addEventListener('resize', scheduleMenuPosition);
+    return () => {
+      window.removeEventListener('scroll', scheduleMenuPosition, true);
+      window.removeEventListener('resize', scheduleMenuPosition);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [isOpen, updateMenuPosition, scheduleMenuPosition]);
+
+  // react-dom/server has neither portal support nor a `document`, and Next.js
+  // prerenders 'use client' components. Mounting the menu only after hydration
+  // costs uncontrolled dropdowns nothing (they start closed) and turns a
+  // server crash into a post-mount render for a consumer that passes
+  // `open` from the first paint.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const itemRefs = useRef<(HTMLButtonElement | HTMLAnchorElement | null)[]>([]);
   const uid = useId();
   const menuId = `dropdown-menu-${uid}`;
@@ -234,81 +309,110 @@ export function Dropdown({
           {trigger}
         </button>
       )}
-      {isOpen && (
-        <div
-          id={menuId}
-          role='menu'
-          aria-labelledby={triggerId}
-          tabIndex={-1}
-          onKeyDown={handleMenuKeyDown}
-          className={cn(
-            'absolute z-50 mt-1 top-full min-w-[180px]',
-            'bg-surface-elevated border border-border rounded-lg shadow-lg',
-            'py-1 animate-slide-down motion-reduce:animate-none',
-            align === 'right' ? 'right-0' : 'left-0',
-            panelClassName
-          )}
-        >
-          {items.map((item, i) => {
-            if (item.divider) {
-              return (
-                <div
-                  key={i}
-                  role='separator'
-                  className='my-1 border-t border-border'
-                />
-              );
-            }
+      {isOpen &&
+        mounted &&
+        createPortal(
+          <div
+            ref={panelRef}
+            id={menuId}
+            role='menu'
+            aria-labelledby={triggerId}
+            tabIndex={-1}
+            data-align={align}
+            onKeyDown={handleMenuKeyDown}
+            style={menuStyle ?? undefined}
+            className={cn(
+              'fixed z-50 min-w-[180px]',
+              'bg-surface-elevated border border-border rounded-lg shadow-lg',
+              'py-1 animate-slide-down motion-reduce:animate-none',
+              panelClassName
+            )}
+          >
+            {items.map((item, i) => {
+              if (item.divider) {
+                return (
+                  <div
+                    key={i}
+                    role='separator'
+                    className='my-1 border-t border-border'
+                  />
+                );
+              }
 
-            const itemClassName = cn(
-              'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left',
-              'transition-colors duration-100 cursor-pointer',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
-              'focus-visible:ring-offset-surface',
-              item.disabled && 'opacity-50 cursor-not-allowed',
-              item.loading && 'cursor-wait',
-              item.danger
-                ? 'text-error hover:bg-error-light'
-                : 'text-text-primary hover:bg-surface-tertiary'
-            );
-
-            const content =
-              item.content != null ? (
-                item.content
-              ) : (
-                <>
-                  {(item.loading || item.icon) && (
-                    <span
-                      className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
-                      aria-hidden='true'
-                    >
-                      {item.loading ? <Spinner size='sm' /> : item.icon}
-                    </span>
-                  )}
-                  <span className='flex-1 truncate'>{item.label}</span>
-                  {item.external && (
-                    <ExternalLink
-                      className='ml-2 h-3.5 w-3.5 shrink-0 opacity-60'
-                      aria-hidden='true'
-                    />
-                  )}
-                </>
+              const itemClassName = cn(
+                'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left',
+                'transition-colors duration-100 cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
+                'focus-visible:ring-offset-surface',
+                item.disabled && 'opacity-50 cursor-not-allowed',
+                item.loading && 'cursor-wait',
+                item.danger
+                  ? 'text-error hover:bg-error-light'
+                  : 'text-text-primary hover:bg-surface-tertiary'
               );
 
-            if (item.href) {
+              const content =
+                item.content != null ? (
+                  item.content
+                ) : (
+                  <>
+                    {(item.loading || item.icon) && (
+                      <span
+                        className='inline-flex h-4 w-4 shrink-0 items-center justify-center'
+                        aria-hidden='true'
+                      >
+                        {item.loading ? <Spinner size='sm' /> : item.icon}
+                      </span>
+                    )}
+                    <span className='flex-1 truncate'>{item.label}</span>
+                    {item.external && (
+                      <ExternalLink
+                        className='ml-2 h-3.5 w-3.5 shrink-0 opacity-60'
+                        aria-hidden='true'
+                      />
+                    )}
+                  </>
+                );
+
+              if (item.href) {
+                return (
+                  <a
+                    key={i}
+                    ref={el => {
+                      itemRefs.current[i] = el;
+                    }}
+                    role='menuitem'
+                    aria-label={item.content != null ? item.label : undefined}
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    tabIndex={i === activeIndex ? 0 : -1}
+                    onClick={() => {
+                      item.onClick?.();
+                      if (item.closeOnClick !== false) {
+                        close();
+                      }
+                    }}
+                    className={itemClassName}
+                  >
+                    {content}
+                  </a>
+                );
+              }
+
               return (
-                <a
+                <button
                   key={i}
                   ref={el => {
                     itemRefs.current[i] = el;
                   }}
                   role='menuitem'
                   aria-label={item.content != null ? item.label : undefined}
-                  href={item.href}
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
                   tabIndex={i === activeIndex ? 0 : -1}
+                  aria-disabled={item.disabled || item.loading || undefined}
+                  aria-busy={item.loading || undefined}
                   onClick={() => {
+                    if (item.disabled || item.loading) return;
                     item.onClick?.();
                     if (item.closeOnClick !== false) {
                       close();
@@ -317,36 +421,12 @@ export function Dropdown({
                   className={itemClassName}
                 >
                   {content}
-                </a>
+                </button>
               );
-            }
-
-            return (
-              <button
-                key={i}
-                ref={el => {
-                  itemRefs.current[i] = el;
-                }}
-                role='menuitem'
-                aria-label={item.content != null ? item.label : undefined}
-                tabIndex={i === activeIndex ? 0 : -1}
-                aria-disabled={item.disabled || item.loading || undefined}
-                aria-busy={item.loading || undefined}
-                onClick={() => {
-                  if (item.disabled || item.loading) return;
-                  item.onClick?.();
-                  if (item.closeOnClick !== false) {
-                    close();
-                  }
-                }}
-                className={itemClassName}
-              >
-                {content}
-              </button>
-            );
-          })}
-        </div>
-      )}
+            })}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

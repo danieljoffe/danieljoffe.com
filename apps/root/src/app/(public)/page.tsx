@@ -234,8 +234,11 @@ export default function Index() {
           label='Featured Projects'
         />
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 reveal-stagger'>
-          {featuredProjects.map((project, i) => (
-            <PostCard key={project.slug} post={project} priority={i < 3} />
+          {featuredProjects.map(project => (
+            // No `priority`: these cards sit below the fold on every
+            // viewport, so preloading their covers wastes bandwidth and
+            // logs unused-preload warnings on every navigation.
+            <PostCard key={project.slug} post={project} />
           ))}
         </div>
         <div className='flex justify-center pt-4'>

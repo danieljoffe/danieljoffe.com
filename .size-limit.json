@@ -33,7 +33,7 @@
     "name": "Dropdown",
     "path": "libs/shared/ui/src/lib/Dropdown.tsx",
     "import": "{ Dropdown }",
-    "limit": "13 kB"
+    "limit": "14 kB"
   },
   {
     "name": "Sidebar",

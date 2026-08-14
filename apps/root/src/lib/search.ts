@@ -19,8 +19,11 @@ export function createSearchEngine(
     ] as Array<keyof SearchEntry>,
     searchOptions: {
       boost: { title: 5, tags: 3.5, excerpt: 2, category: 1.5, body: 1 },
-      fuzzy: 0.2,
-      prefix: true,
+      // No fuzzing for terms of ≤3 chars: at that length one accepted edit
+      // turns "toc" into "to"/"doc"/"hoc", which matches every document in
+      // the corpus and inflates result counts to "everything, ranked".
+      fuzzy: term => (term.length > 3 ? 0.2 : false),
+      prefix: term => term.length >= 2,
       combineWith: 'OR',
     },
     extractField: (doc: SearchEntry, fieldName: string): string => {
@@ -35,6 +38,15 @@ export function createSearchEngine(
   return ms;
 }
 
+/**
+ * OR-combined multi-term queries match any document containing any term, so
+ * the result list grows a long tail of barely-relevant hits (score ~0.01
+ * against a top of ~13). Results below this fraction of the top score are
+ * noise, not answers — drop them so counts reflect what a reader would call
+ * a match.
+ */
+const RELATIVE_SCORE_FLOOR = 0.05;
+
 export function searchWithHighlights(
   engine: MiniSearch<SearchEntry>,
   query: string,
@@ -42,7 +54,11 @@ export function searchWithHighlights(
 ): Array<SearchEntry & { matches: Record<string, string[]> }> {
   if (!query.trim()) return [];
 
-  const results = engine.search(query);
+  const ranked = engine.search(query);
+  const topScore = ranked[0]?.score ?? 0;
+  const results = ranked.filter(
+    r => r.score >= topScore * RELATIVE_SCORE_FLOOR
+  );
 
   return results
     .map(result => {

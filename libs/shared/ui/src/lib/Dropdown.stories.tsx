@@ -29,6 +29,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+/**
+ * The open menu portals to `document.body` so no overflow-hidden ancestor can
+ * clip it — which puts it outside `canvasElement`. Trigger queries stay scoped
+ * to the canvas; menu and menuitem queries go through here.
+ */
+const portal = () => within(document.body);
+
 export const Default: Story = {
   args: {
     trigger: (
@@ -77,14 +84,16 @@ export const ComposedTrigger: Story = {
 
     await step('Open from the composed Button trigger', async () => {
       await userEvent.click(trigger);
-      await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+      await waitFor(() =>
+        expect(portal().getByRole('menu')).toBeInTheDocument()
+      );
       await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     });
 
     await step('Escape closes and restores focus to the Button', async () => {
       await userEvent.keyboard('{Escape}');
       await waitFor(() =>
-        expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+        expect(portal().queryByRole('menu')).not.toBeInTheDocument()
       );
       await expect(trigger).toHaveFocus();
     });
@@ -124,14 +133,16 @@ export const Controlled: Story = {
 
     await step('Open via trigger', async () => {
       await userEvent.click(trigger);
-      await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+      await waitFor(() =>
+        expect(portal().getByRole('menu')).toBeInTheDocument()
+      );
       await expect(args.onOpenChange).toHaveBeenCalledWith(true);
     });
 
     await step('Close via Escape', async () => {
       await userEvent.keyboard('{Escape}');
       await waitFor(() =>
-        expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+        expect(portal().queryByRole('menu')).not.toBeInTheDocument()
       );
       await expect(args.onOpenChange).toHaveBeenCalledWith(false);
     });
@@ -244,12 +255,12 @@ export const OpenAndClose: Story = {
 
     // Open the dropdown
     await userEvent.click(trigger);
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
 
     // Close by clicking trigger again
     await userEvent.click(trigger);
     await waitFor(() =>
-      expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      expect(portal().queryByRole('menu')).not.toBeInTheDocument()
     );
   },
 };
@@ -272,7 +283,7 @@ export const OpenState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole('button', { name: 'Open menu' }));
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
   },
 };
 
@@ -291,14 +302,16 @@ export const ItemClick: Story = {
 
     // Open the dropdown
     await userEvent.click(canvas.getByRole('button', { name: 'Click Item' }));
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
 
     // Click an item
-    await userEvent.click(canvas.getByRole('menuitem', { name: 'Action One' }));
+    await userEvent.click(
+      portal().getByRole('menuitem', { name: 'Action One' })
+    );
 
     // Menu should close after clicking an item
     await waitFor(() =>
-      expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      expect(portal().queryByRole('menu')).not.toBeInTheDocument()
     );
     await expect(args.items[0].onClick).toHaveBeenCalled();
   },
@@ -317,7 +330,7 @@ export const KeyboardNavigation: Story = {
 
     // Open with click
     await userEvent.click(trigger);
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
 
     // Navigate down
     await userEvent.keyboard('{ArrowDown}');
@@ -335,7 +348,7 @@ export const KeyboardNavigation: Story = {
     // Close with Escape
     await userEvent.keyboard('{Escape}');
     await waitFor(() =>
-      expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      expect(portal().queryByRole('menu')).not.toBeInTheDocument()
     );
   },
 };
@@ -355,17 +368,19 @@ export const EnterToSelect: Story = {
 
     // Open dropdown
     await userEvent.click(trigger);
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
 
     // The menu focuses the first item on open (via rAF); wait for that before
     // activating it, otherwise Enter lands on the still-focused trigger.
     await waitFor(() =>
-      expect(canvas.getByRole('menuitem', { name: 'Select me' })).toHaveFocus()
+      expect(
+        portal().getByRole('menuitem', { name: 'Select me' })
+      ).toHaveFocus()
     );
     await userEvent.keyboard('{Enter}');
 
     await waitFor(() =>
-      expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      expect(portal().queryByRole('menu')).not.toBeInTheDocument()
     );
     await expect(args.items[0].onClick).toHaveBeenCalled();
   },
@@ -438,7 +453,7 @@ export const OpenAsyncState: Story = {
     await userEvent.click(
       canvas.getByRole('button', { name: 'Add to target' })
     );
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
   },
 };
 
@@ -453,15 +468,15 @@ export const KeepsMenuOpenForAsyncItems: Story = {
     const canvas = within(canvasElement);
 
     await userEvent.click(canvas.getByRole('button', { name: 'Async' }));
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
 
     await userEvent.click(
-      canvas.getByRole('menuitem', { name: 'Add to target' })
+      portal().getByRole('menuitem', { name: 'Add to target' })
     );
     await expect(args.items[0].onClick).toHaveBeenCalled();
 
     // closeOnClick: false keeps the menu open for async feedback
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
   },
 };
 
@@ -481,17 +496,17 @@ export const ArrowKeyOpen: Story = {
 
     // Open with ArrowDown key on trigger
     await userEvent.keyboard('{ArrowDown}');
-    await waitFor(() => expect(canvas.getByRole('menu')).toBeInTheDocument());
+    await waitFor(() => expect(portal().getByRole('menu')).toBeInTheDocument());
 
     // Wait for the first item to receive focus (rAF) so Tab is handled by the
     // menu's keydown handler (which closes it) rather than the trigger.
     await waitFor(() =>
-      expect(canvas.getByRole('menuitem', { name: 'Item A' })).toHaveFocus()
+      expect(portal().getByRole('menuitem', { name: 'Item A' })).toHaveFocus()
     );
     // Tab to close
     await userEvent.keyboard('{Tab}');
     await waitFor(() =>
-      expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+      expect(portal().queryByRole('menu')).not.toBeInTheDocument()
     );
   },
 };
