@@ -1,5 +1,13 @@
 # @danieljoffe.com/root
 
+## 0.0.11
+
+### Patch Changes
+
+- Updated dependencies [05e97b9]
+- Updated dependencies [6cdc81e]
+  - @danieljoffe/shared-ui@0.12.0
+
 ## 0.0.10
 
 ### Patch Changes
