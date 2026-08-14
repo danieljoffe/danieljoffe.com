@@ -52,10 +52,18 @@ Import the theme CSS to get design tokens (colors, spacing, typography, shadows,
 
 ```css
 /* In your global CSS or Tailwind entry point */
-@import '@danieljoffe/shared-ui/styles/theme.css';
+@import '@danieljoffe/shared-ui/styles/indigo-theme.css';
 ```
 
-The theme file is **self-contained** with no external imports. It uses Tailwind CSS 4's `@theme` directive so every token is available as both a CSS custom property and a Tailwind utility class (e.g., `bg-brand-500`, `text-text-secondary`, `shadow-md`).
+Two themes ship, and they define the same token _names_ — swap the import to
+re-brand without touching a component:
+
+| Theme                | Import path                                      |
+| -------------------- | ------------------------------------------------ |
+| **Indigo** (default) | `@danieljoffe/shared-ui/styles/indigo-theme.css` |
+| **Pyre**             | `@danieljoffe/shared-ui/styles/pyre-theme.css`   |
+
+Each theme file is **self-contained** with no external imports. It uses Tailwind CSS 4's `@theme` directive so every token is available as both a CSS custom property and a Tailwind utility class (e.g., `bg-brand-500`, `text-text-secondary`, `shadow-md`).
 
 > **oklch color space** -- Brand colors use `oklch()` for perceptually uniform lightness across the scale. Semantic surface/text/status colors use hex or `rgba` for maximum browser compatibility.
 
@@ -64,22 +72,22 @@ The theme file is **self-contained** with no external imports. It uses Tailwind 
 ```css
 /* app/globals.css */
 @import 'tailwindcss';
-@import '@danieljoffe/shared-ui/styles/theme.css';
+@import '@danieljoffe/shared-ui/styles/indigo-theme.css';
 ```
 
 That single import gives you every token below. No `tailwind.config` changes are needed in Tailwind CSS 4 -- the `@theme` directive registers tokens automatically.
 
 ### Integration paths
 
-| Approach               | When to use                        | How                                                                                                                                            |
-| ---------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Full adoption**      | New apps built on shared-ui        | Import `theme.css` as shown above. All tokens, base styles, dark mode, and keyframes are active.                                               |
-| **Selective adoption** | Existing apps with their own theme | Copy individual `@theme` token groups into your own CSS. Or import `theme.css` and override specific variables in a subsequent `@theme` block. |
+| Approach               | When to use                        | How                                                                                                                                             |
+| ---------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Full adoption**      | New apps built on shared-ui        | Import a theme file as shown above. All tokens, base styles, dark mode, and keyframes are active.                                               |
+| **Selective adoption** | Existing apps with their own theme | Copy individual `@theme` token groups into your own CSS. Or import a theme file and override specific variables in a subsequent `@theme` block. |
 
 To override tokens selectively:
 
 ```css
-@import '@danieljoffe/shared-ui/styles/theme.css';
+@import '@danieljoffe/shared-ui/styles/indigo-theme.css';
 
 @theme {
   --color-brand-500: oklch(0.6 0.2 280); /* shift brand toward purple */

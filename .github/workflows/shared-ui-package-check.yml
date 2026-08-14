@@ -50,11 +50,19 @@ jobs:
       - name: Assert required files are present
         run: |
           set -euo pipefail
+          # Every consumer-facing entry point the package promises. The theme
+          # CSS is listed explicitly because `exports` maps those two paths
+          # straight at src/styles — nothing else in the repo imports them, so
+          # dropping them from `files` would only surface as a broken import
+          # in a downstream app.
           REQUIRED=(
             "dist/index.js"
             "dist/index.d.ts"
+            "src/styles/indigo-theme.css"
+            "src/styles/pyre-theme.css"
             "LICENSE.md"
             "README.md"
+            "CHANGELOG.md"
             "package.json"
           )
           MISSING=()
