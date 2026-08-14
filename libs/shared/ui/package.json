@@ -3,7 +3,10 @@
   "version": "0.12.0",
   "description": "React component library and design system — Tailwind CSS 4, React 19, server-component-friendly.",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -38,9 +41,11 @@
   },
   "files": [
     "dist",
-    "src/styles",
+    "src/styles/indigo-theme.css",
+    "src/styles/pyre-theme.css",
     "README.md",
-    "LICENSE.md"
+    "LICENSE.md",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "react",
