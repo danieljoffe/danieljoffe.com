@@ -175,8 +175,9 @@ describe('Dropdown', () => {
       <Dropdown trigger={<span>Menu</span>} items={items} align='right' />
     );
     fireEvent.click(screen.getByText('Menu'));
-    const dropdown = screen.getByText('Edit').closest('.right-0');
-    expect(dropdown).toBeInTheDocument();
+    // Portaled menu (see "portal escape" below): alignment is now an anchor
+    // computation, exposed as data-align rather than a right-0 class.
+    expect(screen.getByRole('menu')).toHaveAttribute('data-align', 'right');
   });
 
   describe('ARIA attributes', () => {
@@ -501,7 +502,7 @@ describe('Dropdown', () => {
     });
 
     it('open menu with loading and custom-content items has no a11y violations', async () => {
-      const { container } = render(
+      render(
         <Dropdown
           trigger={<span>Menu</span>}
           items={[
@@ -511,7 +512,14 @@ describe('Dropdown', () => {
         />
       );
       fireEvent.click(screen.getByText('Menu'));
-      expect(await axe(container)).toHaveNoViolations();
+      // The open menu portals to document.body — scanning `container` alone
+      // would silently skip it (a vacuous pass). The `region` rule is
+      // disabled for the body scan only: transient popups portaled to body
+      // legitimately live outside landmarks (the rule targets page content),
+      // and the bare test DOM has no landmarks to begin with.
+      expect(
+        await axe(document.body, { rules: { region: { enabled: false } } })
+      ).toHaveNoViolations();
     });
 
     it('does not steal focus when items become actionable after opening', () => {
@@ -614,11 +622,13 @@ describe('Dropdown', () => {
     });
 
     it('open menu with a composed Button trigger has no a11y violations', async () => {
-      const { container } = render(
-        <Dropdown trigger={buttonTrigger} items={items} />
-      );
+      render(<Dropdown trigger={buttonTrigger} items={items} />);
       fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
-      expect(await axe(container)).toHaveNoViolations();
+      // Portaled menu — scan the document, not the render container. The
+      // `region` rule is disabled for body scans (see the note above).
+      expect(
+        await axe(document.body, { rules: { region: { enabled: false } } })
+      ).toHaveNoViolations();
     });
   });
 
@@ -729,5 +739,73 @@ describe('Dropdown', () => {
       <Dropdown trigger={<span>Menu</span>} items={items} />
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  describe('portal escape (wyrdfold ux-sweep 2026-08-12 B2)', () => {
+    // The menu used to render absolutely-positioned INSIDE the trigger
+    // wrapper, so any overflow-hidden/auto ancestor (a modal edge, a scroll
+    // container) clipped it. It now portals to document.body with a
+    // fixed-position anchor computed from the trigger rect.
+
+    it('renders the open menu outside an overflow-hidden ancestor', () => {
+      const { container } = render(
+        <div style={{ overflow: 'hidden', height: 40 }}>
+          <Dropdown trigger={<span>Menu</span>} items={items} />
+        </div>
+      );
+      fireEvent.click(screen.getByText('Menu'));
+
+      const menu = screen.getByRole('menu');
+      // The clipping container must NOT contain the menu…
+      expect(container.contains(menu)).toBe(false);
+      // …because it rides on document.body with a fixed anchor.
+      expect(menu.parentElement).toBe(document.body);
+      expect(menu.style.position).toBe('fixed');
+    });
+
+    it('does not treat a mousedown inside the portaled menu as outside', () => {
+      // The dismiss listener's containment check must cover the portaled
+      // panel — without panelRef, every press on an item would close the
+      // menu before the item's own click handler ran.
+      render(<Dropdown trigger={<span>Menu</span>} items={items} />);
+      fireEvent.click(screen.getByText('Menu'));
+
+      fireEvent.mouseDown(screen.getByRole('menuitem', { name: 'Edit' }));
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    it('closes on Escape from a menu portaled after the open flip', () => {
+      // The panel mounts one commit later than `open` turns true (the portal
+      // waits for mount, since react-dom/server has no `document`). The
+      // Escape listener must bind to the panel when it actually arrives, not
+      // to whatever existed when the open flip was committed.
+      const onOpenChange = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={items}
+          open
+          onOpenChange={onOpenChange}
+        />
+      );
+
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it('still activates items and closes through a full click in the portal', () => {
+      const onClick = jest.fn();
+      render(
+        <Dropdown
+          trigger={<span>Menu</span>}
+          items={[{ label: 'Edit', onClick }]}
+        />
+      );
+      fireEvent.click(screen.getByText('Menu'));
+
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Edit' }));
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
   });
 });
