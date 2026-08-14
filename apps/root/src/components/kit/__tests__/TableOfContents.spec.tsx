@@ -4,30 +4,12 @@ import {
   fireEvent,
   act,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { TableOfContents } from '../TableOfContents';
 
 expect.extend(toHaveNoViolations);
-
-// Mock IntersectionObserver
-const mockObserve = jest.fn();
-const mockDisconnect = jest.fn();
-
-class MockIntersectionObserver {
-  callback: IntersectionObserverCallback;
-  constructor(callback: IntersectionObserverCallback) {
-    this.callback = callback;
-  }
-  observe = mockObserve;
-  unobserve = jest.fn();
-  disconnect = mockDisconnect;
-}
-
-Object.defineProperty(window, 'IntersectionObserver', {
-  writable: true,
-  value: MockIntersectionObserver,
-});
 
 // Mock matchMedia for reduced motion
 Object.defineProperty(window, 'matchMedia', {
@@ -95,6 +77,20 @@ describe('TableOfContents', () => {
     );
     expect(screen.getAllByText('Details').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('Conclusion').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('marks a section active on initial load (scroll-position spy)', async () => {
+    render(<TableOfContents desktop />);
+    await act(() => Promise.resolve());
+
+    // jsdom reports zero rects for every heading, so the spy resolves the
+    // last one — what matters here is that the spy runs at load at all
+    // (the old observer version highlighted nothing until a scroll).
+    const nav = screen.getByRole('navigation', { name: /table of contents/i });
+    const active = within(nav)
+      .getAllByRole('button')
+      .filter(b => b.getAttribute('aria-current') === 'location');
+    expect(active).toHaveLength(1);
   });
 
   it('scrolls to heading when TOC link is clicked', async () => {

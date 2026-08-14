@@ -24,8 +24,12 @@ export function PageLayout({ children, className, ...rest }: PageLayoutProps) {
       // The App Router focuses this landmark after navigation; `.focus()`
       // scrolls it into view, which would otherwise scroll the (static) nav
       // off-screen. `scroll-mt` ≥ the nav height keeps the scroll at the top.
+      // `outline-none`: that same programmatic focus otherwise draws a
+      // focus ring around the entire page for every user on every
+      // navigation — a non-interactive focus target needs no visible ring
+      // (skip-link users get their context from the content itself).
       className={cn(
-        'flex w-full flex-col gap-y-16 scroll-mt-16 lg:gap-y-20',
+        'flex w-full flex-col gap-y-16 scroll-mt-16 outline-none lg:gap-y-20',
         className
       )}
       {...rest}

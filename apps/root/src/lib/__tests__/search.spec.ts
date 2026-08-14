@@ -1,6 +1,6 @@
 import MiniSearch from 'minisearch';
 import { createSearchEngine, searchWithHighlights } from '../search';
-import type { SearchEntry } from '../searchIndex';
+import { buildSearchIndex, type SearchEntry } from '../searchIndex';
 
 describe('MiniSearch Engine', () => {
   let entries: SearchEntry[];
@@ -98,5 +98,74 @@ describe('MiniSearch Engine', () => {
     expect(results.length).toBeGreaterThan(0);
     expect(results[0]).toHaveProperty('matches');
     expect(results[0]?.id).toBe('blog:react-post');
+  });
+
+  it('does not fuzzy-match short queries into stopwords like "to"', () => {
+    // fuzzy on a ≤3-char term accepts an edit that turns "toc" into "to",
+    // matching every document. The engine must gate fuzzy off at that
+    // length so short queries only exact/prefix match.
+    const shortEntries: SearchEntry[] = [
+      {
+        ...entries[0],
+        id: 'blog:toc-post',
+        title: 'TOC scroll spy',
+        excerpt: 'Table of contents',
+        tags: [],
+        body: 'Building a toc component.',
+      },
+      {
+        ...entries[0],
+        id: 'blog:unrelated',
+        title: 'Unrelated post',
+        excerpt: 'Nothing relevant',
+        tags: [],
+        body: 'How to build things and how to ship them.',
+      },
+    ];
+    const engine = createSearchEngine(shortEntries);
+    const results = engine.search('toc');
+    expect(results.map(r => r.id)).toEqual(['blog:toc-post']);
+  });
+
+  it('drops the barely-relevant OR tail below the relative score floor', () => {
+    const floorEntries: SearchEntry[] = [
+      {
+        ...entries[0],
+        id: 'blog:strong',
+        title: 'Service worker deep dive',
+        excerpt: 'service worker internals',
+        tags: ['service-worker'],
+        body: 'service worker service worker service worker',
+      },
+      {
+        ...entries[0],
+        id: 'blog:weak',
+        title: 'Unrelated ramble',
+        excerpt: 'nothing here',
+        tags: [],
+        body: [
+          'a very long body where the word service appears exactly once',
+          ...Array(120).fill('filler words diluting term frequency badly'),
+        ].join(' '),
+      },
+    ];
+    const engine = createSearchEngine(floorEntries);
+    const raw = engine.search('service worker');
+    const filtered = searchWithHighlights(
+      engine,
+      'service worker',
+      floorEntries
+    );
+    expect(raw.map(r => r.id)).toContain('blog:weak');
+    expect(filtered.map(r => r.id)).toEqual(['blog:strong']);
+  });
+
+  it('finds the Résumé page by the unaccented spelling everyone types', () => {
+    // The tokenizer does no diacritic folding and fuzzy matching cannot
+    // bridge résumé→resume, so the static entry must carry the plain
+    // spelling in a searchable field. Guards the palette "resume" query.
+    const engine = createSearchEngine(buildSearchIndex());
+    const results = engine.search('resume');
+    expect(results.some(r => r.id === 'page:resume')).toBe(true);
   });
 });
