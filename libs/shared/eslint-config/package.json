@@ -1,7 +1,6 @@
 {
   "name": "@danieljoffe/eslint-config",
   "version": "0.1.0",
-  "private": true,
   "description": "Shareable ESLint rules for the danieljoffe.com design system — steer consumers toward @danieljoffe/shared-ui primitives instead of raw HTML.",
   "type": "commonjs",
   "main": "./index.js",
@@ -11,10 +10,33 @@
   "files": [
     "index.js",
     "rules",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
+  "keywords": [
+    "eslint",
+    "eslint-config",
+    "eslint-plugin",
+    "eslint-flat-config",
+    "design-system",
+    "shared-ui"
+  ],
+  "author": "Daniel Joffe",
+  "license": "FSL-1.1-MIT",
+  "homepage": "https://github.com/danieljoffe/danieljoffe.com/tree/main/libs/shared/eslint-config",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danieljoffe/danieljoffe.com.git",
+    "directory": "libs/shared/eslint-config"
+  },
+  "bugs": {
+    "url": "https://github.com/danieljoffe/danieljoffe.com/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "peerDependencies": {
     "eslint": ">=9"
-  },
-  "license": "FSL-1.1-MIT"
+  }
 }
